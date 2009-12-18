@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
+using Papercut.Properties;
 using Papercut.Smtp;
 
 namespace Papercut
@@ -24,6 +25,13 @@ namespace Papercut
 		public ForwardWindow()
 		{
 			InitializeComponent();
+
+			// Load previous settings
+			server.Text = Settings.Default.ForwardServer;
+			to.Text = Settings.Default.ForwardTo;
+			from.Text = Settings.Default.ForwardFrom;
+
+			server.Focus();
 		}
 
 		void cancelButton_Click(object sender, RoutedEventArgs e)
@@ -67,6 +75,12 @@ namespace Papercut
 
 			worker.RunWorkerCompleted += delegate(object s, RunWorkerCompletedEventArgs args)
 			{
+				// Save settings for the next time
+				Settings.Default.ForwardServer = server.Text;
+				Settings.Default.ForwardTo = to.Text;
+				Settings.Default.ForwardFrom = from.Text;
+				Settings.Default.Save();
+
 				working = false;
 				sendingLabel.Visibility = Visibility.Hidden;
 				DialogResult = true;
