@@ -288,7 +288,18 @@ namespace Net.Mime
 			{
 				contentType = "text/plain; charset=us-ascii";
 			}
-			return new ContentType(contentType);
+
+            try
+            {
+                return new ContentType(contentType);
+            }
+            catch (FormatException f)
+            {
+                return new ContentType(
+                    contentType
+                        .Replace("\"", "")
+                        .Replace(" = ", "="));
+            }
 
 		}
 

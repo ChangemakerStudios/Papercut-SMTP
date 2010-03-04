@@ -124,13 +124,47 @@ namespace Papercut
 		/// <summary>
 		/// Write the HTML to a temporary file and render it to the HTML view
 		/// </summary>
-		private void setBrowserDocumentText(string parsedHTML)
+        private void SetBrowserDocument(MailMessageEx mailMessageEx)
 		{
-			double d = new Random().NextDouble();
-			string htmlFile = Path.Combine(Path.GetTempPath(), "papercut.htm");
-			using (TextWriter f = new StreamWriter(htmlFile))
-				f.Write(parsedHTML);
-			htmlView.Navigate(new Uri(htmlFile));
+			//double d = new Random().NextDouble();
+		    string tempPath = Path.GetTempPath();
+
+            string htmlFile = Path.Combine(tempPath, "papercut.htm");
+
+            string htmlText = mailMessageEx.Body;
+            foreach (var attachment in mailMessageEx.Attachments)
+            {
+                if ((!string.IsNullOrEmpty(attachment.ContentId)) &&
+                    (attachment.ContentStream != null))
+                {
+                    string fileName = Path.Combine(tempPath, attachment.ContentId);
+
+                    using (var fs = File.OpenWrite(fileName))
+                    {
+                        int Length = 256;
+                        Byte[] buffer = new Byte[Length];
+                        int bytesRead = attachment.ContentStream.Read(buffer, 0, Length);
+                        // write the required bytes
+                        while (bytesRead > 0)
+                        {
+                            fs.Write(buffer, 0, bytesRead);
+                            bytesRead = attachment.ContentStream.Read(buffer, 0, Length);
+                        }
+                        fs.Close();
+                    }
+
+                    htmlText = 
+                        htmlText
+                            .Replace(String.Format("cid:{0}", attachment.ContentId), attachment.ContentId)
+                            .Replace(String.Format("cid:'{0}'", attachment.ContentId), attachment.ContentId)
+                            .Replace(String.Format("cid:\"{0}\"", attachment.ContentId), attachment.ContentId);
+                }
+            } 
+            
+            using (TextWriter f = new StreamWriter(htmlFile))
+                f.Write(htmlText);
+
+		    htmlView.Navigate(new Uri(htmlFile));
 			htmlView.Refresh();
 		}
 
@@ -179,7 +213,7 @@ namespace Papercut
 				// If it is HTML, render it to the HTML view
 				if (mme.IsBodyHtml)
 				{
-					setBrowserDocumentText(mme.Body);
+					SetBrowserDocument(mme);
 					htmlViewTab.Visibility = Visibility.Visible;
 				}
 				else
@@ -285,6 +319,7 @@ namespace Papercut
 		private void MouseDownHandler(object sender, MouseButtonEventArgs e)
 		{
 			return;
+            /*
 			ListBox parent = (ListBox)sender;
 
 			// Get the object source for the selected item
@@ -296,6 +331,7 @@ namespace Papercut
 				DataObject doo = new DataObject(DataFormats.FileDrop, new[] { data });
 				DragDrop.DoDragDrop(parent, doo, DragDropEffects.Copy);
 			}
+            */
 		}
 
 		private static string GetObjectDataFromPoint(ListBox source, Point point)

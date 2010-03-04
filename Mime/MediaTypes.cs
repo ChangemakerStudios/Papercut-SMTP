@@ -14,6 +14,8 @@ namespace Net.Mime
 
 		public static readonly string MultipartAlternative;
 
+        public static readonly string MultipartRelated;
+
 		public static readonly string TextPlain;
 
 		public static readonly string TextHtml;
@@ -40,6 +42,8 @@ namespace Net.Mime
 
 			MultipartMixed = string.Concat(Multipart, "/", Mixed);
 			MultipartAlternative = string.Concat(Multipart, "/", Alternative);
+		    MultipartRelated = string.Concat(Multipart, "/related");
+
 			MessageRfc822 = string.Concat(Message, "/", Rfc822);
 
 			TextPlain = MediaTypeNames.Text.Plain;

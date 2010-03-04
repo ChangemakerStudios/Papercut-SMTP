@@ -388,7 +388,8 @@ namespace Net.Mime
 			foreach (MimeEntity child in entity.Children)
 			{
 				if (string.Equals(child.ContentType.MediaType, MediaTypes.MultipartAlternative, StringComparison.InvariantCultureIgnoreCase)
-						|| string.Equals(child.ContentType.MediaType, MediaTypes.MultipartMixed, StringComparison.InvariantCultureIgnoreCase))
+						|| string.Equals(child.ContentType.MediaType, MediaTypes.MultipartMixed, StringComparison.InvariantCultureIgnoreCase)
+                        || string.Equals(child.ContentType.MediaType, MediaTypes.MultipartRelated, StringComparison.InvariantCultureIgnoreCase))
 				{
 					BuildMultiPartMessage(child, message);
 				}  //if the message is mulitpart/alternative or multipart/mixed then the entity will have children needing parsed.
@@ -408,8 +409,12 @@ namespace Net.Mime
 				else if (IsAttachment(child))
 				{
 					message.Attachments.Add(CreateAttachment(child));
-
 				}
+                else if (string.Equals(entity.ContentType.MediaType, MediaTypes.MultipartRelated, StringComparison.InvariantCultureIgnoreCase)
+                        || string.Equals(entity.ContentType.MediaType, MediaTypes.MultipartMixed, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    message.Attachments.Add(CreateAttachment(child));
+                }
 			}
 		}
 

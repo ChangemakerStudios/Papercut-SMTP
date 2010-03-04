@@ -56,7 +56,7 @@ namespace Papercut.Smtp
 				_client.Close();
 			}
 
-			if(triggerEvent)
+			if (triggerEvent)
 				OnConnectionClosed(new EventArgs());
 			Logger.Write("Connection closed", _connectionId);
 		}
@@ -158,7 +158,16 @@ namespace Papercut.Smtp
 
 				// Set up to wait for more
 				if (connection._connected)
-					connection.BeginReceive();
+				{
+					try
+					{
+						connection.BeginReceive();
+					}
+					catch (ObjectDisposedException) // Socket has been closed.
+					{
+						return;
+					}
+				}
 			}
 			catch (Exception ex)
 			{
@@ -202,10 +211,7 @@ namespace Papercut.Smtp
 					return;
 				}
 
-				int bytes = connection._client.EndSend(result);
-
-				if (bytes != connection._sendBuffer.Length)
-					Logger.WriteWarning("Sent bytes does not match buffer bytes, sent " + bytes + " and exptected " + connection._sendBuffer.Length, connection._connectionId);
+				connection._client.EndSend(result);
 			}
 			catch (Exception ex)
 			{
