@@ -19,6 +19,6 @@
 		<Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Width="75" Click="Exit_Click">Exit</Button>
 		<Image Height="42" Margin="195,0,0,0" Name="image1" Stretch="Fill" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="42" Source="/Papercut;component/App.ico" />
 		<Label Margin="238,0,345,10" Name="versionLabel" VerticalAlignment="Bottom" FontSize="10" Foreground="#696969">Papercut</Label>
-		<Label Margin="238,0,345,-2" VerticalAlignment="Bottom" FontSize="9" Foreground="#2e74a6" Cursor="Hand" ToolTip="Click to visit the site" MouseUp="GoToSite">http://invalidlogic.com/papercut</Label>
+		<Label Margin="238,0,345,-2" VerticalAlignment="Bottom" FontSize="9" Foreground="#2e74a6" Cursor="Hand" ToolTip="Click to visit the site" MouseUp="GoToSite">http://papercut.codeplex.com/</Label>
 	</Grid>
 </Window>

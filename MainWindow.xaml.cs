@@ -274,7 +274,7 @@ namespace Papercut
 
 		private void GoToSite(object sender, MouseButtonEventArgs e)
 		{
-			Process.Start("http://invalidlogic.com/papercut");
+			Process.Start("http://papercut.codeplex.com/");
 		}
 
 		#endregion
