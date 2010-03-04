@@ -260,6 +260,7 @@ namespace Papercut
 		{
 			OptionsWindow ow = new OptionsWindow();
 			ow.Owner = this;
+			ow.ShowInTaskbar = false;
 			if (ow.ShowDialog().Value)
 			{
 				// Force the server to rebind
