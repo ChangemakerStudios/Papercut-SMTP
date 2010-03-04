@@ -86,7 +86,14 @@ namespace Papercut
 
 			// Start listening for connections
 			server = new Server();
-			server.Start();
+			try
+			{
+				server.Start();
+			}
+			catch
+			{
+				System.Windows.MessageBox.Show("Failed to bind to the address/port specified.  The port may already be in use by another process.  Please change the configuration in the Options dialog.", "Operation Failure");
+			}
 
 			// Minimize if set to
 			if (Settings.Default.StartMinimized)
@@ -297,8 +304,16 @@ namespace Papercut
 			ow.ShowInTaskbar = false;
 			if (ow.ShowDialog().Value)
 			{
-				// Force the server to rebind
-				server.Bind();
+				try
+				{
+					// Force the server to rebind
+					server.Bind();
+				}
+				catch(Exception ex)
+				{
+					System.Windows.MessageBox.Show("Failed to rebind to the address/port specified.  The port may already be in use by another process.  Please update the configuration.", "Operation Failure");
+					Options_Click(null, null);
+				}
 			}
 		}
 
