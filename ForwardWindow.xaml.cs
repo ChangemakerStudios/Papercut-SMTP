@@ -1,95 +1,179 @@
-﻿using System.ComponentModel;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Windows;
-using Papercut.Properties;
-using Papercut.Smtp;
+﻿/*  
+ * Papercut
+ *
+ *  Copyright © 2008 - 2012 Ken Robertson
+ *  
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *  
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *  
+ */
 
 namespace Papercut
 {
+	#region Using
+
+	using System.ComponentModel;
+	using System.IO;
+	using System.Text.RegularExpressions;
+	using System.Threading.Tasks;
+	using System.Windows;
+
+	using Papercut.Properties;
+	using Papercut.Smtp;
+
+	#endregion
+
 	/// <summary>
 	/// Interaction logic for ForwardWindow.xaml
 	/// </summary>
 	public partial class ForwardWindow : Window
 	{
-		string messageFilename;
-		BackgroundWorker worker;
-		bool working = false;
-		static readonly Regex emailRegex = new Regex(@"(\A(\s*)\Z)|(\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+		#region Constants and Fields
 
-		public ForwardWindow(string filename) : this()
+		/// <summary>
+		/// The email regex.
+		/// </summary>
+		private static readonly Regex emailRegex = new Regex(
+			@"(\A(\s*)\Z)|(\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+		/// <summary>
+		/// The message filename.
+		/// </summary>
+		private readonly string messageFilename;
+
+		/// <summary>
+		/// The worker.
+		/// </summary>
+		private Task worker;
+
+		/// <summary>
+		/// The working.
+		/// </summary>
+		private bool working;
+
+		#endregion
+
+		#region Constructors and Destructors
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ForwardWindow"/> class.
+		/// </summary>
+		/// <param name="filename">
+		/// The filename.
+		/// </param>
+		public ForwardWindow(string filename)
+			: this()
 		{
-			messageFilename = filename;
+			this.messageFilename = filename;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ForwardWindow"/> class.
+		/// </summary>
 		public ForwardWindow()
 		{
-			InitializeComponent();
+			this.InitializeComponent();
 
 			// Load previous settings
-			server.Text = Settings.Default.ForwardServer;
-			to.Text = Settings.Default.ForwardTo;
-			from.Text = Settings.Default.ForwardFrom;
+			this.server.Text = Settings.Default.ForwardServer;
+			this.to.Text = Settings.Default.ForwardTo;
+			this.@from.Text = Settings.Default.ForwardFrom;
 
-			server.Focus();
+			this.server.Focus();
 		}
 
-		void cancelButton_Click(object sender, RoutedEventArgs e)
+		#endregion
+
+		#region Methods
+
+		/// <summary>
+		/// The cancel button_ click.
+		/// </summary>
+		/// <param name="sender">
+		/// The sender.
+		/// </param>
+		/// <param name="e">
+		/// The e.
+		/// </param>
+		private void cancelButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (working)
+			if (this.working)
 			{
-				worker.CancelAsync();
-				sendingLabel.Visibility = Visibility.Hidden;
+				this.worker.Dispose();
+				this.sendingLabel.Visibility = Visibility.Hidden;
 			}
-			DialogResult = false;
+
+			this.DialogResult = false;
 		}
 
-		void sendButton_Click(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// The send button_ click.
+		/// </summary>
+		/// <param name="sender">
+		/// The sender.
+		/// </param>
+		/// <param name="e">
+		/// The e.
+		/// </param>
+		private void sendButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (string.IsNullOrEmpty(server.Text) || string.IsNullOrEmpty(from.Text) || string.IsNullOrEmpty(to.Text))
+			if (string.IsNullOrEmpty(this.server.Text) || string.IsNullOrEmpty(this.@from.Text)
+					|| string.IsNullOrEmpty(this.to.Text))
 			{
-				MessageBox.Show("All the text boxes are required, fill them in please.", "Papercut", MessageBoxButton.OK, MessageBoxImage.Warning);
+				MessageBox.Show(
+					"All the text boxes are required, fill them in please.", "Papercut", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
 			}
 
-			if(!emailRegex.IsMatch(from.Text) || !emailRegex.IsMatch(to.Text))
+			if (!emailRegex.IsMatch(this.@from.Text) || !emailRegex.IsMatch(this.to.Text))
 			{
-				MessageBox.Show("You need to enter valid email addresses.", "Papercut", MessageBoxButton.OK, MessageBoxImage.Warning);
+				MessageBox.Show(
+					"You need to enter valid email addresses.", "Papercut", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
 			}
 
-			SmtpSession session = new SmtpSession();
-			session.Sender = server.Text.Trim();
-			session.MailFrom = from.Text;
-			session.Recipients.Add(to.Text);
-			session.Message = File.ReadAllBytes(messageFilename);
+			var session = new SmtpSession { Sender = this.server.Text.Trim(), MailFrom = this.@from.Text };
+			session.Recipients.Add(this.to.Text);
+			session.Message = File.ReadAllBytes(this.messageFilename);
 
-			worker = new BackgroundWorker();
+			worker = Task.Factory.StartNew(
+				() =>
+					{
+						using (var client = new SmtpClient(session))
+						{
+							client.Send();
+						}
+					});
 
-			worker.DoWork += delegate(object s, DoWorkEventArgs args)
-			{
-				SmtpSession _session = args.Argument as SmtpSession;
-				SmtpClient client = new SmtpClient(_session);
-				client.Send();
-			};
+			this.worker.ContinueWith(
+				(t) =>
+					{
+						// Save settings for the next time
+						Settings.Default.ForwardServer = this.server.Text;
+						Settings.Default.ForwardTo = this.to.Text;
+						Settings.Default.ForwardFrom = this.@from.Text;
+						Settings.Default.Save();
 
-			worker.RunWorkerCompleted += delegate(object s, RunWorkerCompletedEventArgs args)
-			{
-				// Save settings for the next time
-				Settings.Default.ForwardServer = server.Text;
-				Settings.Default.ForwardTo = to.Text;
-				Settings.Default.ForwardFrom = from.Text;
-				Settings.Default.Save();
+						this.working = false;
+						this.sendingLabel.Visibility = Visibility.Hidden;
+						this.DialogResult = true;
+					},
+				TaskScheduler.FromCurrentSynchronizationContext());
 
-				working = false;
-				sendingLabel.Visibility = Visibility.Hidden;
-				DialogResult = true;
-			};
-
-			working = true;
-			sendButton.IsEnabled = false;
-			sendingLabel.Visibility = Visibility.Visible;
-			worker.RunWorkerAsync(session);
+			this.working = true;
+			this.sendButton.IsEnabled = false;
+			this.sendingLabel.Visibility = Visibility.Visible;
 		}
+
+		#endregion
 	}
 }

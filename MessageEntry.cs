@@ -1,46 +1,128 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Text.RegularExpressions;
+﻿/*  
+ * Papercut
+ *
+ *  Copyright © 2008 - 2012 Ken Robertson
+ *  
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *  
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *  
+ */
 
 namespace Papercut
 {
-	class MessageEntry
-	{
-		private FileInfo info;
-		private DateTime? created;
+	#region Using
 
+	using System;
+	using System.Globalization;
+	using System.IO;
+	using System.Text.RegularExpressions;
+
+	#endregion
+
+	/// <summary>
+	/// The message entry.
+	/// </summary>
+	internal class MessageEntry
+	{
+		#region Constants and Fields
+
+		/// <summary>
+		/// The name format.
+		/// </summary>
 		private static readonly Regex nameFormat = new Regex(@"^\d{14,16}\.eml$", RegexOptions.Compiled);
 
+		/// <summary>
+		/// The info.
+		/// </summary>
+		private readonly FileInfo info;
+
+		/// <summary>
+		/// The created.
+		/// </summary>
+		private DateTime? created;
+
+		#endregion
+
+		#region Constructors and Destructors
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MessageEntry"/> class.
+		/// </summary>
+		/// <param name="file">
+		/// The file.
+		/// </param>
 		public MessageEntry(string file)
 		{
-			info = new FileInfo(file);
+			this.info = new FileInfo(file);
 
-			if(nameFormat.IsMatch(info.Name))
-				created = DateTime.ParseExact(info.Name.Replace(".eml", ""), "yyyyMMddHHmmssFF", CultureInfo.InvariantCulture);
+			if (nameFormat.IsMatch(this.info.Name))
+			{
+				this.created = DateTime.ParseExact(
+					this.info.Name.Replace(".eml", string.Empty), "yyyyMMddHHmmssFF", CultureInfo.InvariantCulture);
+			}
 		}
 
+		#endregion
+
+		#region Public Properties
+
+		/// <summary>
+		/// Gets File.
+		/// </summary>
 		public string File
 		{
-			get { return info.FullName; }
+			get
+			{
+				return this.info.FullName;
+			}
 		}
 
-		public string Name
-		{
-			get { return info.Name; }
-		}
-
+		/// <summary>
+		/// Gets ModifiedDate.
+		/// </summary>
 		public DateTime ModifiedDate
 		{
-			get { return info.LastWriteTime; }
+			get
+			{
+				return this.info.LastWriteTime;
+			}
 		}
 
+		/// <summary>
+		/// Gets Name.
+		/// </summary>
+		public string Name
+		{
+			get
+			{
+				return this.info.Name;
+			}
+		}
+
+		#endregion
+
+		#region Public Methods and Operators
+
+		/// <summary>
+		/// The to string.
+		/// </summary>
+		/// <returns>
+		/// The to string.
+		/// </returns>
 		public override string ToString()
 		{
-			if(created.HasValue)
-				return created.Value.ToString("G");
-			else
-				return info.Name;
+			return this.created.HasValue ? this.created.Value.ToString("G") : this.info.Name;
 		}
+
+		#endregion
 	}
 }
