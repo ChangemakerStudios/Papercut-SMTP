@@ -366,27 +366,36 @@ namespace Papercut.Smtp
 					while (line.Contains("\n"))
 					{
 						// Take a snippet of the buffer, find the line, and process it
-						connection._stringBuffer = new StringBuilder(line.Substring(line.IndexOf("\n") + 1));
+						connection._stringBuffer = new StringBuilder(line.Substring(line.IndexOf("\n", System.StringComparison.Ordinal) + 1));
 						line = line.Substring(0, line.IndexOf("\n"));
-						Logger.WriteDebug("Received: [" + line + "]", connection._connectionId);
+						Logger.WriteDebug(string.Format("Received: [{0}]", line), connection._connectionId);
 						connection._processData(connection, line);
 						line = connection._stringBuffer.ToString();
 					}
 				}
+				else
+				{
+                    // nothing received, close and return;
+				    connection.Close();
+				    return;
+				}
+
 
 				// Set up to wait for more
-				if (connection._connected)
-				{
-					try
-					{
-						connection.BeginReceive();
-					}
-					catch (ObjectDisposedException)
-					{
-						// Socket has been closed.
-						return;
-					}
-				}
+			    if (!connection._connected)
+			    {
+			        return;
+			    }
+
+			    try
+			    {
+			        connection.BeginReceive();
+			    }
+			    catch (ObjectDisposedException)
+			    {
+			        // Socket has been closed.
+			        return;
+			    }
 			}
 			catch (Exception ex)
 			{

@@ -574,30 +574,13 @@ if (data != null)
 
                 _currentMessageCancellationTokenSource = new CancellationTokenSource();
 
-                Task.Factory.StartNew(() => { }).ContinueWith
-                    (task =>
-                        {
-                            // Load the file as an array of lines
-                            var lines = new List<string>();
-                            using (var sr = new StreamReader(mailFile))
-                            {
-                                string line;
-                                while ((line = sr.ReadLine()) != null)
-                                {
-                                    if (task.IsCanceled)
-                                    {
-                                        break;
-                                    }
-
-                                    lines.Add(line);
-                                }
-                            }
-
-                            return lines;
-                        },
+                Task.Factory.StartNew(() => { })
+                    .ContinueWith
+                    (task => File.ReadAllLines(mailFile),
                      _currentMessageCancellationTokenSource.Token,
                      TaskContinuationOptions.NotOnCanceled,
-                     TaskScheduler.Default).ContinueWith
+                     TaskScheduler.Default)
+                    .ContinueWith
                     (task =>
                         {
                             // Load the MIME body
