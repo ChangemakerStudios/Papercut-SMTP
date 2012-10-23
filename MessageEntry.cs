@@ -26,7 +26,9 @@ namespace Papercut
 	using System.IO;
 	using System.Text.RegularExpressions;
 
-	#endregion
+	using Papercut.Smtp;
+
+    #endregion
 
 	/// <summary>
 	/// The message entry.
@@ -38,7 +40,7 @@ namespace Papercut
 		/// <summary>
 		/// The name format.
 		/// </summary>
-		private static readonly Regex nameFormat = new Regex(@"^\d{14,16}\.eml$", RegexOptions.Compiled);
+        private static readonly Regex nameFormat = new Regex(@"^(?<date>\d{14,16})(\-[A-Z0-9]{2})?\.eml$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
 		/// <summary>
 		/// The info.
@@ -64,10 +66,11 @@ namespace Papercut
 		{
 			this.info = new FileInfo(file);
 
-			if (nameFormat.IsMatch(this.info.Name))
+		    var match = nameFormat.Match(this.info.Name);
+
+			if (match.Success)
 			{
-				this.created = DateTime.ParseExact(
-					this.info.Name.Replace(".eml", string.Empty), "yyyyMMddHHmmssFF", CultureInfo.InvariantCulture);
+			    this.created = DateTime.ParseExact(match.Groups["date"].Value, "yyyyMMddHHmmssFF", CultureInfo.InvariantCulture);
 			}
 		}
 
@@ -120,9 +123,10 @@ namespace Papercut
 		/// </returns>
 		public override string ToString()
 		{
-			return this.created.HasValue ? this.created.Value.ToString("G") : this.info.Name;
+		    return string.Format
+		        ("{0} ({1})", this.created.HasValue ? this.created.Value.ToString("G") : this.info.Name, (this.info.Length.ToFileSizeFormat()));
 		}
 
-		#endregion
+	    #endregion
 	}
 }

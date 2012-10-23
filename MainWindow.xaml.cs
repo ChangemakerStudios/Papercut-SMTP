@@ -25,10 +25,12 @@ namespace Papercut
 	using System.Collections.Generic;
 	using System.ComponentModel;
 	using System.Diagnostics;
+	using System.Diagnostics.CodeAnalysis;
 	using System.Drawing;
 	using System.IO;
 	using System.Linq;
 	using System.Reflection;
+	using System.Threading;
 	using System.Threading.Tasks;
 	using System.Windows;
 	using System.Windows.Controls;
@@ -48,6 +50,7 @@ namespace Papercut
 	using ListBox = System.Windows.Controls.ListBox;
 	using MenuItem = System.Windows.Forms.MenuItem;
 	using MessageBox = System.Windows.MessageBox;
+	using Panel = System.Windows.Controls.Panel;
 	using Point = System.Windows.Point;
 
 	#endregion
@@ -73,6 +76,10 @@ namespace Papercut
 		///   The server.
 		/// </summary>
 		private readonly Server server;
+
+	    private Task _currentMessageLoadTask = null;
+
+	    private CancellationTokenSource _currentMessageCancellationTokenSource = null;
 
 		#endregion
 
@@ -528,6 +535,7 @@ if (data != null)
 		/// <param name="e">
 		/// The e. 
 		/// </param>
+		[SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1126:PrefixCallsCorrectly", Justification = "Reviewed. Suppression is OK here.")]
 		private void messagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			// If there are no selected items, then disable the Delete button, clear the boxes, and return
@@ -543,85 +551,123 @@ if (data != null)
 				return;
 			}
 
-			// Enable the delete and forward button
-			this.deleteButton.IsEnabled = true;
-			this.forwardButton.IsEnabled = true;
-
-			// Load the file as an array of lines
-			var lines = new List<string>();
-			using (var sr = new StreamReader(((MessageEntry)e.AddedItems[0]).File))
-			{
-				string line;
-				while ((line = sr.ReadLine()) != null)
-				{
-					lines.Add(line);
-				}
-			}
-
-			string[] linesArray = lines.ToArray();
-
-			// Set the raw message view
-			this.rawView.Text = string.Join("\n", linesArray);
+		    var setTitle = new Action<string>
+		        ((t) =>
+		            {
+		                Subject.Content = t;
+		                Subject.ToolTip = t;
+		            });
 
 			try
 			{
 				tabControl.IsEnabled = false;
+                SpinAnimation.Visibility = Visibility.Visible;
+			    setTitle("Loading...");
 
-				Task.Factory.StartNew(
-					() =>
-						{
-							// Load the MIME body
-							var mr = new MimeReader(linesArray);
-							MimeEntity me = mr.CreateMimeEntity();
+                if (_currentMessageLoadTask != null && _currentMessageLoadTask.Status == TaskStatus.Running && _currentMessageCancellationTokenSource != null)
+                {
+                    _currentMessageCancellationTokenSource.Cancel();
+                }
 
-							return me.ToMailMessageEx();
-						}).ContinueWith(
-							(task) =>
-								{
-									var mme = task.Result;
+                _currentMessageCancellationTokenSource = new CancellationTokenSource();
 
-									this.bodyView.Text = mme.Body;
-									this.bodyViewTab.Visibility = Visibility.Visible;
+			    _currentMessageLoadTask = Task.Factory.StartNew
+			        (() =>
+			            {
+			                // Load the file as an array of lines
+			                var lines = new List<string>();
+			                using (var sr = new StreamReader(((MessageEntry)e.AddedItems[0]).File))
+			                {
+			                    string line;
+			                    while ((line = sr.ReadLine()) != null)
+			                    {
+			                        lines.Add(line);
+			                    }
+			                }
 
-									this.defaultBodyView.Text = mme.Body;
+			                return lines.ToArray();
 
-									this.FromEdit.Text = mme.From.ToString();
-									this.ToEdit.Text = mme.To.ToString();
-									this.DateEdit.Text = mme.DeliveryDate.ToString();
-									this.SubjectEdit.Text = mme.Subject;
+			            },
+			         _currentMessageCancellationTokenSource.Token).ContinueWith
+			        ((task) =>
+			            {
+			                // Load the MIME body
+			                var mimeReader = new MimeReader(task.Result);
+			                MimeEntity me = mimeReader.CreateMimeEntity();
 
-									// If it is HTML, render it to the HTML view
-									if (mme.IsBodyHtml)
-									{
-										this.SetBrowserDocument(mme);
-										this.htmlViewTab.Visibility = Visibility.Visible;
+			                return Tuple.Create(task.Result, me.ToMailMessageEx());
 
-										this.defaultHtmlView.Visibility = Visibility.Visible;
-										this.defaultBodyView.Visibility = Visibility.Collapsed;
-									}
-									else
-									{
-										this.htmlViewTab.Visibility = Visibility.Hidden;
-										if (this.defaultTab.IsVisible)
-										{
-											this.tabControl.SelectedIndex = 0;
-										}
-										else if (this.tabControl.SelectedItem == this.htmlViewTab)
-										{
-											this.tabControl.SelectedIndex = 2;
-										}
+			            },
+			         _currentMessageCancellationTokenSource.Token,
+			         TaskContinuationOptions.NotOnCanceled,
+			         TaskScheduler.Default).ContinueWith
+			        ((task) =>
+			            {
+                            if (task.IsCanceled)
+                            {
+                                return;
+                            }
 
-										this.defaultHtmlView.Visibility = Visibility.Collapsed;
-										this.defaultBodyView.Visibility = Visibility.Visible;
-									}
+			                var resultTuple = task.Result;
 
-									tabControl.IsEnabled = true;
-								}, TaskScheduler.FromCurrentSynchronizationContext());
+			                var mme = resultTuple.Item2;
+
+			                // set the raw view...
+			                this.rawView.Text = string.Join("\n", resultTuple.Item1);
+
+			                this.bodyView.Text = mme.Body;
+			                this.bodyViewTab.Visibility = Visibility.Visible;
+
+			                this.defaultBodyView.Text = mme.Body;
+
+			                this.FromEdit.Text = mme.From.ToString();
+			                this.ToEdit.Text = mme.To.ToString();
+			                this.DateEdit.Text = mme.DeliveryDate.ToString();
+			                this.SubjectEdit.Text = mme.Subject;
+
+                            setTitle(mme.Subject);
+
+			                // If it is HTML, render it to the HTML view
+			                if (mme.IsBodyHtml)
+			                {
+			                    this.SetBrowserDocument(mme);
+			                    this.htmlViewTab.Visibility = Visibility.Visible;
+
+			                    this.defaultHtmlView.Visibility = Visibility.Visible;
+			                    this.defaultBodyView.Visibility = Visibility.Collapsed;
+			                }
+			                else
+			                {
+			                    this.htmlViewTab.Visibility = Visibility.Hidden;
+			                    if (this.defaultTab.IsVisible)
+			                    {
+			                        this.tabControl.SelectedIndex = 0;
+			                    }
+			                    else if (Equals(this.tabControl.SelectedItem, this.htmlViewTab))
+			                    {
+			                        this.tabControl.SelectedIndex = 2;
+			                    }
+
+			                    this.defaultHtmlView.Visibility = Visibility.Collapsed;
+			                    this.defaultBodyView.Visibility = Visibility.Visible;
+			                }
+
+			                SpinAnimation.Visibility = Visibility.Collapsed;
+			                tabControl.IsEnabled = true;
+
+			                // Enable the delete and forward button
+			                this.deleteButton.IsEnabled = true;
+			                this.forwardButton.IsEnabled = true;
+			            },
+			         _currentMessageCancellationTokenSource.Token,
+			         TaskContinuationOptions.NotOnCanceled,
+			         TaskScheduler.FromCurrentSynchronizationContext());
 			}
 			catch
 			{
 				this.bodyViewTab.Visibility = Visibility.Hidden;
 				this.htmlViewTab.Visibility = Visibility.Hidden;
+                setTitle("Papercut");
 				this.tabControl.SelectedIndex = 1;
 			}
 		}

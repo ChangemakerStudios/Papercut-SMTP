@@ -24,6 +24,7 @@ namespace Papercut.Smtp
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Globalization;
 	using System.Linq;
 	using System.Net;
 	using System.Text;
@@ -157,6 +158,23 @@ namespace Papercut.Smtp
 				return null;
 			}
 		}
+
+        /// <summary>
+        /// To FileSizeFormat... Thank you to "deepee1" on StackOverflow for this elegent solution:
+        /// http://stackoverflow.com/a/4975942
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        public static string ToFileSizeFormat(this long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB", "TB", "PB" };
+
+            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+
+            double roundedNumber = Math.Round(bytes / Math.Pow(1024, place), 1);
+
+            return roundedNumber.ToString(CultureInfo.InvariantCulture) + suffixes[place];            
+        }
 
 		#endregion
 	}
