@@ -18,7 +18,7 @@
 			HorizontalAlignment="Stretch" 
 			VerticalAlignment="Stretch" 
 			Margin="0"/>
-		<ListBox Name="messagesList" SelectionChanged="messagesList_SelectionChanged" Width="Auto" Height="Auto" PreviewMouseLeftButtonDown="MouseDownHandler" SelectionMode="Extended" VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" FontWeight="Bold" Padding="0" Margin="2" />
+		<ListBox Name="messagesList" SelectionChanged="messagesList_SelectionChanged" Width="Auto" Height="Auto" PreviewMouseLeftButtonDown="MouseDownHandler" SelectionMode="Extended" VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2" />
         <Grid Name="ContainerPanel" Grid.Column="2" Width="Auto" Height="Auto">
             <my:Spinner HorizontalAlignment="Right" x:Name="SpinAnimation" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsHitTestVisible="False" Panel.ZIndex="1000" UseLayoutRounding="False" Padding="2" BorderBrush="#FFADADAD" BorderThickness="1" Background="#FF383838" Opacity="0.75" Visibility="Collapsed" Margin="0,5,5,0" />
             <Label Name="Subject" Width="Auto" Height="40" Visibility="Visible" Margin="0" VerticalAlignment="Top" ForceCursor="False" HorizontalAlignment="Stretch" Foreground="#FF287BAD" FontStretch="Normal" FontWeight="Bold" FontSize="20">
@@ -75,7 +75,7 @@
         </Grid>
         <Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,12" Width="75" Name="forwardButton" IsEnabled="False" Click="forwardButton_Click" Grid.Row="1">Forward</Button>
 		<Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="85,0,0,12" Width="75" Name="deleteButton" IsEnabled="False" Click="deleteButton_Click" Grid.Row="1">Delete</Button>
-		<Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,90,12" Width="75" Click="Options_Click" Grid.Column="2" Grid.Row="1">Options</Button>
+		<Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="398,0,0,12" Width="75" Click="Options_Click" Grid.Column="2" Grid.Row="1">Options</Button>
 		<Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,9,12" Width="75" Click="Exit_Click" Grid.Column="2" Grid.Row="1">Exit</Button>
 		<Image Height="42" Margin="6,0,0,3" Name="image1" Stretch="Fill" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="42" Source="/Papercut;component/App.ico" Grid.Row="1" Grid.Column="2" />
 		<Label Margin="52,0,0,13" Name="versionLabel" VerticalAlignment="Bottom" FontSize="10" Foreground="#696969" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left" Width="132">Papercut</Label>
