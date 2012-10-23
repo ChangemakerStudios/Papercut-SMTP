@@ -77,10 +77,6 @@ namespace Papercut
 		/// </summary>
 		private readonly Server server;
 
-	    private Task _currentMessageLoadTask = null;
-
-	    private CancellationTokenSource _currentMessageCancellationTokenSource = null;
-
 		#endregion
 
 		#region Constructors and Destructors
@@ -526,6 +522,8 @@ if (data != null)
 			fw.ShowDialog();
 		}
 
+        private CancellationTokenSource _currentMessageCancellationTokenSource = null;
+
 		/// <summary>
 		/// The messages list_ selection changed.
 		/// </summary>
@@ -564,15 +562,15 @@ if (data != null)
                 SpinAnimation.Visibility = Visibility.Visible;
 			    setTitle("Loading...");
 
-                if (_currentMessageLoadTask != null && _currentMessageLoadTask.Status == TaskStatus.Running && _currentMessageCancellationTokenSource != null)
+                if (_currentMessageCancellationTokenSource != null)
                 {
                     _currentMessageCancellationTokenSource.Cancel();
                 }
 
                 _currentMessageCancellationTokenSource = new CancellationTokenSource();
 
-			    _currentMessageLoadTask = Task.Factory.StartNew
-			        (() =>
+			    Task.Factory.StartNew(() => { }).ContinueWith
+			        (task =>
 			            {
 			                // Load the file as an array of lines
 			                var lines = new List<string>();
@@ -581,32 +579,37 @@ if (data != null)
 			                    string line;
 			                    while ((line = sr.ReadLine()) != null)
 			                    {
+			                        if (task.IsCanceled)
+			                        {
+			                            break;
+			                        }
+
 			                        lines.Add(line);
 			                    }
 			                }
 
-			                return lines.ToArray();
-
+			                return lines;
 			            },
-			         _currentMessageCancellationTokenSource.Token).ContinueWith
-			        ((task) =>
+			         _currentMessageCancellationTokenSource.Token,
+			         TaskContinuationOptions.NotOnCanceled,
+			         TaskScheduler.Default).ContinueWith
+			        (task =>
 			            {
 			                // Load the MIME body
 			                var mimeReader = new MimeReader(task.Result);
 			                MimeEntity me = mimeReader.CreateMimeEntity();
 
 			                return Tuple.Create(task.Result, me.ToMailMessageEx());
-
 			            },
 			         _currentMessageCancellationTokenSource.Token,
 			         TaskContinuationOptions.NotOnCanceled,
 			         TaskScheduler.Default).ContinueWith
-			        ((task) =>
+			        (task =>
 			            {
-                            if (task.IsCanceled)
-                            {
-                                return;
-                            }
+			                if (task.IsCanceled)
+			                {
+			                    return;
+			                }
 
 			                var resultTuple = task.Result;
 
@@ -625,11 +628,16 @@ if (data != null)
 			                this.DateEdit.Text = mme.DeliveryDate.ToString();
 			                this.SubjectEdit.Text = mme.Subject;
 
-                            setTitle(mme.Subject);
+			                setTitle(mme.Subject);
 
 			                // If it is HTML, render it to the HTML view
 			                if (mme.IsBodyHtml)
 			                {
+			                    if (task.IsCanceled)
+			                    {
+			                        return;
+			                    }
+
 			                    this.SetBrowserDocument(mme);
 			                    this.htmlViewTab.Visibility = Visibility.Visible;
 
