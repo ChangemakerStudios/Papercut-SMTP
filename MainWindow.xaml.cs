@@ -29,7 +29,9 @@ namespace Papercut
     using System.Drawing;
     using System.IO;
     using System.Linq;
+    using System.Net.Mail;
     using System.Reflection;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
@@ -90,12 +92,14 @@ namespace Papercut
             this.InitializeComponent();
 
             // Set up the notification icon
-            this.notification = new NotifyIcon();
-            this.notification.Icon =
-                new Icon(Application.GetResourceStream(new Uri("/Papercut;component/App.ico", UriKind.Relative)).Stream);
-            this.notification.Text = "Papercut";
-            this.notification.Visible = true;
-            this.notification.DoubleClick += delegate
+            this.notification = new NotifyIcon
+                {
+                    Icon = new Icon(Application.GetResourceStream(new Uri("/Papercut;component/App.ico", UriKind.Relative)).Stream),
+                    Text = "Papercut",
+                    Visible = true
+                };
+
+            this.notification.Click += delegate
                 {
                     this.Show();
                     this.WindowState = WindowState.Normal;
@@ -103,28 +107,28 @@ namespace Papercut
                     this.Focus();
                     this.Topmost = false;
                 };
+
             this.notification.BalloonTipClicked += delegate
                 {
                     this.Show();
                     this.WindowState = WindowState.Normal;
                     this.messagesList.SelectedIndex = this.messagesList.Items.Count - 1;
                 };
-            this.notification.ContextMenu = new ContextMenu(
-                new[]
-                    {
-                        new MenuItem(
-                            "Show", 
-                            delegate
-                                {
-                                    this.Show();
-                                    this.WindowState = WindowState.Normal;
-                                    this.Focus();
-                                }), new MenuItem("Exit", delegate { this.Close(); })
-                    });
+
+            this.notification.ContextMenu = new ContextMenu(new[]
+                {
+                    new MenuItem("Show",
+                                 delegate
+                                     {
+                                         this.Show();
+                                         this.WindowState = WindowState.Normal;
+                                         this.Focus();
+                                     }) { DefaultItem = true },
+                    new MenuItem("Exit", delegate { this.Close(); })
+                });
 
             // Set the version label
-            this.versionLabel.Content = string.Format(
-                "Papercut v{0}", Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
+            this.versionLabel.Content = string.Format("Papercut v{0}", Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
 
             // Load existing messages
             this.LoadMessages();
@@ -331,26 +335,26 @@ if (data != null)
         /// </param>
         private void Options_Click(object sender, RoutedEventArgs e)
         {
-            var ow = new OptionsWindow();
-            ow.Owner = this;
-            ow.ShowInTaskbar = false;
+            var ow = new OptionsWindow { Owner = this, ShowInTaskbar = false };
 
-            if (ow.ShowDialog().Value)
+            var showDialog = ow.ShowDialog();
+
+            if (showDialog == null || !showDialog.Value)
             {
-                try
-                {
-                    // Force the server to rebind
-                    this.server.Bind();
+                return;
+            }
 
-                    this.SetTabs();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(
-                        "Failed to rebind to the address/port specified.  The port may already be in use by another process.  Please update the configuration.", 
-                        "Operation Failure");
-                    this.Options_Click(null, null);
-                }
+            try
+            {
+                // Force the server to rebind
+                this.server.Bind();
+                this.SetTabs();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to rebind to the address/port specified.  The port may already be in use by another process.  Please update the configuration.",
+                                "Operation Failure");
+                this.Options_Click(null, null);
             }
         }
 
@@ -408,16 +412,13 @@ if (data != null)
                     }
 
                     htmlText =
-                        htmlText.Replace(string.Format("cid:{0}", attachment.ContentId), attachment.ContentId).Replace(
-                            string.Format("cid:'{0}'", attachment.ContentId), attachment.ContentId).Replace(
-                                string.Format("cid:\"{0}\"", attachment.ContentId), attachment.ContentId);
+                        htmlText.Replace(string.Format(@"cid:{0}", attachment.ContentId), attachment.ContentId)
+                                .Replace(string.Format(@"cid:'{0}'", attachment.ContentId), attachment.ContentId)
+                                .Replace(string.Format(@"cid:""{0}""", attachment.ContentId), attachment.ContentId);
                 }
             }
 
-            using (TextWriter f = new StreamWriter(htmlFile))
-            {
-                f.Write(htmlText);
-            }
+            File.WriteAllText(htmlFile, htmlText, Encoding.Unicode);
 
             this.htmlView.Navigate(new Uri(htmlFile));
             this.htmlView.Refresh();
@@ -536,7 +537,6 @@ if (data != null)
         /// <param name="e">
         /// The e. 
         /// </param>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1126:PrefixCallsCorrectly", Justification = "Reviewed. Suppression is OK here.")]
         private void messagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // If there are no selected items, then disable the Delete button, clear the boxes, and return
@@ -552,12 +552,11 @@ if (data != null)
                 return;
             }
 
-            var setTitle = new Action<string>
-                (t =>
-                    {
-                        Subject.Content = t;
-                        Subject.ToolTip = t;
-                    });
+            var setTitle = new Action<string>(t =>
+                {
+                    Subject.Content = t;
+                    Subject.ToolTip = t;
+                });
 
             var mailFile = ((MessageEntry)e.AddedItems[0]).File;
 
@@ -575,13 +574,11 @@ if (data != null)
                 _currentMessageCancellationTokenSource = new CancellationTokenSource();
 
                 Task.Factory.StartNew(() => { })
-                    .ContinueWith
-                    (task => File.ReadAllLines(mailFile),
-                     _currentMessageCancellationTokenSource.Token,
-                     TaskContinuationOptions.NotOnCanceled,
-                     TaskScheduler.Default)
-                    .ContinueWith
-                    (task =>
+                    .ContinueWith(task => File.ReadAllLines(mailFile, Encoding.ASCII),
+                                  _currentMessageCancellationTokenSource.Token,
+                                  TaskContinuationOptions.NotOnCanceled,
+                                  TaskScheduler.Default)
+                    .ContinueWith(task =>
                         {
                             // Load the MIME body
                             var mimeReader = new MimeReader(task.Result);
@@ -589,69 +586,68 @@ if (data != null)
 
                             return Tuple.Create(task.Result, me.ToMailMessageEx());
                         },
-                     _currentMessageCancellationTokenSource.Token,
-                     TaskContinuationOptions.NotOnCanceled,
-                     TaskScheduler.Default).ContinueWith
-                    (task =>
-                        {
-                            var resultTuple = task.Result;
-                            var mailMessageEx = resultTuple.Item2;
+                                  _currentMessageCancellationTokenSource.Token,
+                                  TaskContinuationOptions.NotOnCanceled,
+                                  TaskScheduler.Default).ContinueWith(task =>
+                                      {
+                                          var resultTuple = task.Result;
+                                          var mailMessageEx = resultTuple.Item2;
 
-                            // set the raw view...
-                            this.rawView.Text = string.Join("\n", resultTuple.Item1);
+                                          // set the raw view...
+                                          this.rawView.Text = string.Join("\n", resultTuple.Item1);
 
-                            this.bodyView.Text = mailMessageEx.Body;
-                            this.bodyViewTab.Visibility = Visibility.Visible;
+                                          this.bodyView.Text = mailMessageEx.Body;
+                                          this.bodyViewTab.Visibility = Visibility.Visible;
 
-                            this.defaultBodyView.Text = mailMessageEx.Body;
+                                          this.defaultBodyView.Text = mailMessageEx.Body;
 
-                            this.FromEdit.Text = mailMessageEx.From.ToString();
-                            this.ToEdit.Text = mailMessageEx.To.ToString();
-                            this.DateEdit.Text = mailMessageEx.DeliveryDate.ToString();
-                            this.SubjectEdit.Text = mailMessageEx.Subject;
+                                          this.FromEdit.Text = mailMessageEx.From.ToString();
+                                          this.ToEdit.Text = mailMessageEx.To.ToString();
+                                          this.DateEdit.Text = mailMessageEx.DeliveryDate.ToString();
+                                          this.SubjectEdit.Text = mailMessageEx.Subject;
 
-                            setTitle(mailMessageEx.Subject);
+                                          setTitle(mailMessageEx.Subject);
 
-                            // If it is HTML, render it to the HTML view
-                            if (mailMessageEx.IsBodyHtml)
-                            {
-                                if (task.IsCanceled)
-                                {
-                                    return;
-                                }
+                                          // If it is HTML, render it to the HTML view
+                                          if (mailMessageEx.IsBodyHtml)
+                                          {
+                                              if (task.IsCanceled)
+                                              {
+                                                  return;
+                                              }
 
-                                this.SetBrowserDocument(mailMessageEx);
-                                this.htmlViewTab.Visibility = Visibility.Visible;
+                                              this.SetBrowserDocument(mailMessageEx);
+                                              this.htmlViewTab.Visibility = Visibility.Visible;
 
-                                this.defaultHtmlView.Visibility = Visibility.Visible;
-                                this.defaultBodyView.Visibility = Visibility.Collapsed;
-                            }
-                            else
-                            {
-                                this.htmlViewTab.Visibility = Visibility.Hidden;
-                                if (this.defaultTab.IsVisible)
-                                {
-                                    this.tabControl.SelectedIndex = 0;
-                                }
-                                else if (Equals(this.tabControl.SelectedItem, this.htmlViewTab))
-                                {
-                                    this.tabControl.SelectedIndex = 2;
-                                }
+                                              this.defaultHtmlView.Visibility = Visibility.Visible;
+                                              this.defaultBodyView.Visibility = Visibility.Collapsed;
+                                          }
+                                          else
+                                          {
+                                              this.htmlViewTab.Visibility = Visibility.Hidden;
+                                              if (this.defaultTab.IsVisible)
+                                              {
+                                                  this.tabControl.SelectedIndex = 0;
+                                              }
+                                              else if (Equals(this.tabControl.SelectedItem, this.htmlViewTab))
+                                              {
+                                                  this.tabControl.SelectedIndex = 2;
+                                              }
 
-                                this.defaultHtmlView.Visibility = Visibility.Collapsed;
-                                this.defaultBodyView.Visibility = Visibility.Visible;
-                            }
+                                              this.defaultHtmlView.Visibility = Visibility.Collapsed;
+                                              this.defaultBodyView.Visibility = Visibility.Visible;
+                                          }
 
-                            SpinAnimation.Visibility = Visibility.Collapsed;
-                            tabControl.IsEnabled = true;
+                                          SpinAnimation.Visibility = Visibility.Collapsed;
+                                          tabControl.IsEnabled = true;
 
-                            // Enable the delete and forward button
-                            this.deleteButton.IsEnabled = true;
-                            this.forwardButton.IsEnabled = true;
-                        },
-                     _currentMessageCancellationTokenSource.Token,
-                     TaskContinuationOptions.NotOnCanceled,
-                     TaskScheduler.FromCurrentSynchronizationContext());
+                                          // Enable the delete and forward button
+                                          this.deleteButton.IsEnabled = true;
+                                          this.forwardButton.IsEnabled = true;
+                                      },
+                                                                      _currentMessageCancellationTokenSource.Token,
+                                                                      TaskContinuationOptions.NotOnCanceled,
+                                                                      TaskScheduler.FromCurrentSynchronizationContext());
             }
             catch (Exception ex)
             {
