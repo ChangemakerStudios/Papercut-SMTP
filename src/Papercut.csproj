@@ -65,9 +65,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -105,41 +104,41 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Spinner.xaml.cs">
+    <Compile Include="UI\Spinner.xaml.cs">
       <DependentUpon>Spinner.xaml</DependentUpon>
     </Compile>
-    <Page Include="ForwardWindow.xaml">
+    <Page Include="UI\ForwardWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="OptionsWindow.xaml">
+    <Page Include="UI\OptionsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="UI\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Spinner.xaml">
+    <Page Include="UI\Spinner.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ForwardWindow.xaml.cs">
+    <Compile Include="UI\ForwardWindow.xaml.cs">
       <DependentUpon>ForwardWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MessageEntry.cs" />
+    <Compile Include="UI\MessageEntry.cs" />
     <Compile Include="Mime\MailHeaders.cs" />
     <Compile Include="Mime\MailMessageEx.cs" />
     <Compile Include="Mime\MediaTypes.cs" />
@@ -147,7 +146,7 @@
     <Compile Include="Mime\MimeHeaders.cs" />
     <Compile Include="Mime\MimeReader.cs" />
     <Compile Include="Mime\QuotedPrintableEncoding.cs" />
-    <Compile Include="OptionsWindow.xaml.cs">
+    <Compile Include="UI\OptionsWindow.xaml.cs">
       <DependentUpon>OptionsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -227,6 +226,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

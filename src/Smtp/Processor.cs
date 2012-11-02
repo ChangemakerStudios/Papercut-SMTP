@@ -27,7 +27,9 @@ namespace Papercut.Smtp
 	using System.Net;
 	using System.Net.Sockets;
 
-	#endregion
+	using Papercut.UI;
+
+    #endregion
 
 	/// <summary>
 	/// The processor.
