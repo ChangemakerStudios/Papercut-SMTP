@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Ken Robertson")]
 [assembly: AssemblyProduct("Papercut")]
-[assembly: AssemblyCopyright("Copyright © 2008 - 2012")]
+[assembly: AssemblyCopyright("Copyright © 2008 - 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -49,5 +49,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2012.1.0.0")]
-[assembly: AssemblyFileVersion("2012.1.0.0")]
+[assembly: AssemblyVersion("2013.3.0.0")]
+[assembly: AssemblyFileVersion("2013.3.0.0")]
