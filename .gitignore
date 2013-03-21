@@ -1,0 +1,9 @@
+﻿_ReSharper.Papercut
+[Bb]in
+[Oo]bj
+*.user
+*.TeamCity.user
+Papercut.suo
+Papercut.*.suo
+Papercut.ncrunchsolution
+Papercut.ncrunchsolution.*	  
