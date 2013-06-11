@@ -17,20 +17,19 @@
  *  
  */
 
-namespace Papercut
+namespace Papercut.UI
 {
 	#region Using
 
-	using System.ComponentModel;
-	using System.IO;
-	using System.Text.RegularExpressions;
-	using System.Threading.Tasks;
-	using System.Windows;
+    using System.IO;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+    using System.Windows;
 
-	using Papercut.Properties;
-	using Papercut.SMTP;
+    using Papercut.Properties;
+    using Papercut.SMTP;
 
-	#endregion
+    #endregion
 
 	/// <summary>
 	/// Interaction logic for ForwardWindow.xaml
@@ -145,7 +144,7 @@ namespace Papercut
 			session.Recipients.Add(this.to.Text);
 			session.Message = File.ReadAllBytes(this.messageFilename);
 
-			worker = Task.Factory.StartNew(
+			this.worker = Task.Factory.StartNew(
 				() =>
 					{
 						using (var client = new SmtpClient(session))

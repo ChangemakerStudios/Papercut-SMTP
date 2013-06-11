@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Papercut
+namespace Papercut.UI
 {
     using System.Windows.Controls;
 

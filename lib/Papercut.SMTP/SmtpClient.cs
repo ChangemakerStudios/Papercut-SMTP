@@ -157,9 +157,7 @@ namespace Papercut.SMTP
 		{
 			var en = new ASCIIEncoding();
 
-			var writeBuffer = new byte[1024];
-			writeBuffer = en.GetBytes(string.Format(format, args));
-
+		    byte[] writeBuffer = en.GetBytes(string.Format(format, args));
 			NetworkStream stream = this.GetStream();
 			stream.Write(writeBuffer, 0, writeBuffer.Length);
 		}

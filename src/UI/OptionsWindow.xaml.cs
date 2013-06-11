@@ -17,20 +17,20 @@
  *  
  */
 
-namespace Papercut
+namespace Papercut.UI
 {
 	#region Using
 
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Management;
-	using System.Net;
-	using System.Text.RegularExpressions;
-	using System.Windows;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Management;
+    using System.Net;
+    using System.Text.RegularExpressions;
+    using System.Windows;
 
-	using Papercut.Properties;
+    using Papercut.Properties;
 
-	#endregion
+    #endregion
 
 	/// <summary>
 	/// Interaction logic for OptionsWindow.xaml

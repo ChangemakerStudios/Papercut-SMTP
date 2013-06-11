@@ -17,7 +17,7 @@
  *  
  */
 
-namespace Papercut
+namespace Papercut.UI
 {
     #region Using
 
@@ -496,7 +496,7 @@ if (data != null)
                 }
                 else if (this.messagesList.Items.Count == 0)
                 {
-                    tabControl.IsEnabled = false;
+                    this.tabControl.IsEnabled = false;
                 }
             }
         }
@@ -548,28 +548,28 @@ if (data != null)
 
             var setTitle = new Action<string>(t =>
                 {
-                    Subject.Content = t;
-                    Subject.ToolTip = t;
+                    this.Subject.Content = t;
+                    this.Subject.ToolTip = t;
                 });
 
             var mailFile = ((MessageEntry)e.AddedItems[0]).File;
 
             try
             {
-                tabControl.IsEnabled = false;
-                SpinAnimation.Visibility = Visibility.Visible;
+                this.tabControl.IsEnabled = false;
+                this.SpinAnimation.Visibility = Visibility.Visible;
                 setTitle("Loading...");
 
-                if (_currentMessageCancellationTokenSource != null)
+                if (this._currentMessageCancellationTokenSource != null)
                 {
-                    _currentMessageCancellationTokenSource.Cancel();
+                    this._currentMessageCancellationTokenSource.Cancel();
                 }
 
-                _currentMessageCancellationTokenSource = new CancellationTokenSource();
+                this._currentMessageCancellationTokenSource = new CancellationTokenSource();
 
                 Task.Factory.StartNew(() => { })
                     .ContinueWith(task => File.ReadAllLines(mailFile, Encoding.ASCII),
-                                  _currentMessageCancellationTokenSource.Token,
+                                  this._currentMessageCancellationTokenSource.Token,
                                   TaskContinuationOptions.NotOnCanceled,
                                   TaskScheduler.Default)
                     .ContinueWith(task =>
@@ -580,7 +580,7 @@ if (data != null)
 
                             return Tuple.Create(task.Result, me.ToMailMessageEx());
                         },
-                                  _currentMessageCancellationTokenSource.Token,
+                                  this._currentMessageCancellationTokenSource.Token,
                                   TaskContinuationOptions.NotOnCanceled,
                                   TaskScheduler.Default).ContinueWith(task =>
                                       {
@@ -632,14 +632,14 @@ if (data != null)
                                               this.defaultBodyView.Visibility = Visibility.Visible;
                                           }
 
-                                          SpinAnimation.Visibility = Visibility.Collapsed;
-                                          tabControl.IsEnabled = true;
+                                          this.SpinAnimation.Visibility = Visibility.Collapsed;
+                                          this.tabControl.IsEnabled = true;
 
                                           // Enable the delete and forward button
                                           this.deleteButton.IsEnabled = true;
                                           this.forwardButton.IsEnabled = true;
                                       },
-                                                                      _currentMessageCancellationTokenSource.Token,
+                                                                      this._currentMessageCancellationTokenSource.Token,
                                                                       TaskContinuationOptions.NotOnCanceled,
                                                                       TaskScheduler.FromCurrentSynchronizationContext());
             }
