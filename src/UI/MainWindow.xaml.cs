@@ -146,6 +146,8 @@ namespace Papercut.UI
 
             this.SetTabs();
 
+            UpdateSelectedMessage();
+
             // Minimize if set to
             if (Settings.Default.StartMinimized)
             {
@@ -484,20 +486,25 @@ if (data != null)
                     this.messagesList.Items.Remove(entry);
                 }
 
-                // If there are more than the index location, keep the same position in the list
-                if (this.messagesList.Items.Count > index)
-                {
-                    this.messagesList.SelectedIndex = index;
-                }
-                else if (this.messagesList.Items.Count > 0) 
-                {
-                    // If there are fewer, move to the last one
-                    this.messagesList.SelectedIndex = this.messagesList.Items.Count - 1;
-                }
-                else if (this.messagesList.Items.Count == 0)
-                {
-                    this.tabControl.IsEnabled = false;
-                }
+                this.UpdateSelectedMessage(index);
+            }
+        }
+
+        private void UpdateSelectedMessage(int? index = null)
+        {
+            // If there are more than the index location, keep the same position in the list
+            if (index.HasValue && this.messagesList.Items.Count > index)
+            {
+                this.messagesList.SelectedIndex = index.Value;
+            }
+            else if (this.messagesList.Items.Count > 0)
+            {
+                // If there are fewer, move to the last one
+                this.messagesList.SelectedIndex = this.messagesList.Items.Count - 1;
+            }
+            else if (this.messagesList.Items.Count == 0)
+            {
+                this.tabControl.IsEnabled = false;
             }
         }
 
