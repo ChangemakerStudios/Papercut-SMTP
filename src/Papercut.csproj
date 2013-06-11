@@ -65,7 +65,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net">
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -138,14 +139,6 @@
     <Compile Include="UI\ForwardWindow.xaml.cs">
       <DependentUpon>ForwardWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\MessageEntry.cs" />
-    <Compile Include="Mime\MailHeaders.cs" />
-    <Compile Include="Mime\MailMessageEx.cs" />
-    <Compile Include="Mime\MediaTypes.cs" />
-    <Compile Include="Mime\MimeEntity.cs" />
-    <Compile Include="Mime\MimeHeaders.cs" />
-    <Compile Include="Mime\MimeReader.cs" />
-    <Compile Include="Mime\QuotedPrintableEncoding.cs" />
     <Compile Include="UI\OptionsWindow.xaml.cs">
       <DependentUpon>OptionsWindow.xaml</DependentUpon>
     </Compile>
@@ -162,13 +155,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Smtp\SmtpClient.cs" />
-    <Compile Include="Smtp\Connection.cs" />
-    <Compile Include="Smtp\Logger.cs" />
-    <Compile Include="Smtp\Processor.cs" />
-    <Compile Include="Smtp\Server.cs" />
-    <Compile Include="Smtp\SmtpSession.cs" />
-    <Compile Include="Smtp\Util.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -178,6 +164,7 @@
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
@@ -226,7 +213,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\lib\Papercut.SMTP\Papercut.SMTP.csproj">
+      <Project>{402fad8f-0a66-4f66-828a-9b16b628be01}</Project>
+      <Name>Papercut.SMTP</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
