@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata>
+    <id>papercut</id>
+    <title>Papercut</title>
+    <version>2013.6.10</version>
+    <authors>Jaben</authors>
+    <owners>Jaben</owners>
+    <summary>Papercut - Simplified SMTP server to test email for .NET</summary>
+    <description>Papercut - built on .NET. Ever need to test emails from an application, but don't necessarily want it sending them out? Don't want to hassle with pointing it to a physical SMTP server? All you want to is verify it can send email, and take a look at the message.
+  
+  Papercut is your answer. Papercut is a simplified SMTP server designed to only receive messages (not to send them on) with a GUI on top of it allowing you to see the messages it receives. It doesn't enforce any restrictions on addresses, it just takes the message and allows you see it. It is only active while it is running, and if you want it in the background, just minimize it to the system tray. When it receives a new message, a balloon message will show up to let you know.</description>
+    <projectUrl>http://papercut.codeplex.com/</projectUrl>
+    <licenseUrl>http://papercut.codeplex.com/license</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>dummy smtp papercut</tags>
+    <iconUrl>http://www.tinygecko.com/downloads/Papercut-icon.png</iconUrl>
+  </metadata>
+</package>

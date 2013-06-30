@@ -1,0 +1,5 @@
+Installation Note:
+
+Installation is copy and paste. Incoming messages are written to the start-up directory of Papercut. If you do not have write permission to that directory by default, you will either need to either:
+Run Papercut with elevated (aka Administrator) permissions.
+Run the app in a directory in which you have write permission (e.g. Desktop).
