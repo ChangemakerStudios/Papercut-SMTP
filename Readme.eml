@@ -1,0 +1,419 @@
+From: "Jaben Cargman" <jaben@yetanotherforum.net>
+To: <Papercut@user.com>
+References: 
+In-Reply-To: 
+Subject: Welcome to Papercut!
+Date: Mon, 10 Jun 2013 22:01:37 -0400
+Message-ID: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net>
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	boundary="----=_NextPart_000_0043_01CE6626.145A5DA0"
+X-Mailer: Microsoft Outlook 15.0
+Thread-Index: AQJRC/AHxJuyB6UDfQVRIw7MrHVcQ5gqdnBw
+Content-Language: en-us
+
+This is a multipart message in MIME format.
+
+------=_NextPart_000_0043_01CE6626.145A5DA0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_001_0044_01CE6626.145A5DA0"
+
+
+------=_NextPart_001_0044_01CE6626.145A5DA0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+
+
+The Simple Desktop Email Receiver.
+
+
+Papercut v2013-6-10 Release Notes
+
+
+ 
+
+Feature: Shows From, To, Date and Subject of Email. 
+
+Feature: Async UI and loading spinner.
+
+Enhancement: Improved speed when loading large attachments.
+
+Enhancement: Decoupled SMTP server into secondary assembly.
+
+Enhancement: Upgraded to .NET v4.
+
+Fix: Messages lost when received very fast.
+
+Fix: Email encoding issues on display/Automatically detect message Encoding
+
+ 
+
+
+Papercut v2010-3-3 Release Notes
+
+
+ 
+
+This release includes a few bug fixes and updates, several of which were
+contributed patches (thanks!).
+
+Feature: Added support for embedded images (patch submitted by jasonpenny)
+
+Enhancement: Show an alert when trying to use port that is already in use
+(Issue #5405)
+
+Enhancement: Don't show the options dialog in the taskbar (patch submitted
+by dukesb11)
+
+Fix: Updates to fix issues with multipart messages (Issue #4959, patched
+submitted by jasonpenny)
+
+Fix: Issue with async networking and not handling a disposed object (patch
+submitted by jasonpenny)
+
+Fix: Out dated URL references (Issue #5457, patch submitted by billrob458)
+
+
+------=_NextPart_001_0044_01CE6626.145A5DA0
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40"><head><META =
+HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii"><meta name=3DGenerator content=3D"Microsoft Word 15 =
+(filtered medium)"><!--[if !mso]><style>v\:* =
+{behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+..shape {behavior:url(#default#VML);}
+</style><![endif]--><style><!--
+/* Font Definitions */
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:"Calibri Light";
+	panose-1:2 15 3 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"Segoe UI";
+	panose-1:2 11 5 2 4 2 4 2 2 3;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","serif";}
+h1
+	{mso-style-priority:9;
+	mso-style-link:"Heading 1 Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	page-break-after:avoid;
+	font-size:16.0pt;
+	font-family:"Calibri Light","sans-serif";
+	color:#2E74B5;
+	font-weight:normal;}
+h2
+	{mso-style-priority:9;
+	mso-style-link:"Heading 2 Char";
+	margin-top:2.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	page-break-after:avoid;
+	font-size:13.0pt;
+	font-family:"Calibri Light","sans-serif";
+	color:#2E74B5;
+	font-weight:normal;}
+h3
+	{mso-style-priority:9;
+	mso-style-link:"Heading 3 Char";
+	margin-top:2.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	page-break-after:avoid;
+	font-size:12.0pt;
+	font-family:"Calibri Light","sans-serif";
+	color:#1F4D78;
+	font-weight:normal;}
+h4
+	{mso-style-priority:9;
+	mso-style-link:"Heading 4 Char";
+	margin-top:2.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	page-break-after:avoid;
+	font-size:11.0pt;
+	font-family:"Calibri Light","sans-serif";
+	color:#2E74B5;
+	font-weight:normal;
+	font-style:italic;}
+h5
+	{mso-style-priority:9;
+	mso-style-link:"Heading 5 Char";
+	margin-top:2.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	page-break-after:avoid;
+	font-size:11.0pt;
+	font-family:"Calibri Light","sans-serif";
+	color:#2E74B5;
+	font-weight:normal;}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:#0563C1;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:#954F72;
+	text-decoration:underline;}
+span.Heading1Char
+	{mso-style-name:"Heading 1 Char";
+	mso-style-priority:9;
+	mso-style-link:"Heading 1";
+	font-family:"Calibri Light","sans-serif";
+	color:#2E74B5;}
+span.Heading2Char
+	{mso-style-name:"Heading 2 Char";
+	mso-style-priority:9;
+	mso-style-link:"Heading 2";
+	font-family:"Calibri Light","sans-serif";
+	color:#2E74B5;}
+span.EmailStyle19
+	{mso-style-type:personal;
+	font-family:"Calibri","serif";
+	color:windowtext;}
+span.EmailStyle20
+	{mso-style-type:personal;
+	font-family:"Calibri","serif";
+	color:#1F497D;}
+span.EmailStyle21
+	{mso-style-type:personal;
+	font-family:"Calibri","serif";
+	color:#1F497D;}
+span.EmailStyle22
+	{mso-style-type:personal;
+	font-family:"Calibri","serif";
+	color:#1F497D;}
+span.EmailStyle23
+	{mso-style-type:personal;
+	font-family:"Calibri","serif";
+	color:#1F497D;}
+span.EmailStyle24
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","serif";
+	color:windowtext;}
+span.Heading3Char
+	{mso-style-name:"Heading 3 Char";
+	mso-style-priority:9;
+	mso-style-link:"Heading 3";
+	font-family:"Calibri Light","sans-serif";
+	color:#1F4D78;}
+span.Heading4Char
+	{mso-style-name:"Heading 4 Char";
+	mso-style-priority:9;
+	mso-style-link:"Heading 4";
+	font-family:"Calibri Light","sans-serif";
+	color:#2E74B5;
+	font-style:italic;}
+span.Heading5Char
+	{mso-style-name:"Heading 5 Char";
+	mso-style-priority:9;
+	mso-style-link:"Heading 5";
+	font-family:"Calibri Light","sans-serif";
+	color:#2E74B5;}
+..MsoChpDefault
+	{mso-style-type:export-only;
+	font-size:10.0pt;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]--></head><body lang=3DEN-US =
+link=3D"#0563C1" vlink=3D"#954F72"><div class=3DWordSection1><p =
+class=3DMsoNormal><img width=3D232 height=3D50 id=3D"Picture_x0020_1" =
+src=3D"cid:image001.png@01CE6622.AACEBDC0"><i><o:p></o:p></i></p><p =
+class=3DMsoNormal><i><span style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#A6A6A6'>The Simple Desktop Email =
+Receiver.<o:p></o:p></span></i></p><h1>Papercut v2013-6-10 Release =
+Notes<o:p></o:p></h1><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif"'><o:p>&nbsp;</o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Feature: Shows From, To, Date and =
+Subject of Email. <o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Feature: Async UI and loading =
+spinner.<o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Enhancement: Improved speed when loading =
+large attachments.<o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Enhancement: Decoupled SMTP server into =
+secondary assembly.<o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Enhancement: Upgraded to .NET =
+v4.<o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Fix: Messages lost when received very =
+fast.<o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Fix: Email encoding issues on =
+display/Automatically detect message Encoding<o:p></o:p></span></p><p =
+class=3DMsoNormal><o:p>&nbsp;</o:p></p><h1>Papercut v2010-3-3 Release =
+Notes<o:p></o:p></h1><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif"'><o:p>&nbsp;</o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>This release includes a few bug fixes =
+and updates, several of which were contributed patches =
+(thanks!).<o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Feature: Added support for embedded =
+images (patch submitted by jasonpenny)<o:p></o:p></span></p><p =
+class=3DMsoNormal><span style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Enhancement: Show an alert when trying =
+to use port that is already in use (Issue #5405)<o:p></o:p></span></p><p =
+class=3DMsoNormal><span style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Enhancement: Don't show the options =
+dialog in the taskbar (patch submitted by =
+dukesb11)<o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Fix: Updates to fix issues with =
+multipart messages (Issue #4959, patched submitted by =
+jasonpenny)<o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Fix: Issue with async networking and not =
+handling a disposed object (patch submitted by =
+jasonpenny)<o:p></o:p></span></p><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#404040'>Fix: Out dated URL references (Issue =
+#5457, patch submitted by =
+billrob458)<o:p></o:p></span></p></div></body></html>
+------=_NextPart_001_0044_01CE6626.145A5DA0--
+
+------=_NextPart_000_0043_01CE6626.145A5DA0
+Content-Type: image/png;
+	name="image001.png"
+Content-Transfer-Encoding: base64
+Content-ID: <image001.png@01CE6622.AACEBDC0>
+
+iVBORw0KGgoAAAANSUhEUgAAAOgAAAAyCAMAAABh0mcDAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJ
+bWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdp
+bj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6
+eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0
+NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJo
+dHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlw
+dGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAv
+IiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RS
+ZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpD
+cmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNl
+SUQ9InhtcC5paWQ6RUU1MUVEQTk5MUQ2MTFFMjlGMDZGODZFMzUxN0Y1QzgiIHhtcE1NOkRvY3Vt
+ZW50SUQ9InhtcC5kaWQ6RUU1MUVEQUE5MUQ2MTFFMjlGMDZGODZFMzUxN0Y1QzgiPiA8eG1wTU06
+RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFRTUxRURBNzkxRDYxMUUyOUYw
+NkY4NkUzNTE3RjVDOCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFRTUxRURBODkxRDYxMUUy
+OUYwNkY4NkUzNTE3RjVDOCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1w
+bWV0YT4gPD94cGFja2V0IGVuZD0iciI/Ph8nKXQAAAMAUExURZOTk1JSU4WWoS93qff39zSCuTRX
+ca2tre3t7fLy8vT09Pz8/ANWk42Njvj4+JGjsM3R1Glpa7G6wnR0dLGxsWxsbjB6ruTt9Nra2lNo
+d93d3V1dXr6+vnmLl6WlpRV2u0qGsGVlZsfa6Lm5uvr6+uvy+NHR0S1zpLnAxTJ+tVqSutbW1uvr
+64WFhXajw9Pi7G2FlsXFxZiYmGpqbEOCrzo6O1CKtERERkhISoqKinl5e25ubzJ9s1h2jDs7PBBg
+mTxmhXx8fHl5fEl4ms7OzrPN3yxtnLfQ4efn5+Hh4d3o8MrKyikpKqChojw8Pae0vSxwn3Bwcaio
+qTAwMT19q2BgYra2tujo6J6eni94q4+PkNnk7MHBwYuVnVhYWqbE2e/v8DmPzJu81GNjZCdhi6DA
+1rG4vYuyztTU1LG1uMfR2D09PvL3+jQ0NYGBgdbZ2yRtofb5+zJ/tixPaD8/QDZ6qkxMTnZ2eHml
+xfn7/IatyC1/uzB0pEJCRHmUpzw8PgBGiWacw66vr3SFkEZGSOPj4zJ3qEpKSz4+P2GVuq/J3Imv
+y5O2z1paXF5eXzWJxTWGwChlkWWZvejr7UFBQkRtizZ/s21/jEJCQoqz0VZWV4Orx8/T1pWbn2B4
+iHyox2Z7iWZmZk9PUTmKxPv8/Shafd/f36WqrjF7sKrG2h5pnzc3OMLL0T91mz6CsoKCg2hoarKy
+szeGvipql4aGh256gjl3pBhlnW2Ajn5+f+Xn6GpqajlgfG2dvzB4rC10pipypGFzgDMzNC50pv//
+/y50py51p+Tk5C5zpf7+/v39/bvQ37/T4YKv0OPg3idwo7u7vIuqwG+QqH+px/Pz83es0OXl5lyD
+nvP09GJ/lD+Arz95onGculpwgFN6lfn5+XNzcxpAXB9PcCNFXW6jyABBhqOkpfHx8cjMzzeMyOnp
+6enq6+rq6sPFx77HzKfC1OPl57/K0pubm8C/v/7+//7//9vn7zB2p0BXZkNfc9HPzdDU12SSszV8
+sGiSsP///yn8YwgAAAEAdFJOU///////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////wBT9wclAAAMUElE
+QVR42uyaC1xb1R3HyZIIJIBGSKTQKhRKyqMPQmMCwdRaWkHgjld4tVJYqq3e0tJ4G+xs1NUU4gPE
+Dq0ydSXais20oGitj6rkkmLmNpzMfdR1OKcwGc7Z2uEe7noeN8kluYHW+vm0Vf/9fNpzzz339Hzv
+/3/+53fOTQjzPbGQ7wRFspth3KIo6XccdHSUGc/LTB+NChNJZwGtz4upbe6O7+qKf2lzWfr5hekW
+MUzxyh3K59+dK5qsT54ZtLSoUa0nbRRF2W5zDNhCos4jdyYzKX9u6MjtMTV8dcf+8QmJdCbQaFJD
+kSRJEARJ2jotNiLvPMGUipioa7/6xDXkdDqVpoaVoeEZYaMzgTpseo7ZNI655wrK9thr57mD3QTp
+59OVDSalE9mQ8pMH9qSPVPE6lRdUr+8k484Fyk8fefSmD5+9PLg7JfPE9zqHnB5TpjY8NVafERY1
+GyhlJQkSk35wDnA+/GGJQiw2BQEFNEkrG3qUTo4NKe99Zm/KSNWIdEZQHSOVhFKIlCDOgeT7cEnH
+EZdz8PIg7sxY+sy9yiHndFP2NDz1yGRYRpQ7OCixApYL1YjUVnwOgN6XC4bOCwrWlBveb1AonQE2
+pOx47NE8SVW4dBZQppmCoGTz2Qf9LwJ1BoJKo5j8pc90KP3sVdapCh6n8oAOq9FFna/bkfBg67Ao
+nCcjukdGgjQPl0ybZOOi2Tya6nS+6krjkQhPvN/wVVPE8unWtK2paYp16hWZIxPj0hlBYweQS7Vo
+PYpTxWvUjQNqTe9a7zP9htJSXftGhjlOlQ+oDSnTh1EmUA8MEPFJnuuNBl1paXs2KGUPFDkyPC/v
+hmMXXLBv38tzHmaYea/v2bNn796fw/rr57wALuZczzBbjt1x7NkeMGzh00ufe+H1eY9zZmfBu491
+7Dhw4O43r17Fsflph5YdONSCnFrT8Hzki1yn8oAeLe/0gFZaixy2TmSUo7WAfUZgAeKCGmYebOy0
+gD+OSA5mZvkAZekEtWpBPa5Z6+gEKkTAMJTDYrFM4son/rq+BeRTsTh1HcNcKa4RArsG3viRogcU
+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
+
+------=_NextPart_000_0043_01CE6626.145A5DA0--
+
