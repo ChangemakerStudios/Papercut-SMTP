@@ -28,8 +28,10 @@ namespace Papercut.SMTP
 	using System.Linq;
 	using System.Net;
 	using System.Text;
+	using System.Text.RegularExpressions;
+	using System.Threading;
 
-	#endregion
+    #endregion
 
 	/// <summary>
 	/// The util.
@@ -135,7 +137,31 @@ namespace Papercut.SMTP
 			return Dns.GetHostEntry(ip).HostName;
 		}
 
-		#endregion
+        private static Regex _timeZoneRegex = new Regex(@"\s?(\((?<tz>[A-Z]{3,4})\))?$", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Try parse date time.
+        /// </summary>
+        /// <param name="dateTimeParse">The date time parse.</param>
+        /// <returns>
+        /// .
+        /// </returns>
+	    public static DateTime? TryParseSTMPDateTime(string dateTimeParse)
+	    {
+            if (string.IsNullOrWhiteSpace(dateTimeParse))
+            {
+                return null;
+            }
+
+            DateTime dateTime;
+
+            // clean the timezone off
+            dateTimeParse = _timeZoneRegex.Replace(dateTimeParse.Trim().Replace("−", "-"), string.Empty).Trim();
+
+            return DateTime.TryParse(dateTimeParse, out dateTime) ? (DateTime?)dateTime : null;
+	    }
+
+	    #endregion
 
 		#region Methods
 
