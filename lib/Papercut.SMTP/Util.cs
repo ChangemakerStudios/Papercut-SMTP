@@ -195,6 +195,11 @@ namespace Papercut.SMTP
         {
             string[] suffixes = { "B", "KB", "MB", "GB", "TB", "PB" };
 
+            if (bytes == 0)
+            {
+                return string.Format("0{0}", suffixes[0]);
+            }
+
             var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
 
             double roundedNumber = Math.Round(bytes / Math.Pow(1024, place), 1);
