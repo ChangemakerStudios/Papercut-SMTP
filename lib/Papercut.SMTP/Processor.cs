@@ -192,6 +192,11 @@ namespace Papercut.SMTP
 
 						while ((line = reader.ReadLine()) != ".")
 						{
+							// reverse any dot-stuffing per RFC 2821, section 4.5.2
+							if (line.StartsWith(".") && line.Length > 1)
+							{
+								line = line.Substring(1);
+							}
 							writer.WriteLine(line);
 						}
 
