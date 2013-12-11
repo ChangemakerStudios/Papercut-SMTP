@@ -276,7 +276,7 @@ namespace Papercut.SMTP.Mime
 						message.From = CreateMailAddress(value);
 						break;
 					case MailHeaders.ReplyTo:
-						message.ReplyTo = CreateMailAddress(value);
+						PopulateAddressList(value, message.ReplyToList);
 						break;
 					case MailHeaders.Subject:
 						message.Subject = value;
