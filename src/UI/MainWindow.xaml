@@ -84,9 +84,9 @@
         </Grid>
         <Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,12" Width="75" Name="forwardButton" IsEnabled="False" Click="forwardButton_Click" Grid.Row="1">Forward</Button>
 		<Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="85,0,0,12" Width="75" Name="deleteButton" IsEnabled="False" Click="deleteButton_Click" Grid.Row="1">Delete</Button>
-		<Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,93,12" Width="75" Click="Options_Click" Grid.Column="2" Grid.Row="1">Options</Button>
-		<Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,12,12" Width="75" Click="Exit_Click" Grid.Column="2" Grid.Row="1">Exit</Button>
-		<Image Height="42" Margin="6,0,0,3" Name="image1" Stretch="Fill" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="42" Source="/Papercut;component/App.ico" Grid.Row="1" Grid.Column="2" />
+		<Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,99,12" Width="75" Click="Options_Click" Grid.Column="2" Grid.Row="1">Options</Button>
+        <Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,19,12" Width="75" Click="Close_Click" Grid.Column="2" Grid.Row="1" Content="Close"/>
+        <Image Height="42" Margin="6,0,0,3" Name="image1" Stretch="Fill" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="42" Source="/Papercut;component/App.ico" Grid.Row="1" Grid.Column="2" />
 		<Label Margin="52,0,0,13" Name="versionLabel" VerticalAlignment="Bottom" FontSize="10" Foreground="#696969" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left" Width="132">Papercut</Label>
 		<Label Margin="53,0,0,2" VerticalAlignment="Bottom" FontSize="9" Foreground="#2e74a6" Cursor="Hand" ToolTip="Click to visit the site" MouseUp="GoToSite" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left">http://papercut.codeplex.com/</Label>
     </Grid>

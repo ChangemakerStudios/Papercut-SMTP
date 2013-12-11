@@ -77,6 +77,7 @@ namespace Papercut.UI
 			this.portNumber.Text = Settings.Default.Port.ToString();
 			this.startMinimized.IsChecked = Settings.Default.StartMinimized;
 			this.showDefaultTab.IsChecked = Settings.Default.ShowDefaultTab;
+		    this.minimizeOnClose.IsChecked = Settings.Default.MinimizeOnClose;
 		}
 
 		#endregion
@@ -139,6 +140,7 @@ namespace Papercut.UI
 		{
 			Settings.Default.IP = (string)this.ipsList.SelectedValue;
 			Settings.Default.Port = int.Parse(this.portNumber.Text);
+
 			if (this.startMinimized.IsChecked.HasValue)
 			{
 				Settings.Default.StartMinimized = this.startMinimized.IsChecked.Value;
@@ -149,7 +151,13 @@ namespace Papercut.UI
 				Settings.Default.ShowDefaultTab = this.showDefaultTab.IsChecked.Value;
 			}
 
+		    if (this.minimizeOnClose.IsChecked.HasValue)
+		    {
+		        Settings.Default.MinimizeOnClose = this.minimizeOnClose.IsChecked.Value;
+		    }
+
 			Settings.Default.Save();
+
 			this.DialogResult = true;
 		}
 
