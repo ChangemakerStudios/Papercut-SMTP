@@ -22,10 +22,12 @@ namespace Papercut.SMTP
 	#region Using
 
 	using System;
+	using System.Collections.Generic;
 	using System.IO;
 	using System.Linq;
 	using System.Net;
 	using System.Net.Sockets;
+	using System.Text;
 
 	using Papercut.SMTP;
 
@@ -178,44 +180,43 @@ namespace Papercut.SMTP
 			}
 			while (File.Exists(file));
 
-			try
-			{
-				Stream networkStream = new NetworkStream(connection.Client, false);
-				
-				using (var reader = new StreamReader(networkStream))
-				{
-					using (var writer = new StreamWriter(file))
-					{
-						string line;
+		    try
+		    {
+		        Stream networkStream = new NetworkStream(connection.Client, false);
 
-						connection.Send("354 Start mail input; end with <CRLF>.<CRLF>").AsyncWaitHandle.WaitOne();
+		        var output = new List<string>();
 
-						while ((line = reader.ReadLine()) != ".")
-						{
-							// reverse any dot-stuffing per RFC 2821, section 4.5.2
-							if (line.StartsWith(".") && line.Length > 1)
-							{
-								line = line.Substring(1);
-							}
-							writer.WriteLine(line);
-						}
+		        using (var reader = new StreamReader(networkStream))
+		        {
+                    string line;
+		            connection.Send("354 Start mail input; end with <CRLF>.<CRLF>").AsyncWaitHandle.WaitOne();
 
-						writer.Close();
-					}
+		            while ((line = reader.ReadLine()) != ".")
+		            {
+		                // reverse any dot-stuffing per RFC 2821, section 4.5.2
+		                if (line.StartsWith(".") && line.Length > 1)
+		                {
+		                    line = line.Substring(1);
+		                }
 
-					reader.Close();
-				}
-			}
-			catch (IOException e)
-			{
-				Logger.WriteWarning(
-					"IOException received in Processor.DATA while reading message.  Closing connection.  Message: " + e.Message, 
-					connection.ConnectionId);
-				connection.Close();
-				return;
-			}
+                        output.Add(line);
+		            }
 
-			OnMessageReceived(connection, file);
+                    reader.Close();
+                }
+
+                File.WriteAllLines(file, output);
+		    }
+		    catch (IOException e)
+		    {
+		        Logger.WriteWarning(
+		            "IOException received in Processor.DATA while reading message.  Closing connection.  Message: " + e.Message,
+		            connection.ConnectionId);
+		        connection.Close();
+		        return;
+		    }
+
+		    OnMessageReceived(connection, file);
 
 			connection.Send("250 OK");
 		}
