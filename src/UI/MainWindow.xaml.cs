@@ -346,7 +346,7 @@ if (data != null)
                 this.server.Bind(Settings.Default.IP, Settings.Default.Port);
                 this.SetTabs();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 MessageBox.Show("Failed to rebind to the address/port specified.  The port may already be in use by another process.  Please update the configuration.",
                                 "Operation Failure");
@@ -602,12 +602,16 @@ if (data != null)
 
                                           this.defaultBodyView.Text = mailMessageEx.Body;
 
-                                          this.FromEdit.Text = mailMessageEx.From.ToString();
-                                          this.ToEdit.Text = mailMessageEx.To.ToString();
-                                          this.DateEdit.Text = mailMessageEx.DeliveryDate.ToString();
-                                          this.SubjectEdit.Text = mailMessageEx.Subject;
+                                          this.FromEdit.Text = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                          this.ToEdit.Text = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                          this.CCEdit.Text = mailMessageEx.CC.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                          this.BccEdit.Text = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                          this.DateEdit.Text = mailMessageEx.DeliveryDate.IfNotNull(s => s.ToString()) ?? string.Empty;
 
-                                          setTitle(mailMessageEx.Subject);
+                                          var subject = mailMessageEx.Subject.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                          this.SubjectEdit.Text = subject;
+
+                                          setTitle(subject);
 
                                           // If it is HTML, render it to the HTML view
                                           if (mailMessageEx.IsBodyHtml)

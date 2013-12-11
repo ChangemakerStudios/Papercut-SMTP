@@ -230,8 +230,8 @@
     <PostBuildEvent>REM xcopy /y $(TargetDir)*.exe $(SolutionDir)chocolately\bin
 REM xcopy /y $(TargetDir)*.dll $(SolutionDir)chocolately\bin
 REM xcopy /y $(TargetDir)*.config $(SolutionDir)chocolately\bin
-xcopy /y $(TargetDir)*.manifest $(SolutionDir)chocolately\bin
-xcopy /y $(TargetDir)readme.eml $(SolutionDir)chocolately\bin</PostBuildEvent>
+REM xcopy /y $(TargetDir)*.manifest $(SolutionDir)chocolately\bin
+REM xcopy /y $(TargetDir)readme.eml $(SolutionDir)chocolately\bin</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

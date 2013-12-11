@@ -38,8 +38,10 @@
 						<Grid.RowDefinitions>
 							<RowDefinition Height="Auto" />
 							<RowDefinition Height="Auto" />
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
 						</Grid.RowDefinitions>
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="Auto" />
@@ -47,16 +49,22 @@
 						</Grid.ColumnDefinitions>
 						<Label Content="From" HorizontalAlignment="Right" />
 						<Label Grid.Row="1" Content="To" HorizontalAlignment="Right" />
-						<Label Grid.Row="2" Content="Date" HorizontalAlignment="Right" />
-						<Label Grid.Row="3" Content="Subject" HorizontalAlignment="Right" />
+                            <Label Grid.Row="2" Content="CC" HorizontalAlignment="Right" />
+                            <Label Grid.Row="3" Content="Bcc" HorizontalAlignment="Right" />
+                            <Label Grid.Row="4" Content="Date" HorizontalAlignment="Right" />
+						<Label Grid.Row="5" Content="Subject" HorizontalAlignment="Right" />
 
 						<TextBox Grid.Column="1" Margin="2"
 								 Name="FromEdit" IsReadOnly="True" />
 						<TextBox Grid.Row="1" Grid.Column="1" Margin="2"
 								 Name="ToEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
-						<TextBox Grid.Row="2" Grid.Column="1" Margin="2"
+                            <TextBox Grid.Row="2" Grid.Column="1" Margin="2"
+								 Name="CCEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
+                            <TextBox Grid.Row="3" Grid.Column="1" Margin="2"
+								 Name="BccEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
+                            <TextBox Grid.Row="4" Grid.Column="1" Margin="2"
 								 Name="DateEdit" IsReadOnly="True" />
-						<TextBox Grid.Row="3" Grid.Column="1" Margin="2"
+						<TextBox Grid.Row="5" Grid.Column="1" Margin="2"
 								 Name="SubjectEdit" IsReadOnly="True" />
                     </Grid>
 					<TextBox Grid.Row="1" Name="defaultBodyView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />

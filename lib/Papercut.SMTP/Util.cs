@@ -207,6 +207,17 @@ namespace Papercut.SMTP
             return roundedNumber.ToString(CultureInfo.InvariantCulture) + suffixes[place];            
         }
 
-		#endregion
+	    public static bool IsDefault<TIn>(this TIn value)
+	    {
+	        // from the master, J. Skeet:
+	        return EqualityComparer<TIn>.Default.Equals(value, default(TIn));
+	    }
+
+        public static TOut IfNotNull<TIn, TOut>(this TIn value, Func<TIn, TOut> continueFunc)
+        {
+            return value.IsDefault() ? default(TOut) : continueFunc(value);
+        }
+
+	    #endregion
 	}
 }
