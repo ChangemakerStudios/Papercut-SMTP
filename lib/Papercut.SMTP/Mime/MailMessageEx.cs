@@ -26,6 +26,7 @@ namespace Papercut.SMTP.Mime
     using System.Linq;
     using System.Net.Mail;
     using System.Net.Mime;
+    using System.Text;
     using System.Text.RegularExpressions;
 
     using Papercut.SMTP;
@@ -279,7 +280,7 @@ namespace Papercut.SMTP.Mime
 						PopulateAddressList(value, message.ReplyToList);
 						break;
 					case MailHeaders.Subject:
-						message.Subject = value;
+						message.Subject = DecodeIfEncoded(value);
 						break;
 					case MailHeaders.To:
 						PopulateAddressList(value, message.To);
@@ -290,7 +291,34 @@ namespace Papercut.SMTP.Mime
 			return message;
 		}
 
-		/// <summary>
+	    private static readonly Regex encoder = new Regex(
+	        @"\=\?(?<encoding>[-a-z0-9]+?)\?B\?(?<data>[-A-Za-z0-9+/=]+)\?\=",
+	        RegexOptions.ExplicitCapture | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Gets around a bug in MS stuff:
+        /// https://connect.microsoft.com/VisualStudio/feedback/details/785710/mailmessage-subject-incorrectly-encoded-in-utf-8-base64
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+	    private static string DecodeIfEncoded(string value)
+	    {
+            if (!encoder.IsMatch(value))
+            {
+                return value;
+            }
+
+            // handle decoding...
+            var encodedBlocks = encoder.Matches(value).Cast<Match>()
+                .Where(m => m.Groups["encoding"].Success && m.Groups["data"].Success)
+                .Select(x => new KeyValuePair<Encoding, string>(System.Text.Encoding.GetEncoding(x.Groups["encoding"].Value), x.Groups["data"].Value))
+                .ToList();
+
+            // return decoded string...
+            return string.Join("", encodedBlocks.Select(kv => kv.Key.GetString(Convert.FromBase64String(kv.Value))));
+	    }
+
+	    /// <summary>
 		/// Populates the address list.
 		/// </summary>
 		/// <param name="addressList">
