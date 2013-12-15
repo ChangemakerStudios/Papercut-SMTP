@@ -44,6 +44,7 @@ namespace Papercut.UI
 
     using Application = System.Windows.Application;
     using ContextMenu = System.Windows.Forms.ContextMenu;
+    using KeyEventArgs = System.Windows.Input.KeyEventArgs;
     using ListBox = System.Windows.Controls.ListBox;
     using MenuItem = System.Windows.Forms.MenuItem;
     using MessageBox = System.Windows.MessageBox;
@@ -339,6 +340,50 @@ namespace Papercut.UI
         }
 
         /// <summary>
+        /// Handles the OnKeyDown event of the MessagesList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="KeyEventArgs"/> instance containing the event data.</param>
+        private void MessagesList_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Delete)
+            {
+                return;
+            }
+
+            this.DeleteSelectedMessage();
+        }
+
+        /// <summary>
+        /// Deletes the selected message.
+        /// </summary>
+        private void DeleteSelectedMessage()
+        {
+            // Lock to prevent rapid clicking issues
+            lock (this.deleteLockObject)
+            {
+                Array messages = new MessageEntry[this.messagesList.SelectedItems.Count];
+                this.messagesList.SelectedItems.CopyTo(messages, 0);
+
+                // Capture index position first
+                int index = this.messagesList.SelectedIndex;
+
+                foreach (MessageEntry entry in messages)
+                {
+                    // Delete the file and remove the entry
+                    if (File.Exists(entry.File))
+                    {
+                        File.Delete(entry.File);
+                    }
+
+                    this.messagesList.Items.Remove(entry);
+                }
+
+                this.UpdateSelectedMessage(index);
+            }
+        }
+
+        /// <summary>
         ///     The options_ click.
         /// </summary>
         /// <param name="sender">
@@ -501,38 +546,13 @@ namespace Papercut.UI
         }
 
         /// <summary>
-        ///     The delete button_ click.
+        /// Handles the Click event of the deleteButton control.
         /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void deleteButton_Click(object sender, RoutedEventArgs e)
         {
-            // Lock to prevent rapid clicking issues
-            lock (this.deleteLockObject)
-            {
-                Array messages = new MessageEntry[this.messagesList.SelectedItems.Count];
-                this.messagesList.SelectedItems.CopyTo(messages, 0);
-
-                // Capture index position first
-                int index = this.messagesList.SelectedIndex;
-
-                foreach (MessageEntry entry in messages)
-                {
-                    // Delete the file and remove the entry
-                    if (File.Exists(entry.File))
-                    {
-                        File.Delete(entry.File);
-                    }
-
-                    this.messagesList.Items.Remove(entry);
-                }
-
-                this.UpdateSelectedMessage(index);
-            }
+            this.DeleteSelectedMessage();
         }
 
         /// <summary>
@@ -565,6 +585,13 @@ namespace Papercut.UI
         /// </param>
         private void messagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var setTitle = new Action<string>(
+                t =>
+                {
+                    this.Subject.Content = t;
+                    this.Subject.ToolTip = t;
+                });
+
             // If there are no selected items, then disable the Delete button, clear the boxes, and return
             if (e.AddedItems.Count == 0)
             {
@@ -574,16 +601,27 @@ namespace Papercut.UI
                 this.bodyView.Text = string.Empty;
                 this.htmlViewTab.Visibility = Visibility.Hidden;
                 this.tabControl.SelectedIndex = this.defaultTab.IsVisible ? 0 : 1;
+               
+                // Clear fields
+                this.FromEdit.Text = string.Empty;
+                this.ToEdit.Text = string.Empty;
+                this.CCEdit.Text = string.Empty;
+                this.BccEdit.Text = string.Empty;
+                this.DateEdit.Text = string.Empty;
+
+                var subject = string.Empty;
+                this.SubjectEdit.Text = subject;
+
+                this.defaultBodyView.Text = string.Empty;
+
+                this.defaultHtmlView.Content = null;
+                this.defaultHtmlView.NavigationService.RemoveBackEntry();
+                //this.defaultHtmlView.Refresh();
+
+                setTitle("Papercut");
 
                 return;
             }
-
-            var setTitle = new Action<string>(
-                t =>
-                {
-                    this.Subject.Content = t;
-                    this.Subject.ToolTip = t;
-                });
 
             var mailFile = ((MessageEntry)e.AddedItems[0]).File;
 
