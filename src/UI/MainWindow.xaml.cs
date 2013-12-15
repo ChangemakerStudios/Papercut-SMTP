@@ -52,34 +52,37 @@ namespace Papercut.UI
     #endregion
 
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    ///     Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        #region Constants and Fields
+        #region Fields
 
         /// <summary>
-        ///   The delete lock object.
+        ///     The delete lock object.
         /// </summary>
         private readonly object deleteLockObject = new object();
 
         /// <summary>
-        ///   The notification.
+        ///     The notification.
         /// </summary>
         private readonly NotifyIcon notification;
 
         /// <summary>
-        ///   The server.
+        ///     The server.
         /// </summary>
         private readonly Server server;
+
+        private CancellationTokenSource _currentMessageCancellationTokenSource = null;
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MainWindow"/> class. 
-        ///   Initializes a new instance of the <see cref="MainWindow"/> class. Initializes a new instance of the <see cref="MainWindow"/> class.
+        ///     Initializes a new instance of the <see cref="MainWindow" /> class.
+        ///     Initializes a new instance of the <see cref="MainWindow" /> class. Initializes a new instance of the
+        ///     <see cref="MainWindow" /> class.
         /// </summary>
         public MainWindow()
         {
@@ -87,38 +90,40 @@ namespace Papercut.UI
 
             // Set up the notification icon
             this.notification = new NotifyIcon
-                {
-                    Icon = new Icon(Application.GetResourceStream(new Uri("/Papercut;component/App.ico", UriKind.Relative)).Stream),
-                    Text = "Papercut",
-                    Visible = true
-                };
+                                {
+                                    Icon = new Icon(Application.GetResourceStream(new Uri("/Papercut;component/App.ico", UriKind.Relative)).Stream),
+                                    Text = "Papercut",
+                                    Visible = true
+                                };
 
             this.notification.Click += delegate
-                {
-                    this.Show();
-                    this.WindowState = WindowState.Normal;
-                    this.Topmost = true;
-                    this.Focus();
-                    this.Topmost = false;
-                };
+            {
+                this.Show();
+                this.WindowState = WindowState.Normal;
+                this.Topmost = true;
+                this.Focus();
+                this.Topmost = false;
+            };
 
-            this.notification.BalloonTipClicked += delegate
-                {
-                    this.Show();
-                    this.WindowState = WindowState.Normal;
-                    this.messagesList.SelectedIndex = this.messagesList.Items.Count - 1;
-                };
+            this.notification.BalloonTipClicked += (sender, args) =>
+            {
+                this.Show();
+                this.WindowState = WindowState.Normal;
+                this.messagesList.SelectedIndex = this.messagesList.Items.Count - 1;
+            };
 
-            this.notification.ContextMenu = new ContextMenu(new[]
+            this.notification.ContextMenu = new ContextMenu(
+                new[]
                 {
-                    new MenuItem("Show",
-                                 delegate
-                                     {
-                                         this.Show();
-                                         this.WindowState = WindowState.Normal;
-                                         this.Focus();
-                                     }) { DefaultItem = true },
-                    new MenuItem("Exit", delegate { this.Close(); })
+                    new MenuItem(
+                        "Show",
+                        (sender, args) =>
+                        {
+                            this.Show();
+                            this.WindowState = WindowState.Normal;
+                            this.Focus();
+                        }) { DefaultItem = true },
+                    new MenuItem("Exit", (sender, args) => this.ExitApplication())
                 });
 
             // Set the version label
@@ -140,13 +145,13 @@ namespace Papercut.UI
             catch
             {
                 MessageBox.Show(
-                    "Failed to bind to the address/port specified.  The port may already be in use by another process.  Please change the configuration in the Options dialog.", 
+                    "Failed to bind to the address/port specified.  The port may already be in use by another process.  Please change the configuration in the Options dialog.",
                     "Operation Failure");
             }
 
             this.SetTabs();
 
-            UpdateSelectedMessage();
+            this.UpdateSelectedMessage();
 
             // Minimize if set to
             if (Settings.Default.StartMinimized)
@@ -160,10 +165,10 @@ namespace Papercut.UI
         #region Delegates
 
         /// <summary>
-        /// The message notification delegate.
+        ///     The message notification delegate.
         /// </summary>
         /// <param name="entry">
-        /// The entry. 
+        ///     The entry.
         /// </param>
         private delegate void MessageNotificationDelegate(MessageEntry entry);
 
@@ -172,10 +177,10 @@ namespace Papercut.UI
         #region Methods
 
         /// <summary>
-        /// The on state changed.
+        ///     The on state changed.
         /// </summary>
         /// <param name="e">
-        /// The e. 
+        ///     The e.
         /// </param>
         protected override void OnStateChanged(EventArgs e)
         {
@@ -189,16 +194,16 @@ namespace Papercut.UI
         }
 
         /// <summary>
-        /// The get object data from point.
+        ///     The get object data from point.
         /// </summary>
         /// <param name="source">
-        /// The source. 
+        ///     The source.
         /// </param>
         /// <param name="point">
-        /// The point. 
+        ///     The point.
         /// </param>
         /// <returns>
-        /// The get object data from point. 
+        ///     The get object data from point.
         /// </returns>
         private static string GetObjectDataFromPoint(ListBox source, Point point)
         {
@@ -227,9 +232,11 @@ namespace Papercut.UI
 
                 // Return the data that we fetched only if it is not Unset value, 
                 // which would mean that we did not find the data
-                if (data is MessageEntry)
+                var entry = data as MessageEntry;
+
+                if (entry != null)
                 {
-                    return ((MessageEntry)data).File;
+                    return entry.File;
                 }
             }
 
@@ -237,10 +244,10 @@ namespace Papercut.UI
         }
 
         /// <summary>
-        /// Add a newly received message and show the balloon notification
+        ///     Add a newly received message and show the balloon notification
         /// </summary>
         /// <param name="entry">
-        /// The entry. 
+        ///     The entry.
         /// </param>
         private void AddNewMessage(MessageEntry entry)
         {
@@ -252,27 +259,38 @@ namespace Papercut.UI
         }
 
         /// <summary>
-        /// The exit_ click.
+        ///     The exit_ click.
         /// </summary>
         /// <param name="sender">
-        /// The sender. 
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e. 
+        ///     The e.
         /// </param>
-        private void Exit_Click(object sender, RoutedEventArgs e)
+        private void Close_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
 
+        private void ExitApplication(bool closeWindow = true)
+        {
+            this.notification.Dispose();
+            this.server.Stop();
+            if (closeWindow)
+            {
+                this.Close();
+            }
+            Environment.Exit(0);
+        }
+
         /// <summary>
-        /// The go to site.
+        ///     The go to site.
         /// </summary>
         /// <param name="sender">
-        /// The sender. 
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e. 
+        ///     The e.
         /// </param>
         private void GoToSite(object sender, MouseButtonEventArgs e)
         {
@@ -280,7 +298,7 @@ namespace Papercut.UI
         }
 
         /// <summary>
-        /// Load existing messages from the file system
+        ///     Load existing messages from the file system
         /// </summary>
         private void LoadMessages()
         {
@@ -293,41 +311,41 @@ namespace Papercut.UI
         }
 
         /// <summary>
-        /// The mouse down handler.
+        ///     The mouse down handler.
         /// </summary>
         /// <param name="sender">
-        /// The sender. 
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e. 
+        ///     The e.
         /// </param>
         private void MouseDownHandler(object sender, MouseButtonEventArgs e)
         {
             return;
 
-            /*
-ListBox parent = (ListBox)sender;
+                    /*
+            ListBox parent = (ListBox)sender;
 
-// Get the object source for the selected item
-string data = GetObjectDataFromPoint(parent, e.GetPosition(parent));
+            // Get the object source for the selected item
+            string data = GetObjectDataFromPoint(parent, e.GetPosition(parent));
 
-// If the data is not null then start the drag drop operation
-if (data != null)
-{
-    DataObject doo = new DataObject(DataFormats.FileDrop, new[] { data });
-    DragDrop.DoDragDrop(parent, doo, DragDropEffects.Copy);
-}
-            */
+            // If the data is not null then start the drag drop operation
+            if (data != null)
+            {
+                DataObject doo = new DataObject(DataFormats.FileDrop, new[] { data });
+                DragDrop.DoDragDrop(parent, doo, DragDropEffects.Copy);
+            }
+                        */
         }
 
         /// <summary>
-        /// The options_ click.
+        ///     The options_ click.
         /// </summary>
         /// <param name="sender">
-        /// The sender. 
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e. 
+        ///     The e.
         /// </param>
         private void Options_Click(object sender, RoutedEventArgs e)
         {
@@ -346,22 +364,23 @@ if (data != null)
                 this.server.Bind(Settings.Default.IP, Settings.Default.Port);
                 this.SetTabs();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show("Failed to rebind to the address/port specified.  The port may already be in use by another process.  Please update the configuration.",
-                                "Operation Failure");
+                MessageBox.Show(
+                    "Failed to rebind to the address/port specified.  The port may already be in use by another process.  Please update the configuration.",
+                    "Operation Failure");
                 this.Options_Click(null, null);
             }
         }
 
         /// <summary>
-        /// The processor_ message received.
+        ///     The processor_ message received.
         /// </summary>
         /// <param name="sender">
-        /// The sender. 
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e. 
+        ///     The e.
         /// </param>
         private void Processor_MessageReceived(object sender, MessageEventArgs e)
         {
@@ -371,10 +390,10 @@ if (data != null)
         }
 
         /// <summary>
-        /// Write the HTML to a temporary file and render it to the HTML view
+        ///     Write the HTML to a temporary file and render it to the HTML view
         /// </summary>
         /// <param name="mailMessageEx">
-        /// The mail Message Ex. 
+        ///     The mail Message Ex.
         /// </param>
         private void SetBrowserDocument(MailMessageEx mailMessageEx)
         {
@@ -409,8 +428,8 @@ if (data != null)
 
                     htmlText =
                         htmlText.Replace(string.Format(@"cid:{0}", attachment.ContentId), attachment.ContentId)
-                                .Replace(string.Format(@"cid:'{0}'", attachment.ContentId), attachment.ContentId)
-                                .Replace(string.Format(@"cid:""{0}""", attachment.ContentId), attachment.ContentId);
+                            .Replace(string.Format(@"cid:'{0}'", attachment.ContentId), attachment.ContentId)
+                            .Replace(string.Format(@"cid:""{0}""", attachment.ContentId), attachment.ContentId);
                 }
             }
 
@@ -424,7 +443,7 @@ if (data != null)
         }
 
         /// <summary>
-        /// The set tabs.
+        ///     The set tabs.
         /// </summary>
         private void SetTabs()
         {
@@ -440,29 +459,55 @@ if (data != null)
             }
         }
 
-        /// <summary>
-        /// The window_ closing.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender. 
-        /// </param>
-        /// <param name="e">
-        /// The e. 
-        /// </param>
-        private void Window_Closing(object sender, CancelEventArgs e)
+        private void UpdateSelectedMessage(int? index = null)
         {
-            this.notification.Dispose();
-            this.server.Stop();
+            // If there are more than the index location, keep the same position in the list
+            if (index.HasValue && this.messagesList.Items.Count > index)
+            {
+                this.messagesList.SelectedIndex = index.Value;
+            }
+            else if (this.messagesList.Items.Count > 0)
+            {
+                // If there are fewer, move to the last one
+                this.messagesList.SelectedIndex = this.messagesList.Items.Count - 1;
+            }
+            else if (this.messagesList.Items.Count == 0)
+            {
+                this.tabControl.IsEnabled = false;
+            }
         }
 
         /// <summary>
-        /// The delete button_ click.
+        ///     The window_ closing.
         /// </summary>
         /// <param name="sender">
-        /// The sender. 
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e. 
+        ///     The e.
+        /// </param>
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            //Cancel close and minimize if setting is set to minimize on close
+            if (Settings.Default.MinimizeOnClose)
+            {
+                e.Cancel = true;
+                this.WindowState = WindowState.Minimized;
+            }
+            else
+            {
+                this.ExitApplication(false);
+            }
+        }
+
+        /// <summary>
+        ///     The delete button_ click.
+        /// </summary>
+        /// <param name="sender">
+        ///     The sender.
+        /// </param>
+        /// <param name="e">
+        ///     The e.
         /// </param>
         private void deleteButton_Click(object sender, RoutedEventArgs e)
         {
@@ -490,32 +535,14 @@ if (data != null)
             }
         }
 
-        private void UpdateSelectedMessage(int? index = null)
-        {
-            // If there are more than the index location, keep the same position in the list
-            if (index.HasValue && this.messagesList.Items.Count > index)
-            {
-                this.messagesList.SelectedIndex = index.Value;
-            }
-            else if (this.messagesList.Items.Count > 0)
-            {
-                // If there are fewer, move to the last one
-                this.messagesList.SelectedIndex = this.messagesList.Items.Count - 1;
-            }
-            else if (this.messagesList.Items.Count == 0)
-            {
-                this.tabControl.IsEnabled = false;
-            }
-        }
-
         /// <summary>
-        /// The forward button_ click.
+        ///     The forward button_ click.
         /// </summary>
         /// <param name="sender">
-        /// The sender. 
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e. 
+        ///     The e.
         /// </param>
         private void forwardButton_Click(object sender, RoutedEventArgs e)
         {
@@ -527,16 +554,14 @@ if (data != null)
             }
         }
 
-        private CancellationTokenSource _currentMessageCancellationTokenSource = null;
-
         /// <summary>
-        /// The messages list_ selection changed.
+        ///     The messages list_ selection changed.
         /// </summary>
         /// <param name="sender">
-        /// The sender. 
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e. 
+        ///     The e.
         /// </param>
         private void messagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -553,7 +578,8 @@ if (data != null)
                 return;
             }
 
-            var setTitle = new Action<string>(t =>
+            var setTitle = new Action<string>(
+                t =>
                 {
                     this.Subject.Content = t;
                     this.Subject.ToolTip = t;
@@ -575,11 +601,13 @@ if (data != null)
                 this._currentMessageCancellationTokenSource = new CancellationTokenSource();
 
                 Task.Factory.StartNew(() => { })
-                    .ContinueWith(task => File.ReadAllLines(mailFile, Encoding.ASCII),
-                                  this._currentMessageCancellationTokenSource.Token,
-                                  TaskContinuationOptions.NotOnCanceled,
-                                  TaskScheduler.Default)
-                    .ContinueWith(task =>
+                    .ContinueWith(
+                        task => File.ReadAllLines(mailFile, Encoding.ASCII),
+                        this._currentMessageCancellationTokenSource.Token,
+                        TaskContinuationOptions.NotOnCanceled,
+                        TaskScheduler.Default)
+                    .ContinueWith(
+                        task =>
                         {
                             // Load the MIME body
                             var mimeReader = new MimeReader(task.Result);
@@ -587,68 +615,73 @@ if (data != null)
 
                             return Tuple.Create(task.Result, me.ToMailMessageEx());
                         },
-                                  this._currentMessageCancellationTokenSource.Token,
-                                  TaskContinuationOptions.NotOnCanceled,
-                                  TaskScheduler.Default).ContinueWith(task =>
-                                      {
-                                          var resultTuple = task.Result;
-                                          var mailMessageEx = resultTuple.Item2;
+                        this._currentMessageCancellationTokenSource.Token,
+                        TaskContinuationOptions.NotOnCanceled,
+                        TaskScheduler.Default).ContinueWith(
+                            task =>
+                            {
+                                var resultTuple = task.Result;
+                                var mailMessageEx = resultTuple.Item2;
 
-                                          // set the raw view...
-                                          this.rawView.Text = string.Join("\n", resultTuple.Item1);
+                                // set the raw view...
+                                this.rawView.Text = string.Join("\n", resultTuple.Item1);
 
-                                          this.bodyView.Text = mailMessageEx.Body;
-                                          this.bodyViewTab.Visibility = Visibility.Visible;
+                                this.bodyView.Text = mailMessageEx.Body;
+                                this.bodyViewTab.Visibility = Visibility.Visible;
 
-                                          this.defaultBodyView.Text = mailMessageEx.Body;
+                                this.defaultBodyView.Text = mailMessageEx.Body;
 
-                                          this.FromEdit.Text = mailMessageEx.From.ToString();
-                                          this.ToEdit.Text = mailMessageEx.To.ToString();
-                                          this.DateEdit.Text = mailMessageEx.DeliveryDate.ToString();
-                                          this.SubjectEdit.Text = mailMessageEx.Subject;
+                                this.FromEdit.Text = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                this.ToEdit.Text = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                this.CCEdit.Text = mailMessageEx.CC.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                this.BccEdit.Text = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                this.DateEdit.Text = mailMessageEx.DeliveryDate.IfNotNull(s => s.ToString()) ?? string.Empty;
 
-                                          setTitle(mailMessageEx.Subject);
+                                var subject = mailMessageEx.Subject.IfNotNull(s => s.ToString()) ?? string.Empty;
+                                this.SubjectEdit.Text = subject;
 
-                                          // If it is HTML, render it to the HTML view
-                                          if (mailMessageEx.IsBodyHtml)
-                                          {
-                                              if (task.IsCanceled)
-                                              {
-                                                  return;
-                                              }
+                                setTitle(subject);
 
-                                              this.SetBrowserDocument(mailMessageEx);
-                                              this.htmlViewTab.Visibility = Visibility.Visible;
+                                // If it is HTML, render it to the HTML view
+                                if (mailMessageEx.IsBodyHtml)
+                                {
+                                    if (task.IsCanceled)
+                                    {
+                                        return;
+                                    }
 
-                                              this.defaultHtmlView.Visibility = Visibility.Visible;
-                                              this.defaultBodyView.Visibility = Visibility.Collapsed;
-                                          }
-                                          else
-                                          {
-                                              this.htmlViewTab.Visibility = Visibility.Hidden;
-                                              if (this.defaultTab.IsVisible)
-                                              {
-                                                  this.tabControl.SelectedIndex = 0;
-                                              }
-                                              else if (Equals(this.tabControl.SelectedItem, this.htmlViewTab))
-                                              {
-                                                  this.tabControl.SelectedIndex = 2;
-                                              }
+                                    this.SetBrowserDocument(mailMessageEx);
+                                    this.htmlViewTab.Visibility = Visibility.Visible;
 
-                                              this.defaultHtmlView.Visibility = Visibility.Collapsed;
-                                              this.defaultBodyView.Visibility = Visibility.Visible;
-                                          }
+                                    this.defaultHtmlView.Visibility = Visibility.Visible;
+                                    this.defaultBodyView.Visibility = Visibility.Collapsed;
+                                }
+                                else
+                                {
+                                    this.htmlViewTab.Visibility = Visibility.Hidden;
+                                    if (this.defaultTab.IsVisible)
+                                    {
+                                        this.tabControl.SelectedIndex = 0;
+                                    }
+                                    else if (Equals(this.tabControl.SelectedItem, this.htmlViewTab))
+                                    {
+                                        this.tabControl.SelectedIndex = 2;
+                                    }
 
-                                          this.SpinAnimation.Visibility = Visibility.Collapsed;
-                                          this.tabControl.IsEnabled = true;
+                                    this.defaultHtmlView.Visibility = Visibility.Collapsed;
+                                    this.defaultBodyView.Visibility = Visibility.Visible;
+                                }
 
-                                          // Enable the delete and forward button
-                                          this.deleteButton.IsEnabled = true;
-                                          this.forwardButton.IsEnabled = true;
-                                      },
-                                                                      this._currentMessageCancellationTokenSource.Token,
-                                                                      TaskContinuationOptions.NotOnCanceled,
-                                                                      TaskScheduler.FromCurrentSynchronizationContext());
+                                this.SpinAnimation.Visibility = Visibility.Collapsed;
+                                this.tabControl.IsEnabled = true;
+
+                                // Enable the delete and forward button
+                                this.deleteButton.IsEnabled = true;
+                                this.forwardButton.IsEnabled = true;
+                            },
+                            this._currentMessageCancellationTokenSource.Token,
+                            TaskContinuationOptions.NotOnCanceled,
+                            TaskScheduler.FromCurrentSynchronizationContext());
             }
             catch (Exception ex)
             {
