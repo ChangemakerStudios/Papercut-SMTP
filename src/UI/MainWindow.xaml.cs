@@ -303,9 +303,7 @@ namespace Papercut.UI
         /// </summary>
         private void LoadMessages()
         {
-            string[] files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.eml");
-
-            foreach (var entry in files.Select(file => new MessageEntry(file)))
+            foreach (var entry in MessageFileService.LoadMessages())
             {
                 this.messagesList.Items.Add(entry);
             }

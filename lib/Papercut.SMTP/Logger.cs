@@ -39,7 +39,7 @@ namespace Papercut.SMTP
 	/// <summary>
 	/// Summary description for Logger.
 	/// </summary>
-	public class Logger
+	public static class Logger
 	{
 		#region Constants and Fields
 

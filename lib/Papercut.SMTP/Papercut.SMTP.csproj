@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageFileService.cs" />
     <Compile Include="IServer.cs" />
     <Compile Include="MessageEntry.cs" />
     <Compile Include="Mime\MailHeaders.cs" />
