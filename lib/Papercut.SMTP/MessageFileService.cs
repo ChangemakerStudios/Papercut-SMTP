@@ -42,21 +42,21 @@ namespace Papercut.SMTP
 
         static MessageFileService()
         {
-            var papercutDocuments = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Papercut");
+            var papercutBasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Papercut");
 
             try
             {
-                if (!Directory.Exists(papercutDocuments))
+                if (!Directory.Exists(papercutBasePath))
                 {
-                    Directory.CreateDirectory(papercutDocuments);
+                    Directory.CreateDirectory(papercutBasePath);
                 }
             }
             catch (Exception ex)
             {
-                Logger.WriteError(string.Format("Failure accessing or creating directory: {0}", papercutDocuments), ex);
+                Logger.WriteError(string.Format("Failure accessing or creating directory: {0}", papercutBasePath), ex);
             }
 
-            BasePath = papercutDocuments;
+            BasePath = papercutBasePath;
 
             // attempt migration for previous versions...
             TryMigrateMessages();
