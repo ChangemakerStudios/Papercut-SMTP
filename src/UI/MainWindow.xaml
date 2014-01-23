@@ -19,7 +19,7 @@
 			HorizontalAlignment="Stretch" 
 			VerticalAlignment="Stretch" 
 			Margin="0"/>
-		<ListBox Name="messagesList" SelectionChanged="messagesList_SelectionChanged" Width="Auto" Height="Auto" KeyDown="MessagesList_OnKeyDown" PreviewMouseLeftButtonDown="MouseDownHandler" SelectionMode="Extended" VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2" />
+        <ListBox Name="messagesList" SelectionChanged="messagesList_SelectionChanged" Width="Auto" Height="Auto" KeyDown="MessagesList_OnKeyDown" PreviewMouseDown="MessagesList_OnPreviewLeftMouseDown" PreviewMouseUp="MessagesList_OnPreviewMouseUp" PreviewMouseMove="MessagesList_OnPreviewMouseMove" SelectionMode="Extended" VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2" />
         <Grid Name="ContainerPanel" Grid.Column="2" Width="Auto" Height="Auto">
             <Ui:Spinner HorizontalAlignment="Right" x:Name="SpinAnimation" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsHitTestVisible="False" Panel.ZIndex="1000" UseLayoutRounding="False" Padding="2" BorderBrush="#FFADADAD" BorderThickness="1" Background="#FF383838" Opacity="0.75" Visibility="Collapsed" Margin="0,5,5,0" />
             <Label Name="Subject" Width="Auto" Height="40" Visibility="Visible" Margin="0" VerticalAlignment="Top" ForceCursor="False" Foreground="#FF287BAD" FontStretch="Normal" FontWeight="Bold" FontSize="20">

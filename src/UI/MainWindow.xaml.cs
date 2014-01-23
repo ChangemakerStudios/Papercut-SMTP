@@ -42,9 +42,15 @@ namespace Papercut.UI
 
     using Application = System.Windows.Application;
     using ContextMenu = System.Windows.Forms.ContextMenu;
+    using DataFormats = System.Windows.DataFormats;
+    using DataObject = System.Windows.DataObject;
+    using DragDropEffects = System.Windows.DragDropEffects;
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+    using ListBox = System.Windows.Controls.ListBox;
     using MenuItem = System.Windows.Forms.MenuItem;
     using MessageBox = System.Windows.MessageBox;
+    using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+    using Point = System.Windows.Point;
 
     #endregion
 
@@ -209,25 +215,6 @@ namespace Papercut.UI
             {
                 this.messagesList.Items.Add(entry);
             }
-        }
-
-        private void MouseDownHandler(object sender, MouseButtonEventArgs e)
-        {
-            return;
-
-                    /*
-            ListBox parent = (ListBox)sender;
-
-            // Get the object source for the selected item
-            string data = GetObjectDataFromPoint(parent, e.GetPosition(parent));
-
-            // If the data is not null then start the drag drop operation
-            if (data != null)
-            {
-                DataObject doo = new DataObject(DataFormats.FileDrop, new[] { data });
-                DragDrop.DoDragDrop(parent, doo, DragDropEffects.Copy);
-            }
-                        */
         }
 
         /// <summary>
@@ -571,5 +558,56 @@ namespace Papercut.UI
         }
 
         #endregion
+        
+        Point? _dragStartPoint = null;
+
+        private void MessagesList_OnPreviewLeftMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var parent = sender as ListBox;
+
+            if (parent == null)
+            {
+                return;
+            }
+
+            if (this._dragStartPoint == null)
+            {
+                this._dragStartPoint = e.GetPosition(parent);
+            }
+        }
+
+        private void MessagesList_OnPreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            this._dragStartPoint = null;
+        }
+
+        private void MessagesList_OnPreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            var parent = sender as ListBox;
+
+            if (parent == null || this._dragStartPoint == null)
+            {
+                return;
+            }
+
+            var dragPoint = e.GetPosition(parent);
+
+            Vector potentialDragLength = dragPoint - this._dragStartPoint.Value;
+
+            if (potentialDragLength.Length > 10)
+            {
+                // Get the object source for the selected item
+                var entry = parent.GetObjectDataFromPoint<MessageEntry>(this._dragStartPoint.Value);
+
+                // If the data is not null then start the drag drop operation
+                if (!string.IsNullOrWhiteSpace(entry.File))
+                {
+                    var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
+                    DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);
+                }
+
+                this._dragStartPoint = null;
+            }
+        }
     }
 }
