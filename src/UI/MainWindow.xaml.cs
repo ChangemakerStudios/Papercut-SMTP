@@ -185,9 +185,9 @@ namespace Papercut.UI
             this.notification.ShowBalloonTip(5000, string.Empty, "New message received!", ToolTipIcon.Info);
         }
 
-        private void Close_Click(object sender, RoutedEventArgs e)
+        private void Exit_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            this.ExitApplication(true);
         }
 
         private void ExitApplication(bool closeWindow = true)
