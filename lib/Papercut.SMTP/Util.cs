@@ -19,125 +19,126 @@
 
 namespace Papercut.SMTP
 {
-	#region Using
+    #region Using
 
-	using System;
-	using System.Collections;
-	using System.Collections.Generic;
-	using System.Globalization;
-	using System.Linq;
-	using System.Net;
-	using System.Text;
-	using System.Text.RegularExpressions;
-	using System.Threading;
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Net;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Threading;
 
     #endregion
 
-	/// <summary>
-	/// The util.
-	/// </summary>
-	public static class Util
-	{
-		#region Public Methods and Operators
+    /// <summary>
+    /// The util.
+    /// </summary>
+    public static class Util
+    {
+        #region Public Methods and Operators
 
-		/// <summary>
-		/// The add range.
-		/// </summary>
-		/// <param name="destinationCollection">
-		/// The destination collection.
-		/// </param>
-		/// <param name="sourceCollection">
-		/// The source collection.
-		/// </param>
-		/// <typeparam name="TValue">
-		/// </typeparam>
-		public static void AddRange<TValue>(
-			this ICollection<TValue> destinationCollection, IEnumerable<TValue> sourceCollection)
-		{
-			if (destinationCollection == null)
-			{
-				throw new ArgumentNullException("destinationCollection");
-			}
+        /// <summary>
+        /// The add range.
+        /// </summary>
+        /// <param name="destinationCollection">
+        /// The destination collection.
+        /// </param>
+        /// <param name="sourceCollection">
+        /// The source collection.
+        /// </param>
+        /// <typeparam name="TValue">
+        /// </typeparam>
+        public static void AddRange<TValue>(
+            this ICollection<TValue> destinationCollection, IEnumerable<TValue> sourceCollection)
+        {
+            if (destinationCollection == null)
+            {
+                throw new ArgumentNullException("destinationCollection");
+            }
 
-			if (sourceCollection == null)
-			{
-				throw new ArgumentNullException("sourceCollection");
-			}
+            if (sourceCollection == null)
+            {
+                throw new ArgumentNullException("sourceCollection");
+            }
 
-			foreach (var item in sourceCollection.ToList())
-			{
-				destinationCollection.Add(item);
-			}
-		}
+            foreach (var item in sourceCollection.ToList())
+            {
+                destinationCollection.Add(item);
+            }
+        }
 
-		/// <summary>
-		/// The add range.
-		/// </summary>
-		/// <param name="destinationList">
-		/// The destination list.
-		/// </param>
-		/// <param name="sourceList">
-		/// The source list.
-		/// </param>
-		public static void AddRange(this IList destinationList, IEnumerable sourceList)
-		{
-			if (destinationList == null)
-			{
-				throw new ArgumentNullException("destinationList");
-			}
+        /// <summary>
+        /// The add range.
+        /// </summary>
+        /// <param name="destinationList">
+        /// The destination list.
+        /// </param>
+        /// <param name="sourceList">
+        /// The source list.
+        /// </param>
+        public static void AddRange(this IList destinationList, IEnumerable sourceList)
+        {
+            if (destinationList == null)
+            {
+                throw new ArgumentNullException("destinationList");
+            }
 
-			if (sourceList == null)
-			{
-				throw new ArgumentNullException("sourceList");
-			}
+            if (sourceList == null)
+            {
+                throw new ArgumentNullException("sourceList");
+            }
 
-			foreach (var item in sourceList.Cast<object>().ToList())
-			{
-				destinationList.Add(item);
-			}
-		}
+            foreach (var item in sourceList.Cast<object>().ToList())
+            {
+                destinationList.Add(item);
+            }
+        }
 
-		/// <summary>
-		/// The for each.
-		/// </summary>
-		/// <param name="source">
-		/// The source. 
-		/// </param>
-		/// <param name="act">
-		/// The act. 
-		/// </param>
-		/// <typeparam name="T">
-		/// </typeparam>
-		/// <returns>
-		/// </returns>
-		public static IEnumerable<T> ForEach<T>(this IEnumerable<T> source, Action<T> act)
-		{
-			foreach (T element in source.ToList())
-			{
-				act(element);
-			}
+        /// <summary>
+        /// The for each.
+        /// </summary>
+        /// <param name="source">
+        /// The source. 
+        /// </param>
+        /// <param name="act">
+        /// The act. 
+        /// </param>
+        /// <typeparam name="T">
+        /// </typeparam>
+        /// <returns>
+        /// </returns>
+        public static IEnumerable<T> ForEach<T>(this IEnumerable<T> source, Action<T> act)
+        {
+            foreach (T element in source.ToList())
+            {
+                act(element);
+            }
 
-			return source;
-		}
+            return source;
+        }
 
-		/// <summary>
-		/// The get ip address.
-		/// </summary>
-		/// <returns>
-		/// The get ip address. 
-		/// </returns>
-		public static string GetIPAddress()
-		{
-			IPAddress ip = GetExternalIp();
-			if (ip == null)
-			{
-				return Dns.GetHostEntry(Dns.GetHostName()).HostName;
-			}
+        /// <summary>
+        /// The get ip address.
+        /// </summary>
+        /// <returns>
+        /// The get ip address. 
+        /// </returns>
+        public static string GetIPAddress()
+        {
+            IPAddress ip = GetExternalIp();
 
-			return Dns.GetHostEntry(ip).HostName;
-		}
+            if (ip == null)
+            {
+                return Dns.GetHostEntry(Dns.GetHostName()).HostName;
+            }
 
-        private static Regex _timeZoneRegex = new Regex(@"\s?(\((?<tz>[A-Z]{3,4})\))?$", RegexOptions.Compiled);
+            return Dns.GetHostEntry(ip).HostName;
+        }
+
+        private static readonly Regex _timeZoneRegex = new Regex(@"\s?(\((?<tz>[A-Z]{3,4})\))?$", RegexOptions.Compiled);
 
         /// <summary>
         /// Try parse date time.
@@ -146,8 +147,8 @@ namespace Papercut.SMTP
         /// <returns>
         /// .
         /// </returns>
-	    public static DateTime? TryParseSTMPDateTime(string dateTimeParse)
-	    {
+        public static DateTime? TryParseSTMPDateTime(string dateTimeParse)
+        {
             if (string.IsNullOrWhiteSpace(dateTimeParse))
             {
                 return null;
@@ -159,31 +160,31 @@ namespace Papercut.SMTP
             dateTimeParse = _timeZoneRegex.Replace(dateTimeParse.Trim().Replace("−", "-"), string.Empty).Trim();
 
             return DateTime.TryParse(dateTimeParse, out dateTime) ? (DateTime?)dateTime : null;
-	    }
+        }
 
-	    #endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		/// The get external ip.
-		/// </summary>
-		/// <returns>
-		/// </returns>
-		private static IPAddress GetExternalIp()
-		{
-			try
-			{
-				string whatIsMyIp = "http://www.whatismyip.com/automation/n09230945.asp";
-				var wc = new WebClient();
-				string requestHtml = Encoding.UTF8.GetString(wc.DownloadData(whatIsMyIp));
-				return IPAddress.Parse(requestHtml);
-			}
-			catch
-			{
-				return null;
-			}
-		}
+        /// <summary>
+        /// The get external ip.
+        /// </summary>
+        /// <returns>
+        /// </returns>
+        private static IPAddress GetExternalIp()
+        {
+            try
+            {
+                string whatIsMyIp = "http://www.whatismyip.com/automation/n09230945.asp";
+                var wc = new WebClient();
+                string requestHtml = Encoding.UTF8.GetString(wc.DownloadData(whatIsMyIp));
+                return IPAddress.Parse(requestHtml);
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
         /// <summary>
         /// To FileSizeFormat... Thank you to "deepee1" on StackOverflow for this elegent solution:
@@ -207,17 +208,33 @@ namespace Papercut.SMTP
             return roundedNumber.ToString(CultureInfo.InvariantCulture) + suffixes[place];            
         }
 
-	    public static bool IsDefault<TIn>(this TIn value)
-	    {
-	        // from the master, J. Skeet:
-	        return EqualityComparer<TIn>.Default.Equals(value, default(TIn));
-	    }
+        public static bool IsDefault<TIn>(this TIn value)
+        {
+            // from the master, J. Skeet:
+            return EqualityComparer<TIn>.Default.Equals(value, default(TIn));
+        }
 
         public static TOut IfNotNull<TIn, TOut>(this TIn value, Func<TIn, TOut> continueFunc)
         {
             return value.IsDefault() ? default(TOut) : continueFunc(value);
         }
 
-	    #endregion
-	}
+        /// <summary>
+        /// Converts to an IEnumerable'T if obj is not default.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> ToEnumerable<T>(this T obj)
+        {
+            if (!obj.IsDefault())
+            {
+                yield return obj;
+            }
+
+            yield break;
+        }
+
+        #endregion
+    }
 }

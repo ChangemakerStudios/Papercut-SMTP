@@ -450,30 +450,32 @@ namespace Papercut.UI
 
             foreach (var attachment in mailMessageEx.Attachments)
             {
-                if ((!string.IsNullOrEmpty(attachment.ContentId)) && (attachment.ContentStream != null))
+                if (string.IsNullOrEmpty(attachment.ContentId) || attachment.ContentStream == null)
                 {
-                    string fileName = Path.Combine(tempPath, attachment.ContentId);
+                    continue;
+                }
 
-                    using (var fs = File.OpenWrite(fileName))
+                string fileName = Path.Combine(tempPath, attachment.ContentId);
+
+                using (var fs = File.OpenWrite(fileName))
+                {
+                    var buffer = new byte[Length];
+                    int bytesRead = attachment.ContentStream.Read(buffer, 0, Length);
+
+                    // write the required bytes
+                    while (bytesRead > 0)
                     {
-                        var buffer = new byte[Length];
-                        int bytesRead = attachment.ContentStream.Read(buffer, 0, Length);
-
-                        // write the required bytes
-                        while (bytesRead > 0)
-                        {
-                            fs.Write(buffer, 0, bytesRead);
-                            bytesRead = attachment.ContentStream.Read(buffer, 0, Length);
-                        }
-
-                        fs.Close();
+                        fs.Write(buffer, 0, bytesRead);
+                        bytesRead = attachment.ContentStream.Read(buffer, 0, Length);
                     }
 
-                    htmlText =
-                        htmlText.Replace(string.Format(@"cid:{0}", attachment.ContentId), attachment.ContentId)
+                    fs.Close();
+                }
+
+                htmlText =
+                    htmlText.Replace(string.Format(@"cid:{0}", attachment.ContentId), attachment.ContentId)
                             .Replace(string.Format(@"cid:'{0}'", attachment.ContentId), attachment.ContentId)
                             .Replace(string.Format(@"cid:""{0}""", attachment.ContentId), attachment.ContentId);
-                }
             }
 
             File.WriteAllText(htmlFile, htmlText, Encoding.Unicode);

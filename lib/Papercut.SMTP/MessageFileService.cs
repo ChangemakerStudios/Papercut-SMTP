@@ -34,7 +34,15 @@ namespace Papercut.SMTP
 
         #region Static Fields
 
-        public static readonly string BasePath;
+        public static readonly IEnumerable<string> LoadPaths;
+
+        public static readonly string DefaultSavePath;
+
+        public static readonly IEnumerable<string> ExcludeFilesFromMigration =
+            new string[]
+            {
+                "readme.eml"
+            };
 
         #endregion
 
@@ -56,7 +64,12 @@ namespace Papercut.SMTP
                 Logger.WriteError(string.Format("Failure accessing or creating directory: {0}", papercutBasePath), ex);
             }
 
-            BasePath = papercutBasePath;
+            DefaultSavePath = papercutBasePath;
+            LoadPaths = new List<string>
+                        {
+                            AppDomain.CurrentDomain.BaseDirectory,
+                            DefaultSavePath
+                        };
 
             // attempt migration for previous versions...
             TryMigrateMessages();
@@ -68,7 +81,8 @@ namespace Papercut.SMTP
 
         public static IEnumerable<MessageEntry> LoadMessages()
         {
-            string[] files = Directory.GetFiles(BasePath, MessageFileSearchPattern);
+            var files = LoadPaths.SelectMany(p => Directory.GetFiles(p, MessageFileSearchPattern));
+
             return files.Select(file => new MessageEntry(file));
         }
 
@@ -86,7 +100,7 @@ namespace Papercut.SMTP
                         DateTime.Now.ToString("yyyyMMddHHmmssFF"),
                         Guid.NewGuid().ToString().Substring(0, 2));
 
-                    file = Path.Combine(BasePath, fileNameUnique);
+                    file = Path.Combine(DefaultSavePath, fileNameUnique);
                 }
                 while (File.Exists(file));
 
@@ -109,7 +123,11 @@ namespace Papercut.SMTP
             try
             {
                 var current = AppDomain.CurrentDomain.BaseDirectory;
-                string[] files = Directory.GetFiles(current, MessageFileSearchPattern);
+
+                string[] files = Directory
+                    .GetFiles(current, MessageFileSearchPattern)
+                    .Where(s => !ExcludeFilesFromMigration.Any(e => e.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
+                    .ToArray();
 
                 if (!files.Any())
                 {
@@ -118,7 +136,7 @@ namespace Papercut.SMTP
 
                 foreach (var f in files)
                 {
-                    var destFileName = Path.Combine(BasePath, Path.GetFileName(f));
+                    var destFileName = Path.Combine(DefaultSavePath, Path.GetFileName(f));
                     Logger.WriteWarning(string.Format("Migrating message from {0} to new path {1}.", f, destFileName));
                     File.Move(f, destFileName);
                 }
