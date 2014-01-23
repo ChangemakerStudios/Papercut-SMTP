@@ -86,6 +86,18 @@ namespace Papercut.SMTP
             return files.Select(file => new MessageEntry(file));
         }
 
+        public static bool DeleteMessage(MessageEntry entry)
+        {
+            // Delete the file and remove the entry
+            if (File.Exists(entry.File))
+            {
+                File.Delete(entry.File);
+                return true;
+            }
+
+            return false;
+        }
+
         public static string SaveMessage(IList<string> output)
         {
             string file = null;

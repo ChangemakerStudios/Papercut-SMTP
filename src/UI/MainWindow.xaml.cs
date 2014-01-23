@@ -26,7 +26,6 @@ namespace Papercut.UI
     using System.Diagnostics;
     using System.Drawing;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
     using System.Text;
     using System.Threading;
@@ -35,7 +34,6 @@ namespace Papercut.UI
     using System.Windows.Controls;
     using System.Windows.Forms;
     using System.Windows.Input;
-    using System.Windows.Media;
     using System.Windows.Threading;
 
     using Papercut.Properties;
@@ -45,10 +43,8 @@ namespace Papercut.UI
     using Application = System.Windows.Application;
     using ContextMenu = System.Windows.Forms.ContextMenu;
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-    using ListBox = System.Windows.Controls.ListBox;
     using MenuItem = System.Windows.Forms.MenuItem;
     using MessageBox = System.Windows.MessageBox;
-    using Point = System.Windows.Point;
 
     #endregion
 
@@ -59,19 +55,10 @@ namespace Papercut.UI
     {
         #region Fields
 
-        /// <summary>
-        ///     The delete lock object.
-        /// </summary>
         private readonly object deleteLockObject = new object();
 
-        /// <summary>
-        ///     The notification.
-        /// </summary>
         private readonly NotifyIcon notification;
 
-        /// <summary>
-        ///     The server.
-        /// </summary>
         private readonly Server server;
 
         private CancellationTokenSource _currentMessageCancellationTokenSource = null;
@@ -80,11 +67,6 @@ namespace Papercut.UI
 
         #region Constructors and Destructors
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="MainWindow" /> class.
-        ///     Initializes a new instance of the <see cref="MainWindow" /> class. Initializes a new instance of the
-        ///     <see cref="MainWindow" /> class.
-        /// </summary>
         public MainWindow()
         {
             this.InitializeComponent();
@@ -165,24 +147,12 @@ namespace Papercut.UI
 
         #region Delegates
 
-        /// <summary>
-        ///     The message notification delegate.
-        /// </summary>
-        /// <param name="entry">
-        ///     The entry.
-        /// </param>
         private delegate void MessageNotificationDelegate(MessageEntry entry);
 
         #endregion
 
         #region Methods
 
-        /// <summary>
-        ///     The on state changed.
-        /// </summary>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
         protected override void OnStateChanged(EventArgs e)
         {
             // Hide the window if minimized so it doesn't show up on the task bar
@@ -192,56 +162,6 @@ namespace Papercut.UI
             }
 
             base.OnStateChanged(e);
-        }
-
-        /// <summary>
-        ///     The get object data from point.
-        /// </summary>
-        /// <param name="source">
-        ///     The source.
-        /// </param>
-        /// <param name="point">
-        ///     The point.
-        /// </param>
-        /// <returns>
-        ///     The get object data from point.
-        /// </returns>
-        private static string GetObjectDataFromPoint(ListBox source, Point point)
-        {
-            var element = source.InputHitTest(point) as UIElement;
-            if (element != null)
-            {
-                // Get the object from the element
-                object data = DependencyProperty.UnsetValue;
-                while (data == DependencyProperty.UnsetValue)
-                {
-                    // Try to get the object value for the corresponding element
-                    data = source.ItemContainerGenerator.ItemFromContainer(element);
-
-                    // Get the parent and we will iterate again
-                    if (data == DependencyProperty.UnsetValue)
-                    {
-                        element = VisualTreeHelper.GetParent(element) as UIElement;
-                    }
-
-                    // If we reach the actual listbox then we must break to avoid an infinite loop
-                    if (element == source)
-                    {
-                        return null;
-                    }
-                }
-
-                // Return the data that we fetched only if it is not Unset value, 
-                // which would mean that we did not find the data
-                var entry = data as MessageEntry;
-
-                if (entry != null)
-                {
-                    return entry.File;
-                }
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -259,15 +179,6 @@ namespace Papercut.UI
             this.notification.ShowBalloonTip(5000, string.Empty, "New message received!", ToolTipIcon.Info);
         }
 
-        /// <summary>
-        ///     The exit_ click.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
@@ -284,15 +195,6 @@ namespace Papercut.UI
             Environment.Exit(0);
         }
 
-        /// <summary>
-        ///     The go to site.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
         private void GoToSite(object sender, MouseButtonEventArgs e)
         {
             Process.Start("http://papercut.codeplex.com/");
@@ -309,15 +211,6 @@ namespace Papercut.UI
             }
         }
 
-        /// <summary>
-        ///     The mouse down handler.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
         private void MouseDownHandler(object sender, MouseButtonEventArgs e)
         {
             return;
@@ -352,9 +245,6 @@ namespace Papercut.UI
             this.DeleteSelectedMessage();
         }
 
-        /// <summary>
-        /// Deletes the selected message.
-        /// </summary>
         private void DeleteSelectedMessage()
         {
             // Lock to prevent rapid clicking issues
@@ -368,12 +258,7 @@ namespace Papercut.UI
 
                 foreach (MessageEntry entry in messages)
                 {
-                    // Delete the file and remove the entry
-                    if (File.Exists(entry.File))
-                    {
-                        File.Delete(entry.File);
-                    }
-
+                    MessageFileService.DeleteMessage(entry);
                     this.messagesList.Items.Remove(entry);
                 }
 
@@ -381,15 +266,6 @@ namespace Papercut.UI
             }
         }
 
-        /// <summary>
-        ///     The options_ click.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
         private void Options_Click(object sender, RoutedEventArgs e)
         {
             var ow = new OptionsWindow { Owner = this, ShowInTaskbar = false };
@@ -416,15 +292,6 @@ namespace Papercut.UI
             }
         }
 
-        /// <summary>
-        ///     The processor_ message received.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
         private void Processor_MessageReceived(object sender, MessageEventArgs e)
         {
             // This takes place on a background thread from the SMTP server
@@ -487,9 +354,6 @@ namespace Papercut.UI
             this.defaultHtmlView.Refresh();
         }
 
-        /// <summary>
-        ///     The set tabs.
-        /// </summary>
         private void SetTabs()
         {
             if (Settings.Default.ShowDefaultTab)
@@ -522,15 +386,7 @@ namespace Papercut.UI
             }
         }
 
-        /// <summary>
-        ///     The window_ closing.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
+
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             //Cancel close and minimize if setting is set to minimize on close
@@ -555,15 +411,6 @@ namespace Papercut.UI
             this.DeleteSelectedMessage();
         }
 
-        /// <summary>
-        ///     The forward button_ click.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
         private void forwardButton_Click(object sender, RoutedEventArgs e)
         {
             var entry = this.messagesList.SelectedItem as MessageEntry;
@@ -574,15 +421,6 @@ namespace Papercut.UI
             }
         }
 
-        /// <summary>
-        ///     The messages list_ selection changed.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
         private void messagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var setTitle = new Action<string>(
