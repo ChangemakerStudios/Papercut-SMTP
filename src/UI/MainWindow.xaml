@@ -28,35 +28,35 @@
                 </TextBlock>
             </Label>
             <TabControl Name="tabControl" Width="Auto" Height="Auto" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="2,42,2,2" Visibility="Visible">
-			<TabItem Header="Default" Name="defaultTab">
-				<Grid>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto" />
-						<RowDefinition />
-					</Grid.RowDefinitions>
-					<Grid Grid.Row="0">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="Auto" />
+                <TabItem Header="Message" Name="defaultTab">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition />
-						</Grid.ColumnDefinitions>
-						<Label Content="From" HorizontalAlignment="Right" />
-						<Label Grid.Row="1" Content="To" HorizontalAlignment="Right" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Label Content="From" HorizontalAlignment="Right" />
+                            <Label Grid.Row="1" Content="To" HorizontalAlignment="Right" />
                             <Label Grid.Row="2" Content="CC" HorizontalAlignment="Right" />
                             <Label Grid.Row="3" Content="Bcc" HorizontalAlignment="Right" />
                             <Label Grid.Row="4" Content="Date" HorizontalAlignment="Right" />
-						<Label Grid.Row="5" Content="Subject" HorizontalAlignment="Right" />
+                            <Label Grid.Row="5" Content="Subject" HorizontalAlignment="Right" />
 
-						<TextBox Grid.Column="1" Margin="2"
+                            <TextBox Grid.Column="1" Margin="2"
 								 Name="FromEdit" IsReadOnly="True" />
-						<TextBox Grid.Row="1" Grid.Column="1" Margin="2"
+                            <TextBox Grid.Row="1" Grid.Column="1" Margin="2"
 								 Name="ToEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
                             <TextBox Grid.Row="2" Grid.Column="1" Margin="2"
 								 Name="CCEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
@@ -64,23 +64,23 @@
 								 Name="BccEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
                             <TextBox Grid.Row="4" Grid.Column="1" Margin="2"
 								 Name="DateEdit" IsReadOnly="True" />
-						<TextBox Grid.Row="5" Grid.Column="1" Margin="2"
+                            <TextBox Grid.Row="5" Grid.Column="1" Margin="2"
 								 Name="SubjectEdit" IsReadOnly="True" />
+                        </Grid>
+                        <TextBox Grid.Row="1" Name="defaultBodyView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                        <Frame Grid.Row="1" Name="defaultHtmlView" />
                     </Grid>
-					<TextBox Grid.Row="1" Name="defaultBodyView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
-					<Frame Grid.Row="1" Name="defaultHtmlView" />
-                </Grid>
+                </TabItem>
+                <TabItem Header="Header">
+				<TextBox Name="headerView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
 			</TabItem>
-			<TabItem Header="Raw View">
-				<TextBox Name="rawView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
-			</TabItem>
-			<TabItem Header="Body View" Name="bodyViewTab">
-				<TextBox Name="bodyView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
-			</TabItem>
-			<TabItem Header="HTML View" Name="htmlViewTab" Visibility="Hidden">
-				<Frame Name="htmlView" />
-			</TabItem>
-		</TabControl>
+            <TabItem Header="Body" Name="bodyViewTab">
+                <TextBox Name="bodyView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+            </TabItem>
+            <TabItem Header="Text" Name="textViewTab" Visibility="Hidden">
+                <TextBox Name="textView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
+            </TabItem>
+            </TabControl>
         </Grid>
         <Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,12" Width="75" Name="forwardButton" IsEnabled="False" Click="forwardButton_Click" Grid.Row="1">Forward</Button>
 		<Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="85,0,0,12" Width="75" Name="deleteButton" IsEnabled="False" Click="deleteButton_Click" Grid.Row="1">Delete</Button>

@@ -26,7 +26,9 @@ namespace Papercut.UI
     using System.Diagnostics;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using System.Security.AccessControl;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -36,9 +38,11 @@ namespace Papercut.UI
     using System.Windows.Input;
     using System.Windows.Threading;
 
+    using MimeKit;
+
+    using Papercut.Mime;
     using Papercut.Properties;
     using Papercut.SMTP;
-    using Papercut.SMTP.Mime;
 
     using Application = System.Windows.Application;
     using ContextMenu = System.Windows.Forms.ContextMenu;
@@ -292,50 +296,52 @@ namespace Papercut.UI
         /// <param name="mailMessageEx">
         ///     The mail Message Ex.
         /// </param>
-        private void SetBrowserDocument(MailMessageEx mailMessageEx)
+        private void SetBrowserDocument(MimeMessage mailMessageEx)
         {
             const int Length = 256;
 
-            // double d = new Random().NextDouble();
+            var replaceEmbeddedImageFormats = new[]
+                                           {
+                                               @"cid:{0}", @"cid:'{0}'", @"cid:""{0}"""
+                                           };
+
             string tempPath = Path.GetTempPath();
             string htmlFile = Path.Combine(tempPath, "papercut.htm");
 
-            string htmlText = mailMessageEx.Body;
+            string htmlText = mailMessageEx.BodyParts.GetMainBodyTextPart().Text;
 
-            foreach (var attachment in mailMessageEx.Attachments)
+            foreach (var image in mailMessageEx.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
             {
-                if (string.IsNullOrEmpty(attachment.ContentId) || attachment.ContentStream == null)
-                {
-                    continue;
-                }
-
-                string fileName = Path.Combine(tempPath, attachment.ContentId);
+                string fileName = Path.Combine(tempPath, image.ContentId);
 
                 using (var fs = File.OpenWrite(fileName))
                 {
                     var buffer = new byte[Length];
-                    int bytesRead = attachment.ContentStream.Read(buffer, 0, Length);
 
-                    // write the required bytes
-                    while (bytesRead > 0)
+                    using (var content = image.ContentObject.Open())
                     {
-                        fs.Write(buffer, 0, bytesRead);
-                        bytesRead = attachment.ContentStream.Read(buffer, 0, Length);
+                        int bytesRead = content.Read(buffer, 0, Length);
+
+                        // write the required bytes
+                        while (bytesRead > 0)
+                        {
+                            fs.Write(buffer, 0, bytesRead);
+                            bytesRead = content.Read(buffer, 0, Length);
+                        }
                     }
 
                     fs.Close();
                 }
 
-                htmlText =
-                    htmlText.Replace(string.Format(@"cid:{0}", attachment.ContentId), attachment.ContentId)
-                            .Replace(string.Format(@"cid:'{0}'", attachment.ContentId), attachment.ContentId)
-                            .Replace(string.Format(@"cid:""{0}""", attachment.ContentId), attachment.ContentId);
+                htmlText = replaceEmbeddedImageFormats.Aggregate(
+                    htmlText,
+                    (current, format) => current.Replace(string.Format(format, image.ContentId), image.ContentId));
             }
 
             File.WriteAllText(htmlFile, htmlText, Encoding.Unicode);
 
-            this.htmlView.Navigate(new Uri(htmlFile));
-            this.htmlView.Refresh();
+            //this.htmlView.Navigate(new Uri(htmlFile));
+            //this.htmlView.Refresh();
 
             this.defaultHtmlView.Navigate(new Uri(htmlFile));
             this.defaultHtmlView.Refresh();
@@ -408,23 +414,22 @@ namespace Papercut.UI
             }
         }
 
+        private void SetWindowTitle(string title)
+        {
+            this.Subject.Content = title;
+            this.Subject.ToolTip = title;
+        }
+
         private void messagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var setTitle = new Action<string>(
-                t =>
-                {
-                    this.Subject.Content = t;
-                    this.Subject.ToolTip = t;
-                });
-
             // If there are no selected items, then disable the Delete button, clear the boxes, and return
             if (e.AddedItems.Count == 0)
             {
                 this.deleteButton.IsEnabled = false;
                 this.forwardButton.IsEnabled = false;
-                this.rawView.Text = string.Empty;
+                this.headerView.Text = string.Empty;
                 this.bodyView.Text = string.Empty;
-                this.htmlViewTab.Visibility = Visibility.Hidden;
+                this.textViewTab.Visibility = Visibility.Hidden;
                 this.tabControl.SelectedIndex = this.defaultTab.IsVisible ? 0 : 1;
                
                 // Clear fields
@@ -443,7 +448,7 @@ namespace Papercut.UI
                 this.defaultHtmlView.NavigationService.RemoveBackEntry();
                 //this.defaultHtmlView.Refresh();
 
-                setTitle("Papercut");
+                this.SetWindowTitle("Papercut");
 
                 return;
             }
@@ -454,7 +459,8 @@ namespace Papercut.UI
             {
                 this.tabControl.IsEnabled = false;
                 this.SpinAnimation.Visibility = Visibility.Visible;
-                setTitle("Loading...");
+
+                this.SetWindowTitle("Loading...");
 
                 if (this._currentMessageCancellationTokenSource != null)
                 {
@@ -463,98 +469,83 @@ namespace Papercut.UI
 
                 this._currentMessageCancellationTokenSource = new CancellationTokenSource();
 
-                Task.Factory.StartNew(() => { })
-                    .ContinueWith(
-                        task => File.ReadAllLines(mailFile, Encoding.ASCII),
-                        this._currentMessageCancellationTokenSource.Token,
-                        TaskContinuationOptions.NotOnCanceled,
-                        TaskScheduler.Default)
-                    .ContinueWith(
-                        task =>
-                        {
-                            // Load the MIME body
-                            var mimeReader = new MimeReader(task.Result);
-                            MimeEntity me = mimeReader.CreateMimeEntity();
+                var loadMessageTask = MessageHelper.LoadMessage(mailFile, this._currentMessageCancellationTokenSource.Token);
 
-                            return Tuple.Create(task.Result, me.ToMailMessageEx());
-                        },
-                        this._currentMessageCancellationTokenSource.Token,
-                        TaskContinuationOptions.NotOnCanceled,
-                        TaskScheduler.Default).ContinueWith(
-                            task =>
-                            {
-                                var resultTuple = task.Result;
-                                var mailMessageEx = resultTuple.Item2;
-
-                                // set the raw view...
-                                this.rawView.Text = string.Join("\n", resultTuple.Item1);
-
-                                this.bodyView.Text = mailMessageEx.Body;
-                                this.bodyViewTab.Visibility = Visibility.Visible;
-
-                                this.defaultBodyView.Text = mailMessageEx.Body;
-
-                                this.FromEdit.Text = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
-                                this.ToEdit.Text = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
-                                this.CCEdit.Text = mailMessageEx.CC.IfNotNull(s => s.ToString()) ?? string.Empty;
-                                this.BccEdit.Text = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
-                                this.DateEdit.Text = mailMessageEx.DeliveryDate.IfNotNull(s => s.ToString()) ?? string.Empty;
-
-                                var subject = mailMessageEx.Subject.IfNotNull(s => s.ToString()) ?? string.Empty;
-                                this.SubjectEdit.Text = subject;
-
-                                setTitle(subject);
-
-                                // If it is HTML, render it to the HTML view
-                                if (mailMessageEx.IsBodyHtml)
-                                {
-                                    if (task.IsCanceled)
-                                    {
-                                        return;
-                                    }
-
-                                    this.SetBrowserDocument(mailMessageEx);
-                                    this.htmlViewTab.Visibility = Visibility.Visible;
-
-                                    this.defaultHtmlView.Visibility = Visibility.Visible;
-                                    this.defaultBodyView.Visibility = Visibility.Collapsed;
-                                }
-                                else
-                                {
-                                    this.htmlViewTab.Visibility = Visibility.Hidden;
-                                    if (this.defaultTab.IsVisible)
-                                    {
-                                        this.tabControl.SelectedIndex = 0;
-                                    }
-                                    else if (Equals(this.tabControl.SelectedItem, this.htmlViewTab))
-                                    {
-                                        this.tabControl.SelectedIndex = 2;
-                                    }
-
-                                    this.defaultHtmlView.Visibility = Visibility.Collapsed;
-                                    this.defaultBodyView.Visibility = Visibility.Visible;
-                                }
-
-                                this.SpinAnimation.Visibility = Visibility.Collapsed;
-                                this.tabControl.IsEnabled = true;
-
-                                // Enable the delete and forward button
-                                this.deleteButton.IsEnabled = true;
-                                this.forwardButton.IsEnabled = true;
-                            },
-                            this._currentMessageCancellationTokenSource.Token,
-                            TaskContinuationOptions.NotOnCanceled,
-                            TaskScheduler.FromCurrentSynchronizationContext());
+                // show it...
+                loadMessageTask.ContinueWith(
+                    task => this.DisplayMimeMessage(task.Result),
+                    this._currentMessageCancellationTokenSource.Token,
+                    TaskContinuationOptions.NotOnCanceled,
+                    TaskScheduler.FromCurrentSynchronizationContext());
             }
             catch (Exception ex)
             {
                 Logger.WriteWarning(string.Format(@"Unable to Load Message ""{0}"": {1}", mailFile, ex));
 
-                setTitle("Papercut");
+                this.SetWindowTitle("Papercut");
                 this.tabControl.SelectedIndex = 1;
                 this.bodyViewTab.Visibility = Visibility.Hidden;
-                this.htmlViewTab.Visibility = Visibility.Hidden;
+                this.textViewTab.Visibility = Visibility.Hidden;
             }
+        }
+
+        private void DisplayMimeMessage(MimeMessage mailMessageEx)
+        {
+            this.headerView.Text = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
+
+            var parts = mailMessageEx.BodyParts.ToList();
+            var mainBody = parts.GetMainBodyTextPart();
+
+            this.bodyView.Text = mainBody.Text;
+            this.bodyViewTab.Visibility = Visibility.Visible;
+
+            this.defaultBodyView.Text = mainBody.Text;
+
+            this.FromEdit.Text = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
+            this.ToEdit.Text = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
+            this.CCEdit.Text = mailMessageEx.Cc.IfNotNull(s => s.ToString()) ?? string.Empty;
+            this.BccEdit.Text = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
+            this.DateEdit.Text = mailMessageEx.Date.IfNotNull(s => s.ToString()) ?? string.Empty;
+
+            var subject = mailMessageEx.Subject ?? string.Empty;
+            this.SubjectEdit.Text = subject;
+
+            this.SetWindowTitle(subject);
+
+            var isContentHtml = mainBody.IsContentHtml();
+            textViewTab.Visibility = Visibility.Hidden;
+
+            if (isContentHtml)
+            {
+                this.SetBrowserDocument(mailMessageEx);
+
+                var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
+                if (textPartNotHtml != null)
+                {
+                    textViewTab.Visibility = Visibility.Visible;
+                    textView.Text = textPartNotHtml.Text;
+
+                    if (Equals(this.tabControl.SelectedItem, this.textViewTab))
+                    {
+                        this.tabControl.SelectedIndex = 2;
+                    }
+                }
+            }
+
+            if (this.defaultTab.IsVisible)
+            {
+                this.tabControl.SelectedIndex = 0;
+            }
+
+            this.defaultHtmlView.Visibility = isContentHtml ? Visibility.Visible : Visibility.Collapsed;
+            this.defaultBodyView.Visibility = isContentHtml ? Visibility.Collapsed : Visibility.Visible;
+
+            this.SpinAnimation.Visibility = Visibility.Collapsed;
+            this.tabControl.IsEnabled = true;
+
+            // Enable the delete and forward button
+            this.deleteButton.IsEnabled = true;
+            this.forwardButton.IsEnabled = true;
         }
 
         #endregion
