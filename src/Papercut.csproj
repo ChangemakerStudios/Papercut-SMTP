@@ -122,6 +122,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Annotations.cs" />
+    <Compile Include="CodeContracts.cs" />
     <Compile Include="Mime\MessageHelper.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="UI\Spinner.xaml.cs">

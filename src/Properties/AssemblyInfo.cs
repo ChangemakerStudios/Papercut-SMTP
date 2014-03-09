@@ -8,9 +8,9 @@ using System.Windows;
 [assembly: AssemblyTitle("Papercut")]
 [assembly: AssemblyDescription("Standalone SMTP server designed for viewing received messages")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ken Robertson")]
+[assembly: AssemblyCompany("Ken Robertson & Jaben Cargman")]
 [assembly: AssemblyProduct("Papercut")]
-[assembly: AssemblyCopyright("Copyright © 2008 - 2013")]
+[assembly: AssemblyCopyright("Copyright © 2008 - 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -49,5 +49,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2013.12.10.0")]
-[assembly: AssemblyFileVersion("2013.12.10.0")]
+[assembly: AssemblyVersion("2014.3.8.0")]
+[assembly: AssemblyFileVersion("2014.3.8.0")]

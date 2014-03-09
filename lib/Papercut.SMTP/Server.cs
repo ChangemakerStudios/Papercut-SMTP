@@ -2,6 +2,7 @@
  * Papercut
  *
  *  Copyright © 2008 - 2012 Ken Robertson
+ *  Copyright © 2013 - 2014 Jaben Cargman
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,6 +17,7 @@
  *  limitations under the License.
  *  
  */
+
 namespace Papercut.SMTP
 {
     #region Using

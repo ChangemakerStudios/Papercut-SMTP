@@ -2,6 +2,7 @@
  * Papercut
  *
  *  Copyright © 2008 - 2012 Ken Robertson
+ *  Copyright © 2013 - 2014 Jaben Cargman
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,431 +20,434 @@
 
 namespace Papercut.SMTP
 {
-	#region Using
+    #region Using
 
-	using System;
-	using System.Net;
-	using System.Net.Sockets;
-	using System.Text;
+    using System;
+    using System.Net;
+    using System.Net.Sockets;
+    using System.Text;
 
-	#endregion
+    #endregion
 
-	/// <summary>
-	/// The connection.
-	/// </summary>
-	public class Connection
-	{
-		#region Constants and Fields
+    /// <summary>
+    ///     The connection.
+    /// </summary>
+    public class Connection
+    {
+        #region Constants
 
-		/// <summary>
-		/// The _buffer size.
-		/// </summary>
-		private const int _bufferSize = 64;
+        /// <summary>
+        ///     The _buffer size.
+        /// </summary>
+        private const int _bufferSize = 64;
 
-		/// <summary>
-		/// The _connection id.
-		/// </summary>
-		private readonly int _connectionId;
+        #endregion
 
-		/// <summary>
-		/// The _process data.
-		/// </summary>
-		private readonly ProcessData _processData;
+        #region Fields
 
-		/// <summary>
-		/// The _receive buffer.
-		/// </summary>
-		private readonly byte[] _receiveBuffer;
+        /// <summary>
+        ///     The _connection id.
+        /// </summary>
+        private readonly int _connectionId;
 
-		/// <summary>
-		/// The _client.
-		/// </summary>
-		private Socket _client;
+        /// <summary>
+        ///     The _process data.
+        /// </summary>
+        private readonly ProcessData _processData;
 
-		/// <summary>
-		/// The _connected.
-		/// </summary>
-		private bool _connected;
+        /// <summary>
+        ///     The _receive buffer.
+        /// </summary>
+        private readonly byte[] _receiveBuffer;
 
-		/// <summary>
-		/// The _last activity.
-		/// </summary>
-		private DateTime _lastActivity;
+        /// <summary>
+        ///     The _client.
+        /// </summary>
+        private Socket _client;
 
-		/// <summary>
-		/// The _send buffer.
-		/// </summary>
-		private byte[] _sendBuffer;
+        /// <summary>
+        ///     The _connected.
+        /// </summary>
+        private bool _connected;
 
-		/// <summary>
-		/// The _string buffer.
-		/// </summary>
-		private StringBuilder _stringBuffer;
+        /// <summary>
+        ///     The _last activity.
+        /// </summary>
+        private DateTime _lastActivity;
 
-		#endregion
+        /// <summary>
+        ///     The _send buffer.
+        /// </summary>
+        private byte[] _sendBuffer;
 
-		#region Constructors and Destructors
+        /// <summary>
+        ///     The _string buffer.
+        /// </summary>
+        private StringBuilder _stringBuffer;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Connection"/> class. 
-		/// </summary>
-		/// <param name="connectionID">
-		/// The connection id.
-		/// </param>
-		/// <param name="client">
-		/// The client.
-		/// </param>
-		/// <param name="processData">
-		/// The process data.
-		/// </param>
-		public Connection(int connectionID, Socket client, ProcessData processData)
-		{
-			// Initialize members
-			this._connectionId = connectionID;
-			this._client = client;
-			this._stringBuffer = new StringBuilder();
-			this._receiveBuffer = new byte[_bufferSize + 1];
-			this._processData = processData;
-			this._connected = true;
-			this._lastActivity = DateTime.Now;
-			this.Session = new SmtpSession();
-			this.BeginReceive();
+        #endregion
 
-			this.Send("220 {0}", Dns.GetHostName().ToLower());
-		}
+        #region Constructors and Destructors
 
-		#endregion
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Connection" /> class.
+        /// </summary>
+        /// <param name="connectionID">
+        ///     The connection id.
+        /// </param>
+        /// <param name="client">
+        ///     The client.
+        /// </param>
+        /// <param name="processData">
+        ///     The process data.
+        /// </param>
+        public Connection(int connectionID, Socket client, ProcessData processData)
+        {
+            // Initialize members
+            this._connectionId = connectionID;
+            this._client = client;
+            this._stringBuffer = new StringBuilder();
+            this._receiveBuffer = new byte[_bufferSize + 1];
+            this._processData = processData;
+            this._connected = true;
+            this._lastActivity = DateTime.Now;
+            this.Session = new SmtpSession();
+            this.BeginReceive();
 
-		#region Delegates
+            this.Send("220 {0}", Dns.GetHostName().ToLower());
+        }
 
-		/// <summary>
-		/// The process data.
-		/// </summary>
-		/// <param name="connection">
-		/// The connection.
-		/// </param>
-		/// <param name="data">
-		/// The data.
-		/// </param>
-		public delegate void ProcessData(Connection connection, object data);
+        #endregion
 
-		#endregion
+        #region Delegates
 
-		#region Public Events
+        /// <summary>
+        ///     The process data.
+        /// </summary>
+        /// <param name="connection">
+        ///     The connection.
+        /// </param>
+        /// <param name="data">
+        ///     The data.
+        /// </param>
+        public delegate void ProcessData(Connection connection, object data);
 
-		/// <summary>
-		/// The connection closed.
-		/// </summary>
-		public event EventHandler ConnectionClosed;
+        #endregion
 
-		#endregion
+        #region Public Events
 
-		#region Public Properties
+        /// <summary>
+        ///     The connection closed.
+        /// </summary>
+        public event EventHandler ConnectionClosed;
 
-		/// <summary>
-		/// Gets or sets Client.
-		/// </summary>
-		public Socket Client
-		{
-			get
-			{
-				return this._client;
-			}
+        #endregion
 
-			set
-			{
-				this._client = value;
-			}
-		}
+        #region Public Properties
 
-		/// <summary>
-		/// Gets or sets a value indicating whether Connected.
-		/// </summary>
-		public bool Connected
-		{
-			get
-			{
-				return this._connected;
-			}
+        /// <summary>
+        ///     Gets or sets Client.
+        /// </summary>
+        public Socket Client
+        {
+            get
+            {
+                return this._client;
+            }
 
-			set
-			{
-				this._connected = value;
-			}
-		}
+            set
+            {
+                this._client = value;
+            }
+        }
 
-		/// <summary>
-		/// Gets ConnectionId.
-		/// </summary>
-		public int ConnectionId
-		{
-			get
-			{
-				return this._connectionId;
-			}
-		}
+        /// <summary>
+        ///     Gets or sets a value indicating whether Connected.
+        /// </summary>
+        public bool Connected
+        {
+            get
+            {
+                return this._connected;
+            }
 
-		/// <summary>
-		/// Gets or sets LastActivity.
-		/// </summary>
-		public DateTime LastActivity
-		{
-			get
-			{
-				return this._lastActivity;
-			}
+            set
+            {
+                this._connected = value;
+            }
+        }
 
-			set
-			{
-				this._lastActivity = value;
-			}
-		}
+        /// <summary>
+        ///     Gets ConnectionId.
+        /// </summary>
+        public int ConnectionId
+        {
+            get
+            {
+                return this._connectionId;
+            }
+        }
 
-		/// <summary>
-		/// Gets or sets Session.
-		/// </summary>
-		public SmtpSession Session { get; set; }
+        /// <summary>
+        ///     Gets or sets LastActivity.
+        /// </summary>
+        public DateTime LastActivity
+        {
+            get
+            {
+                return this._lastActivity;
+            }
 
-		#endregion
+            set
+            {
+                this._lastActivity = value;
+            }
+        }
 
-		#region Public Methods and Operators
+        /// <summary>
+        ///     Gets or sets Session.
+        /// </summary>
+        public SmtpSession Session { get; set; }
 
-		/// <summary>
-		/// The close.
-		/// </summary>
-		public void Close()
-		{
-			this.Close(true);
-		}
+        #endregion
 
-		/// <summary>
-		/// The close.
-		/// </summary>
-		/// <param name="triggerEvent">
-		/// The trigger event.
-		/// </param>
-		public void Close(bool triggerEvent)
-		{
-			// Set our internal flag for no longer connected
-			this._connected = false;
+        #region Public Methods and Operators
 
-			// Close out the socket
-			if (this._client != null && this._client.Connected)
-			{
-				this._client.Shutdown(SocketShutdown.Both);
-				this._client.Close();
-			}
+        /// <summary>
+        ///     The close.
+        /// </summary>
+        public void Close()
+        {
+            this.Close(true);
+        }
 
-			if (triggerEvent)
-			{
-				this.OnConnectionClosed(new EventArgs());
-			}
+        /// <summary>
+        ///     The close.
+        /// </summary>
+        /// <param name="triggerEvent">
+        ///     The trigger event.
+        /// </param>
+        public void Close(bool triggerEvent)
+        {
+            // Set our internal flag for no longer connected
+            this._connected = false;
 
-			Logger.Write("Connection closed", this._connectionId);
-		}
+            // Close out the socket
+            if (this._client != null && this._client.Connected)
+            {
+                this._client.Shutdown(SocketShutdown.Both);
+                this._client.Close();
+            }
 
-		/// <summary>
-		/// The send.
-		/// </summary>
-		/// <param name="message">
-		/// The message.
-		/// </param>
-		/// <returns>
-		/// </returns>
-		public IAsyncResult Send(string message)
-		{
-			this._sendBuffer = Encoding.ASCII.GetBytes(message + "\r\n");
-			Logger.WriteDebug("Sending: " + message, this._connectionId);
-			return this._client.BeginSend(this._sendBuffer, 0, this._sendBuffer.Length, SocketFlags.None, SendCallback, this);
-		}
+            if (triggerEvent)
+            {
+                this.OnConnectionClosed(new EventArgs());
+            }
 
-		/// <summary>
-		/// The send.
-		/// </summary>
-		/// <param name="data">
-		/// The data.
-		/// </param>
-		/// <param name="args">
-		/// The args.
-		/// </param>
-		/// <returns>
-		/// </returns>
-		public IAsyncResult Send(string data, params object[] args)
-		{
-			return Send(string.Format(data, args));
-		}
+            Logger.Write("Connection closed", this._connectionId);
+        }
 
-		/// <summary>
-		/// The send.
-		/// </summary>
-		/// <param name="data">
-		/// The data.
-		/// </param>
-		public void Send(byte[] data)
-		{
-			this._sendBuffer = data;
-			Logger.WriteDebug("Sending byte array of " + data.Length + " bytes");
-			this._client.BeginSend(this._sendBuffer, 0, this._sendBuffer.Length, SocketFlags.None, SendCallback, this);
-		}
+        /// <summary>
+        ///     The send.
+        /// </summary>
+        /// <param name="message">
+        ///     The message.
+        /// </param>
+        /// <returns>
+        /// </returns>
+        public IAsyncResult Send(string message)
+        {
+            this._sendBuffer = Encoding.ASCII.GetBytes(message + "\r\n");
+            Logger.WriteDebug("Sending: " + message, this._connectionId);
+            return this._client.BeginSend(this._sendBuffer, 0, this._sendBuffer.Length, SocketFlags.None, SendCallback, this);
+        }
 
-		#endregion
+        /// <summary>
+        ///     The send.
+        /// </summary>
+        /// <param name="data">
+        ///     The data.
+        /// </param>
+        /// <param name="args">
+        ///     The args.
+        /// </param>
+        /// <returns>
+        /// </returns>
+        public IAsyncResult Send(string data, params object[] args)
+        {
+            return Send(string.Format(data, args));
+        }
 
-		#region Methods
+        /// <summary>
+        ///     The send.
+        /// </summary>
+        /// <param name="data">
+        ///     The data.
+        /// </param>
+        public void Send(byte[] data)
+        {
+            this._sendBuffer = data;
+            Logger.WriteDebug("Sending byte array of " + data.Length + " bytes");
+            this._client.BeginSend(this._sendBuffer, 0, this._sendBuffer.Length, SocketFlags.None, SendCallback, this);
+        }
 
-		/// <summary>
-		/// The on connection closed.
-		/// </summary>
-		/// <param name="e">
-		/// The e.
-		/// </param>
-		protected void OnConnectionClosed(EventArgs e)
-		{
-			if (this.ConnectionClosed != null)
-			{
-				this.ConnectionClosed(this, e);
-			}
-		}
+        #endregion
 
-		/// <summary>
-		/// The receive callback.
-		/// </summary>
-		/// <param name="result">
-		/// The result.
-		/// </param>
-		private static void ReceiveCallback(IAsyncResult result)
-		{
-			var connection = (Connection)result.AsyncState;
+        #region Methods
 
-			if (connection == null)
-			{
-				return;
-			}
+        /// <summary>
+        ///     The on connection closed.
+        /// </summary>
+        /// <param name="e">
+        ///     The e.
+        /// </param>
+        protected void OnConnectionClosed(EventArgs e)
+        {
+            if (this.ConnectionClosed != null)
+            {
+                this.ConnectionClosed(this, e);
+            }
+        }
 
-			try
-			{
-				// Ensure we're connected... this method gets called when closing a socket with a pending BeginReceive();
-				if (!connection._connected)
-				{
-					return;
-				}
+        /// <summary>
+        ///     The receive callback.
+        /// </summary>
+        /// <param name="result">
+        ///     The result.
+        /// </param>
+        private static void ReceiveCallback(IAsyncResult result)
+        {
+            var connection = (Connection)result.AsyncState;
 
-				// If the socket has been closed, then ensure we close it out
-				if (connection._client == null || !connection._client.Connected)
-				{
-					connection.Close();
-					return;
-				}
+            if (connection == null)
+            {
+                return;
+            }
 
-				// Receive the rest of the data
-				int bytes = connection._client.EndReceive(result);
-				connection._lastActivity = DateTime.Now;
+            try
+            {
+                // Ensure we're connected... this method gets called when closing a socket with a pending BeginReceive();
+                if (!connection._connected)
+                {
+                    return;
+                }
 
-				// Ensure we received bytes
-				if (bytes > 0)
-				{
-					// Check if the buffer is full of \0, usually means a disconnect
-					if (connection._receiveBuffer.Length == 64 && connection._receiveBuffer[0] == '\0')
-					{
-						connection.Close();
-						return;
-					}
+                // If the socket has been closed, then ensure we close it out
+                if (connection._client == null || !connection._client.Connected)
+                {
+                    connection.Close();
+                    return;
+                }
 
-					// Get the string data and append to buffer
-					string data = Encoding.ASCII.GetString(connection._receiveBuffer, 0, bytes);
+                // Receive the rest of the data
+                int bytes = connection._client.EndReceive(result);
+                connection._lastActivity = DateTime.Now;
 
-					if ((data.Length == 64) && (data[0] == '\0'))
-					{
-						connection.Close();
-						return;
-					}
+                // Ensure we received bytes
+                if (bytes > 0)
+                {
+                    // Check if the buffer is full of \0, usually means a disconnect
+                    if (connection._receiveBuffer.Length == 64 && connection._receiveBuffer[0] == '\0')
+                    {
+                        connection.Close();
+                        return;
+                    }
 
-					connection._stringBuffer.Append(data);
+                    // Get the string data and append to buffer
+                    string data = Encoding.ASCII.GetString(connection._receiveBuffer, 0, bytes);
 
-					// Check if the string buffer contains a line break
-					string line = connection._stringBuffer.ToString().Replace("\r", string.Empty);
+                    if ((data.Length == 64) && (data[0] == '\0'))
+                    {
+                        connection.Close();
+                        return;
+                    }
 
-					while (line.Contains("\n"))
-					{
-						// Take a snippet of the buffer, find the line, and process it
-						connection._stringBuffer = new StringBuilder(line.Substring(line.IndexOf("\n", System.StringComparison.Ordinal) + 1));
-						line = line.Substring(0, line.IndexOf("\n"));
-						Logger.WriteDebug(string.Format("Received: [{0}]", line), connection._connectionId);
-						connection._processData(connection, line);
-						line = connection._stringBuffer.ToString();
-					}
-				}
-				else
-				{
+                    connection._stringBuffer.Append(data);
+
+                    // Check if the string buffer contains a line break
+                    string line = connection._stringBuffer.ToString().Replace("\r", string.Empty);
+
+                    while (line.Contains("\n"))
+                    {
+                        // Take a snippet of the buffer, find the line, and process it
+                        connection._stringBuffer = new StringBuilder(line.Substring(line.IndexOf("\n", StringComparison.Ordinal) + 1));
+                        line = line.Substring(0, line.IndexOf("\n"));
+                        Logger.WriteDebug(string.Format("Received: [{0}]", line), connection._connectionId);
+                        connection._processData(connection, line);
+                        line = connection._stringBuffer.ToString();
+                    }
+                }
+                else
+                {
                     // nothing received, close and return;
-				    connection.Close();
-				    return;
-				}
+                    connection.Close();
+                    return;
+                }
 
+                // Set up to wait for more
+                if (!connection._connected)
+                {
+                    return;
+                }
 
-				// Set up to wait for more
-			    if (!connection._connected)
-			    {
-			        return;
-			    }
+                try
+                {
+                    connection.BeginReceive();
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Socket has been closed.
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError("Error in Connection.ReceiveCallback", ex, connection._connectionId);
+            }
+        }
 
-			    try
-			    {
-			        connection.BeginReceive();
-			    }
-			    catch (ObjectDisposedException)
-			    {
-			        // Socket has been closed.
-			        return;
-			    }
-			}
-			catch (Exception ex)
-			{
-				Logger.WriteError("Error in Connection.ReceiveCallback", ex, connection._connectionId);
-			}
-		}
+        /// <summary>
+        ///     The send callback.
+        /// </summary>
+        /// <param name="result">
+        ///     The result.
+        /// </param>
+        private static void SendCallback(IAsyncResult result)
+        {
+            var connection = (Connection)result.AsyncState;
 
-		/// <summary>
-		/// The send callback.
-		/// </summary>
-		/// <param name="result">
-		/// The result.
-		/// </param>
-		private static void SendCallback(IAsyncResult result)
-		{
-			var connection = (Connection)result.AsyncState;
+            try
+            {
+                // Ensure we're connected... this method gets called when closing a socket with a pending BeginReceive();
+                if (!connection._connected)
+                {
+                    return;
+                }
 
-			try
-			{
-				// Ensure we're connected... this method gets called when closing a socket with a pending BeginReceive();
-				if (!connection._connected)
-				{
-					return;
-				}
+                // If the socket has been closed, then ensure we close it out
+                if (connection._client == null || !connection._client.Connected)
+                {
+                    connection.Close();
+                    return;
+                }
 
-				// If the socket has been closed, then ensure we close it out
-				if (connection._client == null || !connection._client.Connected)
-				{
-					connection.Close();
-					return;
-				}
+                connection._client.EndSend(result);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError("Error in Connection.SendCallback", ex, connection._connectionId);
+            }
+        }
 
-				connection._client.EndSend(result);
-			}
-			catch (Exception ex)
-			{
-				Logger.WriteError("Error in Connection.SendCallback", ex, connection._connectionId);
-			}
-		}
+        /// <summary>
+        ///     The begin receive.
+        /// </summary>
+        private void BeginReceive()
+        {
+            // Begin to listen for data
+            this._client.BeginReceive(this._receiveBuffer, 0, _bufferSize, SocketFlags.None, ReceiveCallback, this);
+        }
 
-		/// <summary>
-		/// The begin receive.
-		/// </summary>
-		private void BeginReceive()
-		{
-			// Begin to listen for data
-			this._client.BeginReceive(this._receiveBuffer, 0, _bufferSize, SocketFlags.None, ReceiveCallback, this);
-		}
-
-		#endregion
-	}
+        #endregion
+    }
 }

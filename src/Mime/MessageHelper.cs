@@ -1,20 +1,21 @@
-﻿/* Yet Another Forum.NET
- * Copyright (C) 2006-2013 Jaben Cargman
- * http://www.yetanotherforum.net/
- * 
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+﻿/*  
+ * Papercut
+ *
+ *  Copyright © 2008 - 2012 Ken Robertson
+ *  Copyright © 2013 - 2014 Jaben Cargman
+ *  
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *  
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *  
  */
 
 namespace Papercut.Mime
@@ -35,20 +36,14 @@ namespace Papercut.Mime
     {
         public static async Task<MimeMessage> LoadMessage([NotNull] string mailFile, CancellationToken token)
         {
-            if (mailFile == null)
-            {
-                throw new ArgumentNullException("mailFile");
-            }
+            CodeContracts.VerifyNotNull(mailFile, "mailFile");
 
             return await Task.Run(() => MimeMessage.Load(ParserOptions.Default, mailFile, token), token);
         }
 
         public static bool IsContentHtml([NotNull] this TextPart textPart)
         {
-            if (textPart == null)
-            {
-                throw new ArgumentNullException("textPart");
-            }
+            CodeContracts.VerifyNotNull(textPart, "textPart");
 
             return textPart.ContentType.Matches("text", "html");
         }
@@ -60,10 +55,7 @@ namespace Papercut.Mime
 
         public static TextPart GetMainBodyTextPart([NotNull] this IEnumerable<MimePart> parts)
         {
-            if (parts == null)
-            {
-                throw new ArgumentNullException("parts");
-            }
+            CodeContracts.VerifyNotNull(parts, "parts");
 
             var mimeParts = parts.OfType<TextPart>().Where(s => !s.IsAttachment).ToArray();
 
