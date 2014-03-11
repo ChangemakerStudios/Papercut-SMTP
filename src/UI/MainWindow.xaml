@@ -1,24 +1,24 @@
 ﻿<Window x:Class="Papercut.UI.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  Title="Papercut" Height="413" Width="757" Closing="Window_Closing" Icon="/Papercut;component/App.ico" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" xmlns:my="clr-namespace:Papercut"
         xmlns:Ui="clr-namespace:Papercut.UI">
-	<Grid IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" ShowGridLines="False" Width="Auto">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="325*" />
-			<RowDefinition Height="47" />
-		</Grid.RowDefinitions>
-		<Grid.ColumnDefinitions >
-			<ColumnDefinition MinWidth="160" Width="150*" />
-			<ColumnDefinition Width="3" />
-			<ColumnDefinition Width="500*"  />
-		</Grid.ColumnDefinitions>
-		<GridSplitter 
-			ResizeDirection="Columns" 
-			Grid.Column="1"
-			Width="3" 
-			Height="Auto" 
-			HorizontalAlignment="Stretch" 
-			VerticalAlignment="Stretch" 
-			Margin="0"/>
+    <Grid IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" ShowGridLines="False" Width="Auto">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="325*" />
+            <RowDefinition Height="47" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions >
+            <ColumnDefinition MinWidth="160" Width="150*" />
+            <ColumnDefinition Width="3" />
+            <ColumnDefinition Width="500*"  />
+        </Grid.ColumnDefinitions>
+        <GridSplitter 
+            ResizeDirection="Columns" 
+            Grid.Column="1"
+            Width="3" 
+            Height="Auto" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" 
+            Margin="0"/>
         <ListBox Name="messagesList" SelectionChanged="messagesList_SelectionChanged" Width="Auto" Height="Auto" KeyDown="MessagesList_OnKeyDown" PreviewMouseDown="MessagesList_OnPreviewLeftMouseDown" PreviewMouseUp="MessagesList_OnPreviewMouseUp" PreviewMouseMove="MessagesList_OnPreviewMouseMove" SelectionMode="Extended" VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2" />
         <Grid Name="ContainerPanel" Grid.Column="2" Width="Auto" Height="Auto">
             <Ui:Spinner HorizontalAlignment="Right" x:Name="SpinAnimation" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsHitTestVisible="False" Panel.ZIndex="1000" UseLayoutRounding="False" Padding="2" BorderBrush="#FFADADAD" BorderThickness="1" Background="#FF383838" Opacity="0.75" Visibility="Collapsed" Margin="0,5,5,0" />
@@ -55,25 +55,25 @@
                             <Label Grid.Row="5" Content="Subject" HorizontalAlignment="Right" />
 
                             <TextBox Grid.Column="1" Margin="2"
-								 Name="FromEdit" IsReadOnly="True" />
+                                 Name="FromEdit" IsReadOnly="True" />
                             <TextBox Grid.Row="1" Grid.Column="1" Margin="2"
-								 Name="ToEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
+                                 Name="ToEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
                             <TextBox Grid.Row="2" Grid.Column="1" Margin="2"
-								 Name="CCEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
+                                 Name="CCEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
                             <TextBox Grid.Row="3" Grid.Column="1" Margin="2"
-								 Name="BccEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
+                                 Name="BccEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54" TextWrapping="Wrap" />
                             <TextBox Grid.Row="4" Grid.Column="1" Margin="2"
-								 Name="DateEdit" IsReadOnly="True" />
+                                 Name="DateEdit" IsReadOnly="True" />
                             <TextBox Grid.Row="5" Grid.Column="1" Margin="2"
-								 Name="SubjectEdit" IsReadOnly="True" />
+                                 Name="SubjectEdit" IsReadOnly="True" />
                         </Grid>
                         <TextBox Grid.Row="1" Name="defaultBodyView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
                         <Frame Grid.Row="1" Name="defaultHtmlView" />
                     </Grid>
                 </TabItem>
                 <TabItem Header="Header">
-				<TextBox Name="headerView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
-			</TabItem>
+                <TextBox Name="headerView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
+            </TabItem>
             <TabItem Header="Body" Name="bodyViewTab">
                 <TextBox Name="bodyView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
             </TabItem>
@@ -83,11 +83,11 @@
             </TabControl>
         </Grid>
         <Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,12" Width="75" Name="forwardButton" IsEnabled="False" Click="forwardButton_Click" Grid.Row="1">Forward</Button>
-		<Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="85,0,0,12" Width="75" Name="deleteButton" IsEnabled="False" Click="deleteButton_Click" Grid.Row="1">Delete</Button>
-		<Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,99,12" Width="75" Click="Options_Click" Grid.Column="2" Grid.Row="1">Options</Button>
+        <Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="85,0,0,12" Width="75" Name="deleteButton" IsEnabled="False" Click="deleteButton_Click" Grid.Row="1">Delete</Button>
+        <Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,99,12" Width="75" Click="Options_Click" Grid.Column="2" Grid.Row="1">Options</Button>
         <Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,19,12" Width="75" Click="Exit_Click" Grid.Column="2" Grid.Row="1" Content="Exit"/>
         <Image Height="42" Margin="6,0,0,3" Name="image1" Stretch="Fill" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="42" Source="/Papercut;component/App.ico" Grid.Row="1" Grid.Column="2" />
-		<Label Margin="52,0,0,13" Name="versionLabel" VerticalAlignment="Bottom" FontSize="10" Foreground="#696969" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left" Width="132">Papercut</Label>
-		<Label Margin="53,0,0,2" VerticalAlignment="Bottom" FontSize="9" Foreground="#2e74a6" Cursor="Hand" ToolTip="Click to visit the site" MouseUp="GoToSite" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left">http://papercut.codeplex.com/</Label>
+        <Label Margin="52,0,0,13" Name="versionLabel" VerticalAlignment="Bottom" FontSize="10" Foreground="#696969" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left" Width="132">Papercut</Label>
+        <Label Margin="53,0,0,2" VerticalAlignment="Bottom" FontSize="9" Foreground="#2e74a6" Cursor="Hand" ToolTip="Click to visit the site" MouseUp="GoToSite" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left">http://papercut.codeplex.com/</Label>
     </Grid>
 </Window>

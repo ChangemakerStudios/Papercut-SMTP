@@ -36,6 +36,7 @@ namespace Papercut.UI
     using System.Windows.Controls;
     using System.Windows.Forms;
     using System.Windows.Input;
+    using System.Windows.Navigation;
     using System.Windows.Threading;
 
     using MimeKit;
@@ -343,6 +344,7 @@ namespace Papercut.UI
             //this.htmlView.Navigate(new Uri(htmlFile));
             //this.htmlView.Refresh();
 
+            this.defaultHtmlView.NavigationUIVisibility = NavigationUIVisibility.Hidden;
             this.defaultHtmlView.Navigate(new Uri(htmlFile));
             this.defaultHtmlView.Refresh();
         }
