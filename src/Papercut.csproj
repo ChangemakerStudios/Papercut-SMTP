@@ -17,7 +17,7 @@
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>true</GenerateManifests>
     <ApplicationIcon>App.ico</ApplicationIcon>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
     <ManifestCertificateThumbprint>75C27D3478451E9C8C97BCE8D51657E4BDC9F29F</ManifestCertificateThumbprint>
     <ManifestKeyFile>Papercut_TemporaryKey.pfx</ManifestKeyFile>
     <SignManifests>false</SignManifests>
@@ -32,17 +32,19 @@
     <RestorePackages>true</RestorePackages>
     <PublishUrl>..\deploy\</PublishUrl>
     <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
     <UpdateMode>Foreground</UpdateMode>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>http://papercut.codeplex.com/releases/clickonce/</InstallUrl>
     <SupportUrl>http://papercut.codeplex.com</SupportUrl>
     <ProductName>Papercut</ProductName>
-    <AutorunEnabled>true</AutorunEnabled>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>publish.htm</WebPage>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>2014.3.8.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
