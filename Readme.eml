@@ -1,25 +1,25 @@
-From: "Jaben Cargman" <jaben@yetanotherforum.net>
-To: <Papercut@user.com>
-References: 
-In-Reply-To: 
+From: "Jaben" <jaben@test.com>
+To: <User@Papercut.com>
+References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net>
+In-Reply-To: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net>
 Subject: Welcome to Papercut!
-Date: Mon, 10 Jun 2013 22:01:37 -0400
-Message-ID: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net>
+Date: Mon, 10 Mar 2014 20:49:11 -0400
+Message-ID: <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com>
 MIME-Version: 1.0
 Content-Type: multipart/related;
-	boundary="----=_NextPart_000_0043_01CE6626.145A5DA0"
+	boundary="----=_NextPart_000_000B_01CF3CA2.318D8340"
 X-Mailer: Microsoft Outlook 15.0
-Thread-Index: AQJRC/AHxJuyB6UDfQVRIw7MrHVcQ5gqdnBw
+Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHoplL/bIg
 Content-Language: en-us
 
 This is a multipart message in MIME format.
 
-------=_NextPart_000_0043_01CE6626.145A5DA0
+------=_NextPart_000_000B_01CF3CA2.318D8340
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_001_0044_01CE6626.145A5DA0"
+	boundary="----=_NextPart_001_000C_01CF3CA2.318D8340"
 
 
-------=_NextPart_001_0044_01CE6626.145A5DA0
+------=_NextPart_001_000C_01CF3CA2.318D8340
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -27,6 +27,37 @@ Content-Transfer-Encoding: 7bit
 
 
 The Simple Desktop Email Receiver.
+
+
+Papercut v2014-3-8 Release Notes
+
+
+ 
+
+Change: Application now using the excellent MimeKit
+<https://github.com/jstedfast/MimeKit>  library. Faster and better support
+for mime types. 
+Change: Removed the the slow and annoying "raw view" and added "header
+view."
+Change: Removed the Redundant "Html" view and added the "Text" view.
+Change: Changed "Close" to "Exit" as the close or minimize window button has
+the close functionality. It's nice to be able to exit Papercut from the main
+app window.
+Feature: Thanks to a little assistance from this answer on stack overflow
+(http://stackoverflow.com/questions/14103159/previewmouseleftbuttondown-inte
+rferes-with-clic-selection) finally implemented that drag&drop message file
+feature. Now you can drag and drop a message file.
+Change: Saves and loads message in AppData\Papercut.
+Feature: Now you can delete a Message with the Delete Key (#9835) - message
+Content from last message is now correctly cleared (#9840)
+Feature: Changed Processing to Buffered File output for speed, etc. 
+Fixed: Issue #6026 -- Supports "Minimize on Close" option.
+Feature: Added CC and BCC to field list aka issue #9836.
+Feature: Added support for "dot stuffing", per RFC 2821, section 4.5.2.
+Fixed: FormatException on empty ReplyTo
+Fixed: fixed crash on start when there is an email with 0 byte.
+
+Fixed: Issue with email address parsing.
 
 
 Papercut v2013-6-10 Release Notes
@@ -76,7 +107,7 @@ submitted by jasonpenny)
 Fix: Out dated URL references (Issue #5457, patch submitted by billrob458)
 
 
-------=_NextPart_001_0044_01CE6626.145A5DA0
+------=_NextPart_001_000C_01CF3CA2.318D8340
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -92,7 +123,7 @@ charset=3Dus-ascii"><meta name=3DGenerator content=3D"Microsoft Word 15 =
 {behavior:url(#default#VML);}
 o\:* {behavior:url(#default#VML);}
 w\:* {behavior:url(#default#VML);}
-..shape {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
 </style><![endif]--><style><!--
 /* Font Definitions */
 @font-face
@@ -112,7 +143,7 @@ p.MsoNormal, li.MsoNormal, div.MsoNormal
 	{margin:0in;
 	margin-bottom:.0001pt;
 	font-size:11.0pt;
-	font-family:"Calibri","serif";}
+	font-family:"Calibri","sans-serif";}
 h1
 	{mso-style-priority:9;
 	mso-style-link:"Heading 1 Char";
@@ -199,30 +230,6 @@ span.Heading2Char
 	mso-style-link:"Heading 2";
 	font-family:"Calibri Light","sans-serif";
 	color:#2E74B5;}
-span.EmailStyle19
-	{mso-style-type:personal;
-	font-family:"Calibri","serif";
-	color:windowtext;}
-span.EmailStyle20
-	{mso-style-type:personal;
-	font-family:"Calibri","serif";
-	color:#1F497D;}
-span.EmailStyle21
-	{mso-style-type:personal;
-	font-family:"Calibri","serif";
-	color:#1F497D;}
-span.EmailStyle22
-	{mso-style-type:personal;
-	font-family:"Calibri","serif";
-	color:#1F497D;}
-span.EmailStyle23
-	{mso-style-type:personal;
-	font-family:"Calibri","serif";
-	color:#1F497D;}
-span.EmailStyle24
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","serif";
-	color:windowtext;}
 span.Heading3Char
 	{mso-style-name:"Heading 3 Char";
 	mso-style-priority:9;
@@ -242,7 +249,37 @@ span.Heading5Char
 	mso-style-link:"Heading 5";
 	font-family:"Calibri Light","sans-serif";
 	color:#2E74B5;}
-..MsoChpDefault
+span.EmailStyle22
+	{mso-style-type:personal;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+span.EmailStyle23
+	{mso-style-type:personal;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+span.EmailStyle24
+	{mso-style-type:personal;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+span.EmailStyle25
+	{mso-style-type:personal;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+span.EmailStyle26
+	{mso-style-type:personal;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+span.EmailStyle27
+	{mso-style-type:personal;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+span.apple-converted-space
+	{mso-style-name:apple-converted-space;}
+span.EmailStyle29
+	{mso-style-type:personal-reply;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+.MsoChpDefault
 	{mso-style-type:export-only;
 	font-size:10.0pt;}
 @page WordSection1
@@ -261,7 +298,38 @@ class=3DMsoNormal><img width=3D232 height=3D50 id=3D"Picture_x0020_1" =
 src=3D"cid:image001.png@01CE6622.AACEBDC0"><i><o:p></o:p></i></p><p =
 class=3DMsoNormal><i><span style=3D'font-size:10.0pt;font-family:"Segoe =
 UI","sans-serif";color:#A6A6A6'>The Simple Desktop Email =
-Receiver.<o:p></o:p></span></i></p><h1>Papercut v2013-6-10 Release =
+Receiver.<o:p></o:p></span></i></p><h1>Papercut v2014-3-8 Release =
+Notes<o:p></o:p></h1><p class=3DMsoNormal><o:p>&nbsp;</o:p></p><p =
+class=3DMsoNormal><span style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#253340'>Change: Application now using the =
+excellent <a href=3D"https://github.com/jstedfast/MimeKit">MimeKit</a> =
+library. Faster and better support for mime types.<span =
+class=3Dapple-converted-space>&nbsp;</span><br>Change: Removed the the =
+slow and annoying &quot;raw view&quot; and added &quot;header =
+view.&#8221;<br>Change: Removed the Redundant &quot;Html&quot; view and =
+added the &quot;Text&quot; view.<br>Change: Changed &quot;Close&quot; to =
+&quot;Exit&quot; as the close or minimize window button has the close =
+functionality. It's nice to be able to exit Papercut from the main app =
+window.<br>Feature: Thanks to a little assistance from this answer on =
+stack overflow (<a =
+href=3D"http://stackoverflow.com/questions/14103159/previewmouseleftbutto=
+ndown-interferes-with-clic-selection">http://stackoverflow.com/questions/=
+14103159/previewmouseleftbuttondown-interferes-with-clic-selection</a>) =
+finally implemented that drag&amp;drop message file feature. Now you can =
+drag and drop a message file.<br>Change: Saves and loads message in =
+AppData\Papercut.<br>Feature: Now you can delete a Message with the =
+Delete Key (#9835) - message Content from last message is now correctly =
+cleared (#9840)<br>Feature: Changed Processing to Buffered File output =
+for speed, etc.<span =
+class=3Dapple-converted-space>&nbsp;</span><br>Fixed: Issue #6026 -- =
+Supports &quot;Minimize on Close&quot; option.<br>Feature: Added CC and =
+BCC to field list aka issue #9836.<br>Feature: Added support for =
+&quot;dot stuffing&quot;, per RFC 2821, section 4.5.2.<br>Fixed: =
+FormatException on empty ReplyTo<br>Fixed: fixed crash on start when =
+there is an email with 0 byte.<o:p></o:p></span></p><p =
+class=3DMsoNormal><span style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#253340'>Fixed: Issue with email address =
+parsing.</span><o:p></o:p></p><h1>Papercut v2013-6-10 Release =
 Notes<o:p></o:p></h1><p class=3DMsoNormal><span =
 style=3D'font-size:10.0pt;font-family:"Segoe =
 UI","sans-serif"'><o:p>&nbsp;</o:p></span></p><p class=3DMsoNormal><span =
@@ -316,9 +384,9 @@ style=3D'font-size:10.0pt;font-family:"Segoe =
 UI","sans-serif";color:#404040'>Fix: Out dated URL references (Issue =
 #5457, patch submitted by =
 billrob458)<o:p></o:p></span></p></div></body></html>
-------=_NextPart_001_0044_01CE6626.145A5DA0--
+------=_NextPart_001_000C_01CF3CA2.318D8340--
 
-------=_NextPart_000_0043_01CE6626.145A5DA0
+------=_NextPart_000_000B_01CF3CA2.318D8340
 Content-Type: image/png;
 	name="image001.png"
 Content-Transfer-Encoding: base64
@@ -415,5 +483,5 @@ zdYgDbdu2s7tPCMls1KV3b9oNqutvnR4S1jyGfz8ZprWPQu/QpmMLRzu27kzdEbbubNvuDAuzO+T
 xDcCjTlbv7eJqs/fH5s+m22JLZgIH3Uz561HYXIfFUnCZzWJKFl6Zr8cO+ug38R+AP0B9HsEmvh9
 AdVRVo3Goq88r0C/FmAAgaQssR9aes8AAAAASUVORK5CYII=
 
-------=_NextPart_000_0043_01CE6626.145A5DA0--
+------=_NextPart_000_000B_01CF3CA2.318D8340--
 
