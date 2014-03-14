@@ -1,25 +1,25 @@
-From: "Jaben" <jaben@test.com>
-To: <User@Papercut.com>
-References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net>
-In-Reply-To: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net>
+From: "Testing" <jaben@test.me>
+To: <HappyUser@Papercut.com>
+References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net> <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com>
+In-Reply-To: <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com>
 Subject: Welcome to Papercut!
-Date: Mon, 10 Mar 2014 20:49:11 -0400
-Message-ID: <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com>
+Date: Thu, 13 Mar 2014 22:00:50 -0400
+Message-ID: <01a901cf3f29$39dfc8d0$ad9f5a70$@test.me>
 MIME-Version: 1.0
 Content-Type: multipart/related;
-	boundary="----=_NextPart_000_000B_01CF3CA2.318D8340"
+	boundary="----=_NextPart_000_01AA_01CF3F07.B2CF3A40"
 X-Mailer: Microsoft Outlook 15.0
-Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHoplL/bIg
+Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHogFmC3YJmUWY8uA=
 Content-Language: en-us
 
 This is a multipart message in MIME format.
 
-------=_NextPart_000_000B_01CF3CA2.318D8340
+------=_NextPart_000_01AA_01CF3F07.B2CF3A40
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_001_000C_01CF3CA2.318D8340"
+	boundary="----=_NextPart_001_01AB_01CF3F07.B2CF3A40"
 
 
-------=_NextPart_001_000C_01CF3CA2.318D8340
+------=_NextPart_001_01AB_01CF3F07.B2CF3A40
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,11 +28,24 @@ Content-Transfer-Encoding: 7bit
 
 The Simple Desktop Email Receiver.
 
+ 
+
+
+Papercut v2014-3-13 Release Notes
+
+
+
+Fixed: Converted back to .NET v4 so that XP users are supported.
+
+Fixed: Running papercut under SYSTEM account will now store messages in the
+application base directory instead of the \User\AppData\Papercut directory.
+
+Change: Using MimeKitLite instead of full MimeKit.
+
 
 Papercut v2014-3-8 Release Notes
 
 
- 
 
 Change: Application now using the excellent MimeKit
 <https://github.com/jstedfast/MimeKit>  library. Faster and better support
@@ -79,8 +92,6 @@ Fix: Messages lost when received very fast.
 
 Fix: Email encoding issues on display/Automatically detect message Encoding
 
- 
-
 
 Papercut v2010-3-3 Release Notes
 
@@ -107,7 +118,7 @@ submitted by jasonpenny)
 Fix: Out dated URL references (Issue #5457, patch submitted by billrob458)
 
 
-------=_NextPart_001_000C_01CF3CA2.318D8340
+------=_NextPart_001_01AB_01CF3F07.B2CF3A40
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -276,6 +287,10 @@ span.EmailStyle27
 span.apple-converted-space
 	{mso-style-name:apple-converted-space;}
 span.EmailStyle29
+	{mso-style-type:personal;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+span.EmailStyle30
 	{mso-style-type:personal-reply;
 	font-family:"Calibri","sans-serif";
 	color:#1F497D;}
@@ -298,10 +313,19 @@ class=3DMsoNormal><img width=3D232 height=3D50 id=3D"Picture_x0020_1" =
 src=3D"cid:image001.png@01CE6622.AACEBDC0"><i><o:p></o:p></i></p><p =
 class=3DMsoNormal><i><span style=3D'font-size:10.0pt;font-family:"Segoe =
 UI","sans-serif";color:#A6A6A6'>The Simple Desktop Email =
-Receiver.<o:p></o:p></span></i></p><h1>Papercut v2014-3-8 Release =
-Notes<o:p></o:p></h1><p class=3DMsoNormal><o:p>&nbsp;</o:p></p><p =
-class=3DMsoNormal><span style=3D'font-size:10.0pt;font-family:"Segoe =
-UI","sans-serif";color:#253340'>Change: Application now using the =
+Receiver.<o:p></o:p></span></i></p><p class=3DMsoNormal><i><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#A6A6A6'><o:p>&nbsp;</o:p></span></i></p><h1>Paper=
+cut v2014-3-13 Release Notes<o:p></o:p></h1><p =
+class=3DMsoNormal><br>Fixed: Converted back to .NET v4 so that XP users =
+are supported.<o:p></o:p></p><p class=3DMsoNormal>Fixed: Running =
+papercut under SYSTEM account will now store messages in the application =
+base directory instead of the \User\AppData\Papercut =
+directory.<o:p></o:p></p><p class=3DMsoNormal>Change: Using MimeKitLite =
+instead of full MimeKit.<o:p></o:p></p><h1>Papercut v2014-3-8 Release =
+Notes<o:p></o:p></h1><p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Segoe =
+UI","sans-serif";color:#253340'><br>Change: Application now using the =
 excellent <a href=3D"https://github.com/jstedfast/MimeKit">MimeKit</a> =
 library. Faster and better support for mime types.<span =
 class=3Dapple-converted-space>&nbsp;</span><br>Change: Removed the the =
@@ -353,8 +377,8 @@ UI","sans-serif";color:#404040'>Fix: Messages lost when received very =
 fast.<o:p></o:p></span></p><p class=3DMsoNormal><span =
 style=3D'font-size:10.0pt;font-family:"Segoe =
 UI","sans-serif";color:#404040'>Fix: Email encoding issues on =
-display/Automatically detect message Encoding<o:p></o:p></span></p><p =
-class=3DMsoNormal><o:p>&nbsp;</o:p></p><h1>Papercut v2010-3-3 Release =
+display/Automatically detect message =
+Encoding</span><o:p></o:p></p><h1>Papercut v2010-3-3 Release =
 Notes<o:p></o:p></h1><p class=3DMsoNormal><span =
 style=3D'font-size:10.0pt;font-family:"Segoe =
 UI","sans-serif"'><o:p>&nbsp;</o:p></span></p><p class=3DMsoNormal><span =
@@ -384,9 +408,9 @@ style=3D'font-size:10.0pt;font-family:"Segoe =
 UI","sans-serif";color:#404040'>Fix: Out dated URL references (Issue =
 #5457, patch submitted by =
 billrob458)<o:p></o:p></span></p></div></body></html>
-------=_NextPart_001_000C_01CF3CA2.318D8340--
+------=_NextPart_001_01AB_01CF3F07.B2CF3A40--
 
-------=_NextPart_000_000B_01CF3CA2.318D8340
+------=_NextPart_000_01AA_01CF3F07.B2CF3A40
 Content-Type: image/png;
 	name="image001.png"
 Content-Transfer-Encoding: base64
@@ -483,5 +507,5 @@ zdYgDbdu2s7tPCMls1KV3b9oNqutvnR4S1jyGfz8ZprWPQu/QpmMLRzu27kzdEbbubNvuDAuzO+T
 xDcCjTlbv7eJqs/fH5s+m22JLZgIH3Uz561HYXIfFUnCZzWJKFl6Zr8cO+ug38R+AP0B9HsEmvh9
 AdVRVo3Goq88r0C/FmAAgaQssR9aes8AAAAASUVORK5CYII=
 
-------=_NextPart_000_000B_01CF3CA2.318D8340--
+------=_NextPart_000_01AA_01CF3F07.B2CF3A40--
 
