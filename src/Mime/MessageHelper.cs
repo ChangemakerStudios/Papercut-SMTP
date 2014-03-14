@@ -34,17 +34,13 @@ namespace Papercut.Mime
 
     public static class MessageHelper
     {
-        public static async Task<MimeMessage> LoadMessage([NotNull] string mailFile, CancellationToken token)
+        public static Task<MimeMessage> LoadMessage([NotNull] string mailFile, CancellationToken token)
         {
-            CodeContracts.VerifyNotNull(mailFile, "mailFile");
-
-            return await Task.Run(() => MimeMessage.Load(ParserOptions.Default, mailFile, token), token);
+            return Task.Factory.StartNew(() => MimeMessage.Load(ParserOptions.Default, mailFile, token), token);
         }
 
         public static bool IsContentHtml([NotNull] this TextPart textPart)
         {
-            CodeContracts.VerifyNotNull(textPart, "textPart");
-
             return textPart.ContentType.Matches("text", "html");
         }
 
@@ -55,8 +51,6 @@ namespace Papercut.Mime
 
         public static TextPart GetMainBodyTextPart([NotNull] this IEnumerable<MimePart> parts)
         {
-            CodeContracts.VerifyNotNull(parts, "parts");
-
             var mimeParts = parts.OfType<TextPart>().Where(s => !s.IsAttachment).ToArray();
 
             // return html if available first
