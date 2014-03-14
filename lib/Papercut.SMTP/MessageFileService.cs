@@ -24,6 +24,7 @@ namespace Papercut.SMTP
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Security.Principal;
 
     public static class MessageFileService
     {
@@ -35,8 +36,6 @@ namespace Papercut.SMTP
 
         #region Static Fields
 
-        public static readonly IEnumerable<string> LoadPaths;
-
         public static readonly string DefaultSavePath;
 
         public static readonly IEnumerable<string> ExcludeFilesFromMigration =
@@ -45,32 +44,36 @@ namespace Papercut.SMTP
                 "readme.eml"
             };
 
+        public static readonly IEnumerable<string> LoadPaths;
+
         #endregion
 
         #region Constructors and Destructors
 
         static MessageFileService()
         {
-            var papercutBasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Papercut");
+            DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
 
-            try
+            var loadPaths = new List<string>
+                            {
+                                AppDomain.CurrentDomain.BaseDirectory
+                            };
+
+            bool isSystem;
+            using (var identity = WindowsIdentity.GetCurrent()) isSystem = identity.IsSystem;
+
+            if (!isSystem)
             {
-                if (!Directory.Exists(papercutBasePath))
+                var papercutBasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Papercut");
+
+                if (ValidatePathExists(papercutBasePath))
                 {
-                    Directory.CreateDirectory(papercutBasePath);
+                    loadPaths.Add(papercutBasePath);
+                    DefaultSavePath = papercutBasePath;
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.WriteError(string.Format("Failure accessing or creating directory: {0}", papercutBasePath), ex);
-            }
 
-            DefaultSavePath = papercutBasePath;
-            LoadPaths = new List<string>
-                        {
-                            AppDomain.CurrentDomain.BaseDirectory,
-                            DefaultSavePath
-                        };
+            LoadPaths = loadPaths;
 
             // attempt migration for previous versions...
             TryMigrateMessages();
@@ -80,23 +83,23 @@ namespace Papercut.SMTP
 
         #region Public Methods and Operators
 
+        public static bool DeleteMessage(MessageEntry entry)
+        {
+            // Delete the file and remove the entry
+            if (!File.Exists(entry.File))
+            {
+                return false;
+            }
+
+            File.Delete(entry.File);
+            return true;
+        }
+
         public static IEnumerable<MessageEntry> LoadMessages()
         {
             var files = LoadPaths.SelectMany(p => Directory.GetFiles(p, MessageFileSearchPattern));
 
             return files.Select(file => new MessageEntry(file));
-        }
-
-        public static bool DeleteMessage(MessageEntry entry)
-        {
-            // Delete the file and remove the entry
-            if (File.Exists(entry.File))
-            {
-                File.Delete(entry.File);
-                return true;
-            }
-
-            return false;
         }
 
         public static string SaveMessage(IList<string> output)
@@ -127,6 +130,30 @@ namespace Papercut.SMTP
             return file;
         }
 
+        public static bool ValidatePathExists(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            try
+            {
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError(string.Format("Failure accessing or creating directory: {0}", path), ex);
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region Methods
@@ -136,6 +163,12 @@ namespace Papercut.SMTP
             try
             {
                 var current = AppDomain.CurrentDomain.BaseDirectory;
+
+                if (current == DefaultSavePath)
+                {
+                    // no migration required
+                    return;
+                }
 
                 string[] files = Directory
                     .GetFiles(current, MessageFileSearchPattern)
