@@ -593,7 +593,7 @@ namespace Papercut.UI
                 var entry = parent.GetObjectDataFromPoint<MessageEntry>(this._dragStartPoint.Value);
 
                 // If the data is not null then start the drag drop operation
-                if (entry == null && !string.IsNullOrWhiteSpace(entry.File))
+                if (entry != null && !string.IsNullOrWhiteSpace(entry.File))
                 {
                     var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
                     DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);
