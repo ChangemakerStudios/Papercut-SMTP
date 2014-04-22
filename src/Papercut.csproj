@@ -272,7 +272,7 @@
       <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
       <Name>Papercut.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Service\Papercut.Service\Papercut.Service.csproj">
+    <ProjectReference Include="..\Papercut.Service\Papercut.Service.csproj">
       <Project>{bddbcfd4-a1bd-4469-acbd-e676e1723252}</Project>
       <Name>Papercut.Service</Name>
     </ProjectReference>
