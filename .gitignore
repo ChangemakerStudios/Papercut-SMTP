@@ -9,3 +9,4 @@ Papercut.ncrunchsolution
 Papercut.ncrunchsolution.*	  
 /.hg
 /packages
+*.hgignore
