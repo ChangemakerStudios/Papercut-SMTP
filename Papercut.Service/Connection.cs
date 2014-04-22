@@ -37,17 +37,17 @@ namespace Papercut.Service
     {
         #region Constants
 
-        private const int BufferSize = 64;
+        const int BufferSize = 64;
 
         #endregion
 
         #region Fields
 
-        private readonly byte[] _receiveBuffer;
+        readonly byte[] _receiveBuffer;
 
-        private byte[] _sendBuffer;
+        byte[] _sendBuffer;
 
-        private StringBuilder _stringBuffer;
+        StringBuilder _stringBuffer;
 
         #endregion
 
@@ -56,16 +56,16 @@ namespace Papercut.Service
         public Connection(int connectionID, Socket client, IDataProcessor dataProcessor)
         {
             // Initialize members
-            this.ConnectionId = connectionID;
-            this.Client = client;
-            this._stringBuffer = new StringBuilder();
-            this._receiveBuffer = new byte[BufferSize + 1];
-            this.DataProcessor = dataProcessor;
-            this.Connected = true;
-            this.LastActivity = DateTime.Now;
-            this.BeginReceive();
+            ConnectionId = connectionID;
+            Client = client;
+            _stringBuffer = new StringBuilder();
+            _receiveBuffer = new byte[BufferSize + 1];
+            DataProcessor = dataProcessor;
+            Connected = true;
+            LastActivity = DateTime.Now;
+            BeginReceive();
 
-            this.DataProcessor.Begin(this);
+            DataProcessor.Begin(this);
         }
 
         #endregion
@@ -80,6 +80,11 @@ namespace Papercut.Service
         #endregion
 
         #region Public Properties
+
+        /// <summary>
+        ///     Gets the data processor
+        /// </summary>
+        public IDataProcessor DataProcessor { get; protected set; }
 
         /// <summary>
         ///     Gets or sets Client.
@@ -97,14 +102,9 @@ namespace Papercut.Service
         public int ConnectionId { get; protected set; }
 
         /// <summary>
-        /// Gets the data processor
-        /// </summary>
-        public IDataProcessor DataProcessor { get; protected set; }
-
-        /// <summary>
         ///     Gets or sets LastActivity.
         /// </summary>
-        public DateTime LastActivity { get; protected set; }
+        public DateTime LastActivity { get; set; }
 
         #endregion
 
@@ -119,21 +119,21 @@ namespace Papercut.Service
         public void Close(bool triggerEvent = true)
         {
             // Set our internal flag for no longer connected
-            this.Connected = false;
+            Connected = false;
 
             // Close out the socket
-            if (this.Client != null && this.Client.Connected)
+            if (Client != null && Client.Connected)
             {
-                this.Client.Shutdown(SocketShutdown.Both);
-                this.Client.Close();
+                Client.Shutdown(SocketShutdown.Both);
+                Client.Close();
             }
 
             if (triggerEvent)
             {
-                this.OnConnectionClosed(new EventArgs());
+                OnConnectionClosed(new EventArgs());
             }
 
-            Logger.Write("Connection closed", this.ConnectionId);
+            Logger.Write("Connection closed", ConnectionId);
         }
 
         /// <summary>
@@ -146,9 +146,9 @@ namespace Papercut.Service
         /// </returns>
         public IAsyncResult Send(string message)
         {
-            this._sendBuffer = Encoding.ASCII.GetBytes(message + "\r\n");
-            Logger.WriteDebug("Sending: " + message, this.ConnectionId);
-            return this.Client.BeginSend(this._sendBuffer, 0, this._sendBuffer.Length, SocketFlags.None, SendCallback, this);
+            _sendBuffer = Encoding.ASCII.GetBytes(message + "\r\n");
+            Logger.WriteDebug("Sending: " + message, ConnectionId);
+            return Client.BeginSend(_sendBuffer, 0, _sendBuffer.Length, SocketFlags.None, SendCallback, this);
         }
 
         /// <summary>
@@ -159,9 +159,9 @@ namespace Papercut.Service
         /// </param>
         public IAsyncResult Send(byte[] data)
         {
-            this._sendBuffer = data;
+            _sendBuffer = data;
             Logger.WriteDebug("Sending byte array of " + data.Length + " bytes");
-            return this.Client.BeginSend(this._sendBuffer, 0, this._sendBuffer.Length, SocketFlags.None, SendCallback, this);
+            return Client.BeginSend(_sendBuffer, 0, _sendBuffer.Length, SocketFlags.None, SendCallback, this);
         }
 
         #endregion
@@ -176,9 +176,9 @@ namespace Papercut.Service
         /// </param>
         protected void OnConnectionClosed(EventArgs e)
         {
-            if (this.ConnectionClosed != null)
+            if (ConnectionClosed != null)
             {
-                this.ConnectionClosed(this, e);
+                ConnectionClosed(this, e);
             }
         }
 
@@ -188,7 +188,7 @@ namespace Papercut.Service
         /// <param name="result">
         ///     The result.
         /// </param>
-        private static void ReceiveCallback(IAsyncResult result)
+        static void ReceiveCallback(IAsyncResult result)
         {
             var connection = (Connection)result.AsyncState;
 
@@ -286,7 +286,7 @@ namespace Papercut.Service
         /// <param name="result">
         ///     The result.
         /// </param>
-        private static void SendCallback(IAsyncResult result)
+        static void SendCallback(IAsyncResult result)
         {
             var connection = (Connection)result.AsyncState;
 
@@ -316,10 +316,10 @@ namespace Papercut.Service
         /// <summary>
         ///     The begin receive.
         /// </summary>
-        private void BeginReceive()
+        void BeginReceive()
         {
             // Begin to listen for data
-            this.Client.BeginReceive(this._receiveBuffer, 0, BufferSize, SocketFlags.None, ReceiveCallback, this);
+            Client.BeginReceive(_receiveBuffer, 0, BufferSize, SocketFlags.None, ReceiveCallback, this);
         }
 
         #endregion

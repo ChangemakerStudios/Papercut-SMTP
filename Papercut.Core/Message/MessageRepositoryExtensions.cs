@@ -36,7 +36,7 @@ namespace Papercut.Core.Message
                 throw new ArgumentNullException("entry");
             }
 
-            return File.ReadAllBytes(entry.File);
+            return messageRepository.GetMessage(entry.File);
         }
     }
 }

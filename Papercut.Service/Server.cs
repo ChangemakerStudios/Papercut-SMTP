@@ -38,50 +38,23 @@ namespace Papercut.Service
     {
         #region Fields
 
-        /// <summary>
-        ///     The _connections.
-        /// </summary>
-        private readonly Dictionary<int, Connection> _connections = new Dictionary<int, Connection>();
+        readonly Dictionary<int, IConnection> _connections = new Dictionary<int, IConnection>();
 
-        /// <summary>
-        ///     The _address.
-        /// </summary>
-        private IPAddress _address;
+        IPAddress _address;
 
-        /// <summary>
-        ///     The connection id.
-        /// </summary>
-        private int _connectionID;
+        int _connectionID;
 
-        /// <summary>
-        ///     The _is ready.
-        /// </summary>
-        private bool _isReady;
+        bool _isReady;
 
-        /// <summary>
-        ///     The _is running.
-        /// </summary>
-        private bool _isRunning;
+        bool _isRunning;
 
-        /// <summary>
-        ///     The _is starting.
-        /// </summary>
-        private bool _isStarting;
+        bool _isStarting;
 
-        /// <summary>
-        ///     The _listener.
-        /// </summary>
-        private Socket _listener;
+        Socket _listener;
 
-        /// <summary>
-        ///     The _port.
-        /// </summary>
-        private int _port;
+        int _port;
 
-        /// <summary>
-        ///     The timeout thread.
-        /// </summary>
-        private Thread _timeoutThread;
+        Thread _timeoutThread;
 
         #endregion
 
@@ -95,28 +68,16 @@ namespace Papercut.Service
             }
         }
 
-        /// <summary>
-        /// The start.
-        /// </summary>
-        /// <param name="ip">
-        /// The ip.
-        /// </param>
-        /// <param name="port">
-        /// The port.
-        /// </param>
         public void Listen(string ip, int port)
         {
-            this.Stop();
-            this.SetEndpoint(ip, port);
-            this.Start();
+            Stop();
+            SetEndpoint(ip, port);
+            Start();
         }
 
-        /// <summary>
-        ///     The stop.
-        /// </summary>
         public void Stop()
         {
-            if (!this._isRunning)
+            if (!_isRunning)
             {
                 return;
             }
@@ -126,16 +87,16 @@ namespace Papercut.Service
             try
             {
                 // Turn off the running bool
-                this._isRunning = false;
+                _isRunning = false;
 
                 // Stop the listener
-                this._listener.Close();
+                _listener.Close();
 
                 // Stop the session timeout thread
-                this._timeoutThread.Join();
+                _timeoutThread.Join();
 
                 // Close all open connections
-                foreach (Connection connection in this._connections.Values.Where(connection => connection != null))
+                foreach (var connection in _connections.Values.Where(connection => connection != null))
                 {
                     connection.Close(false);
                 }
@@ -150,25 +111,22 @@ namespace Papercut.Service
 
         #region Methods
 
-        /// <summary>
-        /// The create listener.
-        /// </summary>
         protected void CreateListener()
         {
             try
             {
                 // If the listener isn't null, close before rebinding
-                if (this._listener != null)
+                if (_listener != null)
                 {
-                    this._listener.Close();
+                    _listener.Close();
                 }
 
                 // Bind to the listening port
-                this._listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                this._listener.Bind(new IPEndPoint(this._address, this._port));
-                this._listener.Listen(10);
-                this._listener.BeginAccept(this.OnClientAccept, null);
-                Logger.Write(string.Format("Server Ready - Listening for new connections {0}:{1}...", this._address, this._port));
+                _listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                _listener.Bind(new IPEndPoint(_address, _port));
+                _listener.Listen(10);
+                _listener.BeginAccept(OnClientAccept, null);
+                Logger.Write(string.Format("Server Ready - Listening for new connections {0}:{1}...", _address, _port));
             }
             catch (Exception ex)
             {
@@ -177,45 +135,30 @@ namespace Papercut.Service
             }
         }
 
-        /// <summary>
-        /// The set endpoint.
-        /// </summary>
-        /// <param name="ip">
-        /// The ip.
-        /// </param>
-        /// <param name="port">
-        /// The port.
-        /// </param>
         protected void SetEndpoint(string ip, int port)
         {
             // Load IP/Port settings
             if (string.IsNullOrWhiteSpace(ip) || string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase))
             {
-                this._address = IPAddress.Any;
+                _address = IPAddress.Any;
             }
             else
             {
-                this._address = IPAddress.Parse(ip);
+                _address = IPAddress.Parse(ip);
             }
 
-            this._port = port;
+            _port = port;
         }
 
-        /// <summary>
-        /// The on client accept.
-        /// </summary>
-        /// <param name="ar">
-        /// The ar.
-        /// </param>
-        private void OnClientAccept(IAsyncResult ar)
+        void OnClientAccept(IAsyncResult ar)
         {
             try
             {
-                Socket clientSocket = this._listener.EndAccept(ar);
-                Interlocked.Increment(ref this._connectionID);
-                var connection = new Connection(this._connectionID, clientSocket, new SmtpProcessor());
-                connection.ConnectionClosed += this.connection_ConnectionClosed;
-                this._connections.Add(connection.ConnectionId, connection);
+                Socket clientSocket = _listener.EndAccept(ar);
+                Interlocked.Increment(ref _connectionID);
+                var connection = new Connection(_connectionID, clientSocket, new SmtpProcessor());
+                connection.ConnectionClosed += connection_ConnectionClosed;
+                _connections.Add(connection.ConnectionId, connection);
             }
             catch (ObjectDisposedException)
             {
@@ -234,11 +177,11 @@ namespace Papercut.Service
             }
             finally
             {
-                if (this._isRunning)
+                if (_isRunning)
                 {
                     try
                     {
-                        this._listener.BeginAccept(this.OnClientAccept, null);
+                        _listener.BeginAccept(OnClientAccept, null);
                     }
                     catch
                     {
@@ -248,27 +191,24 @@ namespace Papercut.Service
             }
         }
 
-        /// <summary>
-        ///     The session timeout watcher.
-        /// </summary>
-        private void SessionTimeoutWatcher()
+        void SessionTimeoutWatcher()
         {
             int collectInterval = 5 * 60 - 1; // How often to collect garbage... every 5 mins
             int statusInterval = 20 * 60 - 1; // How often to print status... every 20 mins
             int collectCount = 0;
             int statusCount = 0;
 
-            while (this._isRunning)
+            while (_isRunning)
             {
                 try
                 {
                     // Check if the program is up and ready to receive connections
-                    if (!this._isReady)
+                    if (!_isReady)
                     {
                         // If it is already trying to start, don't have it retry yet
-                        if (!this._isStarting)
+                        if (!_isStarting)
                         {
-                            this.Start();
+                            Start();
                         }
                     }
                     else
@@ -277,17 +217,17 @@ namespace Papercut.Service
                         if (collectCount >= collectInterval)
                         {
                             // Get the number of current connections
-                            var keys = new int[this._connections.Count];
-                            this._connections.Keys.CopyTo(keys, 0);
+                            var keys = new int[_connections.Count];
+                            _connections.Keys.CopyTo(keys, 0);
 
                             // Loop through the connections
                             foreach (int key in keys)
                             {
                                 // If they have been idle for too long, disconnect them
-                                if (DateTime.Now < this._connections[key].LastActivity.AddMinutes(20))
+                                if (DateTime.Now < _connections[key].LastActivity.AddMinutes(20))
                                 {
-                                    Logger.Write("Session timeout, disconnecting", this._connections[key].ConnectionId);
-                                    this._connections[key].Close();
+                                    Logger.Write("Session timeout, disconnecting", _connections[key].ConnectionId);
+                                    _connections[key].Close();
                                 }
                             }
 
@@ -304,7 +244,10 @@ namespace Papercut.Service
                         {
                             double memusage = (double)Process.GetCurrentProcess().WorkingSet64 / 1024 / 1024;
                             Logger.Write(
-                                string.Format("Current status: {0} connections, {1}mb memory used", this._connections.Count, memusage.ToString("0.#")));
+                                string.Format(
+                                    "Current status: {0} connections, {1}mb memory used",
+                                    _connections.Count,
+                                    memusage.ToString("0.#")));
                             statusCount = 0;
                         }
                         else
@@ -322,31 +265,28 @@ namespace Papercut.Service
             }
         }
 
-        /// <summary>
-        ///     The internal start.
-        /// </summary>
-        private void Start()
+        void Start()
         {
             Logger.Write("Starting server...");
 
             try
             {
                 // Set it as starting
-                this._isRunning = true;
-                this._isStarting = true;
+                _isRunning = true;
+                _isStarting = true;
 
                 // Start the thread to watch for inactive connections
-                if (this._timeoutThread == null)
+                if (_timeoutThread == null)
                 {
-                    this._timeoutThread = new Thread(this.SessionTimeoutWatcher);
-                    this._timeoutThread.Start();
+                    _timeoutThread = new Thread(SessionTimeoutWatcher);
+                    _timeoutThread.Start();
                 }
 
                 // Create and start new listener socket
-                this.CreateListener();
+                CreateListener();
 
                 // Set it as ready
-                this._isReady = true;
+                _isReady = true;
             }
             catch (Exception ex)
             {
@@ -356,35 +296,26 @@ namespace Papercut.Service
             finally
             {
                 // Done starting
-                this._isStarting = false;
+                _isStarting = false;
             }
         }
 
-        /// <summary>
-        /// The connection_ connection closed.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        private void connection_ConnectionClosed(object sender, EventArgs e)
+        void connection_ConnectionClosed(object sender, EventArgs e)
         {
-            var connection = sender as Connection;
+            var connection = sender as IConnection;
             if (connection == null)
             {
                 return;
             }
 
-            this._connections.Remove(connection.ConnectionId);
+            _connections.Remove(connection.ConnectionId);
         }
 
         #endregion
 
         public void Dispose()
         {
-            this.Stop();
+            Stop();
         }
     }
 }

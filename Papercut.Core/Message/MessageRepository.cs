@@ -24,6 +24,9 @@ namespace Papercut.Core.Message
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reactive.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using Papercut.Core.Configuration;
 
@@ -94,7 +97,74 @@ namespace Papercut.Core.Message
 
         void OnChanged(object sender, FileSystemEventArgs e)
         {
-            NewMessage(this, new NewMessageEventArgs(new MessageEntry(e.FullPath)));
+            Task.Factory.StartNew(
+                () =>
+                {
+                    var info = new FileInfo(e.FullPath);
+                    int retryCount = 0;
+
+                    while (!CanOpenFile(info))
+                    {
+                        Thread.Sleep(500);
+                        if (++retryCount > 30)
+                        {
+                            // TODO: log here...
+                            break;
+                        }
+                    }
+
+                    return info;
+                }).ContinueWith((r) => NewMessage(this, new NewMessageEventArgs(new MessageEntry(r.Result))));
+        }
+
+        bool CanOpenFile(FileInfo file)
+        {
+            try
+            {
+                using (var fileStream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                {
+                    fileStream.Close();
+                }
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        bool TryReadFile(FileInfo file, out byte[] fileBytes)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException("file");
+            }
+
+            fileBytes = null;
+
+            try
+            {
+                using (var fileStream = file.OpenRead())
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        fileStream.CopyTo(ms);
+                        fileBytes = ms.ToArray();
+                    }
+
+                    fileStream.Close();
+                }
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                return false;
+            }
+
+            return true;
         }
 
         public bool DeleteMessage(MessageEntry entry)
@@ -111,7 +181,26 @@ namespace Papercut.Core.Message
 
         public byte[] GetMessage(string file)
         {
-            return File.ReadAllBytes(file);
+            if (!File.Exists(file))
+            {
+                throw new IOException(string.Format("File {0} Does Not Exist", file));
+            }
+
+            var info = new FileInfo(file);
+            byte[] data;
+            int retryCount = 0;
+
+            while (!TryReadFile(info, out data))
+            {
+                Thread.Sleep(500);
+
+                if (++retryCount > 10)
+                {
+                    throw new IOException(string.Format("Cannot Load File {0} After 5 Seconds", file));
+                }
+            }
+
+            return data;
         }
 
         public IList<MessageEntry> LoadMessages()

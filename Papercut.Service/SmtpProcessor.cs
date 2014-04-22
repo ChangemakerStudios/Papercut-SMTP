@@ -52,9 +52,9 @@ namespace Papercut.Service
 
         public void Begin(IConnection connection)
         {
-            this.Connection = connection;
-            this.Session = new SmtpSession();
-            this.Connection.Send("220 {0}", Dns.GetHostName().ToLower());
+            Connection = connection;
+            Session = new SmtpSession();
+            Connection.Send("220 {0}", Dns.GetHostName().ToLower());
         }
 
         public void Process(object data)
@@ -63,8 +63,8 @@ namespace Papercut.Service
 
             if (bytes != null)
             {
-                this.Session.Message = bytes;
-                this.Connection.Send("250 OK");
+                Session.Message = bytes;
+                Connection.Send("250 OK");
             }
             else
             {
@@ -75,57 +75,57 @@ namespace Papercut.Service
                 switch (parts[0].ToUpper())
                 {
                     case "HELO":
-                        this.HELO(parts);
+                        HELO(parts);
                         break;
 
                     case "EHLO":
-                        this.EHLO(parts);
+                        EHLO(parts);
                         break;
 
                     case "SEND":
                     case "SOML":
                     case "SAML":
                     case "MAIL":
-                        this.MAIL(parts);
+                        MAIL(parts);
                         break;
 
                     case "RCPT":
-                        this.RCPT(parts);
+                        RCPT(parts);
                         break;
 
                     case "DATA":
-                        this.DATA();
+                        DATA();
                         break;
 
                     case "VRFY":
-                        this.Connection.Send("252 Cannot VRFY user, but will accept message and attempt delivery");
+                        Connection.Send("252 Cannot VRFY user, but will accept message and attempt delivery");
                         break;
 
                     case "EXPN":
-                        this.Connection.Send("252 Cannot expand upon list");
+                        Connection.Send("252 Cannot expand upon list");
                         break;
 
                     case "RSET":
-                        this.Session.Reset();
-                        this.Connection.Send("250 OK");
+                        Session.Reset();
+                        Connection.Send("250 OK");
                         break;
 
                     case "NOOP":
-                        this.Connection.Send("250 OK");
+                        Connection.Send("250 OK");
                         break;
 
                     case "QUIT":
-                        this.Connection.Send("221 Goodbye!");
-                        this.Connection.Close();
+                        Connection.Send("221 Goodbye!");
+                        Connection.Close();
                         break;
 
                     case "HELP":
                     case "TURN":
-                        this.Connection.Send("502 Command not implemented");
+                        Connection.Send("502 Command not implemented");
                         break;
 
                     default:
-                        this.Connection.Send("500 Command not recognized");
+                        Connection.Send("500 Command not recognized");
                         break;
                 }
             }
@@ -135,12 +135,12 @@ namespace Papercut.Service
 
         #region Methods
 
-        private void DATA()
+        void DATA()
         {
             // Check command order
-            if (this.Session.Sender == null || this.Session.MailFrom == null || this.Session.Recipients.Count == 0)
+            if (Session.Sender == null || Session.MailFrom == null || Session.Recipients.Count == 0)
             {
-                this.Connection.Send("503 Bad sequence of commands");
+                Connection.Send("503 Bad sequence of commands");
                 return;
             }
 
@@ -148,14 +148,14 @@ namespace Papercut.Service
 
             try
             {
-                Stream networkStream = new NetworkStream(this.Connection.Client, false);
+                Stream networkStream = new NetworkStream(Connection.Client, false);
 
                 var output = new List<string>();
 
                 using (var reader = new StreamReader(networkStream))
                 {
                     string line;
-                    this.Connection.Send("354 Start mail input; end with <CRLF>.<CRLF>").AsyncWaitHandle.WaitOne();
+                    Connection.Send("354 Start mail input; end with <CRLF>.<CRLF>").AsyncWaitHandle.WaitOne();
 
                     while ((line = reader.ReadLine()) != ".")
                     {
@@ -178,61 +178,61 @@ namespace Papercut.Service
                 Logger.WriteWarning(
                     "IOException received in Processor.DATA while reading message.  Closing this.Connection.  Message: "
                     + e.Message,
-                    this.Connection.ConnectionId);
+                    Connection.ConnectionId);
 
-                this.Connection.Close();
+                Connection.Close();
                 return;
             }
 
-            this.Connection.Send("250 OK");
+            Connection.Send("250 OK");
         }
 
-        private void EHLO(string[] parts)
+        void EHLO(string[] parts)
         {
-            this.Session.Sender = parts.Length < 2 ? string.Empty : parts[1];
-            this.Connection.Send("250-{0}", Dns.GetHostName().ToLower());
-            this.Connection.Send("250-8BITMIME");
-            this.Connection.Send("250 OK");
+            Session.Sender = parts.Length < 2 ? string.Empty : parts[1];
+            Connection.Send("250-{0}", Dns.GetHostName().ToLower());
+            Connection.Send("250-8BITMIME");
+            Connection.Send("250 OK");
         }
 
-        private void HELO(string[] parts)
+        void HELO(string[] parts)
         {
-            this.Session.Sender = parts.Length < 2 ? string.Empty : parts[1];
-            this.Connection.Send("250 {0}", Dns.GetHostName().ToLower());
+            Session.Sender = parts.Length < 2 ? string.Empty : parts[1];
+            Connection.Send("250 {0}", Dns.GetHostName().ToLower());
         }
 
-        private void MAIL(string[] parts)
+        void MAIL(string[] parts)
         {
             string line = string.Join(" ", parts);
 
             // Check for the right number of parameters
             if (parts.Length < 2)
             {
-                this.Connection.Send("504 Command parameter not implemented");
+                Connection.Send("504 Command parameter not implemented");
                 return;
             }
 
             // Check for the ":"
             if (!parts[1].ToUpper().StartsWith("FROM") || !line.Contains(":"))
             {
-                this.Connection.Send("504 Command parameter not implemented");
+                Connection.Send("504 Command parameter not implemented");
                 return;
             }
 
             // Check command order
-            if (this.Session.Sender == null)
+            if (Session.Sender == null)
             {
-                this.Connection.Send("503 Bad sequence of commands");
+                Connection.Send("503 Bad sequence of commands");
                 return;
             }
 
             // Set the from settings
-            this.Session.Reset();
+            Session.Reset();
 
             string address =
                 line.Substring(line.IndexOf(":") + 1).Replace("<", string.Empty).Replace(">", string.Empty).Trim();
 
-            this.Session.MailFrom = address;
+            Session.MailFrom = address;
 
             // Check for encoding
             foreach (string part in parts.Where(part => part.ToUpper().StartsWith("BODY=")))
@@ -240,45 +240,45 @@ namespace Papercut.Service
                 switch (part.ToUpper().Replace("BODY=", string.Empty).Trim())
                 {
                     case "8BITMIME":
-                        this.Session.UseUtf8 = true;
+                        Session.UseUtf8 = true;
                         break;
                     default:
-                        this.Session.UseUtf8 = false;
+                        Session.UseUtf8 = false;
                         break;
                 }
 
                 break;
             }
 
-            this.Connection.Send("250 <{0}> OK", address);
+            Connection.Send("250 <{0}> OK", address);
         }
 
-        private void RCPT(string[] parts)
+        void RCPT(string[] parts)
         {
             string line = string.Join(" ", parts);
 
             // Check for the ":"
             if (!line.ToUpper().StartsWith("RCPT TO") || !line.Contains(":"))
             {
-                this.Connection.Send("504 Command parameter not implemented");
+                Connection.Send("504 Command parameter not implemented");
                 return;
             }
 
             // Check command order
-            if (this.Session.Sender == null || this.Session.MailFrom == null)
+            if (Session.Sender == null || Session.MailFrom == null)
             {
-                this.Connection.Send("503 Bad sequence of commands");
+                Connection.Send("503 Bad sequence of commands");
                 return;
             }
 
             string address =
                 line.Substring(line.IndexOf(":") + 1).Replace("<", string.Empty).Replace(">", string.Empty).Trim();
-            if (!this.Session.Recipients.Contains(address))
+            if (!Session.Recipients.Contains(address))
             {
-                this.Session.Recipients.Add(address);
+                Session.Recipients.Add(address);
             }
 
-            this.Connection.Send("250 <{0}> OK", address);
+            Connection.Send("250 <{0}> OK", address);
         }
 
         #endregion

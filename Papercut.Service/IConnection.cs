@@ -48,7 +48,7 @@ namespace Papercut.Service
         /// <summary>
         ///     Gets or sets LastActivity.
         /// </summary>
-        DateTime LastActivity { get; }
+        DateTime LastActivity { get; set; }
 
         /// <summary>
         ///     The close.

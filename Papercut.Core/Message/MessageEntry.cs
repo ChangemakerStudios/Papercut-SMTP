@@ -20,14 +20,10 @@
 
 namespace Papercut.Core.Message
 {
-    #region Using
-
     using System;
     using System.Globalization;
     using System.IO;
     using System.Text.RegularExpressions;
-
-    #endregion
 
     /// <summary>
     ///     The message entry.
@@ -42,17 +38,11 @@ namespace Papercut.Core.Message
 
         protected DateTime? _created;
 
-        public MessageEntry(string file)
+        public MessageEntry(FileInfo fileInfo)
         {
-            if (file == null)
-            {
-                throw new ArgumentNullException("file");
-            }
-
-            _info = new FileInfo(file);
+            _info = fileInfo;
 
             var match = _nameFormat.Match(_info.Name);
-
             if (match.Success)
             {
                 _created = DateTime.ParseExact(
@@ -62,10 +52,9 @@ namespace Papercut.Core.Message
             }
         }
 
-        protected MessageEntry(MessageEntry messageEntry)
+        public MessageEntry(string file)
+            : this(new FileInfo(file))
         {
-            _created = messageEntry._created;
-            _info = messageEntry._info;
         }
 
         public string File

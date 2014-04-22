@@ -30,7 +30,7 @@ namespace Papercut.Core.Helper
         /// <summary>
         ///     The lock object count.
         /// </summary>
-        private const int LockObjectCount = 0xFFF;
+        private const int LockObjectCount = 0xFF;
 
         #endregion
 
