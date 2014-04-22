@@ -2,6 +2,7 @@
  * Papercut
  *
  *  Copyright © 2008 - 2012 Ken Robertson
+ *  Copyright © 2013 - 2014 Jaben Cargman
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,23 +28,27 @@ namespace Papercut.UI
     using System.Drawing;
     using System.IO;
     using System.Linq;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Linq;
     using System.Reflection;
-    using System.Security.AccessControl;
     using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Forms;
     using System.Windows.Input;
     using System.Windows.Navigation;
-    using System.Windows.Threading;
+
+    using Autofac;
 
     using MimeKit;
 
-    using Papercut.Mime;
+    using Papercut.Core;
+    using Papercut.Core.Message;
+    using Papercut.Core.Mime;
     using Papercut.Properties;
-    using Papercut.SMTP;
+
+    using Serilog;
 
     using Application = System.Windows.Application;
     using ContextMenu = System.Windows.Forms.ContextMenu;
@@ -66,13 +71,14 @@ namespace Papercut.UI
     {
         #region Fields
 
-        private readonly object deleteLockObject = new object();
+        public ILogger Logger { get; set; }
+        public IServer SmtpServer { get; set; }
+        public MimeMessageLoader MimeMessageLoader { get; set; }
+        public MessageRepository MessageRepository { get; set; }
 
-        private readonly NotifyIcon notification;
-
-        private readonly Server server;
-
-        private CancellationTokenSource _currentMessageCancellationTokenSource = null;
+        private readonly object _deleteLockObject = new object();
+        private readonly NotifyIcon _notification;
+        private Point? _dragStartPoint = null;
 
         #endregion
 
@@ -80,61 +86,65 @@ namespace Papercut.UI
 
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+
+            // temporary -- inject properties...
+            PapercutContainer.Instance.InjectUnsetProperties(this);
+
+            // Begin listening for new messages
+            MessageRepository.NewMessage += NewMessage;
+            MessageRepository.RefreshNeeded += RefreshMessages;
 
             // Set up the notification icon
-            this.notification = new NotifyIcon
-                                {
-                                    Icon = new Icon(Application.GetResourceStream(new Uri("/Papercut;component/App.ico", UriKind.Relative)).Stream),
-                                    Text = "Papercut",
-                                    Visible = true
-                                };
-
-            this.notification.Click += delegate
+            _notification = new NotifyIcon
             {
-                this.Show();
-                this.WindowState = WindowState.Normal;
-                this.Topmost = true;
-                this.Focus();
-                this.Topmost = false;
+                Icon =
+                    new Icon(Application.GetResourceStream(new Uri("/Papercut;component/App.ico", UriKind.Relative)).Stream),
+                Text = "Papercut",
+                Visible = true
             };
 
-            this.notification.BalloonTipClicked += (sender, args) =>
+            _notification.Click += (sender, args) =>
             {
-                this.Show();
-                this.WindowState = WindowState.Normal;
-                this.messagesList.SelectedIndex = this.messagesList.Items.Count - 1;
+                Show();
+                WindowState = WindowState.Normal;
+                Topmost = true;
+                Focus();
+                Topmost = false;
             };
 
-            this.notification.ContextMenu = new ContextMenu(
+            _notification.BalloonTipClicked += (sender, args) =>
+            {
+                Show();
+                WindowState = WindowState.Normal;
+                messagesList.SelectedIndex = messagesList.Items.Count - 1;
+            };
+
+            _notification.ContextMenu = new ContextMenu(
                 new[]
                 {
                     new MenuItem(
                         "Show",
                         (sender, args) =>
                         {
-                            this.Show();
-                            this.WindowState = WindowState.Normal;
-                            this.Focus();
+                            Show();
+                            WindowState = WindowState.Normal;
+                            Focus();
                         }) { DefaultItem = true },
-                    new MenuItem("Exit", (sender, args) => this.ExitApplication())
+                    new MenuItem("Exit", (sender, args) => ExitApplication())
                 });
 
             // Set the version label
-            this.versionLabel.Content = string.Format("Papercut v{0}", Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
+            versionLabel.Content = string.Format(
+                "Papercut v{0}",
+                Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
 
             // Load existing messages
-            this.LoadMessages();
-            this.messagesList.Items.SortDescriptions.Add(new SortDescription("ModifiedDate", ListSortDirection.Ascending));
+            RefreshMessageList();
 
-            // Begin listening for new messages
-            Processor.MessageReceived += this.Processor_MessageReceived;
-
-            // Start listening for connections
-            this.server = new Server();
             try
             {
-                this.server.Bind(Settings.Default.IP, Settings.Default.Port);
+                SmtpServer.Listen(Settings.Default.IP, Settings.Default.Port);
             }
             catch
             {
@@ -143,22 +153,12 @@ namespace Papercut.UI
                     "Operation Failure");
             }
 
-            this.SetTabs();
-
-            this.UpdateSelectedMessage();
-
             // Minimize if set to
             if (Settings.Default.StartMinimized)
             {
-                this.Hide();
+                Hide();
             }
         }
-
-        #endregion
-
-        #region Delegates
-
-        private delegate void MessageNotificationDelegate(MessageEntry entry);
 
         #endregion
 
@@ -167,9 +167,9 @@ namespace Papercut.UI
         protected override void OnStateChanged(EventArgs e)
         {
             // Hide the window if minimized so it doesn't show up on the task bar
-            if (this.WindowState == WindowState.Minimized)
+            if (WindowState == WindowState.Minimized)
             {
-                this.Hide();
+                Hide();
             }
 
             base.OnStateChanged(e);
@@ -183,27 +183,122 @@ namespace Papercut.UI
         /// </param>
         private void AddNewMessage(MessageEntry entry)
         {
-            // Add it to the list box
-            this.messagesList.Items.Add(entry);
+            MimeMessageLoader.Get(entry)
+                .ObserveOnDispatcher()
+                .Subscribe(
+                    message =>
+                    {
+                        _notification.ShowBalloonTip(
+                            5000,
+                            "New Message Received",
+                            string.Format(
+                                "From: {0}\r\nSubject: {1}",
+                                message.From.ToString().Truncate(50),
+                                message.Subject.Truncate(50)),
+                            ToolTipIcon.Info);
 
-            // Show the notification
-            this.notification.ShowBalloonTip(5000, string.Empty, "New message received!", ToolTipIcon.Info);
+                        // Add it to the list box
+                        messagesList.Items.Add(entry);
+                    });
         }
 
-        private void Exit_Click(object sender, RoutedEventArgs e)
+        private void DeleteSelectedMessage()
         {
-            this.ExitApplication(true);
+            // Lock to prevent rapid clicking issues
+            lock (_deleteLockObject)
+            {
+                var messages = new MessageEntry[messagesList.SelectedItems.Count];
+                messagesList.SelectedItems.CopyTo(messages, 0);
+
+                // Capture index position first
+                int index = messagesList.SelectedIndex;
+
+                foreach (var entry in messages)
+                {
+                    MessageRepository.DeleteMessage(entry);
+                    messagesList.Items.Remove(entry);
+                }
+
+                UpdateSelectedMessage(index);
+            }
+        }
+
+        private void DisplayMimeMessage(MimeMessage mailMessageEx)
+        {
+            headerView.Text = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
+
+            var parts = mailMessageEx.BodyParts.ToList();
+            var mainBody = parts.GetMainBodyTextPart();
+
+            bodyView.Text = mainBody.Text;
+            bodyViewTab.Visibility = Visibility.Visible;
+
+            defaultBodyView.Text = mainBody.Text;
+
+            FromEdit.Text = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
+            ToEdit.Text = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
+            CCEdit.Text = mailMessageEx.Cc.IfNotNull(s => s.ToString()) ?? string.Empty;
+            BccEdit.Text = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
+            DateEdit.Text = mailMessageEx.Date.IfNotNull(s => s.ToString()) ?? string.Empty;
+
+            var subject = mailMessageEx.Subject ?? string.Empty;
+            SubjectEdit.Text = subject;
+
+            SetWindowTitle(subject);
+
+            var isContentHtml = mainBody.IsContentHtml();
+            textViewTab.Visibility = Visibility.Hidden;
+
+            if (isContentHtml)
+            {
+                SetBrowserDocument(mailMessageEx);
+
+                var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
+                if (textPartNotHtml != null)
+                {
+                    textViewTab.Visibility = Visibility.Visible;
+                    textView.Text = textPartNotHtml.Text;
+
+                    if (Equals(tabControl.SelectedItem, textViewTab))
+                    {
+                        tabControl.SelectedIndex = 2;
+                    }
+                }
+            }
+
+            if (defaultTab.IsVisible)
+            {
+                tabControl.SelectedIndex = 0;
+            }
+
+            defaultHtmlView.Visibility = isContentHtml ? Visibility.Visible : Visibility.Collapsed;
+            defaultBodyView.Visibility = isContentHtml ? Visibility.Collapsed : Visibility.Visible;
+
+            SpinAnimation.Visibility = Visibility.Collapsed;
+            tabControl.IsEnabled = true;
+
+            // Enable the delete and forward button
+            deleteButton.IsEnabled = true;
+            forwardButton.IsEnabled = true;
         }
 
         private void ExitApplication(bool closeWindow = true)
         {
-            this.notification.Dispose();
-            this.server.Stop();
+            _notification.Dispose();
+            SmtpServer.Stop();
+            PapercutContainer.Instance.Dispose();
+
             if (closeWindow)
             {
-                this.Close();
+                Close();
             }
+
             Environment.Exit(0);
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            ExitApplication(true);
         }
 
         private void GoToSite(object sender, MouseButtonEventArgs e)
@@ -212,21 +307,10 @@ namespace Papercut.UI
         }
 
         /// <summary>
-        ///     Load existing messages from the file system
-        /// </summary>
-        private void LoadMessages()
-        {
-            foreach (var entry in MessageFileService.LoadMessages())
-            {
-                this.messagesList.Items.Add(entry);
-            }
-        }
-
-        /// <summary>
-        /// Handles the OnKeyDown event of the MessagesList control.
+        ///     Handles the OnKeyDown event of the MessagesList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="KeyEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="KeyEventArgs" /> instance containing the event data.</param>
         private void MessagesList_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key != Key.Delete)
@@ -234,28 +318,61 @@ namespace Papercut.UI
                 return;
             }
 
-            this.DeleteSelectedMessage();
+            DeleteSelectedMessage();
         }
 
-        private void DeleteSelectedMessage()
+        private void MessagesList_OnPreviewLeftMouseDown(object sender, MouseButtonEventArgs e)
         {
-            // Lock to prevent rapid clicking issues
-            lock (this.deleteLockObject)
+            var parent = sender as ListBox;
+
+            if (parent == null)
             {
-                Array messages = new MessageEntry[this.messagesList.SelectedItems.Count];
-                this.messagesList.SelectedItems.CopyTo(messages, 0);
+                return;
+            }
 
-                // Capture index position first
-                int index = this.messagesList.SelectedIndex;
+            if (_dragStartPoint == null)
+            {
+                _dragStartPoint = e.GetPosition(parent);
+            }
+        }
 
-                foreach (MessageEntry entry in messages)
+        private void MessagesList_OnPreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            var parent = sender as ListBox;
+
+            if (parent == null || _dragStartPoint == null)
+            {
+                return;
+            }
+
+            var dragPoint = e.GetPosition(parent);
+
+            Vector potentialDragLength = dragPoint - _dragStartPoint.Value;
+
+            if (potentialDragLength.Length > 10)
+            {
+                // Get the object source for the selected item
+                var entry = parent.GetObjectDataFromPoint<MessageEntry>(_dragStartPoint.Value);
+
+                // If the data is not null then start the drag drop operation
+                if (entry != null && !string.IsNullOrWhiteSpace(entry.File))
                 {
-                    MessageFileService.DeleteMessage(entry);
-                    this.messagesList.Items.Remove(entry);
+                    var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
+                    DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);
                 }
 
-                this.UpdateSelectedMessage(index);
+                _dragStartPoint = null;
             }
+        }
+
+        private void MessagesList_OnPreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            _dragStartPoint = null;
+        }
+
+        private void NewMessage(object sender, NewMessageEventArgs e)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() => this.AddNewMessage(e.NewMessage)));
         }
 
         private void Options_Click(object sender, RoutedEventArgs e)
@@ -272,23 +389,36 @@ namespace Papercut.UI
             try
             {
                 // Force the server to rebind
-                this.server.Bind(Settings.Default.IP, Settings.Default.Port);
-                this.SetTabs();
+                this.SmtpServer.Listen(Settings.Default.IP, Settings.Default.Port);
             }
             catch (Exception)
             {
                 MessageBox.Show(
                     "Failed to rebind to the address/port specified.  The port may already be in use by another process.  Please update the configuration.",
                     "Operation Failure");
-                this.Options_Click(null, null);
+                Options_Click(null, null);
             }
         }
 
-        private void Processor_MessageReceived(object sender, MessageEventArgs e)
+        private void RefreshMessageList()
         {
-            // This takes place on a background thread from the SMTP server
-            // Dispatch it back to the main thread for the update
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new MessageNotificationDelegate(this.AddNewMessage), e.Entry);
+            var messageEntries = PapercutContainer.Instance.Resolve<MessageRepository>().LoadMessages();
+
+            messagesList.Items.Clear();
+
+            foreach (MessageEntry messageEntry in messageEntries)
+            {
+                messagesList.Items.Add(messageEntry);
+            }
+
+            messagesList.Items.SortDescriptions.Add(new SortDescription("ModifiedDate", ListSortDirection.Ascending));
+
+            UpdateSelectedMessage();
+        }
+
+        private void RefreshMessages(object sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(RefreshMessageList));
         }
 
         /// <summary>
@@ -299,12 +429,42 @@ namespace Papercut.UI
         /// </param>
         private void SetBrowserDocument(MimeMessage mailMessageEx)
         {
+            Observable.Start(
+                () =>
+                {
+                    try
+                    {
+                        return SaveBrowserTempHtmlFile(mailMessageEx);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(
+                            ex,
+                            "Exception Saving Browser Temp File for {MailMessage}",
+                            mailMessageEx.ToString());
+                    }
+
+                    return null;
+                })
+                .ObserveOnDispatcher()
+                .Where(s => !string.IsNullOrEmpty(s))
+                .Subscribe(
+                    (h) =>
+                    {
+                        defaultHtmlView.NavigationUIVisibility = NavigationUIVisibility.Hidden;
+                        defaultHtmlView.Navigate(new Uri(h));
+                        defaultHtmlView.Refresh();
+                    });
+        }
+
+        private static string SaveBrowserTempHtmlFile(MimeMessage mailMessageEx)
+        {
             const int Length = 256;
 
             var replaceEmbeddedImageFormats = new[]
-                                           {
-                                               @"cid:{0}", @"cid:'{0}'", @"cid:""{0}"""
-                                           };
+            {
+                @"cid:{0}", @"cid:'{0}'", @"cid:""{0}"""
+            };
 
             string tempPath = Path.GetTempPath();
             string htmlFile = Path.Combine(tempPath, "papercut.htm");
@@ -341,46 +501,32 @@ namespace Papercut.UI
 
             File.WriteAllText(htmlFile, htmlText, Encoding.Unicode);
 
-            //this.htmlView.Navigate(new Uri(htmlFile));
-            //this.htmlView.Refresh();
-
-            this.defaultHtmlView.NavigationUIVisibility = NavigationUIVisibility.Hidden;
-            this.defaultHtmlView.Navigate(new Uri(htmlFile));
-            this.defaultHtmlView.Refresh();
+            return htmlFile;
         }
 
-        private void SetTabs()
+        private void SetWindowTitle(string title)
         {
-            if (Settings.Default.ShowDefaultTab)
-            {
-                this.tabControl.SelectedIndex = 0;
-                this.defaultTab.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                this.tabControl.SelectedIndex = 1;
-                this.defaultTab.Visibility = Visibility.Collapsed;
-            }
+            Subject.Content = title;
+            Subject.ToolTip = title;
         }
 
         private void UpdateSelectedMessage(int? index = null)
         {
             // If there are more than the index location, keep the same position in the list
-            if (index.HasValue && this.messagesList.Items.Count > index)
+            if (index.HasValue && messagesList.Items.Count > index)
             {
-                this.messagesList.SelectedIndex = index.Value;
+                messagesList.SelectedIndex = index.Value;
             }
-            else if (this.messagesList.Items.Count > 0)
+            else if (messagesList.Items.Count > 0)
             {
                 // If there are fewer, move to the last one
-                this.messagesList.SelectedIndex = this.messagesList.Items.Count - 1;
+                messagesList.SelectedIndex = messagesList.Items.Count - 1;
             }
-            else if (this.messagesList.Items.Count == 0)
+            else if (messagesList.Items.Count == 0)
             {
-                this.tabControl.IsEnabled = false;
+                tabControl.IsEnabled = false;
             }
         }
-
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
@@ -388,219 +534,99 @@ namespace Papercut.UI
             if (Settings.Default.MinimizeOnClose)
             {
                 e.Cancel = true;
-                this.WindowState = WindowState.Minimized;
+                WindowState = WindowState.Minimized;
             }
             else
             {
-                this.ExitApplication(false);
+                ExitApplication(false);
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the deleteButton control.
+        ///     Handles the Click event of the deleteButton control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void deleteButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DeleteSelectedMessage();
+            DeleteSelectedMessage();
         }
 
         private void forwardButton_Click(object sender, RoutedEventArgs e)
         {
-            var entry = this.messagesList.SelectedItem as MessageEntry;
+            var entry = messagesList.SelectedItem as MessageEntry;
             if (entry != null)
             {
-                var fw = new ForwardWindow(entry.File) { Owner = this };
+                var fw = new ForwardWindow(entry) { Owner = this };
                 fw.ShowDialog();
             }
         }
 
-        private void SetWindowTitle(string title)
-        {
-            this.Subject.Content = title;
-            this.Subject.ToolTip = title;
-        }
+        private IDisposable _loadingDisposable = null;
 
         private void messagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // If there are no selected items, then disable the Delete button, clear the boxes, and return
             if (e.AddedItems.Count == 0)
             {
-                this.deleteButton.IsEnabled = false;
-                this.forwardButton.IsEnabled = false;
-                this.headerView.Text = string.Empty;
-                this.bodyView.Text = string.Empty;
-                this.textViewTab.Visibility = Visibility.Hidden;
-                this.tabControl.SelectedIndex = this.defaultTab.IsVisible ? 0 : 1;
-               
+                deleteButton.IsEnabled = false;
+                forwardButton.IsEnabled = false;
+                headerView.Text = string.Empty;
+                bodyView.Text = string.Empty;
+                textViewTab.Visibility = Visibility.Hidden;
+                tabControl.SelectedIndex = defaultTab.IsVisible ? 0 : 1;
+
                 // Clear fields
-                this.FromEdit.Text = string.Empty;
-                this.ToEdit.Text = string.Empty;
-                this.CCEdit.Text = string.Empty;
-                this.BccEdit.Text = string.Empty;
-                this.DateEdit.Text = string.Empty;
+                FromEdit.Text = string.Empty;
+                ToEdit.Text = string.Empty;
+                CCEdit.Text = string.Empty;
+                BccEdit.Text = string.Empty;
+                DateEdit.Text = string.Empty;
 
                 var subject = string.Empty;
-                this.SubjectEdit.Text = subject;
+                SubjectEdit.Text = subject;
 
-                this.defaultBodyView.Text = string.Empty;
+                defaultBodyView.Text = string.Empty;
 
-                this.defaultHtmlView.Content = null;
-                this.defaultHtmlView.NavigationService.RemoveBackEntry();
+                defaultHtmlView.Content = null;
+                defaultHtmlView.NavigationService.RemoveBackEntry();
                 //this.defaultHtmlView.Refresh();
 
-                this.SetWindowTitle("Papercut");
+                SetWindowTitle("Papercut");
 
                 return;
             }
 
-            var mailFile = ((MessageEntry)e.AddedItems[0]).File;
+            var messageEntry = ((MessageEntry)e.AddedItems[0]);
 
             try
             {
-                this.tabControl.IsEnabled = false;
-                this.SpinAnimation.Visibility = Visibility.Visible;
+                tabControl.IsEnabled = false;
+                SpinAnimation.Visibility = Visibility.Visible;
 
-                this.SetWindowTitle("Loading...");
+                SetWindowTitle("Loading...");
 
-                if (this._currentMessageCancellationTokenSource != null)
+                if (_loadingDisposable != null)
                 {
-                    this._currentMessageCancellationTokenSource.Cancel();
+                    _loadingDisposable.Dispose();
                 }
 
-                this._currentMessageCancellationTokenSource = new CancellationTokenSource();
-
-                var loadMessageTask = MessageHelper.LoadMessage(mailFile, this._currentMessageCancellationTokenSource.Token);
-
                 // show it...
-                loadMessageTask.ContinueWith(
-                    task => this.DisplayMimeMessage(task.Result),
-                    this._currentMessageCancellationTokenSource.Token,
-                    TaskContinuationOptions.NotOnCanceled,
-                    TaskScheduler.FromCurrentSynchronizationContext());
+                _loadingDisposable = MimeMessageLoader.Get(messageEntry)
+                    .ObserveOnDispatcher()
+                    .Subscribe(DisplayMimeMessage);
             }
             catch (Exception ex)
             {
-                Logger.WriteWarning(string.Format(@"Unable to Load Message ""{0}"": {1}", mailFile, ex));
+                Core.Logger.WriteWarning(string.Format(@"Unable to Load Message ""{0}"": {1}", messageEntry.File, ex));
 
-                this.SetWindowTitle("Papercut");
-                this.tabControl.SelectedIndex = 1;
-                this.bodyViewTab.Visibility = Visibility.Hidden;
-                this.textViewTab.Visibility = Visibility.Hidden;
+                SetWindowTitle("Papercut");
+                tabControl.SelectedIndex = 1;
+                bodyViewTab.Visibility = Visibility.Hidden;
+                textViewTab.Visibility = Visibility.Hidden;
             }
-        }
-
-        private void DisplayMimeMessage(MimeMessage mailMessageEx)
-        {
-            this.headerView.Text = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
-
-            var parts = mailMessageEx.BodyParts.ToList();
-            var mainBody = parts.GetMainBodyTextPart();
-
-            this.bodyView.Text = mainBody.Text;
-            this.bodyViewTab.Visibility = Visibility.Visible;
-
-            this.defaultBodyView.Text = mainBody.Text;
-
-            this.FromEdit.Text = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
-            this.ToEdit.Text = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
-            this.CCEdit.Text = mailMessageEx.Cc.IfNotNull(s => s.ToString()) ?? string.Empty;
-            this.BccEdit.Text = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
-            this.DateEdit.Text = mailMessageEx.Date.IfNotNull(s => s.ToString()) ?? string.Empty;
-
-            var subject = mailMessageEx.Subject ?? string.Empty;
-            this.SubjectEdit.Text = subject;
-
-            this.SetWindowTitle(subject);
-
-            var isContentHtml = mainBody.IsContentHtml();
-            textViewTab.Visibility = Visibility.Hidden;
-
-            if (isContentHtml)
-            {
-                this.SetBrowserDocument(mailMessageEx);
-
-                var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
-                if (textPartNotHtml != null)
-                {
-                    textViewTab.Visibility = Visibility.Visible;
-                    textView.Text = textPartNotHtml.Text;
-
-                    if (Equals(this.tabControl.SelectedItem, this.textViewTab))
-                    {
-                        this.tabControl.SelectedIndex = 2;
-                    }
-                }
-            }
-
-            if (this.defaultTab.IsVisible)
-            {
-                this.tabControl.SelectedIndex = 0;
-            }
-
-            this.defaultHtmlView.Visibility = isContentHtml ? Visibility.Visible : Visibility.Collapsed;
-            this.defaultBodyView.Visibility = isContentHtml ? Visibility.Collapsed : Visibility.Visible;
-
-            this.SpinAnimation.Visibility = Visibility.Collapsed;
-            this.tabControl.IsEnabled = true;
-
-            // Enable the delete and forward button
-            this.deleteButton.IsEnabled = true;
-            this.forwardButton.IsEnabled = true;
         }
 
         #endregion
-        
-        Point? _dragStartPoint = null;
-
-        private void MessagesList_OnPreviewLeftMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var parent = sender as ListBox;
-
-            if (parent == null)
-            {
-                return;
-            }
-
-            if (this._dragStartPoint == null)
-            {
-                this._dragStartPoint = e.GetPosition(parent);
-            }
-        }
-
-        private void MessagesList_OnPreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            this._dragStartPoint = null;
-        }
-
-        private void MessagesList_OnPreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            var parent = sender as ListBox;
-
-            if (parent == null || this._dragStartPoint == null)
-            {
-                return;
-            }
-
-            var dragPoint = e.GetPosition(parent);
-
-            Vector potentialDragLength = dragPoint - this._dragStartPoint.Value;
-
-            if (potentialDragLength.Length > 10)
-            {
-                // Get the object source for the selected item
-                var entry = parent.GetObjectDataFromPoint<MessageEntry>(this._dragStartPoint.Value);
-
-                // If the data is not null then start the drag drop operation
-                if (!string.IsNullOrWhiteSpace(entry.File))
-                {
-                    var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
-                    DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);
-                }
-
-                this._dragStartPoint = null;
-            }
-        }
     }
 }

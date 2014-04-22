@@ -7,3 +7,5 @@ Papercut.suo
 Papercut.*.suo
 Papercut.ncrunchsolution
 Papercut.ncrunchsolution.*	  
+/.hg
+/packages

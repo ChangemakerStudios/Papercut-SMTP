@@ -98,24 +98,24 @@ namespace Papercut.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool ShowDefaultTab {
-            get {
-                return ((bool)(this["ShowDefaultTab"]));
-            }
-            set {
-                this["ShowDefaultTab"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool MinimizeOnClose {
             get {
                 return ((bool)(this["MinimizeOnClose"]));
             }
             set {
                 this["MinimizeOnClose"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("%ApplicationData%\\Papercut;%BaseDirectory%")]
+        public string MessagePaths {
+            get {
+                return ((string)(this["MessagePaths"]));
+            }
+            set {
+                this["MessagePaths"] = value;
             }
         }
     }

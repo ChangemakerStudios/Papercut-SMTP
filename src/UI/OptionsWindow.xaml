@@ -28,7 +28,6 @@
 			</Grid>
 			<CheckBox Grid.Column="1" Grid.Row="2" Margin="5" Name="startMinimized" VerticalAlignment="Bottom">Start Minimized</CheckBox>
             <CheckBox Grid.Column="1" Grid.Row="3" Margin="5" Name="minimizeOnClose" VerticalAlignment="Bottom">Minimize on Close</CheckBox>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5" Name="showDefaultTab" VerticalAlignment="Bottom">Show Default Tab</CheckBox>
-		</Grid>
+        </Grid>
 	</DockPanel>
 </Window>

@@ -2,6 +2,7 @@
  * Papercut
  *
  *  Copyright © 2008 - 2012 Ken Robertson
+ *  Copyright © 2013 - 2014 Jaben Cargman
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@
 
 namespace Papercut.UI
 {
-	#region Using
+    #region Using
 
     using System.Collections.Generic;
     using System.Linq;
@@ -32,135 +33,129 @@ namespace Papercut.UI
 
     #endregion
 
-	/// <summary>
-	/// Interaction logic for OptionsWindow.xaml
-	/// </summary>
-	public partial class OptionsWindow : Window
-	{
-		#region Constants and Fields
+    /// <summary>
+    /// Interaction logic for OptionsWindow.xaml
+    /// </summary>
+    public partial class OptionsWindow : Window
+    {
+        #region Constants and Fields
 
-		/// <summary>
-		/// The ipv 4.
-		/// </summary>
-		private static readonly Regex ipv4 = new Regex(@"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", RegexOptions.Compiled);
+        /// <summary>
+        /// The ipv 4.
+        /// </summary>
+        private static readonly Regex ipv4 = new Regex(@"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", RegexOptions.Compiled);
 
-		#endregion
+        #endregion
 
-		#region Constructors and Destructors
+        #region Constructors and Destructors
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="OptionsWindow"/> class.
-		/// </summary>
-		public OptionsWindow()
-		{
-			this.InitializeComponent();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OptionsWindow"/> class.
+        /// </summary>
+        public OptionsWindow()
+        {
+            this.InitializeComponent();
 
-			// Add the Any option
-			this.ipsList.Items.Add("Any");
+            // Add the Any option
+            this.ipsList.Items.Add("Any");
 
-			// Add local IPs
-			foreach (IPAddress address in Dns.GetHostAddresses("localhost").Where(address => ipv4.IsMatch(address.ToString())))
-			{
-				this.ipsList.Items.Add(address.ToString());
-			}
+            // Add local IPs
+            foreach (IPAddress address in Dns.GetHostAddresses("localhost").Where(address => ipv4.IsMatch(address.ToString())))
+            {
+                this.ipsList.Items.Add(address.ToString());
+            }
 
-			// Get NIC IPs
-			foreach (string address in this.GetIpAddresses().Where(address => ipv4.IsMatch(address)))
-			{
-				this.ipsList.Items.Add(address);
-			}
+            // Get NIC IPs
+            foreach (string address in this.GetIpAddresses().Where(address => ipv4.IsMatch(address)))
+            {
+                this.ipsList.Items.Add(address);
+            }
 
-			// Select the current one
+            // Select the current one
             this.ipsList.SelectedItem = Settings.Default.IP;
 
-			// Set the other options
-			this.portNumber.Text = Settings.Default.Port.ToString();
-			this.startMinimized.IsChecked = Settings.Default.StartMinimized;
-			this.showDefaultTab.IsChecked = Settings.Default.ShowDefaultTab;
-		    this.minimizeOnClose.IsChecked = Settings.Default.MinimizeOnClose;
-		}
+            // Set the other options
+            this.portNumber.Text = Settings.Default.Port.ToString();
+            this.startMinimized.IsChecked = Settings.Default.StartMinimized;
+            this.minimizeOnClose.IsChecked = Settings.Default.MinimizeOnClose;
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		/// The get ip addresses.
-		/// </summary>
-		/// <returns>
-		/// </returns>
-		private List<string> GetIpAddresses()
-		{
-			var ips = new List<string>();
+        /// <summary>
+        /// The get ip addresses.
+        /// </summary>
+        /// <returns>
+        /// </returns>
+        private IEnumerable<string> GetIpAddresses()
+        {
+            var ips = new List<string>();
 
-			string query = "SELECT IPAddress from Win32_NetworkAdapterConfiguration WHERE IPEnabled=true";
-			ManagementObjectCollection mgtObjects = new ManagementObjectSearcher(query).Get();
+            string query = "SELECT IPAddress from Win32_NetworkAdapterConfiguration WHERE IPEnabled=true";
+            ManagementObjectCollection mgtObjects = new ManagementObjectSearcher(query).Get();
 
-			foreach (
-				PropertyData ipaddr in
-					mgtObjects.Cast<ManagementObject>().Select(mo => mo.Properties["IPAddress"]).Where(ipaddr => ipaddr.IsLocal))
-			{
-				if (ipaddr.IsArray)
-				{
-					ips.AddRange((string[])ipaddr.Value);
-				}
-				else
-				{
-					ips.Add(ipaddr.Value.ToString());
-				}
-			}
+            foreach (
+                PropertyData ipaddr in
+                    mgtObjects.Cast<ManagementObject>().Select(mo => mo.Properties["IPAddress"]).Where(ipaddr => ipaddr.IsLocal))
+            {
+                if (ipaddr.IsArray)
+                {
+                    ips.AddRange((string[])ipaddr.Value);
+                }
+                else
+                {
+                    ips.Add(ipaddr.Value.ToString());
+                }
+            }
 
-			return ips;
-		}
+            return ips;
+        }
 
-		/// <summary>
-		/// The cancel button_ click.
-		/// </summary>
-		/// <param name="sender">
-		/// The sender.
-		/// </param>
-		/// <param name="e">
-		/// The e.
-		/// </param>
-		private void cancelButton_Click(object sender, RoutedEventArgs e)
-		{
-			this.DialogResult = false;
-		}
+        /// <summary>
+        /// The cancel button_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void cancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
+        }
 
-		/// <summary>
-		/// The save button_ click.
-		/// </summary>
-		/// <param name="sender">
-		/// The sender.
-		/// </param>
-		/// <param name="e">
-		/// The e.
-		/// </param>
-		private void saveButton_Click(object sender, RoutedEventArgs e)
-		{
-			Settings.Default.IP = (string)this.ipsList.SelectedValue;
-			Settings.Default.Port = int.Parse(this.portNumber.Text);
+        /// <summary>
+        /// The save button_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void saveButton_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.IP = (string)this.ipsList.SelectedValue;
+            Settings.Default.Port = int.Parse(this.portNumber.Text);
 
-			if (this.startMinimized.IsChecked.HasValue)
-			{
-				Settings.Default.StartMinimized = this.startMinimized.IsChecked.Value;
-			}
+            if (this.startMinimized.IsChecked.HasValue)
+            {
+                Settings.Default.StartMinimized = this.startMinimized.IsChecked.Value;
+            }
 
-			if (this.showDefaultTab.IsChecked.HasValue)
-			{
-				Settings.Default.ShowDefaultTab = this.showDefaultTab.IsChecked.Value;
-			}
+            if (this.minimizeOnClose.IsChecked.HasValue)
+            {
+                Settings.Default.MinimizeOnClose = this.minimizeOnClose.IsChecked.Value;
+            }
 
-		    if (this.minimizeOnClose.IsChecked.HasValue)
-		    {
-		        Settings.Default.MinimizeOnClose = this.minimizeOnClose.IsChecked.Value;
-		    }
+            Settings.Default.Save();
 
-			Settings.Default.Save();
+            this.DialogResult = true;
+        }
 
-			this.DialogResult = true;
-		}
-
-		#endregion
-	}
+        #endregion
+    }
 }

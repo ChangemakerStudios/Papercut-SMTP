@@ -24,7 +24,7 @@ namespace Papercut.UI
     using System.Windows.Controls;
     using System.Windows.Media;
 
-    using Papercut.Annotations;
+    using Papercut.Core;
 
     public static class UIExtensions
     {
