@@ -37,6 +37,7 @@ namespace Papercut.UI
     using System.Windows.Controls;
     using System.Windows.Forms;
     using System.Windows.Input;
+    using System.Windows.Media;
     using System.Windows.Navigation;
 
     using Autofac;
@@ -336,7 +337,16 @@ namespace Papercut.UI
             }
         }
 
-        private void MessagesList_OnPreviewMouseMove(object sender, MouseEventArgs e)
+        static T FindAncestor<T>(DependencyObject dependencyObject)
+            where T : DependencyObject
+        {
+            var parent = VisualTreeHelper.GetParent(dependencyObject);
+            if (parent == null) return null;
+            var parentT = parent as T;
+            return parentT ?? FindAncestor<T>(parent);
+        }
+
+        void MessagesList_OnPreviewMouseMove(object sender, MouseEventArgs e)
         {
             var parent = sender as ListBox;
 
@@ -345,23 +355,26 @@ namespace Papercut.UI
                 return;
             }
 
-            var dragPoint = e.GetPosition(parent);
-
-            Vector potentialDragLength = dragPoint - _dragStartPoint.Value;
-
-            if (potentialDragLength.Length > 10)
+            if (FindAncestor<System.Windows.Controls.Primitives.ScrollBar>((DependencyObject)e.OriginalSource) == null)
             {
-                // Get the object source for the selected item
-                var entry = parent.GetObjectDataFromPoint<MessageEntry>(_dragStartPoint.Value);
+                var dragPoint = e.GetPosition(parent);
 
-                // If the data is not null then start the drag drop operation
-                if (entry != null && !string.IsNullOrWhiteSpace(entry.File))
+                Vector potentialDragLength = dragPoint - _dragStartPoint.Value;
+
+                if (potentialDragLength.Length > 10)
                 {
-                    var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
-                    DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);
-                }
+                    // Get the object source for the selected item
+                    var entry = parent.GetObjectDataFromPoint<MessageEntry>(_dragStartPoint.Value);
 
-                _dragStartPoint = null;
+                    // If the data is not null then start the drag drop operation
+                    if (entry != null && !string.IsNullOrWhiteSpace(entry.File))
+                    {
+                        var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
+                        DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);
+                    }
+
+                    _dragStartPoint = null;
+                }
             }
         }
 

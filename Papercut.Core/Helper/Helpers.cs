@@ -107,7 +107,7 @@ namespace Papercut.Core
                 return string.Format("0{0}", suffixes[0]);
             }
 
-            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            var place = Convert.ToInt64(Math.Floor(Math.Log(bytes, 1024)));
 
             double roundedNumber = Math.Round(bytes / Math.Pow(1024, place), 1);
 

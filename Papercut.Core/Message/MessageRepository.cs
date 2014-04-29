@@ -24,7 +24,6 @@ namespace Papercut.Core.Message
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reactive.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -119,6 +118,11 @@ namespace Papercut.Core.Message
 
         bool CanOpenFile(FileInfo file)
         {
+            if (file == null)
+            {
+                throw new ArgumentNullException("file");
+            }
+
             try
             {
                 using (var fileStream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None))
@@ -158,9 +162,7 @@ namespace Papercut.Core.Message
             }
             catch (IOException)
             {
-                //the file is unavailable because it is:
-                //still being written to
-                //or being processed by another thread
+                // the file is unavailable because it is still being written by another thread or process
                 return false;
             }
 
