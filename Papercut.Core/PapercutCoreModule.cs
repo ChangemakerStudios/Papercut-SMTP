@@ -61,6 +61,7 @@ namespace Papercut.Core
                 {
                     Log.Logger = new LoggerConfiguration()
                         .MinimumLevel.Verbose()
+                        .Enrich.WithMachineName()
                         .Enrich.WithThreadId()
                         .WriteTo.ColoredConsole()
                         .WriteTo.RollingFile("papercut.log", LogEventLevel.Debug)
@@ -68,7 +69,7 @@ namespace Papercut.Core
                         .CreateLogger();
 
                     return Log.Logger;
-                });
+                }).SingleInstance();
 
             base.Load(builder);
         }

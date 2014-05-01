@@ -20,6 +20,8 @@
 
 namespace Papercut
 {
+    using System.Windows.Controls;
+
     using Autofac;
 
     using Papercut.Core.Configuration;
@@ -32,6 +34,7 @@ namespace Papercut
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<SettingPathTemplateProvider>().As<IPathTemplatesProvider>().SingleInstance();
+            builder.RegisterAssemblyTypes(new[] { ThisAssembly }).AssignableTo<Control>().AsSelf().InstancePerDependency();
 
             base.Load(builder);
         }
