@@ -43,6 +43,7 @@ namespace Papercut.UI
     using MimeKit;
 
     using Papercut.Core;
+    using Papercut.Core.Helper;
     using Papercut.Core.Message;
     using Papercut.Core.Mime;
     using Papercut.Properties;
@@ -450,8 +451,6 @@ namespace Papercut.UI
 
         static string SaveBrowserTempHtmlFile(MimeMessage mailMessageEx)
         {
-            const int Length = 256;
-
             var replaceEmbeddedImageFormats = new[]
             {
                 @"cid:{0}", @"cid:'{0}'", @"cid:""{0}"""
@@ -465,23 +464,9 @@ namespace Papercut.UI
             foreach (var image in mailMessageEx.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
             {
                 string fileName = Path.Combine(tempPath, image.ContentId);
-
                 using (var fs = File.OpenWrite(fileName))
                 {
-                    var buffer = new byte[Length];
-
-                    using (var content = image.ContentObject.Open())
-                    {
-                        int bytesRead = content.Read(buffer, 0, Length);
-
-                        // write the required bytes
-                        while (bytesRead > 0)
-                        {
-                            fs.Write(buffer, 0, bytesRead);
-                            bytesRead = content.Read(buffer, 0, Length);
-                        }
-                    }
-
+                    using (var content = image.ContentObject.Open()) content.CopyBufferedTo(fs);
                     fs.Close();
                 }
 
