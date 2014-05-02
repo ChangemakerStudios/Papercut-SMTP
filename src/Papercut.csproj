@@ -166,6 +166,7 @@
     </Compile>
     <Compile Include="SettingPathTemplateProvider.cs" />
     <Compile Include="PapercutUIModule.cs" />
+    <Compile Include="UI\AppResourceLocator.cs" />
     <Compile Include="UI\Spinner.xaml.cs">
       <DependentUpon>Spinner.xaml</DependentUpon>
     </Compile>
@@ -295,6 +296,20 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+    <Target Name="EmbedReferencedAssemblies" AfterTargets="ResolveAssemblyReferences">
+        <ItemGroup>
+            <!-- get list of assemblies marked as CopyToLocal -->
+            <AssembliesToEmbed Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
+            <!-- add these assemblies to the list of embedded resources -->
+            <EmbeddedResource Include="@(AssembliesToEmbed)">
+                <LogicalName>%(AssembliesToEmbed.DestinationSubDirectory)%(AssembliesToEmbed.Filename)%(AssembliesToEmbed.Extension)</LogicalName>
+            </EmbeddedResource>
+        </ItemGroup>
+        <Message Importance="high" Text="Embedding: @(AssembliesToEmbed->'%(DestinationSubDirectory)%(Filename)%(Extension)', ', ')" />
+    </Target>
+    <!-- no need to copy the assemblies locally anymore -->
+    <Target Name="_CopyFilesMarkedCopyLocal" />    
+    
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -41,13 +41,28 @@ namespace Papercut.Core
             var allFiles = GetAllFilesIn(AppDomain.CurrentDomain.BaseDirectory).ToList();
 
             // exclude currently loaded assemblies
-            var needsToBeLoaded = allFiles.Where(f => !loadedFiles.Contains(Path.GetFileName(f))).ToList();
+            var needsToBeLoaded = allFiles
+                .Where(f => !loadedFiles.Contains(Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
+                .ToList();
 
             // attempt to load files as an assembly and include already loaded
-            return TryLoadAssemblies(needsToBeLoaded)
+            var aggregatedAssemblies = TryLoadAssemblies(needsToBeLoaded)
                 .Where(filterAssemblies)
                 .Concat(loadedAssemblies)
                 .ToList();
+
+            // load resource assemblies
+            var loadedAssemblyNames = loadedAssemblies.Select(a => a.GetName().Name).ToArray();
+            var assemblyResourcesToLoad =
+                GetAllAssemblyResourcesIn(loadedAssemblies)
+                    .Where(s => !loadedAssemblyNames.Contains(s, StringComparer.OrdinalIgnoreCase))
+                    .ToArray();
+
+            return
+                TryLoadResourceAssemblies(assemblyResourcesToLoad)
+                    .Where(filterAssemblies)
+                    .Concat(aggregatedAssemblies)
+                    .ToList();
         }
 
         static IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
@@ -70,12 +85,43 @@ namespace Papercut.Core
             }
         }
 
+        static IEnumerable<Assembly> TryLoadResourceAssemblies([NotNull] IEnumerable<string> assemblyNames)
+        {
+            foreach (var assemblyName in assemblyNames)
+            {
+                Assembly assembly;
+
+                try
+                {
+                    assembly = Assembly.Load(assemblyName);
+                }
+                catch (BadImageFormatException)
+                {
+                    // fail on native images...
+                    continue;
+                }
+
+                yield return assembly;
+            }
+        }
+
         [NotNull]
         static IEnumerable<string> GetAllFilesIn(string directory)
         {
             var lookFor = new[] { "*.dll", "*.exe" };
 
             return lookFor.SelectMany(s => Directory.GetFiles(directory, s)).ToArray();
+        }
+
+        static IEnumerable<string> GetAllAssemblyResourcesIn(IEnumerable<Assembly> assemblies)
+        {
+            var lookFor = new [] { ".dll", ".exe" };
+
+            return
+                assemblies.SelectMany(a => a.GetManifestResourceNames())
+                    .Where(r => lookFor.Any(r.EndsWith))
+                    .Select(Path.GetFileNameWithoutExtension)
+                    .ToArray();
         }
     }
 }

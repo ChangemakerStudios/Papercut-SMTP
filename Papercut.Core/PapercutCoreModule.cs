@@ -63,6 +63,7 @@ namespace Papercut.Core
                         .MinimumLevel.Verbose()
                         .Enrich.WithMachineName()
                         .Enrich.WithThreadId()
+                        .Enrich.FromLogContext()
                         .WriteTo.ColoredConsole()
                         .WriteTo.RollingFile("papercut.log", LogEventLevel.Debug)
                         //.WriteTo.Seq("http://localhost:5341")

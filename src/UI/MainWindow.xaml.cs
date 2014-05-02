@@ -86,6 +86,8 @@ namespace Papercut.UI
 
         public MimeMessageLoader MimeMessageLoader { get; set; }
 
+        public AppResourceLocator ResourceLocator { get; set; }
+
         public MessageRepository MessageRepository { get; set; }
 
         #endregion
@@ -95,11 +97,13 @@ namespace Papercut.UI
         public MainWindow(
             MessageRepository messageRepository,
             MimeMessageLoader mimeMessageLoader,
+            AppResourceLocator resourceLocator,
             IServer smtpServer,
             ILogger logger)
         {
             MessageRepository = messageRepository;
             MimeMessageLoader = mimeMessageLoader;
+            ResourceLocator = resourceLocator;
             SmtpServer = smtpServer;
             Logger = logger;
 
@@ -130,8 +134,7 @@ namespace Papercut.UI
             // Set up the notification icon
             _notification = new NotifyIcon
             {
-                Icon =
-                    new Icon(Application.GetResourceStream(new Uri("/Papercut;component/App.ico", UriKind.Relative)).Stream),
+                Icon = new Icon(ResourceLocator.GetResource("App.ico").Stream),
                 Text = "Papercut",
                 Visible = true
             };

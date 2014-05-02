@@ -26,6 +26,7 @@ namespace Papercut
 
     using Papercut.Core.Configuration;
     using Papercut.Core.Setting;
+    using Papercut.UI;
 
     public class PapercutUIModule : Module
     {
@@ -33,6 +34,7 @@ namespace Papercut
 
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<AppResourceLocator>().SingleInstance();
             builder.RegisterType<SettingPathTemplateProvider>().As<IPathTemplatesProvider>().SingleInstance();
             builder.RegisterAssemblyTypes(new[] { ThisAssembly }).AssignableTo<Control>().AsSelf().InstancePerDependency();
 
