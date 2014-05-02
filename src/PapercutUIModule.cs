@@ -25,6 +25,7 @@ namespace Papercut
     using Autofac;
 
     using Papercut.Core.Configuration;
+    using Papercut.Core.Helper;
     using Papercut.Core.Setting;
     using Papercut.UI;
 
@@ -36,7 +37,7 @@ namespace Papercut
         {
             builder.RegisterType<AppResourceLocator>().SingleInstance();
             builder.RegisterType<SettingPathTemplateProvider>().As<IPathTemplatesProvider>().SingleInstance();
-            builder.RegisterAssemblyTypes(new[] { ThisAssembly }).AssignableTo<Control>().AsSelf().InstancePerDependency();
+            builder.RegisterAssemblyTypes(new[] { ThisAssembly }).AssignableTo<Control>().AsSelf().InstancePerUIScope();
 
             base.Load(builder);
         }

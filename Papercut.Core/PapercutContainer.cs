@@ -27,6 +27,8 @@ namespace Papercut.Core
         static readonly SafeReadWriteProvider<IContainer> _containerProvider
             = new SafeReadWriteProvider<IContainer>(Build);
 
+        public static readonly object UIScopeTag = new object();
+
         public static IContainer Instance
         {
             get

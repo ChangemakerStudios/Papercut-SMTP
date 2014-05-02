@@ -79,7 +79,7 @@
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            _lifetimeScope = PapercutContainer.Instance.BeginLifetimeScope();
+            _lifetimeScope = PapercutContainer.Instance.BeginLifetimeScope(PapercutContainer.UIScopeTag);
             base.OnStartup(e);
         }
 
