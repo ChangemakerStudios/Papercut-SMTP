@@ -25,8 +25,6 @@ namespace Papercut.Core
 
     public static class ObjectExtensions
     {
-        #region Public Methods and Operators
-
         /// <summary>
         ///     If value is not null, calls continueFunc with value, else, returns default(TOut).
         /// </summary>
@@ -60,14 +58,7 @@ namespace Papercut.Core
         /// <returns></returns>
         public static IEnumerable<T> ToEnumerable<T>(this T obj)
         {
-            if (!obj.IsDefault())
-            {
-                yield return obj;
-            }
-
-            yield break;
+            if (!obj.IsDefault()) yield return obj;
         }
-
-        #endregion
     }
 }

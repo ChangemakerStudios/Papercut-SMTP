@@ -128,10 +128,7 @@ namespace Papercut.Service
                 Client.Close();
             }
 
-            if (triggerEvent)
-            {
-                OnConnectionClosed(new EventArgs());
-            }
+            if (triggerEvent) OnConnectionClosed(new EventArgs());
 
             Logger.Write("Connection closed", ConnectionId);
         }
@@ -176,10 +173,7 @@ namespace Papercut.Service
         /// </param>
         protected void OnConnectionClosed(EventArgs e)
         {
-            if (ConnectionClosed != null)
-            {
-                ConnectionClosed(this, e);
-            }
+            if (ConnectionClosed != null) ConnectionClosed(this, e);
         }
 
         /// <summary>
@@ -192,18 +186,12 @@ namespace Papercut.Service
         {
             var connection = (Connection)result.AsyncState;
 
-            if (connection == null)
-            {
-                return;
-            }
+            if (connection == null) return;
 
             try
             {
                 // Ensure we're connected... this method gets called when closing a socket with a pending BeginReceive();
-                if (!connection.Connected)
-                {
-                    return;
-                }
+                if (!connection.Connected) return;
 
                 // If the socket has been closed, then ensure we close it out
                 if (connection.Client == null || !connection.Client.Connected)
@@ -259,10 +247,7 @@ namespace Papercut.Service
                 }
 
                 // Set up to wait for more
-                if (!connection.Connected)
-                {
-                    return;
-                }
+                if (!connection.Connected) return;
 
                 try
                 {
@@ -293,10 +278,7 @@ namespace Papercut.Service
             try
             {
                 // Ensure we're connected... this method gets called when closing a socket with a pending BeginReceive();
-                if (!connection.Connected)
-                {
-                    return;
-                }
+                if (!connection.Connected) return;
 
                 // If the socket has been closed, then ensure we close it out
                 if (connection.Client == null || !connection.Client.Connected)

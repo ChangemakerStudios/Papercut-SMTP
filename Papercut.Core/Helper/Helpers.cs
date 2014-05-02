@@ -20,8 +20,6 @@
 
 namespace Papercut.Core
 {
-    #region Using
-
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -29,21 +27,14 @@ namespace Papercut.Core
     using System.Net;
     using System.Text;
 
-    #endregion
-
     /// <summary>
     ///     The util.
     /// </summary>
     public static class Helpers
     {
-        #region Public Methods and Operators
-
         public static string AsString(this byte[] bytes, Encoding byteEncoding = null)
         {
-            if (bytes == null)
-            {
-                throw new ArgumentNullException("bytes");
-            }
+            if (bytes == null) throw new ArgumentNullException("bytes");
 
             byteEncoding = byteEncoding ?? Encoding.UTF8;
             return byteEncoding.GetString(bytes);
@@ -60,10 +51,7 @@ namespace Papercut.Core
             Type enumType = typeof(TEnum);
 
             // Can't use type constraints on value types, so have to do check like this
-            if (enumType.BaseType != typeof(Enum))
-            {
-                throw new ArgumentException("EnumAsList does not support non-enum types");
-            }
+            if (enumType.BaseType != typeof(Enum)) throw new ArgumentException("EnumAsList does not support non-enum types");
 
             Array enumValArray = Enum.GetValues(enumType);
 
@@ -84,10 +72,7 @@ namespace Papercut.Core
         {
             IPAddress ip = GetExternalIp();
 
-            if (ip == null)
-            {
-                return Dns.GetHostEntry(Dns.GetHostName()).HostName;
-            }
+            if (ip == null) return Dns.GetHostEntry(Dns.GetHostName()).HostName;
 
             return Dns.GetHostEntry(ip).HostName;
         }
@@ -102,10 +87,7 @@ namespace Papercut.Core
         {
             string[] suffixes = { "B", "KB", "MB", "GB", "TB", "PB" };
 
-            if (bytes == 0)
-            {
-                return string.Format("0{0}", suffixes[0]);
-            }
+            if (bytes == 0) return string.Format("0{0}", suffixes[0]);
 
             var place = Convert.ToInt64(Math.Floor(Math.Log(bytes, 1024)));
 
@@ -123,17 +105,11 @@ namespace Papercut.Core
         /// <returns></returns>
         public static string Truncate([CanBeNull] this string input, int inputLimit, [NotNull] string cutOff = "...")
         {
-            if (cutOff == null)
-            {
-                throw new ArgumentNullException("cutOff");
-            }
+            if (cutOff == null) throw new ArgumentNullException("cutOff");
 
             string output = input;
 
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                return null;
-            }
+            if (string.IsNullOrWhiteSpace(input)) return null;
 
             int limit = inputLimit - cutOff.Length;
 
@@ -152,10 +128,7 @@ namespace Papercut.Core
                     int lastSpace = output.LastIndexOf(" ");
 
                     // if we found a space then, cut back to that space
-                    if (lastSpace != -1)
-                    {
-                        output = output.Substring(0, lastSpace);
-                    }
+                    if (lastSpace != -1) output = output.Substring(0, lastSpace);
                 }
 
                 // Finally, add the the cut off string...
@@ -164,10 +137,6 @@ namespace Papercut.Core
 
             return output;
         }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         ///     The get external ip.
@@ -188,7 +157,5 @@ namespace Papercut.Core
                 return null;
             }
         }
-
-        #endregion
     }
 }

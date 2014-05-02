@@ -27,12 +27,8 @@ namespace Papercut.Core
     /// </summary>
     public interface IServer : IDisposable
     {
-        #region Public Methods and Operators
-
         void Listen(string ip, int port);
 
         void Stop();
-
-        #endregion
     }
 }

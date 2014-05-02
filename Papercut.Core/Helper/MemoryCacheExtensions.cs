@@ -30,7 +30,7 @@ namespace Papercut.Core.Helper
         /// <summary>
         ///     The lock object count.
         /// </summary>
-        private const int LockObjectCount = 0xFF;
+        const int LockObjectCount = 0xFF;
 
         #endregion
 
@@ -39,7 +39,7 @@ namespace Papercut.Core.Helper
         /// <summary>
         ///     The lock cache items.
         /// </summary>
-        private static readonly object[] _lockCacheItems;
+        static readonly object[] _lockCacheItems;
 
         #endregion
 
@@ -63,35 +63,20 @@ namespace Papercut.Core.Helper
             [NotNull] Func<T> getValue,
             [NotNull] Action<T> addToCacheFunction)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException("key");
-            }
-            if (getValue == null)
-            {
-                throw new ArgumentNullException("getValue");
-            }
-            if (addToCacheFunction == null)
-            {
-                throw new ArgumentNullException("addToCacheFunction");
-            }
+            if (key == null) throw new ArgumentNullException("key");
+            if (getValue == null) throw new ArgumentNullException("getValue");
+            if (addToCacheFunction == null) throw new ArgumentNullException("addToCacheFunction");
 
             var cachedItem = (T)(cache[key]);
 
-            if (!cachedItem.IsDefault())
-            {
-                return cachedItem;
-            }
+            if (!cachedItem.IsDefault()) return cachedItem;
 
             lock (GetLockObject(key))
             {
                 // now that we're on lockdown, try one more time...
                 cachedItem = (T)(cache[key]);
 
-                if (!cachedItem.IsDefault())
-                {
-                    return cachedItem;
-                }
+                if (!cachedItem.IsDefault()) return cachedItem;
 
                 // materialize the query
                 cachedItem = getValue();
@@ -120,20 +105,14 @@ namespace Papercut.Core.Helper
         ///     The get.
         /// </returns>
         [NotNull]
-        private static object GetLockObject([NotNull] string originalKey)
+        static object GetLockObject([NotNull] string originalKey)
         {
-            if (originalKey == null)
-            {
-                throw new ArgumentNullException("originalKey");
-            }
+            if (originalKey == null) throw new ArgumentNullException("originalKey");
 
             int keyHash = originalKey.GetHashCode();
 
             // make positive if negative...
-            if (keyHash < 0)
-            {
-                keyHash = -keyHash;
-            }
+            if (keyHash < 0) keyHash = -keyHash;
 
             // get the lock item id (value between 0 and objectCount)
             int lockItemId = keyHash % LockObjectCount;

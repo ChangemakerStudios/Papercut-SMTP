@@ -21,20 +21,13 @@
 namespace Papercut.Core.Message
 {
     using System;
-    using System.IO;
 
     public static class MessageRepositoryExtensions
     {
         public static byte[] GetMessage(this MessageRepository messageRepository, MessageEntry entry)
         {
-            if (messageRepository == null)
-            {
-                throw new ArgumentNullException("messageRepository");
-            }
-            if (entry == null)
-            {
-                throw new ArgumentNullException("entry");
-            }
+            if (messageRepository == null) throw new ArgumentNullException("messageRepository");
+            if (entry == null) throw new ArgumentNullException("entry");
 
             return messageRepository.GetMessage(entry.File);
         }

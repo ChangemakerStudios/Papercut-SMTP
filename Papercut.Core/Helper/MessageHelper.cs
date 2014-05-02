@@ -44,10 +44,7 @@ namespace Papercut.Core.Mime
             // return html if available first
             var html = mimeParts.FirstOrDefault(s => s.IsContentHtml());
 
-            if (!html.IsDefault())
-            {
-                return html;
-            }
+            if (!html.IsDefault()) return html;
 
             // anything else available
             return mimeParts.FirstOrDefault();

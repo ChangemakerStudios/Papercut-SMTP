@@ -160,10 +160,7 @@ namespace Papercut.Service
                     while ((line = reader.ReadLine()) != ".")
                     {
                         // reverse any dot-stuffing per RFC 2821, section 4.5.2
-                        if (line.StartsWith(".") && line.Length > 1)
-                        {
-                            line = line.Substring(1);
-                        }
+                        if (line.StartsWith(".") && line.Length > 1) line = line.Substring(1);
 
                         output.Add(line);
                     }
@@ -273,10 +270,7 @@ namespace Papercut.Service
 
             string address =
                 line.Substring(line.IndexOf(":") + 1).Replace("<", string.Empty).Replace(">", string.Empty).Trim();
-            if (!Session.Recipients.Contains(address))
-            {
-                Session.Recipients.Add(address);
-            }
+            if (!Session.Recipients.Contains(address)) Session.Recipients.Add(address);
 
             Connection.Send("250 <{0}> OK", address);
         }

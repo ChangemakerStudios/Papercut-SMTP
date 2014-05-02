@@ -60,12 +60,12 @@ namespace Papercut.Core
                 (c) =>
                 {
                     Log.Logger = new LoggerConfiguration()
-                        .MinimumLevel.Verbose()
+                        .MinimumLevel.Debug()
                         .Enrich.WithMachineName()
                         .Enrich.WithThreadId()
                         .Enrich.FromLogContext()
                         .WriteTo.ColoredConsole()
-                        .WriteTo.RollingFile("papercut.log", LogEventLevel.Debug)
+                        .WriteTo.RollingFile("papercut.log")
                         //.WriteTo.Seq("http://localhost:5341")
                         .CreateLogger();
 

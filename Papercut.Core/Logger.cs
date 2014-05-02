@@ -57,10 +57,7 @@ namespace Papercut.Core
         /// </param>
         public static void Write(string message)
         {
-            if (Log.IsEnabled(LogEventLevel.Information))
-            {
-                Log.Information("{Message}", message);
-            }
+            if (Log.IsEnabled(LogEventLevel.Information)) Log.Information("{Message}", message);
         }
 
         /// <summary>
@@ -74,10 +71,7 @@ namespace Papercut.Core
         /// </param>
         public static void Write(string message, int connectionId)
         {
-            if (Log.IsEnabled(LogEventLevel.Information))
-            {
-                Log.Information("[{ConnectionId}] - {Message}", connectionId, message);
-            }
+            if (Log.IsEnabled(LogEventLevel.Information)) Log.Information("[{ConnectionId}] - {Message}", connectionId, message);
         }
 
         /// <summary>
@@ -88,10 +82,7 @@ namespace Papercut.Core
         /// </param>
         public static void WriteDebug(string message)
         {
-            if (Log.IsEnabled(LogEventLevel.Debug))
-            {
-                Log.Debug("{Message}", message);
-            }
+            if (Log.IsEnabled(LogEventLevel.Debug)) Log.Debug("{Message}", message);
         }
 
         /// <summary>
@@ -105,10 +96,7 @@ namespace Papercut.Core
         /// </param>
         public static void WriteDebug(string message, int connectionId)
         {
-            if (Log.IsEnabled(LogEventLevel.Debug))
-            {
-                Log.Debug("[{ConnectionId}] - {Message}", connectionId, message);
-            }
+            if (Log.IsEnabled(LogEventLevel.Debug)) Log.Debug("[{ConnectionId}] - {Message}", connectionId, message);
         }
 
         /// <summary>
@@ -122,10 +110,7 @@ namespace Papercut.Core
         /// </param>
         public static void WriteError(string message, Exception e)
         {
-            if (Log.IsEnabled(LogEventLevel.Error))
-            {
-                Log.Error(e, "{Message}", message);
-            }
+            if (Log.IsEnabled(LogEventLevel.Error)) Log.Error(e, "{Message}", message);
         }
 
         /// <summary>
@@ -142,10 +127,7 @@ namespace Papercut.Core
         /// </param>
         public static void WriteError(string message, Exception e, int connectionId)
         {
-            if (Log.IsEnabled(LogEventLevel.Error))
-            {
-                Log.Error(e, "[{ConnectionId}] - {Message}", connectionId, message);
-            }
+            if (Log.IsEnabled(LogEventLevel.Error)) Log.Error(e, "[{ConnectionId}] - {Message}", connectionId, message);
         }
 
         /// <summary>
@@ -156,10 +138,7 @@ namespace Papercut.Core
         /// </param>
         public static void WriteWarning(string message)
         {
-            if (Log.IsEnabled(LogEventLevel.Warning))
-            {
-                Log.Warning("{Message}", message);
-            }
+            if (Log.IsEnabled(LogEventLevel.Warning)) Log.Warning("{Message}", message);
         }
 
         /// <summary>
@@ -173,10 +152,7 @@ namespace Papercut.Core
         /// </param>
         public static void WriteWarning(string message, int connectionId)
         {
-            if (Log.IsEnabled(LogEventLevel.Warning))
-            {
-                Log.Error("[{ConnectionId}] - {Message}", connectionId, message);
-            }
+            if (Log.IsEnabled(LogEventLevel.Warning)) Log.Error("[{ConnectionId}] - {Message}", connectionId, message);
         }
     }
 }

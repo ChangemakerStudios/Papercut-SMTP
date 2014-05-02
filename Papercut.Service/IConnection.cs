@@ -26,11 +26,6 @@ namespace Papercut.Service
     public interface IConnection
     {
         /// <summary>
-        ///     The connection closed.
-        /// </summary>
-        event EventHandler ConnectionClosed;
-
-        /// <summary>
         ///     Gets or sets Client.
         /// </summary>
         Socket Client { get; }
@@ -49,6 +44,11 @@ namespace Papercut.Service
         ///     Gets or sets LastActivity.
         /// </summary>
         DateTime LastActivity { get; set; }
+
+        /// <summary>
+        ///     The connection closed.
+        /// </summary>
+        event EventHandler ConnectionClosed;
 
         /// <summary>
         ///     The close.

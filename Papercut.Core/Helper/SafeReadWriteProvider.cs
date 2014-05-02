@@ -26,26 +26,16 @@ namespace Papercut.Core
     public class SafeReadWriteProvider<T>
         where T : class
     {
-        #region Fields
-
         readonly Func<T> _create;
 
         readonly ReaderWriterLockSlim _slimLock = new ReaderWriterLockSlim();
 
         T _instance;
 
-        #endregion
-
-        #region Constructors and Destructors
-
         public SafeReadWriteProvider(Func<T> create)
         {
             _create = create;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public T Instance
         {
@@ -85,7 +75,5 @@ namespace Papercut.Core
                 }
             }
         }
-
-        #endregion
     }
 }

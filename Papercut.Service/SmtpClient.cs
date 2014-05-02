@@ -31,26 +31,26 @@ namespace Papercut.Service
     #endregion
 
     /// <summary>
-    /// The smtp client.
+    ///     The smtp client.
     /// </summary>
     public class SmtpClient : TcpClient
     {
         #region Constants and Fields
 
         /// <summary>
-        /// The session.
+        ///     The session.
         /// </summary>
-        private readonly SmtpSession session;
+        readonly SmtpSession session;
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SmtpClient"/> class.
+        ///     Initializes a new instance of the <see cref="SmtpClient" /> class.
         /// </summary>
         /// <param name="session">
-        /// The session.
+        ///     The session.
         /// </param>
         public SmtpClient(SmtpSession session)
         {
@@ -62,7 +62,7 @@ namespace Papercut.Service
         #region Public Methods and Operators
 
         /// <summary>
-        /// The send.
+        ///     The send.
         /// </summary>
         /// <exception cref="SmtpException">
         /// </exception>
@@ -70,61 +70,40 @@ namespace Papercut.Service
         {
             string response;
 
-            this.Connect(this.session.Sender, 25);
-            response = this.Response();
-            if (response.Substring(0, 3) != "220")
-            {
-                throw new SmtpException(response);
-            }
+            Connect(session.Sender, 25);
+            response = Response();
+            if (response.Substring(0, 3) != "220") throw new SmtpException(response);
 
-            this.Write("HELO {0}\r\n", Helpers.GetIPAddress());
-            response = this.Response();
-            if (response.Substring(0, 3) != "250")
-            {
-                throw new SmtpException(response);
-            }
+            Write("HELO {0}\r\n", Helpers.GetIPAddress());
+            response = Response();
+            if (response.Substring(0, 3) != "250") throw new SmtpException(response);
 
-            this.Write("MAIL FROM:<{0}>\r\n", this.session.MailFrom);
-            response = this.Response();
-            if (response.Substring(0, 3) != "250")
-            {
-                throw new SmtpException(response);
-            }
+            Write("MAIL FROM:<{0}>\r\n", session.MailFrom);
+            response = Response();
+            if (response.Substring(0, 3) != "250") throw new SmtpException(response);
 
-            this.session.Recipients.ForEach(
+            session.Recipients.ForEach(
                 address =>
-                    {
-                        this.Write("RCPT TO:<{0}>\r\n", address);
-                        response = this.Response();
-                        if (response.Substring(0, 3) != "250")
-                        {
-                            throw new SmtpException(response);
-                        }
-                    });
+                {
+                    Write("RCPT TO:<{0}>\r\n", address);
+                    response = Response();
+                    if (response.Substring(0, 3) != "250") throw new SmtpException(response);
+                });
 
-            this.Write("DATA\r\n");
-            response = this.Response();
-            if (response.Substring(0, 3) != "354")
-            {
-                throw new SmtpException(response);
-            }
+            Write("DATA\r\n");
+            response = Response();
+            if (response.Substring(0, 3) != "354") throw new SmtpException(response);
 
-            NetworkStream stream = this.GetStream();
-            stream.Write(this.session.Message, 0, this.session.Message.Length);
+            NetworkStream stream = GetStream();
+            stream.Write(session.Message, 0, session.Message.Length);
 
-            this.Write("\r\n.\r\n");
-            response = this.Response();
-            if (response.Substring(0, 3) != "250")
-            {
-                throw new SmtpException(response);
-            }
+            Write("\r\n.\r\n");
+            response = Response();
+            if (response.Substring(0, 3) != "250") throw new SmtpException(response);
 
-            this.Write("QUIT\r\n");
-            response = this.Response();
-            if (response.IndexOf("221") == -1)
-            {
-                throw new SmtpException(response);
-            }
+            Write("QUIT\r\n");
+            response = Response();
+            if (response.IndexOf("221") == -1) throw new SmtpException(response);
         }
 
         #endregion
@@ -132,36 +111,36 @@ namespace Papercut.Service
         #region Methods
 
         /// <summary>
-        /// The response.
+        ///     The response.
         /// </summary>
         /// <returns>
-        /// The response.
+        ///     The response.
         /// </returns>
-        private string Response()
+        string Response()
         {
             var enc = new ASCIIEncoding();
             var serverbuff = new byte[1024];
-            NetworkStream stream = this.GetStream();
+            NetworkStream stream = GetStream();
             int count = stream.Read(serverbuff, 0, 1024);
 
             return count == 0 ? string.Empty : enc.GetString(serverbuff, 0, count);
         }
 
         /// <summary>
-        /// The write.
+        ///     The write.
         /// </summary>
         /// <param name="format">
-        /// The format.
+        ///     The format.
         /// </param>
         /// <param name="args">
-        /// The args.
+        ///     The args.
         /// </param>
-        private void Write(string format, params object[] args)
+        void Write(string format, params object[] args)
         {
             var en = new ASCIIEncoding();
 
             byte[] writeBuffer = en.GetBytes(string.Format(format, args));
-            NetworkStream stream = this.GetStream();
+            NetworkStream stream = GetStream();
             stream.Write(writeBuffer, 0, writeBuffer.Length);
         }
 

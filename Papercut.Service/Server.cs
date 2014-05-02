@@ -77,10 +77,7 @@ namespace Papercut.Service
 
         public void Stop()
         {
-            if (!_isRunning)
-            {
-                return;
-            }
+            if (!_isRunning) return;
 
             Logger.Write("Stopping server...");
 
@@ -96,10 +93,7 @@ namespace Papercut.Service
                 _timeoutThread.Join();
 
                 // Close all open connections
-                foreach (var connection in _connections.Values.Where(connection => connection != null))
-                {
-                    connection.Close(false);
-                }
+                foreach (var connection in _connections.Values.Where(connection => connection != null)) connection.Close(false);
             }
             catch (Exception ex)
             {
@@ -116,10 +110,7 @@ namespace Papercut.Service
             try
             {
                 // If the listener isn't null, close before rebinding
-                if (_listener != null)
-                {
-                    _listener.Close();
-                }
+                if (_listener != null) _listener.Close();
 
                 // Bind to the listening port
                 _listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -138,14 +129,8 @@ namespace Papercut.Service
         protected void SetEndpoint(string ip, int port)
         {
             // Load IP/Port settings
-            if (string.IsNullOrWhiteSpace(ip) || string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase))
-            {
-                _address = IPAddress.Any;
-            }
-            else
-            {
-                _address = IPAddress.Parse(ip);
-            }
+            if (string.IsNullOrWhiteSpace(ip) || string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase)) _address = IPAddress.Any;
+            else _address = IPAddress.Parse(ip);
 
             _port = port;
         }
@@ -206,10 +191,7 @@ namespace Papercut.Service
                     if (!_isReady)
                     {
                         // If it is already trying to start, don't have it retry yet
-                        if (!_isStarting)
-                        {
-                            Start();
-                        }
+                        if (!_isStarting) Start();
                     }
                     else
                     {
@@ -234,10 +216,7 @@ namespace Papercut.Service
                             GC.Collect();
                             collectCount = 0;
                         }
-                        else
-                        {
-                            collectCount++;
-                        }
+                        else collectCount++;
 
                         // Print status messages?
                         if (statusCount >= statusInterval)
@@ -250,10 +229,7 @@ namespace Papercut.Service
                                     memusage.ToString("0.#")));
                             statusCount = 0;
                         }
-                        else
-                        {
-                            statusCount++;
-                        }
+                        else statusCount++;
                     }
                 }
                 catch (Exception ex)
@@ -303,10 +279,7 @@ namespace Papercut.Service
         void connection_ConnectionClosed(object sender, EventArgs e)
         {
             var connection = sender as IConnection;
-            if (connection == null)
-            {
-                return;
-            }
+            if (connection == null) return;
 
             _connections.Remove(connection.ConnectionId);
         }

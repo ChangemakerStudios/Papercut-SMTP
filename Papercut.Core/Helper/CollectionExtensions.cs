@@ -27,8 +27,6 @@ namespace Papercut.Core
 
     public static class CollectionExtensions
     {
-        #region Public Methods and Operators
-
         /// <summary>
         ///     The add range.
         /// </summary>
@@ -44,20 +42,11 @@ namespace Papercut.Core
             this ICollection<TValue> destinationCollection,
             IEnumerable<TValue> sourceCollection)
         {
-            if (destinationCollection == null)
-            {
-                throw new ArgumentNullException("destinationCollection");
-            }
+            if (destinationCollection == null) throw new ArgumentNullException("destinationCollection");
 
-            if (sourceCollection == null)
-            {
-                throw new ArgumentNullException("sourceCollection");
-            }
+            if (sourceCollection == null) throw new ArgumentNullException("sourceCollection");
 
-            foreach (var item in sourceCollection.ToList())
-            {
-                destinationCollection.Add(item);
-            }
+            foreach (var item in sourceCollection.ToList()) destinationCollection.Add(item);
         }
 
         /// <summary>
@@ -71,20 +60,11 @@ namespace Papercut.Core
         /// </param>
         public static void AddRange(this IList destinationList, IEnumerable sourceList)
         {
-            if (destinationList == null)
-            {
-                throw new ArgumentNullException("destinationList");
-            }
+            if (destinationList == null) throw new ArgumentNullException("destinationList");
 
-            if (sourceList == null)
-            {
-                throw new ArgumentNullException("sourceList");
-            }
+            if (sourceList == null) throw new ArgumentNullException("sourceList");
 
-            foreach (var item in sourceList.Cast<object>().ToList())
-            {
-                destinationList.Add(item);
-            }
+            foreach (var item in sourceList.Cast<object>().ToList()) destinationList.Add(item);
         }
 
         /// <summary>
@@ -102,19 +82,11 @@ namespace Papercut.Core
         /// </returns>
         public static IEnumerable<T> ForEach<T>(this IEnumerable<T> source, Action<T> act)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
+            if (source == null) throw new ArgumentNullException("source");
 
-            foreach (T element in source.ToList())
-            {
-                act(element);
-            }
+            foreach (T element in source.ToList()) act(element);
 
             return source;
         }
-
-        #endregion
     }
 }

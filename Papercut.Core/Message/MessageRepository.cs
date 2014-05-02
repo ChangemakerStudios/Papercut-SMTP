@@ -29,16 +29,21 @@ namespace Papercut.Core.Message
 
     using Papercut.Core.Configuration;
 
+    using Serilog;
+
     public class MessageRepository : IDisposable
     {
         public const string MessageFileSearchPattern = "*.eml";
+
+        readonly ILogger _logger;
 
         readonly IMessagePathConfigurator _messagePathConfigurator;
 
         List<FileSystemWatcher> _watchers;
 
-        public MessageRepository(IMessagePathConfigurator messagePathConfigurator)
+        public MessageRepository(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
         {
+            _logger = logger.ForContext<MessageRepository>();
             _messagePathConfigurator = messagePathConfigurator;
             SetupMessageWatchers();
         }
@@ -107,7 +112,7 @@ namespace Papercut.Core.Message
                         Thread.Sleep(500);
                         if (++retryCount > 30)
                         {
-                            // TODO: log here...
+                            _logger.Error("Failed after {RetryCount} retries to Open File {FileInfo}", retryCount, info);
                             break;
                         }
                     }
@@ -118,10 +123,7 @@ namespace Papercut.Core.Message
 
         bool CanOpenFile(FileInfo file)
         {
-            if (file == null)
-            {
-                throw new ArgumentNullException("file");
-            }
+            if (file == null) throw new ArgumentNullException("file");
 
             try
             {
@@ -140,10 +142,7 @@ namespace Papercut.Core.Message
 
         bool TryReadFile(FileInfo file, out byte[] fileBytes)
         {
-            if (file == null)
-            {
-                throw new ArgumentNullException("file");
-            }
+            if (file == null) throw new ArgumentNullException("file");
 
             fileBytes = null;
 
@@ -172,10 +171,7 @@ namespace Papercut.Core.Message
         public bool DeleteMessage(MessageEntry entry)
         {
             // Delete the file and remove the entry
-            if (!File.Exists(entry.File))
-            {
-                return false;
-            }
+            if (!File.Exists(entry.File)) return false;
 
             File.Delete(entry.File);
             return true;
@@ -183,10 +179,7 @@ namespace Papercut.Core.Message
 
         public byte[] GetMessage(string file)
         {
-            if (!File.Exists(file))
-            {
-                throw new IOException(string.Format("File {0} Does Not Exist", file));
-            }
+            if (!File.Exists(file)) throw new IOException(string.Format("File {0} Does Not Exist", file));
 
             var info = new FileInfo(file);
             byte[] data;
@@ -196,10 +189,7 @@ namespace Papercut.Core.Message
             {
                 Thread.Sleep(500);
 
-                if (++retryCount > 10)
-                {
-                    throw new IOException(string.Format("Cannot Load File {0} After 5 Seconds", file));
-                }
+                if (++retryCount > 10) throw new IOException(string.Format("Cannot Load File {0} After 5 Seconds", file));
             }
 
             return data;
@@ -222,19 +212,13 @@ namespace Papercut.Core.Message
         protected virtual void OnRefreshNeeded()
         {
             var handler = RefreshNeeded;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            if (handler != null) handler(this, EventArgs.Empty);
         }
 
         protected virtual void OnNewMessage(NewMessageEventArgs e)
         {
             var handler = NewMessage;
-            if (handler != null)
-            {
-                handler(this, e);
-            }
+            if (handler != null) handler(this, e);
         }
 
         public string SaveMessage(IList<string> output)

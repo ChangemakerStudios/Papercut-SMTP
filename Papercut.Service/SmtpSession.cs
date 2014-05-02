@@ -27,86 +27,86 @@ namespace Papercut.Service
     #endregion
 
     /// <summary>
-    /// The smtp session.
+    ///     The smtp session.
     /// </summary>
     public class SmtpSession
     {
         #region Constants and Fields
 
         /// <summary>
-        /// The _mail from.
+        ///     The _mail from.
         /// </summary>
-        private string _mailFrom;
+        string _mailFrom;
 
         /// <summary>
-        /// The _recipients.
+        ///     The _recipients.
         /// </summary>
-        private IList<string> _recipients = new List<string>();
+        IList<string> _recipients = new List<string>();
 
         /// <summary>
-        /// The use utf 8.
+        ///     The use utf 8.
         /// </summary>
-        private bool _useUtf8;
+        bool _useUtf8;
 
         #endregion
 
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets MailFrom.
+        ///     Gets or sets MailFrom.
         /// </summary>
         public string MailFrom
         {
             get
             {
-                return this._mailFrom;
+                return _mailFrom;
             }
 
             set
             {
-                this._mailFrom = value;
+                _mailFrom = value;
             }
         }
 
         /// <summary>
-        /// Gets or sets Message.
+        ///     Gets or sets Message.
         /// </summary>
         public byte[] Message { get; set; }
 
         /// <summary>
-        /// Gets or sets Recipients.
+        ///     Gets or sets Recipients.
         /// </summary>
         public IList<string> Recipients
         {
             get
             {
-                return this._recipients;
+                return _recipients;
             }
 
             set
             {
-                this._recipients = value;
+                _recipients = value;
             }
         }
 
         /// <summary>
-        /// Gets or sets Sender.
+        ///     Gets or sets Sender.
         /// </summary>
         public string Sender { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether UseUtf8.
+        ///     Gets or sets a value indicating whether UseUtf8.
         /// </summary>
         public bool UseUtf8
         {
             get
             {
-                return this._useUtf8;
+                return _useUtf8;
             }
 
             set
             {
-                this._useUtf8 = value;
+                _useUtf8 = value;
             }
         }
 
@@ -115,13 +115,13 @@ namespace Papercut.Service
         #region Public Methods and Operators
 
         /// <summary>
-        /// The reset.
+        ///     The reset.
         /// </summary>
         public void Reset()
         {
-            this._mailFrom = null;
-            this._recipients.Clear();
-            this._useUtf8 = false;
+            _mailFrom = null;
+            _recipients.Clear();
+            _useUtf8 = false;
         }
 
         #endregion
