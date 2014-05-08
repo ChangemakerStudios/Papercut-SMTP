@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="Papercut.Components.Spinner"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+            d:DesignWidth="640" d:DesignHeight="480">
+    <UserControl.Resources>
+        <Storyboard x:Name="spinner" x:Key="spinner"  RepeatBehavior="Forever" >
+            <DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="bottomCog" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)">
+                <EasingDoubleKeyFrame KeyTime="00:00:00" Value="15"/>
+                <EasingDoubleKeyFrame KeyTime="00:00:00.5000000" Value="195"/>
+                <EasingDoubleKeyFrame KeyTime="00:00:01" Value="344"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="topCog" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)">
+                <EasingDoubleKeyFrame KeyTime="00:00:00" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="00:00:00.5000000" Value="-180"/>
+                <EasingDoubleKeyFrame KeyTime="00:00:01" Value="-359"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+    </UserControl.Resources>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource spinner}"/>
+        </EventTrigger>
+    </UserControl.Triggers>
+
+    <Canvas x:Name="uc_SpinnerCogs" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" Width="24">
+        <Path x:Name="topCog" Data="M6.1820068,13.326002 C6.1820068,9.1240015 9.6010065,5.7050018 13.804008,5.7050018 C18.005007,5.7050018 21.425007,9.1240015 21.425007,13.326002 C21.425007,17.528002 18.005007,20.947002 13.804008,20.947002 C9.6010065,20.947002 6.1820068,17.528002 6.1820068,13.326002 z M26.226999,13.326 C26.226999,10.769 25.448999,8.3900003 24.118999,6.4120002 L27.768,2.7639999 L25.004,0 L21.455,3.549 C19.344999,1.8940001 16.688,0.90200001 13.804,0.90200001 C10.959,0.90200001 8.3380003,1.865 6.2420001,3.4779999 L2.7639999,0 L0,2.7639999 L3.553,6.316 C2.1830001,8.3129997 1.38,10.727 1.38,13.326 C1.38,16.209999 2.3710001,18.865999 4.026,20.978001 L0,25.004 L2.7639999,27.768 L6.8889999,23.642 C8.8669996,24.972 11.246,25.749001 13.804,25.749001 C16.402,25.749001 18.816,24.945999 20.813,23.576 L25.004,27.768 L27.768,25.004 L23.65,20.888 C25.264,18.791 26.226999,16.169001 26.226999,13.326 z" Fill="White" Stretch="Fill" Height="10" Width="10" UseLayoutRounding="False" Canvas.Left="2.5" Canvas.Top="2.5" RenderTransformOrigin="0.5,0.5">
+            <Path.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Path.RenderTransform>
+        </Path>
+        <Path x:Name="bottomCog" Data="M6.1820068,13.326002 C6.1820068,9.1240015 9.6010065,5.7050018 13.804008,5.7050018 C18.005007,5.7050018 21.425007,9.1240015 21.425007,13.326002 C21.425007,17.528002 18.005007,20.947002 13.804008,20.947002 C9.6010065,20.947002 6.1820068,17.528002 6.1820068,13.326002 z M26.226999,13.326 C26.226999,10.769 25.448999,8.3900003 24.118999,6.4120002 L27.768,2.7639999 L25.004,0 L21.455,3.549 C19.344999,1.8940001 16.688,0.90200001 13.804,0.90200001 C10.959,0.90200001 8.3380003,1.865 6.2420001,3.4779999 L2.7639999,0 L0,2.7639999 L3.553,6.316 C2.1830001,8.3129997 1.38,10.727 1.38,13.326 C1.38,16.209999 2.3710001,18.865999 4.026,20.978001 L0,25.004 L2.7639999,27.768 L6.8889999,23.642 C8.8669996,24.972 11.246,25.749001 13.804,25.749001 C16.402,25.749001 18.816,24.945999 20.813,23.576 L25.004,27.768 L27.768,25.004 L23.65,20.888 C25.264,18.791 26.226999,16.169001 26.226999,13.326 z" Fill="White" Stretch="Fill" Height="10" Width="10" UseLayoutRounding="False" Canvas.Left="11" Canvas.Top="10.25" RenderTransformOrigin="0.5,0.5">
+            <Path.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="15"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Path.RenderTransform>
+        </Path>
+    </Canvas>
+</UserControl>

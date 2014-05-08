@@ -20,6 +20,11 @@
 
 namespace Papercut.Core
 {
+    using System;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Reflection;
+
     using Autofac;
 
     public static class PapercutContainer
@@ -29,11 +34,47 @@ namespace Papercut.Core
 
         public static readonly object UIScopeTag = new object();
 
+        static readonly Lazy<Assembly[]> _extensionAssemblies = new Lazy<Assembly[]>(
+            () => new AssemblyScanner()
+                      .GetAll()
+                      .Except(Assembly.GetExecutingAssembly().ToEnumerable())
+                      .Where(s => s.FullName.StartsWith("Papercut"))
+                      .Distinct()
+                      .ToArray());
+
+        static PapercutContainer()
+        {
+            AppDomain.CurrentDomain.ProcessExit += DisposeContainer;
+        }
+
+        public static Assembly[] ExtensionAssemblies
+        {
+            get
+            {
+                return _extensionAssemblies.Value;
+            }
+        }
+
         public static IContainer Instance
         {
             get
             {
                 return _containerProvider.Instance;
+            }
+        }
+
+        static void DisposeContainer(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_containerProvider.Created)
+                {
+                    _containerProvider.Instance.Dispose();
+                    _containerProvider.Instance = null;
+                }
+            }
+            catch (ObjectDisposedException)
+            {
             }
         }
 

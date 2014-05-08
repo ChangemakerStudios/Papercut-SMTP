@@ -1,7 +1,9 @@
 ﻿namespace Papercut
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Windows;
@@ -9,15 +11,26 @@
     using Autofac;
 
     using Papercut.Core;
-    using Papercut.UI;
+    using Papercut.Core.Events;
 
     public partial class App : Application
     {
-        ILifetimeScope _lifetimeScope;
+        Lazy<ILifetimeScope> _lifetimeScope =
+            new Lazy<ILifetimeScope>(
+                () => PapercutContainer.Instance.BeginLifetimeScope(PapercutContainer.UIScopeTag));
 
-        public App()
+        static App()
         {
+            // nothing can be called or loaded before this call is done.
             SetupEmbeddedAssemblyResolve();
+        }
+
+        public ILifetimeScope Container
+        {
+            get
+            {
+                return _lifetimeScope.Value;
+            }
         }
 
         static void SetupEmbeddedAssemblyResolve()
@@ -29,32 +42,39 @@
             // Code based on: http://www.codingmurmur.com/2014/02/embedded-assembly-loading-with-support.html
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
             {
-                var name = args.Name;
+                string name = args.Name;
                 var asmName = new AssemblyName(name);
 
                 // Any retargetable assembly should be resolved directly using normal load e.g. System.Core issue: 
                 // http://stackoverflow.com/questions/18793959/filenotfoundexception-when-trying-to-load-autofac-as-an-embedded-assembly
                 if (name.EndsWith("Retargetable=Yes")) return Assembly.Load(asmName);
 
-                var possibleResourceNames = validExtensions.Select(ext => string.Format("{0}{1}", asmName.Name, ext)).ToList();
-                var resourceToFind = string.Join(",", possibleResourceNames);
-                var resourceName = resourceNames.SingleOrDefault(n => possibleResourceNames.Any(n.Contains));
+                List<string> possibleResourceNames =
+                    validExtensions.Select(ext => string.Format("{0}{1}", asmName.Name, ext))
+                        .ToList();
+                string resourceToFind = string.Join(",", possibleResourceNames);
+                string resourceName =
+                    resourceNames.SingleOrDefault(n => possibleResourceNames.Any(n.Contains));
 
                 if (string.IsNullOrWhiteSpace(resourceName)) return null;
 
-                var symbolsToFind = asmName.Name + ".pdb";
-                var symbolsName = resourceNames.SingleOrDefault(n => n.Contains(symbolsToFind));
+                string symbolsToFind = asmName.Name + ".pdb";
+                string symbolsName = resourceNames.SingleOrDefault(n => n.Contains(symbolsToFind));
 
-                var assemblyData = LoadResourceBytes(thisAssembly, resourceName);
+                byte[] assemblyData = LoadResourceBytes(thisAssembly, resourceName);
 
                 if (string.IsNullOrWhiteSpace(symbolsName))
                 {
-                    Trace.WriteLine(string.Format("Loading '{0}' as embedded resource '{1}'", resourceToFind, resourceName));
+                    Trace.WriteLine(
+                        string.Format(
+                            "Loading '{0}' as embedded resource '{1}'",
+                            resourceToFind,
+                            resourceName));
 
                     return Assembly.Load(assemblyData);
                 }
 
-                var symbolsData = LoadResourceBytes(thisAssembly, symbolsName);
+                byte[] symbolsData = LoadResourceBytes(thisAssembly, symbolsName);
 
                 Trace.WriteLine(
                     string.Format(
@@ -69,7 +89,7 @@
 
         static byte[] LoadResourceBytes(Assembly executingAssembly, string resourceName)
         {
-            using (var stream = executingAssembly.GetManifestResourceStream(resourceName))
+            using (Stream stream = executingAssembly.GetManifestResourceStream(resourceName))
             {
                 var assemblyData = new byte[stream.Length];
                 stream.Read(assemblyData, 0, assemblyData.Length);
@@ -79,20 +99,21 @@
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            _lifetimeScope = PapercutContainer.Instance.BeginLifetimeScope(PapercutContainer.UIScopeTag);
             base.OnStartup(e);
+            Container.Resolve<IPublishEvent>().Publish(new AppReadyEvent());
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            _lifetimeScope.Dispose();
-            base.OnExit(e);
-        }
+            Debug.WriteLine("App.OnExit()");
 
-        void Application_Startup(object sender, StartupEventArgs e)
-        {
-            var mainWindow = _lifetimeScope.Resolve<MainWindow>();
-            mainWindow.Show();
+            using (Container)
+            {
+                Container.Resolve<IPublishEvent>().Publish(new AppExitEvent());
+            }
+
+            _lifetimeScope = null;
+            base.OnExit(e);
         }
     }
 }

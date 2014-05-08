@@ -17,7 +17,7 @@
  *  limitations under the License.
  *  
  */
-namespace Papercut.UI
+namespace Papercut.Helpers
 {
     using System;
     using System.Windows;
@@ -26,7 +26,7 @@ namespace Papercut.UI
 
     using Papercut.Core;
 
-    public static class UIExtensions
+    public static class UIHelper
     {
         public static T GetObjectDataFromPoint<T>([NotNull] this ListBox source, Point point)
             where T : class

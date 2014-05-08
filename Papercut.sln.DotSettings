@@ -1,2 +1,110 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=Papercut_002EAnnotations/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
+	<s:String x:Key="/Default/CodeInspection/CodeAnnotations/DefaultNamespace/@EntryValue">Papercut.Annotations</s:String>
+	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=JetBrains_002EAnnotations/@EntryIndexedValue">False</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=JetBrains_002EAnnotations/@EntryIndexRemoved">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=Papercut_002EAnnotations/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=SC_002ETypes/@EntryIndexedValue">False</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=SC_002ETypes/@EntryIndexRemoved">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=YAF_002ETypes/@EntryIndexedValue">False</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=YAF_002ETypes/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/CodeStyle/CodeCleanup/SilentCleanupProfile/@EntryValue">Default: Full Cleanup</s:String>
+	<s:String x:Key="/Default/CodeStyle/FileHeader/FileHeaderText/@EntryValue">/*  &#xD;
+ * Papercut&#xD;
+ *&#xD;
+ *  Copyright © 2008 - 2012 Ken Robertson&#xD;
+ *  Copyright © 2013 - 2014 Jaben Cargman&#xD;
+ *  &#xD;
+ *  Licensed under the Apache License, Version 2.0 (the "License");&#xD;
+ *  you may not use this file except in compliance with the License.&#xD;
+ *  You may obtain a copy of the License at&#xD;
+ *  &#xD;
+ *  http://www.apache.org/licenses/LICENSE-2.0&#xD;
+ *  &#xD;
+ *  Unless required by applicable law or agreed to in writing, software&#xD;
+ *  distributed under the License is distributed on an "AS IS" BASIS,&#xD;
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#xD;
+ *  See the License for the specific language governing permissions and&#xD;
+ *  limitations under the License.&#xD;
+ *  &#xD;
+ */&#xD;
+</s:String>
+	<s:Boolean x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=13892BFD95551A46992EFE5075830912/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=13892BFD95551A46992EFE5075830912/AbsolutePath/@EntryValue">C:\Projects\Papercut\Papercut.sln.DotSettings</s:String>
+	<s:Boolean x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File13892BFD95551A46992EFE5075830912/@KeyIndexDefined">True</s:Boolean>
+	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File13892BFD95551A46992EFE5075830912/RelativePriority/@EntryValue">1</s:Double>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/@KeyIndexDefined">False</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/Comment/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=funcName/Properties/=CaseSensitive/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=funcName/Properties/=CaseSensitive/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=funcName/Properties/=ExactType/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=funcName/Properties/=ExactType/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=funcName/Properties/=RegEx/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=funcName/Properties/=RegEx/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=funcName/Type/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=LegacyDb/Properties/=CaseSensitive/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=LegacyDb/Properties/=CaseSensitive/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=LegacyDb/Properties/=ExactType/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=LegacyDb/Properties/=ExactType/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=LegacyDb/Properties/=RegEx/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=LegacyDb/Properties/=RegEx/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=LegacyDb/Type/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=params/Properties/=Maximal/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=params/Properties/=Maximal/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=params/Properties/=Minimal/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=params/Properties/=Minimal/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/CustomPatternPlaceholder/=params/Type/@EntryValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/FormatAfterReplace/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/IsReplacePattern/@EntryValue">False</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/LanguageName/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/ReplaceComment/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/ReplacePattern/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/SearchPattern/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/Severity/@EntryValue">DO_NOT_SHOW</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=AC23DACE1E9FB34CA5C6CDDBB2AA73B9/ShortenReferences/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/@KeyIndexDefined">False</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/Comment/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=funcName/Properties/=CaseSensitive/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=funcName/Properties/=CaseSensitive/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=funcName/Properties/=ExactType/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=funcName/Properties/=ExactType/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=funcName/Properties/=RegEx/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=funcName/Properties/=RegEx/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=funcName/Type/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=LegacyDb/Properties/=CaseSensitive/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=LegacyDb/Properties/=CaseSensitive/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=LegacyDb/Properties/=ExactType/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=LegacyDb/Properties/=ExactType/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=LegacyDb/Properties/=RegEx/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=LegacyDb/Properties/=RegEx/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=LegacyDb/Type/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=params/Properties/=Maximal/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=params/Properties/=Maximal/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=params/Properties/=Minimal/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=params/Properties/=Minimal/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/CustomPatternPlaceholder/=params/Type/@EntryValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/FormatAfterReplace/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/IsReplacePattern/@EntryValue">False</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/LanguageName/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/ReplaceComment/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/ReplacePattern/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/SearchPattern/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/Severity/@EntryValue">DO_NOT_SHOW</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=B3743B81396915449A26D7125855EA0B/ShortenReferences/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/@KeyIndexDefined">False</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/Comment/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=param/Properties/=ExactType/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=param/Properties/=ExactType/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=param/Properties/=ExpressionType/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=param/Properties/=ExpressionType/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=param/Type/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=paramName/Properties/=Maximal/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=paramName/Properties/=Maximal/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=paramName/Properties/=Minimal/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=paramName/Properties/=Minimal/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/CustomPatternPlaceholder/=paramName/Type/@EntryValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/IsReplacePattern/@EntryValue">False</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/LanguageName/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/ReplaceComment/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/ReplacePattern/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/SearchPattern/@EntryValue"></s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/Severity/@EntryValue">DO_NOT_SHOW</s:String></wpf:ResourceDictionary>

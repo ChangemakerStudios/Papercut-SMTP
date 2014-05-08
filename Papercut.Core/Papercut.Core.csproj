@@ -72,6 +72,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Annotations.cs" />
+    <Compile Include="Events\AppExitEvent.cs" />
+    <Compile Include="Events\AppForceShutdownEvent.cs" />
+    <Compile Include="Events\AutofacPublishEvent.cs" />
+    <Compile Include="Events\IDomainEvent.cs" />
+    <Compile Include="Events\IPublishEvent.cs" />
+    <Compile Include="Events\IHandleEvent.cs" />
+    <Compile Include="Events\AppReadyEvent.cs" />
+    <Compile Include="Events\SmtpServerForceRebindEvent.cs" />
     <Compile Include="Helper\AssemblyScanner.cs" />
     <Compile Include="Configuration\IMessagePathConfigurator.cs" />
     <Compile Include="Configuration\IPathTemplatesProvider.cs" />

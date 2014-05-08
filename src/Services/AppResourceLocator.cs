@@ -18,7 +18,7 @@
  *  
  */
 
-namespace Papercut.UI
+namespace Papercut.Services
 {
     using System;
     using System.IO;

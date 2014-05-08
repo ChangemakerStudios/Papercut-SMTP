@@ -20,77 +20,33 @@
 
 namespace Papercut.UI
 {
-    #region Using
-
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Windows;
 
-    using Autofac;
-
-    using Papercut.Core;
     using Papercut.Core.Message;
     using Papercut.Properties;
     using Papercut.Service;
-
-    #endregion
 
     /// <summary>
     ///     Interaction logic for ForwardWindow.xaml
     /// </summary>
     public partial class ForwardWindow : Window
     {
-        #region Static Fields
+        static readonly Regex _emailRegex =
+            new Regex(
+                @"(\A(\s*)\Z)|(\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z)",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        /// <summary>
-        ///     The email regex.
-        /// </summary>
-        private static readonly Regex _emailRegex = new Regex(
-            @"(\A(\s*)\Z)|(\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z)",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        Task _worker;
 
-        #endregion
+        bool _working;
 
-        #region Fields
-
-        /// <summary>
-        ///     The message filename.
-        /// </summary>
-        private readonly MessageEntry _messageEntry;
-
-        /// <summary>
-        ///     The worker.
-        /// </summary>
-        private Task _worker;
-
-        /// <summary>
-        ///     The working.
-        /// </summary>
-        private bool _working;
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="ForwardWindow" /> class.
-        /// </summary>
-        /// <param name="entry"></param>
-        public ForwardWindow(MessageEntry entry)
-            : this()
+        public ForwardWindow(MessageRepository messageRepository)
         {
-            _messageEntry = entry;
-        }
+            MessageRepository = messageRepository;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="ForwardWindow" /> class.
-        /// </summary>
-        public ForwardWindow()
-        {
             InitializeComponent();
-
-            // simplistic injection
-            PapercutContainer.Instance.InjectUnsetProperties(this);
 
             // Load previous settings
             server.Text = Settings.Default.ForwardServer;
@@ -100,26 +56,11 @@ namespace Papercut.UI
             server.Focus();
         }
 
-        #endregion
-
-        #region Public Properties
+        public MessageEntry MessageEntry { get; set; }
 
         public MessageRepository MessageRepository { get; set; }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        ///     The cancel button_ click.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
-        private void cancelButton_Click(object sender, RoutedEventArgs e)
+        void cancelButton_Click(object sender, RoutedEventArgs e)
         {
             if (_working)
             {
@@ -130,16 +71,7 @@ namespace Papercut.UI
             DialogResult = false;
         }
 
-        /// <summary>
-        ///     The send button_ click.
-        /// </summary>
-        /// <param name="sender">
-        ///     The sender.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
-        private void sendButton_Click(object sender, RoutedEventArgs e)
+        void sendButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(server.Text) || string.IsNullOrEmpty(this.@from.Text)
                 || string.IsNullOrEmpty(this.to.Text))
@@ -162,22 +94,22 @@ namespace Papercut.UI
                 return;
             }
 
-            var host = server.Text.Trim();
-            var from = this.@from.Text.Trim();
-            var to = this.to.Text.Trim();
+            string host = server.Text.Trim();
+            string from = this.@from.Text.Trim();
+            string to = this.to.Text.Trim();
 
             _worker = Task.Factory.StartNew(
                 () =>
                 {
-                    var session = new SmtpSession() { MailFrom = from, Sender = host };
+                    var session = new SmtpSession { MailFrom = from, Sender = host };
                     session.Recipients.Add(to);
-                    session.Message = MessageRepository.GetMessage(this._messageEntry);
+                    session.Message = MessageRepository.GetMessage(MessageEntry);
 
                     new SmtpClient(session).Send();
                 });
 
             _worker.ContinueWith(
-                (t) =>
+                t =>
                 {
                     // Save settings for the next time
                     Settings.Default.ForwardServer = server.Text;
@@ -195,7 +127,5 @@ namespace Papercut.UI
             sendButton.IsEnabled = false;
             sendingLabel.Visibility = Visibility.Visible;
         }
-
-        #endregion
     }
 }

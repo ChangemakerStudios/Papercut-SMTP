@@ -37,6 +37,23 @@ namespace Papercut.Core
             _create = create;
         }
 
+        public bool Created
+        {
+            get
+            {
+                _slimLock.EnterReadLock();
+                try
+                {
+                    var readValue = _instance;
+                    return (readValue != null);
+                }
+                finally
+                {
+                    _slimLock.ExitReadLock();
+                }
+            }
+        }
+
         public T Instance
         {
             get

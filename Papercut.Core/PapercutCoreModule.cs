@@ -27,6 +27,7 @@ namespace Papercut.Core
     using Autofac.Core;
 
     using Papercut.Core.Configuration;
+    using Papercut.Core.Events;
     using Papercut.Core.Message;
 
     using Serilog;
@@ -36,24 +37,22 @@ namespace Papercut.Core
 
     class PapercutCoreModule : Module
     {
-        protected Assembly[] GetExtensionAssemblies()
-        {
-            return new AssemblyScanner()
-                .GetAll()
-                .Except(Assembly.GetExecutingAssembly().ToEnumerable())
-                .Where(s => s.FullName.StartsWith("Papercut"))
-                .Distinct()
-                .ToArray();
-        }
-
         protected override void Load(ContainerBuilder builder)
         {
-            var scannableAssemblies = GetExtensionAssemblies();
+            var scannableAssemblies = PapercutContainer.ExtensionAssemblies;
 
             builder.RegisterAssemblyModules<IModule>(scannableAssemblies);
 
+            // events
+            builder.RegisterType<AutofacPublishEvent>()
+                .As<IPublishEvent>()
+                .AsSelf()
+                .InstancePerLifetimeScope()
+                .PreserveExistingDefaults();
+
             builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
             builder.RegisterType<MimeMessageLoader>().AsSelf().SingleInstance();
+
             builder.RegisterType<MessagePathConfigurator>().As<IMessagePathConfigurator>().AsSelf().SingleInstance();
 
             builder.Register(

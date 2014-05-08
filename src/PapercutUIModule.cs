@@ -20,13 +20,19 @@
 
 namespace Papercut
 {
-    using System.Windows.Controls;
-
     using Autofac;
+    using Autofac.Core;
 
+    using Caliburn.Micro;
+
+    using Papercut.Core;
     using Papercut.Core.Configuration;
+    using Papercut.Core.Events;
     using Papercut.Core.Helper;
     using Papercut.Core.Setting;
+    using Papercut.Events;
+    using Papercut.Helpers;
+    using Papercut.Services;
     using Papercut.UI;
 
     public class PapercutUIModule : Module
@@ -35,11 +41,43 @@ namespace Papercut
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<AppResourceLocator>().SingleInstance();
+            //  register view models
+            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
+              .Where(type => type.Name.EndsWith("ViewModel"))
+              .AsImplementedInterfaces()
+              .AsSelf()
+              .OnActivated(SubscribeEventAggregator)
+              .InstancePerDependency();
+
+            //  register views
+            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
+              .Where(type => type.Name.EndsWith("View"))
+              .AsImplementedInterfaces()
+              .AsSelf()
+              .OnActivated(SubscribeEventAggregator)
+              .InstancePerDependency();
+
+            // register ui scope services
+            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
+                .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
+                .AsImplementedInterfaces()
+                .AsSelf()
+                .InstancePerUIScope();
+
+            builder.RegisterType<WindowManager>().As<IWindowManager>().InstancePerLifetimeScope();
+            builder.RegisterType<EventAggregator>().As<IEventAggregator>().InstancePerLifetimeScope();
+            builder.RegisterType<EventPublishAll>().As<IPublishEvent>().InstancePerLifetimeScope();
+
+            builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SettingPathTemplateProvider>().As<IPathTemplatesProvider>().SingleInstance();
-            builder.RegisterAssemblyTypes(new[] { ThisAssembly }).AssignableTo<Control>().AsSelf().InstancePerUIScope();
 
             base.Load(builder);
+        }
+
+        static void SubscribeEventAggregator(IActivatedEventArgs<object> e)
+        {
+            // Automatically calls subscribe on activated Windows, Views and ViewModels
+            e.Context.Resolve<IEventAggregator>().Subscribe(e.Instance);
         }
 
         #endregion
