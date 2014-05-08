@@ -60,12 +60,7 @@ namespace Papercut.Services
             _notification.Click +=
                 (sender, args) => _publishEvent.Publish(new ShowMainWindowEvent());
 
-            //_notification.BalloonTipClicked += (sender, args) =>
-            //{
-            //    Show();
-            //    WindowState = WindowState.Normal;
-            //    messagesList.SelectedIndex = messagesList.Items.Count - 1;
-            //};
+            _notification.BalloonTipClicked += (sender, args) => _publishEvent.Publish(new ShowMainWindowEvent() { SelectMostRecentMessage = true });
 
             _notification.ContextMenu =
                 new ContextMenu(

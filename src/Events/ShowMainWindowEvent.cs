@@ -24,5 +24,11 @@ namespace Papercut.Events
 
     public class ShowMainWindowEvent : IDomainEvent
     {
+        public bool SelectMostRecentMessage { get; set; }
+
+        public ShowMainWindowEvent(bool selectMostRecentMessage = false)
+        {
+            SelectMostRecentMessage = selectMostRecentMessage;
+        }
     }
 }

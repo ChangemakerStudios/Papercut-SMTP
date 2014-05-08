@@ -542,6 +542,11 @@ namespace Papercut.Views
             Topmost = true;
             Focus();
             Topmost = false;
+
+            if (message.SelectMostRecentMessage)
+            {
+                messagesList.SelectedIndex = messagesList.Items.Count - 1;
+            }
         }
 
         void IHandle<SmtpServerBindFailedEvent>.Handle(SmtpServerBindFailedEvent message)
