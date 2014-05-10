@@ -141,7 +141,7 @@ namespace Papercut.Service
             {
                 Socket clientSocket = _listener.EndAccept(ar);
                 Interlocked.Increment(ref _connectionID);
-                var connection = new Connection(_connectionID, clientSocket, new SmtpProcessor());
+                var connection = new Connection(_connectionID, clientSocket, new SmtpProtocol());
                 connection.ConnectionClosed += connection_ConnectionClosed;
                 _connections.Add(connection.Id, connection);
             }

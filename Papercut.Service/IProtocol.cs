@@ -20,13 +20,13 @@
 
 namespace Papercut.Service
 {
-    public interface IDataProcessor
+    public interface IProtocol
     {
         #region Public Methods and Operators
 
         void Begin(IConnection connection);
 
-        void Process(object data);
+        void ProcessIncomingBuffer(byte[] bufferedData);
 
         #endregion
     }

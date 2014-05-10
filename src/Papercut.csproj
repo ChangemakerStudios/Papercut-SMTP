@@ -99,9 +99,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MimeKitLite.0.32.0.0\lib\net40\MimeKitLite.dll</HintPath>
     </Reference>
-    <Reference Include="NamedPipeWrapper">
-      <HintPath>..\packages\NamedPipeWrapper.1.4.0\lib\net40\NamedPipeWrapper.dll</HintPath>
-    </Reference>
     <Reference Include="Serilog, Version=1.2.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Serilog.1.2.51\lib\net40\Serilog.dll</HintPath>

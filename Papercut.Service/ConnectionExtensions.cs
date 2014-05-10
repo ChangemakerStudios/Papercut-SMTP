@@ -43,7 +43,7 @@ namespace Papercut.Service
         public static Task<int> Send(this IClient client, byte[] data)
         {
             Logger.WriteDebug("Sending byte array of " + data.Length + " bytes");
-            return client.Send(data, 0, data.Length, SocketFlags.None);
+            return client.Send(data, 0, data.Length);
         }
 
         public static Task<int> Send(
@@ -51,7 +51,7 @@ namespace Papercut.Service
             byte[] buffer,
             int offset,
             int size,
-            SocketFlags flags)
+            SocketFlags flags = SocketFlags.None)
         {
             AsyncCallback nullOp = i => { };
             IAsyncResult result = client.Client.BeginSend(

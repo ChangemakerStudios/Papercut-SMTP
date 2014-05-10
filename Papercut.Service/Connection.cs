@@ -24,8 +24,6 @@ namespace Papercut.Service
 
     using System;
     using System.Net.Sockets;
-    using System.Text;
-    using System.Threading.Tasks;
 
     using Papercut.Core;
 
@@ -40,24 +38,20 @@ namespace Papercut.Service
 
         readonly byte[] _receiveBuffer = new byte[BufferSize + 1];
 
-        byte[] _sendBuffer;
-
-        StringBuilder _stringBuffer = new StringBuilder();
-
         #region Constructors and Destructors
 
-        public Connection(int id, Socket client, IDataProcessor dataProcessor)
+        public Connection(int id, Socket client, IProtocol protocol)
         {
             // Initialize members
             Id = id;
             Client = client;
-            DataProcessor = dataProcessor;
+            Protocol = protocol;
             Connected = true;
             LastActivity = DateTime.Now;
 
             BeginReceive();
 
-            DataProcessor.Begin(this);
+            Protocol.Begin(this);
         }
 
         #endregion
@@ -70,7 +64,7 @@ namespace Papercut.Service
 
         #region Public Properties
 
-        public IDataProcessor DataProcessor { get; protected set; }
+        public IProtocol Protocol { get; protected set; }
 
         public Socket Client { get; protected set; }
 
@@ -100,7 +94,7 @@ namespace Papercut.Service
 
             Logger.Write("Connection closed", Id);
         }
-        
+
         #endregion
 
         #region Methods
@@ -110,73 +104,26 @@ namespace Papercut.Service
             if (ConnectionClosed != null) ConnectionClosed(this, e);
         }
 
-        protected void HandleReceive(IAsyncResult result)
+        protected bool ContinueProcessReceive(IAsyncResult result)
         {
-            try
+            // Receive the rest of the data
+            int bytes = Client.EndReceive(result);
+            LastActivity = DateTime.Now;
+
+            // Ensure we received bytes
+            if (bytes <= 0 || (_receiveBuffer.Length == 64 && _receiveBuffer[0] == '\0'))
             {
-                // Receive the rest of the data
-                int bytes = Client.EndReceive(result);
-                LastActivity = DateTime.Now;
-
-                // Ensure we received bytes
-                if (bytes > 0)
-                {
-                    // Check if the buffer is full of \0, usually means a disconnect
-                    if (_receiveBuffer.Length == 64 && _receiveBuffer[0] == '\0')
-                    {
-                        Close();
-                        return;
-                    }
-
-                    // Get the string data and append to buffer
-                    string data = Encoding.ASCII.GetString(_receiveBuffer, 0, bytes);
-
-                    if ((data.Length == 64) && (data[0] == '\0'))
-                    {
-                        Close();
-                        return;
-                    }
-
-                    _stringBuffer.Append(data);
-
-                    // Check if the string buffer contains a line break
-                    string line = _stringBuffer.ToString().Replace("\r", string.Empty);
-
-                    while (line.Contains("\n"))
-                    {
-                        // Take a snippet of the buffer, find the line, and process it
-                        _stringBuffer =
-                            new StringBuilder(
-                                line.Substring(line.IndexOf("\n", StringComparison.Ordinal) + 1));
-                        line = line.Substring(0, line.IndexOf("\n"));
-                        Logger.WriteDebug(string.Format("Received: [{0}]", line), Id);
-                        DataProcessor.Process(line);
-                        line = _stringBuffer.ToString();
-                    }
-                }
-                else
-                {
-                    // nothing received, close and return;
-                    Close();
-                    return;
-                }
-
-                // Set up to wait for more
-                if (!Connected) return;
-
-                try
-                {
-                    BeginReceive();
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Socket has been closed.
-                }
+                // nothing received, close and return;
+                Close();
+                return false;
             }
-            catch (Exception ex)
-            {
-                Logger.WriteError("Error in Connection.ReceiveCallback", ex, Id);
-            }
+
+            var incoming = new byte[bytes];
+            Array.Copy(_receiveBuffer, incoming, bytes);
+            Protocol.ProcessIncomingBuffer(incoming);
+
+            // continue receiving...
+            return true;
         }
 
         bool IsValidConnection()
@@ -205,18 +152,29 @@ namespace Papercut.Service
 
         void BeginReceive()
         {
-            // Begin to listen for data
-            Client.BeginReceive(
-                _receiveBuffer,
-                0,
-                BufferSize,
-                SocketFlags.None,
-                result =>
-                {
-                    if (!IsValidConnection()) return;
-                    HandleReceive(result);
-                },
-                this);
+            try
+            {
+                // Begin to listen for data
+                Client.BeginReceive(
+                    _receiveBuffer,
+                    0,
+                    BufferSize,
+                    SocketFlags.None,
+                    result =>
+                    {
+                        if (!IsValidConnection()) return;
+                        if (ContinueProcessReceive(result) && Connected && Client.Connected)
+                        {
+                            // continue processing
+                            BeginReceive();
+                        }
+                    },
+                    this);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError("Error in Connection.BeginReceive", ex, Id);
+            }
         }
 
         #endregion

@@ -22,11 +22,13 @@ namespace Papercut.Service
 {
     #region Using
 
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
+    using System.Text;
 
     using Autofac;
 
@@ -38,8 +40,10 @@ namespace Papercut.Service
     /// <summary>
     ///     The processor.
     /// </summary>
-    public class SmtpProcessor : IDataProcessor
+    public class SmtpProtocol : IProtocol
     {
+        StringBuilder _stringBuffer = new StringBuilder();
+
         #region Public Properties
 
         public IConnection Connection { get; protected set; }
@@ -57,77 +61,91 @@ namespace Papercut.Service
             Connection.Send("220 {0}", Dns.GetHostName().ToLower());
         }
 
-        public void Process(object data)
+        public void ProcessIncomingBuffer(byte[] bufferedData)
         {
-            var bytes = data as byte[];
+            // Get the string data and append to buffer
+            string data = Encoding.ASCII.GetString(bufferedData, 0, bufferedData.Length);
 
-            if (bytes != null)
+            _stringBuffer.Append(data);
+
+            // Check if the string buffer contains a line break
+            string line = _stringBuffer.ToString().Replace("\r", string.Empty);
+
+            while (line.Contains("\n"))
             {
-                Session.Message = bytes;
-                Connection.Send("250 OK");
+                // Take a snippet of the buffer, find the line, and process it
+                _stringBuffer =
+                    new StringBuilder(
+                        line.Substring(line.IndexOf("\n", StringComparison.Ordinal) + 1));
+
+                line = line.Substring(0, line.IndexOf("\n", StringComparison.Ordinal));
+
+                Logger.WriteDebug(string.Format("Received: [{0}]", line), Connection.Id);
+                ProcessCommand(line);
+                line = _stringBuffer.ToString();
             }
-            else
+        }
+
+        public void ProcessCommand(string command)
+        {
+            string[] parts = command.Split(' ');
+
+            switch (parts[0].ToUpper())
             {
-                // Command mode
-                var command = (string)data;
-                string[] parts = command.Split(' ');
+                case "HELO":
+                    HELO(parts);
+                    break;
 
-                switch (parts[0].ToUpper())
-                {
-                    case "HELO":
-                        HELO(parts);
-                        break;
+                case "EHLO":
+                    EHLO(parts);
+                    break;
 
-                    case "EHLO":
-                        EHLO(parts);
-                        break;
+                case "SEND":
+                case "SOML":
+                case "SAML":
+                case "MAIL":
+                    MAIL(parts);
+                    break;
 
-                    case "SEND":
-                    case "SOML":
-                    case "SAML":
-                    case "MAIL":
-                        MAIL(parts);
-                        break;
+                case "RCPT":
+                    RCPT(parts);
+                    break;
 
-                    case "RCPT":
-                        RCPT(parts);
-                        break;
+                case "DATA":
+                    DATA();
+                    break;
 
-                    case "DATA":
-                        DATA();
-                        break;
+                case "VRFY":
+                    Connection.Send(
+                        "252 Cannot VRFY user, but will accept message and attempt delivery");
+                    break;
 
-                    case "VRFY":
-                        Connection.Send("252 Cannot VRFY user, but will accept message and attempt delivery");
-                        break;
+                case "EXPN":
+                    Connection.Send("252 Cannot expand upon list");
+                    break;
 
-                    case "EXPN":
-                        Connection.Send("252 Cannot expand upon list");
-                        break;
+                case "RSET":
+                    Session.Reset();
+                    Connection.Send("250 OK");
+                    break;
 
-                    case "RSET":
-                        Session.Reset();
-                        Connection.Send("250 OK");
-                        break;
+                case "NOOP":
+                    Connection.Send("250 OK");
+                    break;
 
-                    case "NOOP":
-                        Connection.Send("250 OK");
-                        break;
+                case "QUIT":
+                    Connection.Send("221 Goodbye!");
+                    Connection.Close();
+                    break;
 
-                    case "QUIT":
-                        Connection.Send("221 Goodbye!");
-                        Connection.Close();
-                        break;
+                case "HELP":
+                case "TURN":
+                    Connection.Send("502 Command not implemented");
+                    break;
 
-                    case "HELP":
-                    case "TURN":
-                        Connection.Send("502 Command not implemented");
-                        break;
-
-                    default:
-                        Connection.Send("500 Command not recognized");
-                        break;
-                }
+                default:
+                    Connection.Send("500 Command not recognized");
+                    break;
             }
         }
 
