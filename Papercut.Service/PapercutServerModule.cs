@@ -29,6 +29,7 @@ namespace Papercut.Service
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<Server>().As<IServer>().SingleInstance();
+            builder.RegisterType<PapercutService>().SingleInstance();
         }
     }
 }

@@ -21,12 +21,49 @@
 namespace Papercut.Service
 {
     using System;
+    using System.Net.Sockets;
+    using System.Text;
+    using System.Threading.Tasks;
+
+    using Papercut.Core;
 
     public static class ConnectionExtensions
     {
-        public static IAsyncResult Send(this IConnection connection, string message, params object[] args)
+        public static Task<int> Send(this IClient client, string message)
         {
-            return connection.Send(string.Format(message, args));
+            Logger.WriteDebug("Sending: " + message, client.Id);
+            return client.Send(Encoding.ASCII.GetBytes(message + "\r\n"));
+        }
+
+        public static Task<int> Send(this IClient client, string message, params object[] args)
+        {
+            return client.Send(string.Format(message, args));
+        }
+
+        public static Task<int> Send(this IClient client, byte[] data)
+        {
+            Logger.WriteDebug("Sending byte array of " + data.Length + " bytes");
+            return client.Send(data, 0, data.Length, SocketFlags.None);
+        }
+
+        public static Task<int> Send(
+            this IClient client,
+            byte[] buffer,
+            int offset,
+            int size,
+            SocketFlags flags)
+        {
+            AsyncCallback nullOp = i => { };
+            IAsyncResult result = client.Client.BeginSend(
+                buffer,
+                offset,
+                size,
+                flags,
+                nullOp,
+                client.Client);
+
+            // Use overload that takes an IAsyncResult directly
+            return Task.Factory.FromAsync(result, r => client.Client.EndSend(r));
         }
     }
 }

@@ -20,9 +20,6 @@
 
 namespace Papercut.Core
 {
-    using System.Linq;
-    using System.Reflection;
-
     using Autofac;
     using Autofac.Core;
 
@@ -31,7 +28,6 @@ namespace Papercut.Core
     using Papercut.Core.Message;
 
     using Serilog;
-    using Serilog.Events;
 
     using Module = Autofac.Module;
 

@@ -23,57 +23,21 @@ namespace Papercut.Service
     using System;
     using System.Net.Sockets;
 
-    public interface IConnection
+    public interface IClient
     {
-        /// <summary>
-        ///     Gets or sets Client.
-        /// </summary>
+        int Id { get; }
+
         Socket Client { get; }
 
-        /// <summary>
-        ///     Gets or sets a value indicating whether Connected.
-        /// </summary>
         bool Connected { get; }
+    }
 
-        /// <summary>
-        ///     Gets ConnectionId.
-        /// </summary>
-        int ConnectionId { get; }
-
-        /// <summary>
-        ///     Gets or sets LastActivity.
-        /// </summary>
+    public interface IConnection : IClient
+    {
         DateTime LastActivity { get; set; }
 
-        /// <summary>
-        ///     The connection closed.
-        /// </summary>
         event EventHandler ConnectionClosed;
 
-        /// <summary>
-        ///     The close.
-        /// </summary>
-        /// <param name="triggerEvent">
-        ///     The trigger event.
-        /// </param>
         void Close(bool triggerEvent = true);
-
-        /// <summary>
-        ///     The send.
-        /// </summary>
-        /// <param name="message">
-        ///     The message.
-        /// </param>
-        /// <returns>
-        /// </returns>
-        IAsyncResult Send(string message);
-
-        /// <summary>
-        ///     The send.
-        /// </summary>
-        /// <param name="data">
-        ///     The data.
-        /// </param>
-        IAsyncResult Send(byte[] data);
     }
 }

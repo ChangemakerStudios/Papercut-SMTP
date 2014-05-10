@@ -51,7 +51,7 @@ namespace Papercut.Core.Configuration
                 }
             };
 
-            foreach (var specialPath in Helpers.EnumAsList<Environment.SpecialFolder>())
+            foreach (var specialPath in GeneralExtensions.EnumAsList<Environment.SpecialFolder>())
             {
                 var specialPathName = specialPath.ToString();
 

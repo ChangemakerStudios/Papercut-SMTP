@@ -101,7 +101,7 @@
     <Compile Include="PapercutContainer.cs" />
     <Compile Include="PapercutCoreModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Helper\Helpers.cs" />
+    <Compile Include="Helper\GeneralExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

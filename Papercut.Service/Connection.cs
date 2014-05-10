@@ -25,6 +25,7 @@ namespace Papercut.Service
     using System;
     using System.Net.Sockets;
     using System.Text;
+    using System.Threading.Tasks;
 
     using Papercut.Core;
 
@@ -35,34 +36,25 @@ namespace Papercut.Service
     /// </summary>
     public class Connection : IConnection
     {
-        #region Constants
-
         const int BufferSize = 64;
 
-        #endregion
-
-        #region Fields
-
-        readonly byte[] _receiveBuffer;
+        readonly byte[] _receiveBuffer = new byte[BufferSize + 1];
 
         byte[] _sendBuffer;
 
-        StringBuilder _stringBuffer;
-
-        #endregion
+        StringBuilder _stringBuffer = new StringBuilder();
 
         #region Constructors and Destructors
 
-        public Connection(int connectionID, Socket client, IDataProcessor dataProcessor)
+        public Connection(int id, Socket client, IDataProcessor dataProcessor)
         {
             // Initialize members
-            ConnectionId = connectionID;
+            Id = id;
             Client = client;
-            _stringBuffer = new StringBuilder();
-            _receiveBuffer = new byte[BufferSize + 1];
             DataProcessor = dataProcessor;
             Connected = true;
             LastActivity = DateTime.Now;
+
             BeginReceive();
 
             DataProcessor.Begin(this);
@@ -72,50 +64,26 @@ namespace Papercut.Service
 
         #region Public Events
 
-        /// <summary>
-        ///     The connection closed.
-        /// </summary>
         public event EventHandler ConnectionClosed;
 
         #endregion
 
         #region Public Properties
 
-        /// <summary>
-        ///     Gets the data processor
-        /// </summary>
         public IDataProcessor DataProcessor { get; protected set; }
 
-        /// <summary>
-        ///     Gets or sets Client.
-        /// </summary>
         public Socket Client { get; protected set; }
 
-        /// <summary>
-        ///     Gets or sets a value indicating whether Connected.
-        /// </summary>
         public bool Connected { get; protected set; }
 
-        /// <summary>
-        ///     Gets ConnectionId.
-        /// </summary>
-        public int ConnectionId { get; protected set; }
+        public int Id { get; protected set; }
 
-        /// <summary>
-        ///     Gets or sets LastActivity.
-        /// </summary>
         public DateTime LastActivity { get; set; }
 
         #endregion
 
         #region Public Methods and Operators
 
-        /// <summary>
-        ///     The close.
-        /// </summary>
-        /// <param name="triggerEvent">
-        ///     The trigger event.
-        /// </param>
         public void Close(bool triggerEvent = true)
         {
             // Set our internal flag for no longer connected
@@ -130,178 +98,125 @@ namespace Papercut.Service
 
             if (triggerEvent) OnConnectionClosed(new EventArgs());
 
-            Logger.Write("Connection closed", ConnectionId);
+            Logger.Write("Connection closed", Id);
         }
-
-        /// <summary>
-        ///     The send.
-        /// </summary>
-        /// <param name="message">
-        ///     The message.
-        /// </param>
-        /// <returns>
-        /// </returns>
-        public IAsyncResult Send(string message)
-        {
-            _sendBuffer = Encoding.ASCII.GetBytes(message + "\r\n");
-            Logger.WriteDebug("Sending: " + message, ConnectionId);
-            return Client.BeginSend(_sendBuffer, 0, _sendBuffer.Length, SocketFlags.None, SendCallback, this);
-        }
-
-        /// <summary>
-        ///     The send.
-        /// </summary>
-        /// <param name="data">
-        ///     The data.
-        /// </param>
-        public IAsyncResult Send(byte[] data)
-        {
-            _sendBuffer = data;
-            Logger.WriteDebug("Sending byte array of " + data.Length + " bytes");
-            return Client.BeginSend(_sendBuffer, 0, _sendBuffer.Length, SocketFlags.None, SendCallback, this);
-        }
-
+        
         #endregion
 
         #region Methods
 
-        /// <summary>
-        ///     The on connection closed.
-        /// </summary>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
         protected void OnConnectionClosed(EventArgs e)
         {
             if (ConnectionClosed != null) ConnectionClosed(this, e);
         }
 
-        /// <summary>
-        ///     The receive callback.
-        /// </summary>
-        /// <param name="result">
-        ///     The result.
-        /// </param>
-        static void ReceiveCallback(IAsyncResult result)
+        protected void HandleReceive(IAsyncResult result)
         {
-            var connection = (Connection)result.AsyncState;
-
-            if (connection == null) return;
-
             try
             {
-                // Ensure we're connected... this method gets called when closing a socket with a pending BeginReceive();
-                if (!connection.Connected) return;
-
-                // If the socket has been closed, then ensure we close it out
-                if (connection.Client == null || !connection.Client.Connected)
-                {
-                    connection.Close();
-                    return;
-                }
-
                 // Receive the rest of the data
-                int bytes = connection.Client.EndReceive(result);
-                connection.LastActivity = DateTime.Now;
+                int bytes = Client.EndReceive(result);
+                LastActivity = DateTime.Now;
 
                 // Ensure we received bytes
                 if (bytes > 0)
                 {
                     // Check if the buffer is full of \0, usually means a disconnect
-                    if (connection._receiveBuffer.Length == 64 && connection._receiveBuffer[0] == '\0')
+                    if (_receiveBuffer.Length == 64 && _receiveBuffer[0] == '\0')
                     {
-                        connection.Close();
+                        Close();
                         return;
                     }
 
                     // Get the string data and append to buffer
-                    string data = Encoding.ASCII.GetString(connection._receiveBuffer, 0, bytes);
+                    string data = Encoding.ASCII.GetString(_receiveBuffer, 0, bytes);
 
                     if ((data.Length == 64) && (data[0] == '\0'))
                     {
-                        connection.Close();
+                        Close();
                         return;
                     }
 
-                    connection._stringBuffer.Append(data);
+                    _stringBuffer.Append(data);
 
                     // Check if the string buffer contains a line break
-                    string line = connection._stringBuffer.ToString().Replace("\r", string.Empty);
+                    string line = _stringBuffer.ToString().Replace("\r", string.Empty);
 
                     while (line.Contains("\n"))
                     {
                         // Take a snippet of the buffer, find the line, and process it
-                        connection._stringBuffer =
-                            new StringBuilder(line.Substring(line.IndexOf("\n", StringComparison.Ordinal) + 1));
+                        _stringBuffer =
+                            new StringBuilder(
+                                line.Substring(line.IndexOf("\n", StringComparison.Ordinal) + 1));
                         line = line.Substring(0, line.IndexOf("\n"));
-                        Logger.WriteDebug(string.Format("Received: [{0}]", line), connection.ConnectionId);
-                        connection.DataProcessor.Process(line);
-                        line = connection._stringBuffer.ToString();
+                        Logger.WriteDebug(string.Format("Received: [{0}]", line), Id);
+                        DataProcessor.Process(line);
+                        line = _stringBuffer.ToString();
                     }
                 }
                 else
                 {
                     // nothing received, close and return;
-                    connection.Close();
+                    Close();
                     return;
                 }
 
                 // Set up to wait for more
-                if (!connection.Connected) return;
+                if (!Connected) return;
 
                 try
                 {
-                    connection.BeginReceive();
+                    BeginReceive();
                 }
                 catch (ObjectDisposedException)
                 {
                     // Socket has been closed.
-                    return;
                 }
             }
             catch (Exception ex)
             {
-                Logger.WriteError("Error in Connection.ReceiveCallback", ex, connection.ConnectionId);
+                Logger.WriteError("Error in Connection.ReceiveCallback", ex, Id);
             }
         }
 
-        /// <summary>
-        ///     The send callback.
-        /// </summary>
-        /// <param name="result">
-        ///     The result.
-        /// </param>
-        static void SendCallback(IAsyncResult result)
+        bool IsValidConnection()
         {
-            var connection = (Connection)result.AsyncState;
-
             try
             {
                 // Ensure we're connected... this method gets called when closing a socket with a pending BeginReceive();
-                if (!connection.Connected) return;
+                if (!Connected) return false;
 
                 // If the socket has been closed, then ensure we close it out
-                if (connection.Client == null || !connection.Client.Connected)
+                if (Client == null || !Client.Connected)
                 {
-                    connection.Close();
-                    return;
+                    Close();
+                    return false;
                 }
 
-                connection.Client.EndSend(result);
+                return true;
             }
             catch (Exception ex)
             {
-                Logger.WriteError("Error in Connection.SendCallback", ex, connection.ConnectionId);
+                Logger.WriteError("Error in Connection.IsValidConnection", ex, Id);
             }
+
+            return false;
         }
 
-        /// <summary>
-        ///     The begin receive.
-        /// </summary>
         void BeginReceive()
         {
             // Begin to listen for data
-            Client.BeginReceive(_receiveBuffer, 0, BufferSize, SocketFlags.None, ReceiveCallback, this);
+            Client.BeginReceive(
+                _receiveBuffer,
+                0,
+                BufferSize,
+                SocketFlags.None,
+                result =>
+                {
+                    if (!IsValidConnection()) return;
+                    HandleReceive(result);
+                },
+                this);
         }
 
         #endregion

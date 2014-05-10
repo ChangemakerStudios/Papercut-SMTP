@@ -155,7 +155,7 @@ namespace Papercut.Service
                 using (var reader = new StreamReader(networkStream))
                 {
                     string line;
-                    Connection.Send("354 Start mail input; end with <CRLF>.<CRLF>").AsyncWaitHandle.WaitOne();
+                    Connection.Send("354 Start mail input; end with <CRLF>.<CRLF>").Wait();
 
                     while ((line = reader.ReadLine()) != ".")
                     {
@@ -175,7 +175,7 @@ namespace Papercut.Service
                 Logger.WriteWarning(
                     "IOException received in Processor.DATA while reading message.  Closing this.Connection.  Message: "
                     + e.Message,
-                    Connection.ConnectionId);
+                    Connection.Id);
 
                 Connection.Close();
                 return;

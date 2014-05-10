@@ -30,7 +30,7 @@ namespace Papercut.Core
     /// <summary>
     ///     The util.
     /// </summary>
-    public static class Helpers
+    public static class GeneralExtensions
     {
         public static string AsString(this byte[] bytes, Encoding byteEncoding = null)
         {

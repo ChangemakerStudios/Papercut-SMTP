@@ -74,7 +74,7 @@ namespace Papercut.Service
             response = Response();
             if (response.Substring(0, 3) != "220") throw new SmtpException(response);
 
-            Write("HELO {0}\r\n", Helpers.GetIPAddress());
+            Write("HELO {0}\r\n", GeneralExtensions.GetIPAddress());
             response = Response();
             if (response.Substring(0, 3) != "250") throw new SmtpException(response);
 

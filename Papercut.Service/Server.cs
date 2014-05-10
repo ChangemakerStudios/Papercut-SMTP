@@ -143,7 +143,7 @@ namespace Papercut.Service
                 Interlocked.Increment(ref _connectionID);
                 var connection = new Connection(_connectionID, clientSocket, new SmtpProcessor());
                 connection.ConnectionClosed += connection_ConnectionClosed;
-                _connections.Add(connection.ConnectionId, connection);
+                _connections.Add(connection.Id, connection);
             }
             catch (ObjectDisposedException)
             {
@@ -208,7 +208,7 @@ namespace Papercut.Service
                                 // If they have been idle for too long, disconnect them
                                 if (DateTime.Now < _connections[key].LastActivity.AddMinutes(20))
                                 {
-                                    Logger.Write("Session timeout, disconnecting", _connections[key].ConnectionId);
+                                    Logger.Write("Session timeout, disconnecting", _connections[key].Id);
                                     _connections[key].Close();
                                 }
                             }
@@ -281,7 +281,7 @@ namespace Papercut.Service
             var connection = sender as IConnection;
             if (connection == null) return;
 
-            _connections.Remove(connection.ConnectionId);
+            _connections.Remove(connection.Id);
         }
 
         #endregion

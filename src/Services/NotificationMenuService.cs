@@ -28,9 +28,7 @@ namespace Papercut.Services
     using Papercut.Core.Events;
     using Papercut.Events;
 
-    using Application = System.Windows.Application;
-
-    public class NotificationMenu : IDisposable, IHandleEvent<AppReadyEvent>,
+    public class NotificationMenuService : IDisposable, IHandleEvent<AppReadyEvent>,
         IHandleEvent<ShowBallonTip>
     {
         readonly IPublishEvent _publishEvent;
@@ -39,7 +37,7 @@ namespace Papercut.Services
 
         NotifyIcon _notification;
 
-        public NotificationMenu(AppResourceLocator resourceLocator, IPublishEvent publishEvent)
+        public NotificationMenuService(AppResourceLocator resourceLocator, IPublishEvent publishEvent)
         {
             _resourceLocator = resourceLocator;
             _publishEvent = publishEvent;
@@ -60,7 +58,9 @@ namespace Papercut.Services
             _notification.Click +=
                 (sender, args) => _publishEvent.Publish(new ShowMainWindowEvent());
 
-            _notification.BalloonTipClicked += (sender, args) => _publishEvent.Publish(new ShowMainWindowEvent() { SelectMostRecentMessage = true });
+            _notification.BalloonTipClicked +=
+                (sender, args) =>
+                _publishEvent.Publish(new ShowMainWindowEvent() { SelectMostRecentMessage = true });
 
             _notification.ContextMenu =
                 new ContextMenu(
