@@ -18,17 +18,11 @@
  *  
  */
 
-namespace Papercut.Core.Server
+namespace Papercut.Core.Network
 {
-    using System;
-
-    /// <summary>
-    ///     The Server interface.
-    /// </summary>
-    public interface IServer : IDisposable
+    public enum ServerProtocolType
     {
-        void Listen(string ip, int port);
-
-        void Stop();
+        Smtp,
+        Papercut
     }
 }

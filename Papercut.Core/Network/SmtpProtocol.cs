@@ -18,7 +18,7 @@
  *  
  */
 
-namespace Papercut.Service
+namespace Papercut.Core.Network
 {
     using System;
     using System.Collections.Generic;
@@ -29,7 +29,6 @@ namespace Papercut.Service
 
     using Papercut.Core;
     using Papercut.Core.Message;
-    using Papercut.Core.Server;
 
     public class SmtpProtocol : IProtocol
     {

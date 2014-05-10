@@ -305,10 +305,6 @@
       <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
       <Name>Papercut.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Papercut.Service\Papercut.Service.csproj">
-      <Project>{bddbcfd4-a1bd-4469-acbd-e676e1723252}</Project>
-      <Name>Papercut.Service</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="UI\" />
@@ -328,9 +324,9 @@
         <LogicalName>%(AssembliesToEmbed.DestinationSubDirectory)%(AssembliesToEmbed.Filename)%(AssembliesToEmbed.Extension)</LogicalName>
       </EmbeddedResource>
       <!--no need to copy the assemblies locally anymore-->
-      <ReferenceCopyLocalPaths Remove="@(AssembliesToEmbed)" />
+      <!--<ReferenceCopyLocalPaths Remove="@(AssembliesToEmbed)" />-->
     </ItemGroup>
     <Message Importance="high" Text="Embedding: @(AssembliesToEmbed->'%(DestinationSubDirectory)%(Filename)%(Extension)', ', ')" />
   </Target>
-  <!--<Target Name="_CopyFilesMarkedCopyLocal" />-->
+  <Target Name="_CopyFilesMarkedCopyLocal" />
 </Project>

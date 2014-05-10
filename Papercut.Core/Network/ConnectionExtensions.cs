@@ -18,7 +18,7 @@
  *  
  */
 
-namespace Papercut.Core.Server
+namespace Papercut.Core.Network
 {
     using System;
     using System.IO;

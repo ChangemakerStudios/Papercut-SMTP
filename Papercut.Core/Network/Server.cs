@@ -18,7 +18,7 @@
  *  
  */
 
-namespace Papercut.Service
+namespace Papercut.Core.Network
 {
     using System;
     using System.Net;
@@ -27,7 +27,6 @@ namespace Papercut.Service
     using Autofac.Features.Indexed;
 
     using Papercut.Core;
-    using Papercut.Core.Server;
 
     public class Server : IServer
     {

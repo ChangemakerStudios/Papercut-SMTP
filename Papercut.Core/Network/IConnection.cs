@@ -18,22 +18,26 @@
  *  
  */
 
-namespace Papercut.Service
+namespace Papercut.Core.Network
 {
-    using Autofac;
+    using System;
+    using System.Net.Sockets;
 
-    using Papercut.Core.Configuration;
-
-    public class PapercutServiceModule : Module
+    public interface IClient
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            // only used if primary papercut is not loaded.
-            builder.RegisterType<ServerPathTemplateProvider>()
-                .As<IPathTemplatesProvider>()
-                .PreserveExistingDefaults();
+        int Id { get; }
 
-            builder.RegisterType<PapercutService>().SingleInstance();
-        }
+        Socket Client { get; }
+
+        bool Connected { get; }
+    }
+
+    public interface IConnection : IClient
+    {
+        DateTime LastActivity { get; set; }
+
+        event EventHandler ConnectionClosed;
+
+        void Close(bool triggerEvent = true);
     }
 }

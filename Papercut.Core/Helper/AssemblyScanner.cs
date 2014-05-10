@@ -108,14 +108,14 @@ namespace Papercut.Core
         [NotNull]
         static IEnumerable<string> GetAllFilesIn(string directory)
         {
-            var lookFor = new[] { "*.dll", "*.exe" };
+            var lookFor = new[] { "*.dll" };
 
             return lookFor.SelectMany(s => Directory.GetFiles(directory, s)).ToArray();
         }
 
         static IEnumerable<string> GetAllAssemblyResourcesIn(IEnumerable<Assembly> assemblies)
         {
-            var lookFor = new [] { ".dll", ".exe" };
+            var lookFor = new [] { ".dll" };
 
             return
                 assemblies.SelectMany(a => a.GetManifestResourceNames())

@@ -25,8 +25,8 @@ namespace Papercut.UI
     using System.Windows;
 
     using Papercut.Core.Message;
+    using Papercut.Core.Network;
     using Papercut.Properties;
-    using Papercut.Service;
 
     /// <summary>
     ///     Interaction logic for ForwardWindow.xaml

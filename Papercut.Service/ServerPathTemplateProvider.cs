@@ -18,11 +18,25 @@
  *  
  */
 
-namespace Papercut.Core.Server
+namespace Papercut.Service
 {
-    public enum ServerProtocolType
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using Papercut.Core.Configuration;
+    using Papercut.Service.Properties;
+
+    public class ServerPathTemplateProvider : IPathTemplatesProvider
     {
-        Smtp,
-        Papercut
+        public ServerPathTemplateProvider()
+        {
+            PathTemplates =
+                Settings.Default.MessagePaths.Split(new[] { ';' })
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .ToArray();
+        }
+
+        public IEnumerable<string> PathTemplates { get; private set; }
     }
 }

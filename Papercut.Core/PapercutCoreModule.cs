@@ -26,6 +26,7 @@ namespace Papercut.Core
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
     using Papercut.Core.Message;
+    using Papercut.Core.Network;
 
     using Serilog;
 
@@ -38,6 +39,15 @@ namespace Papercut.Core
             var scannableAssemblies = PapercutContainer.ExtensionAssemblies;
 
             builder.RegisterAssemblyModules<IModule>(scannableAssemblies);
+
+            // server/connections
+            builder.RegisterType<SmtpProtocol>()
+                .Keyed<IProtocol>(ServerProtocolType.Smtp)
+                .InstancePerDependency();
+
+            builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
+            builder.RegisterType<Connection>().As<IConnection>().InstancePerDependency();
+            builder.RegisterType<Server>().As<IServer>().InstancePerDependency();
 
             // events
             builder.RegisterType<AutofacPublishEvent>()

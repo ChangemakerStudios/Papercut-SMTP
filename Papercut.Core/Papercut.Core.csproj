@@ -89,10 +89,12 @@
     <Compile Include="Helper\CollectionExtensions.cs" />
     <Compile Include="Helper\ObjectExtensions.cs" />
     <Compile Include="Helper\StreamExtensions.cs" />
-    <Compile Include="Server\ConnectionExtensions.cs" />
-    <Compile Include="Server\IConnection.cs" />
-    <Compile Include="Server\IProtocol.cs" />
-    <Compile Include="Server\IServer.cs" />
+    <Compile Include="Network\Connection.cs" />
+    <Compile Include="Network\ConnectionExtensions.cs" />
+    <Compile Include="Network\ConnectionManager.cs" />
+    <Compile Include="Network\IConnection.cs" />
+    <Compile Include="Network\IProtocol.cs" />
+    <Compile Include="Network\IServer.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Message\MessageEntry.cs" />
     <Compile Include="Configuration\MessagePathConfigurator.cs" />
@@ -105,7 +107,11 @@
     <Compile Include="PapercutCoreModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helper\GeneralExtensions.cs" />
-    <Compile Include="Server\ServerProtocolType.cs" />
+    <Compile Include="Network\Server.cs" />
+    <Compile Include="Network\ServerProtocolType.cs" />
+    <Compile Include="Network\SmtpClient.cs" />
+    <Compile Include="Network\SmtpProtocol.cs" />
+    <Compile Include="Network\SmtpSession.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
