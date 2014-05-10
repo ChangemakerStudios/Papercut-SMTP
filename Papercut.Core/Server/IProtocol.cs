@@ -18,7 +18,7 @@
  *  
  */
 
-namespace Papercut.Service
+namespace Papercut.Core.Server
 {
     public interface IProtocol
     {

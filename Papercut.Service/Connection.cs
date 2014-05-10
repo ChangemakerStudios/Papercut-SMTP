@@ -26,6 +26,7 @@ namespace Papercut.Service
     using System.Net.Sockets;
 
     using Papercut.Core;
+    using Papercut.Core.Server;
 
     #endregion
 

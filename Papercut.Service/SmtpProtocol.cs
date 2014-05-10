@@ -20,39 +20,31 @@
 
 namespace Papercut.Service
 {
-    #region Using
-
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Net.Sockets;
     using System.Text;
-
-    using Autofac;
 
     using Papercut.Core;
     using Papercut.Core.Message;
+    using Papercut.Core.Server;
 
-    #endregion
-
-    /// <summary>
-    ///     The processor.
-    /// </summary>
     public class SmtpProtocol : IProtocol
     {
-        StringBuilder _stringBuffer = new StringBuilder();
+        readonly MessageRepository _messageRepository;
 
-        #region Public Properties
+        StringBuilder _stringBuffer = new StringBuilder();
 
         public IConnection Connection { get; protected set; }
 
+        public SmtpProtocol(MessageRepository messageRepository)
+        {
+            _messageRepository = messageRepository;
+        }
+
         public SmtpSession Session { get; protected set; }
-
-        #endregion
-
-        #region Public Methods and Operators
 
         public void Begin(IConnection connection)
         {
@@ -149,10 +141,6 @@ namespace Papercut.Service
             }
         }
 
-        #endregion
-
-        #region Methods
-
         void DATA()
         {
             // Check command order
@@ -162,31 +150,28 @@ namespace Papercut.Service
                 return;
             }
 
-            string file = null;
-
             try
             {
-                Stream networkStream = new NetworkStream(Connection.Client, false);
-
-                var output = new List<string>();
-
-                using (var reader = new StreamReader(networkStream))
-                {
-                    string line;
-                    Connection.Send("354 Start mail input; end with <CRLF>.<CRLF>").Wait();
-
-                    while ((line = reader.ReadLine()) != ".")
+                var output = Connection.ReadStream(
+                    reader =>
                     {
-                        // reverse any dot-stuffing per RFC 2821, section 4.5.2
-                        if (line.StartsWith(".") && line.Length > 1) line = line.Substring(1);
+                        var messageLines = new List<string>();
 
-                        output.Add(line);
-                    }
+                        string line;
+                        Connection.Send("354 Start mail input; end with <CRLF>.<CRLF>").Wait();
 
-                    reader.Close();
-                }
+                        while ((line = reader.ReadLine()) != ".")
+                        {
+                            // reverse any dot-stuffing per RFC 2821, section 4.5.2
+                            if (line.StartsWith(".") && line.Length > 1) line = line.Substring(1);
 
-                file = PapercutContainer.Instance.Resolve<MessageRepository>().SaveMessage(output);
+                            messageLines.Add(line);
+                        }
+
+                        return messageLines;
+                    });
+
+                _messageRepository.SaveMessage(output);
             }
             catch (IOException e)
             {
@@ -245,7 +230,10 @@ namespace Papercut.Service
             Session.Reset();
 
             string address =
-                line.Substring(line.IndexOf(":") + 1).Replace("<", string.Empty).Replace(">", string.Empty).Trim();
+                line.Substring(line.IndexOf(":") + 1)
+                    .Replace("<", string.Empty)
+                    .Replace(">", string.Empty)
+                    .Trim();
 
             Session.MailFrom = address;
 
@@ -287,12 +275,13 @@ namespace Papercut.Service
             }
 
             string address =
-                line.Substring(line.IndexOf(":") + 1).Replace("<", string.Empty).Replace(">", string.Empty).Trim();
+                line.Substring(line.IndexOf(":") + 1)
+                    .Replace("<", string.Empty)
+                    .Replace(">", string.Empty)
+                    .Trim();
             if (!Session.Recipients.Contains(address)) Session.Recipients.Add(address);
 
             Connection.Send("250 <{0}> OK", address);
         }
-
-        #endregion
     }
 }

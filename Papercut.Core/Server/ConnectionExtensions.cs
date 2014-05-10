@@ -18,9 +18,10 @@
  *  
  */
 
-namespace Papercut.Service
+namespace Papercut.Core.Server
 {
     using System;
+    using System.IO;
     using System.Net.Sockets;
     using System.Text;
     using System.Threading.Tasks;
@@ -29,6 +30,24 @@ namespace Papercut.Service
 
     public static class ConnectionExtensions
     {
+        public static TOut ReadStream<TOut>(this IClient client, Func<StreamReader, TOut> read)
+        {
+            TOut output;
+
+            using (Stream networkStream = new NetworkStream(client.Client, false))
+            {
+                using (var reader = new StreamReader(networkStream))
+                {
+                    output = read(reader);
+                    reader.Close();
+                }
+
+                networkStream.Close();
+            }
+
+            return output;
+        }
+
         public static Task<int> Send(this IClient client, string message)
         {
             Logger.WriteDebug("Sending: " + message, client.Id);

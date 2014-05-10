@@ -18,17 +18,26 @@
  *  
  */
 
-namespace Papercut.Core
+namespace Papercut.Core.Server
 {
     using System;
+    using System.Net.Sockets;
 
-    /// <summary>
-    ///     The Server interface.
-    /// </summary>
-    public interface IServer : IDisposable
+    public interface IClient
     {
-        void Listen(string ip, int port);
+        int Id { get; }
 
-        void Stop();
+        Socket Client { get; }
+
+        bool Connected { get; }
+    }
+
+    public interface IConnection : IClient
+    {
+        DateTime LastActivity { get; set; }
+
+        event EventHandler ConnectionClosed;
+
+        void Close(bool triggerEvent = true);
     }
 }

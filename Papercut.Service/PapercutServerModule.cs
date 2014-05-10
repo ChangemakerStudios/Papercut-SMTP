@@ -23,12 +23,20 @@ namespace Papercut.Service
     using Autofac;
 
     using Papercut.Core;
+    using Papercut.Core.Server;
 
     public class PapercutServiceModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<Server>().As<IServer>().SingleInstance();
+            builder.RegisterType<SmtpProtocol>()
+                .Keyed<IProtocol>(ServerProtocolType.Smtp)
+                .InstancePerDependency();
+
+            builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
+            builder.RegisterType<Connection>().As<IConnection>().InstancePerDependency();
+            builder.RegisterType<Server>().As<IServer>().InstancePerDependency();
+
             builder.RegisterType<PapercutService>().SingleInstance();
         }
     }

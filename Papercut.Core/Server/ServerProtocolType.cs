@@ -18,26 +18,11 @@
  *  
  */
 
-namespace Papercut.Service
+namespace Papercut.Core.Server
 {
-    using System;
-    using System.Net.Sockets;
-
-    public interface IClient
+    public enum ServerProtocolType
     {
-        int Id { get; }
-
-        Socket Client { get; }
-
-        bool Connected { get; }
-    }
-
-    public interface IConnection : IClient
-    {
-        DateTime LastActivity { get; set; }
-
-        event EventHandler ConnectionClosed;
-
-        void Close(bool triggerEvent = true);
+        Smtp,
+        Papercut
     }
 }

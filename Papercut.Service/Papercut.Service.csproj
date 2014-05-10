@@ -73,10 +73,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Connection.cs" />
-    <Compile Include="ConnectionExtensions.cs" />
+    <Compile Include="ConnectionManager.cs" />
     <Compile Include="Helpers\AssemblyResolutionHelper.cs" />
-    <Compile Include="IConnection.cs" />
-    <Compile Include="IProtocol.cs" />
     <Compile Include="PapercutServerModule.cs" />
     <Compile Include="PapercutService.cs" />
     <Compile Include="SmtpProtocol.cs" />
