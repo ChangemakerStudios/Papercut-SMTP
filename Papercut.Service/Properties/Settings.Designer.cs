@@ -49,13 +49,13 @@ namespace Papercut.Service.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("%ApplicationData%\\Papercut;%BaseDirectory%")]
-        public string MessagePaths {
+        [global::System.Configuration.DefaultSettingValueAttribute("%BaseDirectory%")]
+        public string MessagePath {
             get {
-                return ((string)(this["MessagePaths"]));
+                return ((string)(this["MessagePath"]));
             }
             set {
-                this["MessagePaths"] = value;
+                this["MessagePath"] = value;
             }
         }
     }

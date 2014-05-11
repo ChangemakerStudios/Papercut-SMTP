@@ -31,7 +31,7 @@ namespace Papercut.Service
         public ServerPathTemplateProvider()
         {
             PathTemplates =
-                Settings.Default.MessagePaths.Split(new[] { ';' })
+                Settings.Default.MessagePath.Split(new[] { ';' })
                     .Select(s => s.Trim())
                     .Where(s => !string.IsNullOrWhiteSpace(s))
                     .ToArray();

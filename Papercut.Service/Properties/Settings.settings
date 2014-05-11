@@ -8,8 +8,8 @@
     <Setting Name="Port" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">25</Value>
     </Setting>
-    <Setting Name="MessagePaths" Type="System.String" Scope="User">
-      <Value Profile="(Default)">%ApplicationData%\Papercut;%BaseDirectory%</Value>
+    <Setting Name="MessagePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%BaseDirectory%</Value>
     </Setting>
   </Settings>
 </SettingsFile>
