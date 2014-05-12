@@ -18,28 +18,32 @@
  *  
  */
 
-
 namespace Papercut.Services
 {
     using System;
     using System.Threading;
 
     using Papercut.Core.Events;
+    using Papercut.Core.Network;
+    using Papercut.Events;
 
-    public class SingleInstanceService : IDisposable, IHandleEvent<AppReadyEvent>
+    using Serilog;
+
+    public class SingleInstanceService : IDisposable, IHandleEvent<AppPreStartEvent>
     {
-        public class ProcessMessage
-        {
-            
-        }
-
         const string GlobalPapercutAppName = "Papercut.App";
 
-        Mutex _appMutex = new Mutex(false, GlobalPapercutAppName);
+        readonly Mutex _appMutex = new Mutex(false, GlobalPapercutAppName);
 
-        public SingleInstanceService()
+        readonly PapercutClient _papercutClient;
+
+        public SingleInstanceService(PapercutClient papercutClient, ILogger logger)
         {
+            Logger = logger;
+            _papercutClient = papercutClient;
         }
+
+        public ILogger Logger { get; set; }
 
         public void Dispose()
         {
@@ -53,13 +57,18 @@ namespace Papercut.Services
             }
         }
 
-        public void Handle(AppReadyEvent @event)
+        public void Handle(AppPreStartEvent @event)
         {
-            if (!_appMutex.WaitOne(0, false))
-            {
-                // papercut is already running...
+            // papercut is not already running...
+            if (_appMutex.WaitOne(0, false)) return;
 
-            }
+            Logger.Debug("Second process run. Shutting this process and pushing show event to other process.");
+
+            // papercut is already running, push event to other process
+            _papercutClient.PublishRemoteEvent(new ShowMainWindowEvent());
+
+            // no need to go further
+            @event.CancelStart = true;
         }
     }
 }

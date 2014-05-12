@@ -20,6 +20,10 @@
 
 namespace Papercut.Core
 {
+    using System;
+    using System.Linq;
+    using System.Reflection;
+
     using Autofac;
     using Autofac.Core;
 
@@ -36,7 +40,7 @@ namespace Papercut.Core
     {
         protected override void Load(ContainerBuilder builder)
         {
-            var scannableAssemblies = PapercutContainer.ExtensionAssemblies;
+            Assembly[] scannableAssemblies = PapercutContainer.ExtensionAssemblies;
 
             builder.RegisterAssemblyModules<IModule>(scannableAssemblies);
 
@@ -45,8 +49,15 @@ namespace Papercut.Core
                 .Keyed<IProtocol>(ServerProtocolType.Smtp)
                 .InstancePerDependency();
 
+            builder.RegisterType<PapercutProtocol>()
+                .Keyed<IProtocol>(ServerProtocolType.Papercut)
+                .InstancePerDependency();
+
+            builder.RegisterType<PapercutClient>().AsSelf().InstancePerDependency();
+            builder.RegisterType<SmtpClient>().AsSelf().InstancePerDependency();
+
             builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
-            builder.RegisterType<Connection>().As<IConnection>().InstancePerDependency();
+            builder.RegisterType<Connection>().AsSelf().InstancePerDependency();
             builder.RegisterType<Server>().As<IServer>().InstancePerDependency();
 
             // events
@@ -59,25 +70,52 @@ namespace Papercut.Core
             builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
             builder.RegisterType<MimeMessageLoader>().AsSelf().SingleInstance();
 
-            builder.RegisterType<MessagePathConfigurator>().As<IMessagePathConfigurator>().AsSelf().SingleInstance();
+            builder.RegisterType<MessagePathConfigurator>()
+                .As<IMessagePathConfigurator>()
+                .AsSelf()
+                .SingleInstance();
 
             builder.Register(
-                (c) =>
+                c =>
                 {
-                    Log.Logger = new LoggerConfiguration()
-                        .MinimumLevel.Debug()
-                        .Enrich.WithMachineName()
-                        .Enrich.WithThreadId()
-                        .Enrich.FromLogContext()
-                        .WriteTo.ColoredConsole()
-                        .WriteTo.RollingFile("papercut.log")
-                        //.WriteTo.Seq("http://localhost:5341")
-                        .CreateLogger();
+                    //var jsonSink = new RollingFileSink(@"papercut.json", new JsonFormatter(), null, null);
+
+                    Log.Logger =
+                        new LoggerConfiguration().MinimumLevel.Debug()
+                            .Enrich.WithMachineName()
+                            .Enrich.WithThreadId()
+                            .Enrich.FromLogContext()
+                            .WriteTo.ColoredConsole()
+                            //.WriteTo.Sink(jsonSink)
+                            .WriteTo.RollingFile("papercut.log")
+                            //.WriteTo.Seq("http://localhost:5341")
+                            .CreateLogger();
 
                     return Log.Logger;
                 }).SingleInstance();
 
             base.Load(builder);
+        }
+
+        protected override void AttachToComponentRegistration(
+            IComponentRegistry componentRegistry,
+            IComponentRegistration registration)
+        {
+            // Handle constructor parameters.
+            registration.Preparing += OnComponentPreparing;
+        }
+
+        void OnComponentPreparing(object sender, PreparingEventArgs e)
+        {
+            Type t = e.Component.Activator.LimitType;
+            e.Parameters =
+                e.Parameters.Union(
+                    new[]
+                    {
+                        new ResolvedParameter(
+                            (p, i) => p.ParameterType == typeof(ILogger),
+                            (p, i) => i.Resolve<ILogger>().ForContext(t))
+                    });
         }
     }
 }

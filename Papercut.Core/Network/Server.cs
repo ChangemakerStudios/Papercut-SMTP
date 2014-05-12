@@ -28,9 +28,13 @@ namespace Papercut.Core.Network
 
     using Papercut.Core;
 
+    using Serilog;
+
     public class Server : IServer
     {
         public ConnectionManager ConnectionManager { get; set; }
+
+        public ILogger Logger { get; set; }
 
         public Func<IProtocol> ProtocolFactory { get; set; }
 
@@ -47,9 +51,12 @@ namespace Papercut.Core.Network
         public Server(
             ServerProtocolType serverProtocolType,
             IIndex<ServerProtocolType, Func<IProtocol>> protocolFactory,
-            ConnectionManager connectionManager)
+            ConnectionManager connectionManager,
+            ILogger logger)
         {
             ConnectionManager = connectionManager;
+            Logger = logger;
+            Logger.ForContext("ServerProtocolType", serverProtocolType);
             ProtocolFactory = protocolFactory[serverProtocolType];
         }
 
@@ -68,7 +75,7 @@ namespace Papercut.Core.Network
         {
             if (!_isRunning) return;
 
-            Logger.Write("Stopping server...");
+            Logger.Information("Stopping Server...");
 
             try
             {
@@ -82,7 +89,7 @@ namespace Papercut.Core.Network
             }
             catch (Exception ex)
             {
-                Logger.WriteError("Exception thrown in Server.Stop()", ex);
+                Logger.Error(ex, "Exception Stopping Server");
             }
         }
 
@@ -107,15 +114,14 @@ namespace Papercut.Core.Network
                 _listener.Listen(10);
                 _listener.BeginAccept(OnClientAccept, null);
 
-                Logger.Write(
-                    string.Format(
-                        "Server Ready - Listening for new connections {0}:{1}...",
-                        _address,
-                        _port));
+                Logger.Information(
+                    "Server Ready - Listening for new connections {Address}:{Port}",
+                    _address,
+                    _port);
             }
             catch (Exception ex)
             {
-                Logger.WriteError("Exception thrown in Server.Start()", ex);
+                Logger.Error(ex, "Exception in Starting Server");
                 throw;
             }
         }
@@ -148,7 +154,7 @@ namespace Papercut.Core.Network
             }
             catch (Exception ex)
             {
-                Logger.WriteError("Exception thrown in Server.OnClientAccept", ex);
+                Logger.Error(ex, "Exception in Server.OnClientAccept");
             }
             finally
             {
@@ -168,7 +174,7 @@ namespace Papercut.Core.Network
 
         void Start()
         {
-            Logger.Write("Starting server...");
+            Logger.Information("Starting Server...");
 
             try
             {
@@ -180,7 +186,7 @@ namespace Papercut.Core.Network
             }
             catch (Exception ex)
             {
-                Logger.WriteError("Exception thrown in Server.Start()", ex);
+                Logger.Error(ex, "Exception Starting Server");
                 throw;
             }
         }

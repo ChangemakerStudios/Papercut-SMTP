@@ -65,6 +65,8 @@ namespace Papercut.Core
 
         static void DisposeContainer(object sender, EventArgs e)
         {
+            Trace.WriteLine("ProcessExit Called: Disposing Container");
+
             try
             {
                 if (_containerProvider.Created)

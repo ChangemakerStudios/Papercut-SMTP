@@ -21,18 +21,16 @@
 namespace Papercut.Services
 {
     using System;
-    using System.Windows;
 
-    using Papercut.Core;
     using Papercut.Core.Events;
     using Papercut.Core.Network;
     using Papercut.Properties;
 
     using Serilog;
 
-    public class SmtpServerCordinator : IHandleEvent<AppReadyEvent>, IHandleEvent<AppExitEvent>, IHandleEvent<SmtpServerForceRebindEvent>
+    public class SmtpServerCoordinator : IHandleEvent<AppReadyEvent>, IHandleEvent<AppExitEvent>, IHandleEvent<SmtpServerForceRebindEvent>
     {
-        public SmtpServerCordinator(Func<ServerProtocolType,IServer> serverFactory, ILogger logger, IPublishEvent publishEvent)
+        public SmtpServerCoordinator(Func<ServerProtocolType,IServer> serverFactory, ILogger logger, IPublishEvent publishEvent)
         {
             SmtpServer = serverFactory(ServerProtocolType.Smtp);
             Logger = logger;

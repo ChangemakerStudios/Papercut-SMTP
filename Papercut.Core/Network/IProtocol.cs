@@ -24,7 +24,7 @@ namespace Papercut.Core.Network
     {
         #region Public Methods and Operators
 
-        void Begin(IConnection connection);
+        void Begin(Connection connection);
 
         void ProcessIncomingBuffer(byte[] bufferedData);
 

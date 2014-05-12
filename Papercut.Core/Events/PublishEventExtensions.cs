@@ -18,26 +18,21 @@
  *  
  */
 
-namespace Papercut.Core.Network
+namespace Papercut.Core.Events
 {
     using System;
-    using System.Net.Sockets;
+    using System.Reflection;
 
-    public interface IClient
+    public static class PublishEventExtensions
     {
-        int Id { get; }
+        static readonly MethodInfo _publishMethodInfo = typeof(IPublishEvent).GetMethod("Publish");
 
-        Socket Client { get; }
+        public static void Publish(this IPublishEvent publishEvent, Type eventType, object @event)
+        {
+            if (publishEvent == null) throw new ArgumentNullException("publishEvent");
 
-        bool Connected { get; }
-    }
-
-    public interface IConnection : IClient
-    {
-        DateTime LastActivity { get; set; }
-
-        event EventHandler ConnectionClosed;
-
-        void Close(bool triggerEvent = true);
+            MethodInfo publishMethod = _publishMethodInfo.MakeGenericMethod(eventType);
+            publishMethod.Invoke(publishEvent, new[] { @event });
+        }
     }
 }

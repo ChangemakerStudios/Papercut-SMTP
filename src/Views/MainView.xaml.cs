@@ -357,7 +357,7 @@ namespace Papercut.Views
         }
 
         /// <summary>
-        ///     Write the HTML to a temporary file and render it to the HTML view
+        ///     WriteFormat the HTML to a temporary file and render it to the HTML view
         /// </summary>
         /// <param name="mailMessageEx">
         ///     The mail Message Ex.

@@ -14,10 +14,10 @@ namespace Papercut.Core.Network
 
     public class ConnectionManager : IDisposable
     {
-        readonly Func<int, Socket, IProtocol, IConnection> _connectionFactory;
+        readonly Func<int, Socket, IProtocol, Connection> _connectionFactory;
 
-        readonly ConcurrentDictionary<int, IConnection> _connections =
-            new ConcurrentDictionary<int, IConnection>();
+        readonly ConcurrentDictionary<int, Connection> _connections =
+            new ConcurrentDictionary<int, Connection>();
 
         readonly CompositeDisposable _disposables = new CompositeDisposable();
 
@@ -26,7 +26,7 @@ namespace Papercut.Core.Network
         bool _isInitialized;
 
         public ConnectionManager(
-            Func<int, Socket, IProtocol, IConnection> connectionFactory,
+            Func<int, Socket, IProtocol, Connection> connectionFactory,
             ILogger logger)
         {
             Logger = logger;
@@ -40,12 +40,17 @@ namespace Papercut.Core.Network
             _disposables.Dispose();
         }
 
-        public IConnection CreateConnection(Socket clientSocket, IProtocol protocol)
+        public Connection CreateConnection(Socket clientSocket, IProtocol protocol)
         {
             Interlocked.Increment(ref _connectionID);
-            IConnection connection = _connectionFactory(_connectionID, clientSocket, protocol);
+            Connection connection = _connectionFactory(_connectionID, clientSocket, protocol);
             connection.ConnectionClosed += ConnectionClosed;
             _connections.TryAdd(connection.Id, connection);
+
+            Logger.Debug(
+                "New Connection {ConnectionId} from {RemoteEndPoint}",
+                _connectionID,
+                clientSocket.RemoteEndPoint);
 
             InitCleanupObservables();
 
@@ -103,7 +108,7 @@ namespace Papercut.Core.Network
         public void CloseAll()
         {
             // Close all open connections
-            foreach (IConnection connection in
+            foreach (Connection connection in
                 _connections.Values.Where(connection => connection != null))
             {
                 connection.Close(false);
@@ -112,10 +117,10 @@ namespace Papercut.Core.Network
 
         void ConnectionClosed(object sender, EventArgs e)
         {
-            var connection = sender as IConnection;
+            var connection = sender as Connection;
             if (connection == null) return;
 
-            IConnection noneed;
+            Connection noneed;
             _connections.TryRemove(connection.Id, out noneed);
         }
     }

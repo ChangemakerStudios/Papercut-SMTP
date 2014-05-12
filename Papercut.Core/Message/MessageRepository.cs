@@ -35,22 +35,22 @@ namespace Papercut.Core.Message
     {
         public const string MessageFileSearchPattern = "*.eml";
 
-        readonly ILogger _logger;
-
         readonly IMessagePathConfigurator _messagePathConfigurator;
 
         List<FileSystemWatcher> _watchers;
 
         public MessageRepository(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
         {
-            _logger = logger.ForContext<MessageRepository>();
+            Logger = logger;
             _messagePathConfigurator = messagePathConfigurator;
             SetupMessageWatchers();
         }
 
+        public ILogger Logger { get; private set; }
+
         public void Dispose()
         {
-            foreach (var watch in _watchers)
+            foreach (FileSystemWatcher watch in _watchers)
             {
                 try
                 {
@@ -68,13 +68,12 @@ namespace Papercut.Core.Message
             _watchers = new List<FileSystemWatcher>();
 
             // setup watcher for each path...
-            foreach (var path in _messagePathConfigurator.LoadPaths)
+            foreach (string path in _messagePathConfigurator.LoadPaths)
             {
                 var watcher = new FileSystemWatcher(path, MessageFileSearchPattern)
                 {
-                    NotifyFilter = NotifyFilters.LastAccess
-                                   | NotifyFilters.LastWrite
-                                   | NotifyFilters.FileName
+                    NotifyFilter =
+                        NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName
                 };
 
                 // Add event handlers.
@@ -112,13 +111,18 @@ namespace Papercut.Core.Message
                         Thread.Sleep(500);
                         if (++retryCount > 30)
                         {
-                            _logger.Error("Failed after {RetryCount} retries to Open File {FileInfo}", retryCount, info);
+                            Logger.Error(
+                                "Failed after {RetryCount} retries to Open File {FileInfo}",
+                                retryCount,
+                                info);
                             break;
                         }
                     }
 
                     return info;
-                }).ContinueWith((r) => NewMessage(this, new NewMessageEventArgs(new MessageEntry(r.Result))));
+                })
+                .ContinueWith(
+                    r => NewMessage(this, new NewMessageEventArgs(new MessageEntry(r.Result))));
         }
 
         bool CanOpenFile(FileInfo file)
@@ -127,7 +131,11 @@ namespace Papercut.Core.Message
 
             try
             {
-                using (var fileStream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                using (
+                    FileStream fileStream = file.Open(
+                        FileMode.Open,
+                        FileAccess.ReadWrite,
+                        FileShare.None))
                 {
                     fileStream.Close();
                 }
@@ -148,7 +156,7 @@ namespace Papercut.Core.Message
 
             try
             {
-                using (var fileStream = file.OpenRead())
+                using (FileStream fileStream = file.OpenRead())
                 {
                     using (var ms = new MemoryStream())
                     {
@@ -189,7 +197,11 @@ namespace Papercut.Core.Message
             {
                 Thread.Sleep(500);
 
-                if (++retryCount > 10) throw new IOException(string.Format("Cannot Load File {0} After 5 Seconds", file));
+                if (++retryCount > 10)
+                {
+                    throw new IOException(
+                        string.Format("Cannot Load File {0} After 5 Seconds", file));
+                }
             }
 
             return data;
@@ -197,12 +209,15 @@ namespace Papercut.Core.Message
 
         public IList<MessageEntry> LoadMessages()
         {
-            var files = _messagePathConfigurator.LoadPaths.SelectMany(p => Directory.GetFiles(p, MessageFileSearchPattern));
+            IEnumerable<string> files =
+                _messagePathConfigurator.LoadPaths.SelectMany(
+                    p => Directory.GetFiles(p, MessageFileSearchPattern));
 
-            return files.Select(file => new MessageEntry(file))
-                .OrderByDescending(m => m.ModifiedDate)
-                .ThenBy(m => m.Name)
-                .ToList();
+            return
+                files.Select(file => new MessageEntry(file))
+                    .OrderByDescending(m => m.ModifiedDate)
+                    .ThenBy(m => m.Name)
+                    .ToList();
         }
 
         public event EventHandler<NewMessageEventArgs> NewMessage;
@@ -211,13 +226,13 @@ namespace Papercut.Core.Message
 
         protected virtual void OnRefreshNeeded()
         {
-            var handler = RefreshNeeded;
+            EventHandler handler = RefreshNeeded;
             if (handler != null) handler(this, EventArgs.Empty);
         }
 
         protected virtual void OnNewMessage(NewMessageEventArgs e)
         {
-            var handler = NewMessage;
+            EventHandler<NewMessageEventArgs> handler = NewMessage;
             if (handler != null) handler(this, e);
         }
 
@@ -230,7 +245,7 @@ namespace Papercut.Core.Message
                 do
                 {
                     // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
-                    var fileNameUnique = string.Format(
+                    string fileNameUnique = string.Format(
                         "{0}-{1}.eml",
                         DateTime.Now.ToString("yyyyMMddHHmmssFF"),
                         Guid.NewGuid().ToString().Substring(0, 2));
@@ -243,7 +258,7 @@ namespace Papercut.Core.Message
             }
             catch (Exception ex)
             {
-                Logger.WriteError(string.Format("Failure saving email message: {0}", file), ex);
+                Logger.Error(ex, "Failure saving email message: {EmailMessageFile}", file);
             }
 
             return file;

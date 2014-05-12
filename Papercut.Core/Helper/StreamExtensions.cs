@@ -24,7 +24,10 @@ namespace Papercut.Core.Helper
 
     public static class StreamExtensions
     {
-        public static Stream CopyBufferedTo(this Stream source, Stream destination, int bufferLength = 0xFFF)
+        public static Stream CopyBufferedTo(
+            this Stream source,
+            Stream destination,
+            int bufferLength = 0xFFF)
         {
             var buffer = new byte[bufferLength];
             int bytesRead = source.Read(buffer, 0, bufferLength);
@@ -34,6 +37,22 @@ namespace Papercut.Core.Helper
             {
                 destination.Write(buffer, 0, bytesRead);
                 bytesRead = source.Read(buffer, 0, bufferLength);
+            }
+
+            return source;
+        }
+
+        public static Stream CopyBufferedLimited(this Stream source, Stream destination, int size, int bufferLength = 0xFFF)
+        {
+            var buffer = new byte[bufferLength];
+            int bytesRead;
+
+            for (int readCount = 0; readCount < size; readCount += bytesRead)
+            {
+                bytesRead = source.Read(buffer, 0, buffer.Length);
+                if (bytesRead == 0) break;
+
+                destination.Write(buffer, 0, bytesRead);
             }
 
             return source;

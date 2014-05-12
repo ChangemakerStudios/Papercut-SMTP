@@ -24,9 +24,6 @@ namespace Papercut.Core.Network
 
     using System.Net.Mail;
     using System.Net.Sockets;
-    using System.Text;
-
-    using Papercut.Core;
 
     #endregion
 
@@ -35,115 +32,55 @@ namespace Papercut.Core.Network
     /// </summary>
     public class SmtpClient : TcpClient
     {
-        #region Constants and Fields
+        readonly SmtpSession _session;
 
-        /// <summary>
-        ///     The session.
-        /// </summary>
-        readonly SmtpSession session;
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="SmtpClient" /> class.
-        /// </summary>
-        /// <param name="session">
-        ///     The session.
-        /// </param>
         public SmtpClient(SmtpSession session)
         {
-            this.session = session;
+            _session = session;
         }
 
-        #endregion
-
-        #region Public Methods and Operators
-
-        /// <summary>
-        ///     The send.
-        /// </summary>
-        /// <exception cref="SmtpException">
-        /// </exception>
         public void Send()
         {
             string response;
 
-            Connect(session.Sender, 25);
-            response = Response();
-            if (response.Substring(0, 3) != "220") throw new SmtpException(response);
+            Connect(_session.Sender, 25);
+            response = this.ReadString();
+            IsValidResponse(response);
 
-            Write("HELO {0}\r\n", GeneralExtensions.GetIPAddress());
-            response = Response();
-            if (response.Substring(0, 3) != "250") throw new SmtpException(response);
+            this.WriteFormat("HELO {0}\r\n", GeneralExtensions.GetIPAddress());
+            response = this.ReadString();
+            IsValidResponse(response);
 
-            Write("MAIL FROM:<{0}>\r\n", session.MailFrom);
-            response = Response();
-            if (response.Substring(0, 3) != "250") throw new SmtpException(response);
+            this.WriteFormat("MAIL FROM:<{0}>\r\n", _session.MailFrom);
+            response = this.ReadString();
+            IsValidResponse(response);
 
-            session.Recipients.ForEach(
+            _session.Recipients.ForEach(
                 address =>
                 {
-                    Write("RCPT TO:<{0}>\r\n", address);
-                    response = Response();
-                    if (response.Substring(0, 3) != "250") throw new SmtpException(response);
+                    this.WriteFormat("RCPT TO:<{0}>\r\n", address);
+                    response = this.ReadString();
+                    IsValidResponse(response);
                 });
 
-            Write("DATA\r\n");
-            response = Response();
-            if (response.Substring(0, 3) != "354") throw new SmtpException(response);
+            this.WriteFormat("DATA\r\n");
+            response = this.ReadString();
+            IsValidResponse(response, "354");
 
-            NetworkStream stream = GetStream();
-            stream.Write(session.Message, 0, session.Message.Length);
+            this.WriteBytes(_session.Message);
 
-            Write("\r\n.\r\n");
-            response = Response();
-            if (response.Substring(0, 3) != "250") throw new SmtpException(response);
+            this.WriteFormat("\r\n.\r\n");
+            response = this.ReadString();
+            IsValidResponse(response);
 
-            Write("QUIT\r\n");
-            response = Response();
+            this.WriteFormat("QUIT\r\n");
+            response = this.ReadString();
             if (response.IndexOf("221") == -1) throw new SmtpException(response);
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        ///     The response.
-        /// </summary>
-        /// <returns>
-        ///     The response.
-        /// </returns>
-        string Response()
+        static void IsValidResponse(string response, string correctResponse = "250")
         {
-            var enc = new ASCIIEncoding();
-            var serverbuff = new byte[1024];
-            NetworkStream stream = GetStream();
-            int count = stream.Read(serverbuff, 0, 1024);
-
-            return count == 0 ? string.Empty : enc.GetString(serverbuff, 0, count);
+            if (response.Substring(0, 3) != correctResponse) throw new SmtpException(response);
         }
-
-        /// <summary>
-        ///     The write.
-        /// </summary>
-        /// <param name="format">
-        ///     The format.
-        /// </param>
-        /// <param name="args">
-        ///     The args.
-        /// </param>
-        void Write(string format, params object[] args)
-        {
-            var en = new ASCIIEncoding();
-
-            byte[] writeBuffer = en.GetBytes(string.Format(format, args));
-            NetworkStream stream = GetStream();
-            stream.Write(writeBuffer, 0, writeBuffer.Length);
-        }
-
-        #endregion
     }
 }

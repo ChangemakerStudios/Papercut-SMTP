@@ -27,11 +27,15 @@ namespace Papercut.Core.Configuration
     using System.Security.Principal;
     using System.Text.RegularExpressions;
 
+    using Serilog;
+
     public class MessagePathConfigurator : IMessagePathConfigurator
     {
+        public ILogger Logger { get; set; }
+
         #region Static Fields
 
-        static readonly IDictionary<string, string> _templateDictionary = null;
+        static readonly IDictionary<string, string> _templateDictionary;
 
         static readonly Regex _templateRegex = new Regex(
             @"\%(?<name>.+?)\%",
@@ -45,44 +49,37 @@ namespace Papercut.Core.Configuration
         {
             _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                {
-                    "BaseDirectory",
-                    AppDomain.CurrentDomain.BaseDirectory
-                }
+                { "BaseDirectory", AppDomain.CurrentDomain.BaseDirectory }
             };
 
-            foreach (var specialPath in GeneralExtensions.EnumAsList<Environment.SpecialFolder>())
+            foreach (
+                Environment.SpecialFolder specialPath in
+                    GeneralExtensions.EnumAsList<Environment.SpecialFolder>())
             {
-                var specialPathName = specialPath.ToString();
+                string specialPathName = specialPath.ToString();
 
-                if (!_templateDictionary.ContainsKey(specialPathName))
-                {
-                    _templateDictionary.Add(specialPathName, Environment.GetFolderPath(specialPath));
-                }
+                if (!_templateDictionary.ContainsKey(specialPathName)) _templateDictionary.Add(specialPathName, Environment.GetFolderPath(specialPath));
             }
         }
 
-        public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider)
+        public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
         {
-            if (pathTemplateProvider == null)
-            {
-                throw new ArgumentNullException("pathTemplateProvider");
-            }
+            if (pathTemplateProvider == null) throw new ArgumentNullException("pathTemplateProvider");
+            if (logger == null) throw new ArgumentNullException("logger");
+
+            Logger = logger;
 
             DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
 
-            LoadPaths = pathTemplateProvider.PathTemplates
-                .Select(RenderPathTemplate)
-                .Where(ValidatePathExists)
-                .ToList();
+            LoadPaths =
+                pathTemplateProvider.PathTemplates.Select(RenderPathTemplate)
+                    .Where(ValidatePathExists)
+                    .ToList();
 
             bool isSystem;
-            using (var identity = WindowsIdentity.GetCurrent()) isSystem = identity.IsSystem;
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent()) isSystem = identity.IsSystem;
 
-            if (!isSystem && LoadPaths.Any())
-            {
-                DefaultSavePath = LoadPaths.First();
-            }
+            if (!isSystem && LoadPaths.Any()) DefaultSavePath = LoadPaths.First();
         }
 
         #endregion
@@ -99,15 +96,20 @@ namespace Papercut.Core.Configuration
 
         string RenderPathTemplate(string pathTemplate)
         {
-            var pathKeys = _templateRegex.Matches(pathTemplate).OfType<Match>().Select(s => s.Groups["name"].Value);
-            var renderedPath = pathTemplate;
+            IEnumerable<string> pathKeys =
+                _templateRegex.Matches(pathTemplate)
+                    .OfType<Match>()
+                    .Select(s => s.Groups["name"].Value);
+            string renderedPath = pathTemplate;
 
-            foreach (var pathKeyName in pathKeys)
+            foreach (string pathKeyName in pathKeys)
             {
                 string path;
                 if (_templateDictionary.TryGetValue(pathKeyName, out path))
                 {
-                    renderedPath = renderedPath.Replace(string.Format("%{0}%", pathKeyName), path).Replace(@"\\", @"\");
+                    renderedPath =
+                        renderedPath.Replace(string.Format("%{0}%", pathKeyName), path)
+                            .Replace(@"\\", @"\");
                 }
             }
 
@@ -116,23 +118,17 @@ namespace Papercut.Core.Configuration
 
         bool ValidatePathExists(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException("path");
-            }
+            if (path == null) throw new ArgumentNullException("path");
 
             try
             {
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.WriteError(string.Format("Failure accessing or creating directory: {0}", path), ex);
+                Logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
             }
 
             return false;

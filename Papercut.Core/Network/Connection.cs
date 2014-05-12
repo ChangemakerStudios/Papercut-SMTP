@@ -25,14 +25,14 @@ namespace Papercut.Core.Network
     using System;
     using System.Net.Sockets;
 
-    using Papercut.Core;
+    using Serilog;
 
     #endregion
 
     /// <summary>
     ///     A connection.
     /// </summary>
-    public class Connection : IConnection
+    public class Connection
     {
         const int BufferSize = 64;
 
@@ -40,12 +40,16 @@ namespace Papercut.Core.Network
 
         #region Constructors and Destructors
 
-        public Connection(int id, Socket client, IProtocol protocol)
+        public Connection(int id, Socket client, IProtocol protocol, ILogger logger)
         {
             // Initialize members
             Id = id;
             Client = client;
             Protocol = protocol;
+            Logger = logger;
+
+            Logger.ForContext("ConnectionId", id);
+
             Connected = true;
             LastActivity = DateTime.Now;
 
@@ -65,6 +69,8 @@ namespace Papercut.Core.Network
         #region Public Properties
 
         public IProtocol Protocol { get; protected set; }
+
+        public ILogger Logger { get; set; }
 
         public Socket Client { get; protected set; }
 
@@ -92,7 +98,7 @@ namespace Papercut.Core.Network
 
             if (triggerEvent) OnConnectionClosed(new EventArgs());
 
-            Logger.Write("Connection closed", Id);
+            Logger.Debug("Connection {ConnectionId} Closed", Id);
         }
 
         #endregion
@@ -144,7 +150,7 @@ namespace Papercut.Core.Network
             }
             catch (Exception ex)
             {
-                Logger.WriteError("Error in Connection.IsValidConnection", ex, Id);
+                Logger.Error(ex, "Error in Connection.IsValidConnection");
             }
 
             return false;
@@ -173,7 +179,7 @@ namespace Papercut.Core.Network
             }
             catch (Exception ex)
             {
-                Logger.WriteError("Error in Connection.BeginReceive", ex, Id);
+                Logger.Error(ex, "Error in Connection.BeginReceive");
             }
         }
 

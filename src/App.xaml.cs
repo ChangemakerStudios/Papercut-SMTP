@@ -37,8 +37,22 @@
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            var publishEvent = Container.Resolve<IPublishEvent>();
+
+            var appCanStartEvent = new AppPreStartEvent();
+            publishEvent.Publish(appCanStartEvent);
+
+            if (appCanStartEvent.CancelStart)
+            {
+                // force shut down...
+                publishEvent.Publish(new AppForceShutdownEvent());
+                return;
+            }
+
             base.OnStartup(e);
-            Container.Resolve<IPublishEvent>().Publish(new AppReadyEvent());
+
+            // startup app
+            publishEvent.Publish(new AppReadyEvent());
         }
 
         protected override void OnExit(ExitEventArgs e)
