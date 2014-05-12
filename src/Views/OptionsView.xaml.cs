@@ -22,7 +22,6 @@ namespace Papercut.UI
 {
     using System.Linq;
     using System.Net;
-    using System.Text.RegularExpressions;
     using System.Windows;
 
     using Papercut.Helpers;
@@ -30,57 +29,64 @@ namespace Papercut.UI
 
     public partial class OptionsWindow : Window
     {
-        static readonly Regex _ipv4 = new Regex(
-            @"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
-            RegexOptions.Compiled);
+        #region Constructors and Destructors
 
         public OptionsWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
             // Add the Any option
-            ipsList.Items.Add("Any");
+            this.ipsList.Items.Add("Any");
 
             // Add local IPs
-            foreach (IPAddress address in
-                Dns.GetHostAddresses("localhost")
-                    .Where(address => _ipv4.IsMatch(address.ToString())))
+            foreach (IPAddress address in Dns.GetHostAddresses("localhost").Where(address => NetworkHelper.IsValidIP(address.ToString())))
             {
-                ipsList.Items.Add(address.ToString());
+                this.ipsList.Items.Add(address.ToString());
             }
 
             // Get NIC IPs
-            foreach (string address in
-                NetworkHelper.GetIPAddresses().Where(address => _ipv4.IsMatch(address)))
+            foreach (string address in NetworkHelper.GetIPAddresses().Where(NetworkHelper.IsValidIP))
             {
-                ipsList.Items.Add(address);
+                this.ipsList.Items.Add(address);
             }
 
             // Select the current one
-            ipsList.SelectedItem = Settings.Default.IP;
+            this.ipsList.SelectedItem = Settings.Default.IP;
 
             // Set the other options
-            portNumber.Text = Settings.Default.Port.ToString();
-            startMinimized.IsChecked = Settings.Default.StartMinimized;
-            minimizeOnClose.IsChecked = Settings.Default.MinimizeOnClose;
+            this.portNumber.Text = Settings.Default.Port.ToString();
+            this.startMinimized.IsChecked = Settings.Default.StartMinimized;
+            this.minimizeOnClose.IsChecked = Settings.Default.MinimizeOnClose;
         }
 
-        void cancelButton_Click(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region Methods
+
+        private void cancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
+            this.DialogResult = false;
         }
 
-        void saveButton_Click(object sender, RoutedEventArgs e)
+        private void saveButton_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.IP = (string)ipsList.SelectedValue;
-            Settings.Default.Port = int.Parse(portNumber.Text);
+            Settings.Default.IP = (string)this.ipsList.SelectedValue;
+            Settings.Default.Port = int.Parse(this.portNumber.Text);
 
-            if (startMinimized.IsChecked.HasValue) Settings.Default.StartMinimized = startMinimized.IsChecked.Value;
-            if (minimizeOnClose.IsChecked.HasValue) Settings.Default.MinimizeOnClose = minimizeOnClose.IsChecked.Value;
+            if (this.startMinimized.IsChecked.HasValue)
+            {
+                Settings.Default.StartMinimized = this.startMinimized.IsChecked.Value;
+            }
+            if (this.minimizeOnClose.IsChecked.HasValue)
+            {
+                Settings.Default.MinimizeOnClose = this.minimizeOnClose.IsChecked.Value;
+            }
 
             Settings.Default.Save();
 
-            DialogResult = true;
+            this.DialogResult = true;
         }
+
+        #endregion
     }
 }

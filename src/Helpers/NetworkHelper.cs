@@ -23,10 +23,13 @@ namespace Papercut.Helpers
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
+    using System.Text.RegularExpressions;
 
     public static class NetworkHelper
     {
         const string NetworkAdapterQuery = "SELECT IPAddress from Win32_NetworkAdapterConfiguration WHERE IPEnabled=true";
+
+        private static readonly Regex _ipv4 = new Regex(@"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", RegexOptions.Compiled);
 
         public static IEnumerable<string> GetIPAddresses()
         {
@@ -52,8 +55,13 @@ namespace Papercut.Helpers
                 }
             }
 
-            return ips;
+            return ips.Where(address => _ipv4.IsMatch(address)).ToList();
         }
 
+        public static bool IsValidIP(string ip)
+        {
+            if (ip == null) return false;
+            return _ipv4.IsMatch(ip);
+        }
     }
 }
