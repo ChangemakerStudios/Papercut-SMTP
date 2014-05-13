@@ -18,7 +18,7 @@
  *  
  */
 
-namespace Papercut.Core
+namespace Papercut.Core.Helper
 {
     using System;
     using System.Collections;

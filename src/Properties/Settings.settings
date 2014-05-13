@@ -26,7 +26,7 @@
     <Setting Name="MessagePaths" Type="System.String" Scope="User">
       <Value Profile="(Default)">%ApplicationData%\Papercut;%BaseDirectory%</Value>
     </Setting>
-    <Setting Name="RunOnStartup" Type="System.String" Scope="User">
+    <Setting Name="RunOnStartup" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>

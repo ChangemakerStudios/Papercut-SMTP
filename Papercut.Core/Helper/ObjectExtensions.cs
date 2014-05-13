@@ -18,13 +18,48 @@
  *  
  */
 
-namespace Papercut.Core
+namespace Papercut.Core.Helper
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
 
     public static class ObjectExtensions
     {
+        /// <summary>
+        ///     Converts any object to type T.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static T ToType<T>([CanBeNull] this object instance)
+        {
+            if (instance == null) return default(T);
+
+            if (Equals(instance, default(T))) return default(T);
+
+            if (Equals(instance, DBNull.Value)) return default(T);
+
+            Type instanceType = instance.GetType();
+
+            if (instanceType == typeof(string))
+            {
+                if (string.IsNullOrEmpty(instance as string)) return default(T);
+            }
+            else if (instanceType.IsClass && !(instance is IConvertible))
+            {
+                // just cast since it's a class....
+                return (T)instance;
+            }
+
+            Type conversionType = typeof(T);
+
+            if (conversionType.IsGenericType
+                && conversionType.GetGenericTypeDefinition() == typeof(Nullable<>)) conversionType = (new NullableConverter(conversionType)).UnderlyingType;
+
+            return (T)Convert.ChangeType(instance, conversionType);
+        }
+
         /// <summary>
         ///     If value is not null, calls continueFunc with value, else, returns default(TOut).
         /// </summary>

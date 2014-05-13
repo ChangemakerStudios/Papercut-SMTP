@@ -22,6 +22,6 @@ namespace Papercut.ViewModels
 {
     public class OptionViewModel : Caliburn.Micro.PropertyChangedBase 
     {
-        // stub
+        
     }
 }

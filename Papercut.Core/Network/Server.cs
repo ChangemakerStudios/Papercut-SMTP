@@ -32,6 +32,8 @@ namespace Papercut.Core.Network
 
     public class Server : IServer
     {
+        readonly ServerProtocolType _serverProtocolType;
+
         public ConnectionManager ConnectionManager { get; set; }
 
         public ILogger Logger { get; set; }
@@ -55,9 +57,10 @@ namespace Papercut.Core.Network
             ILogger logger)
         {
             ConnectionManager = connectionManager;
-            Logger = logger;
-            Logger.ForContext("ServerProtocolType", serverProtocolType);
-            ProtocolFactory = protocolFactory[serverProtocolType];
+
+            _serverProtocolType = serverProtocolType;
+            Logger = logger.ForContext("ServerProtocolType", _serverProtocolType);
+            ProtocolFactory = protocolFactory[_serverProtocolType];
         }
 
         #endregion
@@ -115,7 +118,7 @@ namespace Papercut.Core.Network
                 _listener.BeginAccept(OnClientAccept, null);
 
                 Logger.Information(
-                    "Server Ready - Listening for new connections {Address}:{Port}",
+                    "Server Ready - Listening for new connections {Address}:{UIPort}",
                     _address,
                     _port);
             }
@@ -128,7 +131,7 @@ namespace Papercut.Core.Network
 
         protected void SetEndpoint(string ip, int port)
         {
-            // Load IP/Port settings
+            // Load IP/UIPort settings
             if (string.IsNullOrWhiteSpace(ip)
                 || string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase)) _address = IPAddress.Any;
             else _address = IPAddress.Parse(ip);
@@ -174,7 +177,7 @@ namespace Papercut.Core.Network
 
         void Start()
         {
-            Logger.Information("Starting Server...");
+            Logger.Information("Starting Server {ProtocolType}", _serverProtocolType);
 
             try
             {

@@ -73,7 +73,7 @@ namespace Papercut.Services
                             DefaultItem = true
                         },
                         new MenuItem(
-                            "Shutdown",
+                            "Exit",
                             (sender, args) => _publishEvent.Publish(new AppForceShutdownEvent()))
                     });
         }

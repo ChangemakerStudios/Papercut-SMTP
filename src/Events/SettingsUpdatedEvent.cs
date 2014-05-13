@@ -18,10 +18,13 @@
  *  
  */
 
-namespace Papercut.Core.Events
-{
-    public class SmtpServerForceRebindEvent : IDomainEvent
-    {
 
+namespace Papercut.Events
+{
+    using Papercut.Core.Events;
+
+    public class SettingsUpdatedEvent : IDomainEvent
+    {
+         
     }
 }

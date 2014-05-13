@@ -22,6 +22,7 @@ namespace Papercut
 {
     using System;
     using System.Diagnostics;
+    using System.Reflection;
     using System.Windows;
 
     using Autofac;
@@ -32,6 +33,10 @@ namespace Papercut
 
     public partial class App : Application
     {
+        public const string GlobalName = "Papercut.App";
+
+        public static string ExecutablePath = Assembly.GetExecutingAssembly().Location;
+
         Lazy<ILifetimeScope> _lifetimeScope =
             new Lazy<ILifetimeScope>(
                 () => PapercutContainer.Instance.BeginLifetimeScope(PapercutContainer.UIScopeTag));

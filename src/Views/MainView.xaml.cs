@@ -47,7 +47,6 @@ namespace Papercut.Views
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
-    using Papercut.Core.Mime;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
@@ -74,7 +73,7 @@ namespace Papercut.Views
     /// <summary>
     ///     Interaction logic for MainView.xaml
     /// </summary>
-    public partial class MainView : Window, IHandle<ShowMainWindowEvent>, IHandle<SmtpServerBindFailedEvent>
+    public partial class MainView : Window, IHandle<ShowMainWindowEvent>, IHandle<SmtpServerBindFailedEvent>, IHandle<ShowMessageEvent>
     {
         #region Fields
 
@@ -324,13 +323,9 @@ namespace Papercut.Views
 
         void Options_Click(object sender, RoutedEventArgs e)
         {
-            var ow = new OptionsWindow { Owner = this, ShowInTaskbar = false };
+            var ow = new OptionsWindow(PublishEvent) { Owner = this, ShowInTaskbar = false };
 
-            bool? showDialog = ow.ShowDialog();
-
-            if (showDialog == null || !showDialog.Value) return;
-
-            PublishEvent.Publish(new SmtpServerForceRebindEvent());
+            ow.ShowDialog();
         }
 
         void RefreshMessageList()
@@ -552,10 +547,15 @@ namespace Papercut.Views
         void IHandle<SmtpServerBindFailedEvent>.Handle(SmtpServerBindFailedEvent message)
         {
             MessageBox.Show(
-                "Failed to rebind to the address/port specified.  The port may already be in use by another process.  Please update the configuration.",
-                "Operation Failure");
+                "Failed to start SMTP server listening. The IP and Port combination is in use by another program. To fix, change the server bindings in the options.",
+                "Failed");
 
             Options_Click(null, null);
+        }
+
+        void IHandle<ShowMessageEvent>.Handle(ShowMessageEvent message)
+        {
+            MessageBox.Show(message.MessageText, message.Caption);
         }
     }
 }

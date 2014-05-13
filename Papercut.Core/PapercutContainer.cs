@@ -27,6 +27,8 @@ namespace Papercut.Core
 
     using Autofac;
 
+    using Papercut.Core.Helper;
+
     public static class PapercutContainer
     {
         static readonly SafeReadWriteProvider<IContainer> _containerProvider

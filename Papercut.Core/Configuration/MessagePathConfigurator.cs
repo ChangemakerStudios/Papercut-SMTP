@@ -27,6 +27,8 @@ namespace Papercut.Core.Configuration
     using System.Security.Principal;
     using System.Text.RegularExpressions;
 
+    using Papercut.Core.Helper;
+
     using Serilog;
 
     public class MessagePathConfigurator : IMessagePathConfigurator

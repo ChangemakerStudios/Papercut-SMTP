@@ -18,10 +18,20 @@
  *  
  */
 
-namespace Papercut.Core.Events
+namespace Papercut.Events
 {
-    public class SmtpServerForceRebindEvent : IDomainEvent
-    {
+    using Papercut.Core.Events;
 
+    public class ShowMessageEvent : IDomainEvent
+    {
+        public ShowMessageEvent(string messageText, string caption)
+        {
+            MessageText = messageText;
+            Caption = caption;
+        }
+
+        public string MessageText { get; set; }
+
+        public string Caption { get; set; }
     }
 }

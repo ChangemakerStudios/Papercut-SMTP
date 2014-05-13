@@ -33,7 +33,8 @@ namespace Papercut.Core.Network
     {
         public const string Localhost = "127.0.0.1";
 
-        public const int Port = 37402;
+        public const int UIPort = 37402;
+        public const int ServerPort = 37403;
 
         public PapercutClient(ILogger logger)
         {
@@ -54,7 +55,7 @@ namespace Papercut.Core.Network
         {
             try
             {
-                Client.Connect(Localhost, Port);
+                Client.Connect(Localhost, UIPort);
             }
             catch (SocketException)
             {

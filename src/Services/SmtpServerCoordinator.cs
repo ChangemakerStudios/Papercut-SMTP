@@ -24,11 +24,12 @@ namespace Papercut.Services
 
     using Papercut.Core.Events;
     using Papercut.Core.Network;
+    using Papercut.Events;
     using Papercut.Properties;
 
     using Serilog;
 
-    public class SmtpServerCoordinator : IHandleEvent<AppReadyEvent>, IHandleEvent<AppExitEvent>, IHandleEvent<SmtpServerForceRebindEvent>
+    public class SmtpServerCoordinator : IHandleEvent<AppReadyEvent>, IHandleEvent<AppExitEvent>, IHandleEvent<SettingsUpdatedEvent>
     {
         public SmtpServerCoordinator(Func<ServerProtocolType,IServer> serverFactory, ILogger logger, IPublishEvent publishEvent)
         {
@@ -63,7 +64,7 @@ namespace Papercut.Services
             {
                 Logger.Warning(
                     ex,
-                    "Failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
+                    "Failed to bind to the {Address} {UIPort} specified. The port may already be in use by another process.",
                     Settings.Default.IP,
                     Settings.Default.Port);
 
@@ -78,7 +79,7 @@ namespace Papercut.Services
             SmtpServer.Stop();
         }
 
-        public void Handle(SmtpServerForceRebindEvent @event)
+        public void Handle(SettingsUpdatedEvent @event)
         {
             ListenSmtpServer();
         }

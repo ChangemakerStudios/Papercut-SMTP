@@ -24,67 +24,69 @@ namespace Papercut.UI
     using System.Net;
     using System.Windows;
 
+    using Papercut.Core;
+    using Papercut.Core.Events;
+    using Papercut.Core.Helper;
+    using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
 
     public partial class OptionsWindow : Window
     {
+        readonly IPublishEvent _publishEvent;
+
         #region Constructors and Destructors
 
-        public OptionsWindow()
+        public OptionsWindow(IPublishEvent publishEvent)
         {
-            this.InitializeComponent();
+            _publishEvent = publishEvent;
+            InitializeComponent();
 
             // Add the Any option
-            this.ipsList.Items.Add("Any");
+            ipsList.Items.Add("Any");
 
             // Add local IPs
-            foreach (IPAddress address in Dns.GetHostAddresses("localhost").Where(address => NetworkHelper.IsValidIP(address.ToString())))
-            {
-                this.ipsList.Items.Add(address.ToString());
-            }
+            ipsList.Items.AddRange(
+                Dns.GetHostAddresses("localhost")
+                    .Select(a => a.ToString())
+                    .Where(NetworkHelper.IsValidIP));
 
             // Get NIC IPs
-            foreach (string address in NetworkHelper.GetIPAddresses().Where(NetworkHelper.IsValidIP))
-            {
-                this.ipsList.Items.Add(address);
-            }
+            ipsList.Items.AddRange(NetworkHelper.GetIPAddresses().Where(NetworkHelper.IsValidIP));
 
             // Select the current one
-            this.ipsList.SelectedItem = Settings.Default.IP;
+            ipsList.SelectedItem = Settings.Default.IP;
 
             // Set the other options
-            this.portNumber.Text = Settings.Default.Port.ToString();
-            this.startMinimized.IsChecked = Settings.Default.StartMinimized;
-            this.minimizeOnClose.IsChecked = Settings.Default.MinimizeOnClose;
+            portNumber.Text = Settings.Default.Port.ToString();
+            startMinimized.IsChecked = Settings.Default.StartMinimized;
+            minimizeOnClose.IsChecked = Settings.Default.MinimizeOnClose;
+            runOnStartup.IsChecked = Settings.Default.RunOnStartup;
         }
 
         #endregion
 
         #region Methods
 
-        private void cancelButton_Click(object sender, RoutedEventArgs e)
+        void cancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
+            DialogResult = false;
         }
 
-        private void saveButton_Click(object sender, RoutedEventArgs e)
+        void saveButton_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.IP = (string)this.ipsList.SelectedValue;
-            Settings.Default.Port = int.Parse(this.portNumber.Text);
+            Settings.Default.IP = (string)ipsList.SelectedValue;
+            Settings.Default.Port = int.Parse(portNumber.Text);
 
-            if (this.startMinimized.IsChecked.HasValue)
-            {
-                Settings.Default.StartMinimized = this.startMinimized.IsChecked.Value;
-            }
-            if (this.minimizeOnClose.IsChecked.HasValue)
-            {
-                Settings.Default.MinimizeOnClose = this.minimizeOnClose.IsChecked.Value;
-            }
+            if (runOnStartup.IsChecked.HasValue) Settings.Default.RunOnStartup = runOnStartup.IsChecked.Value;
+            if (startMinimized.IsChecked.HasValue) Settings.Default.StartMinimized = startMinimized.IsChecked.Value;
+            if (minimizeOnClose.IsChecked.HasValue) Settings.Default.MinimizeOnClose = minimizeOnClose.IsChecked.Value;
 
             Settings.Default.Save();
 
-            this.DialogResult = true;
+            _publishEvent.Publish(new SettingsUpdatedEvent());
+
+            DialogResult = true;
         }
 
         #endregion

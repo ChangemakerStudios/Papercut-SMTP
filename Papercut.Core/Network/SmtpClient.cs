@@ -25,6 +25,8 @@ namespace Papercut.Core.Network
     using System.Net.Mail;
     using System.Net.Sockets;
 
+    using Papercut.Core.Helper;
+
     #endregion
 
     /// <summary>

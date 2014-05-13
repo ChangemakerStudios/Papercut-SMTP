@@ -27,10 +27,12 @@ namespace Papercut.Service
     public class PapercutService
     {
         readonly IServer _smtpServer;
+        readonly IServer _papercutServer;
 
         public PapercutService(Func<ServerProtocolType, IServer> serverFactory)
         {
             _smtpServer = serverFactory(ServerProtocolType.Smtp);
+            _papercutServer = serverFactory(ServerProtocolType.Papercut);
         }
 
         public void Start()

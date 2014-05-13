@@ -33,6 +33,8 @@ namespace Papercut.Core
     using Papercut.Core.Network;
 
     using Serilog;
+    using Serilog.Formatting.Json;
+    using Serilog.Sinks.RollingFile;
 
     using Module = Autofac.Module;
 
@@ -78,7 +80,7 @@ namespace Papercut.Core
             builder.Register(
                 c =>
                 {
-                    //var jsonSink = new RollingFileSink(@"papercut.json", new JsonFormatter(), null, null);
+                    var jsonSink = new RollingFileSink(@"papercut.json", new JsonFormatter(), null, null);
 
                     Log.Logger =
                         new LoggerConfiguration().MinimumLevel.Debug()
@@ -86,8 +88,8 @@ namespace Papercut.Core
                             .Enrich.WithThreadId()
                             .Enrich.FromLogContext()
                             .WriteTo.ColoredConsole()
-                            //.WriteTo.Sink(jsonSink)
-                            .WriteTo.RollingFile("papercut.log")
+                            .WriteTo.Sink(jsonSink)
+                            //.WriteTo.RollingFile("papercut.log")
                             //.WriteTo.Seq("http://localhost:5341")
                             .CreateLogger();
 

@@ -18,7 +18,7 @@
  *  
  */
 
-namespace Papercut.Core.Mime
+namespace Papercut.Core.Helper
 {
     using System.Collections.Generic;
     using System.Linq;

@@ -31,9 +31,7 @@ namespace Papercut.Services
 
     public class SingleInstanceService : IDisposable, IHandleEvent<AppPreStartEvent>
     {
-        const string GlobalPapercutAppName = "Papercut.App";
-
-        readonly Mutex _appMutex = new Mutex(false, GlobalPapercutAppName);
+        readonly Mutex _appMutex = new Mutex(false, App.GlobalName);
 
         readonly PapercutClient _papercutClient;
 

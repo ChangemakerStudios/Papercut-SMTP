@@ -25,6 +25,8 @@ namespace Papercut.Core.Message
     using System.IO;
     using System.Text.RegularExpressions;
 
+    using Papercut.Core.Helper;
+
     /// <summary>
     ///     The message entry.
     /// </summary>

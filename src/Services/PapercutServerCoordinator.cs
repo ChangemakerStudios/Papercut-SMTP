@@ -54,7 +54,7 @@ namespace Papercut.Services
         {
             try
             {
-                PapercutServer.Listen(PapercutClient.Localhost, PapercutClient.Port);
+                PapercutServer.Listen(PapercutClient.Localhost, PapercutClient.UIPort);
             }
             catch (Exception)
             {
