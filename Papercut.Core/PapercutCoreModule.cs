@@ -33,8 +33,6 @@ namespace Papercut.Core
     using Papercut.Core.Network;
 
     using Serilog;
-    using Serilog.Formatting.Json;
-    using Serilog.Sinks.RollingFile;
 
     using Module = Autofac.Module;
 
@@ -80,18 +78,22 @@ namespace Papercut.Core
             builder.Register(
                 c =>
                 {
-                    var jsonSink = new RollingFileSink(@"papercut.json", new JsonFormatter(), null, null);
+                    //var jsonSink = new RollingFileSink(@"papercut.json", new JsonFormatter(), null, null);
 
-                    Log.Logger =
+                    var logConfiguration =
                         new LoggerConfiguration().MinimumLevel.Debug()
                             .Enrich.WithMachineName()
                             .Enrich.WithThreadId()
                             .Enrich.FromLogContext()
+                            .Enrich.WithProperty("AppName", "Papercut")
+                            .Enrich.WithProperty("AppVersion", Assembly.GetExecutingAssembly().GetName().Version.ToString(3))
                             .WriteTo.ColoredConsole()
-                            .WriteTo.Sink(jsonSink)
-                            //.WriteTo.RollingFile("papercut.log")
-                            //.WriteTo.Seq("http://localhost:5341")
-                            .CreateLogger();
+                            .WriteTo.RollingFile("Papercut.log");
+
+                    // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
+                    c.Resolve<IPublishEvent>().Publish(new ConfigureLoggerEvent(logConfiguration));
+
+                    Log.Logger = logConfiguration.CreateLogger();
 
                     return Log.Logger;
                 }).SingleInstance();

@@ -21,6 +21,7 @@
 namespace Papercut.Helpers
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
@@ -31,13 +32,14 @@ namespace Papercut.Helpers
     {
         public static void SetupEmbeddedAssemblyResolve()
         {
-            Assembly thisAssembly = Assembly.GetExecutingAssembly();
-            string[] validExtensions = { ".dll" };
-            string[] resourceNames = thisAssembly.GetManifestResourceNames();
+            var thisAssembly = Assembly.GetExecutingAssembly();
+            var loadCache = new ConcurrentDictionary<AssemblyName, Assembly>();
 
             // Code based on: http://www.codingmurmur.com/2014/02/embedded-assembly-loading-with-support.html
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
             {
+                var searchAssemblies = new[] { thisAssembly }.Select(a => Tuple.Create(a, a.GetManifestResourceNames())).ToList();
+
                 string name = args.Name;
                 var asmName = new AssemblyName(name);
 
@@ -45,47 +47,64 @@ namespace Papercut.Helpers
                 // http://stackoverflow.com/questions/18793959/filenotfoundexception-when-trying-to-load-autofac-as-an-embedded-assembly
                 if (name.EndsWith("Retargetable=Yes")) return Assembly.Load(asmName);
 
-                List<string> possibleResourceNames =
-                    validExtensions.Select(ext => string.Format("{0}{1}", asmName.Name, ext))
-                        .ToList();
-                string resourceToFind = string.Join(",", possibleResourceNames);
-                string resourceName =
-                    resourceNames.FirstOrDefault(n => possibleResourceNames.Any(n.Contains));
+                var resource = FindResource(asmName, new [] { ".dll" }, searchAssemblies);
 
-                if (string.IsNullOrWhiteSpace(resourceName)) return null;
+                if (resource == null) return null;
 
-                string symbolsToFind = asmName.Name + ".pdb";
-                string symbolsName = resourceNames.SingleOrDefault(n => n.Contains(symbolsToFind));
-
-                byte[] assemblyData = LoadResourceBytes(thisAssembly, resourceName);
-
-                if (string.IsNullOrWhiteSpace(symbolsName))
+                Assembly assembly;
+                if (!loadCache.TryGetValue(asmName, out assembly))
                 {
-                    Trace.WriteLine(
-                        string.Format(
-                            "Loading '{0}' as embedded resource '{1}'",
-                            resourceToFind,
-                            resourceName));
+                    byte[] assemblyData = LoadResourceBytes(resource);
+                    var symbolResource = FindResource(asmName, new[] { ".pdb" }, searchAssemblies);
 
-                    return Assembly.Load(assemblyData);
+                    if (symbolResource != null)
+                    {
+                        byte[] symbolsData = LoadResourceBytes(symbolResource);
+
+                        Trace.WriteLine(string.Format("Loading '{0}' as embedded resource from '{1}' with symbols '{2}'",
+                            resource.Item2,
+                            resource.Item1,
+                            symbolResource.Item2));
+                        assembly = Assembly.Load(assemblyData, symbolsData);
+                    }
+                    else
+                    {
+                        Trace.WriteLine(string.Format("Loading '{0}' as embedded resource from '{1}'", resource.Item2, resource.Item1));
+                        assembly = Assembly.Load(assemblyData);
+                    }
+
+                    loadCache.TryAdd(asmName, assembly);
                 }
 
-                byte[] symbolsData = LoadResourceBytes(thisAssembly, symbolsName);
-
-                Trace.WriteLine(
-                    string.Format(
-                        "Loading '{0}' as embedded resource '{1}' with symbols '{2}'",
-                        resourceToFind,
-                        resourceName,
-                        symbolsName));
-
-                return Assembly.Load(assemblyData, symbolsData);
+                return assembly;
             };
         }
 
-        public static byte[] LoadResourceBytes(Assembly executingAssembly, string resourceName)
+        public static Tuple<Assembly, string> FindResource(AssemblyName asmName, string[] validExtensions, IList<Tuple<Assembly, string[]>> searchAssemblies)
         {
-            using (Stream stream = executingAssembly.GetManifestResourceStream(resourceName))
+            var possibleResourceNames = validExtensions.Select(ext => string.Format("{0}{1}", asmName.Name, ext)).ToList();
+
+            foreach (var assembly in searchAssemblies)
+            {
+                var resourceName = assembly.Item2.FirstOrDefault(n => possibleResourceNames.Any(n.Contains));
+
+                if (resourceName != null)
+                {
+                    return Tuple.Create(assembly.Item1, resourceName);
+                }
+            }
+
+            return null;
+        }
+
+        public static byte[] LoadResourceBytes(Tuple<Assembly, string> resource)
+        {
+            return LoadResourceBytes(resource.Item1, resource.Item2);
+        }
+
+        public static byte[] LoadResourceBytes(Assembly assembly, string resourceName)
+        {
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             {
                 var assemblyData = new byte[stream.Length];
                 stream.Read(assemblyData, 0, assemblyData.Length);

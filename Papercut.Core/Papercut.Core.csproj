@@ -82,6 +82,7 @@
     <Compile Include="Events\AppExitEvent.cs" />
     <Compile Include="Events\AppForceShutdownEvent.cs" />
     <Compile Include="Events\AutofacPublishEvent.cs" />
+    <Compile Include="Events\ConfigureLoggerEvent.cs" />
     <Compile Include="Events\SmtpServerForceRebindEvent.cs" />
     <Compile Include="Events\IDomainEvent.cs" />
     <Compile Include="Events\IPublishEvent.cs" />
