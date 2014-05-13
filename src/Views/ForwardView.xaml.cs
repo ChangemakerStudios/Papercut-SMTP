@@ -24,6 +24,8 @@ namespace Papercut.UI
     using System.Threading.Tasks;
     using System.Windows;
 
+    using MahApps.Metro.Controls;
+
     using Papercut.Core.Message;
     using Papercut.Core.Network;
     using Papercut.Properties;
@@ -31,7 +33,7 @@ namespace Papercut.UI
     /// <summary>
     ///     Interaction logic for ForwardWindow.xaml
     /// </summary>
-    public partial class ForwardWindow : Window
+    public partial class ForwardWindow : MetroWindow
     {
         static readonly Regex _emailRegex =
             new Regex(

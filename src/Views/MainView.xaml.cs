@@ -41,6 +41,8 @@ namespace Papercut.Views
 
     using Caliburn.Micro;
 
+    using MahApps.Metro.Controls;
+
     using MimeKit;
 
     using Papercut.Core;
@@ -73,7 +75,7 @@ namespace Papercut.Views
     /// <summary>
     ///     Interaction logic for MainView.xaml
     /// </summary>
-    public partial class MainView : Window, IHandle<ShowMainWindowEvent>, IHandle<SmtpServerBindFailedEvent>, IHandle<ShowMessageEvent>
+    public partial class MainView : MetroWindow, IHandle<ShowMainWindowEvent>, IHandle<SmtpServerBindFailedEvent>, IHandle<ShowMessageEvent>
     {
         #region Fields
 

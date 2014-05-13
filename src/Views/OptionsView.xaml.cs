@@ -24,6 +24,8 @@ namespace Papercut.UI
     using System.Net;
     using System.Windows;
 
+    using MahApps.Metro.Controls;
+
     using Papercut.Core;
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
@@ -31,7 +33,7 @@ namespace Papercut.UI
     using Papercut.Helpers;
     using Papercut.Properties;
 
-    public partial class OptionsWindow : Window
+    public partial class OptionsWindow : MetroWindow
     {
         readonly IPublishEvent _publishEvent;
 
