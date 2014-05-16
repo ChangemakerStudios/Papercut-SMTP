@@ -18,25 +18,24 @@
  *  
  */
 
-namespace Papercut.Core.Setting
+namespace Papercut.Service.Classes
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
     using Papercut.Core.Configuration;
-    using Papercut.Properties;
+    using Papercut.Core.Events;
 
-    public class SettingPathTemplateProvider : IPathTemplatesProvider
+    public class ReplyWithDefaultMessageSavePath : IHandleEvent<AppProcessExchangeEvent>
     {
-        public IEnumerable<string> PathTemplates { get; private set; }
+        readonly IMessagePathConfigurator _messagePathConfigurator;
 
-        public SettingPathTemplateProvider()
+        public ReplyWithDefaultMessageSavePath(IMessagePathConfigurator messagePathConfigurator)
         {
-            this.PathTemplates =
-                Settings.Default.MessagePaths.Split(new[] { ';' })
-                        .Select(s => s.Trim())
-                        .Where(s => !string.IsNullOrWhiteSpace(s))
-                        .ToArray();
+            _messagePathConfigurator = messagePathConfigurator;
+        }
+
+        public void Handle(AppProcessExchangeEvent @event)
+        {
+            // respond with the current save path...
+            @event.MessageWritePath = _messagePathConfigurator.DefaultSavePath;
         }
     }
 }

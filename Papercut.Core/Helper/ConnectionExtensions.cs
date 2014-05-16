@@ -28,11 +28,13 @@ namespace Papercut.Core.Network
 
     public static class ConnectionExtensions
     {
-        public static TOut ReadTextStream<TOut>(this Connection client, Func<StreamReader, TOut> read)
+        public static TOut ReadTextStream<TOut>(
+            this Socket socket,
+            Func<StreamReader, TOut> read)
         {
             TOut output;
 
-            using (Stream networkStream = new NetworkStream(client.Client, false))
+            using (var networkStream = new NetworkStream(socket, false))
             {
                 using (var reader = new StreamReader(networkStream))
                 {
@@ -52,12 +54,18 @@ namespace Papercut.Core.Network
             return connection.Send(Encoding.ASCII.GetBytes(message + "\r\n"));
         }
 
-        public static Task<int> SendLine(this Connection connection, string message, params object[] args)
+        public static Task<int> SendLine(
+            this Connection connection,
+            string message,
+            params object[] args)
         {
             return connection.SendLine(string.Format(message, args));
         }
 
-        public static Task<int> Send(this Connection connection, string message, params object[] args)
+        public static Task<int> Send(
+            this Connection connection,
+            string message,
+            params object[] args)
         {
             return connection.Send(Encoding.ASCII.GetBytes(string.Format(message, args)));
         }
@@ -65,27 +73,22 @@ namespace Papercut.Core.Network
         public static Task<int> Send(this Connection connection, byte[] data)
         {
             connection.Logger.Debug("Sending byte[] length of {ByteArrayLength}", data.Length);
-            return connection.Send(data, 0, data.Length);
+
+            return connection.Client.Send(data, 0, data.Length);
         }
 
         public static Task<int> Send(
-            this Connection connection,
+            this Socket socket,
             byte[] buffer,
             int offset,
             int size,
             SocketFlags flags = SocketFlags.None)
         {
             AsyncCallback nullOp = i => { };
-            IAsyncResult result = connection.Client.BeginSend(
-                buffer,
-                offset,
-                size,
-                flags,
-                nullOp,
-                connection.Client);
+            IAsyncResult result = socket.BeginSend(buffer, offset, size, flags, nullOp, socket);
 
             // Use overload that takes an IAsyncResult directly
-            return Task.Factory.FromAsync(result, r => connection.Client.EndSend(r));
+            return Task.Factory.FromAsync(result, r => socket.EndSend(r));
         }
     }
 }

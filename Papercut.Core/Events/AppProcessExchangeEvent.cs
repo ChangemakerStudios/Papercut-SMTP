@@ -20,19 +20,8 @@
 
 namespace Papercut.Core.Events
 {
-    using System;
-    using System.Reflection;
-
-    public static class PublishEventExtensions
+    public class AppProcessExchangeEvent : IDomainEvent
     {
-        static readonly MethodInfo _publishMethodInfo = typeof(IPublishEvent).GetMethod("Publish");
-
-        public static void PublishObject(this IPublishEvent publishEvent, object @event, Type eventType)
-        {
-            if (publishEvent == null) throw new ArgumentNullException("publishEvent");
-
-            MethodInfo publishMethod = _publishMethodInfo.MakeGenericMethod(eventType);
-            publishMethod.Invoke(publishEvent, new[] { @event });
-        }
+        public string MessageWritePath { get; set; }
     }
 }

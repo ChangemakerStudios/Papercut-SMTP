@@ -51,9 +51,9 @@ namespace Papercut.Core.Network
             Connection.SendLine("220 {0}", Dns.GetHostName().ToLower());
         }
 
-        protected override void ProcessCommand(string command)
+        protected override void ProcessRequest(string request)
         {
-            string[] parts = command.Split(' ');
+            string[] parts = request.Split(' ');
 
             switch (parts[0].ToUpper())
             {
@@ -116,7 +116,7 @@ namespace Papercut.Core.Network
 
         void DATA()
         {
-            // Check command order
+            // Check request order
             if (Session.Sender == null || Session.MailFrom == null || Session.Recipients.Count == 0)
             {
                 Connection.SendLine("503 Bad sequence of commands");
@@ -125,7 +125,7 @@ namespace Papercut.Core.Network
 
             try
             {
-                List<string> output = Connection.ReadTextStream(
+                List<string> output = Connection.Client.ReadTextStream(
                     reader =>
                     {
                         var messageLines = new List<string>();
@@ -191,7 +191,7 @@ namespace Papercut.Core.Network
                 return;
             }
 
-            // Check command order
+            // Check request order
             if (Session.Sender == null)
             {
                 Connection.SendLine("503 Bad sequence of commands");
@@ -239,7 +239,7 @@ namespace Papercut.Core.Network
                 return;
             }
 
-            // Check command order
+            // Check request order
             if (Session.Sender == null || Session.MailFrom == null)
             {
                 Connection.SendLine("503 Bad sequence of commands");

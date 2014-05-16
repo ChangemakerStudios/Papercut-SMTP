@@ -173,12 +173,13 @@
     <Compile Include="Helpers\CalburnSerilogBridge.cs" />
     <Compile Include="Helpers\WireupLogBridge.cs" />
     <Compile Include="Services\AppStartupService.cs" />
-    <Compile Include="Services\PapercutServerCoordinator.cs" />
+    <Compile Include="Services\PapercutServiceBackendCoordinator.cs" />
+    <Compile Include="Services\PapercutUIServerCoordinator.cs" />
     <Compile Include="Services\ShutdownService.cs" />
     <Compile Include="Helpers\NetworkHelper.cs" />
     <Compile Include="Services\SingleInstanceService.cs" />
     <Compile Include="Services\SmtpServerCoordinator.cs" />
-    <Compile Include="SettingPathTemplateProvider.cs" />
+    <Compile Include="Services\SettingPathTemplateProvider.cs" />
     <Compile Include="PapercutUIModule.cs" />
     <Compile Include="Services\AppResourceLocator.cs" />
     <Compile Include="Events\EventPublishAll.cs" />

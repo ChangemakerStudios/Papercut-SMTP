@@ -20,10 +20,55 @@
 
 namespace Papercut.Core.Helper
 {
+    using System;
     using System.IO;
+    using System.Text;
 
     public static class StreamExtensions
     {
+        public static string ReadString(this Stream stream, int bufferSize = 0xFF0, Encoding encoding = null)
+        {
+            if (stream == null) throw new ArgumentNullException("stream");
+
+            var serverbuff = new byte[bufferSize];
+
+            encoding = encoding ?? Encoding.ASCII;
+
+            int count = stream.Read(serverbuff, 0, bufferSize);
+
+            return count == 0 ? string.Empty : encoding.GetString(serverbuff, 0, count);
+        }
+
+        public static void WriteFormat(this Stream stream, string format, params object[] args)
+        {
+            if (stream == null) throw new ArgumentNullException("stream");
+
+            stream.WriteStr(string.Format(format, args));
+        }
+
+        public static void WriteLine(this Stream stream, string str, Encoding encoding = null)
+        {
+            if (stream == null) throw new ArgumentNullException("stream");
+
+            encoding = encoding ?? Encoding.ASCII;
+
+            stream.WriteBytes(encoding.GetBytes(str + "\r\n"));
+        }
+
+        public static void WriteStr(this Stream stream, string str, Encoding encoding = null)
+        {
+            if (stream == null) throw new ArgumentNullException("stream");
+
+            encoding = encoding ?? Encoding.ASCII;
+
+            stream.WriteBytes(encoding.GetBytes(str));
+        }
+
+        public static void WriteBytes(this Stream stream, byte[] data)
+        {
+            stream.Write(data, 0, data.Length);
+        }
+
         public static Stream CopyBufferedTo(
             this Stream source,
             Stream destination,
@@ -42,7 +87,11 @@ namespace Papercut.Core.Helper
             return source;
         }
 
-        public static Stream CopyBufferedLimited(this Stream source, Stream destination, int size, int bufferLength = 0xFFF)
+        public static Stream CopyBufferedLimited(
+            this Stream source,
+            Stream destination,
+            int size,
+            int bufferLength = 0xFFF)
         {
             var buffer = new byte[bufferLength];
             int bytesRead;

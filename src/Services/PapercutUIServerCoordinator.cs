@@ -27,40 +27,40 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class PapercutServerCoordinator : IHandleEvent<AppReadyEvent>, IHandleEvent<AppExitEvent>
+    public class PapercutUIServerCoordinator : IHandleEvent<AppReadyEvent>,
+        IHandleEvent<AppExitEvent>
     {
-        public PapercutServerCoordinator(
+        readonly ILogger _logger;
+
+        readonly IServer _papercutServer;
+
+        public PapercutUIServerCoordinator(
             Func<ServerProtocolType, IServer> serverFactory,
-            ILogger logger,
-            IPublishEvent publishEvent)
+            ILogger logger)
         {
-            PapercutServer = serverFactory(ServerProtocolType.Papercut);
-            Logger = logger;
-            PublishEvent = publishEvent;
+            _logger = logger;
+            _papercutServer = serverFactory(ServerProtocolType.Papercut);
         }
-
-        public ILogger Logger { get; set; }
-
-        public IPublishEvent PublishEvent { get; set; }
-
-        public IServer PapercutServer { get; set; }
 
         public void Handle(AppExitEvent @event)
         {
-            PapercutServer.Stop();
+            _papercutServer.Stop();
         }
 
         public void Handle(AppReadyEvent @event)
         {
             try
             {
-                PapercutServer.Listen(PapercutClient.Localhost, PapercutClient.UIPort);
+                _papercutServer.Listen(PapercutClient.Localhost, PapercutClient.UIPort);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                
+                _logger.Warning(
+                    ex,
+                    "Failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
+                    PapercutClient.Localhost,
+                    PapercutClient.UIPort);
             }
-            
         }
     }
 }

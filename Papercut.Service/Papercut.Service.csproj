@@ -85,6 +85,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Logging\SerilogWriterFactory.cs" />
+    <Compile Include="Classes\ReplyWithDefaultMessageSavePath.cs" />
     <Compile Include="RunServiceApp.cs" />
     <Compile Include="ServerPathTemplateProvider.cs" />
     <Compile Include="Program.cs" />

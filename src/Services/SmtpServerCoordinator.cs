@@ -29,59 +29,78 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class SmtpServerCoordinator : IHandleEvent<AppReadyEvent>, IHandleEvent<AppExitEvent>, IHandleEvent<SettingsUpdatedEvent>
+    public class SmtpServerCoordinator : IHandleEvent<AppReadyEvent>,
+        IHandleEvent<AppExitEvent>,
+        IHandleEvent<SettingsUpdatedEvent>
     {
-        public SmtpServerCoordinator(Func<ServerProtocolType,IServer> serverFactory, ILogger logger, IPublishEvent publishEvent)
+        readonly ILogger _logger;
+
+        readonly IPublishEvent _publishEvent;
+
+        readonly IServer _smtpServer;
+
+        bool _smtpServerEnabled = true;
+
+        public SmtpServerCoordinator(
+            Func<ServerProtocolType, IServer> serverFactory,
+            ILogger logger,
+            IPublishEvent publishEvent)
         {
-            SmtpServer = serverFactory(ServerProtocolType.Smtp);
-            Logger = logger;
-            PublishEvent = publishEvent;
+            _smtpServer = serverFactory(ServerProtocolType.Smtp);
+            _logger = logger;
+            _publishEvent = publishEvent;
         }
 
-        public IServer SmtpServer { get; set; }
+        public bool SmtpServerEnabled
+        {
+            get
+            {
+                return _smtpServerEnabled;
+            }
+            set
+            {
+                _smtpServerEnabled = value;
+            }
+        }
 
-        public ILogger Logger { get; set; }
-
-        public IPublishEvent PublishEvent { get; set; }
+        public void Handle(AppExitEvent @event)
+        {
+            _smtpServer.Stop();
+        }
 
         public void Handle(AppReadyEvent @event)
         {
-            ListenSmtpServer();
+            if (SmtpServerEnabled) ListenSmtpServer();
+        }
+
+        public void Handle(SettingsUpdatedEvent @event)
+        {
+            if (SmtpServerEnabled) ListenSmtpServer();
         }
 
         public bool ListenSmtpServer()
         {
             try
             {
-                SmtpServer.Stop();
-                SmtpServer.Listen(Settings.Default.IP, Settings.Default.Port);
-                PublishEvent.Publish(
+                _smtpServer.Stop();
+                _smtpServer.Listen(Settings.Default.IP, Settings.Default.Port);
+                _publishEvent.Publish(
                     new SmtpServerBoundEvent(Settings.Default.IP, Settings.Default.Port));
 
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Warning(
+                _logger.Warning(
                     ex,
-                    "Failed to bind to the {Address} {UIPort} specified. The port may already be in use by another process.",
+                    "Failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
                     Settings.Default.IP,
                     Settings.Default.Port);
 
-                PublishEvent.Publish(new SmtpServerBindFailedEvent());
+                _publishEvent.Publish(new SmtpServerBindFailedEvent());
             }
 
             return false;
-        }
-
-        public void Handle(AppExitEvent @event)
-        {
-            SmtpServer.Stop();
-        }
-
-        public void Handle(SettingsUpdatedEvent @event)
-        {
-            ListenSmtpServer();
         }
     }
 }

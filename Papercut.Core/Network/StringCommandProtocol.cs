@@ -59,12 +59,12 @@ namespace Papercut.Core.Network
 
                 Logger.Debug("Received Line {Line}", line);
 
-                ProcessCommand(line);
+                ProcessRequest(line);
 
                 line = _stringBuffer.ToString();
             }
         }
 
-        protected abstract void ProcessCommand(string command);
+        protected abstract void ProcessRequest(string request);
     }
 }

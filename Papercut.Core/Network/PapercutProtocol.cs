@@ -22,15 +22,25 @@ namespace Papercut.Core.Network
 {
     using System;
     using System.IO;
-    using System.Net.Sockets;
-    using System.Text;
-
-    using Newtonsoft.Json;
 
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
 
     using Serilog;
+
+    public enum ProtocolCommandType
+    {
+        NoOp = 0,
+        Publish = 1,
+        Exchange = 2
+    }
+
+    public class PapercutProtocolRequest
+    {
+        public ProtocolCommandType CommandType { get; set; }
+        public Type Type { get; set; }
+        public int ByteSize { get; set; }
+    }
 
     public class PapercutProtocol : StringCommandProtocol
     {
@@ -51,53 +61,38 @@ namespace Papercut.Core.Network
             Connection.SendLine("PAPERCUT");
         }
 
-        protected override void ProcessCommand(string command)
-        {
-            string[] parts = command.Split('\t');
-
-            switch (parts[0].ToUpper().Trim())
-            {
-                case "PUBLISH":
-                    Type eventType = Type.GetType(parts[1].Trim(), true, true);
-                    int size = int.Parse(parts[2].Trim());
-                    object @event = ReadEvent(eventType, size);
-
-                    if (@event != null)
-                    {
-                        Logger.Information("Publishing Received Event {@Event} from Remote", @event);
-                        _publishEvent.Publish(eventType, @event);
-                    }
-
-                    break;
-            }
-        }
-
-        object ReadEvent(Type eventType, int size)
+        protected override void ProcessRequest(string incomingRequest)
         {
             try
             {
-                Connection.SendLine("READY").Wait();
+                var request = incomingRequest.FromJson<PapercutProtocolRequest>();
 
-                using (Stream networkStream = new NetworkStream(Connection.Client, false))
+                Logger.Verbose("Incoming Request Received {@Request}", request);
+
+                Connection.Send("ACK").Wait();
+
+                if (request.CommandType == ProtocolCommandType.Publish || request.CommandType == ProtocolCommandType.Exchange)
                 {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        networkStream.CopyBufferedLimited(memoryStream, size);
-                        string incoming = new ASCIIEncoding().GetString(memoryStream.ToArray());
+                    // read the rest of the object...
+                    var @event = Connection.Client.ReadObj(request.Type, request.ByteSize);
+                    Logger.Information("Publishing Event Received {@Event} from Remote", @event);
 
-                        return JsonConvert.DeserializeObject(incoming, eventType);
+                    _publishEvent.PublishObject(@event, request.Type);
+
+                    if (request.CommandType == ProtocolCommandType.Exchange)
+                    {
+                        // send response back...
+                        Logger.Information("Exchanging Event {@Event} -- Pushing to Remote", @event);
+                        Connection.Send("REPLY").Wait();
+                        Connection.SendLine(@event.ToJson()).Wait();
                     }
                 }
             }
             catch (IOException e)
             {
-                Logger.Error(
-                    e,
-                    "IOException received while reading publish event. Closing this connection.");
+                Logger.Error(e, "IOException received. Closing this connection.");
                 Connection.Close();
             }
-
-            return null;
         }
     }
 }

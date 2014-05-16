@@ -20,9 +20,6 @@
 
 namespace Papercut
 {
-    using System.Linq;
-    using System.Reflection;
-
     using Autofac;
     using Autofac.Core;
 
@@ -32,11 +29,9 @@ namespace Papercut
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
-    using Papercut.Core.Setting;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Services;
-    using Papercut.UI;
 
     using Module = Autofac.Module;
 

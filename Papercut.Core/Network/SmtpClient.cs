@@ -43,41 +43,44 @@ namespace Papercut.Core.Network
 
         public void Send()
         {
-            string response;
-
             Connect(_session.Sender, 25);
-            response = this.ReadString();
-            IsValidResponse(response);
 
-            this.WriteFormat("HELO {0}\r\n", GeneralExtensions.GetIPAddress());
-            response = this.ReadString();
-            IsValidResponse(response);
+            using (NetworkStream stream = GetStream())
+            {
+                string response = stream.ReadString();
+                IsValidResponse(response);
 
-            this.WriteFormat("MAIL FROM:<{0}>\r\n", _session.MailFrom);
-            response = this.ReadString();
-            IsValidResponse(response);
+                stream.WriteFormat("HELO {0}\r\n", GeneralExtensions.GetIPAddress());
+                response = stream.ReadString();
+                IsValidResponse(response);
 
-            _session.Recipients.ForEach(
-                address =>
-                {
-                    this.WriteFormat("RCPT TO:<{0}>\r\n", address);
-                    response = this.ReadString();
-                    IsValidResponse(response);
-                });
+                stream.WriteFormat("MAIL FROM:<{0}>\r\n", _session.MailFrom);
+                response = stream.ReadString();
+                IsValidResponse(response);
 
-            this.WriteFormat("DATA\r\n");
-            response = this.ReadString();
-            IsValidResponse(response, "354");
+                _session.Recipients.ForEach(
+                    address =>
+                    {
+                        stream.WriteFormat("RCPT TO:<{0}>\r\n", address);
+                        response = stream.ReadString();
+                        IsValidResponse(response);
+                    });
 
-            this.WriteBytes(_session.Message);
+                stream.WriteFormat("DATA\r\n");
+                response = stream.ReadString();
+                IsValidResponse(response, "354");
 
-            this.WriteFormat("\r\n.\r\n");
-            response = this.ReadString();
-            IsValidResponse(response);
+                stream.WriteBytes(_session.Message);
 
-            this.WriteFormat("QUIT\r\n");
-            response = this.ReadString();
-            if (response.IndexOf("221") == -1) throw new SmtpException(response);
+                stream.WriteFormat("\r\n.\r\n");
+                response = stream.ReadString();
+                IsValidResponse(response);
+
+                stream.WriteFormat("QUIT\r\n");
+                response = stream.ReadString();
+
+                if (response.IndexOf("221") == -1) throw new SmtpException(response);
+            }
         }
 
         static void IsValidResponse(string response, string correctResponse = "250")

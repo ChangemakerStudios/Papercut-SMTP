@@ -63,7 +63,7 @@ namespace Papercut.Services
             Logger.Debug("Second process run. Shutting this process and pushing show event to other process.");
 
             // papercut is already running, push event to other process
-            _papercutClient.PublishRemoteEvent(new ShowMainWindowEvent());
+            _papercutClient.PublishEventServer(new ShowMainWindowEvent());
 
             // no need to go further
             @event.CancelStart = true;

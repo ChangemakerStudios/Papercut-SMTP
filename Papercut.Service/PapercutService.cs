@@ -38,11 +38,13 @@ namespace Papercut.Service
         public void Start()
         {
             _smtpServer.Listen(Properties.Settings.Default.IP, Properties.Settings.Default.Port);
+            _papercutServer.Listen(PapercutClient.Localhost, PapercutClient.ServerPort);
         }
 
         public void Stop()
         {
             _smtpServer.Stop();
+            _papercutServer.Stop();
         }
     }
 }

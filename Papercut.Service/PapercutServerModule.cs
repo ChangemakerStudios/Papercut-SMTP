@@ -23,6 +23,7 @@ namespace Papercut.Service
     using Autofac;
 
     using Papercut.Core.Configuration;
+    using Papercut.Service.Classes;
 
     public class PapercutServiceModule : Module
     {
@@ -31,7 +32,13 @@ namespace Papercut.Service
             // only used if primary papercut is not loaded.
             builder.RegisterType<ServerPathTemplateProvider>()
                 .As<IPathTemplatesProvider>()
+                .AsSelf()
                 .PreserveExistingDefaults();
+
+            builder.RegisterType<ReplyWithDefaultMessageSavePath>()
+                .AsImplementedInterfaces()
+                .AsSelf()
+                .SingleInstance();
 
             builder.RegisterType<PapercutService>().SingleInstance();
         }

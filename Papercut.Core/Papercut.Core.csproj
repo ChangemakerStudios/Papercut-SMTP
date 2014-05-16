@@ -81,6 +81,8 @@
     <Compile Include="Annotations.cs" />
     <Compile Include="Events\AppExitEvent.cs" />
     <Compile Include="Events\AppForceShutdownEvent.cs" />
+    <Compile Include="Events\AppPreStartEvent.cs" />
+    <Compile Include="Events\AppProcessExchangeEvent.cs" />
     <Compile Include="Events\AutofacPublishEvent.cs" />
     <Compile Include="Events\ConfigureLoggerEvent.cs" />
     <Compile Include="Events\SmtpServerForceRebindEvent.cs" />
@@ -95,13 +97,15 @@
     <Compile Include="Configuration\IMessagePathConfigurator.cs" />
     <Compile Include="Configuration\IPathTemplatesProvider.cs" />
     <Compile Include="Helper\AutofacRegistrationExtensions.cs" />
+    <Compile Include="Helper\JsonHelpers.cs" />
     <Compile Include="Helper\MemoryCacheExtensions.cs" />
+    <Compile Include="Helper\PapercutProtocolHelpers.cs" />
     <Compile Include="Helper\SafeReadWriteProvider.cs" />
     <Compile Include="Helper\CollectionExtensions.cs" />
     <Compile Include="Helper\ObjectExtensions.cs" />
     <Compile Include="Helper\StreamExtensions.cs" />
     <Compile Include="Network\Connection.cs" />
-    <Compile Include="Network\ConnectionExtensions.cs" />
+    <Compile Include="Helper\ConnectionExtensions.cs" />
     <Compile Include="Network\ConnectionManager.cs" />
     <Compile Include="Network\IProtocol.cs" />
     <Compile Include="Network\IServer.cs" />
@@ -115,7 +119,6 @@
     <Compile Include="Network\PapercutClient.cs" />
     <Compile Include="Network\PapercutProtocol.cs" />
     <Compile Include="Network\StringCommandProtocol.cs" />
-    <Compile Include="Network\TcpClientExtensions.cs" />
     <Compile Include="PapercutContainer.cs" />
     <Compile Include="PapercutCoreModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
