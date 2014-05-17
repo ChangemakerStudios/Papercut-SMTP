@@ -43,6 +43,7 @@ namespace Papercut.Core.Message
         {
             Logger = logger;
             _messagePathConfigurator = messagePathConfigurator;
+            _messagePathConfigurator.RefreshLoadPath += OnRefreshLoadPaths;
             SetupMessageWatchers();
         }
 
@@ -52,14 +53,39 @@ namespace Papercut.Core.Message
         {
             foreach (FileSystemWatcher watch in _watchers)
             {
-                try
-                {
-                    watch.EnableRaisingEvents = false;
-                    watch.Dispose();
-                }
-                catch (Exception)
-                {
-                }
+                DisposeWatch(watch);
+            }
+        }
+
+        void OnRefreshLoadPaths(object sender, EventArgs eventArgs)
+        {
+            var existingPaths = _watchers.Select(s => s.Path).ToList();
+            var removePaths = existingPaths.Except(_messagePathConfigurator.LoadPaths).ToList();
+            var addPaths = _messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
+
+            foreach (var watch in
+                    _watchers.Where(s => removePaths.Contains(s.Path)).ToList())
+            {
+                DisposeWatch(watch);
+                _watchers.Remove(watch);
+            }
+
+            // setup new ones...
+            foreach (string newPath in addPaths)
+            {
+                AddWatcher(newPath);
+            }
+        }
+
+        static void DisposeWatch(FileSystemWatcher watch)
+        {
+            try
+            {
+                watch.EnableRaisingEvents = false;
+                watch.Dispose();
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -70,22 +96,27 @@ namespace Papercut.Core.Message
             // setup watcher for each path...
             foreach (string path in _messagePathConfigurator.LoadPaths)
             {
-                var watcher = new FileSystemWatcher(path, MessageFileSearchPattern)
-                {
-                    NotifyFilter =
-                        NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName
-                };
-
-                // Add event handlers.
-                watcher.Created += OnChanged;
-                watcher.Deleted += OnDeleted;
-                watcher.Renamed += OnRenamed;
-
-                // Begin watching.
-                watcher.EnableRaisingEvents = true;
-
-                _watchers.Add(watcher);
+                AddWatcher(path);
             }
+        }
+
+        void AddWatcher(string path)
+        {
+            var watcher = new FileSystemWatcher(path, MessageFileSearchPattern)
+            {
+                NotifyFilter =
+                    NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName
+            };
+
+            // Add event handlers.
+            watcher.Created += OnChanged;
+            watcher.Deleted += OnDeleted;
+            watcher.Renamed += OnRenamed;
+
+            // Begin watching.
+            watcher.EnableRaisingEvents = true;
+
+            _watchers.Add(watcher);
         }
 
         void OnDeleted(object sender, FileSystemEventArgs e)

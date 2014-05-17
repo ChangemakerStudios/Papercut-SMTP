@@ -20,6 +20,7 @@
 
 namespace Papercut.Core.Configuration
 {
+    using System;
     using System.Collections.Generic;
 
     public interface IMessagePathConfigurator
@@ -27,5 +28,7 @@ namespace Papercut.Core.Configuration
         string DefaultSavePath { get; }
 
         IEnumerable<string> LoadPaths { get; }
+
+        event EventHandler RefreshLoadPath;
     }
 }

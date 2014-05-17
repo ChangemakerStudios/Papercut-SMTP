@@ -20,6 +20,8 @@
 
 namespace Papercut.Service.Classes
 {
+    using System.IO;
+
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
 
@@ -35,7 +37,8 @@ namespace Papercut.Service.Classes
         public void Handle(AppProcessExchangeEvent @event)
         {
             // respond with the current save path...
-            @event.MessageWritePath = _messagePathConfigurator.DefaultSavePath;
+            @event.MessageWritePath = Path.GetDirectoryName(
+                _messagePathConfigurator.DefaultSavePath);
         }
     }
 }

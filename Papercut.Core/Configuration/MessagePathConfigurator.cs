@@ -22,6 +22,7 @@ namespace Papercut.Core.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.IO;
     using System.Linq;
     using System.Security.Principal;
@@ -33,7 +34,9 @@ namespace Papercut.Core.Configuration
 
     public class MessagePathConfigurator : IMessagePathConfigurator
     {
-        public ILogger Logger { get; set; }
+        readonly IPathTemplatesProvider _pathTemplateProvider;
+
+        readonly ILogger _logger;
 
         #region Static Fields
 
@@ -69,19 +72,31 @@ namespace Papercut.Core.Configuration
             if (pathTemplateProvider == null) throw new ArgumentNullException("pathTemplateProvider");
             if (logger == null) throw new ArgumentNullException("logger");
 
-            Logger = logger;
+            _logger = logger;
+            _pathTemplateProvider = pathTemplateProvider;
+            _pathTemplateProvider.PathTemplates.CollectionChanged += PathTemplatesCollectionChanged;
 
             DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
-
-            LoadPaths =
-                pathTemplateProvider.PathTemplates.Select(RenderPathTemplate)
-                    .Where(ValidatePathExists)
-                    .ToList();
+            RenderLoadPaths();
 
             bool isSystem;
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent()) isSystem = identity.IsSystem;
 
             if (!isSystem && LoadPaths.Any()) DefaultSavePath = LoadPaths.First();
+        }
+
+        void PathTemplatesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            RenderLoadPaths();
+            RefreshLoadPath(this, new EventArgs());
+        }
+
+        void RenderLoadPaths()
+        {
+            LoadPaths =
+                _pathTemplateProvider.PathTemplates.Select(RenderPathTemplate)
+                    .Where(ValidatePathExists)
+                    .ToList();
         }
 
         #endregion
@@ -91,6 +106,14 @@ namespace Papercut.Core.Configuration
         public string DefaultSavePath { get; private set; }
 
         public IEnumerable<string> LoadPaths { get; private set; }
+
+        public event EventHandler RefreshLoadPath;
+
+        protected virtual void OnRefreshLoadPath()
+        {
+            EventHandler handler = RefreshLoadPath;
+            if (handler != null) handler(this, EventArgs.Empty);
+        }
 
         #endregion
 
@@ -130,7 +153,7 @@ namespace Papercut.Core.Configuration
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
+                _logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
             }
 
             return false;

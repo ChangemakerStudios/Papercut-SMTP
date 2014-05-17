@@ -20,20 +20,40 @@
 
 namespace Papercut.Services
 {
+    using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
 
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
+    using Papercut.Core.Helper;
     using Papercut.Events;
     using Papercut.Properties;
+
+    using Serilog;
 
     public class SettingPathTemplateProvider : IPathTemplatesProvider,
         IHandleEvent<SettingsUpdatedEvent>
     {
-        public SettingPathTemplateProvider()
+        readonly ILogger _logger;
+
+        private IEnumerable<string> MessagePaths
         {
-            UpdatePathTemplates();
+            get
+            {
+                return
+                    Settings.Default.MessagePaths.Split(new[] { ';', ',' })
+                        .Select(s => s.Trim())
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Distinct();
+            }
+        }
+
+        public SettingPathTemplateProvider(ILogger logger)
+        {
+            _logger = logger;
+            PathTemplates = new ObservableCollection<string>(MessagePaths);
         }
 
         public void Handle(SettingsUpdatedEvent @event)
@@ -41,15 +61,27 @@ namespace Papercut.Services
             UpdatePathTemplates();
         }
 
-        public IEnumerable<string> PathTemplates { get; private set; }
+        public ObservableCollection<string> PathTemplates { get; private set; }
 
         void UpdatePathTemplates()
         {
-            PathTemplates =
-                Settings.Default.MessagePaths.Split(new[] { ';' })
-                    .Select(s => s.Trim())
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                    .ToArray();
+            var paths = MessagePaths.ToArray();
+            var toRemove = PathTemplates.Except(paths).ToList();
+            var toAdd = paths.Except(PathTemplates).ToList();
+
+            if (toRemove.Any())
+            {
+                _logger.Information("Removing Path(s) {Paths} to Path Templates", toRemove);
+            }
+
+            toRemove.ForEach(s => PathTemplates.Remove(s));
+
+            if (toAdd.Any())
+            {
+                _logger.Information("Added Path(s) {Paths} to Path Templates", toAdd);
+            }
+
+            PathTemplates.AddRange(toAdd);
         }
     }
 }

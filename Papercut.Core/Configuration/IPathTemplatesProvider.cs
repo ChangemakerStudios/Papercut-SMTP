@@ -17,12 +17,13 @@
  *  limitations under the License.
  *  
  */
+
 namespace Papercut.Core.Configuration
 {
-    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
 
     public interface IPathTemplatesProvider
     {
-        IEnumerable<string> PathTemplates { get; }
+        ObservableCollection<string> PathTemplates { get; }
     }
 }
