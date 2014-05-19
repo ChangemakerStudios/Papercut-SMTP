@@ -10,10 +10,16 @@
         xmlns:Components="clr-namespace:Papercut.Components"
         mc:Ignorable="d"
         d:DataContext="{x:Type ViewModels:MainViewModel}"
-        
+        ResizeMode="CanResizeWithGrip"
         Height="500" Width="700" Closing="Window_Closing" Icon="/Papercut;component/App.ico"
         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
         Title="{Binding WindowTitle}">
+    <controls:MetroWindow.RightWindowCommands>
+        <controls:WindowCommands>
+            <Button Content="options" ToolTip="Configure Papercut Options" Click="Options_Click" />
+            <Button Content="exit" ToolTip="Shut Down Papercut App" Click="Exit_Click" />
+        </controls:WindowCommands>
+    </controls:MetroWindow.RightWindowCommands>
     <Grid IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
           ShowGridLines="False" Width="Auto">
         <Grid.RowDefinitions>
@@ -122,6 +128,7 @@
                 Name="deleteButton" IsEnabled="False" Click="deleteButton_Click" Grid.Row="1">
             Delete
         </Button>
+        
         <Button Height="23" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,99,12" Width="75"
                 Click="Options_Click" Grid.Column="2" Grid.Row="1">
             Options

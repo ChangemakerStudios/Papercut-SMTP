@@ -22,22 +22,40 @@ namespace Papercut.Service
 {
     using System;
 
+    using Papercut.Core.Events;
     using Papercut.Core.Network;
 
-    public class PapercutService
+    using Serilog;
+
+    public class PapercutService : IHandleEvent<SmtpServerBindEvent>
     {
+        readonly ILogger _logger;
+
         readonly IServer _smtpServer;
         readonly IServer _papercutServer;
 
-        public PapercutService(Func<ServerProtocolType, IServer> serverFactory)
+        public PapercutService(Func<ServerProtocolType, IServer> serverFactory, ILogger logger)
         {
+            _logger = logger;
             _smtpServer = serverFactory(ServerProtocolType.Smtp);
             _papercutServer = serverFactory(ServerProtocolType.Papercut);
         }
 
         public void Start()
         {
+            BindSMTPServer();
+            BindPapercutServer();
+        }
+
+        void BindSMTPServer()
+        {
+            _smtpServer.Stop();
             _smtpServer.Listen(Properties.Settings.Default.IP, Properties.Settings.Default.Port);
+        }
+
+        void BindPapercutServer()
+        {
+            _papercutServer.Stop();
             _papercutServer.Listen(PapercutClient.Localhost, PapercutClient.ServerPort);
         }
 
@@ -45,6 +63,21 @@ namespace Papercut.Service
         {
             _smtpServer.Stop();
             _papercutServer.Stop();
+        }
+
+        public void Handle(SmtpServerBindEvent @event)
+        {
+            _logger.Information(
+                "Received New Smtp Server Binding Settings from UI {@Event}",
+                @event);
+
+            // update settings...
+            Properties.Settings.Default.IP = @event.IP;
+            Properties.Settings.Default.Port = @event.Port;
+            Properties.Settings.Default.Save();
+
+            // rebind the server...
+            BindSMTPServer();
         }
     }
 }

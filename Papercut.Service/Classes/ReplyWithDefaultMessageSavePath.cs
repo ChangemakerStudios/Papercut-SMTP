@@ -24,6 +24,7 @@ namespace Papercut.Service.Classes
 
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
+    using Papercut.Service.Properties;
 
     public class ReplyWithDefaultMessageSavePath : IHandleEvent<AppProcessExchangeEvent>
     {
@@ -37,8 +38,11 @@ namespace Papercut.Service.Classes
         public void Handle(AppProcessExchangeEvent @event)
         {
             // respond with the current save path...
-            @event.MessageWritePath = Path.GetDirectoryName(
-                _messagePathConfigurator.DefaultSavePath);
+            @event.MessageWritePath = Path.GetDirectoryName(_messagePathConfigurator.DefaultSavePath);
+
+            // share our current ip and port binding for the SMTP server.
+            @event.IP = Settings.Default.IP;
+            @event.Port = Settings.Default.Port;
         }
     }
 }

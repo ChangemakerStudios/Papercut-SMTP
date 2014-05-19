@@ -84,6 +84,7 @@
     <Compile Include="Events\AppPreStartEvent.cs" />
     <Compile Include="Events\AppProcessExchangeEvent.cs" />
     <Compile Include="Events\AutofacPublishEvent.cs" />
+    <Compile Include="Events\BaseBindEvent.cs" />
     <Compile Include="Events\ConfigureLoggerEvent.cs" />
     <Compile Include="Events\SmtpServerForceRebindEvent.cs" />
     <Compile Include="Events\IDomainEvent.cs" />
@@ -92,7 +93,7 @@
     <Compile Include="Events\AppReadyEvent.cs" />
     <Compile Include="Events\PublishEventExtensions.cs" />
     <Compile Include="Events\SmtpServerBindFailedEvent.cs" />
-    <Compile Include="Events\SmtpServerBoundEvent.cs" />
+    <Compile Include="Events\SmtpServerBindEvent.cs" />
     <Compile Include="Helper\AssemblyScanner.cs" />
     <Compile Include="Configuration\IMessagePathConfigurator.cs" />
     <Compile Include="Configuration\IPathTemplatesProvider.cs" />

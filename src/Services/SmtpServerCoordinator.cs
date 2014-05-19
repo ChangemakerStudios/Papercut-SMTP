@@ -85,7 +85,7 @@ namespace Papercut.Services
                 _smtpServer.Stop();
                 _smtpServer.Listen(Settings.Default.IP, Settings.Default.Port);
                 _publishEvent.Publish(
-                    new SmtpServerBoundEvent(Settings.Default.IP, Settings.Default.Port));
+                    new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port));
 
                 return true;
             }

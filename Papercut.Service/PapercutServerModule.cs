@@ -40,7 +40,10 @@ namespace Papercut.Service
                 .AsSelf()
                 .SingleInstance();
 
-            builder.RegisterType<PapercutService>().SingleInstance();
+            builder.RegisterType<PapercutService>()
+                .AsImplementedInterfaces()
+                .AsSelf()
+                .SingleInstance();
         }
     }
 }

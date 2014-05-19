@@ -173,7 +173,7 @@
     <Compile Include="Helpers\CalburnSerilogBridge.cs" />
     <Compile Include="Helpers\WireupLogBridge.cs" />
     <Compile Include="Services\AppStartupService.cs" />
-    <Compile Include="Services\MergeServerBackendMessagePath.cs" />
+    <Compile Include="Services\MergeServerBackendSettings.cs" />
     <Compile Include="Services\PapercutServiceBackendCoordinator.cs" />
     <Compile Include="Services\PapercutUIServerCoordinator.cs" />
     <Compile Include="Services\ShutdownService.cs" />

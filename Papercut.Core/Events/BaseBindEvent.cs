@@ -20,15 +20,9 @@
 
 namespace Papercut.Core.Events
 {
-    public class SmtpServerBoundEvent : IDomainEvent
+    public class BaseBindEvent : IDomainEvent
     {
         public string IP { get; set; }
         public int Port { get; set; }
-
-        public SmtpServerBoundEvent(string ip, int port)
-        {
-            IP = ip;
-            Port = port;
-        }
     }
 }

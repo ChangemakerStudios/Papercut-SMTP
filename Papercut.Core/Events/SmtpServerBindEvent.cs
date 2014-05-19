@@ -20,8 +20,12 @@
 
 namespace Papercut.Core.Events
 {
-    public class AppProcessExchangeEvent : BaseBindEvent
+    public class SmtpServerBindEvent : BaseBindEvent
     {
-        public string MessageWritePath { get; set; }
+        public SmtpServerBindEvent(string ip, int port)
+        {
+            IP = ip;
+            Port = port;
+        }
     }
 }

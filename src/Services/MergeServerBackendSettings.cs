@@ -29,13 +29,13 @@ namespace Papercut.Services
     using Papercut.Events;
     using Papercut.Properties;
 
-    public class MergeServerBackendMessagePath : IHandleEvent<AppProcessExchangeEvent>
+    public class MergeServerBackendSettings : IHandleEvent<AppProcessExchangeEvent>
     {
         readonly IMessagePathConfigurator _configurator;
 
         readonly IPublishEvent _publishEvent;
 
-        public MergeServerBackendMessagePath(IMessagePathConfigurator configurator, IPublishEvent publishEvent)
+        public MergeServerBackendSettings(IMessagePathConfigurator configurator, IPublishEvent publishEvent)
         {
             _configurator = configurator;
             _publishEvent = publishEvent;
@@ -44,15 +44,21 @@ namespace Papercut.Services
         public void Handle(AppProcessExchangeEvent @event)
         {
             if (string.IsNullOrWhiteSpace(@event.MessageWritePath)) return;
-            if (_configurator.LoadPaths.Any(s => s.StartsWith(@event.MessageWritePath, StringComparison.OrdinalIgnoreCase))) return;
 
-            // add it for watching...
-            Settings.Default.MessagePaths = string.Format(
-                "{0};{1}",
-                Settings.Default.MessagePaths,
-                @event.MessageWritePath);
+            if (!_configurator.LoadPaths.Any(s => s.StartsWith(@event.MessageWritePath, StringComparison.OrdinalIgnoreCase)))
+            {
+                // add it for watching...
+                Settings.Default.MessagePaths = string.Format(
+                    "{0};{1}",
+                    Settings.Default.MessagePaths,
+                    @event.MessageWritePath);
+            }
 
+            // save ip:port bindings as our own to keep in sync...
+            Settings.Default.IP = @event.IP;
+            Settings.Default.Port = @event.Port;
             Settings.Default.Save();
+
             _publishEvent.Publish(new SettingsUpdatedEvent());
         }
     }
