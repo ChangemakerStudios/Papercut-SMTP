@@ -4,8 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:model="clr-namespace:Papercut.ViewModels"
-        xmlns:Ui="clr-namespace:Papercut.UI"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
         xmlns:Components="clr-namespace:Papercut.Components"
         mc:Ignorable="d"
@@ -53,7 +52,7 @@
             <Label Name="Subject" Width="Auto" Height="40" Visibility="Visible" Margin="0" VerticalAlignment="Top"
                    ForceCursor="False" Foreground="#FF287BAD" FontStretch="Normal" FontWeight="Bold" FontSize="20">
                 <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Padding="1"
-                           VerticalAlignment="Stretch" Height="31">
+                           VerticalAlignment="Stretch" Height="31" FontWeight="Normal" FontSize="22" Foreground="#FF424242">
                     Papercut
                 </TextBlock>
             </Label>

@@ -1,15 +1,22 @@
-﻿<controls:MetroWindow x:Class="Papercut.UI.OptionsWindow"
+﻿<controls:MetroWindow x:Class="Papercut.Views.OptionsView"
                       xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                      Title="Options" Width="328" Height="220" Icon="/Papercut;component/App.ico"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:model="clr-namespace:Papercut.ViewModels"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
+                      xmlns:Components="clr-namespace:Papercut.Components"
+                      mc:Ignorable="d"
+                      d:DataContext="{x:Type ViewModels:OptionsViewModel}"
+                      Title="{Binding WindowTitle}" Width="328" Height="220" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="NoResize"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner">
     <DockPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" FrameworkElement.FlowDirection="RightToLeft">
-            <Button Width="75" Margin="2" Name="cancelButton" IsCancel="True" Click="cancelButton_Click">Cancel</Button>
-            <Button Width="75" Margin="2" Name="saveButton" IsDefault="True" Click="saveButton_Click">OK</Button>
+            <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
+            <Button Width="75" Margin="2" Name="Save" IsDefault="True">Save</Button>
         </StackPanel>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -25,15 +32,16 @@
             </Grid.RowDefinitions>
             <Label Grid.Column="0" Grid.Row="0">IP Address:</Label>
             <Label Grid.Column="0" Grid.Row="1">Port:</Label>
-            <ComboBox Grid.Column="1" Grid.Row="0" Margin="2,2,0,2" Width="170" HorizontalAlignment="Left" Name="ipsList" />
+            <ComboBox Grid.Column="1" Grid.Row="0" Margin="2,2,0,2" Width="170" HorizontalAlignment="Left"
+                      Name="IPs" SelectedItem="{Binding IP}" />
             <Grid Grid.Column="1" Grid.Row="1">
-                <TextBox Margin="2,2,0,2" Width="100" HorizontalAlignment="Left" Name="portNumber" />
+                <TextBox Margin="2,2,0,2" Width="100" HorizontalAlignment="Left" Name="Port" />
                 <Label Margin="102,0,0,0">(default is 25)</Label>
             </Grid>
-            <CheckBox Grid.Column="1" Grid.Row="2" Margin="5" Name="runOnStartup" VerticalAlignment="Bottom"
+            <CheckBox Grid.Column="1" Grid.Row="2" Margin="5" Name="RunOnStartup" VerticalAlignment="Bottom"
                       Content="Run On Startup" />
-            <CheckBox Grid.Column="1" Grid.Row="3" Margin="5" Name="startMinimized" VerticalAlignment="Bottom">Start Minimized</CheckBox>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5" Name="minimizeOnClose" VerticalAlignment="Bottom">Minimize On Close</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="3" Margin="5" Name="StartMinimized" VerticalAlignment="Bottom">Start Minimized</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5" Name="MinimizeOnClose" VerticalAlignment="Bottom">Minimize On Close</CheckBox>
         </Grid>
     </DockPanel>
 </controls:MetroWindow>

@@ -18,79 +18,15 @@
  *  
  */
 
-namespace Papercut.UI
+namespace Papercut.Views
 {
-    using System.Linq;
-    using System.Net;
-    using System.Windows;
-
     using MahApps.Metro.Controls;
 
-    using Papercut.Core;
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
-    using Papercut.Events;
-    using Papercut.Helpers;
-    using Papercut.Properties;
-
-    public partial class OptionsWindow : MetroWindow
+    public partial class OptionsView : MetroWindow
     {
-        readonly IPublishEvent _publishEvent;
-
-        #region Constructors and Destructors
-
-        public OptionsWindow(IPublishEvent publishEvent)
+        public OptionsView()
         {
-            _publishEvent = publishEvent;
             InitializeComponent();
-
-            // Add the Any option
-            ipsList.Items.Add("Any");
-
-            // Add local IPs
-            ipsList.Items.AddRange(
-                Dns.GetHostAddresses("localhost")
-                    .Select(a => a.ToString())
-                    .Where(NetworkHelper.IsValidIP));
-
-            // Get NIC IPs
-            ipsList.Items.AddRange(NetworkHelper.GetIPAddresses().Where(NetworkHelper.IsValidIP));
-
-            // Select the current one
-            ipsList.SelectedItem = Settings.Default.IP;
-
-            // Set the other options
-            portNumber.Text = Settings.Default.Port.ToString();
-            startMinimized.IsChecked = Settings.Default.StartMinimized;
-            minimizeOnClose.IsChecked = Settings.Default.MinimizeOnClose;
-            runOnStartup.IsChecked = Settings.Default.RunOnStartup;
         }
-
-        #endregion
-
-        #region Methods
-
-        void cancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-        }
-
-        void saveButton_Click(object sender, RoutedEventArgs e)
-        {
-            Settings.Default.IP = (string)ipsList.SelectedValue;
-            Settings.Default.Port = int.Parse(portNumber.Text);
-
-            if (runOnStartup.IsChecked.HasValue) Settings.Default.RunOnStartup = runOnStartup.IsChecked.Value;
-            if (startMinimized.IsChecked.HasValue) Settings.Default.StartMinimized = startMinimized.IsChecked.Value;
-            if (minimizeOnClose.IsChecked.HasValue) Settings.Default.MinimizeOnClose = minimizeOnClose.IsChecked.Value;
-
-            Settings.Default.Save();
-
-            _publishEvent.Publish(new SettingsUpdatedEvent());
-
-            DialogResult = true;
-        }
-
-        #endregion
     }
 }

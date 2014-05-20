@@ -53,7 +53,6 @@ namespace Papercut.Views
     using Papercut.Helpers;
     using Papercut.Properties;
     using Papercut.Services;
-    using Papercut.UI;
     using Papercut.ViewModels;
 
     using Serilog;
@@ -77,6 +76,8 @@ namespace Papercut.Views
     /// </summary>
     public partial class MainView : MetroWindow, IHandle<ShowMainWindowEvent>, IHandle<SmtpServerBindFailedEvent>, IHandle<ShowMessageEvent>
     {
+        readonly Func<OptionsViewModel> _optionsViewModelFactory;
+
         #region Fields
 
         readonly object _deleteLockObject = new object();
@@ -105,10 +106,12 @@ namespace Papercut.Views
             MessageRepository messageRepository,
             MimeMessageLoader mimeMessageLoader,
             AppResourceLocator resourceLocator,
+            Func<OptionsViewModel> optionsViewModelFactory,
             IWindowManager windowManager,
             IPublishEvent publishEvent,
             ILogger logger)
         {
+            _optionsViewModelFactory = optionsViewModelFactory;
             MessageRepository = messageRepository;
             MimeMessageLoader = mimeMessageLoader;
             ResourceLocator = resourceLocator;
@@ -325,9 +328,11 @@ namespace Papercut.Views
 
         void Options_Click(object sender, RoutedEventArgs e)
         {
-            var ow = new OptionsWindow(PublishEvent) { Owner = this, ShowInTaskbar = false };
+            WindowManager.ShowDialog(_optionsViewModelFactory());
 
-            ow.ShowDialog();
+            //var ow = new OptionsView(PublishEvent) { Owner = this, ShowInTaskbar = false };
+
+            //ow.ShowDialog();
         }
 
         void RefreshMessageList()
@@ -460,7 +465,7 @@ namespace Papercut.Views
             var entry = messagesList.SelectedItem as MessageEntry;
             if (entry != null)
             {
-                var fw = new ForwardWindow(MessageRepository) { Owner = this, MessageEntry = entry };
+                var fw = new ForwardView(MessageRepository) { Owner = this, MessageEntry = entry };
                 fw.ShowDialog();
             }
         }

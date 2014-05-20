@@ -18,7 +18,7 @@
  *  
  */
 
-namespace Papercut.UI
+namespace Papercut.Views
 {
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
@@ -30,10 +30,7 @@ namespace Papercut.UI
     using Papercut.Core.Network;
     using Papercut.Properties;
 
-    /// <summary>
-    ///     Interaction logic for ForwardWindow.xaml
-    /// </summary>
-    public partial class ForwardWindow : MetroWindow
+    public partial class ForwardView : MetroWindow
     {
         static readonly Regex _emailRegex =
             new Regex(
@@ -44,7 +41,7 @@ namespace Papercut.UI
 
         bool _working;
 
-        public ForwardWindow(MessageRepository messageRepository)
+        public ForwardView(MessageRepository messageRepository)
         {
             MessageRepository = messageRepository;
 

@@ -36,7 +36,7 @@ namespace Papercut.Events
         {
             _autofacPublishEvent = autofacPublishEvent;
             _uiEventAggregator = uiEventAggregator;
-        }
+       }
 
         public void Publish<T>(T eventObject) where T : IDomainEvent
         {
