@@ -171,7 +171,9 @@
     <Compile Include="Events\ShowMessageEvent.cs" />
     <Compile Include="Helpers\AssemblyResolutionHelper.cs" />
     <Compile Include="Helpers\CalburnSerilogBridge.cs" />
+    <Compile Include="Helpers\MailMessageHelper.cs" />
     <Compile Include="Helpers\WireupLogBridge.cs" />
+    <Compile Include="Helpers\WPFValueConverters.cs" />
     <Compile Include="Services\AppStartupService.cs" />
     <Compile Include="Services\MergeServerBackendSettings.cs" />
     <Compile Include="Services\PapercutServiceBackendCoordinator.cs" />

@@ -25,7 +25,6 @@ namespace Papercut.ViewModels
         private const string WindowTitleDefault = "Papercut";
 
         private string _windowTitle = WindowTitleDefault;
-
         public string WindowTitle
         {
             get { return _windowTitle; }

@@ -48,7 +48,7 @@ namespace Papercut.Core.Network
             using (NetworkStream stream = GetStream())
             {
                 string response = stream.ReadString();
-                IsValidResponse(response);
+                IsValidResponse(response, "220");
 
                 stream.WriteFormat("HELO {0}\r\n", GeneralExtensions.GetIPAddress());
                 response = stream.ReadString();

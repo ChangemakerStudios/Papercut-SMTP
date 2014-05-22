@@ -24,12 +24,9 @@ namespace Papercut.Views
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
-    using System.Drawing;
-    using System.IO;
     using System.Linq;
     using System.Reactive.Linq;
     using System.Reflection;
-    using System.Text;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Forms;
@@ -59,13 +56,11 @@ namespace Papercut.Views
 
     using Action = System.Action;
     using Application = System.Windows.Application;
-    using ContextMenu = System.Windows.Forms.ContextMenu;
     using DataFormats = System.Windows.DataFormats;
     using DataObject = System.Windows.DataObject;
     using DragDropEffects = System.Windows.DragDropEffects;
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
     using ListBox = System.Windows.Controls.ListBox;
-    using MenuItem = System.Windows.Forms.MenuItem;
     using MessageBox = System.Windows.MessageBox;
     using MouseEventArgs = System.Windows.Input.MouseEventArgs;
     using Point = System.Windows.Point;
@@ -77,6 +72,8 @@ namespace Papercut.Views
     public partial class MainView : MetroWindow, IHandle<ShowMainWindowEvent>, IHandle<SmtpServerBindFailedEvent>, IHandle<ShowMessageEvent>
     {
         readonly Func<OptionsViewModel> _optionsViewModelFactory;
+
+        readonly Func<ForwardViewModel> _forwardViewModelFactory;
 
         #region Fields
 
@@ -107,11 +104,13 @@ namespace Papercut.Views
             MimeMessageLoader mimeMessageLoader,
             AppResourceLocator resourceLocator,
             Func<OptionsViewModel> optionsViewModelFactory,
+            Func<ForwardViewModel> forwardViewModelFactory,
             IWindowManager windowManager,
             IPublishEvent publishEvent,
             ILogger logger)
         {
             _optionsViewModelFactory = optionsViewModelFactory;
+            _forwardViewModelFactory = forwardViewModelFactory;
             MessageRepository = messageRepository;
             MimeMessageLoader = mimeMessageLoader;
             ResourceLocator = resourceLocator;
@@ -329,10 +328,6 @@ namespace Papercut.Views
         void Options_Click(object sender, RoutedEventArgs e)
         {
             WindowManager.ShowDialog(_optionsViewModelFactory());
-
-            //var ow = new OptionsView(PublishEvent) { Owner = this, ShowInTaskbar = false };
-
-            //ow.ShowDialog();
         }
 
         void RefreshMessageList()
@@ -371,7 +366,7 @@ namespace Papercut.Views
                 {
                     try
                     {
-                        return SaveBrowserTempHtmlFile(mailMessageEx);
+                        return mailMessageEx.CreateHtmlPreviewFile();
                     }
                     catch (Exception ex)
                     {
@@ -391,36 +386,6 @@ namespace Papercut.Views
                     });
         }
 
-        static string SaveBrowserTempHtmlFile(MimeMessage mailMessageEx)
-        {
-            var replaceEmbeddedImageFormats = new[] { @"cid:{0}", @"cid:'{0}'", @"cid:""{0}""" };
-
-            string tempPath = Path.GetTempPath();
-            string htmlFile = Path.Combine(tempPath, "papercut.htm");
-
-            string htmlText = mailMessageEx.BodyParts.GetMainBodyTextPart().Text;
-
-            foreach (
-                MimePart image in
-                    mailMessageEx.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
-            {
-                string fileName = Path.Combine(tempPath, image.ContentId);
-                using (FileStream fs = File.OpenWrite(fileName))
-                {
-                    using (Stream content = image.ContentObject.Open()) content.CopyBufferedTo(fs);
-                    fs.Close();
-                }
-
-                htmlText = replaceEmbeddedImageFormats.Aggregate(
-                    htmlText,
-                    (current, format) =>
-                    current.Replace(string.Format(format, image.ContentId), image.ContentId));
-            }
-
-            File.WriteAllText(htmlFile, htmlText, Encoding.Unicode);
-
-            return htmlFile;
-        }
 
         void SetWindowTitle(string title)
         {
@@ -465,8 +430,9 @@ namespace Papercut.Views
             var entry = messagesList.SelectedItem as MessageEntry;
             if (entry != null)
             {
-                var fw = new ForwardView(MessageRepository) { Owner = this, MessageEntry = entry };
-                fw.ShowDialog();
+                var forwardViewModel = this._forwardViewModelFactory();
+                forwardViewModel.MessageEntry = entry;
+                WindowManager.ShowDialog(forwardViewModel);
             }
         }
 

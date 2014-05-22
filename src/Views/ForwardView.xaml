@@ -7,16 +7,21 @@
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
                       xmlns:Components="clr-namespace:Papercut.Components"
-                      ResizeMode="NoResize"
-                      Title="Forward Message" Width="274" Height="171" Icon="/Papercut;component/App.ico"
+                      xmlns:Helpers="clr-namespace:Papercut.Helpers"
+                      mc:Ignorable="d"
+                      d:DataContext="{x:Type ViewModels:ForwardViewModel}"
+                      Title="{Binding WindowTitle}"
+                      ResizeMode="NoResize" Width="274" Height="171" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
-                      ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner">
+                      ShowIconOnTitleBar="false"
+                      WindowStartupLocation="CenterOwner">
     <Grid>
         <DockPanel>
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" FrameworkElement.FlowDirection="RightToLeft">
-                <Button Width="75" Margin="2" Name="cancelButton" IsCancel="True" Click="cancelButton_Click">Cancel</Button>
-                <Button Width="75" Margin="2" Name="sendButton" IsDefault="True" Click="sendButton_Click">Send</Button>
-                <Label FlowDirection="LeftToRight" Name="sendingLabel" Visibility="Hidden">Sending...</Label>
+                <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
+                <Button Width="75" Margin="2" Name="Send" IsDefault="True" IsEnabled="{Binding Sending, Converter={StaticResource InverseBooleanConverter}}">Send</Button>
+                <Label FlowDirection="LeftToRight" Name="sendingLabel" Content="Sending..." Visibility="{Binding Sending, Converter={StaticResource HiddenIfFalse}}">
+                </Label>
             </StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -32,11 +37,11 @@
                 <Label Grid.Column="0" Grid.Row="1">From:</Label>
                 <Label Grid.Column="0" Grid.Row="2">To:</Label>
                 <TextBox Grid.Column="1" Grid.Row="0" Margin="2" Width="150" TabIndex="0" HorizontalAlignment="Left"
-                         Name="server" />
+                         Name="Server" IsEnabled="{Binding Sending, Converter={StaticResource InverseBooleanConverter}}" />
                 <TextBox Grid.Column="1" Grid.Row="1" Margin="2" Width="150" TabIndex="1" HorizontalAlignment="Left"
-                         Name="from" />
+                         Name="From" IsEnabled="{Binding Sending, Converter={StaticResource InverseBooleanConverter}}" />
                 <TextBox Grid.Column="1" Grid.Row="2" Margin="2" Width="150" TabIndex="2" HorizontalAlignment="Left"
-                         Name="to" />
+                         Name="To" IsEnabled="{Binding Sending, Converter={StaticResource InverseBooleanConverter}}" />
             </Grid>
         </DockPanel>
     </Grid>

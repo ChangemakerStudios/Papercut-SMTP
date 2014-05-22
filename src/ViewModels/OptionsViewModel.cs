@@ -37,6 +37,8 @@ namespace Papercut.ViewModels
     {
         const string WindowTitleDefault = "Options";
 
+        static readonly Lazy<IList<string>> _ipList = new Lazy<IList<string>>(GetIPs);
+
         readonly IPublishEvent _publishEvent;
 
         string _ip = "Any";
@@ -51,14 +53,12 @@ namespace Papercut.ViewModels
 
         string _windowTitle = WindowTitleDefault;
 
-        static Lazy<IList<string>> _ipList = new Lazy<IList<string>>(GetIPs);
-
         public OptionsViewModel(IPublishEvent publishEvent)
         {
             _publishEvent = publishEvent;
             IPs = new ObservableCollection<string>(_ipList.Value);
 
-            LoadFromSettings();
+            Load();
         }
 
         public string WindowTitle
@@ -141,7 +141,7 @@ namespace Papercut.ViewModels
 
         public ObservableCollection<string> IPs { get; private set; }
 
-        void LoadFromSettings()
+        public void Load()
         {
             _ip = Settings.Default.IP;
             _port = Settings.Default.Port;
