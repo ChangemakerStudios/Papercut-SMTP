@@ -118,9 +118,6 @@ namespace Papercut.ViewModels
 
             if (_window == null) return;
 
-            // Minimize if set to
-            if (Settings.Default.StartMinimized) _window.Hide();
-
             _window.StateChanged += (sender, args) =>
             {
                 // Hide the window if minimized so it doesn't show up on the task bar
@@ -134,22 +131,48 @@ namespace Papercut.ViewModels
                     return;
                 }
 
-                //Cancel close and minimize if setting is set to minimize on close
+                // Cancel close and minimize if setting is set to minimize on close
                 if (Settings.Default.MinimizeOnClose)
                 {
                     args.Cancel = true;
                     _window.WindowState = WindowState.Minimized;
                 }
             };
+
+            // Minimize if set to
+            if (Settings.Default.StartMinimized)
+            {
+                bool initialWindowActivate = true;
+                _window.Activated += (sender, args) =>
+                {
+                    if (initialWindowActivate)
+                    {
+                        initialWindowActivate = false;
+                        _window.WindowState = WindowState.Minimized;
+                    }
+                };
+            }
         }
 
         void IHandle<ShowMainWindowEvent>.Handle(ShowMainWindowEvent message)
         {
-            _window.Show();
-            _window.WindowState = WindowState.Normal;
+            if (!_window.IsVisible)
+            {
+                _window.Show();
+            }
+
+            if (_window.WindowState == WindowState.Minimized)
+            {
+                _window.WindowState = WindowState.Normal;
+            }
+
+            _window.Activate();
+
             _window.Topmost = true;
-            _window.Focus();
             _window.Topmost = false;
+
+            _window.Focus();
+            
         }
     }
 }
