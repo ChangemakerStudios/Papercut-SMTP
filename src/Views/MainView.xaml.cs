@@ -69,10 +69,8 @@ namespace Papercut.Views
     /// <summary>
     ///     Interaction logic for MainView.xaml
     /// </summary>
-    public partial class MainView : MetroWindow, IHandle<ShowMainWindowEvent>, IHandle<SmtpServerBindFailedEvent>, IHandle<ShowMessageEvent>
+    public partial class MainView : MetroWindow, IHandle<ShowMainWindowEvent>
     {
-        readonly Func<OptionsViewModel> _optionsViewModelFactory;
-
         readonly Func<ForwardViewModel> _forwardViewModelFactory;
 
         #region Fields
@@ -103,13 +101,11 @@ namespace Papercut.Views
             MessageRepository messageRepository,
             MimeMessageLoader mimeMessageLoader,
             AppResourceLocator resourceLocator,
-            Func<OptionsViewModel> optionsViewModelFactory,
             Func<ForwardViewModel> forwardViewModelFactory,
             IWindowManager windowManager,
             IPublishEvent publishEvent,
             ILogger logger)
         {
-            _optionsViewModelFactory = optionsViewModelFactory;
             _forwardViewModelFactory = forwardViewModelFactory;
             MessageRepository = messageRepository;
             MimeMessageLoader = mimeMessageLoader;
@@ -124,29 +120,13 @@ namespace Papercut.Views
             MessageRepository.NewMessage += NewMessage;
             MessageRepository.RefreshNeeded += RefreshMessages;
 
-            // Set the version label
-            versionLabel.Content = string.Format(
-                "Papercut v{0}",
-                Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
-
             // Load existing messages
             RefreshMessageList();
-
-            // Minimize if set to
-            if (Settings.Default.StartMinimized) Hide();
         }
 
         #endregion
 
         #region Methods
-
-        protected override void OnStateChanged(EventArgs e)
-        {
-            // Hide the window if minimized so it doesn't show up on the task bar
-            if (WindowState == WindowState.Minimized) Hide();
-
-            base.OnStateChanged(e);
-        }
 
         /// <summary>
         ///     Add a newly received message and show the balloon notification
@@ -245,18 +225,8 @@ namespace Papercut.Views
             tabControl.IsEnabled = true;
 
             // Enable the delete and forward button
-            deleteButton.IsEnabled = true;
-            forwardButton.IsEnabled = true;
-        }
-
-        void Exit_Click(object sender, RoutedEventArgs e)
-        {
-            PublishEvent.Publish(new AppForceShutdownEvent());
-        }
-
-        void GoToSite(object sender, MouseButtonEventArgs e)
-        {
-            Process.Start("http://papercut.codeplex.com/");
+            DeleteSelected.IsEnabled = true;
+            ForwardSelected.IsEnabled = true;
         }
 
         /// <summary>
@@ -280,20 +250,12 @@ namespace Papercut.Views
             if (_dragStartPoint == null) _dragStartPoint = e.GetPosition(parent);
         }
 
-        static T FindAncestor<T>(DependencyObject dependencyObject) where T : DependencyObject
-        {
-            DependencyObject parent = VisualTreeHelper.GetParent(dependencyObject);
-            if (parent == null) return null;
-            var parentT = parent as T;
-            return parentT ?? FindAncestor<T>(parent);
-        }
-
         void MessagesList_OnPreviewMouseMove(object sender, MouseEventArgs e)
         {
             var parent = sender as ListBox;
-
             if (parent == null || _dragStartPoint == null) return;
-            if (FindAncestor<ScrollBar>((DependencyObject)e.OriginalSource) != null) return;
+
+            if (((DependencyObject)e.OriginalSource).FindAncestor<ScrollBar>() != null) return;
 
             Point dragPoint = e.GetPosition(parent);
 
@@ -323,11 +285,6 @@ namespace Papercut.Views
         void NewMessage(object sender, NewMessageEventArgs e)
         {
             Dispatcher.BeginInvoke(new Action(() => AddNewMessage(e.NewMessage)));
-        }
-
-        void Options_Click(object sender, RoutedEventArgs e)
-        {
-            WindowManager.ShowDialog(_optionsViewModelFactory());
         }
 
         void RefreshMessageList()
@@ -405,21 +362,6 @@ namespace Papercut.Views
             else if (messagesList.Items.Count == 0) tabControl.IsEnabled = false;
         }
 
-        void Window_Closing(object sender, CancelEventArgs e)
-        {
-            if (Application.Current.ShutdownMode == ShutdownMode.OnExplicitShutdown)
-            {
-                return;
-            }
-
-            //Cancel close and minimize if setting is set to minimize on close
-            if (Settings.Default.MinimizeOnClose)
-            {
-                e.Cancel = true;
-                WindowState = WindowState.Minimized;
-            }
-        }
-
         void deleteButton_Click(object sender, RoutedEventArgs e)
         {
             DeleteSelectedMessage();
@@ -441,8 +383,8 @@ namespace Papercut.Views
             // If there are no selected items, then disable the Delete button, clear the boxes, and return
             if (e.AddedItems.Count == 0)
             {
-                deleteButton.IsEnabled = false;
-                forwardButton.IsEnabled = false;
+                DeleteSelected.IsEnabled = false;
+                ForwardSelected.IsEnabled = false;
                 headerView.Text = string.Empty;
                 bodyView.Text = string.Empty;
                 textViewTab.Visibility = Visibility.Hidden;
@@ -500,30 +442,10 @@ namespace Papercut.Views
 
         void IHandle<ShowMainWindowEvent>.Handle(ShowMainWindowEvent message)
         {
-            Show();
-            WindowState = WindowState.Normal;
-            Topmost = true;
-            Focus();
-            Topmost = false;
-
             if (message.SelectMostRecentMessage)
             {
                 messagesList.SelectedIndex = messagesList.Items.Count - 1;
             }
-        }
-
-        void IHandle<SmtpServerBindFailedEvent>.Handle(SmtpServerBindFailedEvent message)
-        {
-            MessageBox.Show(
-                "Failed to start SMTP server listening. The IP and Port combination is in use by another program. To fix, change the server bindings in the options.",
-                "Failed");
-
-            Options_Click(null, null);
-        }
-
-        void IHandle<ShowMessageEvent>.Handle(ShowMessageEvent message)
-        {
-            MessageBox.Show(message.MessageText, message.Caption);
         }
     }
 }

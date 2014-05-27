@@ -32,16 +32,10 @@ namespace Papercut.Helpers
         public static T GetObjectDataFromPoint<T>([NotNull] this ListBox source, Point point)
             where T : class
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
+            if (source == null) throw new ArgumentNullException("source");
 
             var element = source.InputHitTest(point) as UIElement;
-            if (element == null)
-            {
-                return null;
-            }
+            if (element == null) return null;
 
             // Get the object from the element
             object data = DependencyProperty.UnsetValue;
@@ -52,19 +46,24 @@ namespace Papercut.Helpers
                 data = source.ItemContainerGenerator.ItemFromContainer(element);
 
                 // Get the parent and we will iterate again
-                if (data == DependencyProperty.UnsetValue && element != null)
-                {
-                    element = VisualTreeHelper.GetParent(element) as UIElement;
-                }
+                if (data == DependencyProperty.UnsetValue && element != null) element = VisualTreeHelper.GetParent(element) as UIElement;
 
                 // If we reach the actual listbox then we must break to avoid an infinite loop
-                if (Equals(element, source))
-                {
-                    return null;
-                }
+                if (Equals(element, source)) return null;
             }
 
             return data as T;
+        }
+
+        public static T FindAncestor<T>(this DependencyObject dependencyObject)
+            where T : DependencyObject
+        {
+            if (dependencyObject == null) throw new ArgumentNullException("dependencyObject");
+
+            DependencyObject parent = VisualTreeHelper.GetParent(dependencyObject);
+            if (parent == null) return null;
+            var parentT = parent as T;
+            return parentT ?? FindAncestor<T>(parent);
         }
     }
 }
