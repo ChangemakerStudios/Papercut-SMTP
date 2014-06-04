@@ -27,6 +27,7 @@ namespace Papercut.Core.Message
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
     using System.Runtime.Caching;
+    using System.Threading;
 
     using MimeKit;
 

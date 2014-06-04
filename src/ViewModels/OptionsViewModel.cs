@@ -57,7 +57,6 @@ namespace Papercut.ViewModels
         {
             _publishEvent = publishEvent;
             IPs = new ObservableCollection<string>(_ipList.Value);
-
             Load();
         }
 

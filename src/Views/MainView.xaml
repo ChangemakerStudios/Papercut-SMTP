@@ -9,6 +9,7 @@
         xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
         xmlns:Components="clr-namespace:Papercut.Components"
         xmlns:cal="http://www.caliburnproject.org"
+        xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
         mc:Ignorable="d"
         d:DataContext="{x:Type ViewModels:MainViewModel}"
         ResizeMode="CanResizeWithGrip"
@@ -41,7 +42,12 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             Margin="0" />        
-        <ContentControl Grid.Column="2" x:Name="MessageDetailViewModel" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+        <ContentControl Grid.Column="2" x:Name="MessageDetailViewModel" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                        IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}">
+            <i:Interaction.Behaviors>
+                <Behaviors:InteractivityBlurOnDisabled BlurRadius="2"/>
+            </i:Interaction.Behaviors>
+        </ContentControl>
             <!--<Components:Spinner HorizontalAlignment="Right" x:Name="SpinAnimation" VerticalAlignment="Top"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsHitTestVisible="False"
                         Panel.ZIndex="1000" UseLayoutRounding="False" Padding="2" BorderBrush="#FFADADAD"

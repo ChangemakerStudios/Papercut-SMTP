@@ -31,6 +31,8 @@ namespace Papercut
     using Papercut.Core.Events;
     using Papercut.Helpers;
 
+    using Serilog;
+
     public partial class App : Application
     {
         public const string GlobalName = "Papercut.App";
@@ -59,20 +61,28 @@ namespace Papercut
         {
             var publishEvent = Container.Resolve<IPublishEvent>();
 
-            var appPreStartEvent = new AppPreStartEvent();
-            publishEvent.Publish(appPreStartEvent);
-
-            if (appPreStartEvent.CancelStart)
+            try
             {
-                // force shut down...
-                publishEvent.Publish(new AppForceShutdownEvent());
-                return;
+                var appPreStartEvent = new AppPreStartEvent();
+                publishEvent.Publish(appPreStartEvent);
+
+                if (appPreStartEvent.CancelStart)
+                {
+                    // force shut down...
+                    publishEvent.Publish(new AppForceShutdownEvent());
+                    return;
+                }
+
+                base.OnStartup(e);
+
+                // startup app
+                publishEvent.Publish(new AppReadyEvent());
             }
-
-            base.OnStartup(e);
-
-            // startup app
-            publishEvent.Publish(new AppReadyEvent());
+            catch (Exception ex)
+            {
+                Container.Resolve<ILogger>().Fatal(ex, "Fatal Error Starting Papercut");
+                throw;
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)

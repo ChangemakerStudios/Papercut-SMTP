@@ -22,6 +22,7 @@ namespace Papercut.ViewModels
 {
     using System;
     using System.Diagnostics;
+    using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reflection;
     using System.Windows;
@@ -118,10 +119,7 @@ namespace Papercut.ViewModels
 
             _window.Focus();
 
-            if (message.SelectMostRecentMessage)
-            {
-                MessageListViewModel.UpdateSelectedIndex();
-            }
+            if (message.SelectMostRecentMessage) MessageListViewModel.UpdateSelectedIndex();
         }
 
         void IHandle<ShowMessageEvent>.Handle(ShowMessageEvent message)
@@ -140,22 +138,29 @@ namespace Papercut.ViewModels
 
         void SetupObservables()
         {
-            MessageListViewModel.GetPropertyValues((m) => m.SelectedMessage)
+            MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
+                .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
                 .Subscribe(m => LoadMessageEntry(MessageListViewModel.SelectedMessage));
         }
 
         public void LoadMessageEntry(MessageEntry messageEntry)
         {
-            if (messageEntry == null) throw new ArgumentNullException("messageEntry");
-
             if (_loadingDisposable != null) _loadingDisposable.Dispose();
 
-            // show it...
-            _loadingDisposable =
-                _mimeMessageLoader.Get(messageEntry)
-                    .ObserveOnDispatcher()
-                    .Subscribe(MessageDetailViewModel.DisplayMimeMessage);
+            if (messageEntry == null)
+            {
+                // show empty...
+                MessageDetailViewModel.DisplayMimeMessage(null);
+            }
+            else
+            {
+                // load and show it...
+                _loadingDisposable =
+                    _mimeMessageLoader.Get(messageEntry)
+                        .ObserveOnDispatcher()
+                        .Subscribe(MessageDetailViewModel.DisplayMimeMessage);
+            }
         }
 
         public void GoToSite()

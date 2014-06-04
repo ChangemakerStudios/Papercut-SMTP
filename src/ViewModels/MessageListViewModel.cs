@@ -83,6 +83,7 @@ namespace Papercut.ViewModels
             _logger = logger;
 
             SetupMessages();
+            RefreshMessageList();
         }
 
         public ObservableCollection<MessageEntry> Messages { get; private set; }
@@ -144,8 +145,6 @@ namespace Papercut.ViewModels
             _messageRepository.RefreshNeeded += RefreshMessages;
 
             Messages.CollectionChanged += CollectionChanged;
-
-            RefreshMessageList();
         }
 
         void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)

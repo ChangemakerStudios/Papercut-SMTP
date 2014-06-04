@@ -18,15 +18,12 @@
 //  *  
 //  */
 
-
 namespace Papercut.ViewModels
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Net.Mime;
     using System.Reactive.Linq;
-    using System.Windows;
     using System.Windows.Navigation;
 
     using Caliburn.Micro;
@@ -41,54 +38,29 @@ namespace Papercut.ViewModels
 
     public class MessageDetailViewModel : Screen
     {
-        string _subject;
-
-        string _to;
-
         string _bcc;
+
+        string _body;
+
+        string _cc;
 
         string _date;
 
         string _from;
 
-        string _cc;
-
         string _headers;
-
-        string _textBody;
-
-        string _body;
-
-        bool _isHtml;
 
         string _htmlFile;
 
+        bool _isHtml;
+
         int _selectedTabIndex;
 
-        void SetBrowserDocument(MimeMessage mailMessageEx)
-        {
-            Observable.Start(
-                () =>
-                {
-                    try
-                    {
-                        return mailMessageEx.CreateHtmlPreviewFile();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error(
-                            ex,
-                            "Exception Saving Browser Temp File for {MailMessage}",
-                            mailMessageEx.ToString());
-                    }
+        string _subject;
 
-                    return null;
-                }).Where(s => !string.IsNullOrEmpty(s)).Subscribe(
-                    h =>
-                    {
-                        HtmlFile = h;
-                    });
-        }
+        string _textBody;
+
+        string _to;
 
         public string Subject
         {
@@ -246,54 +218,69 @@ namespace Papercut.ViewModels
             }
         }
 
+        void SetBrowserDocument(MimeMessage mailMessageEx)
+        {
+            Observable.Start(
+                () =>
+                {
+                    try
+                    {
+                        return mailMessageEx.CreateHtmlPreviewFile();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(
+                            ex,
+                            "Exception Saving Browser Temp File for {MailMessage}",
+                            mailMessageEx.ToString());
+                    }
+
+                    return null;
+                }).Where(s => !string.IsNullOrEmpty(s)).Subscribe(h => HtmlFile = h);
+        }
+
         public void DisplayMimeMessage(MimeMessage mailMessageEx)
         {
-            Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
-
-            List<MimePart> parts = mailMessageEx.BodyParts.ToList();
-            TextPart mainBody = parts.GetMainBodyTextPart();
-            Body = mainBody.Text;
-
-            From = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
-            To = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
-            CC = mailMessageEx.Cc.IfNotNull(s => s.ToString()) ?? string.Empty;
-            Bcc = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
-            Date = mailMessageEx.Date.IfNotNull(s => s.ToString()) ?? string.Empty;
-
-            Subject = mailMessageEx.Subject ?? string.Empty;
-
-            //SetWindowTitle(subject);
-
-            IsHtml = mainBody.IsContentHtml();
-            HtmlFile = null;
-            TextBody = null;
-
-            SetBrowserDocument(mailMessageEx);
-
-            if (IsHtml)
+            if (mailMessageEx != null)
             {
-                TextPart textPartNotHtml =
-                    parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
+                Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
 
-                if (textPartNotHtml != null)
+                List<MimePart> parts = mailMessageEx.BodyParts.ToList();
+                TextPart mainBody = parts.GetMainBodyTextPart();
+                Body = mainBody.Text;
+
+                From = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
+                To = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
+                CC = mailMessageEx.Cc.IfNotNull(s => s.ToString()) ?? string.Empty;
+                Bcc = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
+                Date = mailMessageEx.Date.IfNotNull(s => s.ToString()) ?? string.Empty;
+
+                Subject = mailMessageEx.Subject ?? string.Empty;
+                IsHtml = mainBody.IsContentHtml();
+
+                SetBrowserDocument(mailMessageEx);
+
+                if (IsHtml)
                 {
-                    TextBody = textPartNotHtml.Text;
+                    TextPart textPartNotHtml =
+                        parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
+
+                    if (textPartNotHtml != null) TextBody = textPartNotHtml.Text;
+                }
+                else
+                {
+                    TextBody = null;
                 }
             }
+            else
+            {
+                IsHtml = false;
+                HtmlFile = null;
+                TextBody = null;
+                Body = null;
+            }
 
-            this.SelectedTabIndex = 0;
-
-            //if (defaultTab.IsVisible) tabControl.SelectedIndex = 0;
-
-            //defaultHtmlView.Visibility = isContentHtml ? Visibility.Visible : Visibility.Collapsed;
-            //defaultBodyView.Visibility = isContentHtml ? Visibility.Collapsed : Visibility.Visible;
-
-            //SpinAnimation.Visibility = Visibility.Collapsed;
-            //tabControl.IsEnabled = true;
-
-            //// Enable the delete and forward button
-            //DeleteSelected.IsEnabled = true;
-            //ForwardSelected.IsEnabled = true;
+            SelectedTabIndex = 0;
         }
 
         protected override void OnViewLoaded(object view)
@@ -304,20 +291,23 @@ namespace Papercut.ViewModels
 
             if (typedView != null)
             {
-                typedView.Loaded += (sender, args) =>
-                {
-                    typedView.defaultHtmlView.Content = null;
-                    typedView.defaultHtmlView.RemoveBackEntry();
-                };
-
                 this.GetPropertyValues(p => p.HtmlFile)
                     .ObserveOnDispatcher()
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
                     .Subscribe(
-                        (url) =>
+                        file =>
                         {
-                            typedView.defaultHtmlView.Navigate(new Uri(url));
-                            typedView.defaultHtmlView.Refresh();
+                            typedView.defaultHtmlView.NavigationUIVisibility =
+                                NavigationUIVisibility.Hidden;
+
+                            if (!string.IsNullOrWhiteSpace(file))
+                            {
+                                typedView.defaultHtmlView.Navigate(new Uri(file));
+                                typedView.defaultHtmlView.Refresh();
+                            }
+                            else
+                            {
+                                typedView.defaultHtmlView.Content = null;
+                            }
                         });
             }
         }
