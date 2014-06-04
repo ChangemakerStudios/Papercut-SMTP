@@ -90,7 +90,7 @@ namespace Papercut.Core.Network
             // Use overload that takes an IAsyncResult directly
             try
             {
-                return Task.Factory.FromAsync(result, r => socket.EndSend(r));
+                return Task.Factory.FromAsync(result, r => socket.Connected ? socket.EndSend(r) : 0);
             }
             catch (ObjectDisposedException)
             {
