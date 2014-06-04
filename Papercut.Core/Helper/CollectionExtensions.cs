@@ -46,7 +46,10 @@ namespace Papercut.Core.Helper
 
             if (sourceCollection == null) throw new ArgumentNullException("sourceCollection");
 
-            foreach (var item in sourceCollection.ToList()) destinationCollection.Add(item);
+            foreach (TValue item in (sourceCollection as IList<TValue> ?? sourceCollection.ToList()))
+            {
+                destinationCollection.Add(item);
+            }
         }
 
         /// <summary>
@@ -64,7 +67,10 @@ namespace Papercut.Core.Helper
 
             if (sourceList == null) throw new ArgumentNullException("sourceList");
 
-            foreach (var item in sourceList.Cast<object>().ToList()) destinationList.Add(item);
+            foreach (object item in sourceList.Cast<object>().ToList())
+            {
+                destinationList.Add(item);
+            }
         }
 
         /// <summary>
@@ -84,7 +90,10 @@ namespace Papercut.Core.Helper
         {
             if (source == null) throw new ArgumentNullException("source");
 
-            foreach (T element in source.ToList()) act(element);
+            foreach (T element in (source as IList<T> ?? source.ToList()))
+            {
+                act(element);
+            }
 
             return source;
         }

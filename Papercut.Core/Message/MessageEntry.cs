@@ -21,6 +21,7 @@
 namespace Papercut.Core.Message
 {
     using System;
+    using System.ComponentModel;
     using System.Globalization;
     using System.IO;
     using System.Text.RegularExpressions;
@@ -30,7 +31,7 @@ namespace Papercut.Core.Message
     /// <summary>
     ///     The message entry.
     /// </summary>
-    public class MessageEntry
+    public class MessageEntry : INotifyPropertyChanged
     {
         static readonly Regex _nameFormat = new Regex(
             @"^(?<date>\d{14,16})(\-[A-Z0-9]{2})?\.eml$",
@@ -40,11 +41,13 @@ namespace Papercut.Core.Message
 
         protected DateTime? _created;
 
+        bool _isSelected;
+
         public MessageEntry(FileInfo fileInfo)
         {
             _info = fileInfo;
 
-            var match = _nameFormat.Match(_info.Name);
+            Match match = _nameFormat.Match(_info.Name);
             if (match.Success)
             {
                 _created = DateTime.ParseExact(
@@ -82,6 +85,21 @@ namespace Papercut.Core.Message
                 return _info.Name;
             }
         }
+
+        public bool IsSelected
+        {
+            get
+            {
+                return _isSelected;
+            }
+            set
+            {
+                _isSelected = value;
+                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("IsSelected"));
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public override string ToString()
         {

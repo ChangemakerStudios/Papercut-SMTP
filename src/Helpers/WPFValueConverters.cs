@@ -79,7 +79,18 @@ namespace Papercut.Helpers
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return GetVisibility(value);
+            bool booleanValue = value != null;
+
+            if (value is string)
+            {
+                booleanValue = !string.IsNullOrEmpty(value as string);
+            }
+            else if (value is bool)
+            {
+                booleanValue = (bool)value;
+            }
+
+            return GetVisibility(booleanValue);
         }
 
         public object ConvertBack(
@@ -91,12 +102,10 @@ namespace Papercut.Helpers
             throw new NotImplementedException();
         }
 
-        object GetVisibility(object value)
+        object GetVisibility(bool toggleValue)
         {
-            if (!(value is bool)) return DependencyProperty.UnsetValue;
-            var objValue = (bool)value;
-            if ((objValue && TriggerValue && IsHidden) || (!objValue && !TriggerValue && IsHidden)) return Visibility.Hidden;
-            if ((objValue && TriggerValue && !IsHidden) || (!objValue && !TriggerValue && !IsHidden)) return Visibility.Collapsed;
+            if ((toggleValue && TriggerValue && IsHidden) || (!toggleValue && !TriggerValue && IsHidden)) return Visibility.Hidden;
+            if ((toggleValue && TriggerValue && !IsHidden) || (!toggleValue && !TriggerValue && !IsHidden)) return Visibility.Collapsed;
             return Visibility.Visible;
         }
     }

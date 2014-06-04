@@ -32,6 +32,7 @@
             <ColumnDefinition Width="3" />
             <ColumnDefinition Width="500*" />
         </Grid.ColumnDefinitions>
+        <ContentControl Grid.Column="0" x:Name="MessageListViewModel" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
         <GridSplitter
             ResizeDirection="Columns"
             Grid.Column="1"
@@ -39,14 +40,9 @@
             Height="Auto"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
-            Margin="0" />
-        <ListBox Name="messagesList" SelectionChanged="messagesList_SelectionChanged" Width="Auto" Height="Auto"
-                 KeyDown="MessagesList_OnKeyDown" PreviewMouseDown="MessagesList_OnPreviewLeftMouseDown"
-                 PreviewMouseUp="MessagesList_OnPreviewMouseUp" PreviewMouseMove="MessagesList_OnPreviewMouseMove"
-                 SelectionMode="Extended" VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0"
-                 Margin="2" />
-        <Grid Name="ContainerPanel" Grid.Column="2" Width="Auto" Height="Auto">
-            <Components:Spinner HorizontalAlignment="Right" x:Name="SpinAnimation" VerticalAlignment="Top"
+            Margin="0" />        
+        <ContentControl Grid.Column="2" x:Name="MessageDetailViewModel" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+            <!--<Components:Spinner HorizontalAlignment="Right" x:Name="SpinAnimation" VerticalAlignment="Top"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsHitTestVisible="False"
                         Panel.ZIndex="1000" UseLayoutRounding="False" Padding="2" BorderBrush="#FFADADAD"
                         BorderThickness="1" Background="#FF383838" Opacity="0.75" Visibility="Collapsed"
@@ -57,79 +53,18 @@
                            VerticalAlignment="Stretch" Height="31" FontWeight="Normal" FontSize="22" Foreground="#FF424242">
                     Papercut
                 </TextBlock>
-            </Label>
-            <TabControl Name="tabControl" Width="Auto" Height="Auto" VerticalContentAlignment="Stretch"
-                        HorizontalContentAlignment="Stretch" Margin="2,42,2,2" Visibility="Visible">
-                <TabItem Header="Message" Name="defaultTab">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
-                        <Grid Grid.Row="0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <Label Content="From" HorizontalAlignment="Right" />
-                            <Label Grid.Row="1" Content="To" HorizontalAlignment="Right" />
-                            <Label Grid.Row="2" Content="CC" HorizontalAlignment="Right" />
-                            <Label Grid.Row="3" Content="Bcc" HorizontalAlignment="Right" />
-                            <Label Grid.Row="4" Content="Date" HorizontalAlignment="Right" />
-                            <Label Grid.Row="5" Content="Subject" HorizontalAlignment="Right" />
-
-                            <TextBox Grid.Column="1" Margin="2"
-                                     Name="FromEdit" IsReadOnly="True" />
-                            <TextBox Grid.Row="1" Grid.Column="1" Margin="2"
-                                     Name="ToEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54"
-                                     TextWrapping="Wrap" />
-                            <TextBox Grid.Row="2" Grid.Column="1" Margin="2"
-                                     Name="CCEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54"
-                                     TextWrapping="Wrap" />
-                            <TextBox Grid.Row="3" Grid.Column="1" Margin="2"
-                                     Name="BccEdit" IsReadOnly="True" VerticalScrollBarVisibility="Auto" MaxHeight="54"
-                                     TextWrapping="Wrap" />
-                            <TextBox Grid.Row="4" Grid.Column="1" Margin="2"
-                                     Name="DateEdit" IsReadOnly="True" />
-                            <TextBox Grid.Row="5" Grid.Column="1" Margin="2"
-                                     Name="SubjectEdit" IsReadOnly="True" />
-                        </Grid>
-                        <TextBox Grid.Row="1" Name="defaultBodyView" IsReadOnly="True"
-                                 HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
-                        <Frame Grid.Row="1" Name="defaultHtmlView" />
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Header">
-                    <TextBox Name="headerView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto"
-                             VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
-                </TabItem>
-                <TabItem Header="Body" Name="bodyViewTab">
-                    <TextBox Name="bodyView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto"
-                             VerticalScrollBarVisibility="Auto" />
-                </TabItem>
-                <TabItem Header="Text" Name="textViewTab" Visibility="Hidden">
-                    <TextBox Name="textView" IsReadOnly="True" HorizontalScrollBarVisibility="Auto"
-                             VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
-                </TabItem>
-            </TabControl>
-        </Grid>
+            </Label>-->
         <Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,12" Width="75"
-                Name="ForwardSelected" IsEnabled="False" Click="forwardButton_Click" Grid.Row="1">
+                Name="ForwardSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}"
+                Grid.Row="1">
             Forward
         </Button>
         <Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="85,0,0,12" Width="75"
-                Name="DeleteSelected" IsEnabled="False" Click="deleteButton_Click" Grid.Row="1">
-            Delete
-        </Button>
-        
+                Name="DeleteSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}"
+                cal:Bind.ModelWithoutContext="{Binding Path=MessageListViewModel}"
+                Content="Delete"
+                cal:Message.Attach="[Event Click] = [Action DeleteSelected]" Grid.Row="1"/>
+
         <Button Height="23" HorizontalAlignment="Right" Name="OpenOptions" VerticalAlignment="Bottom" Margin="0,0,99,12" Width="75"
                 Grid.Column="2" Grid.Row="1" cal:Message.Attach="[Event Click] = [Action ShowOptions]">
             Options

@@ -1,0 +1,83 @@
+﻿<UserControl x:Class="Papercut.Views.MessageDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="500">
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Width="Auto" Height="Auto">
+            <Grid Visibility="{Binding From,Converter={StaticResource CollapsedIfFalse}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="150*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="From" HorizontalAlignment="Right" />
+                <TextBox Grid.Column="1" Margin="2" Name="From" IsReadOnly="True" />
+            </Grid>
+            <Grid Visibility="{Binding To,Converter={StaticResource CollapsedIfFalse}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="150*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="To" HorizontalAlignment="Right" />
+                <TextBox Grid.Column="1" Margin="2" Name="To" IsReadOnly="True" />
+            </Grid>
+            <Grid Visibility="{Binding CC,Converter={StaticResource CollapsedIfFalse}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="150*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="CC" HorizontalAlignment="Right" />
+                <TextBox Grid.Column="1" Name="CC" Margin="2" IsReadOnly="True" />
+            </Grid>
+            <Grid Visibility="{Binding Bcc,Converter={StaticResource CollapsedIfFalse}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="150*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Bcc" HorizontalAlignment="Right" />
+                <TextBox Grid.Column="1" Name="Bcc" Margin="2" IsReadOnly="True" />
+            </Grid>
+            <Grid Visibility="{Binding Date,Converter={StaticResource CollapsedIfFalse}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="150*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Date" HorizontalAlignment="Right" />
+                <TextBox Grid.Column="1" Name="Date" Margin="2" IsReadOnly="True" />
+            </Grid>
+            <Grid Visibility="{Binding Subject,Converter={StaticResource CollapsedIfFalse}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="150*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Subject" HorizontalAlignment="Right" />
+                <TextBox Grid.Column="1" Name="Subject" Margin="2" FontWeight="Bold" IsReadOnly="True" />
+            </Grid>
+        </StackPanel>
+        <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}">
+            <TabItem Header="Message">
+                <Frame Name="defaultHtmlView" BorderBrush="LightGray" BorderThickness="1" Width="Auto" Height="Auto" />
+            </TabItem>
+            <TabItem Header="Header">
+                <TextBox Name="Headers" IsReadOnly="True" HorizontalScrollBarVisibility="Auto"
+                         Width="Auto" Height="Auto"
+                         VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
+            </TabItem>
+            <TabItem Header="Body" Name="bodyViewTab">
+                <TextBox Name="Body" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Width="Auto" Height="Auto"
+                         VerticalScrollBarVisibility="Auto" />
+            </TabItem>
+            <TabItem Header="Text" Name="textViewTab"
+                     Visibility="{Binding TextBody,Converter={StaticResource HiddenIfFalse}}">
+                <TextBox 
+                    Name="TextBody" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Height="Auto" Width="Auto"
+                         VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

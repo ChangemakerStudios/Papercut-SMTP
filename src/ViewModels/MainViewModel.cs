@@ -22,13 +22,16 @@ namespace Papercut.ViewModels
 {
     using System;
     using System.Diagnostics;
+    using System.Reactive.Linq;
     using System.Reflection;
     using System.Windows;
 
     using Caliburn.Micro;
 
     using Papercut.Core.Events;
+    using Papercut.Core.Message;
     using Papercut.Events;
+    using Papercut.Helpers;
     using Papercut.Properties;
 
     public class MainViewModel : Screen,
@@ -38,25 +41,46 @@ namespace Papercut.ViewModels
     {
         const string WindowTitleDefault = "Papercut";
 
-        readonly Func<OptionsViewModel> _optionsViewModelFactory;
+        readonly Func<ForwardViewModel> _forwardViewModelFactory;
 
-        readonly IWindowManager _windowsManager;
+        readonly MimeMessageLoader _mimeMessageLoader;
+
+        readonly Func<OptionsViewModel> _optionsViewModelFactory;
 
         readonly IPublishEvent _publishEvent;
 
-        string _windowTitle = WindowTitleDefault;
+        readonly IWindowManager _windowsManager;
+
+        IDisposable _loadingDisposable;
 
         Window _window;
+
+        string _windowTitle = WindowTitleDefault;
 
         public MainViewModel(
             IWindowManager windowsManager,
             IPublishEvent publishEvent,
-            Func<OptionsViewModel> optionsViewModelFactory)
+            Func<OptionsViewModel> optionsViewModelFactory,
+            Func<MessageListViewModel> messageListViewModelFactory,
+            Func<MessageDetailViewModel> messageDetailViewModelFactory,
+            Func<ForwardViewModel> forwardViewModelFactory,
+            MimeMessageLoader mimeMessageLoader)
         {
             _windowsManager = windowsManager;
             _publishEvent = publishEvent;
             _optionsViewModelFactory = optionsViewModelFactory;
+            _forwardViewModelFactory = forwardViewModelFactory;
+            _mimeMessageLoader = mimeMessageLoader;
+
+            MessageListViewModel = messageListViewModelFactory();
+            MessageDetailViewModel = messageDetailViewModelFactory();
+
+            SetupObservables();
         }
+
+        public MessageListViewModel MessageListViewModel { get; private set; }
+
+        public MessageDetailViewModel MessageDetailViewModel { get; private set; }
 
         public string WindowTitle
         {
@@ -81,6 +105,25 @@ namespace Papercut.ViewModels
             }
         }
 
+        void IHandle<ShowMainWindowEvent>.Handle(ShowMainWindowEvent message)
+        {
+            if (!_window.IsVisible) _window.Show();
+
+            if (_window.WindowState == WindowState.Minimized) _window.WindowState = WindowState.Normal;
+
+            _window.Activate();
+
+            _window.Topmost = true;
+            _window.Topmost = false;
+
+            _window.Focus();
+
+            if (message.SelectMostRecentMessage)
+            {
+                MessageListViewModel.UpdateSelectedIndex();
+            }
+        }
+
         void IHandle<ShowMessageEvent>.Handle(ShowMessageEvent message)
         {
             MessageBox.Show(message.MessageText, message.Caption);
@@ -93,6 +136,26 @@ namespace Papercut.ViewModels
                 "Failed");
 
             ShowOptions();
+        }
+
+        void SetupObservables()
+        {
+            MessageListViewModel.GetPropertyValues((m) => m.SelectedMessage)
+                .ObserveOnDispatcher()
+                .Subscribe(m => LoadMessageEntry(MessageListViewModel.SelectedMessage));
+        }
+
+        public void LoadMessageEntry(MessageEntry messageEntry)
+        {
+            if (messageEntry == null) throw new ArgumentNullException("messageEntry");
+
+            if (_loadingDisposable != null) _loadingDisposable.Dispose();
+
+            // show it...
+            _loadingDisposable =
+                _mimeMessageLoader.Get(messageEntry)
+                    .ObserveOnDispatcher()
+                    .Subscribe(MessageDetailViewModel.DisplayMimeMessage);
         }
 
         public void GoToSite()
@@ -108,6 +171,17 @@ namespace Papercut.ViewModels
         public void Exit()
         {
             _publishEvent.Publish(new AppForceShutdownEvent());
+        }
+
+        public void ForwardSelected()
+        {
+            MessageEntry entry = MessageListViewModel.SelectedMessage;
+            if (entry != null)
+            {
+                ForwardViewModel forwardViewModel = _forwardViewModelFactory();
+                forwardViewModel.MessageEntry = entry;
+                _windowsManager.ShowDialog(forwardViewModel);
+            }
         }
 
         protected override void OnViewAttached(object view, object context)
@@ -126,10 +200,7 @@ namespace Papercut.ViewModels
 
             _window.Closing += (sender, args) =>
             {
-                if (Application.Current.ShutdownMode == ShutdownMode.OnExplicitShutdown)
-                {
-                    return;
-                }
+                if (Application.Current.ShutdownMode == ShutdownMode.OnExplicitShutdown) return;
 
                 // Cancel close and minimize if setting is set to minimize on close
                 if (Settings.Default.MinimizeOnClose)
@@ -152,27 +223,6 @@ namespace Papercut.ViewModels
                     }
                 };
             }
-        }
-
-        void IHandle<ShowMainWindowEvent>.Handle(ShowMainWindowEvent message)
-        {
-            if (!_window.IsVisible)
-            {
-                _window.Show();
-            }
-
-            if (_window.WindowState == WindowState.Minimized)
-            {
-                _window.WindowState = WindowState.Normal;
-            }
-
-            _window.Activate();
-
-            _window.Topmost = true;
-            _window.Topmost = false;
-
-            _window.Focus();
-            
         }
     }
 }
