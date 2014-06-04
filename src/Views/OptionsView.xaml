@@ -7,12 +7,17 @@
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
                       xmlns:Components="clr-namespace:Papercut.Components"
+                      xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                      xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:OptionsViewModel}"
                       Title="{Binding WindowTitle}" Width="328" Height="220" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="NoResize"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner">
+    <i:Interaction.Behaviors>
+        <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
+    </i:Interaction.Behaviors>
     <DockPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" FrameworkElement.FlowDirection="RightToLeft">
             <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
