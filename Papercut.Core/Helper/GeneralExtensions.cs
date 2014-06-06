@@ -27,6 +27,8 @@ namespace Papercut.Core.Helper
     using System.Net;
     using System.Text;
 
+    using Papercut.Core.Annotations;
+
     /// <summary>
     ///     The util.
     /// </summary>

@@ -3,8 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="500">
-    <Grid Background="White">
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
+             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -71,6 +73,10 @@
             <TabItem Header="Body" Name="bodyViewTab">
                 <TextBox Name="Body" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Width="Auto" Height="Auto"
                          VerticalScrollBarVisibility="Auto" />
+            </TabItem>
+            <TabItem Header="Sections" Name="partsViewTab">
+                <ContentControl Grid.Column="2" x:Name="PartsListViewModel" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                </ContentControl>
             </TabItem>
             <TabItem Header="Text" Name="textViewTab"
                      Visibility="{Binding TextBody,Converter={StaticResource HiddenIfFalse}}">

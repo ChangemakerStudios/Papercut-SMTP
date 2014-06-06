@@ -26,6 +26,7 @@ namespace Papercut.Helpers
     using System.Windows.Media;
 
     using Papercut.Core;
+    using Papercut.Core.Annotations;
 
     public static class UIHelper
     {

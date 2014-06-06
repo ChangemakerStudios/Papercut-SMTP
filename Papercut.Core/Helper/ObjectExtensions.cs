@@ -24,6 +24,8 @@ namespace Papercut.Core.Helper
     using System.Collections.Generic;
     using System.ComponentModel;
 
+    using Papercut.Core.Annotations;
+
     public static class ObjectExtensions
     {
         /// <summary>

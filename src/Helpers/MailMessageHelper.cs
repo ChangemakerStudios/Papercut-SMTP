@@ -42,10 +42,11 @@ namespace Papercut.Helpers
             string tempPath = Path.GetTempPath();
             string htmlFile = Path.Combine(tempPath, PreviewFileNme);
 
-            string htmlText = mailMessageEx.BodyParts.GetMainBodyTextPart().Text;
+            var mimeParts = mailMessageEx.BodyParts.ToList();
 
-            foreach (MimePart image in
-                    mailMessageEx.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
+            string htmlText = mimeParts.GetMainBodyTextPart().Text;
+
+            foreach (MimePart image in mimeParts.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
             {
                 string fileName = Path.Combine(tempPath, image.ContentId);
                 using (FileStream fs = File.OpenWrite(fileName))

@@ -38,6 +38,11 @@ namespace Papercut.ViewModels
 
     public class MessageDetailViewModel : Screen
     {
+        public MessageDetailViewModel(Func<PartsListViewModel> partsListViewModelFactory)
+        {
+            PartsListViewModel = partsListViewModelFactory();
+        }
+
         string _bcc;
 
         string _body;
@@ -61,6 +66,8 @@ namespace Papercut.ViewModels
         string _textBody;
 
         string _to;
+
+        int _attachmentCount;
 
         public string Subject
         {
@@ -205,6 +212,28 @@ namespace Papercut.ViewModels
             }
         }
 
+        public int AttachmentCount
+        {
+            get
+            {
+                return _attachmentCount;
+            }
+            set
+            {
+                _attachmentCount = value;
+                NotifyOfPropertyChange(() => AttachmentCount);
+                NotifyOfPropertyChange(() => HasAttachments);
+            }
+        }
+
+        public bool HasAttachments
+        {
+            get
+            {
+                return AttachmentCount > 0;
+            }
+        }
+
         public string HtmlFile
         {
             get
@@ -260,6 +289,10 @@ namespace Papercut.ViewModels
 
                 SetBrowserDocument(mailMessageEx);
 
+                AttachmentCount = parts.GetAttachments().Count();
+
+                PartsListViewModel.MimeMessage = mailMessageEx;
+
                 if (IsHtml)
                 {
                     TextPart textPartNotHtml =
@@ -274,6 +307,7 @@ namespace Papercut.ViewModels
             }
             else
             {
+                AttachmentCount = 0;
                 IsHtml = false;
                 HtmlFile = null;
                 TextBody = null;
@@ -282,6 +316,8 @@ namespace Papercut.ViewModels
 
             SelectedTabIndex = 0;
         }
+
+        public PartsListViewModel PartsListViewModel { get; private set; }
 
         protected override void OnViewLoaded(object view)
         {

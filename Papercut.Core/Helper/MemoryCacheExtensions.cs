@@ -23,6 +23,8 @@ namespace Papercut.Core.Helper
     using System;
     using System.Runtime.Caching;
 
+    using Papercut.Core.Annotations;
+
     public static class MemoryCacheExtensions
     {
         #region Constants

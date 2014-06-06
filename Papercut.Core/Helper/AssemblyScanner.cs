@@ -26,6 +26,8 @@ namespace Papercut.Core.Helper
     using System.Linq;
     using System.Reflection;
 
+    using Papercut.Core.Annotations;
+
     public class AssemblyScanner
     {
         [NotNull]

@@ -20,10 +20,13 @@
 
 namespace Papercut.Core.Helper
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
     using MimeKit;
+
+    using Papercut.Core.Annotations;
 
     public static class MessageHelper
     {
@@ -32,17 +35,33 @@ namespace Papercut.Core.Helper
             return textPart.ContentType.Matches("text", "html");
         }
 
-        public static IEnumerable<MimePart> GetImages([NotNull] this MimeMessage mimeMessage)
+        public static IEnumerable<MimePart> GetImages(
+            [NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
         {
-            return mimeMessage.BodyParts.Where(e => e.ContentType.Matches("image", "*"));
+            if (prefilteredMimeParts == null) throw new ArgumentNullException("prefilteredMimeParts");
+
+            return prefilteredMimeParts.Where(e => e.ContentType.Matches("image", "*"));
         }
 
-        public static TextPart GetMainBodyTextPart([NotNull] this IEnumerable<MimePart> parts)
+        public static IEnumerable<MimePart> GetAttachments(
+            [NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
         {
-            var mimeParts = parts.OfType<TextPart>().Where(s => !s.IsAttachment).ToArray();
+            if (prefilteredMimeParts == null) throw new ArgumentNullException("prefilteredMimeParts");
+
+            return prefilteredMimeParts.Where(p => p.IsAttachment);
+        }
+
+        public static TextPart GetMainBodyTextPart(
+            [NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
+        {
+            List<TextPart> mimeParts =
+                prefilteredMimeParts
+                    .OfType<TextPart>()
+                    .Where(s => !s.IsAttachment)
+                    .ToList();
 
             // return html if available first
-            var html = mimeParts.FirstOrDefault(s => s.IsContentHtml());
+            TextPart html = mimeParts.FirstOrDefault(s => s.IsContentHtml());
 
             if (!html.IsDefault()) return html;
 

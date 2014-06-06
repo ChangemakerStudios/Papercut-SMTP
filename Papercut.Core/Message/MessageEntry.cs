@@ -26,12 +26,13 @@ namespace Papercut.Core.Message
     using System.IO;
     using System.Text.RegularExpressions;
 
+    using Papercut.Core.Annotations;
     using Papercut.Core.Helper;
 
     /// <summary>
     ///     The message entry.
     /// </summary>
-    public class MessageEntry : INotifyPropertyChanged
+    public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>
     {
         static readonly Regex _nameFormat = new Regex(
             @"^(?<date>\d{14,16})(\-[A-Z0-9]{2})?\.eml$",
@@ -86,6 +87,25 @@ namespace Papercut.Core.Message
             }
         }
 
+        public string FileSize
+        {
+            get
+            {
+                return _info.Length.ToFileSizeFormat();
+            }
+        }
+
+        public string DisplayText
+        {
+            get
+            {
+                return string.Format(
+                    "{0} ({1})",
+                    _created.HasValue ? _created.Value.ToString("G") : _info.Name,
+                    (FileSize));
+            }
+        }
+
         public bool IsSelected
         {
             get
@@ -95,23 +115,20 @@ namespace Papercut.Core.Message
             set
             {
                 _isSelected = value;
-                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("IsSelected"));
+                OnPropertyChanged("IsSelected");
             }
+        }
+
+        public bool Equals(MessageEntry other)
+        {
+            return Equals(_info, other._info);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public override string ToString()
         {
-            return string.Format(
-                "{0} ({1})",
-                _created.HasValue ? _created.Value.ToString("G") : _info.Name,
-                (_info.Length.ToFileSizeFormat()));
-        }
-
-        protected bool Equals(MessageEntry other)
-        {
-            return Equals(_info, other._info);
+            return DisplayText;
         }
 
         public override bool Equals(object obj)
@@ -125,6 +142,13 @@ namespace Papercut.Core.Message
         public override int GetHashCode()
         {
             return (_info != null ? _info.GetHashCode() : 0);
+        }
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

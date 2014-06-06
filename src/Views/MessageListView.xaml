@@ -12,7 +12,10 @@
                  ItemsSource="{Binding MessagesSorted}" Margin="2">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Name}"/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Subject}" FontWeight="Bold" Visibility="{Binding Subject,Converter={StaticResource CollapsedIfFalse}}"/>
+                        <TextBlock Text="{Binding DisplayText}" Foreground="#FF646464"/>
+                    </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
             <ListBox.ItemContainerStyle>

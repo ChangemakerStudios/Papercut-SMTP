@@ -86,11 +86,11 @@ namespace Papercut.ViewModels
             RefreshMessageList();
         }
 
-        public ObservableCollection<MessageEntry> Messages { get; private set; }
+        public ObservableCollection<MimeMessageEntry> Messages { get; private set; }
 
         public ICollectionView MessagesSorted { get; private set; }
 
-        public MessageEntry SelectedMessage
+        public MimeMessageEntry SelectedMessage
         {
             get
             {
@@ -114,9 +114,9 @@ namespace Papercut.ViewModels
             }
         }
 
-        private MessageEntry GetMessageByIndex(int index)
+        private MimeMessageEntry GetMessageByIndex(int index)
         {
-            return MessagesSorted.OfType<MessageEntry>().Skip(index).FirstOrDefault();
+            return MessagesSorted.OfType<MimeMessageEntry>().Skip(index).FirstOrDefault();
         }
 
         private int? GetIndexOfMessage(MessageEntry entry)
@@ -124,9 +124,9 @@ namespace Papercut.ViewModels
             if (entry == null) throw new ArgumentNullException("entry");
 
             int index = 0;
-            foreach (var message in MessagesSorted.OfType<MessageEntry>())
+            foreach (var message in MessagesSorted.OfType<MimeMessageEntry>())
             {
-                if (Equals(message, entry)) return index;
+                if (Equals(entry, message)) return index;
                 index++;
             }
 
@@ -135,7 +135,7 @@ namespace Papercut.ViewModels
 
         void SetupMessages()
         {
-            Messages = new ObservableCollection<MessageEntry>();
+            Messages = new ObservableCollection<MimeMessageEntry>();
             MessagesSorted = CollectionViewSource.GetDefaultView(Messages);
             MessagesSorted.SortDescriptions.Add(
                 new SortDescription("ModifiedDate", ListSortDirection.Ascending));
@@ -161,7 +161,7 @@ namespace Papercut.ViewModels
 
                 if (args.NewItems != null)
                 {
-                    foreach (var m in args.NewItems.OfType<MessageEntry>())
+                    foreach (var m in args.NewItems.OfType<MimeMessageEntry>())
                     {
                         m.PropertyChanged += (o, eventArgs) => notifyOfSelectionChange();
                     }
@@ -200,7 +200,7 @@ namespace Papercut.ViewModels
                         // Add it to the list box
                         ClearSelected();
                         entry.IsSelected = true;
-                        Messages.Add(entry);
+                        Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));
                     });
         }
 
@@ -232,7 +232,7 @@ namespace Papercut.ViewModels
             Execute.OnUIThread(() => AddNewMessage(e.NewMessage));
         }
 
-        public IEnumerable<MessageEntry> GetSelected()
+        public IEnumerable<MimeMessageEntry> GetSelected()
         {
             return Messages.Where(message => message.IsSelected);
         }
@@ -330,7 +330,10 @@ namespace Papercut.ViewModels
 
         public void RefreshMessageList()
         {
-            IList<MessageEntry> messageEntries = _messageRepository.LoadMessages();
+            List<MimeMessageEntry> messageEntries =
+                _messageRepository.LoadMessages()
+                    .Select(m => new MimeMessageEntry(m, _mimeMessageLoader))
+                    .ToList();
 
             Messages.Clear();
             Messages.AddRange(messageEntries);
