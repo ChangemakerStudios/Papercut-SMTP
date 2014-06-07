@@ -25,6 +25,8 @@ namespace Papercut.Core.Helper
     using System.Collections.Generic;
     using System.Linq;
 
+    using Papercut.Core.Annotations;
+
     public static class CollectionExtensions
     {
         /// <summary>
@@ -46,7 +48,8 @@ namespace Papercut.Core.Helper
 
             if (sourceCollection == null) throw new ArgumentNullException("sourceCollection");
 
-            foreach (TValue item in (sourceCollection as IList<TValue> ?? sourceCollection.ToList()))
+            foreach (TValue item in (sourceCollection as IList<TValue> ?? sourceCollection.ToList())
+                )
             {
                 destinationCollection.Add(item);
             }
@@ -71,6 +74,30 @@ namespace Papercut.Core.Helper
             {
                 destinationList.Add(item);
             }
+        }
+
+        /// <summary>
+        /// Returns the index of the first occurance of T matching the predicate or -1.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static int FindIndex<T>(
+            [NotNull] this IEnumerable<T> items,
+            [NotNull] Predicate<T> predicate)
+        {
+            if (items == null) throw new ArgumentNullException("items");
+            if (predicate == null) throw new ArgumentNullException("predicate");
+
+            int index = 0;
+            foreach (T item in items)
+            {
+                if (predicate(item)) return index;
+                index++;
+            }
+
+            return -1;
         }
 
         /// <summary>

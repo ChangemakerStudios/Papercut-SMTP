@@ -119,7 +119,7 @@ namespace Papercut.ViewModels
 
             _window.Focus();
 
-            if (message.SelectMostRecentMessage) MessageListViewModel.UpdateSelectedIndex();
+            if (message.SelectMostRecentMessage) MessageListViewModel.SetSelectedIndex();
         }
 
         void IHandle<ShowMessageEvent>.Handle(ShowMessageEvent message)

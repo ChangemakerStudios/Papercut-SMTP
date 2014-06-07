@@ -26,12 +26,11 @@ namespace Papercut.ViewModels
     using System.Collections.Specialized;
     using System.ComponentModel;
     using System.Linq;
+    using System.Reactive.Concurrency;
     using System.Reactive.Linq;
-    using System.Windows;
     using System.Windows.Data;
     using System.Windows.Forms;
     using System.Windows.Input;
-    using System.Windows.Navigation;
 
     using Caliburn.Micro;
 
@@ -44,17 +43,13 @@ namespace Papercut.ViewModels
     using Serilog;
 
     using Action = System.Action;
-    using DataFormats = System.Windows.DataFormats;
-    using DataObject = System.Windows.DataObject;
-    using DragDropEffects = System.Windows.DragDropEffects;
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-    using ListBox = System.Windows.Controls.ListBox;
-    using MouseEventArgs = System.Windows.Input.MouseEventArgs;
     using Screen = Caliburn.Micro.Screen;
-    using ScrollBar = System.Windows.Controls.Primitives.ScrollBar;
 
     public class MessageListViewModel : Screen
     {
+        readonly object _deleteLockObject = new object();
+
         readonly ILogger _logger;
 
         readonly MessageRepository _messageRepository;
@@ -62,10 +57,6 @@ namespace Papercut.ViewModels
         readonly MimeMessageLoader _mimeMessageLoader;
 
         readonly IPublishEvent _publishEvent;
-
-        readonly object _deleteLockObject = new object();
-
-        
 
         public MessageListViewModel(
             MessageRepository messageRepository,
@@ -114,23 +105,18 @@ namespace Papercut.ViewModels
             }
         }
 
-        private MimeMessageEntry GetMessageByIndex(int index)
+        MimeMessageEntry GetMessageByIndex(int index)
         {
             return MessagesSorted.OfType<MimeMessageEntry>().Skip(index).FirstOrDefault();
         }
 
-        private int? GetIndexOfMessage(MessageEntry entry)
+        int? GetIndexOfMessage(MessageEntry entry)
         {
             if (entry == null) throw new ArgumentNullException("entry");
 
-            int index = 0;
-            foreach (var message in MessagesSorted.OfType<MimeMessageEntry>())
-            {
-                if (Equals(entry, message)) return index;
-                index++;
-            }
+            int index = MessagesSorted.OfType<MessageEntry>().FindIndex(m => Equals(entry, m));
 
-            return null;
+            return index == -1 ? null : (int?)index;
         }
 
         void SetupMessages()
@@ -142,7 +128,13 @@ namespace Papercut.ViewModels
 
             // Begin listening for new messages
             _messageRepository.NewMessage += NewMessage;
-            _messageRepository.RefreshNeeded += RefreshMessages;
+
+            Observable.FromEventPattern(
+                e => _messageRepository.RefreshNeeded += e,
+                e => _messageRepository.RefreshNeeded -= e,
+                TaskPoolScheduler.Default)
+                .Throttle(TimeSpan.FromMilliseconds(100))
+                .Subscribe(e => Execute.OnUIThread(RefreshMessageList));
 
             Messages.CollectionChanged += CollectionChanged;
         }
@@ -161,7 +153,7 @@ namespace Papercut.ViewModels
 
                 if (args.NewItems != null)
                 {
-                    foreach (var m in args.NewItems.OfType<MimeMessageEntry>())
+                    foreach (MimeMessageEntry m in args.NewItems.OfType<MimeMessageEntry>())
                     {
                         m.PropertyChanged += (o, eventArgs) => notifyOfSelectionChange();
                     }
@@ -173,11 +165,6 @@ namespace Papercut.ViewModels
             {
                 _logger.Error(ex, "Failure Handling Message Collection Change {@Args}", args);
             }
-        }
-
-        void RefreshMessages(object sender, EventArgs e)
-        {
-            Execute.OnUIThread(RefreshMessageList);
         }
 
         void AddNewMessage(MessageEntry entry)
@@ -200,31 +187,29 @@ namespace Papercut.ViewModels
                         // Add it to the list box
                         ClearSelected();
                         entry.IsSelected = true;
-                        Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));
+                        Messages.Add(new MimeMessageEntry(entry, _mimeMessageLoader));
                     });
         }
 
-        public void UpdateSelectedIndex(int? index = null)
+        public void SetSelectedIndex(int? index = null)
         {
-            ClearSelected();
-
             int messageCount = Messages.Count;
 
-            if (index.HasValue && index >= messageCount)
-            {
-                index = null;
-            }
+            if (index.HasValue && index >= messageCount) index = null;
 
-            if (!index.HasValue && messageCount > 0)
-            {
-                index = messageCount - 1;
-            }
+            if (!index.HasValue && messageCount > 0) index = messageCount - 1;
 
             if (index.HasValue)
             {
-                var m = GetMessageByIndex(index.Value);
+                MimeMessageEntry m = GetMessageByIndex(index.Value);
                 if (m != null) m.IsSelected = true;
             }
+        }
+
+        public void ValidateSelected()
+        {
+            List<MimeMessageEntry> selected = GetSelected().ToList();
+            if (!selected.Any() && Messages.Count > 0) SetSelectedIndex();
         }
 
         void NewMessage(object sender, NewMessageEventArgs e)
@@ -239,7 +224,7 @@ namespace Papercut.ViewModels
 
         public void ClearSelected()
         {
-            foreach (var message in GetSelected().ToList())
+            foreach (MimeMessageEntry message in GetSelected().ToList())
             {
                 message.IsSelected = false;
             }
@@ -247,32 +232,16 @@ namespace Papercut.ViewModels
 
         public void DeleteSelected()
         {
-            int? previousIndex = null;
-
             // Lock to prevent rapid clicking issues
             lock (_deleteLockObject)
             {
-                var selectedList = GetSelected().ToList();
+                List<MimeMessageEntry> selectedList = GetSelected().ToList();
 
-                var messageEntry = selectedList.FirstOrDefault();
-                if (messageEntry != null)
-                {
-                    previousIndex = GetIndexOfMessage(messageEntry);
-                }
-
-                foreach (var entry in selectedList)
+                foreach (MimeMessageEntry entry in selectedList)
                 {
                     _messageRepository.DeleteMessage(entry);
-                    Messages.Remove(entry);
                 }
             }
-
-            Execute.OnUIThread(
-                () =>
-                {
-                    MessagesSorted.Refresh();
-                    UpdateSelectedIndex(previousIndex);
-                });
         }
 
         public void MessageListKeyDown(KeyEventArgs e)
@@ -281,25 +250,26 @@ namespace Papercut.ViewModels
             DeleteSelected();
         }
 
-        
-
         public void RefreshMessageList()
         {
-            var messageEntries =
+            List<MessageEntry> messageEntries =
                 _messageRepository.LoadMessages()
                     .ToList();
-            
-            var toAdd =
+
+            List<MimeMessageEntry> toAdd =
                 messageEntries.Except(Messages)
                     .Select(m => new MimeMessageEntry(m, _mimeMessageLoader))
                     .ToList();
 
-            var toDelete = Messages.Except(messageEntries).OfType<MimeMessageEntry>().ToList();
+            List<MimeMessageEntry> toDelete =
+                Messages.Except(messageEntries).OfType<MimeMessageEntry>().ToList();
             toDelete.ForEach(m => Messages.Remove(m));
 
             Messages.AddRange(toAdd);
 
-            UpdateSelectedIndex();
+            MessagesSorted.Refresh();
+
+            ValidateSelected();
         }
     }
 }
