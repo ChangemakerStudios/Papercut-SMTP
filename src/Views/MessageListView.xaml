@@ -4,25 +4,42 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="200">
-    <Grid>
-        <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended"
-                 VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0"
-                 ItemsSource="{Binding MessagesSorted}" Margin="2">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <TextBlock Text="{Binding Subject}" FontWeight="Bold" Visibility="{Binding Subject,Converter={StaticResource CollapsedIfFalse}}"/>
-                        <TextBlock Text="{Binding DisplayText}" Foreground="#FF646464"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="{x:Type ListBoxItem}">
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
-                </Style>
-            </ListBox.ItemContainerStyle>
-        </ListBox>
-    </Grid>
+    <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
+             cal:Message.Attach="[Event KeyDown] = [Action MessageListKeyDown($eventArgs)]"
+             ItemsSource="{Binding MessagesSorted}">
+        <i:Interaction.Behaviors>
+            <Behaviors:DragDropIFile />
+        </i:Interaction.Behaviors>
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}" FontWeight="Bold" Foreground="#FF222222"
+                               TextTrimming="CharacterEllipsis"
+                               Visibility="{Binding Subject,Converter={StaticResource CollapsedIfFalse}}" FontSize="14" />
+                    <TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding DisplayText}" Foreground="#FF646464"
+                               TextTrimming="CharacterEllipsis" />
+                </Grid>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+        <ListBox.ItemContainerStyle>
+            <Style TargetType="{x:Type ListBoxItem}">
+                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+            </Style>
+        </ListBox.ItemContainerStyle>
+    </ListBox>
+
 </UserControl>

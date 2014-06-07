@@ -65,7 +65,7 @@ namespace Papercut.ViewModels
 
         readonly object _deleteLockObject = new object();
 
-        Point? _dragStartPoint;
+        
 
         public MessageListViewModel(
             MessageRepository messageRepository,
@@ -275,68 +275,29 @@ namespace Papercut.ViewModels
                 });
         }
 
-        /// <summary>
-        ///     Handles the OnKeyDown event of the MessagesList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Windows.Input.KeyEventArgs" /> instance containing the event data.</param>
-        void MessagesList_OnKeyDown(object sender, KeyEventArgs e)
+        public void MessageListKeyDown(KeyEventArgs e)
         {
             if (e.Key != Key.Delete) return;
-
             DeleteSelected();
         }
 
-        void MessagesList_OnPreviewLeftMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var parent = sender as ListBox;
-
-            if (parent == null) return;
-
-            if (_dragStartPoint == null) _dragStartPoint = e.GetPosition(parent);
-        }
-
-        void MessagesList_OnPreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            var parent = sender as ListBox;
-            if (parent == null || _dragStartPoint == null) return;
-
-            if (((DependencyObject)e.OriginalSource).FindAncestor<ScrollBar>() != null) return;
-
-            Point dragPoint = e.GetPosition(parent);
-
-            Vector potentialDragLength = dragPoint - _dragStartPoint.Value;
-
-            if (potentialDragLength.Length > 10)
-            {
-                // Get the object source for the selected item
-                var entry = parent.GetObjectDataFromPoint<MessageEntry>(_dragStartPoint.Value);
-
-                // If the data is not null then start the drag drop operation
-                if (entry != null && !string.IsNullOrWhiteSpace(entry.File))
-                {
-                    var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
-                    DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);
-                }
-
-                _dragStartPoint = null;
-            }
-        }
-
-        void MessagesList_OnPreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            _dragStartPoint = null;
-        }
+        
 
         public void RefreshMessageList()
         {
-            List<MimeMessageEntry> messageEntries =
+            var messageEntries =
                 _messageRepository.LoadMessages()
+                    .ToList();
+            
+            var toAdd =
+                messageEntries.Except(Messages)
                     .Select(m => new MimeMessageEntry(m, _mimeMessageLoader))
                     .ToList();
 
-            Messages.Clear();
-            Messages.AddRange(messageEntries);
+            var toDelete = Messages.Except(messageEntries).OfType<MimeMessageEntry>().ToList();
+            toDelete.ForEach(m => Messages.Remove(m));
+
+            Messages.AddRange(toAdd);
 
             UpdateSelectedIndex();
         }

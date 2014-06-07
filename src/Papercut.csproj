@@ -169,6 +169,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Behaviors\DragDropIFile.cs" />
     <Compile Include="Behaviors\InteractivityBlurOnDisabled.cs" />
     <Compile Include="Events\SettingsUpdatedEvent.cs" />
     <Compile Include="Events\ShowMessageEvent.cs" />

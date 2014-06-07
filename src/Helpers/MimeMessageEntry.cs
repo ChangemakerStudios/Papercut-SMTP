@@ -21,6 +21,7 @@
 namespace Papercut.Helpers
 {
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Reactive.Linq;
 
@@ -36,7 +37,6 @@ namespace Papercut.Helpers
             IsSelected = entry.IsSelected;
 
             loader.Get(this)
-                .Delay(TimeSpan.FromMilliseconds(entry.GetHashCode() % 2000))
                 .Subscribe(
                     m =>
                     {

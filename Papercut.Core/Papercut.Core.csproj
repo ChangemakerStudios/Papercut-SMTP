@@ -105,6 +105,7 @@
     <Compile Include="Helper\CollectionExtensions.cs" />
     <Compile Include="Helper\ObjectExtensions.cs" />
     <Compile Include="Helper\StreamExtensions.cs" />
+    <Compile Include="Message\IFile.cs" />
     <Compile Include="Network\Connection.cs" />
     <Compile Include="Helper\ConnectionExtensions.cs" />
     <Compile Include="Network\ConnectionManager.cs" />

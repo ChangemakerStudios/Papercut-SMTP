@@ -32,7 +32,7 @@ namespace Papercut.Core.Message
     /// <summary>
     ///     The message entry.
     /// </summary>
-    public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>
+    public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IFile
     {
         static readonly Regex _nameFormat = new Regex(
             @"^(?<date>\d{14,16})(\-[A-Z0-9]{2})?\.eml$",
