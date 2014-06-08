@@ -110,7 +110,7 @@ namespace Papercut.Core.Helper
         [NotNull]
         static IEnumerable<string> GetAllFilesIn(string directory)
         {
-            var lookFor = new[] { "*.dll", "*.exe" };
+            var lookFor = new[] { "*.dll" };
 
             return lookFor.SelectMany(s => Directory.GetFiles(directory, s)).ToArray();
         }
