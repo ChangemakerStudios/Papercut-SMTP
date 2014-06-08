@@ -19,7 +19,7 @@
         <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
     </i:Interaction.Behaviors>
     <DockPanel>
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" FrameworkElement.FlowDirection="RightToLeft">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="2" FrameworkElement.FlowDirection="RightToLeft">
             <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
             <Button Width="75" Margin="2" Name="Save" IsDefault="True">Save</Button>
         </StackPanel>

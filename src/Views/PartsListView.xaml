@@ -2,27 +2,24 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
+             xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d" 
-             d:DesignHeight="400" d:DesignWidth="300">
+             d:DesignHeight="400" d:DesignWidth="600">
     <Grid>
-        <ListBox x:Name="MessagesList" Width="Auto" Height="Auto"
-    		VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0"
-    		ItemsSource="{Binding Parts}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <TextBlock Text="{Binding ContentType}" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding FileName}" Visibility="{Binding FileName,Converter={StaticResource CollapsedIfFalse}}"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-            <!--<ListBox.ItemContainerStyle>
-                <Style TargetType="{x:Type ListBoxItem}">
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
-                </Style>
-            </ListBox.ItemContainerStyle>-->
-        </ListBox>
+        <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto"
+    		VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
+            SelectedItem="{Binding SelectedPart,Mode=TwoWay}"
+            cal:Message.Attach="[Event MouseDoubleClick] = [Action ViewSection]"
+    		ItemsSource="{Binding Parts}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Media Type" Binding="{Binding ContentType.MediaType}"/>
+                <DataGridTextColumn Header="Media Subtype" Binding="{Binding ContentType.MediaSubtype}"/>
+                <DataGridTextColumn Header="Charset" Binding="{Binding ContentType.Charset}"/>
+                <DataGridTextColumn Header="Filename" Binding="{Binding FileName}"/>
+            </DataGrid.Columns>
+        </DataGrid>
 
     </Grid>
 </UserControl>

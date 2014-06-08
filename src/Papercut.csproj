@@ -201,6 +201,10 @@
     <Compile Include="ViewModels\ForwardViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Events\ShowMainWindowEvent.cs" />
+    <Page Include="Views\MimePartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\PartsListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -233,8 +237,12 @@
     </Page>
     <Compile Include="ViewModels\MessageDetailViewModel.cs" />
     <Compile Include="ViewModels\MessageListViewModel.cs" />
+    <Compile Include="ViewModels\MimePartViewModel.cs" />
     <Compile Include="ViewModels\OptionsViewModel.cs" />
     <Compile Include="ViewModels\PartsListViewModel.cs" />
+    <Compile Include="Views\MimePartView.xaml.cs">
+      <DependentUpon>MimePartView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\PartsListView.xaml.cs">
       <DependentUpon>PartsListView.xaml</DependentUpon>
     </Compile>

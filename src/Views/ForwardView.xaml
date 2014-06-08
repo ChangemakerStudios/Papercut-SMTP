@@ -13,7 +13,7 @@
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:ForwardViewModel}"
                       Title="{Binding WindowTitle}"
-                      ResizeMode="NoResize" Width="274" Height="171" Icon="/Papercut;component/App.ico"
+                      ResizeMode="NoResize" Width="274" Height="171"
                       WindowStyle="ToolWindow"
                       ShowIconOnTitleBar="false"
                       WindowStartupLocation="CenterOwner">
@@ -22,7 +22,7 @@
     </i:Interaction.Behaviors>    
     <Grid>
         <DockPanel>
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" FrameworkElement.FlowDirection="RightToLeft">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="2" FrameworkElement.FlowDirection="RightToLeft">
                 <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
                 <Button Width="75" Margin="2" Name="Send" IsDefault="True" IsEnabled="{Binding Sending, Converter={StaticResource InverseBooleanConverter}}">Send</Button>
                 <Label FlowDirection="LeftToRight" Name="sendingLabel" Content="Sending..." Visibility="{Binding Sending, Converter={StaticResource HiddenIfFalse}}">

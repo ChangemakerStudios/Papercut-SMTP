@@ -1,0 +1,33 @@
+﻿<controls:MetroWindow x:Class="Papercut.Views.MimePartView"
+                      xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:model="clr-namespace:Papercut.ViewModels"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
+                      xmlns:Components="clr-namespace:Papercut.Components"
+                      xmlns:Helpers="clr-namespace:Papercut.Helpers"
+                      xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                      xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
+            mc:Ignorable="d" Background="White"
+            d:DataContext="{x:Type ViewModels:MimePartViewModel}"
+            Title="{Binding WindowTitle}"
+            ResizeMode="CanResizeWithGrip" Width="500" Height="400"
+            WindowStyle="ToolWindow"
+            ShowIconOnTitleBar="false"
+            WindowStartupLocation="CenterOwner"
+            VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <i:Interaction.Behaviors>
+        <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
+    </i:Interaction.Behaviors>
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="2" FrameworkElement.FlowDirection="RightToLeft">
+            <Button Width="75" Margin="20 2" x:Name="Close" IsDefault="True" Content="Close"/>
+        </StackPanel>
+        <TextBox
+            Name="PartText" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Height="Auto" Width="Auto"
+            VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
+    </DockPanel>
+</controls:MetroWindow>

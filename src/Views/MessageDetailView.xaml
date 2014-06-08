@@ -70,19 +70,13 @@
                          Width="Auto" Height="Auto"
                          VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
             </TabItem>
-            <TabItem Header="Body" Name="bodyViewTab">
-                <TextBox Name="Body" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Width="Auto" Height="Auto"
-                         VerticalScrollBarVisibility="Auto" />
-            </TabItem>
             <TabItem Header="Sections" Name="partsViewTab">
                 <ContentControl Grid.Column="2" x:Name="PartsListViewModel" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 </ContentControl>
-            </TabItem>
-            <TabItem Header="Text" Name="textViewTab"
-                     Visibility="{Binding TextBody,Converter={StaticResource HiddenIfFalse}}">
-                <TextBox 
-                    Name="TextBody" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Height="Auto" Width="Auto"
-                         VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
+            </TabItem>            
+            <TabItem Header="Body" Name="bodyViewTab">
+                <TextBox Name="Body" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Width="Auto" Height="Auto"
+                         VerticalScrollBarVisibility="Auto" />
             </TabItem>
         </TabControl>
     </Grid>
