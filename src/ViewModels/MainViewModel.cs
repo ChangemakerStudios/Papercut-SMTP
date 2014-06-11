@@ -34,6 +34,7 @@ namespace Papercut.ViewModels
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
+    using Papercut.Services;
 
     public class MainViewModel : Screen,
         IHandle<SmtpServerBindFailedEvent>,
@@ -57,6 +58,8 @@ namespace Papercut.ViewModels
         Window _window;
 
         string _windowTitle = WindowTitleDefault;
+
+        bool _isLoading;
 
         public MainViewModel(
             IWindowManager windowsManager,
@@ -82,6 +85,8 @@ namespace Papercut.ViewModels
         public MessageListViewModel MessageListViewModel { get; private set; }
 
         public MessageDetailViewModel MessageDetailViewModel { get; private set; }
+
+
 
         public string WindowTitle
         {
@@ -141,26 +146,7 @@ namespace Papercut.ViewModels
             MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
-                .Subscribe(m => LoadMessageEntry(MessageListViewModel.SelectedMessage));
-        }
-
-        public void LoadMessageEntry(MessageEntry messageEntry)
-        {
-            if (_loadingDisposable != null) _loadingDisposable.Dispose();
-
-            if (messageEntry == null)
-            {
-                // show empty...
-                MessageDetailViewModel.DisplayMimeMessage(null);
-            }
-            else
-            {
-                // load and show it...
-                _loadingDisposable =
-                    _mimeMessageLoader.Get(messageEntry)
-                        .ObserveOnDispatcher()
-                        .Subscribe(MessageDetailViewModel.DisplayMimeMessage);
-            }
+                .Subscribe(m => MessageDetailViewModel.LoadMessageEntry(MessageListViewModel.SelectedMessage));
         }
 
         public void GoToSite()

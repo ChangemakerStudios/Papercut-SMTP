@@ -6,7 +6,6 @@
                       xmlns:model="clr-namespace:Papercut.ViewModels"
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
-                      xmlns:Components="clr-namespace:Papercut.Components"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       mc:Ignorable="d"

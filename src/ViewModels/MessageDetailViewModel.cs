@@ -31,6 +31,7 @@ namespace Papercut.ViewModels
     using MimeKit;
 
     using Papercut.Core.Helper;
+    using Papercut.Core.Message;
     using Papercut.Helpers;
     using Papercut.Views;
 
@@ -38,10 +39,9 @@ namespace Papercut.ViewModels
 
     public class MessageDetailViewModel : Screen
     {
-        public MessageDetailViewModel(Func<PartsListViewModel> partsListViewModelFactory)
-        {
-            PartsListViewModel = partsListViewModelFactory();
-        }
+        readonly MimeMessageLoader _mimeMessageLoader;
+
+        int _attachmentCount;
 
         string _bcc;
 
@@ -59,6 +59,10 @@ namespace Papercut.ViewModels
 
         bool _isHtml;
 
+        bool _isLoading;
+
+        IDisposable _loadingDisposable;
+
         int _selectedTabIndex;
 
         string _subject;
@@ -67,7 +71,13 @@ namespace Papercut.ViewModels
 
         string _to;
 
-        int _attachmentCount;
+        public MessageDetailViewModel(
+            Func<PartsListViewModel> partsListViewModelFactory,
+            MimeMessageLoader mimeMessageLoader)
+        {
+            _mimeMessageLoader = mimeMessageLoader;
+            PartsListViewModel = partsListViewModelFactory();
+        }
 
         public string Subject
         {
@@ -173,6 +183,19 @@ namespace Papercut.ViewModels
             }
         }
 
+        public bool IsLoading
+        {
+            get
+            {
+                return _isLoading;
+            }
+            set
+            {
+                _isLoading = value;
+                NotifyOfPropertyChange(() => IsLoading);
+            }
+        }
+
         public string Body
         {
             get
@@ -247,6 +270,8 @@ namespace Papercut.ViewModels
             }
         }
 
+        public PartsListViewModel PartsListViewModel { get; private set; }
+
         void SetBrowserDocument(MimeMessage mailMessageEx)
         {
             Observable.Start(
@@ -268,7 +293,34 @@ namespace Papercut.ViewModels
                 }).Where(s => !string.IsNullOrEmpty(s)).Subscribe(h => HtmlFile = h);
         }
 
-        public void DisplayMimeMessage(MimeMessage mailMessageEx)
+        public void LoadMessageEntry(MessageEntry messageEntry)
+        {
+            if (_loadingDisposable != null) _loadingDisposable.Dispose();
+
+            if (messageEntry == null)
+            {
+                // show empty...
+                DisplayMimeMessage(null);
+                IsLoading = false;
+            }
+            else
+            {
+                IsLoading = true;
+
+                // load and show it...
+                _loadingDisposable =
+                    _mimeMessageLoader.Get(messageEntry)
+                        .ObserveOnDispatcher()
+                        .Subscribe(
+                            m =>
+                            {
+                                DisplayMimeMessage(m);
+                                IsLoading = false;
+                            });
+            }
+        }
+
+        void DisplayMimeMessage(MimeMessage mailMessageEx)
         {
             if (mailMessageEx != null)
             {
@@ -300,10 +352,7 @@ namespace Papercut.ViewModels
 
                     if (textPartNotHtml != null) TextBody = textPartNotHtml.Text;
                 }
-                else
-                {
-                    TextBody = null;
-                }
+                else TextBody = null;
             }
             else
             {
@@ -316,8 +365,6 @@ namespace Papercut.ViewModels
 
             SelectedTabIndex = 0;
         }
-
-        public PartsListViewModel PartsListViewModel { get; private set; }
 
         protected override void OnViewLoaded(object view)
         {
@@ -340,10 +387,7 @@ namespace Papercut.ViewModels
                                 typedView.defaultHtmlView.Navigate(new Uri(file));
                                 typedView.defaultHtmlView.Refresh();
                             }
-                            else
-                            {
-                                typedView.defaultHtmlView.Content = null;
-                            }
+                            else typedView.defaultHtmlView.Content = null;
                         });
             }
         }
