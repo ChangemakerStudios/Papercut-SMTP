@@ -44,7 +44,15 @@ namespace Papercut.Helpers
 
             var mimeParts = mailMessageEx.BodyParts.ToList();
 
-            string htmlText = mimeParts.GetMainBodyTextPart().Text;
+            var mainBodyTextPart = mimeParts.GetMainBodyTextPart();
+            string htmlText = mainBodyTextPart.Text;
+
+            if (!mainBodyTextPart.IsContentHtml())
+            {
+                htmlText =
+                    "<html><head><style>body { padding: 0; margin: 0.5em; font-family:monospace; line-height: 1.5em; font-size: 8pt; }</style></head><body>"
+                    + htmlText + "</body></html>";
+            }
 
             foreach (MimePart image in mimeParts.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
             {

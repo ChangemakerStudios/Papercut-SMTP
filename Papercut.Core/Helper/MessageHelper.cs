@@ -24,6 +24,8 @@ namespace Papercut.Core.Helper
     using System.Collections.Generic;
     using System.Linq;
 
+    using Microsoft.Win32;
+
     using MimeKit;
 
     using Papercut.Core.Annotations;
@@ -33,6 +35,24 @@ namespace Papercut.Core.Helper
         public static bool IsContentHtml([NotNull] this TextPart textPart)
         {
             return textPart.ContentType.Matches("text", "html");
+        }
+
+        public static string GetExtension([NotNull] this ContentType contentType)
+        {
+            if (contentType == null) throw new ArgumentNullException("contentType");
+
+            return
+                Registry.ClassesRoot.OpenSubKey(
+                    string.Format(
+                        @"MIME\Database\Content Type\{0}/{1}",
+                        contentType.MediaType,
+                        contentType.MediaSubtype),
+                    false)
+                    .ToEnumerable()
+                    .Select(k => k.GetValue("Extension", null))
+                    .Where(v => v != null)
+                    .Select(v => v.ToString())
+                    .FirstOrDefault();
         }
 
         public static IEnumerable<MimePart> GetImages(

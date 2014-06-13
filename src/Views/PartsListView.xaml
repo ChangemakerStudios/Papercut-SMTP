@@ -13,6 +13,11 @@
             SelectedItem="{Binding SelectedPart,Mode=TwoWay}"
             cal:Message.Attach="[Event MouseDoubleClick] = [Action ViewSection]"
     		ItemsSource="{Binding Parts}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Save As..." IsEnabled="{Binding Path=HasSelectedPart}" cal:Message.Attach="SaveAs" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Media Type" Binding="{Binding ContentType.MediaType}"/>
                 <DataGridTextColumn Header="Media Subtype" Binding="{Binding ContentType.MediaSubtype}"/>

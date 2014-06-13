@@ -64,9 +64,9 @@
         </StackPanel>
         <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}">
             <TabItem Header="Message">
-                <Frame Name="defaultHtmlView" BorderBrush="LightGray" BorderThickness="1"
-                       Visibility="{Binding Path=IsLoading, Converter={StaticResource CollapsedIfTrue}}" Width="Auto"
-                       Height="Auto" />
+                <ContentControl x:Name="MessageViewModel" VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1"
+                        Visibility="{Binding Path=IsLoading, Converter={StaticResource CollapsedIfTrue}}" />
             </TabItem>
             <TabItem Header="Header">
                 <TextBox Name="Headers" IsReadOnly="True" HorizontalScrollBarVisibility="Auto"

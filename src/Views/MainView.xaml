@@ -51,18 +51,6 @@
         <ContentControl Grid.Column="2" Grid.Row="0" x:Name="MessageDetailViewModel" VerticalAlignment="Stretch"
                         HorizontalAlignment="Stretch"
                         IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}" />
-        <!--<Components:Spinner HorizontalAlignment="Right" x:Name="SpinAnimation" VerticalAlignment="Top"
-                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsHitTestVisible="False"
-                        Panel.ZIndex="1000" UseLayoutRounding="False" Padding="2" BorderBrush="#FFADADAD"
-                        BorderThickness="1" Background="#FF383838" Opacity="0.75" Visibility="Collapsed"
-                        Margin="0,5,5,0" />
-            <Label Name="Subject" Width="Auto" Height="40" Visibility="Visible" Margin="0" VerticalAlignment="Top"
-                   ForceCursor="False" Foreground="#FF287BAD" FontStretch="Normal" FontWeight="Bold" FontSize="20">
-                <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Padding="1"
-                           VerticalAlignment="Stretch" Height="31" FontWeight="Normal" FontSize="22" Foreground="#FF424242">
-                    Papercut
-                </TextBlock>
-            </Label>-->
         <Button Height="23" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,12" Width="75"
                 Name="ForwardSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}"
                 Grid.Row="1">

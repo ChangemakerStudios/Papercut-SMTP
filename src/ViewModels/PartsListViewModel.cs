@@ -21,9 +21,14 @@
 namespace Papercut.ViewModels
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
+    using System.Globalization;
+    using System.IO;
     using System.Linq;
+    using System.Threading;
+    using System.Windows.Documents;
 
     using Caliburn.Micro;
 
@@ -52,6 +57,8 @@ namespace Papercut.ViewModels
         MimePart _selectedPart;
 
         readonly MimePartViewModel _mimePartViewModel;
+
+        bool _hasSelectedPart;
 
         public ObservableCollection<MimePart> Parts { get; private set; }
 
@@ -82,13 +89,27 @@ namespace Papercut.ViewModels
             set
             {
                 _selectedPart = value;
+                HasSelectedPart = _selectedPart != null;
                 NotifyOfPropertyChange(() => SelectedPart);
+            }
+        }
+
+        public bool HasSelectedPart
+        {
+            get
+            {
+                return _hasSelectedPart;
+            }
+            set
+            {
+                _hasSelectedPart = value;
+                NotifyOfPropertyChange(() => HasSelectedPart);
             }
         }
 
         public void ViewSection()
         {
-            var part = this.SelectedPart;
+            var part = SelectedPart;
 
             if (part is TextPart)
             {
@@ -100,26 +121,77 @@ namespace Papercut.ViewModels
             }
             else
             {
-                var dlg = new Microsoft.Win32.SaveFileDialog();
+                string tempFileName;
+
                 if (!string.IsNullOrWhiteSpace(part.FileName))
                 {
-                    dlg.FileName = part.FileName;
+                    tempFileName = Path.Combine(Path.GetTempPath(), part.FileName);
+                }
+                else
+                {
+                    tempFileName = Path.GetTempFileName();
+
+                    string extension = part.ContentType.GetExtension();
+
+                    if (!string.IsNullOrWhiteSpace(extension))
+                    {
+                        tempFileName = Path.ChangeExtension(tempFileName, extension);
+                    }
                 }
 
-                var result = dlg.ShowDialog();
-                if (result.HasValue && result.Value)
+                using (var outputFile = File.Open(tempFileName, FileMode.Create))
                 {
-                    _logger.Debug(
-                        "Saving File {File} as Output for MimePart {PartFileName}",
-                        dlg.FileName,
-                        part.FileName);
+                    part.ContentObject.DecodeTo(outputFile);
+                    outputFile.Close();
+                }
 
-                    // save it..
-                    using (var outputFile = dlg.OpenFile())
-                    {
-                        part.ContentObject.DecodeTo(outputFile);
-                        outputFile.Close();
-                    }
+                Process.Start(tempFileName);
+            }
+        }
+
+        public void SaveAs()
+        {
+            var part = SelectedPart;
+
+            var dlg = new Microsoft.Win32.SaveFileDialog();
+            if (!string.IsNullOrWhiteSpace(part.FileName))
+            {
+                dlg.FileName = part.FileName;
+            }
+
+            var extensions = new List<string>();
+            if (part.ContentType.MediaSubtype != "Unknown")
+            {
+                var extension = part.ContentType.GetExtension();
+
+                if (!string.IsNullOrWhiteSpace(extension))
+                {
+                    extensions.Add(
+                        string.Format(
+                            "{0} (*{1})|*{1}",
+                            Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(
+                                part.ContentType.MediaSubtype),
+                            extension));
+                }
+            }
+
+            extensions.Add("All (*.*)|*.*");
+            dlg.Filter = string.Join("|", extensions.ToArray());
+
+            var result = dlg.ShowDialog();
+
+            if (result.HasValue && result.Value)
+            {
+                _logger.Debug(
+                    "Saving File {File} as Output for MimePart {PartFileName}",
+                    dlg.FileName,
+                    part.FileName);
+
+                // save it..
+                using (var outputFile = dlg.OpenFile())
+                {
+                    part.ContentObject.DecodeTo(outputFile);
+                    outputFile.Close();
                 }
             }
         }

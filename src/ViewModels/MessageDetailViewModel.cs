@@ -73,10 +73,12 @@ namespace Papercut.ViewModels
 
         public MessageDetailViewModel(
             Func<PartsListViewModel> partsListViewModelFactory,
+            Func<MessageViewModel> messagesViewModelFactory,
             MimeMessageLoader mimeMessageLoader)
         {
             _mimeMessageLoader = mimeMessageLoader;
             PartsListViewModel = partsListViewModelFactory();
+            MessageViewModel = messagesViewModelFactory();
         }
 
         public string Subject
@@ -272,27 +274,8 @@ namespace Papercut.ViewModels
 
         public PartsListViewModel PartsListViewModel { get; private set; }
 
-        void SetBrowserDocument(MimeMessage mailMessageEx)
-        {
-            Observable.Start(
-                () =>
-                {
-                    try
-                    {
-                        return mailMessageEx.CreateHtmlPreviewFile();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error(
-                            ex,
-                            "Exception Saving Browser Temp File for {MailMessage}",
-                            mailMessageEx.ToString());
-                    }
-
-                    return null;
-                }).Where(s => !string.IsNullOrEmpty(s)).Subscribe(h => HtmlFile = h);
-        }
-
+        public MessageViewModel MessageViewModel { get; private set; }
+        
         public void LoadMessageEntry(MessageEntry messageEntry)
         {
             if (_loadingDisposable != null) _loadingDisposable.Dispose();
@@ -339,7 +322,7 @@ namespace Papercut.ViewModels
                 Subject = mailMessageEx.Subject ?? string.Empty;
                 IsHtml = mainBody.IsContentHtml();
 
-                SetBrowserDocument(mailMessageEx);
+                MessageViewModel.ShowMessage(mailMessageEx);
 
                 AttachmentCount = parts.GetAttachments().Count();
 
@@ -364,32 +347,6 @@ namespace Papercut.ViewModels
             }
 
             SelectedTabIndex = 0;
-        }
-
-        protected override void OnViewLoaded(object view)
-        {
-            base.OnViewLoaded(view);
-
-            var typedView = view as MessageDetailView;
-
-            if (typedView != null)
-            {
-                this.GetPropertyValues(p => p.HtmlFile)
-                    .ObserveOnDispatcher()
-                    .Subscribe(
-                        file =>
-                        {
-                            typedView.defaultHtmlView.NavigationUIVisibility =
-                                NavigationUIVisibility.Hidden;
-
-                            if (!string.IsNullOrWhiteSpace(file))
-                            {
-                                typedView.defaultHtmlView.Navigate(new Uri(file));
-                                typedView.defaultHtmlView.Refresh();
-                            }
-                            else typedView.defaultHtmlView.Content = null;
-                        });
-            }
         }
     }
 }
