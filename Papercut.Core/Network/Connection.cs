@@ -25,6 +25,8 @@ namespace Papercut.Core.Network
     using System;
     using System.Net.Sockets;
 
+    using Papercut.Core.Annotations;
+
     using Serilog;
 
     #endregion
@@ -110,26 +112,37 @@ namespace Papercut.Core.Network
             if (ConnectionClosed != null) ConnectionClosed(this, e);
         }
 
-        protected bool ContinueProcessReceive(IAsyncResult result)
+        protected bool ContinueProcessReceive([NotNull] IAsyncResult result)
         {
-            // Receive the rest of the data
-            int bytes = Client.EndReceive(result);
-            LastActivity = DateTime.Now;
+            if (result == null) throw new ArgumentNullException("result");
 
-            // Ensure we received bytes
-            if (bytes <= 0 || (_receiveBuffer.Length == 64 && _receiveBuffer[0] == '\0'))
+            try
             {
-                // nothing received, close and return;
-                Close();
-                return false;
+                // Receive the rest of the data
+                int bytes = Client.EndReceive(result);
+                LastActivity = DateTime.Now;
+
+                // Ensure we received bytes
+                if (bytes <= 0 || (_receiveBuffer.Length == 64 && _receiveBuffer[0] == '\0'))
+                {
+                    // nothing received, close and return;
+                    Close();
+                    return false;
+                }
+
+                var incoming = new byte[bytes];
+                Array.Copy(_receiveBuffer, incoming, bytes);
+                Protocol.ProcessIncomingBuffer(incoming);
+
+                // continue receiving...
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning(ex, "Failed to End Receive on Async Socket");
             }
 
-            var incoming = new byte[bytes];
-            Array.Copy(_receiveBuffer, incoming, bytes);
-            Protocol.ProcessIncomingBuffer(incoming);
-
-            // continue receiving...
-            return true;
+            return false;
         }
 
         bool IsValidConnection()
@@ -169,7 +182,7 @@ namespace Papercut.Core.Network
                     result =>
                     {
                         if (!IsValidConnection()) return;
-                        if (ContinueProcessReceive(result) && Connected && Client.Connected)
+                        if (Connected && Client.Connected && ContinueProcessReceive(result))
                         {
                             // continue processing
                             BeginReceive();
