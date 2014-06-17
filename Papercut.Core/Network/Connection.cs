@@ -181,11 +181,13 @@ namespace Papercut.Core.Network
                     SocketFlags.None,
                     result =>
                     {
-                        if (!IsValidConnection()) return;
-                        if (Connected && Client.Connected && ContinueProcessReceive(result))
+                        if (IsValidConnection() && ContinueProcessReceive(result))
                         {
-                            // continue processing
-                            BeginReceive();
+                            if (Connected && Client.Connected)
+                            {
+                                // continue processing
+                                BeginReceive();
+                            }
                         }
                     },
                     this);
