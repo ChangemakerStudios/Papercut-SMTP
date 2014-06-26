@@ -25,44 +25,22 @@ namespace Papercut.Core.Rules
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.Reflection;
     using System.Runtime.Serialization.Formatters;
     using System.Text;
 
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
 
     using Papercut.Core.Annotations;
 
     [Serializable]
     public class RuleCollection : ICollection<Rule>
     {
-        private class RuleConvertor : JsonConverter
-        {
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override bool CanConvert(Type objectType)
-            {
-                Debug.WriteLine("Resolving Contract: " + objectType.FullName);
-                return false;
-            }
-        }
-
         readonly Lazy<JsonSerializerSettings> _serializationSettings =
             new Lazy<JsonSerializerSettings>(
                 () => new JsonSerializerSettings()
                 {
                     TypeNameHandling = TypeNameHandling.Auto,
-                    TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
-                    Converters = new JsonConverter[] {  new RuleConvertor() }
+                    TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
                 });
 
         List<Rule> _rules = new List<Rule>();
