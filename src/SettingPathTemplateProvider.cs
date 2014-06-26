@@ -18,9 +18,8 @@
  *  
  */
 
-namespace Papercut.Services
+namespace Papercut
 {
-    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
@@ -33,8 +32,7 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class SettingPathTemplateProvider : IPathTemplatesProvider,
-        IHandleEvent<SettingsUpdatedEvent>
+    public class SettingPathTemplateProvider : IPathTemplatesProvider, IHandleEvent<SettingsUpdatedEvent>
     {
         readonly ILogger _logger;
 

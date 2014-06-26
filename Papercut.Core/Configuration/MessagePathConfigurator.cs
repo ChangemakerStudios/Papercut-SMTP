@@ -88,7 +88,7 @@ namespace Papercut.Core.Configuration
         void PathTemplatesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             RenderLoadPaths();
-            RefreshLoadPath(this, new EventArgs());
+            OnRefreshLoadPath();
         }
 
         void RenderLoadPaths()

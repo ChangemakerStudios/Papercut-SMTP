@@ -73,7 +73,7 @@ namespace Papercut
             builder.RegisterType<EventAggregator>().As<IEventAggregator>().InstancePerLifetimeScope();
             builder.RegisterType<EventPublishAll>().As<IPublishEvent>().InstancePerLifetimeScope();
 
-            builder.RegisterType<SettingPathTemplateProvider>().As<IPathTemplatesProvider>();
+            builder.RegisterType<SettingPathTemplateProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
 
             base.Load(builder);
