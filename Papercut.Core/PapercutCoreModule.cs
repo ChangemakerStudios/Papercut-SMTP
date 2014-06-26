@@ -21,6 +21,7 @@
 namespace Papercut.Core
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
 
@@ -29,6 +30,7 @@ namespace Papercut.Core
 
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
+    using Papercut.Core.Helper;
     using Papercut.Core.Message;
     using Papercut.Core.Network;
 
@@ -79,6 +81,7 @@ namespace Papercut.Core
                 c =>
                 {
                     //var jsonSink = new RollingFileSink(@"papercut.json", new JsonFormatter(), null, null);
+                    var logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Papercut.log");
 
                     var logConfiguration =
                         new LoggerConfiguration().MinimumLevel.Debug()
@@ -88,7 +91,7 @@ namespace Papercut.Core
                             .Enrich.WithProperty("AppName", "Papercut")
                             .Enrich.WithProperty("AppVersion", Assembly.GetExecutingAssembly().GetName().Version.ToString(3))
                             .WriteTo.ColoredConsole()
-                            .WriteTo.RollingFile("Papercut.log");
+                            .WriteTo.RollingFile(logFilePath);
 
                     // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
                     c.Resolve<IPublishEvent>().Publish(new ConfigureLoggerEvent(logConfiguration));

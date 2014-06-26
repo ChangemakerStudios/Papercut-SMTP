@@ -102,6 +102,7 @@
     <Compile Include="Helper\JsonHelpers.cs" />
     <Compile Include="Helper\MemoryCacheExtensions.cs" />
     <Compile Include="Helper\PapercutProtocolHelpers.cs" />
+    <Compile Include="Helper\PathHelpers.cs" />
     <Compile Include="Helper\SafeReadWriteProvider.cs" />
     <Compile Include="Helper\CollectionExtensions.cs" />
     <Compile Include="Helper\ObjectExtensions.cs" />
