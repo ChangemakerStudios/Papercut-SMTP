@@ -33,11 +33,19 @@ namespace Papercut.Helpers
         public static void SetupEmbeddedAssemblyResolve()
         {
             var thisAssembly = Assembly.GetExecutingAssembly();
-            var loadCache = new ConcurrentDictionary<AssemblyName, Assembly>();
 
             // Code based on: http://www.codingmurmur.com/2014/02/embedded-assembly-loading-with-support.html
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
             {
+                var loadedAssembly =
+                    AppDomain.CurrentDomain.GetAssemblies()
+                        .FirstOrDefault(s => s.GetName().Name == args.Name);
+
+                if (loadedAssembly != null)
+                {
+                    return loadedAssembly;
+                }
+
                 var searchAssemblies = new[] { thisAssembly }.Select(a => Tuple.Create(a, a.GetManifestResourceNames())).ToList();
 
                 string name = args.Name;
@@ -52,30 +60,26 @@ namespace Papercut.Helpers
                 if (resource == null) return null;
 
                 Assembly assembly;
-                if (!loadCache.TryGetValue(asmName, out assembly))
+
+                byte[] assemblyData = LoadResourceBytes(resource);
+                var symbolResource = FindResource(asmName, new[] { ".pdb" }, searchAssemblies);
+
+                if (symbolResource != null)
                 {
-                    byte[] assemblyData = LoadResourceBytes(resource);
-                    var symbolResource = FindResource(asmName, new[] { ".pdb" }, searchAssemblies);
+                    byte[] symbolsData = LoadResourceBytes(symbolResource);
 
-                    if (symbolResource != null)
-                    {
-                        byte[] symbolsData = LoadResourceBytes(symbolResource);
-
-                        Trace.WriteLine(string.Format("Loading '{0}' as embedded resource from '{1}' with symbols '{2}'",
-                            resource.Item2,
-                            resource.Item1,
-                            symbolResource.Item2));
-                        assembly = Assembly.Load(assemblyData, symbolsData);
-                    }
-                    else
-                    {
-                        Trace.WriteLine(string.Format("Loading '{0}' as embedded resource from '{1}'", resource.Item2, resource.Item1));
-                        assembly = Assembly.Load(assemblyData);
-                    }
-
-                    loadCache.TryAdd(asmName, assembly);
+                    Trace.WriteLine(string.Format("Loading '{0}' as embedded resource from '{1}' with symbols '{2}'",
+                        resource.Item2,
+                        resource.Item1,
+                        symbolResource.Item2));
+                    assembly = Assembly.Load(assemblyData, symbolsData);
                 }
-
+                else
+                {
+                    Trace.WriteLine(string.Format("Loading '{0}' as embedded resource from '{1}'", resource.Item2, resource.Item1));
+                    assembly = Assembly.Load(assemblyData);
+                }
+                
                 return assembly;
             };
         }

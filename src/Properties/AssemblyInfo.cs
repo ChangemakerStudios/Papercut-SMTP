@@ -8,9 +8,9 @@ using System.Windows;
 [assembly: AssemblyTitle("Papercut")]
 [assembly: AssemblyDescription("Standalone SMTP server designed for viewing received messages")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ken Robertson & Jaben Cargman")]
+[assembly: AssemblyCompany("Papercut")]
 [assembly: AssemblyProduct("Papercut")]
-[assembly: AssemblyCopyright("Copyright © 2008 - 2014")]
+[assembly: AssemblyCopyright("Copyright © 2008 - 2014 Ken Robertson & Jaben Cargman")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

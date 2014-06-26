@@ -9,8 +9,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyProduct("Papercut.Core")]
-[assembly: AssemblyCompany("Ken Robertson & Jaben Cargman")]
-[assembly: AssemblyCopyright("Copyright © 2008 - 2014")]
+[assembly: AssemblyCompany("Papercut")]
+[assembly: AssemblyCopyright("Copyright © 2008 - 2014 Ken Robertson & Jaben Cargman")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
