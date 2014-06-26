@@ -186,6 +186,7 @@
     <Compile Include="Services\MergeServerBackendSettings.cs" />
     <Compile Include="Services\PapercutServiceBackendCoordinator.cs" />
     <Compile Include="Services\PapercutUIServerCoordinator.cs" />
+    <Compile Include="Services\RulesDispatcher.cs" />
     <Compile Include="Services\ShutdownService.cs" />
     <Compile Include="Helpers\NetworkHelper.cs" />
     <Compile Include="Services\SingleInstanceService.cs" />

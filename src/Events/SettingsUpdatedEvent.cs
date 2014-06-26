@@ -18,7 +18,6 @@
  *  
  */
 
-
 namespace Papercut.Events
 {
     using Papercut.Core.Events;

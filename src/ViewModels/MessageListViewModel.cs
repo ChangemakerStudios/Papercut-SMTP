@@ -34,6 +34,7 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
+    using Papercut.Core.Annotations;
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
@@ -54,21 +55,26 @@ namespace Papercut.ViewModels
 
         readonly MessageRepository _messageRepository;
 
+        readonly MessageWatcher _messageWatcher;
+
         readonly MimeMessageLoader _mimeMessageLoader;
 
         readonly IPublishEvent _publishEvent;
 
         public MessageListViewModel(
             MessageRepository messageRepository,
+            [NotNull] MessageWatcher messageWatcher,
             MimeMessageLoader mimeMessageLoader,
             IPublishEvent publishEvent,
             ILogger logger)
         {
             if (messageRepository == null) throw new ArgumentNullException("messageRepository");
+            if (messageWatcher == null) throw new ArgumentNullException("messageWatcher");
             if (mimeMessageLoader == null) throw new ArgumentNullException("mimeMessageLoader");
             if (publishEvent == null) throw new ArgumentNullException("publishEvent");
 
             _messageRepository = messageRepository;
+            _messageWatcher = messageWatcher;
             _mimeMessageLoader = mimeMessageLoader;
             _publishEvent = publishEvent;
             _logger = logger;
@@ -127,11 +133,11 @@ namespace Papercut.ViewModels
                 new SortDescription("ModifiedDate", ListSortDirection.Ascending));
 
             // Begin listening for new messages
-            _messageRepository.NewMessage += NewMessage;
+            _messageWatcher.NewMessage += NewMessage;
 
             Observable.FromEventPattern(
-                e => _messageRepository.RefreshNeeded += e,
-                e => _messageRepository.RefreshNeeded -= e,
+                e => _messageWatcher.RefreshNeeded += e,
+                e => _messageWatcher.RefreshNeeded -= e,
                 TaskPoolScheduler.Default)
                 .Throttle(TimeSpan.FromMilliseconds(100))
                 .Subscribe(e => Execute.OnUIThread(RefreshMessageList));

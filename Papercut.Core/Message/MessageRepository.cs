@@ -25,186 +25,24 @@ namespace Papercut.Core.Message
     using System.IO;
     using System.Linq;
     using System.Threading;
-    using System.Threading.Tasks;
 
     using Papercut.Core.Configuration;
+    using Papercut.Core.Helper;
 
     using Serilog;
 
-    public class MessageRepository : IDisposable
+    public class MessageRepository
     {
         public const string MessageFileSearchPattern = "*.eml";
 
         readonly IMessagePathConfigurator _messagePathConfigurator;
 
-        List<FileSystemWatcher> _watchers;
+        readonly ILogger _logger;
 
         public MessageRepository(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
         {
-            Logger = logger;
+            _logger = logger;
             _messagePathConfigurator = messagePathConfigurator;
-            _messagePathConfigurator.RefreshLoadPath += OnRefreshLoadPaths;
-            SetupMessageWatchers();
-        }
-
-        public ILogger Logger { get; private set; }
-
-        public void Dispose()
-        {
-            foreach (FileSystemWatcher watch in _watchers)
-            {
-                DisposeWatch(watch);
-            }
-        }
-
-        void OnRefreshLoadPaths(object sender, EventArgs eventArgs)
-        {
-            var existingPaths = _watchers.Select(s => s.Path).ToList();
-            var removePaths = existingPaths.Except(_messagePathConfigurator.LoadPaths).ToList();
-            var addPaths = _messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
-
-            foreach (var watch in
-                    _watchers.Where(s => removePaths.Contains(s.Path)).ToList())
-            {
-                DisposeWatch(watch);
-                _watchers.Remove(watch);
-            }
-
-            // setup new ones...
-            foreach (string newPath in addPaths)
-            {
-                AddWatcher(newPath);
-            }
-        }
-
-        static void DisposeWatch(FileSystemWatcher watch)
-        {
-            try
-            {
-                watch.EnableRaisingEvents = false;
-                watch.Dispose();
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        void SetupMessageWatchers()
-        {
-            _watchers = new List<FileSystemWatcher>();
-
-            // setup watcher for each path...
-            foreach (string path in _messagePathConfigurator.LoadPaths)
-            {
-                AddWatcher(path);
-            }
-        }
-
-        void AddWatcher(string path)
-        {
-            var watcher = new FileSystemWatcher(path, MessageFileSearchPattern)
-            {
-                NotifyFilter =
-                    NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName
-            };
-
-            // Add event handlers.
-            watcher.Created += OnChanged;
-            watcher.Deleted += OnDeleted;
-            watcher.Renamed += OnRenamed;
-
-            // Begin watching.
-            watcher.EnableRaisingEvents = true;
-
-            _watchers.Add(watcher);
-        }
-
-        void OnDeleted(object sender, FileSystemEventArgs e)
-        {
-            RefreshNeeded(this, new EventArgs());
-        }
-
-        void OnRenamed(object sender, RenamedEventArgs e)
-        {
-            RefreshNeeded(this, new EventArgs());
-        }
-
-        void OnChanged(object sender, FileSystemEventArgs e)
-        {
-            Task.Factory.StartNew(
-                () =>
-                {
-                    var info = new FileInfo(e.FullPath);
-                    int retryCount = 0;
-
-                    while (!CanOpenFile(info))
-                    {
-                        Thread.Sleep(500);
-                        if (++retryCount > 30)
-                        {
-                            Logger.Error(
-                                "Failed after {RetryCount} retries to Open File {FileInfo}",
-                                retryCount,
-                                info);
-                            break;
-                        }
-                    }
-
-                    return info;
-                })
-                .ContinueWith(
-                    r => NewMessage(this, new NewMessageEventArgs(new MessageEntry(r.Result))));
-        }
-
-        bool CanOpenFile(FileInfo file)
-        {
-            if (file == null) throw new ArgumentNullException("file");
-
-            try
-            {
-                using (
-                    FileStream fileStream = file.Open(
-                        FileMode.Open,
-                        FileAccess.ReadWrite,
-                        FileShare.None))
-                {
-                    fileStream.Close();
-                }
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        bool TryReadFile(FileInfo file, out byte[] fileBytes)
-        {
-            if (file == null) throw new ArgumentNullException("file");
-
-            fileBytes = null;
-
-            try
-            {
-                using (FileStream fileStream = file.OpenRead())
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        fileStream.CopyTo(ms);
-                        fileBytes = ms.ToArray();
-                    }
-
-                    fileStream.Close();
-                }
-            }
-            catch (IOException)
-            {
-                // the file is unavailable because it is still being written by another thread or process
-                return false;
-            }
-
-            return true;
         }
 
         public bool DeleteMessage(MessageEntry entry)
@@ -224,7 +62,7 @@ namespace Papercut.Core.Message
             byte[] data;
             int retryCount = 0;
 
-            while (!TryReadFile(info, out data))
+            while (!info.TryReadFile(out data))
             {
                 Thread.Sleep(500);
 
@@ -251,22 +89,6 @@ namespace Papercut.Core.Message
                     .ToList();
         }
 
-        public event EventHandler<NewMessageEventArgs> NewMessage;
-
-        public event EventHandler RefreshNeeded;
-
-        protected virtual void OnRefreshNeeded()
-        {
-            EventHandler handler = RefreshNeeded;
-            if (handler != null) handler(this, EventArgs.Empty);
-        }
-
-        protected virtual void OnNewMessage(NewMessageEventArgs e)
-        {
-            EventHandler<NewMessageEventArgs> handler = NewMessage;
-            if (handler != null) handler(this, e);
-        }
-
         public string SaveMessage(IList<string> output)
         {
             string file = null;
@@ -289,7 +111,7 @@ namespace Papercut.Core.Message
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Failure saving email message: {EmailMessageFile}", file);
+                _logger.Error(ex, "Failure saving email message: {EmailMessageFile}", file);
             }
 
             return file;

@@ -29,6 +29,8 @@ namespace Papercut
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
+    using Papercut.Core.Message;
+    using Papercut.Core.Rules;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Services;
@@ -63,6 +65,9 @@ namespace Papercut
                 .AsImplementedInterfaces()
                 .AsSelf()
                 .InstancePerUIScope();
+
+            // message watcher is needed for watching
+            builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
 
             builder.RegisterType<WindowManager>().As<IWindowManager>().InstancePerLifetimeScope();
             builder.RegisterType<EventAggregator>().As<IEventAggregator>().InstancePerLifetimeScope();
