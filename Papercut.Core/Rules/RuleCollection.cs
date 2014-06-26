@@ -33,7 +33,7 @@ namespace Papercut.Core.Rules
     using Papercut.Core.Annotations;
 
     [Serializable]
-    public class RuleCollection : ICollection<Rule>
+    public class RuleCollection : ICollection<IRule>
     {
         readonly Lazy<JsonSerializerSettings> _serializationSettings =
             new Lazy<JsonSerializerSettings>(
@@ -43,7 +43,7 @@ namespace Papercut.Core.Rules
                     TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
                 });
 
-        List<Rule> _rules = new List<Rule>();
+        List<IRule> _rules = new List<IRule>();
 
         JsonSerializerSettings SerializationSettings
         {
@@ -53,12 +53,12 @@ namespace Papercut.Core.Rules
             }
         }
 
-        public IEnumerator<Rule> GetEnumerator()
+        public IEnumerator<IRule> GetEnumerator()
         {
             return _rules.GetEnumerator();
         }
 
-        public void Add(Rule item)
+        public void Add(IRule item)
         {
             _rules.Add(item);
         }
@@ -68,17 +68,17 @@ namespace Papercut.Core.Rules
             _rules.Clear();
         }
 
-        public bool Contains(Rule item)
+        public bool Contains(IRule item)
         {
             return _rules.Contains(item);
         }
 
-        public void CopyTo(Rule[] array, int arrayIndex)
+        public void CopyTo(IRule[] array, int arrayIndex)
         {
             _rules.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(Rule item)
+        public bool Remove(IRule item)
         {
             return _rules.Remove(item);
         }
@@ -126,7 +126,7 @@ namespace Papercut.Core.Rules
 
             string json = File.ReadAllText(path, Encoding.UTF8);
 
-            _rules = JsonConvert.DeserializeObject<List<Rule>>(json, SerializationSettings);
+            _rules = JsonConvert.DeserializeObject<List<IRule>>(json, SerializationSettings);
 
             return true;
         }

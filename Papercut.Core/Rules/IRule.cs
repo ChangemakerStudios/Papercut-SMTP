@@ -1,8 +1,8 @@
-ï»¿/*  
+/*  
  * Papercut
  *
- *  Copyright Â© 2008 - 2012 Ken Robertson
- *  Copyright Â© 2013 - 2014 Jaben Cargman
+ *  Copyright © 2008 - 2012 Ken Robertson
+ *  Copyright © 2013 - 2014 Jaben Cargman
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,22 +20,8 @@
 
 namespace Papercut.Core.Rules
 {
-    using System;
-
-    [Serializable]
-    public class ForwardRule : IRule
+    public interface IRule
     {
-        public string FromEmail;
-
-        public string SmtpServer;
-
-        public string ToEmail;
-
-        public ForwardRule(string smtpServer, string fromEmail, string toEmail)
-        {
-            FromEmail = fromEmail;
-            SmtpServer = smtpServer;
-            ToEmail = toEmail;
-        }
+        
     }
 }

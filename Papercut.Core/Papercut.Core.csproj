@@ -134,7 +134,7 @@
     <Compile Include="Network\SmtpClient.cs" />
     <Compile Include="Network\SmtpProtocol.cs" />
     <Compile Include="Network\SmtpSession.cs" />
-    <Compile Include="Rules\Rule.cs" />
+    <Compile Include="Rules\IRule.cs" />
     <Compile Include="Rules\RuleCollection.cs" />
   </ItemGroup>
   <ItemGroup>
