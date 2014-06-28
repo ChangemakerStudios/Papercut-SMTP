@@ -1,22 +1,19 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.Service.Helpers
 {
@@ -40,12 +37,11 @@ namespace Papercut.Service.Helpers
                     AppDomain.CurrentDomain.GetAssemblies()
                         .FirstOrDefault(s => s.GetName().Name == args.Name);
 
-                if (loadedAssembly != null)
-                {
-                    return loadedAssembly;
-                }
+                if (loadedAssembly != null) return loadedAssembly;
 
-                var searchAssemblies = new[] { thisAssembly }.Select(a => Tuple.Create(a, a.GetManifestResourceNames())).ToList();
+                var searchAssemblies =
+                    new[] { thisAssembly }.Select(
+                        a => Tuple.Create(a, a.GetManifestResourceNames())).ToList();
 
                 string name = args.Name;
                 var asmName = new AssemblyName(name);
@@ -67,15 +63,21 @@ namespace Papercut.Service.Helpers
                 {
                     byte[] symbolsData = LoadResourceBytes(symbolResource);
 
-                    Trace.WriteLine(string.Format("Loading '{0}' as embedded resource from '{1}' with symbols '{2}'",
-                        resource.Item2,
-                        resource.Item1,
-                        symbolResource.Item2));
+                    Trace.WriteLine(
+                        string.Format(
+                            "Loading '{0}' as embedded resource from '{1}' with symbols '{2}'",
+                            resource.Item2,
+                            resource.Item1,
+                            symbolResource.Item2));
                     assembly = Assembly.Load(assemblyData, symbolsData);
                 }
                 else
                 {
-                    Trace.WriteLine(string.Format("Loading '{0}' as embedded resource from '{1}'", resource.Item2, resource.Item1));
+                    Trace.WriteLine(
+                        string.Format(
+                            "Loading '{0}' as embedded resource from '{1}'",
+                            resource.Item2,
+                            resource.Item1));
                     assembly = Assembly.Load(assemblyData);
                 }
 
@@ -83,18 +85,20 @@ namespace Papercut.Service.Helpers
             };
         }
 
-        public static Tuple<Assembly, string> FindResource(AssemblyName asmName, string[] validExtensions, IList<Tuple<Assembly, string[]>> searchAssemblies)
+        public static Tuple<Assembly, string> FindResource(
+            AssemblyName asmName,
+            string[] validExtensions,
+            IList<Tuple<Assembly, string[]>> searchAssemblies)
         {
-            var possibleResourceNames = validExtensions.Select(ext => string.Format("{0}{1}", asmName.Name, ext)).ToList();
+            var possibleResourceNames =
+                validExtensions.Select(ext => string.Format("{0}{1}", asmName.Name, ext)).ToList();
 
             foreach (var assembly in searchAssemblies)
             {
-                var resourceName = assembly.Item2.FirstOrDefault(n => possibleResourceNames.Any(n.Contains));
+                var resourceName =
+                    assembly.Item2.FirstOrDefault(n => possibleResourceNames.Any(n.Contains));
 
-                if (resourceName != null)
-                {
-                    return Tuple.Create(assembly.Item1, resourceName);
-                }
+                if (resourceName != null) return Tuple.Create(assembly.Item1, resourceName);
             }
 
             return null;
