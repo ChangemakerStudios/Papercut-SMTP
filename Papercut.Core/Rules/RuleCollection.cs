@@ -1,29 +1,25 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.Core.Rules
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Runtime.Serialization.Formatters;
     using System.Text;
@@ -37,7 +33,7 @@ namespace Papercut.Core.Rules
     {
         readonly Lazy<JsonSerializerSettings> _serializationSettings =
             new Lazy<JsonSerializerSettings>(
-                () => new JsonSerializerSettings()
+                () => new JsonSerializerSettings
                 {
                     TypeNameHandling = TypeNameHandling.Auto,
                     TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
@@ -47,10 +43,7 @@ namespace Papercut.Core.Rules
 
         JsonSerializerSettings SerializationSettings
         {
-            get
-            {
-                return _serializationSettings.Value;
-            }
+            get { return _serializationSettings.Value; }
         }
 
         public IEnumerator<IRule> GetEnumerator()
@@ -85,18 +78,12 @@ namespace Papercut.Core.Rules
 
         public int Count
         {
-            get
-            {
-                return _rules.Count;
-            }
+            get { return _rules.Count; }
         }
 
         public bool IsReadOnly
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
 
         IEnumerator IEnumerable.GetEnumerator()

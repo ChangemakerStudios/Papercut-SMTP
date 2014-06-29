@@ -1,22 +1,19 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.Core.Helper
 {
@@ -59,7 +56,8 @@ namespace Papercut.Core.Helper
 
             var enumValues = new List<TEnum>(enumValArray.Length);
 
-            enumValues.AddRange(enumValArray.Cast<int>().Select(val => (TEnum)Enum.Parse(enumType, val.ToString())));
+            enumValues.AddRange(
+                enumValArray.Cast<int>().Select(val => (TEnum)Enum.Parse(enumType, val.ToString())));
 
             return enumValues;
         }
@@ -105,7 +103,10 @@ namespace Papercut.Core.Helper
         /// <param name="inputLimit"></param>
         /// <param name="cutOff"></param>
         /// <returns></returns>
-        public static string Truncate([CanBeNull] this string input, int inputLimit, [NotNull] string cutOff = "...")
+        public static string Truncate(
+            [CanBeNull] this string input,
+            int inputLimit,
+            [NotNull] string cutOff = "...")
         {
             if (cutOff == null) throw new ArgumentNullException("cutOff");
 

@@ -1,22 +1,19 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.Core.Helper
 {
@@ -33,10 +30,12 @@ namespace Papercut.Core.Helper
         [NotNull]
         public IEnumerable<Assembly> GetAll()
         {
-            var filterAssemblies = new Func<Assembly, bool>(a => !a.IsDynamic && !a.GlobalAssemblyCache);
+            var filterAssemblies =
+                new Func<Assembly, bool>(a => !a.IsDynamic && !a.GlobalAssemblyCache);
 
             // get all currently loaded assemblies sans GAC and Dynamic assemblies.
-            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Where(filterAssemblies).ToList();
+            var loadedAssemblies =
+                AppDomain.CurrentDomain.GetAssemblies().Where(filterAssemblies).ToList();
             var loadedFiles = loadedAssemblies.Select(a => Path.GetFileName(a.CodeBase)).ToList();
 
             // get all files...
@@ -44,7 +43,9 @@ namespace Papercut.Core.Helper
 
             // exclude currently loaded assemblies
             var needsToBeLoaded = allFiles
-                .Where(f => !loadedFiles.Contains(Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
+                .Where(
+                    f =>
+                    !loadedFiles.Contains(Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             // attempt to load files as an assembly and include already loaded
@@ -87,7 +88,8 @@ namespace Papercut.Core.Helper
             }
         }
 
-        static IEnumerable<Assembly> TryLoadResourceAssemblies([NotNull] IEnumerable<string> assemblyNames)
+        static IEnumerable<Assembly> TryLoadResourceAssemblies(
+            [NotNull] IEnumerable<string> assemblyNames)
         {
             foreach (var assemblyName in assemblyNames)
             {
@@ -117,7 +119,7 @@ namespace Papercut.Core.Helper
 
         static IEnumerable<string> GetAllAssemblyResourcesIn(IEnumerable<Assembly> assemblies)
         {
-            var lookFor = new [] { ".dll", ".exe" };
+            var lookFor = new[] { ".dll", ".exe" };
 
             return
                 assemblies.SelectMany(a => a.GetManifestResourceNames())

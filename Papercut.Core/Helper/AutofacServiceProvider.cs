@@ -15,12 +15,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Events
+namespace Papercut.Core.Helper
 {
-    public class BaseBindEvent : IDomainEvent
-    {
-        public string IP { get; set; }
+    using System;
 
-        public int Port { get; set; }
+    using Autofac;
+
+    public class AutofacServiceProvider : IServiceProvider
+    {
+        readonly ILifetimeScope _lifetimeScope;
+
+        public AutofacServiceProvider(ILifetimeScope lifetimeScope)
+        {
+            _lifetimeScope = lifetimeScope;
+        }
+
+        public object GetService(Type serviceType)
+        {
+            return _lifetimeScope.Resolve(serviceType);
+        }
     }
 }
