@@ -15,36 +15,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Helpers
+namespace Papercut.ViewModels
 {
-    using System;
+    using System.Collections.ObjectModel;
 
     using Caliburn.Micro;
 
-    using Serilog;
+    using Papercut.Core.Rules;
 
-    public class CalburnSerilogBridge : ILog
+    public class RulesConfigurationViewModel : Screen
     {
-        readonly Lazy<ILogger> _logger;
+        IRule _selectedRule;
 
-        public CalburnSerilogBridge(Lazy<ILogger> logger)
+        string _windowTitle = "Rules Configuration";
+
+        public string WindowTitle
         {
-            _logger = logger;
+            get { return _windowTitle; }
+            set
+            {
+                _windowTitle = value;
+                NotifyOfPropertyChange(() => WindowTitle);
+            }
         }
 
-        public void Info(string format, params object[] args)
+        public IRule SelectedRule
         {
-            _logger.Value.Debug(format, args);
+            get { return _selectedRule; }
+            set
+            {
+                _selectedRule = value;
+                NotifyOfPropertyChange(() => SelectedRule);
+            }
         }
 
-        public void Warn(string format, params object[] args)
-        {
-            _logger.Value.Warning(format, args);
-        }
-
-        public void Error(Exception exception)
-        {
-            _logger.Value.Error(exception, "Exception Logged");
-        }
+        public ObservableCollection<IRule> Rules { get; private set; }
     }
 }

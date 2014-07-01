@@ -1,22 +1,19 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.ViewModels
 {
@@ -25,6 +22,8 @@ namespace Papercut.ViewModels
     using System.Collections.ObjectModel;
     using System.Collections.Specialized;
     using System.ComponentModel;
+    using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
@@ -40,6 +39,7 @@ namespace Papercut.ViewModels
     using Papercut.Core.Message;
     using Papercut.Events;
     using Papercut.Helpers;
+    using Papercut.Properties;
 
     using Serilog;
 
@@ -89,26 +89,25 @@ namespace Papercut.ViewModels
 
         public MimeMessageEntry SelectedMessage
         {
+            get { return GetSelected().FirstOrDefault(); }
+        }
+
+        public string DeleteText
+        {
             get
             {
-                return GetSelected().FirstOrDefault();
+                return UIStrings.DeleteTextTemplate.RenderTemplate(this);
             }
         }
 
         public bool HasSelectedMessage
         {
-            get
-            {
-                return GetSelected().Any();
-            }
+            get { return GetSelected().Any(); }
         }
 
         public int SelectedMessageCount
         {
-            get
-            {
-                return GetSelected().Count();
-            }
+            get { return GetSelected().Count(); }
         }
 
         MimeMessageEntry GetMessageByIndex(int index)
@@ -155,6 +154,7 @@ namespace Papercut.ViewModels
                         NotifyOfPropertyChange(() => HasSelectedMessage);
                         NotifyOfPropertyChange(() => SelectedMessageCount);
                         NotifyOfPropertyChange(() => SelectedMessage);
+                        NotifyOfPropertyChange(() => DeleteText);
                     });
 
                 if (args.NewItems != null)
@@ -210,6 +210,13 @@ namespace Papercut.ViewModels
                 MimeMessageEntry m = GetMessageByIndex(index.Value);
                 if (m != null) m.IsSelected = true;
             }
+        }
+
+        public void OpenMessageFolder()
+        {
+            string[] folders =
+                GetSelected().Select(s => Path.GetDirectoryName(s.File)).Distinct().ToArray();
+            folders.ForEach(f => Process.Start(f));
         }
 
         public void ValidateSelected()

@@ -1,4 +1,21 @@
-﻿namespace Papercut.Services
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+namespace Papercut.Services
 {
     using System;
 
@@ -32,13 +49,6 @@
             _smtpServerCoordinator = smtpServerCoordinator;
         }
 
-        PapercutClient GetClient()
-        {
-            var client = _papercutClientFactory();
-            client.Port = PapercutClient.ServerPort;
-            return client;
-        }
-
         public bool IsBackendServiceOnline { get; private set; }
 
         public void Handle(AppPreStartEvent @event)
@@ -48,7 +58,7 @@
                 var exchangeEvent = new AppProcessExchangeEvent();
 
                 // attempt to connect to the backend server...
-                using (var client = GetClient())
+                using (PapercutClient client = GetClient())
                 {
                     if (!client.ExchangeEventServer(ref exchangeEvent)) return;
 
@@ -80,7 +90,7 @@
 
             try
             {
-                using (var client = GetClient())
+                using (PapercutClient client = GetClient())
                 {
                     // update the backend service with the new ip/port settings...
                     var smtpServerBindEvent = new SmtpServerBindEvent(
@@ -100,6 +110,13 @@
             {
                 _logger.Warning(ex, "Papercut Backend Service Exception Attempting to Contact");
             }
+        }
+
+        PapercutClient GetClient()
+        {
+            PapercutClient client = _papercutClientFactory();
+            client.Port = PapercutClient.ServerPort;
+            return client;
         }
     }
 }

@@ -1,11 +1,11 @@
 ﻿<UserControl x:Class="Papercut.Views.MessageView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="400" Background="White">
     <Grid>
-        <Frame Name="defaultHtmlView" BorderBrush="LightGray" BorderThickness="1" Width="Auto" Height="Auto" />    
+        <Frame Name="defaultHtmlView" BorderBrush="LightGray" BorderThickness="1" Width="Auto" Height="Auto" />
     </Grid>
 </UserControl>

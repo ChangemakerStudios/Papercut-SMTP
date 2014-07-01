@@ -1,22 +1,19 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut
 {
@@ -26,16 +23,11 @@ namespace Papercut
     using Caliburn.Micro;
 
     using Papercut.Core;
-    using Papercut.Core.Configuration;
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
-    using Papercut.Core.Rules;
     using Papercut.Events;
     using Papercut.Helpers;
-    using Papercut.Services;
-
-    using Module = Autofac.Module;
 
     public class PapercutUIModule : Module
     {
@@ -45,19 +37,19 @@ namespace Papercut
         {
             //  register view models
             builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
-              .Where(type => type.Name.EndsWith("ViewModel"))
-              .AsImplementedInterfaces()
-              .AsSelf()
-              .OnActivated(SubscribeEventAggregator)
-              .InstancePerDependency();
+                .Where(type => type.Name.EndsWith("ViewModel"))
+                .AsImplementedInterfaces()
+                .AsSelf()
+                .OnActivated(SubscribeEventAggregator)
+                .InstancePerDependency();
 
             //  register views
             builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
-              .Where(type => type.Name.EndsWith("View"))
-              .AsImplementedInterfaces()
-              .AsSelf()
-              .OnActivated(SubscribeEventAggregator)
-              .InstancePerDependency();
+                .Where(type => type.Name.EndsWith("View"))
+                .AsImplementedInterfaces()
+                .AsSelf()
+                .OnActivated(SubscribeEventAggregator)
+                .InstancePerDependency();
 
             // register ui scope services
             builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
@@ -69,11 +61,19 @@ namespace Papercut
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
 
-            builder.RegisterType<WindowManager>().As<IWindowManager>().InstancePerLifetimeScope();
-            builder.RegisterType<EventAggregator>().As<IEventAggregator>().InstancePerLifetimeScope();
+            builder.RegisterType<ViewModelWindowManager>()
+                .As<IViewModelWindowManager>()
+                .As<IWindowManager>()
+                .InstancePerLifetimeScope();
+
+            builder.RegisterType<EventAggregator>()
+                .As<IEventAggregator>()
+                .InstancePerLifetimeScope();
             builder.RegisterType<EventPublishAll>().As<IPublishEvent>().InstancePerLifetimeScope();
 
-            builder.RegisterType<SettingPathTemplateProvider>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<SettingPathTemplateProvider>()
+                .AsImplementedInterfaces()
+                .SingleInstance();
             builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
 
             base.Load(builder);

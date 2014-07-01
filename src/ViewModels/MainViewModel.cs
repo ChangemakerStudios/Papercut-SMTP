@@ -1,22 +1,19 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.ViewModels
 {
@@ -34,47 +31,31 @@ namespace Papercut.ViewModels
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
-    using Papercut.Services;
 
     public class MainViewModel : Screen,
         IHandle<SmtpServerBindFailedEvent>,
         IHandle<ShowMessageEvent>,
-        IHandle<ShowMainWindowEvent>
+        IHandle<ShowMainWindowEvent>,
+        IHandle<ShowOptionWindowEvent>
     {
         const string WindowTitleDefault = "Papercut";
 
-        readonly Func<ForwardViewModel> _forwardViewModelFactory;
-
-        readonly MimeMessageLoader _mimeMessageLoader;
-
-        readonly Func<OptionsViewModel> _optionsViewModelFactory;
-
         readonly IPublishEvent _publishEvent;
 
-        readonly IWindowManager _windowsManager;
-
-        IDisposable _loadingDisposable;
+        readonly IViewModelWindowManager _viewModelWindowManager;
 
         Window _window;
 
         string _windowTitle = WindowTitleDefault;
 
-        bool _isLoading;
-
         public MainViewModel(
-            IWindowManager windowsManager,
+            IViewModelWindowManager viewModelWindowManager,
             IPublishEvent publishEvent,
-            Func<OptionsViewModel> optionsViewModelFactory,
             Func<MessageListViewModel> messageListViewModelFactory,
-            Func<MessageDetailViewModel> messageDetailViewModelFactory,
-            Func<ForwardViewModel> forwardViewModelFactory,
-            MimeMessageLoader mimeMessageLoader)
+            Func<MessageDetailViewModel> messageDetailViewModelFactory)
         {
-            _windowsManager = windowsManager;
+            _viewModelWindowManager = viewModelWindowManager;
             _publishEvent = publishEvent;
-            _optionsViewModelFactory = optionsViewModelFactory;
-            _forwardViewModelFactory = forwardViewModelFactory;
-            _mimeMessageLoader = mimeMessageLoader;
 
             MessageListViewModel = messageListViewModelFactory();
             MessageDetailViewModel = messageDetailViewModelFactory();
@@ -86,14 +67,9 @@ namespace Papercut.ViewModels
 
         public MessageDetailViewModel MessageDetailViewModel { get; private set; }
 
-
-
         public string WindowTitle
         {
-            get
-            {
-                return _windowTitle;
-            }
+            get { return _windowTitle; }
             set
             {
                 _windowTitle = value;
@@ -141,12 +117,19 @@ namespace Papercut.ViewModels
             ShowOptions();
         }
 
+        void IHandle<ShowOptionWindowEvent>.Handle(ShowOptionWindowEvent message)
+        {
+            ShowOptions();
+        }
+
         void SetupObservables()
         {
             MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
-                .Subscribe(m => MessageDetailViewModel.LoadMessageEntry(MessageListViewModel.SelectedMessage));
+                .Subscribe(
+                    m =>
+                    MessageDetailViewModel.LoadMessageEntry(MessageListViewModel.SelectedMessage));
         }
 
         public void GoToSite()
@@ -154,9 +137,14 @@ namespace Papercut.ViewModels
             Process.Start("http://papercut.codeplex.com/");
         }
 
+        public void ShowRulesConfiguration()
+        {
+            _viewModelWindowManager.ShowDialogWithViewModel<RulesConfigurationViewModel>();
+        }
+
         public void ShowOptions()
         {
-            _windowsManager.ShowDialog(_optionsViewModelFactory());
+            _viewModelWindowManager.ShowDialogWithViewModel<OptionsViewModel>();
         }
 
         public void Exit()
@@ -169,9 +157,8 @@ namespace Papercut.ViewModels
             MessageEntry entry = MessageListViewModel.SelectedMessage;
             if (entry != null)
             {
-                ForwardViewModel forwardViewModel = _forwardViewModelFactory();
-                forwardViewModel.MessageEntry = entry;
-                _windowsManager.ShowDialog(forwardViewModel);
+                _viewModelWindowManager.ShowDialogWithViewModel<ForwardViewModel>(
+                    vm => vm.MessageEntry = entry);
             }
         }
 

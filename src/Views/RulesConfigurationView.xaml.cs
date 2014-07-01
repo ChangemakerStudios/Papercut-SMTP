@@ -15,11 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Events
+namespace Papercut.Views
 {
-    using Papercut.Core.Events;
+    using MahApps.Metro.Controls;
 
-    public class SettingsUpdatedEvent : IDomainEvent
+    /// <summary>
+    ///     Interaction logic for RulesConfigurationView.xaml
+    /// </summary>
+    public partial class RulesConfigurationView : MetroWindow
     {
+        public RulesConfigurationView()
+        {
+            InitializeComponent();
+        }
     }
 }

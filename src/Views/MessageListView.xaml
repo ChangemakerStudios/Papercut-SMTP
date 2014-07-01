@@ -14,20 +14,28 @@
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
              cal:Message.Attach="[Event KeyDown] = [Action MessageListKeyDown($eventArgs)]"
              ItemsSource="{Binding MessagesSorted}">
+        <ListBox.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Open Containing Folder..." IsEnabled="{Binding Path=HasSelectedMessage}"
+                          cal:Message.Attach="OpenMessageFolder" />
+            </ContextMenu>
+        </ListBox.ContextMenu>
         <i:Interaction.Behaviors>
             <Behaviors:DragDropIFile />
         </i:Interaction.Behaviors>
         <ListBox.ItemTemplate>
             <DataTemplate>
-                <Grid>
+                <Grid ToolTip="{Binding File}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
+                        <ColumnDefinition
+                            Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}" FontWeight="Bold" Foreground="#FF222222"
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}" FontWeight="Bold"
+                               Foreground="#FF222222"
                                TextTrimming="CharacterEllipsis"
                                Visibility="{Binding Subject,Converter={StaticResource CollapsedIfFalse}}" FontSize="14" />
                     <TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding DisplayText}" Foreground="#FF646464"

@@ -1,22 +1,19 @@
-﻿// /*  
-//  * Papercut
-//  *
-//  *  Copyright © 2008 - 2012 Ken Robertson
-//  *  Copyright © 2013 - 2014 Jaben Cargman
-//  *  
-//  *  Licensed under the Apache License, Version 2.0 (the "License");
-//  *  you may not use this file except in compliance with the License.
-//  *  You may obtain a copy of the License at
-//  *  
-//  *  http://www.apache.org/licenses/LICENSE-2.0
-//  *  
-//  *  Unless required by applicable law or agreed to in writing, software
-//  *  distributed under the License is distributed on an "AS IS" BASIS,
-//  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  *  See the License for the specific language governing permissions and
-//  *  limitations under the License.
-//  *  
-//  */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.ViewModels
 {
@@ -24,7 +21,6 @@ namespace Papercut.ViewModels
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
-    using System.Windows.Navigation;
 
     using Caliburn.Micro;
 
@@ -32,10 +28,6 @@ namespace Papercut.ViewModels
 
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
-    using Papercut.Helpers;
-    using Papercut.Views;
-
-    using Serilog;
 
     public class MessageDetailViewModel : Screen
     {
@@ -83,10 +75,7 @@ namespace Papercut.ViewModels
 
         public string Subject
         {
-            get
-            {
-                return _subject;
-            }
+            get { return _subject; }
             set
             {
                 _subject = value;
@@ -96,10 +85,7 @@ namespace Papercut.ViewModels
 
         public string To
         {
-            get
-            {
-                return _to;
-            }
+            get { return _to; }
             set
             {
                 _to = value;
@@ -109,10 +95,7 @@ namespace Papercut.ViewModels
 
         public string Bcc
         {
-            get
-            {
-                return _bcc;
-            }
+            get { return _bcc; }
             set
             {
                 _bcc = value;
@@ -122,10 +105,7 @@ namespace Papercut.ViewModels
 
         public string Date
         {
-            get
-            {
-                return _date;
-            }
+            get { return _date; }
             set
             {
                 _date = value;
@@ -135,10 +115,7 @@ namespace Papercut.ViewModels
 
         public string From
         {
-            get
-            {
-                return _from;
-            }
+            get { return _from; }
             set
             {
                 _from = value;
@@ -148,10 +125,7 @@ namespace Papercut.ViewModels
 
         public string CC
         {
-            get
-            {
-                return _cc;
-            }
+            get { return _cc; }
             set
             {
                 _cc = value;
@@ -161,10 +135,7 @@ namespace Papercut.ViewModels
 
         public string Headers
         {
-            get
-            {
-                return _headers;
-            }
+            get { return _headers; }
             set
             {
                 _headers = value;
@@ -174,10 +145,7 @@ namespace Papercut.ViewModels
 
         public string TextBody
         {
-            get
-            {
-                return _textBody;
-            }
+            get { return _textBody; }
             set
             {
                 _textBody = value;
@@ -187,10 +155,7 @@ namespace Papercut.ViewModels
 
         public bool IsLoading
         {
-            get
-            {
-                return _isLoading;
-            }
+            get { return _isLoading; }
             set
             {
                 _isLoading = value;
@@ -200,10 +165,7 @@ namespace Papercut.ViewModels
 
         public string Body
         {
-            get
-            {
-                return _body;
-            }
+            get { return _body; }
             set
             {
                 _body = value;
@@ -213,10 +175,7 @@ namespace Papercut.ViewModels
 
         public bool IsHtml
         {
-            get
-            {
-                return _isHtml;
-            }
+            get { return _isHtml; }
             set
             {
                 _isHtml = value;
@@ -226,10 +185,7 @@ namespace Papercut.ViewModels
 
         public int SelectedTabIndex
         {
-            get
-            {
-                return _selectedTabIndex;
-            }
+            get { return _selectedTabIndex; }
             set
             {
                 _selectedTabIndex = value;
@@ -239,10 +195,7 @@ namespace Papercut.ViewModels
 
         public int AttachmentCount
         {
-            get
-            {
-                return _attachmentCount;
-            }
+            get { return _attachmentCount; }
             set
             {
                 _attachmentCount = value;
@@ -253,18 +206,12 @@ namespace Papercut.ViewModels
 
         public bool HasAttachments
         {
-            get
-            {
-                return AttachmentCount > 0;
-            }
+            get { return AttachmentCount > 0; }
         }
 
         public string HtmlFile
         {
-            get
-            {
-                return _htmlFile;
-            }
+            get { return _htmlFile; }
             set
             {
                 _htmlFile = value;
@@ -275,7 +222,7 @@ namespace Papercut.ViewModels
         public PartsListViewModel PartsListViewModel { get; private set; }
 
         public MessageViewModel MessageViewModel { get; private set; }
-        
+
         public void LoadMessageEntry(MessageEntry messageEntry)
         {
             if (_loadingDisposable != null) _loadingDisposable.Dispose();

@@ -1,26 +1,24 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.Helpers
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -28,6 +26,7 @@ namespace Papercut.Helpers
     using MimeKit;
 
     using Papercut.Core.Helper;
+    using Papercut.Properties;
 
     public static class MailMessageHelper
     {
@@ -42,19 +41,16 @@ namespace Papercut.Helpers
             string tempPath = Path.GetTempPath();
             string htmlFile = Path.Combine(tempPath, PreviewFileNme);
 
-            var mimeParts = mailMessageEx.BodyParts.ToList();
+            List<MimePart> mimeParts = mailMessageEx.BodyParts.ToList();
 
-            var mainBodyTextPart = mimeParts.GetMainBodyTextPart();
+            TextPart mainBodyTextPart = mimeParts.GetMainBodyTextPart();
             string htmlText = mainBodyTextPart.Text;
 
-            if (!mainBodyTextPart.IsContentHtml())
-            {
-                htmlText =
-                    "<html><head><style>body { padding: 0; margin: 0.5em; font-family:monospace; line-height: 1.5em; font-size: 8pt; }</style></head><body>"
-                    + htmlText + "</body></html>";
-            }
+            if (!mainBodyTextPart.IsContentHtml()) htmlText = string.Format(UIStrings.HtmlFormatWrapper, htmlText);
 
-            foreach (MimePart image in mimeParts.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
+            foreach (
+                MimePart image in
+                    mimeParts.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
             {
                 string fileName = Path.Combine(tempPath, image.ContentId);
                 using (FileStream fs = File.OpenWrite(fileName))

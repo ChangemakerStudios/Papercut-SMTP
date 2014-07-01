@@ -1,22 +1,19 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.ViewModels
 {
@@ -62,10 +59,7 @@ namespace Papercut.ViewModels
 
         public string WindowTitle
         {
-            get
-            {
-                return _windowTitle;
-            }
+            get { return _windowTitle; }
             set
             {
                 _windowTitle = value;
@@ -75,10 +69,7 @@ namespace Papercut.ViewModels
 
         public string Server
         {
-            get
-            {
-                return _server;
-            }
+            get { return _server; }
             set
             {
                 _server = value;
@@ -88,10 +79,7 @@ namespace Papercut.ViewModels
 
         public string To
         {
-            get
-            {
-                return _to;
-            }
+            get { return _to; }
             set
             {
                 _to = value;
@@ -101,10 +89,7 @@ namespace Papercut.ViewModels
 
         public bool Sending
         {
-            get
-            {
-                return _sending;
-            }
+            get { return _sending; }
             private set
             {
                 _sending = value;
@@ -114,10 +99,7 @@ namespace Papercut.ViewModels
 
         public string From
         {
-            get
-            {
-                return _from;
-            }
+            get { return _from; }
             set
             {
                 _from = value;
@@ -127,15 +109,19 @@ namespace Papercut.ViewModels
 
         public MessageEntry MessageEntry
         {
-            get
-            {
-                return _messageEntry;
-            }
+            get { return _messageEntry; }
             set
             {
                 _messageEntry = value;
                 NotifyOfPropertyChange(() => MessageEntry);
             }
+        }
+
+        public void Dispose()
+        {
+            if (_worker != null) _worker.Dispose();
+
+            _worker = null;
         }
 
         void Load()
@@ -205,16 +191,6 @@ namespace Papercut.ViewModels
                 TaskScheduler.FromCurrentSynchronizationContext());
 
             Sending = true;
-        }
-
-        public void Dispose()
-        {
-            if (this._worker != null)
-            {
-                this._worker.Dispose();
-            }
-
-            this._worker = null;
         }
     }
 }

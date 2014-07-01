@@ -21,30 +21,21 @@ namespace Papercut.Helpers
 
     using Caliburn.Micro;
 
-    using Serilog;
-
-    public class CalburnSerilogBridge : ILog
+    public interface IViewModelWindowManager : IWindowManager
     {
-        readonly Lazy<ILogger> _logger;
+        bool? ShowDialogWithViewModel<TViewModel>(
+            Action<TViewModel> setViewModel = null,
+            object context = null)
+            where TViewModel : PropertyChangedBase;
 
-        public CalburnSerilogBridge(Lazy<ILogger> logger)
-        {
-            _logger = logger;
-        }
+        void ShowWindowWithViewModel<TViewModel>(
+            Action<TViewModel> setViewModel = null,
+            object context = null)
+            where TViewModel : PropertyChangedBase;
 
-        public void Info(string format, params object[] args)
-        {
-            _logger.Value.Debug(format, args);
-        }
-
-        public void Warn(string format, params object[] args)
-        {
-            _logger.Value.Warning(format, args);
-        }
-
-        public void Error(Exception exception)
-        {
-            _logger.Value.Error(exception, "Exception Logged");
-        }
+        void ShowPopupWithViewModel<TViewModel>(
+            Action<TViewModel> setViewModel = null,
+            object context = null)
+            where TViewModel : PropertyChangedBase;
     }
 }

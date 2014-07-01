@@ -1,0 +1,43 @@
+﻿<controls:MetroWindow x:Class="Papercut.Views.RulesConfigurationView"
+                      xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:model="clr-namespace:Papercut.ViewModels"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
+                      xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                      xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
+                      xmlns:cal="http://www.caliburnproject.org"
+                      mc:Ignorable="d"
+                      Title="{Binding WindowTitle}" Width="500" Height="400" Icon="/Papercut;component/App.ico"
+                      WindowStyle="ToolWindow"
+                      ResizeMode="NoResize"
+                      ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner">
+    <i:Interaction.Behaviors>
+        <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
+    </i:Interaction.Behaviors>    
+    <DockPanel>
+        <ToolBarTray Height="Auto" DockPanel.Dock="Top">
+            <ToolBar>
+                <MenuItem Header="Add Rule">
+                    <MenuItem Header="Forward" />
+                </MenuItem>
+            </ToolBar>
+        </ToolBarTray>
+        <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto"
+                  SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
+                  ItemsSource="{Binding Rules}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Delete" IsEnabled="{Binding Path=HasSelectedRule}"
+                              cal:Message.Attach="Delete" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Rule Type" Binding="{Binding ContentType.MediaType}" />
+                <DataGridTextColumn Header="Description" Binding="{Binding ContentType.Charset}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</controls:MetroWindow>

@@ -19,7 +19,8 @@ namespace Papercut.Events
 {
     using Papercut.Core.Events;
 
-    public class SettingsUpdatedEvent : IDomainEvent
+    public class ShowOptionWindowEvent : IDomainEvent
     {
+        
     }
 }

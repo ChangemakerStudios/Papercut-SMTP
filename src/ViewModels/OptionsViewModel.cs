@@ -1,22 +1,19 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Papercut.ViewModels
 {
@@ -62,10 +59,7 @@ namespace Papercut.ViewModels
 
         public string WindowTitle
         {
-            get
-            {
-                return _windowTitle;
-            }
+            get { return _windowTitle; }
             set
             {
                 _windowTitle = value;
@@ -75,10 +69,7 @@ namespace Papercut.ViewModels
 
         public string IP
         {
-            get
-            {
-                return _ip;
-            }
+            get { return _ip; }
             set
             {
                 _ip = value;
@@ -88,10 +79,7 @@ namespace Papercut.ViewModels
 
         public int Port
         {
-            get
-            {
-                return _port;
-            }
+            get { return _port; }
             set
             {
                 _port = value;
@@ -101,10 +89,7 @@ namespace Papercut.ViewModels
 
         public bool RunOnStartup
         {
-            get
-            {
-                return _runOnStartup;
-            }
+            get { return _runOnStartup; }
             set
             {
                 _runOnStartup = value;
@@ -114,10 +99,7 @@ namespace Papercut.ViewModels
 
         public bool MinimizeOnClose
         {
-            get
-            {
-                return _minimizeOnClose;
-            }
+            get { return _minimizeOnClose; }
             set
             {
                 _minimizeOnClose = value;
@@ -127,10 +109,7 @@ namespace Papercut.ViewModels
 
         public bool StartMinimized
         {
-            get
-            {
-                return _startMinimized;
-            }
+            get { return _startMinimized; }
             set
             {
                 _startMinimized = value;
