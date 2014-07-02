@@ -19,6 +19,7 @@ namespace Papercut.ViewModels
 {
     using System;
     using System.Reactive.Linq;
+    using System.Windows;
     using System.Windows.Navigation;
 
     using Caliburn.Micro;
@@ -26,6 +27,7 @@ namespace Papercut.ViewModels
     using MimeKit;
 
     using Papercut.Core.Annotations;
+    using Papercut.Core.Helper;
     using Papercut.Helpers;
     using Papercut.Views;
 
@@ -33,7 +35,14 @@ namespace Papercut.ViewModels
 
     public class MessageViewModel : Screen
     {
+        readonly ILogger _logger;
+
         string _htmlFile;
+
+        public MessageViewModel(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         public string HtmlFile
         {
@@ -58,14 +67,15 @@ namespace Papercut.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        Log.Logger.Error(
+                        _logger.Error(
                             ex,
                             "Exception Saving Browser Temp File for {MailMessage}",
                             mailMessageEx.ToString());
                     }
 
                     return null;
-                }).Where(s => !string.IsNullOrEmpty(s)).Subscribe(h => HtmlFile = h);
+                }).Where(s => !string.IsNullOrEmpty(s))
+                .Subscribe(h => HtmlFile = h);
         }
 
         protected override void OnViewLoaded(object view)
@@ -74,24 +84,40 @@ namespace Papercut.ViewModels
 
             var typedView = view as MessageView;
 
-            if (typedView != null)
+            if (typedView == null)
             {
-                this.GetPropertyValues(p => p.HtmlFile)
-                    .ObserveOnDispatcher()
-                    .Subscribe(
-                        file =>
-                        {
-                            typedView.defaultHtmlView.NavigationUIVisibility =
-                                NavigationUIVisibility.Hidden;
-
-                            if (!string.IsNullOrWhiteSpace(file))
-                            {
-                                typedView.defaultHtmlView.Navigate(new Uri(file));
-                                typedView.defaultHtmlView.Refresh();
-                            }
-                            else typedView.defaultHtmlView.Content = null;
-                        });
+                _logger.Error("Unable to locate the MessageView to hook the Frame Control");
+                return;
             }
+
+            this.GetPropertyValues(p => p.HtmlFile)
+                .ObserveOnDispatcher()
+                .Subscribe(
+                    file =>
+                    {
+                        typedView.defaultHtmlView.NavigationUIVisibility =
+                            NavigationUIVisibility.Hidden;
+
+                        if (!string.IsNullOrWhiteSpace(file))
+                        {
+                            typedView.defaultHtmlView.Navigate(new Uri(file));
+                            typedView.defaultHtmlView.Refresh();
+                        }
+                        else typedView.defaultHtmlView.Content = null;
+                    });
+
+            Observable
+                .FromEvent
+                <DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
+                    a => ((s, e) => a(e)),
+                    h => typedView.IsEnabledChanged += h,
+                    h => typedView.IsEnabledChanged -= h)
+                .Subscribe(
+                    o =>
+                    {
+                        // not enabled -- set the control to file to null
+                        if (!o.NewValue.ToType<bool>()) HtmlFile = null;
+                    });
         }
     }
 }
