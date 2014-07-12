@@ -191,8 +191,10 @@ namespace Papercut.ViewModels
             Observable.Start(
                 () =>
                 {
-                    progressController.Result.SetCancelable(false);
-                    progressController.Result.SetIndeterminate();
+                    var progressDialog = progressController.Result;
+
+                    progressDialog.SetCancelable(false);
+                    progressDialog.SetIndeterminate();
 
                     // send message...
                     var session = new SmtpSession
@@ -205,7 +207,7 @@ namespace Papercut.ViewModels
                         _messageRepository.GetMessage(MessageListViewModel.SelectedMessage);
 
                     new SmtpClient(session).Send();
-                    progressController.Result.CloseAsync().Wait();
+                    progressDialog.CloseAsync().Wait();
 
                     return true;
                 }, TaskPoolScheduler.Default)

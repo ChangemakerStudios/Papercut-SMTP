@@ -82,7 +82,7 @@
             </TabItem>
             <TabItem Header="Body" Name="bodyViewTab">
                 <TextBox Name="Body" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Width="Auto" Height="Auto"
-                         VerticalScrollBarVisibility="Auto" />
+                         VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
             </TabItem>
         </TabControl>
     </Grid>
