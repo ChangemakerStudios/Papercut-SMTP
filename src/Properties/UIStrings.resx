@@ -121,7 +121,7 @@
     <value>Delete{{#if HasSelectedMessage}} ({{SelectedMessageCount}}){{/if}}</value>
   </data>
   <data name="HtmlFormatWrapper" xml:space="preserve">
-    <value>&lt;html&gt;&lt;head&gt;&lt;style&gt;body {{ padding: 0; margin: 0.5em; font-family:monospace; line-height: 1.5em; font-size: 8pt; }}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;{0}&lt;/body&gt;&lt;/html&gt;</value>
+    <value>&lt;html&gt;&lt;head&gt;&lt;style&gt;body {{ padding: 0; margin: 0.5em; font-family:monospace; line-height: 1.5em; font-size: 8pt; }}&lt;/style&gt;&lt;/head&gt;&lt;body oncontextmenu="return false;"&gt;{0}&lt;/body&gt;&lt;/html&gt;</value>
     <comment>Used to create the papercut.htm file</comment>
   </data>
 </root>

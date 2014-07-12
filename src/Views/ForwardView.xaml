@@ -24,12 +24,9 @@
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="2"
                         FrameworkElement.FlowDirection="RightToLeft">
                 <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
-                <Button Width="75" Margin="2" Name="Send" IsDefault="True"
-                        IsEnabled="{Binding Sending, Converter={StaticResource InverseBooleanConverter}}">
+                <Button Width="75" Margin="2" Name="Send" IsDefault="True">
                     Send
                 </Button>
-                <Label FlowDirection="LeftToRight" Name="sendingLabel" Content="Sending..."
-                       Visibility="{Binding Sending, Converter={StaticResource HiddenIfFalse}}" />
             </StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -45,12 +42,11 @@
                 <Label Grid.Column="0" Grid.Row="1">From:</Label>
                 <Label Grid.Column="0" Grid.Row="2">To:</Label>
                 <TextBox Grid.Column="1" Grid.Row="0" Margin="2" Width="150" TabIndex="0" HorizontalAlignment="Left"
-                         Name="Server"
-                         IsEnabled="{Binding Sending, Converter={StaticResource InverseBooleanConverter}}" />
+                         Name="Server" />
                 <TextBox Grid.Column="1" Grid.Row="1" Margin="2" Width="150" TabIndex="1" HorizontalAlignment="Left"
-                         Name="From" IsEnabled="{Binding Sending, Converter={StaticResource InverseBooleanConverter}}" />
+                         Name="From" />
                 <TextBox Grid.Column="1" Grid.Row="2" Margin="2" Width="150" TabIndex="2" HorizontalAlignment="Left"
-                         Name="To" IsEnabled="{Binding Sending, Converter={StaticResource InverseBooleanConverter}}" />
+                         Name="To" />
             </Grid>
         </DockPanel>
     </Grid>

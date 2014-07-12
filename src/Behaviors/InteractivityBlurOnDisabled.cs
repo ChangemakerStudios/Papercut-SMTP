@@ -18,25 +18,9 @@
 namespace Papercut.Behaviors
 {
     using System.Windows;
-    using System.Windows.Interactivity;
-    using System.Windows.Media.Effects;
 
-    public class InteractivityBlurOnDisabled : Behavior<FrameworkElement>
+    public class InteractivityBlurOnDisabled : InteractivityBlurBase<FrameworkElement>
     {
-        // Using a DependencyProperty as the backing store for BlurRadius. This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty BlurRadiusProperty =
-            DependencyProperty.Register(
-                "BlurRadius",
-                typeof(int),
-                typeof(FrameworkElement),
-                new UIPropertyMetadata(0));
-
-        public int BlurRadius
-        {
-            get { return (int)GetValue(BlurRadiusProperty); }
-            set { SetValue(BlurRadiusProperty, value); }
-        }
-
         protected override void OnAttached()
         {
             base.OnAttached();
@@ -47,7 +31,7 @@ namespace Papercut.Behaviors
         {
             AssociatedObject.Effect = AssociatedObject.IsEnabled
                                           ? null
-                                          : new BlurEffect { Radius = BlurRadius };
+                                          : GetBlurEffect();
         }
     }
 }

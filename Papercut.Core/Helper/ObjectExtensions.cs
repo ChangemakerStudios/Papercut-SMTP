@@ -36,16 +36,14 @@ namespace Papercut.Core.Helper
             if (instance == null) return default(T);
 
             if (Equals(instance, default(T))) return default(T);
-
             if (Equals(instance, DBNull.Value)) return default(T);
 
-            Type instanceType = instance.GetType();
-
-            if (instanceType == typeof(string))
+            var str = instance as string;
+            if (str != null)
             {
-                if (string.IsNullOrEmpty(instance as string)) return default(T);
+                if (string.IsNullOrEmpty(str)) return default(T);
             }
-            else if (instanceType.IsClass && !(instance is IConvertible))
+            else if (!(instance is IConvertible) && !instance.GetType().IsValueType)
             {
                 // just cast since it's a class....
                 return (T)instance;

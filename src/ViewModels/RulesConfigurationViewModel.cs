@@ -22,12 +22,21 @@ namespace Papercut.ViewModels
     using Caliburn.Micro;
 
     using Papercut.Core.Rules;
+    using Papercut.Services;
 
     public class RulesConfigurationViewModel : Screen
     {
+        readonly RuleService _ruleService;
+
         IRule _selectedRule;
 
         string _windowTitle = "Rules Configuration";
+
+        public RulesConfigurationViewModel(RuleService ruleService)
+        {
+            _ruleService = ruleService;
+            Rules = _ruleService.Rules;
+        }
 
         public string WindowTitle
         {
@@ -47,6 +56,11 @@ namespace Papercut.ViewModels
                 _selectedRule = value;
                 NotifyOfPropertyChange(() => SelectedRule);
             }
+        }
+
+        public void AddForwardRule()
+        {
+            
         }
 
         public ObservableCollection<IRule> Rules { get; private set; }

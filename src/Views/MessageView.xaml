@@ -6,6 +6,8 @@
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="400" Background="White">
     <Grid>
-        <Frame Name="defaultHtmlView" BorderBrush="LightGray" BorderThickness="1" Width="Auto" Height="Auto" />
+        <Border BorderBrush="LightGray" BorderThickness="1">
+            <WebBrowser Name="htmlView" Width="Auto" Height="Auto"></WebBrowser>
+        </Border>
     </Grid>
 </UserControl>

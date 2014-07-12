@@ -227,15 +227,17 @@ namespace Papercut.ViewModels
         {
             if (_loadingDisposable != null) _loadingDisposable.Dispose();
 
+            bool handleLoading = !IsLoading;
+
             if (messageEntry == null)
             {
                 // show empty...
                 DisplayMimeMessage(null);
-                IsLoading = false;
+                if (handleLoading) IsLoading = false;
             }
             else
             {
-                IsLoading = true;
+                if (handleLoading) IsLoading = true;
 
                 // load and show it...
                 _loadingDisposable =
@@ -245,7 +247,7 @@ namespace Papercut.ViewModels
                             m =>
                             {
                                 DisplayMimeMessage(m);
-                                IsLoading = false;
+                                if (handleLoading) IsLoading = false;
                             });
             }
         }

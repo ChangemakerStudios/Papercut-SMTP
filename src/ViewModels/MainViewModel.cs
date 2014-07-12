@@ -22,12 +22,19 @@ namespace Papercut.ViewModels
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reflection;
+    using System.Threading;
     using System.Windows;
 
     using Caliburn.Micro;
 
+    using MahApps.Metro.Controls;
+    using MahApps.Metro.Controls.Dialogs;
+
+    using Microsoft.Build.Utilities;
+
     using Papercut.Core.Events;
     using Papercut.Core.Message;
+    using Papercut.Core.Network;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
@@ -42,20 +49,26 @@ namespace Papercut.ViewModels
 
         readonly IPublishEvent _publishEvent;
 
+        readonly MessageRepository _messageRepository;
+
         readonly IViewModelWindowManager _viewModelWindowManager;
 
-        Window _window;
+        bool _isDeactivated;
+
+        MetroWindow _window;
 
         string _windowTitle = WindowTitleDefault;
 
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
             IPublishEvent publishEvent,
+            MessageRepository messageRepository,
             Func<MessageListViewModel> messageListViewModelFactory,
             Func<MessageDetailViewModel> messageDetailViewModelFactory)
         {
             _viewModelWindowManager = viewModelWindowManager;
             _publishEvent = publishEvent;
+            _messageRepository = messageRepository;
 
             MessageListViewModel = messageListViewModelFactory();
             MessageDetailViewModel = messageDetailViewModelFactory();
@@ -66,6 +79,16 @@ namespace Papercut.ViewModels
         public MessageListViewModel MessageListViewModel { get; private set; }
 
         public MessageDetailViewModel MessageDetailViewModel { get; private set; }
+
+        public bool IsDeactivated
+        {
+            get { return _isDeactivated; }
+            set
+            {
+                _isDeactivated = value;
+                NotifyOfPropertyChange(() => IsDeactivated);
+            }
+        }
 
         public string WindowTitle
         {
@@ -108,17 +131,17 @@ namespace Papercut.ViewModels
             MessageBox.Show(message.MessageText, message.Caption);
         }
 
+        void IHandle<ShowOptionWindowEvent>.Handle(ShowOptionWindowEvent message)
+        {
+            ShowOptions();
+        }
+
         void IHandle<SmtpServerBindFailedEvent>.Handle(SmtpServerBindFailedEvent message)
         {
             MessageBox.Show(
                 "Failed to start SMTP server listening. The IP and Port combination is in use by another program. To fix, change the server bindings in the options.",
                 "Failed");
 
-            ShowOptions();
-        }
-
-        void IHandle<ShowOptionWindowEvent>.Handle(ShowOptionWindowEvent message)
-        {
             ShowOptions();
         }
 
@@ -154,19 +177,51 @@ namespace Papercut.ViewModels
 
         public void ForwardSelected()
         {
-            MessageEntry entry = MessageListViewModel.SelectedMessage;
-            if (entry != null)
-            {
-                _viewModelWindowManager.ShowDialogWithViewModel<ForwardViewModel>(
-                    vm => vm.MessageEntry = entry);
-            }
+            if (MessageListViewModel.SelectedMessage == null) return;
+
+            var forwardViewModel = new ForwardViewModel() { FromSetting = true };
+            var result = _viewModelWindowManager.ShowDialog(forwardViewModel);
+            if (result == null || !result.Value) return;
+
+            MessageDetailViewModel.IsLoading = true;
+            var progressController =
+                _window.ShowProgressAsync("Please wait...", "Forwarding Email");
+
+            Observable.Start(
+                () =>
+                {
+                    progressController.Result.SetCancelable(false);
+                    progressController.Result.SetIndeterminate();
+
+                    // send message...
+                    var session = new SmtpSession
+                    {
+                        MailFrom = forwardViewModel.From,
+                        Sender = forwardViewModel.Server
+                    };
+                    session.Recipients.Add(forwardViewModel.To);
+                    session.Message =
+                        _messageRepository.GetMessage(MessageListViewModel.SelectedMessage);
+
+                    new SmtpClient(session).Send();
+                    progressController.Result.CloseAsync();
+
+                    return true;
+                }, TaskPoolScheduler.Default)
+                .Delay(TimeSpan.FromMilliseconds(500))
+                .ObserveOnDispatcher()
+                .Subscribe((b) =>
+                {
+                    MessageDetailViewModel.IsLoading = false;
+                });
+
         }
 
         protected override void OnViewAttached(object view, object context)
         {
             base.OnViewAttached(view, context);
 
-            _window = view as Window;
+            _window = view as MetroWindow;
 
             if (_window == null) return;
 
@@ -187,6 +242,9 @@ namespace Papercut.ViewModels
                     _window.WindowState = WindowState.Minimized;
                 }
             };
+
+            _window.Activated += (sender, args) => IsDeactivated = false;
+            _window.Deactivated += (sender, args) => IsDeactivated = true;
 
             // Minimize if set to
             if (Settings.Default.StartMinimized)

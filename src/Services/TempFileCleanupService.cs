@@ -15,39 +15,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Helpers
-{
-    using System;
 
-    using Caliburn.Micro;
+namespace Papercut.Services
+{
+    using Papercut.Core.Events;
+    using Papercut.Helpers;
 
     using Serilog;
 
-    public class CalburnSerilogBridge : ILog
+    public class TempFileCleanupService : IHandleEvent<AppExitEvent>
     {
-        readonly Lazy<ILogger> _logger;
+        readonly ILogger _logger;
 
-        public CalburnSerilogBridge(Lazy<ILogger> logger)
+        public TempFileCleanupService(ILogger logger)
         {
             _logger = logger;
         }
 
-        public void Info(string format, params object[] args)
+        public void Handle(AppExitEvent @event)
         {
-            if (!format.StartsWith("Action Convention Not Applied"))
-            {
-                _logger.Value.Debug(format, args);
-            }
-        }
-
-        public void Warn(string format, params object[] args)
-        {
-            _logger.Value.Warning(format, args);
-        }
-
-        public void Error(Exception exception)
-        {
-            _logger.Value.Error(exception, "Exception Logged");
+            // time for temp file cleanup
+            MailMessageHelper.TryCleanUpTempFiles(_logger);
         }
     }
 }

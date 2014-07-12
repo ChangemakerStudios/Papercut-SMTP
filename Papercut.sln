@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut", "src\Papercut.csproj", "{AC067042-66BD-4110-ADA1-E2CEA43E7947}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{C631287A-54C5-4AAA-8DC7-68D9651EE0CE}"
@@ -37,7 +39,6 @@ Global
 		{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

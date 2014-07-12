@@ -30,6 +30,7 @@ namespace Papercut.Core
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
     using Papercut.Core.Network;
+    using Papercut.Core.Rules;
 
     using Serilog;
 
@@ -71,6 +72,7 @@ namespace Papercut.Core
                 .PreserveExistingDefaults();
 
             builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
+            builder.RegisterType<RuleRespository>().AsSelf().SingleInstance();
             builder.RegisterType<MimeMessageLoader>().AsSelf().SingleInstance();
 
             builder.RegisterType<MessagePathConfigurator>()

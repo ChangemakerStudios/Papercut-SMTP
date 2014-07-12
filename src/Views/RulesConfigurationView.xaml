@@ -16,16 +16,18 @@
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner">
     <i:Interaction.Behaviors>
         <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
-    </i:Interaction.Behaviors>    
+    </i:Interaction.Behaviors>
     <DockPanel>
         <ToolBarTray Height="Auto" DockPanel.Dock="Top">
-            <ToolBar>
-                <MenuItem Header="Add Rule">
-                    <MenuItem Header="Forward" />
-                </MenuItem>
+            <ToolBar BorderBrush="LightGray" BorderThickness="1" Width="Auto" Margin="2">
+                <Menu>
+                    <MenuItem Header="Add Rule">
+                        <MenuItem Header="Forward" Name="AddForwardRule" />
+                    </MenuItem>
+                </Menu>
             </ToolBar>
         </ToolBarTray>
-        <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto"
+        <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto" 
                   SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
                   ItemsSource="{Binding Rules}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.ContextMenu>
@@ -35,8 +37,8 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Rule Type" Binding="{Binding ContentType.MediaType}" />
-                <DataGridTextColumn Header="Description" Binding="{Binding ContentType.Charset}" />
+                <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" />
+                <DataGridTextColumn Header="Description" Binding="{Binding Description}" />
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>

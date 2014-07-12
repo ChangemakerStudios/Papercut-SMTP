@@ -25,60 +25,59 @@ namespace Papercut.Services
     using Papercut.Core.Rules;
 
     using Serilog;
-
+    
     public class RulesDispatcher : IHandleEvent<AppReadyEvent>, IHandleEvent<AppExitEvent>
     {
         readonly PapercutServiceBackendCoordinator _coordinator;
 
+        readonly RuleService _ruleService;
+
         readonly ILogger _logger;
 
-        public RulesDispatcher(ILogger logger, PapercutServiceBackendCoordinator coordinator)
+        public RulesDispatcher(ILogger logger, PapercutServiceBackendCoordinator coordinator, RuleService ruleService)
         {
             _logger = logger;
             _coordinator = coordinator;
-            RuleCollection = new RuleCollection();
-            RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
+            _ruleService = ruleService;
         }
-
-        public string RuleFileName { get; set; }
-
-        public RuleCollection RuleCollection { get; set; }
 
         public void Handle(AppExitEvent @event)
         {
-            if (!RuleCollection.Any()) return;
+            if (!_ruleService.Rules.Any()) return;
 
             try
             {
-                RuleCollection.SaveTo(RuleFileName);
+                _ruleService.Save();
                 _logger.Information(
                     "Saved {RuleCount} to {RuleFileName}",
-                    RuleCollection.Count,
-                    RuleFileName);
+                    _ruleService.Rules.Count,
+                    _ruleService.RuleFileName);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error saving rules to file {RuleFileName}", RuleFileName);
+                _logger.Error(ex, "Error saving rules to file {RuleFileName}", _ruleService.RuleFileName);
             }
         }
 
         public void Handle(AppReadyEvent @event)
         {
-            _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+            _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", _ruleService.RuleFileName);
             try
             {
-                if (RuleCollection.LoadFrom(RuleFileName))
+                if (_ruleService.Rules.Any())
                 {
                     _logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
-                        RuleCollection.Count,
-                        RuleFileName);
+                        _ruleService.Rules.Count,
+                        _ruleService.RuleFileName);
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error loading rules from file {RuleFileName}", RuleFileName);
+                _logger.Error(ex, "Error loading rules from file {RuleFileName}", _ruleService.RuleFileName);
             }
+
+            //RuleRespository.Add(new ForwardRule("127.0.0.1", "testing@papercut.com", "blah@papercut.com"));
         }
     }
 }

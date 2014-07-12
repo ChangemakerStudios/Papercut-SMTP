@@ -22,15 +22,73 @@ namespace Papercut.Helpers
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Text.RegularExpressions;
 
     using MimeKit;
 
     using Papercut.Core.Helper;
     using Papercut.Properties;
 
+    using Serilog;
+
     public static class MailMessageHelper
     {
-        const string PreviewFileNme = "papercut.htm";
+        const string PreviewFilePrefix = "Papercut-";
+
+        const string BodyContentsDisableContextMenu =
+            @"<body${contents} oncontextmenu=""return false;"">";
+
+        const string HtmlBodyPattern = @"\<body(?<contents>[^\<]*?)\>";
+
+        static readonly Regex _htmlBodyReplaceRegex =
+            new Regex(HtmlBodyPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        internal static int TryCleanUpTempFiles(ILogger logger = null)
+        {
+            int deleteCount = 0;
+            string tempPath = Path.GetTempPath();
+
+            logger = logger ?? Log.Logger;
+
+            // try cleanup...
+            try
+            {
+                string[] tmpFiles = Directory.GetFiles(
+                    tempPath,
+                    string.Format(
+                        "{0}*.html",
+                        PreviewFilePrefix));
+
+                foreach (string tmpFile in tmpFiles)
+                {
+                    try
+                    {
+                        File.Delete(tmpFile);
+                        deleteCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Warning(ex, @"Unable to delete {TempFile}", tmpFile);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warning(
+                    ex,
+                    @"Failure running temp file cleanup task on path delete {TempPath}",
+                    tempPath);
+            }
+
+            if (deleteCount > 0)
+            {
+                logger.Information(
+                    "Deleted {DeleteCount} temp files",
+                    deleteCount);
+            }
+
+            return deleteCount;
+        }
 
         internal static string CreateHtmlPreviewFile(this MimeMessage mailMessageEx)
         {
@@ -39,14 +97,20 @@ namespace Papercut.Helpers
             var replaceEmbeddedImageFormats = new[] { @"cid:{0}", @"cid:'{0}'", @"cid:""{0}""" };
 
             string tempPath = Path.GetTempPath();
-            string htmlFile = Path.Combine(tempPath, PreviewFileNme);
+            string tempFileName = string.Format(
+                "{0}{1}.html",
+                PreviewFilePrefix,
+                mailMessageEx.GetHashCode());
+
+            string htmlFile = Path.Combine(tempPath, tempFileName);
 
             List<MimePart> mimeParts = mailMessageEx.BodyParts.ToList();
 
             TextPart mainBodyTextPart = mimeParts.GetMainBodyTextPart();
             string htmlText = mainBodyTextPart.Text;
 
-            if (!mainBodyTextPart.IsContentHtml()) htmlText = string.Format(UIStrings.HtmlFormatWrapper, htmlText);
+            if (mainBodyTextPart.IsContentHtml()) htmlText = _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
+            else htmlText = string.Format(UIStrings.HtmlFormatWrapper, htmlText);
 
             foreach (
                 MimePart image in

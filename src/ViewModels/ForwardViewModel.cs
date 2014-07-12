@@ -17,31 +17,23 @@
 
 namespace Papercut.ViewModels
 {
-    using System;
     using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
     using System.Windows;
 
     using Caliburn.Micro;
 
-    using Papercut.Core.Message;
-    using Papercut.Core.Network;
     using Papercut.Properties;
 
-    public class ForwardViewModel : Screen, IDisposable
+    public class ForwardViewModel : Screen
     {
         static readonly Regex _emailRegex =
             new Regex(
                 @"(\A(\s*)\Z)|(\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z)",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        readonly MessageRepository _messageRepository;
-
         string _from;
 
-        MessageEntry _messageEntry;
-
-        bool _sending;
+        bool _fromSetting;
 
         string _server;
 
@@ -49,12 +41,14 @@ namespace Papercut.ViewModels
 
         string _windowTitle = "Forward Message";
 
-        Task _worker;
-
-        public ForwardViewModel(MessageRepository messageRepository)
+        public bool FromSetting
         {
-            _messageRepository = messageRepository;
-            Load();
+            get { return _fromSetting; }
+            set
+            {
+                _fromSetting = value;
+                NotifyOfPropertyChange(() => FromSetting);
+            }
         }
 
         public string WindowTitle
@@ -87,16 +81,6 @@ namespace Papercut.ViewModels
             }
         }
 
-        public bool Sending
-        {
-            get { return _sending; }
-            private set
-            {
-                _sending = value;
-                NotifyOfPropertyChange(() => Sending);
-            }
-        }
-
         public string From
         {
             get { return _from; }
@@ -105,23 +89,6 @@ namespace Papercut.ViewModels
                 _from = value;
                 NotifyOfPropertyChange(() => From);
             }
-        }
-
-        public MessageEntry MessageEntry
-        {
-            get { return _messageEntry; }
-            set
-            {
-                _messageEntry = value;
-                NotifyOfPropertyChange(() => MessageEntry);
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_worker != null) _worker.Dispose();
-
-            _worker = null;
         }
 
         void Load()
@@ -137,10 +104,16 @@ namespace Papercut.ViewModels
             TryClose(false);
         }
 
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewLoaded(view);
+
+            if (FromSetting) Load();
+        }
+
         public void Send()
         {
-            if (string.IsNullOrEmpty(Server)
-                || string.IsNullOrEmpty(From)
+            if (string.IsNullOrEmpty(Server) || string.IsNullOrEmpty(From)
                 || string.IsNullOrEmpty(To))
             {
                 MessageBox.Show(
@@ -161,36 +134,16 @@ namespace Papercut.ViewModels
                 return;
             }
 
-            string host = Server.Trim();
-            string from = From.Trim();
-            string to = To.Trim();
+            if (FromSetting)
+            {
+                // Save settings for the next time
+                Settings.Default.ForwardServer = Server.Trim();
+                Settings.Default.ForwardTo = To.Trim();
+                Settings.Default.ForwardFrom = From.Trim();
+                Settings.Default.Save();
+            }
 
-            _worker = Task.Factory.StartNew(
-                () =>
-                {
-                    var session = new SmtpSession { MailFrom = from, Sender = host };
-                    session.Recipients.Add(to);
-                    session.Message = _messageRepository.GetMessage(MessageEntry);
-
-                    new SmtpClient(session).Send();
-                });
-
-            _worker.ContinueWith(
-                t =>
-                {
-                    // Save settings for the next time
-                    Settings.Default.ForwardServer = Server;
-                    Settings.Default.ForwardTo = To;
-                    Settings.Default.ForwardFrom = From;
-                    Settings.Default.Save();
-
-                    Sending = false;
-
-                    TryClose(true);
-                },
-                TaskScheduler.FromCurrentSynchronizationContext());
-
-            Sending = true;
+            TryClose(true);
         }
     }
 }

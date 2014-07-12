@@ -20,9 +20,6 @@ namespace Papercut.ViewModels
     using System;
     using System.Reactive.Linq;
     using System.Windows;
-    using System.Windows.Navigation;
-
-    using Caliburn.Micro;
 
     using MimeKit;
 
@@ -32,6 +29,8 @@ namespace Papercut.ViewModels
     using Papercut.Views;
 
     using Serilog;
+
+    using Screen = Caliburn.Micro.Screen;
 
     public class MessageViewModel : Screen
     {
@@ -51,7 +50,13 @@ namespace Papercut.ViewModels
             {
                 _htmlFile = value;
                 NotifyOfPropertyChange(() => HtmlFile);
+                NotifyOfPropertyChange(() => HasHtmlFile);
             }
+        }
+
+        public bool HasHtmlFile
+        {
+            get { return !string.IsNullOrWhiteSpace(HtmlFile); }
         }
 
         public void ShowMessage([NotNull] MimeMessage mailMessageEx)
@@ -74,8 +79,8 @@ namespace Papercut.ViewModels
                     }
 
                     return null;
-                }).Where(s => !string.IsNullOrEmpty(s))
-                .Subscribe(h => HtmlFile = h);
+                }).Subscribe(
+                    h => { HtmlFile = h; });
         }
 
         protected override void OnViewLoaded(object view)
@@ -91,32 +96,26 @@ namespace Papercut.ViewModels
             }
 
             this.GetPropertyValues(p => p.HtmlFile)
-                .ObserveOnDispatcher()
                 .Subscribe(
                     file =>
                     {
-                        typedView.defaultHtmlView.NavigationUIVisibility =
-                            NavigationUIVisibility.Hidden;
-
-                        if (!string.IsNullOrWhiteSpace(file))
-                        {
-                            typedView.defaultHtmlView.Navigate(new Uri(file));
-                            typedView.defaultHtmlView.Refresh();
-                        }
-                        else typedView.defaultHtmlView.Content = null;
+                        typedView.htmlView.Source =
+                            new Uri(string.IsNullOrWhiteSpace(file) ? "about:blank" : file);
                     });
 
             Observable
-                .FromEvent
-                <DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
+                .FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
                     a => ((s, e) => a(e)),
                     h => typedView.IsEnabledChanged += h,
                     h => typedView.IsEnabledChanged -= h)
+                .Throttle(TimeSpan.FromMilliseconds(100))
+                .ObserveOnDispatcher()
                 .Subscribe(
                     o =>
                     {
-                        // not enabled -- set the control to file to null
-                        if (!o.NewValue.ToType<bool>()) HtmlFile = null;
+                        typedView.htmlView.Visibility = o.NewValue.ToType<bool>()
+                                                            ? Visibility.Visible
+                                                            : Visibility.Collapsed;
                     });
         }
     }

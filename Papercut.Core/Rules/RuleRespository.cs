@@ -18,7 +18,6 @@
 namespace Papercut.Core.Rules
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.Serialization.Formatters;
@@ -28,8 +27,7 @@ namespace Papercut.Core.Rules
 
     using Papercut.Core.Annotations;
 
-    [Serializable]
-    public class RuleCollection : ICollection<IRule>
+    public class RuleRespository
     {
         readonly Lazy<JsonSerializerSettings> _serializationSettings =
             new Lazy<JsonSerializerSettings>(
@@ -39,83 +37,33 @@ namespace Papercut.Core.Rules
                     TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
                 });
 
-        List<IRule> _rules = new List<IRule>();
-
         JsonSerializerSettings SerializationSettings
         {
             get { return _serializationSettings.Value; }
         }
 
-        public IEnumerator<IRule> GetEnumerator()
+        public void SaveRules([NotNull] IList<IRule> rules, string path)
         {
-            return _rules.GetEnumerator();
-        }
-
-        public void Add(IRule item)
-        {
-            _rules.Add(item);
-        }
-
-        public void Clear()
-        {
-            _rules.Clear();
-        }
-
-        public bool Contains(IRule item)
-        {
-            return _rules.Contains(item);
-        }
-
-        public void CopyTo(IRule[] array, int arrayIndex)
-        {
-            _rules.CopyTo(array, arrayIndex);
-        }
-
-        public bool Remove(IRule item)
-        {
-            return _rules.Remove(item);
-        }
-
-        public int Count
-        {
-            get { return _rules.Count; }
-        }
-
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public void SaveTo(string path)
-        {
+            if (rules == null) throw new ArgumentNullException("rules");
             if (path == null) throw new ArgumentNullException("path");
 
             string rulesJson = JsonConvert.SerializeObject(
-                _rules,
+                rules,
                 Formatting.Indented,
                 SerializationSettings);
 
             File.WriteAllText(path, rulesJson, Encoding.UTF8);
         }
 
-        public bool LoadFrom([NotNull] string path)
+        public IList<IRule> LoadRules([NotNull] string path)
         {
             if (path == null) throw new ArgumentNullException("path");
 
-            Clear();
-
-            if (!File.Exists(path)) return false;
+            if (!File.Exists(path)) return new List<IRule>(0);
 
             string json = File.ReadAllText(path, Encoding.UTF8);
 
-            _rules = JsonConvert.DeserializeObject<List<IRule>>(json, SerializationSettings);
-
-            return true;
+            return JsonConvert.DeserializeObject<List<IRule>>(json, SerializationSettings);
         }
     }
 }
