@@ -23,6 +23,7 @@ namespace Papercut.ViewModels
     using System.Reactive.Linq;
     using System.Reflection;
     using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows;
 
     using Caliburn.Micro;
@@ -185,7 +186,7 @@ namespace Papercut.ViewModels
 
             MessageDetailViewModel.IsLoading = true;
             var progressController =
-                _window.ShowProgressAsync("Please wait...", "Forwarding Email");
+                _window.ShowProgressAsync("Forwarding Email...", "Please wait");
 
             Observable.Start(
                 () =>
@@ -204,11 +205,10 @@ namespace Papercut.ViewModels
                         _messageRepository.GetMessage(MessageListViewModel.SelectedMessage);
 
                     new SmtpClient(session).Send();
-                    progressController.Result.CloseAsync();
+                    progressController.Result.CloseAsync().Wait();
 
                     return true;
                 }, TaskPoolScheduler.Default)
-                .Delay(TimeSpan.FromMilliseconds(500))
                 .ObserveOnDispatcher()
                 .Subscribe((b) =>
                 {
