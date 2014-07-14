@@ -26,17 +26,24 @@ namespace Papercut.Core.Helper
 
     public static class CollectionExtensions
     {
-        /// <summary>
-        ///     The add range.
-        /// </summary>
-        /// <param name="destinationCollection">
-        ///     The destination collection.
-        /// </param>
-        /// <param name="sourceCollection">
-        ///     The source collection.
-        /// </param>
-        /// <typeparam name="TValue">
-        /// </typeparam>
+        public static IDictionary<TKey, TValue> ToDictionary<TKey, TValue>(
+            [NotNull] this IEnumerable<KeyValuePair<TKey, TValue>> keyValuePairs)
+        {
+            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+
+            return keyValuePairs.ToDictionary(s => s.Key, s => s.Value);
+        }
+
+        public static IDictionary<TKey, TValue> FlattenToDictionary<TKey, TValue>(
+            [NotNull] this ILookup<TKey, TValue> lookup, Func<IEnumerable<TValue>, TValue> flattenFunc = null)
+        {
+            if (lookup == null) throw new ArgumentNullException("nameValueCollection");
+
+            flattenFunc = flattenFunc ?? (v => v.FirstOrDefault());
+
+            return lookup.ToDictionary(k => k.Key, v => flattenFunc(v));
+        }
+
         public static void AddRange<TValue>(
             this ICollection<TValue> destinationCollection,
             IEnumerable<TValue> sourceCollection)
@@ -52,15 +59,6 @@ namespace Papercut.Core.Helper
             }
         }
 
-        /// <summary>
-        ///     The add range.
-        /// </summary>
-        /// <param name="destinationList">
-        ///     The destination list.
-        /// </param>
-        /// <param name="sourceList">
-        ///     The source list.
-        /// </param>
         public static void AddRange(this IList destinationList, IEnumerable sourceList)
         {
             if (destinationList == null) throw new ArgumentNullException("destinationList");
@@ -73,13 +71,6 @@ namespace Papercut.Core.Helper
             }
         }
 
-        /// <summary>
-        /// Returns the index of the first occurance of T matching the predicate or -1.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="predicate"></param>
-        /// <returns></returns>
         public static int FindIndex<T>(
             [NotNull] this IEnumerable<T> items,
             [NotNull] Predicate<T> predicate)
@@ -97,19 +88,6 @@ namespace Papercut.Core.Helper
             return -1;
         }
 
-        /// <summary>
-        ///     The for each.
-        /// </summary>
-        /// <param name="source">
-        ///     The source.
-        /// </param>
-        /// <param name="act">
-        ///     The act.
-        /// </param>
-        /// <typeparam name="T">
-        /// </typeparam>
-        /// <returns>
-        /// </returns>
         public static IEnumerable<T> ForEach<T>(this IEnumerable<T> source, Action<T> act)
         {
             if (source == null) throw new ArgumentNullException("source");

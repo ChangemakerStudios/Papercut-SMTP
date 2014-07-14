@@ -18,14 +18,58 @@
 namespace Papercut.Core.Helper
 {
     using System;
+    using System.IO;
+    using System.Runtime.Serialization.Formatters;
+    using System.Text;
 
     using Newtonsoft.Json;
 
     public static class JsonHelpers
     {
+        static readonly JsonSerializerSettings _serializationSettings =
+            new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto,
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
+            };
+
         public static string ToJson(this object obj)
         {
             return JsonConvert.SerializeObject(obj);
+        }
+
+        public static void SaveJson<T>(
+            T obj,
+            string path,
+            Encoding textEncoding = null,
+            JsonSerializerSettings setting = null)
+            where T : class
+        {
+            if (obj == null) throw new ArgumentNullException("obj");
+            if (path == null) throw new ArgumentNullException("path");
+
+            string json = JsonConvert.SerializeObject(
+                obj,
+                Formatting.Indented,
+                setting ?? _serializationSettings);
+
+            File.WriteAllText(path, json, textEncoding ?? Encoding.UTF8);
+        }
+
+        public static T LoadJson<T>(
+            string path,
+            Func<T> defaultValueFunc = null,
+            Encoding textEncoding = null,
+            JsonSerializerSettings setting = null)
+            where T : class
+        {
+            if (path == null) throw new ArgumentNullException("path");
+
+            if (!File.Exists(path)) return defaultValueFunc == null ? default(T) : defaultValueFunc();
+
+            string json = File.ReadAllText(path, textEncoding ?? Encoding.UTF8);
+
+            return JsonConvert.DeserializeObject<T>(json, setting ?? _serializationSettings);
         }
 
         public static object FromJson(this string json, Type type)

@@ -15,29 +15,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Rules
+namespace Papercut.Core.Settings
 {
     using System;
-    using System.Collections.Generic;
 
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
 
-    public class RuleRespository
+    public static class SettingsTypedExtensions
     {
-        public void SaveRules([NotNull] IList<IRule> rules, string path)
+        public static T UseTyped<T>([NotNull] this ISettingStore settingStore)
+            where T : ISettingsTyped, new()
         {
-            if (rules == null) throw new ArgumentNullException("rules");
-            if (path == null) throw new ArgumentNullException("path");
+            if (settingStore == null) throw new ArgumentNullException("settingStore");
 
-            JsonHelpers.SaveJson(rules, path);
-        }
-
-        public IList<IRule> LoadRules([NotNull] string path)
-        {
-            if (path == null) throw new ArgumentNullException("path");
-
-            return JsonHelpers.LoadJson<IList<IRule>>(path, () => new List<IRule>(0));
+            return new T { Settings = settingStore };
         }
     }
 }
