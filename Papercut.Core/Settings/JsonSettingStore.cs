@@ -27,11 +27,7 @@ namespace Papercut.Core.Settings
         {
             if (SettingsFilePath == null) return;
 
-            var settings =
-                JsonHelpers.LoadJson<Dictionary<string, string>>(SettingsFilePath);
-
-            if (settings != null) CurrentSettings = new ConcurrentDictionary<string, string>(settings);
-            else CurrentSettings.Clear();
+            LoadSettings(JsonHelpers.LoadJson<Dictionary<string, string>>(SettingsFilePath));
         }
 
         public override void Save()
