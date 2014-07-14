@@ -83,10 +83,12 @@ namespace Papercut.Core
             builder.Register(
                 c =>
                 {
+                    var appMeta = c.Resolve<IAppMeta>();
+
                     //var jsonSink = new RollingFileSink(@"papercut.json", new JsonFormatter(), null, null);
                     var logFilePath = Path.Combine(
                         AppDomain.CurrentDomain.BaseDirectory,
-                        "Papercut.log");
+                        string.Format("{0}.log", appMeta.AppName));
 
                     var logConfiguration =
                         new LoggerConfiguration()
@@ -98,10 +100,8 @@ namespace Papercut.Core
                             .Enrich.WithMachineName()
                             .Enrich.WithThreadId()
                             .Enrich.FromLogContext()
-                            .Enrich.WithProperty("AppName", "Papercut")
-                            .Enrich.WithProperty(
-                                "AppVersion",
-                                Assembly.GetExecutingAssembly().GetName().Version.ToString(3))
+                            .Enrich.WithProperty("AppName", appMeta.AppName)
+                            .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
                             .WriteTo.ColoredConsole()
                             .WriteTo.RollingFile(logFilePath);
 

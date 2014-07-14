@@ -17,10 +17,18 @@
 
 namespace Papercut.Service
 {
+    using System;
+    using System.IO;
+    using System.Reflection;
+
     using Autofac;
+    using Autofac.Core;
 
     using Papercut.Core.Configuration;
+    using Papercut.Core.Settings;
     using Papercut.Service.Classes;
+
+    using Module = Autofac.Module;
 
     public class PapercutServiceModule : Module
     {
@@ -35,6 +43,20 @@ namespace Papercut.Service
             builder.RegisterType<ReplyWithDefaultMessageSavePath>()
                 .AsImplementedInterfaces()
                 .AsSelf()
+                .SingleInstance();
+
+            builder.RegisterType<ApplicationJsonSettingStore>()
+                .As<ISettingStore>()
+                .AsSelf()
+                .SingleInstance();
+
+            builder.Register(
+                ctx => ctx.Resolve<ISettingStore>().UseTyped<PapercutServiceSettings>())
+                .AsSelf()
+                .SingleInstance();
+
+            builder.Register((c) => new ApplicationMeta("Papercut.Service"))
+                .As<IAppMeta>()
                 .SingleInstance();
 
             builder.RegisterType<PapercutService>()

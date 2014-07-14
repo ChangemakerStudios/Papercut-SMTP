@@ -22,9 +22,19 @@ namespace Papercut.Core.Settings
     using Papercut.Core.Annotations;
     using Papercut.Core.Helper;
 
-    public static class ReadValueExtensions
+    public static class ReadWriteValueExtensions
     {
-        public static T GetAs<T>(
+        public static void Set(
+            [NotNull] this IWriteValue<string> writeValue,
+            [NotNull] string key, object value)
+        {
+            if (writeValue == null) throw new ArgumentNullException("writeValue");
+            if (key == null) throw new ArgumentNullException("key");
+
+            writeValue.Set(key, value.ToType<string>());
+        }
+
+        public static T Get<T>(
             [NotNull] this IReadValue<string> readValue,
             [NotNull] string key,
             [NotNull] Func<T> getDefaultValue)
@@ -37,7 +47,7 @@ namespace Papercut.Core.Settings
             return value.IsDefault() ? getDefaultValue() : value.ToType<T>();
         }
 
-        public static T GetAs<T>(
+        public static T Get<T>(
             [NotNull] this IReadValue<string> readValue,
             [NotNull] string key,
             [CanBeNull] T defaultValue = default(T))

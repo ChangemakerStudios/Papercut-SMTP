@@ -15,25 +15,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Service
+namespace Papercut.Service.Classes
 {
-    using System.Collections.ObjectModel;
-    using System.Linq;
+    using Papercut.Core.Settings;
 
-    using Papercut.Core.Configuration;
-    using Papercut.Service.Properties;
-
-    public class ServerPathTemplateProvider : IPathTemplatesProvider
+    public class PapercutServiceSettings : ISettingsTyped
     {
-        public ServerPathTemplateProvider()
+        public ISettingStore Settings { get; set; }
+
+        public string IP
         {
-            PathTemplates =
-                new ObservableCollection<string>(
-                    Settings.Default.MessagePath.Split(new[] { ';' })
-                        .Select(s => s.Trim())
-                        .Where(s => !string.IsNullOrWhiteSpace(s)));
+            get { return Settings.Get("IP", "Any"); }
+            set { if (IP != value) Settings.Set("IP", value); }
         }
 
-        public ObservableCollection<string> PathTemplates { get; private set; }
+        public int Port
+        {
+            get { return Settings.Get("Port", 25); }
+            set { if (Port != value) Settings.Set("Port", value); }
+        }
+
+        public string MessagePath
+        {
+            get { return Settings.Get("MessagePath", "%BaseDirectory%"); }
+            set { if (MessagePath != value) Settings.Set("MessagePath", value); }
+        }
     }
 }

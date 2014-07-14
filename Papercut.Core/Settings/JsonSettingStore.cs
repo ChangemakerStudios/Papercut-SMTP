@@ -1,23 +1,34 @@
 namespace Papercut.Core.Settings
 {
+    using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
 
     using Papercut.Core.Helper;
 
     public class JsonSettingStore : BaseSettingsStore
     {
-        readonly string _saveFilePath;
-
-        public JsonSettingStore(string saveFilePath)
+        protected JsonSettingStore()
         {
-            _saveFilePath = saveFilePath;
         }
+
+        public JsonSettingStore(string appName)
+        {
+            SettingsFilePath = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                appName + ".json");
+        }
+
+        protected string SettingsFilePath { get; set; }
 
         public override void Load()
         {
-            var settings = JsonHelpers.LoadJson<IList<KeyValuePair<string, string>>>(_saveFilePath);
+            if (SettingsFilePath == null) return;
+
+            var settings =
+                JsonHelpers.LoadJson<Dictionary<string, string>>(SettingsFilePath);
 
             if (settings != null) CurrentSettings = new ConcurrentDictionary<string, string>(settings);
             else CurrentSettings.Clear();
@@ -25,9 +36,9 @@ namespace Papercut.Core.Settings
 
         public override void Save()
         {
-            JsonHelpers.SaveJson<IList<KeyValuePair<string, string>>>(
-                CurrentSettings.ToList(),
-                _saveFilePath);
+            if (SettingsFilePath == null) return;
+
+            JsonHelpers.SaveJson(GetSettingSnapshot(), SettingsFilePath);
         }
     }
 }

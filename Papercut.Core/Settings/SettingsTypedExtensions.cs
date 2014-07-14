@@ -30,5 +30,19 @@ namespace Papercut.Core.Settings
 
             return new T { Settings = settingStore };
         }
+
+        public static void Save([NotNull] this ISettingsTyped typedSettings)
+        {
+            if (typedSettings == null) throw new ArgumentNullException("typedSettings");
+
+            typedSettings.Settings.Save();
+        }
+
+        public static void Load([NotNull] this ISettingsTyped typedSettings)
+        {
+            if (typedSettings == null) throw new ArgumentNullException("typedSettings");
+
+            typedSettings.Settings.Load();
+        }
     }
 }

@@ -25,12 +25,23 @@ namespace Papercut.Core.Settings
 
     public abstract class BaseSettingsStore : ISettingStore
     {
-        protected BaseSettingsStore(IEnumerable<KeyValuePair<string, string>> settings = null)
+        protected BaseSettingsStore()
         {
-            CurrentSettings = new ConcurrentDictionary<string, string>(settings);
+            CurrentSettings = new ConcurrentDictionary<string, string>();
         }
 
         protected ConcurrentDictionary<string, string> CurrentSettings { get; set; }
+
+        protected Dictionary<string, string> GetSettingSnapshot()
+        {
+            return new Dictionary<string, string>(CurrentSettings);
+        }
+
+        protected void LoadSettings(IEnumerable<KeyValuePair<string, string>> settings = null)
+        {
+            if (settings != null) CurrentSettings = new ConcurrentDictionary<string, string>(settings);
+            else CurrentSettings.Clear();
+        }
 
         public string this[[NotNull] string key]
         {
@@ -45,7 +56,7 @@ namespace Papercut.Core.Settings
             {
                 if (key == null) throw new ArgumentNullException("key");
 
-                CurrentSettings.TryUpdate(key, value, null);
+                CurrentSettings.AddOrUpdate(key, value, (k, v) => value);
             }
         }
 

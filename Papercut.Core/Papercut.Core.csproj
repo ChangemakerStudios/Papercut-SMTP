@@ -99,6 +99,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\ApplicationMeta.cs" />
+    <Compile Include="Configuration\IAppMeta.cs" />
     <Compile Include="Events\AppExitEvent.cs" />
     <Compile Include="Events\AppForceShutdownEvent.cs" />
     <Compile Include="Events\AppPreStartEvent.cs" />
@@ -165,7 +167,7 @@
     <Compile Include="Settings\ISettingStore.cs" />
     <Compile Include="Settings\ISettingsTyped.cs" />
     <Compile Include="Settings\JsonSettingStore.cs" />
-    <Compile Include="Settings\ReadValueExtensions.cs" />
+    <Compile Include="Settings\ReadWriteValueExtensions.cs" />
     <Compile Include="Settings\IWriteValue.cs" />
     <Compile Include="Settings\SettingsTypedExtensions.cs" />
   </ItemGroup>

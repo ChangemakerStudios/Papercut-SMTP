@@ -23,6 +23,7 @@ namespace Papercut
     using Caliburn.Micro;
 
     using Papercut.Core;
+    using Papercut.Core.Configuration;
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
@@ -60,6 +61,10 @@ namespace Papercut
 
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
+
+            builder.Register((c) => new ApplicationMeta("Papercut"))
+                .As<IAppMeta>()
+                .SingleInstance();
 
             builder.RegisterType<ViewModelWindowManager>()
                 .As<IViewModelWindowManager>()

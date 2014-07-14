@@ -21,15 +21,17 @@ namespace Papercut.Service.Classes
 
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
-    using Papercut.Service.Properties;
 
     public class ReplyWithDefaultMessageSavePath : IHandleEvent<AppProcessExchangeEvent>
     {
         readonly IMessagePathConfigurator _messagePathConfigurator;
 
-        public ReplyWithDefaultMessageSavePath(IMessagePathConfigurator messagePathConfigurator)
+        readonly PapercutServiceSettings _serviceSettings;
+
+        public ReplyWithDefaultMessageSavePath(IMessagePathConfigurator messagePathConfigurator, PapercutServiceSettings serviceSettings)
         {
             _messagePathConfigurator = messagePathConfigurator;
+            _serviceSettings = serviceSettings;
         }
 
         public void Handle(AppProcessExchangeEvent @event)
@@ -39,8 +41,8 @@ namespace Papercut.Service.Classes
                 _messagePathConfigurator.DefaultSavePath);
 
             // share our current ip and port binding for the SMTP server.
-            @event.IP = Settings.Default.IP;
-            @event.Port = Settings.Default.Port;
+            @event.IP = _serviceSettings.IP;
+            @event.Port = _serviceSettings.Port;
         }
     }
 }

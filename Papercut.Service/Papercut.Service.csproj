@@ -93,6 +93,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\ApplicationJsonSettingStore.cs" />
+    <Compile Include="Classes\PapercutServiceSettings.cs" />
     <Compile Include="Helpers\AssemblyResolutionHelper.cs" />
     <Compile Include="Logging\MessageProvider.cs" />
     <Compile Include="Logging\SerilogConfigurationExtensions.cs" />
@@ -100,26 +102,16 @@
     <Compile Include="Logging\SerilogWriter.cs" />
     <Compile Include="PapercutServerModule.cs" />
     <Compile Include="PapercutService.cs" />
-    <Compile Include="Properties\Settings.Designer.cs">
-      <DependentUpon>Settings.settings</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
     <Compile Include="Logging\SerilogWriterFactory.cs" />
     <Compile Include="Classes\ReplyWithDefaultMessageSavePath.cs" />
     <Compile Include="RunServiceApp.cs" />
-    <Compile Include="ServerPathTemplateProvider.cs" />
+    <Compile Include="Classes\ServerPathTemplateProvider.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Papercut-Service-icon.ico" />
