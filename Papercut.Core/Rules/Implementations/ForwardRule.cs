@@ -15,9 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Rules
+namespace Papercut.Core.Rules.Implementations
 {
     using System;
+    using System.ComponentModel;
 
     [Serializable]
     public class ForwardRule : RuleBase
@@ -40,6 +41,15 @@ namespace Papercut.Core.Rules
             ToEmail = toEmail;
         }
 
+        [Category("Information")]
+        public override string Type
+        {
+            get { return "Forward"; }
+        }
+
+        [Category("Settings")]
+        [DisplayName("From Email")]
+        [Description("Forward From Email")]
         public string FromEmail
         {
             get { return _fromEmail; }
@@ -51,6 +61,9 @@ namespace Papercut.Core.Rules
             }
         }
 
+        [Category("Settings")]
+        [DisplayName("SMTP Server")]
+        [Description("Foward to SMTP Server")]
         public string SmtpServer
         {
             get { return _smtpServer; }
@@ -62,6 +75,9 @@ namespace Papercut.Core.Rules
             }
         }
 
+        [Category("Settings")]
+        [DisplayName("To Email")]
+        [Description("Foward To Email")]
         public string ToEmail
         {
             get { return _toEmail; }
@@ -76,7 +92,7 @@ namespace Papercut.Core.Rules
         public override string ToString()
         {
             return string.Format(
-                "Smtp Server: {0}, From Email: {1}, To Email: {2}",
+                "SMTP Server: {0}\r\nFrom Email: {1}\r\nTo Email: {2}",
                 SmtpServer,
                 FromEmail,
                 ToEmail);

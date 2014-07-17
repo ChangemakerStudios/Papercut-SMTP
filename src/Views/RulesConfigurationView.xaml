@@ -1,4 +1,5 @@
 ﻿<controls:MetroWindow x:Class="Papercut.Views.RulesConfigurationView"
+                      xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
                       xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,9 +11,9 @@
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       xmlns:cal="http://www.caliburnproject.org"
                       mc:Ignorable="d"
-                      Title="{Binding WindowTitle}" Width="500" Height="400" Icon="/Papercut;component/App.ico"
+                      Title="{Binding WindowTitle}" Width="773" Height="400" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
-                      ResizeMode="NoResize"
+                      ResizeMode="CanResizeWithGrip"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner">
     <i:Interaction.Behaviors>
         <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
@@ -21,8 +22,12 @@
         <ToolBarTray Height="Auto" DockPanel.Dock="Top">
             <ToolBar BorderBrush="LightGray" BorderThickness="1" Width="Auto" Margin="2">
                 <Menu>
-                    <MenuItem Header="Add Rule">
-                        <MenuItem Header="Forward" Name="AddForwardRule" />
+                    <MenuItem x:Name="RegisteredRules" Header="Add Rule" cal:Message.Attach="AddRule($orignalsourcecontext)">
+                        <MenuItem.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Type}" />
+                            </DataTemplate>
+                        </MenuItem.ItemTemplate>
                     </MenuItem>
                 </Menu>
             </ToolBar>
@@ -32,8 +37,7 @@
                   ItemsSource="{Binding Rules}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Delete" IsEnabled="{Binding Path=HasSelectedRule}"
-                              cal:Message.Attach="Delete" />
+                    <MenuItem Header="Delete" cal:Message.Attach="DeleteRule" />
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
@@ -41,5 +45,6 @@
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" />
             </DataGrid.Columns>
         </DataGrid>
+        <xctk:PropertyGrid DockPanel.Dock="Right" Width="Auto" SelectedObject="{Binding SelectedRule}"></xctk:PropertyGrid>
     </DockPanel>
 </controls:MetroWindow>

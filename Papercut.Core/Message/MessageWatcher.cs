@@ -152,8 +152,7 @@ namespace Papercut.Core.Message
 
                     return info;
                 })
-                .ContinueWith(
-                    r => NewMessage(this, new NewMessageEventArgs(new MessageEntry(r.Result))));
+                .ContinueWith(r => OnNewMessage(new NewMessageEventArgs(new MessageEntry(r.Result))));
         }
 
         public event EventHandler<NewMessageEventArgs> NewMessage;

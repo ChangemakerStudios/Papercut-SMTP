@@ -18,6 +18,7 @@
 namespace Papercut.Core
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -70,6 +71,19 @@ namespace Papercut.Core
                 .AsSelf()
                 .InstancePerLifetimeScope()
                 .PreserveExistingDefaults();
+
+            // rules and rule dispatchers
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .AssignableTo<IRule>()
+                .As<IRule>()
+                .InstancePerDependency();
+
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .AsClosedTypesOf(typeof(IRuleDispatcher<>))
+                .AsImplementedInterfaces()
+                .InstancePerDependency();
+
+            builder.RegisterType<RulesRunner>().As<IRulesRunner>().SingleInstance();
 
             builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
             builder.RegisterType<RuleRespository>().AsSelf().SingleInstance();

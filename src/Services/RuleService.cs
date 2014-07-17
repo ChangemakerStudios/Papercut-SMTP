@@ -18,20 +18,49 @@
 namespace Papercut.Services
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.IO;
+    using System.Linq;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Linq;
 
+    using Papercut.Core.Events;
+    using Papercut.Core.Message;
     using Papercut.Core.Rules;
 
-    public class RuleService
+    using Serilog;
+
+    public class RuleService : IHandleEvent<AppReadyEvent>, IHandleEvent<AppExitEvent>
     {
+        readonly PapercutServiceBackendCoordinator _coordinator;
+
+        readonly ILogger _logger;
+
+        readonly MessageWatcher _messageWatcher;
+
+        readonly IPublishEvent _publishEvent;
+
         readonly RuleRespository _ruleRespository;
 
         readonly Lazy<ObservableCollection<IRule>> _rules;
 
-        public RuleService(RuleRespository ruleRespository)
+        readonly IRulesRunner _rulesRunner;
+
+        public RuleService(
+            RuleRespository ruleRespository,
+            ILogger logger,
+            PapercutServiceBackendCoordinator coordinator,
+            MessageWatcher messageWatcher,
+            IRulesRunner rulesRunner,
+            IPublishEvent publishEvent)
         {
             _ruleRespository = ruleRespository;
+            _logger = logger;
+            _coordinator = coordinator;
+            _messageWatcher = messageWatcher;
+            _rulesRunner = rulesRunner;
+            _publishEvent = publishEvent;
             RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
             _rules = new Lazy<ObservableCollection<IRule>>(GetRulesCollection);
         }
@@ -43,14 +72,82 @@ namespace Papercut.Services
             get { return _rules.Value; }
         }
 
+        public void Handle(AppExitEvent @event)
+        {
+            Save();
+        }
+
+        public void Handle(AppReadyEvent @event)
+        {
+            _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+            try
+            {
+                // accessing "Rules" forces the collection to be loaded
+                if (Rules.Any())
+                {
+                    _logger.Information(
+                        "Loaded {RuleCount} from {RuleFileName}",
+                        Rules.Count,
+                        RuleFileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error loading rules from file {RuleFileName}", RuleFileName);
+            }
+
+            // rules loaded/updated event
+            _publishEvent.Publish(new RulesUpdatedEvent(Rules.ToArray()));
+
+            // publish event on rules changing
+            Rules.CollectionChanged +=
+                (sender, args) => _publishEvent.Publish(new RulesUpdatedEvent(Rules.ToArray()));
+
+            // the backend service handles rules running if it's online
+            if (!_coordinator.IsBackendServiceOnline)
+            {
+                _logger.Debug("Setting up Rule Dispatcher Observable");
+
+                // observe message watcher and run rules when a new message arrives
+                Observable.FromEventPattern<NewMessageEventArgs>(
+                    e => _messageWatcher.NewMessage += e,
+                    e => _messageWatcher.NewMessage -= e,
+                    TaskPoolScheduler.Default)
+                    .DelaySubscription(TimeSpan.FromSeconds(1))
+                    .Subscribe(e => _rulesRunner.Run(Rules.ToArray(), e.EventArgs.NewMessage));
+            }
+        }
+
         protected virtual ObservableCollection<IRule> GetRulesCollection()
         {
-            return new ObservableCollection<IRule>(_ruleRespository.LoadRules(RuleFileName));
+            IList<IRule> loadRules = null;
+
+            try
+            {
+                loadRules = _ruleRespository.LoadRules(RuleFileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Failed to load rules in file {RuleFileName}", RuleFileName);
+            }
+
+            return new ObservableCollection<IRule>(loadRules ?? new List<IRule>(0));
         }
 
         public void Save()
         {
-            _ruleRespository.SaveRules(Rules, RuleFileName);
+            try
+            {
+                _ruleRespository.SaveRules(Rules, RuleFileName);
+                _logger.Information(
+                    "Saved {RuleCount} to {RuleFileName}",
+                    Rules.Count,
+                    RuleFileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error saving rules to file {RuleFileName}", RuleFileName);
+            }
         }
     }
 }

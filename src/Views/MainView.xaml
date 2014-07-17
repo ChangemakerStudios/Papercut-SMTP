@@ -21,8 +21,21 @@
     </i:Interaction.Behaviors>
     <controls:MetroWindow.RightWindowCommands>
         <controls:WindowCommands>
-            <!--<Button Content="rules" ToolTip="Configure Automatic Rules"
-                    cal:Message.Attach="[Event Click] = [Action ShowRulesConfiguration]" />-->
+            <Button ToolTip="Configure Automatic Rules"
+                    cal:Message.Attach="[Event Click] = [Action ShowRulesConfiguration]">
+                <StackPanel Orientation="Horizontal">
+                    <Rectangle Width="20" Height="20"
+                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
+                        <Rectangle.OpacityMask>
+                            <VisualBrush Stretch="Fill"
+                                         Visual="{StaticResource appbar_layer}" />
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                    <TextBlock Margin="4 0 0 0"
+                               VerticalAlignment="Center"
+                               Text="Rules" />
+                </StackPanel>                
+            </Button>
             <Button ToolTip="Configure Papercut Options" cal:Message.Attach="[Event Click] = [Action ShowOptions]">
                 <StackPanel Orientation="Horizontal">
                     <Rectangle Width="20" Height="20"

@@ -17,7 +17,14 @@
 
 namespace Papercut.ViewModels
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Linq;
+    using System.Windows;
+
+    using Autofac.Features.Metadata;
 
     using Caliburn.Micro;
 
@@ -32,9 +39,10 @@ namespace Papercut.ViewModels
 
         string _windowTitle = "Rules Configuration";
 
-        public RulesConfigurationViewModel(RuleService ruleService)
+        public RulesConfigurationViewModel(RuleService ruleService, IEnumerable<IRule> registeredRules)
         {
             _ruleService = ruleService;
+            RegisteredRules = new ObservableCollection<IRule>(registeredRules);
             Rules = _ruleService.Rules;
         }
 
@@ -58,9 +66,18 @@ namespace Papercut.ViewModels
             }
         }
 
-        public void AddForwardRule()
+        public ObservableCollection<IRule> RegisteredRules { get; private set; }
+
+        public void AddRule(IRule rule)
         {
-            
+            var newRule = Activator.CreateInstance(rule.GetType()) as IRule;
+            Rules.Add(newRule);
+            SelectedRule = newRule;
+        }
+
+        public void DeleteRule()
+        {
+            Rules.Remove(SelectedRule);
         }
 
         public ObservableCollection<IRule> Rules { get; private set; }

@@ -42,6 +42,30 @@ namespace Papercut
             }
         }
 
+        protected override void Configure()
+        {
+            MessageBinder.SpecialValues.Add(
+                "$orignalsourcecontext",
+                context =>
+                {
+                    var args = context.EventArgs as RoutedEventArgs;
+                    if (args == null)
+                    {
+                        return null;
+                    }
+
+                    var fe = args.OriginalSource as FrameworkElement;
+                    if (fe == null)
+                    {
+                        return null;
+                    }
+
+                    return fe.DataContext;
+                });
+
+            base.Configure();
+        }
+
         protected override IEnumerable<object> GetAllInstances(Type service)
         {
             return

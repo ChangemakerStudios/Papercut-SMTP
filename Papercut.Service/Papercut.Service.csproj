@@ -95,6 +95,7 @@
   <ItemGroup>
     <Compile Include="Classes\ApplicationJsonSettingStore.cs" />
     <Compile Include="Classes\PapercutServiceSettings.cs" />
+    <Compile Include="Classes\UpdateRulesService.cs" />
     <Compile Include="Helpers\AssemblyResolutionHelper.cs" />
     <Compile Include="Logging\MessageProvider.cs" />
     <Compile Include="Logging\SerilogConfigurationExtensions.cs" />
@@ -112,6 +113,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Papercut.Service.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Papercut-Service-icon.ico" />

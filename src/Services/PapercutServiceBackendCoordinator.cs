@@ -27,7 +27,8 @@ namespace Papercut.Services
     using Serilog;
 
     public class PapercutServiceBackendCoordinator : IHandleEvent<AppPreStartEvent>,
-        IHandleEvent<SettingsUpdatedEvent>
+        IHandleEvent<SettingsUpdatedEvent>,
+        IHandleEvent<RulesUpdatedEvent>
     {
         readonly ILogger _logger;
 
@@ -76,6 +77,29 @@ namespace Papercut.Services
 
                         _publishEvent.Publish(exchangeEvent);
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Papercut Backend Service Exception Attempting to Contact");
+            }
+        }
+
+        public void Handle(RulesUpdatedEvent @event)
+        {
+            if (!IsBackendServiceOnline) return;
+
+            try
+            {
+                using (PapercutClient client = GetClient())
+                {
+                    bool successfulPublish =
+                        client.PublishEventServer(@event);
+
+                    _logger.Information(
+                        successfulPublish
+                            ? "Successfully Updated Rules on Backend Service"
+                            : "Papercut Backend Service Failed to Update Rules. Could be offline.");
                 }
             }
             catch (Exception ex)

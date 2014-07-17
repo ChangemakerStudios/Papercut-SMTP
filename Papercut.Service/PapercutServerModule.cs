@@ -45,6 +45,11 @@ namespace Papercut.Service
                 .AsSelf()
                 .SingleInstance();
 
+            builder.RegisterType<UpdateRulesService>()
+                .AsImplementedInterfaces()
+                .AsSelf()
+                .SingleInstance();
+
             builder.RegisterType<ApplicationJsonSettingStore>()
                 .As<ISettingStore>()
                 .AsSelf()

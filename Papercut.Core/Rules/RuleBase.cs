@@ -23,20 +23,23 @@ namespace Papercut.Core.Rules
     using Papercut.Core.Annotations;
 
     [Serializable]
-    public class RuleBase : IRule, INotifyPropertyChanged
+    public abstract class RuleBase : IRule, INotifyPropertyChanged
     {
-        public RuleBase()
+        protected RuleBase()
         {
             Id = Guid.NewGuid();
         }
 
+        [Category("Information")]
         public Guid Id { get; protected set; }
 
+        [Category("Information")]
         public virtual string Type
         {
             get { return GetType().Name; }
         }
 
+        [Category("Information")]
         public virtual string Description
         {
             get { return ToString(); }
@@ -48,7 +51,11 @@ namespace Papercut.Core.Rules
         protected virtual void OnPropertyChanged(string propertyName)
         {
             var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+                handler(this, new PropertyChangedEventArgs("Description"));
+            }
         }
     }
 }

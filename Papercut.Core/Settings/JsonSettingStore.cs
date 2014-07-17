@@ -1,10 +1,8 @@
 namespace Papercut.Core.Settings
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
 
     using Papercut.Core.Helper;
 

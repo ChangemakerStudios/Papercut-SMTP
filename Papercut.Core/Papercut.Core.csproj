@@ -105,6 +105,7 @@
     <Compile Include="Events\AppForceShutdownEvent.cs" />
     <Compile Include="Events\AppPreStartEvent.cs" />
     <Compile Include="Events\AppProcessExchangeEvent.cs" />
+    <Compile Include="Events\RulesUpdatedEvent.cs" />
     <Compile Include="Events\AutofacPublishEvent.cs" />
     <Compile Include="Events\BaseBindEvent.cs" />
     <Compile Include="Events\ConfigureLoggerEvent.cs" />
@@ -133,7 +134,7 @@
     <Compile Include="Helper\StreamExtensions.cs" />
     <Compile Include="Message\IFile.cs" />
     <Compile Include="Message\MessageWatcher.cs" />
-    <Compile Include="Rules\ForwardRule.cs" />
+    <Compile Include="Rules\Implementations\ForwardRule.cs" />
     <Compile Include="Network\Connection.cs" />
     <Compile Include="Helper\ConnectionExtensions.cs" />
     <Compile Include="Network\ConnectionManager.cs" />
@@ -159,8 +160,12 @@
     <Compile Include="Network\SmtpClient.cs" />
     <Compile Include="Network\SmtpProtocol.cs" />
     <Compile Include="Network\SmtpSession.cs" />
+    <Compile Include="Rules\Implementations\ForwardRuleDispatch.cs" />
     <Compile Include="Rules\IRule.cs" />
+    <Compile Include="Rules\IRuleDispatcher.cs" />
+    <Compile Include="Rules\IRulesRunner.cs" />
     <Compile Include="Rules\RuleBase.cs" />
+    <Compile Include="Rules\RulesRunner.cs" />
     <Compile Include="Rules\RuleRespository.cs" />
     <Compile Include="Settings\BaseSettingsStore.cs" />
     <Compile Include="Settings\IReadValue.cs" />

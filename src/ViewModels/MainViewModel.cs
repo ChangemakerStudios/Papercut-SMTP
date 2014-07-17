@@ -22,7 +22,6 @@ namespace Papercut.ViewModels
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reflection;
-    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
 
@@ -31,11 +30,9 @@ namespace Papercut.ViewModels
     using MahApps.Metro.Controls;
     using MahApps.Metro.Controls.Dialogs;
 
-    using Microsoft.Build.Utilities;
-
     using Papercut.Core.Events;
     using Papercut.Core.Message;
-    using Papercut.Core.Network;
+    using Papercut.Core.Rules.Implementations;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
@@ -48,9 +45,9 @@ namespace Papercut.ViewModels
     {
         const string WindowTitleDefault = "Papercut";
 
-        readonly IPublishEvent _publishEvent;
-
         readonly MessageRepository _messageRepository;
+
+        readonly IPublishEvent _publishEvent;
 
         readonly IViewModelWindowManager _viewModelWindowManager;
 
@@ -180,43 +177,41 @@ namespace Papercut.ViewModels
         {
             if (MessageListViewModel.SelectedMessage == null) return;
 
-            var forwardViewModel = new ForwardViewModel() { FromSetting = true };
-            var result = _viewModelWindowManager.ShowDialog(forwardViewModel);
+            var forwardViewModel = new ForwardViewModel { FromSetting = true };
+            bool? result = _viewModelWindowManager.ShowDialog(forwardViewModel);
             if (result == null || !result.Value) return;
 
             MessageDetailViewModel.IsLoading = true;
-            var progressController =
+            Task<ProgressDialogController> progressController =
                 _window.ShowProgressAsync("Forwarding Email...", "Please wait");
 
             Observable.Start(
                 () =>
                 {
-                    var progressDialog = progressController.Result;
+                    ProgressDialogController progressDialog = progressController.Result;
 
                     progressDialog.SetCancelable(false);
                     progressDialog.SetIndeterminate();
 
-                    // send message...
-                    var session = new SmtpSession
-                    {
-                        MailFrom = forwardViewModel.From,
-                        Sender = forwardViewModel.Server
-                    };
-                    session.Recipients.Add(forwardViewModel.To);
-                    session.Message =
-                        _messageRepository.GetMessage(MessageListViewModel.SelectedMessage);
+                    var forwardRule = new ForwardRule(
+                        forwardViewModel.Server,
+                        forwardViewModel.From,
+                        forwardViewModel.To);
 
-                    new SmtpClient(session).Send();
+                    var forwardRuleDispatcher = new ForwardRuleDispatch(_messageRepository);
+
+                    // send message using forward dispatcher...
+                    forwardRuleDispatcher.Dispatch(
+                        forwardRule,
+                        MessageListViewModel.SelectedMessage);
+
                     progressDialog.CloseAsync().Wait();
 
                     return true;
-                }, TaskPoolScheduler.Default)
+                },
+                TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
-                .Subscribe((b) =>
-                {
-                    MessageDetailViewModel.IsLoading = false;
-                });
-
+                .Subscribe(b => { MessageDetailViewModel.IsLoading = false; });
         }
 
         protected override void OnViewAttached(object view, object context)
