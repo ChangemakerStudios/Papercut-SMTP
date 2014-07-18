@@ -25,20 +25,69 @@ namespace Papercut.Core.Rules.Implementations
     {
         string _fromEmail;
 
-        string _smtpServer;
+        string _smtpPassword;
+
+        int _smtpPort = 25;
+
+        string _smtpServer = "127.0.0.1";
+
+        bool _smtpUseSsl;
+
+        string _smtpUsername;
 
         string _toEmail;
 
-        public ForwardRule()
+        [Category("Settings")]
+        [DisplayName("SMTP Password")]
+        [PasswordPropertyTextAttribute]
+        public string SMTPPassword
         {
+            get { return _smtpPassword; }
+            set
+            {
+                if (value == _smtpPassword) return;
+                _smtpPassword = value;
+                OnPropertyChanged("SMTPPassword");
+            }
         }
 
-        public ForwardRule(string smtpServer, string fromEmail, string toEmail)
-            : this()
+        [Category("Settings")]
+        [DisplayName("SMTP Username")]
+        public string SMTPUsername
         {
-            FromEmail = fromEmail;
-            SmtpServer = smtpServer;
-            ToEmail = toEmail;
+            get { return _smtpUsername; }
+            set
+            {
+                if (value == _smtpUsername) return;
+                _smtpUsername = value;
+                OnPropertyChanged("SMTPUsername");
+            }
+        }
+
+        [Category("Settings")]
+        [DisplayName("SMTP Port")]
+        public int SMTPPort
+        {
+            get { return _smtpPort; }
+            set
+            {
+                if (value == _smtpPort) return;
+                _smtpPort = value;
+                OnPropertyChanged("SMTPPort");
+            }
+        }
+
+        [Category("Settings")]
+        [DisplayName("SMTP Use SSL")]
+        public bool SmtpUseSSL
+        {
+            get { return _smtpUseSsl; }
+            set
+            {
+                if (value.Equals(_smtpUseSsl)) return;
+                _smtpUseSsl = value;
+                OnPropertyChanged("SmtpUseSSL");
+            }
         }
 
         [Category("Information")]
@@ -64,14 +113,14 @@ namespace Papercut.Core.Rules.Implementations
         [Category("Settings")]
         [DisplayName("SMTP Server")]
         [Description("Foward to SMTP Server")]
-        public string SmtpServer
+        public string SMTPServer
         {
             get { return _smtpServer; }
             set
             {
                 if (value == _smtpServer) return;
                 _smtpServer = value;
-                OnPropertyChanged("SmtpServer");
+                OnPropertyChanged("SMTPServer");
             }
         }
 
@@ -91,11 +140,15 @@ namespace Papercut.Core.Rules.Implementations
 
         public override string ToString()
         {
-            return string.Format(
-                "SMTP Server: {0}\r\nFrom Email: {1}\r\nTo Email: {2}",
-                SmtpServer,
-                FromEmail,
-                ToEmail);
+            return
+                string.Format(
+                    "SMTP Server: {0}:{1}\r\nSMTP Username: {2}\r\nSMTP Use SSL: {3}\r\nFrom Email: {4}\r\nTo Email: {5}",
+                    _smtpServer,
+                    _smtpPort,
+                    _smtpUsername,
+                    _smtpUseSsl,
+                    _fromEmail,
+                    _toEmail);
         }
     }
 }

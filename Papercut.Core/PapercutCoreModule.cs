@@ -55,7 +55,7 @@ namespace Papercut.Core
                 .InstancePerDependency();
 
             builder.RegisterType<PapercutClient>().AsSelf().InstancePerDependency();
-            builder.RegisterType<SmtpClient>().AsSelf().InstancePerDependency();
+            //builder.RegisterType<SmtpClient>().AsSelf().InstancePerDependency();
 
             builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
             builder.RegisterType<Connection>().AsSelf().InstancePerDependency();
@@ -81,6 +81,7 @@ namespace Papercut.Core
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                 .AsClosedTypesOf(typeof(IRuleDispatcher<>))
                 .AsImplementedInterfaces()
+                .AsSelf()
                 .InstancePerDependency();
 
             builder.RegisterType<RulesRunner>().As<IRulesRunner>().SingleInstance();

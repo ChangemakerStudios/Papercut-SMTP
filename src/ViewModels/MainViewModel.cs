@@ -47,6 +47,8 @@ namespace Papercut.ViewModels
 
         readonly MessageRepository _messageRepository;
 
+        readonly ForwardRuleDispatch _forwardRuleDispatch;
+
         readonly IPublishEvent _publishEvent;
 
         readonly IViewModelWindowManager _viewModelWindowManager;
@@ -61,12 +63,14 @@ namespace Papercut.ViewModels
             IViewModelWindowManager viewModelWindowManager,
             IPublishEvent publishEvent,
             MessageRepository messageRepository,
+            ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
             Func<MessageDetailViewModel> messageDetailViewModelFactory)
         {
             _viewModelWindowManager = viewModelWindowManager;
             _publishEvent = publishEvent;
             _messageRepository = messageRepository;
+            _forwardRuleDispatch = forwardRuleDispatch;
 
             MessageListViewModel = messageListViewModelFactory();
             MessageDetailViewModel = messageDetailViewModelFactory();
@@ -193,15 +197,15 @@ namespace Papercut.ViewModels
                     progressDialog.SetCancelable(false);
                     progressDialog.SetIndeterminate();
 
-                    var forwardRule = new ForwardRule(
-                        forwardViewModel.Server,
-                        forwardViewModel.From,
-                        forwardViewModel.To);
-
-                    var forwardRuleDispatcher = new ForwardRuleDispatch(_messageRepository);
+                    var forwardRule = new ForwardRule()
+                    {
+                        SMTPServer = forwardViewModel.Server,
+                        FromEmail = forwardViewModel.From,
+                        ToEmail = forwardViewModel.To
+                    };
 
                     // send message using forward dispatcher...
-                    forwardRuleDispatcher.Dispatch(
+                    _forwardRuleDispatch.Dispatch(
                         forwardRule,
                         MessageListViewModel.SelectedMessage);
 

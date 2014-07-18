@@ -37,6 +37,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Autofac.3.5.0\lib\net40\Autofac.dll</HintPath>
     </Reference>
+    <Reference Include="BouncyCastle">
+      <HintPath>..\packages\MimeKit.0.42.0.0\lib\net40\BouncyCastle.dll</HintPath>
+    </Reference>
+    <Reference Include="MailKit">
+      <HintPath>..\packages\MailKit.0.25.0.0\lib\net40\MailKit.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Threading.Tasks">
       <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.dll</HintPath>
     </Reference>
@@ -46,9 +52,8 @@
     <Reference Include="Microsoft.Threading.Tasks.Extensions.Desktop">
       <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.Desktop.dll</HintPath>
     </Reference>
-    <Reference Include="MimeKitLite, Version=0.41.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MimeKitLite.0.41.0.0\lib\net40\MimeKitLite.dll</HintPath>
+    <Reference Include="MimeKit">
+      <HintPath>..\packages\MimeKit.0.42.0.0\lib\net40\MimeKit.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -157,7 +162,6 @@
     <Compile Include="Helper\GeneralExtensions.cs" />
     <Compile Include="Network\Server.cs" />
     <Compile Include="Network\ServerProtocolType.cs" />
-    <Compile Include="Network\SmtpClient.cs" />
     <Compile Include="Network\SmtpProtocol.cs" />
     <Compile Include="Network\SmtpSession.cs" />
     <Compile Include="Rules\Implementations\ForwardRuleDispatch.cs" />

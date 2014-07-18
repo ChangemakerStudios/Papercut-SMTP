@@ -19,17 +19,21 @@ namespace Papercut.Core.Rules.Implementations
 {
     using System;
 
+    using MailKit.Net.Smtp;
+
+    using MimeKit;
+
     using Papercut.Core.Annotations;
+    using Papercut.Core.Helper;
     using Papercut.Core.Message;
-    using Papercut.Core.Network;
 
     public class ForwardRuleDispatch : IRuleDispatcher<ForwardRule>
     {
-        readonly MessageRepository _messageRepository;
+        readonly MimeMessageLoader _mimeMessageLoader;
 
-        public ForwardRuleDispatch(MessageRepository messageRepository)
+        public ForwardRuleDispatch(MimeMessageLoader mimeMessageLoader)
         {
-            _messageRepository = messageRepository;
+            _mimeMessageLoader = mimeMessageLoader;
         }
 
         public void Dispatch([NotNull] ForwardRule rule, [NotNull] MessageEntry messageEntry)
@@ -37,16 +41,43 @@ namespace Papercut.Core.Rules.Implementations
             if (rule == null) throw new ArgumentNullException("rule");
             if (messageEntry == null) throw new ArgumentNullException("messageEntry");
 
-            // send message...
-            var session = new SmtpSession
-            {
-                MailFrom = rule.FromEmail,
-                Sender = rule.SmtpServer
-            };
-            session.Recipients.Add(rule.ToEmail);
-            session.Message = _messageRepository.GetMessage(messageEntry);
+            _mimeMessageLoader.Get(messageEntry)
+                .Subscribe(
+                    readOnlyMessage =>
+                    {
+                        MimeMessage message = readOnlyMessage.CloneMessage();
 
-            new SmtpClient(session).Send();
+                        using (var client = new SmtpClient())
+                        {
+                            client.Connect(rule.SMTPServer, rule.SMTPPort, rule.SmtpUseSSL);
+
+                            // Note: since we don't have an OAuth2 token, disable
+                            // the XOAUTH2 authentication mechanism.
+                            client.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                            if (!string.IsNullOrWhiteSpace(rule.SMTPPassword)
+                                && !string.IsNullOrWhiteSpace(rule.SMTPUsername))
+                            {
+                                // Note: only needed if the SMTP server requires authentication
+                                client.Authenticate(rule.SMTPUsername, rule.SMTPPassword);
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(rule.FromEmail))
+                            {
+                                message.From.Clear();
+                                message.From.Add(new MailboxAddress(rule.FromEmail, rule.FromEmail));
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(rule.ToEmail))
+                            {
+                                message.To.Clear();
+                                message.To.Add(new MailboxAddress(rule.ToEmail, rule.ToEmail));
+                            }
+
+                            client.Send(message);
+                            client.Disconnect(true);
+                        }
+                    });
         }
     }
 }

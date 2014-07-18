@@ -19,6 +19,7 @@ namespace Papercut.Core.Helper
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
 
     using Microsoft.Win32;
@@ -29,6 +30,21 @@ namespace Papercut.Core.Helper
 
     public static class MessageHelper
     {
+        public static MimeMessage CloneMessage([NotNull] this MimeMessage mimeMessage)
+        {
+            if (mimeMessage == null) throw new ArgumentNullException("mimeMessage");
+
+            using (var ms = new MemoryStream())
+            {
+                mimeMessage.WriteTo(FormatOptions.Default, ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                MimeMessage clonedMessage = MimeMessage.Load(ParserOptions.Default, ms);
+                ms.Close();
+
+                return clonedMessage;
+            }
+        }
+
         public static bool IsContentHtml([NotNull] this TextPart textPart)
         {
             return textPart.ContentType.Matches("text", "html");
