@@ -45,7 +45,7 @@ namespace Papercut.Service
                 .AsSelf()
                 .SingleInstance();
 
-            builder.RegisterType<UpdateRulesService>()
+            builder.RegisterType<RuleService>()
                 .AsImplementedInterfaces()
                 .AsSelf()
                 .SingleInstance();

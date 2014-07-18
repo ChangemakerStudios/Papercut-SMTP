@@ -110,6 +110,7 @@
     <Compile Include="Events\AppForceShutdownEvent.cs" />
     <Compile Include="Events\AppPreStartEvent.cs" />
     <Compile Include="Events\AppProcessExchangeEvent.cs" />
+    <Compile Include="Events\NewMessageEvent.cs" />
     <Compile Include="Events\RulesUpdatedEvent.cs" />
     <Compile Include="Events\AutofacPublishEvent.cs" />
     <Compile Include="Events\BaseBindEvent.cs" />
@@ -169,6 +170,7 @@
     <Compile Include="Rules\IRuleDispatcher.cs" />
     <Compile Include="Rules\IRulesRunner.cs" />
     <Compile Include="Rules\RuleBase.cs" />
+    <Compile Include="Rules\RuleServiceBase.cs" />
     <Compile Include="Rules\RulesRunner.cs" />
     <Compile Include="Rules\RuleRespository.cs" />
     <Compile Include="Settings\BaseSettingsStore.cs" />

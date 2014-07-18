@@ -18,6 +18,10 @@
 namespace Papercut.Services
 {
     using System;
+    using System.Linq;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Disposables;
+    using System.Reactive.Linq;
 
     using Papercut.Core.Events;
     using Papercut.Core.Network;
@@ -38,6 +42,10 @@ namespace Papercut.Services
 
         readonly SmtpServerCoordinator _smtpServerCoordinator;
 
+        Action<RulesUpdatedEvent> _nextUpdateEvent;
+
+        IObservable<RulesUpdatedEvent> rulesUpdateObservable;
+
         public PapercutServiceBackendCoordinator(
             ILogger logger,
             IPublishEvent publishEvent,
@@ -48,6 +56,18 @@ namespace Papercut.Services
             _publishEvent = publishEvent;
             _papercutClientFactory = papercutClientFactory;
             _smtpServerCoordinator = smtpServerCoordinator;
+
+            rulesUpdateObservable = Observable.Create<RulesUpdatedEvent>(
+                o =>
+                {
+                    _nextUpdateEvent = o.OnNext;
+                    return Disposable.Empty;
+                }).SubscribeOn(TaskPoolScheduler.Default);
+
+            // flush rules every 10 seconds
+            rulesUpdateObservable.Buffer(TimeSpan.FromSeconds(10))
+                .Where(e => e.Any())
+                .Subscribe(events => PublishUpdateEvent(events.Last()));
         }
 
         public bool IsBackendServiceOnline { get; private set; }
@@ -89,23 +109,7 @@ namespace Papercut.Services
         {
             if (!IsBackendServiceOnline) return;
 
-            try
-            {
-                using (PapercutClient client = GetClient())
-                {
-                    bool successfulPublish =
-                        client.PublishEventServer(@event);
-
-                    _logger.Information(
-                        successfulPublish
-                            ? "Successfully Updated Rules on Backend Service"
-                            : "Papercut Backend Service Failed to Update Rules. Could be offline.");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning(ex, "Papercut Backend Service Exception Attempting to Contact");
-            }
+            _nextUpdateEvent(@event);
         }
 
         public void Handle(SettingsUpdatedEvent @event)
@@ -128,6 +132,27 @@ namespace Papercut.Services
                         successfulPublish
                             ? "Successfully pushed new Smtp Server Binding to Backend Service"
                             : "Papercut Backend Service Failed to Update. Could be offline.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Papercut Backend Service Exception Attempting to Contact");
+            }
+        }
+
+        void PublishUpdateEvent(RulesUpdatedEvent @event)
+        {
+            try
+            {
+                using (PapercutClient client = GetClient())
+                {
+                    bool successfulPublish =
+                        client.PublishEventServer(@event);
+
+                    _logger.Information(
+                        successfulPublish
+                            ? "Successfully Updated Rules on Backend Service"
+                            : "Papercut Backend Service Failed to Update Rules. Could be offline.");
                 }
             }
             catch (Exception ex)

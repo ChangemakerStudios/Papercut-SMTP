@@ -28,18 +28,25 @@ namespace Papercut.Service
 
     public class PapercutService : IHandleEvent<SmtpServerBindEvent>
     {
-        readonly PapercutServiceSettings _serviceSettings;
-
         readonly ILogger _logger;
 
         readonly IServer _papercutServer;
 
+        readonly IPublishEvent _publishEvent;
+
+        readonly PapercutServiceSettings _serviceSettings;
+
         readonly IServer _smtpServer;
 
-        public PapercutService(Func<ServerProtocolType, IServer> serverFactory, PapercutServiceSettings serviceSettings, ILogger logger)
+        public PapercutService(
+            Func<ServerProtocolType, IServer> serverFactory,
+            PapercutServiceSettings serviceSettings,
+            ILogger logger,
+            IPublishEvent publishEvent)
         {
             _serviceSettings = serviceSettings;
             _logger = logger;
+            _publishEvent = publishEvent;
             _smtpServer = serverFactory(ServerProtocolType.Smtp);
             _papercutServer = serverFactory(ServerProtocolType.Papercut);
         }
@@ -63,6 +70,7 @@ namespace Papercut.Service
         {
             BindSMTPServer();
             BindPapercutServer();
+            _publishEvent.Publish(new AppReadyEvent());
         }
 
         void BindSMTPServer()
@@ -79,6 +87,7 @@ namespace Papercut.Service
 
         public void Stop()
         {
+            _publishEvent.Publish(new AppExitEvent());
             _smtpServer.Stop();
             _papercutServer.Stop();
         }

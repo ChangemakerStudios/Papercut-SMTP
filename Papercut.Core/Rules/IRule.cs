@@ -18,8 +18,9 @@
 namespace Papercut.Core.Rules
 {
     using System;
+    using System.ComponentModel;
 
-    public interface IRule
+    public interface IRule : INotifyPropertyChanged
     {
         Guid Id { get; }
         string Type { get; }

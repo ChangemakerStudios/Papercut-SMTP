@@ -101,7 +101,7 @@
   <ItemGroup>
     <Compile Include="Classes\ApplicationJsonSettingStore.cs" />
     <Compile Include="Classes\PapercutServiceSettings.cs" />
-    <Compile Include="Classes\UpdateRulesService.cs" />
+    <Compile Include="Classes\RuleService.cs" />
     <Compile Include="Helpers\AssemblyResolutionHelper.cs" />
     <Compile Include="Logging\MessageProvider.cs" />
     <Compile Include="Logging\SerilogConfigurationExtensions.cs" />

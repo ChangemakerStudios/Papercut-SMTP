@@ -22,6 +22,7 @@ namespace Papercut.Core.Network
     using System.Linq;
     using System.Net;
 
+    using Papercut.Core.Events;
     using Papercut.Core.Message;
 
     using Serilog;
@@ -30,10 +31,13 @@ namespace Papercut.Core.Network
     {
         readonly MessageRepository _messageRepository;
 
-        public SmtpProtocol(MessageRepository messageRepository, ILogger logger)
+        readonly IPublishEvent _publishEvent;
+
+        public SmtpProtocol(MessageRepository messageRepository, IPublishEvent publishEvent, ILogger logger)
             : base(logger)
         {
             _messageRepository = messageRepository;
+            _publishEvent = publishEvent;
         }
 
         public Connection Connection { get; protected set; }
@@ -141,7 +145,12 @@ namespace Papercut.Core.Network
                         return messageLines;
                     });
 
-                _messageRepository.SaveMessage(output);
+                var file = _messageRepository.SaveMessage(output);
+                if (!string.IsNullOrWhiteSpace(file))
+                {
+                    _publishEvent.Publish(new NewMessageEvent(new MessageEntry(file)));
+                }
+               
             }
             catch (IOException e)
             {

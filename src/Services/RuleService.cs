@@ -19,8 +19,7 @@ namespace Papercut.Services
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.IO;
+    using System.Collections.Specialized;
     using System.Linq;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
@@ -31,19 +30,15 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class RuleService : IHandleEvent<AppReadyEvent>, IHandleEvent<AppExitEvent>
+    public class RuleService : RuleServiceBase,
+        IHandleEvent<AppReadyEvent>,
+        IHandleEvent<AppExitEvent>
     {
         readonly PapercutServiceBackendCoordinator _coordinator;
-
-        readonly ILogger _logger;
 
         readonly MessageWatcher _messageWatcher;
 
         readonly IPublishEvent _publishEvent;
-
-        readonly RuleRespository _ruleRespository;
-
-        readonly Lazy<ObservableCollection<IRule>> _rules;
 
         readonly IRulesRunner _rulesRunner;
 
@@ -54,22 +49,12 @@ namespace Papercut.Services
             MessageWatcher messageWatcher,
             IRulesRunner rulesRunner,
             IPublishEvent publishEvent)
+            : base(ruleRespository, logger)
         {
-            _ruleRespository = ruleRespository;
-            _logger = logger;
             _coordinator = coordinator;
             _messageWatcher = messageWatcher;
             _rulesRunner = rulesRunner;
             _publishEvent = publishEvent;
-            RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
-            _rules = new Lazy<ObservableCollection<IRule>>(GetRulesCollection);
-        }
-
-        public string RuleFileName { get; set; }
-
-        public ObservableCollection<IRule> Rules
-        {
-            get { return _rules.Value; }
         }
 
         public void Handle(AppExitEvent @event)
@@ -99,9 +84,8 @@ namespace Papercut.Services
             // rules loaded/updated event
             _publishEvent.Publish(new RulesUpdatedEvent(Rules.ToArray()));
 
-            // publish event on rules changing
-            Rules.CollectionChanged +=
-                (sender, args) => _publishEvent.Publish(new RulesUpdatedEvent(Rules.ToArray()));
+            Rules.CollectionChanged += RuleCollectionChanged;
+            HookPropertyChangedForRules(Rules);
 
             // the backend service handles rules running if it's online
             if (!_coordinator.IsBackendServiceOnline)
@@ -118,35 +102,33 @@ namespace Papercut.Services
             }
         }
 
-        protected virtual ObservableCollection<IRule> GetRulesCollection()
+        void PublishUpdateEvent()
         {
-            IList<IRule> loadRules = null;
-
-            try
-            {
-                loadRules = _ruleRespository.LoadRules(RuleFileName);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning(ex, "Failed to load rules in file {RuleFileName}", RuleFileName);
-            }
-
-            return new ObservableCollection<IRule>(loadRules ?? new List<IRule>(0));
+            _publishEvent.Publish(new RulesUpdatedEvent(Rules.ToArray()));
         }
 
-        public void Save()
+        void RuleCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
         {
             try
             {
-                _ruleRespository.SaveRules(Rules, RuleFileName);
-                _logger.Information(
-                    "Saved {RuleCount} to {RuleFileName}",
-                    Rules.Count,
-                    RuleFileName);
+                if (args.NewItems != null)
+                {
+                    HookPropertyChangedForRules(args.NewItems.OfType<IRule>());
+                }
+
+                PublishUpdateEvent();
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error saving rules to file {RuleFileName}", RuleFileName);
+                _logger.Error(ex, "Failure Handling Rule Collection Change {@Args}", args);
+            }
+        }
+
+        void HookPropertyChangedForRules(IEnumerable<IRule> rules)
+        {
+            foreach (IRule m in rules)
+            {
+                m.PropertyChanged += (o, eventArgs) => PublishUpdateEvent();
             }
         }
     }

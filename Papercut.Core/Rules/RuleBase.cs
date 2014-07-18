@@ -23,7 +23,7 @@ namespace Papercut.Core.Rules
     using Papercut.Core.Annotations;
 
     [Serializable]
-    public abstract class RuleBase : IRule, INotifyPropertyChanged
+    public abstract class RuleBase : IRule
     {
         protected RuleBase()
         {

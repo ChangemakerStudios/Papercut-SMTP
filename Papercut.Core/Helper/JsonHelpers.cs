@@ -33,9 +33,9 @@ namespace Papercut.Core.Helper
                 TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
             };
 
-        public static string ToJson(this object obj)
+        public static string ToJson(this object obj, JsonSerializerSettings setting = null)
         {
-            return JsonConvert.SerializeObject(obj);
+            return JsonConvert.SerializeObject(obj, setting ?? _serializationSettings);
         }
 
         public static void SaveJson<T>(
@@ -72,14 +72,17 @@ namespace Papercut.Core.Helper
             return JsonConvert.DeserializeObject<T>(json, setting ?? _serializationSettings);
         }
 
-        public static object FromJson(this string json, Type type)
+        public static object FromJson(
+            this string json,
+            Type type,
+            JsonSerializerSettings setting = null)
         {
-            return JsonConvert.DeserializeObject(json, type);
+            return JsonConvert.DeserializeObject(json, type, setting ?? _serializationSettings);
         }
 
-        public static T FromJson<T>(this string json)
+        public static T FromJson<T>(this string json, JsonSerializerSettings setting = null)
         {
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonConvert.DeserializeObject<T>(json, setting ?? _serializationSettings);
         }
     }
 }

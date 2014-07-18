@@ -15,16 +15,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-namespace Papercut.Service.Classes
+namespace Papercut.Core.Events
 {
-    using Papercut.Core.Events;
+    using Papercut.Core.Message;
 
-    public class UpdateRulesService : IHandleEvent<RulesUpdatedEvent>
+    public class NewMessageEvent : IDomainEvent
     {
-        public void Handle(RulesUpdatedEvent @event)
+        public NewMessageEvent(MessageEntry newMessage)
         {
-            
+            NewMessage = newMessage;
         }
+
+        public MessageEntry NewMessage { get; set; }
     }
 }
