@@ -21,6 +21,7 @@ namespace Papercut.ViewModels
     using System.Collections;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Collections.Specialized;
     using System.Linq;
     using System.Windows;
 
@@ -44,6 +45,13 @@ namespace Papercut.ViewModels
             _ruleService = ruleService;
             RegisteredRules = new ObservableCollection<IRule>(registeredRules);
             Rules = _ruleService.Rules;
+            Rules.CollectionChanged += (sender, args) =>
+            {
+                if (!Rules.Contains(SelectedRule))
+                {
+                    SelectedRule = null;
+                }
+            };
         }
 
         public string WindowTitle
@@ -63,7 +71,13 @@ namespace Papercut.ViewModels
             {
                 _selectedRule = value;
                 NotifyOfPropertyChange(() => SelectedRule);
+                NotifyOfPropertyChange(() => HasSelectedRule);
             }
+        }
+
+        public bool HasSelectedRule
+        {
+            get { return _selectedRule != null; }
         }
 
         public ObservableCollection<IRule> RegisteredRules { get; private set; }

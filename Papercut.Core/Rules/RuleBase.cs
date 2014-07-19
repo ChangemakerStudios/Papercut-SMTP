@@ -34,12 +34,14 @@ namespace Papercut.Core.Rules
         public Guid Id { get; protected set; }
 
         [Category("Information")]
+        [Browsable(false)]
         public virtual string Type
         {
             get { return GetType().Name; }
         }
 
         [Category("Information")]
+        [Browsable(false)]
         public virtual string Description
         {
             get { return ToString(); }

@@ -19,27 +19,24 @@
         <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
     </i:Interaction.Behaviors>
     <DockPanel>
-        <ToolBarTray Height="Auto" DockPanel.Dock="Top">
-            <ToolBar BorderBrush="LightGray" BorderThickness="1" Width="Auto" Margin="2">
+        <ToolBarTray Height="Auto" DockPanel.Dock="Top" Background="WhiteSmoke">
+            <ToolBar Width="Auto" Margin="2">
                 <Menu>
-                    <MenuItem x:Name="RegisteredRules" Header="Add Rule" cal:Message.Attach="AddRule($orignalsourcecontext)">
+                    <MenuItem x:Name="RegisteredRules" Margin="1" Padding="8,4,8,4" Header="Add Rule" cal:Message.Attach="AddRule($orignalsourcecontext)">
                         <MenuItem.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Type}" />
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>
+                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="4,2,4,2" />
+                    <MenuItem Padding="8,4,8,4" Margin="1" Header="Delete Rule" cal:Message.Attach="DeleteRule" IsEnabled="{Binding HasSelectedRule}"></MenuItem>
                 </Menu>
             </ToolBar>
         </ToolBarTray>
         <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto" 
                   SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
                   ItemsSource="{Binding Rules}" AutoGenerateColumns="False" IsReadOnly="True">
-            <DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Delete" cal:Message.Attach="DeleteRule" />
-                </ContextMenu>
-            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" />
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" />
