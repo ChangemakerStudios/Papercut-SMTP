@@ -18,6 +18,7 @@
 namespace Papercut.Core.Rules.Implementations
 {
     using System;
+    using System.Reactive.Linq;
 
     using MailKit.Net.Smtp;
 
@@ -42,15 +43,14 @@ namespace Papercut.Core.Rules.Implementations
             if (messageEntry == null) throw new ArgumentNullException("messageEntry");
 
             _mimeMessageLoader.Get(messageEntry)
+                .Select(m => m.CloneMessage())
                 .Subscribe(
-                    readOnlyMessage =>
+                    m =>
                     {
-                        MimeMessage message = readOnlyMessage.CloneMessage();
-
                         using (SmtpClient client = rule.CreateConnectedSmtpClient())
                         {
-                            message.PopulateFromRule(rule);
-                            client.Send(message);
+                            m.PopulateFromRule(rule);
+                            client.Send(m);
                             client.Disconnect(true);
                         }
                     });

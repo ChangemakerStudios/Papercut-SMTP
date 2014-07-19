@@ -13,7 +13,8 @@
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:MainViewModel}"
                       ResizeMode="CanResizeWithGrip"
-                      Height="500" Width="700" Icon="/Papercut;component/App.ico"
+                      Height="{Behaviors:SettingBinding Window_Height}" Width="{Behaviors:SettingBinding Window_Width}"
+                      Icon="/Papercut;component/App.ico"
                       VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
                       Title="{Binding WindowTitle}">
     <i:Interaction.Behaviors>

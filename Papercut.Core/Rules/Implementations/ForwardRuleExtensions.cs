@@ -48,8 +48,10 @@ namespace Papercut.Core.Rules.Implementations
             }
         }
 
-        public static SmtpClient CreateConnectedSmtpClient(this ForwardRule forwardRule)
+        public static SmtpClient CreateConnectedSmtpClient([NotNull] this ForwardRule forwardRule)
         {
+            if (forwardRule == null) throw new ArgumentNullException("forwardRule");
+
             var client = new SmtpClient();
 
             client.Connect(forwardRule.SMTPServer, forwardRule.SMTPPort, forwardRule.SmtpUseSSL);

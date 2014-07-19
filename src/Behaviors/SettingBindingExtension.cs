@@ -15,26 +15,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Services
+namespace Papercut.Behaviors
 {
-    using Papercut.Core.Events;
-    using Papercut.Helpers;
+    using System.Windows.Data;
 
-    using Serilog;
+    using Papercut.Properties;
 
-    public class TempFileCleanupService : IHandleEvent<AppExitEvent>
+    /// <summary>
+    /// Very useful code from here:
+    /// http://tomlev2.wordpress.com/2008/11/18/wpf-binding-to-application-settings-using-a-markup-extension/
+    /// </summary>
+    public class SettingBindingExtension : Binding
     {
-        readonly ILogger _logger;
-
-        public TempFileCleanupService(ILogger logger)
+        public SettingBindingExtension()
         {
-            _logger = logger;
+            Initialize();
         }
 
-        public void Handle(AppExitEvent @event)
+        public SettingBindingExtension(string path)
+            : base(path)
         {
-            // time for temp file cleanup
-            MailMessageHelper.TryCleanUpTempFiles(_logger);
+            Initialize();
+        }
+
+        void Initialize()
+        {
+            Source = Settings.Default;
+            Mode = BindingMode.TwoWay;
         }
     }
 }

@@ -18,23 +18,23 @@
 namespace Papercut.Services
 {
     using Papercut.Core.Events;
-    using Papercut.Helpers;
+    using Papercut.Properties;
 
     using Serilog;
 
-    public class TempFileCleanupService : IHandleEvent<AppExitEvent>
+    public class SaveSettingsOnExitService : IHandleEvent<AppExitEvent>
     {
         readonly ILogger _logger;
 
-        public TempFileCleanupService(ILogger logger)
+        public SaveSettingsOnExitService(ILogger logger)
         {
             _logger = logger;
         }
 
         public void Handle(AppExitEvent @event)
         {
-            // time for temp file cleanup
-            MailMessageHelper.TryCleanUpTempFiles(_logger);
+            _logger.Debug("Saving Updated Settings...");
+            Settings.Default.Save();
         }
     }
 }
