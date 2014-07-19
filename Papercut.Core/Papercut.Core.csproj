@@ -166,6 +166,7 @@
     <Compile Include="Network\SmtpProtocol.cs" />
     <Compile Include="Network\SmtpSession.cs" />
     <Compile Include="Rules\Implementations\ForwardRuleDispatch.cs" />
+    <Compile Include="Rules\Implementations\ForwardRuleExtensions.cs" />
     <Compile Include="Rules\IRule.cs" />
     <Compile Include="Rules\IRuleDispatcher.cs" />
     <Compile Include="Rules\IRulesRunner.cs" />
