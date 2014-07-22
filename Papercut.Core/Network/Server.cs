@@ -113,7 +113,7 @@ namespace Papercut.Core.Network
                 _listener.BeginAccept(OnClientAccept, null);
 
                 Logger.Information(
-                    "Server Ready - Listening for new connections {Address}:{UIPort}",
+                    "Server Ready - Listening for new connections {Address}:{ClientPort}",
                     _address,
                     _port);
             }
@@ -126,7 +126,7 @@ namespace Papercut.Core.Network
 
         protected void SetEndpoint(string ip, int port)
         {
-            // Load IP/UIPort settings
+            // Load IP/ClientPort settings
             if (string.IsNullOrWhiteSpace(ip)
                 || string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase)) _address = IPAddress.Any;
             else _address = IPAddress.Parse(ip);

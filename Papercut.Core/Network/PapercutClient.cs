@@ -29,7 +29,7 @@ namespace Papercut.Core.Network
     {
         public const string Localhost = "127.0.0.1";
 
-        public const int UIPort = 37402;
+        public const int ClientPort = 37402;
 
         public const int ServerPort = 37403;
 
@@ -40,7 +40,7 @@ namespace Papercut.Core.Network
             _logger = logger;
             Client = new TcpClient();
             Host = Localhost;
-            Port = UIPort;
+            Port = ClientPort;
         }
 
         public string Host { get; set; }

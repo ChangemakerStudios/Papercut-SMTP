@@ -15,24 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Service.Classes
+namespace Papercut.Core.Events
 {
-    using System.Collections.ObjectModel;
-    using System.Linq;
-
-    using Papercut.Core.Configuration;
-
-    public class ServerPathTemplateProvider : IPathTemplatesProvider
+    public class PapercutClientPreStartEvent : IDomainEvent
     {
-        public ServerPathTemplateProvider(PapercutServiceSettings serviceSettings)
+        public PapercutClientPreStartEvent(bool cancelStart = false)
         {
-            PathTemplates =
-                new ObservableCollection<string>(
-                    serviceSettings.MessagePath.Split(new[] { ';' })
-                        .Select(s => s.Trim())
-                        .Where(s => !string.IsNullOrWhiteSpace(s)));
+            CancelStart = cancelStart;
         }
 
-        public ObservableCollection<string> PathTemplates { get; private set; }
+        public bool CancelStart { get; set; }
     }
 }

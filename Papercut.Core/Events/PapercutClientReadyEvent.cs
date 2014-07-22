@@ -15,26 +15,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Services
+namespace Papercut.Core.Events
 {
-    using Papercut.Core.Events;
-    using Papercut.Helpers;
+    using Papercut.Core.Configuration;
 
-    using Serilog;
-
-    public class TempFileCleanupService : IHandleEvent<PapercutClientExitEvent>
+    public class PapercutClientReadyEvent : IDomainEvent
     {
-        readonly ILogger _logger;
-
-        public TempFileCleanupService(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        public void Handle(PapercutClientExitEvent @event)
-        {
-            // time for temp file cleanup
-            MailMessageHelper.TryCleanUpTempFiles(_logger);
-        }
+        public IAppMeta AppMeta { get; set; }
     }
 }

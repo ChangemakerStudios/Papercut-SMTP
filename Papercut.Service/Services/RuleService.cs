@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Service.Classes
+namespace Papercut.Service.Services
 {
     using System;
     using System.Linq;
@@ -30,7 +30,7 @@ namespace Papercut.Service.Classes
 
     public class RuleService : RuleServiceBase,
         IHandleEvent<RulesUpdatedEvent>,
-        IHandleEvent<AppReadyEvent>,
+        IHandleEvent<PapercutClientReadyEvent>,
         IHandleEvent<NewMessageEvent>
     {
         readonly IRulesRunner _rulesRunner;
@@ -44,7 +44,7 @@ namespace Papercut.Service.Classes
             _rulesRunner = rulesRunner;
         }
 
-        public void Handle(AppReadyEvent @event)
+        public void Handle(PapercutClientReadyEvent @event)
         {
             _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
             try

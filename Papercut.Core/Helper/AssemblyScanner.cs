@@ -27,36 +27,43 @@ namespace Papercut.Core.Helper
 
     public class AssemblyScanner
     {
-        [NotNull]
-        public IEnumerable<Assembly> GetAll()
+        static readonly Lazy<IEnumerable<Assembly>> _allAssemblies;
+
+        static AssemblyScanner()
+        {
+            _allAssemblies = new Lazy<IEnumerable<Assembly>>(GetAssembliesList);
+        }
+
+        static IList<Assembly> GetAssembliesList()
         {
             var filterAssemblies =
                 new Func<Assembly, bool>(a => !a.IsDynamic && !a.GlobalAssemblyCache);
 
             // get all currently loaded assemblies sans GAC and Dynamic assemblies.
-            var loadedAssemblies =
+            List<Assembly> loadedAssemblies =
                 AppDomain.CurrentDomain.GetAssemblies().Where(filterAssemblies).ToList();
-            var loadedFiles = loadedAssemblies.Select(a => Path.GetFileName(a.CodeBase)).ToList();
+            List<string> loadedFiles =
+                loadedAssemblies.Select(a => Path.GetFileName(a.CodeBase)).ToList();
 
             // get all files...
-            var allFiles = GetAllFilesIn(AppDomain.CurrentDomain.BaseDirectory).ToList();
+            List<string> allFiles = GetAllFilesIn(AppDomain.CurrentDomain.BaseDirectory).ToList();
 
             // exclude currently loaded assemblies
-            var needsToBeLoaded = allFiles
+            List<string> needsToBeLoaded = allFiles
                 .Where(
                     f =>
                     !loadedFiles.Contains(Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             // attempt to load files as an assembly and include already loaded
-            var aggregatedAssemblies = TryLoadAssemblies(needsToBeLoaded)
+            List<Assembly> aggregatedAssemblies = TryLoadAssemblies(needsToBeLoaded)
                 .Where(filterAssemblies)
                 .Concat(loadedAssemblies)
                 .ToList();
 
             // load resource assemblies
-            var loadedAssemblyNames = loadedAssemblies.Select(a => a.GetName().Name).ToArray();
-            var assemblyResourcesToLoad =
+            string[] loadedAssemblyNames = loadedAssemblies.Select(a => a.GetName().Name).ToArray();
+            string[] assemblyResourcesToLoad =
                 GetAllAssemblyResourcesIn(loadedAssemblies)
                     .Where(s => !loadedAssemblyNames.Contains(s, StringComparer.OrdinalIgnoreCase))
                     .ToArray();
@@ -68,9 +75,15 @@ namespace Papercut.Core.Helper
                     .ToList();
         }
 
+        [NotNull]
+        public IEnumerable<Assembly> GetAll()
+        {
+            return _allAssemblies.Value;
+        }
+
         static IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
         {
-            foreach (var assemblyFile in filenames.Where(File.Exists))
+            foreach (string assemblyFile in filenames.Where(File.Exists))
             {
                 Assembly assembly;
 
@@ -91,7 +104,7 @@ namespace Papercut.Core.Helper
         static IEnumerable<Assembly> TryLoadResourceAssemblies(
             [NotNull] IEnumerable<string> assemblyNames)
         {
-            foreach (var assemblyName in assemblyNames)
+            foreach (string assemblyName in assemblyNames)
             {
                 Assembly assembly;
 

@@ -30,10 +30,16 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class PapercutServiceBackendCoordinator : IHandleEvent<AppPreStartEvent>,
+    public class PapercutServiceBackendCoordinator : IHandleEvent<PapercutClientPreStartEvent>,
         IHandleEvent<SettingsUpdatedEvent>,
-        IHandleEvent<RulesUpdatedEvent>
+        IHandleEvent<RulesUpdatedEvent>,
+        IHandleEvent<PapercutServicePreStartEvent>,
+        IHandleEvent<PapercutServiceReadyEvent>,
+        IHandleEvent<PapercutServiceExitEvent>
     {
+        const string BackendServiceFailureMessage =
+            "Papercut Backend Service Exception Attempting to Contact";
+
         readonly ILogger _logger;
 
         readonly Func<PapercutClient> _papercutClientFactory;
@@ -43,8 +49,6 @@ namespace Papercut.Services
         readonly SmtpServerCoordinator _smtpServerCoordinator;
 
         Action<RulesUpdatedEvent> _nextUpdateEvent;
-
-        IObservable<RulesUpdatedEvent> rulesUpdateObservable;
 
         public PapercutServiceBackendCoordinator(
             ILogger logger,
@@ -57,12 +61,13 @@ namespace Papercut.Services
             _papercutClientFactory = papercutClientFactory;
             _smtpServerCoordinator = smtpServerCoordinator;
 
-            rulesUpdateObservable = Observable.Create<RulesUpdatedEvent>(
-                o =>
-                {
-                    _nextUpdateEvent = o.OnNext;
-                    return Disposable.Empty;
-                }).SubscribeOn(TaskPoolScheduler.Default);
+            IObservable<RulesUpdatedEvent> rulesUpdateObservable = Observable
+                .Create<RulesUpdatedEvent>(
+                    o =>
+                    {
+                        _nextUpdateEvent = o.OnNext;
+                        return Disposable.Empty;
+                    }).SubscribeOn(TaskPoolScheduler.Default);
 
             // flush rules every 10 seconds
             rulesUpdateObservable.Buffer(TimeSpan.FromSeconds(10))
@@ -72,37 +77,26 @@ namespace Papercut.Services
 
         public bool IsBackendServiceOnline { get; private set; }
 
-        public void Handle(AppPreStartEvent @event)
+        public void Handle(PapercutClientPreStartEvent @event)
         {
-            try
-            {
-                var exchangeEvent = new AppProcessExchangeEvent();
+            DoProcessExchange();
+        }
 
-                // attempt to connect to the backend server...
-                using (PapercutClient client = GetClient())
-                {
-                    if (!client.ExchangeEventServer(ref exchangeEvent)) return;
+        public void Handle(PapercutServiceExitEvent @event)
+        {
+            IsBackendServiceOnline = false;
+            _smtpServerCoordinator.SmtpServerEnabled = true;
+        }
 
-                    IsBackendServiceOnline = true;
+        public void Handle(PapercutServicePreStartEvent @event)
+        {
+            IsBackendServiceOnline = true;
+            _smtpServerCoordinator.SmtpServerEnabled = false;
+        }
 
-                    // backend server is online...
-                    _logger.Information("Papercut Backend Service Running. Disabling SMTP in App.");
-                    _smtpServerCoordinator.SmtpServerEnabled = false;
-
-                    if (!string.IsNullOrWhiteSpace(exchangeEvent.MessageWritePath))
-                    {
-                        _logger.Debug(
-                            "Background Process Returned {@Event} -- Publishing",
-                            exchangeEvent);
-
-                        _publishEvent.Publish(exchangeEvent);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning(ex, "Papercut Backend Service Exception Attempting to Contact");
-            }
+        public void Handle(PapercutServiceReadyEvent @event)
+        {
+            DoProcessExchange();
         }
 
         public void Handle(RulesUpdatedEvent @event)
@@ -136,7 +130,40 @@ namespace Papercut.Services
             }
             catch (Exception ex)
             {
-                _logger.Warning(ex, "Papercut Backend Service Exception Attempting to Contact");
+                _logger.Warning(ex, BackendServiceFailureMessage);
+            }
+        }
+
+        void DoProcessExchange()
+        {
+            try
+            {
+                var exchangeEvent = new AppProcessExchangeEvent();
+
+                // attempt to connect to the backend server...
+                using (PapercutClient client = GetClient())
+                {
+                    if (!client.ExchangeEventServer(ref exchangeEvent)) return;
+
+                    IsBackendServiceOnline = true;
+
+                    // backend server is online...
+                    _logger.Information("Papercut Backend Service Running. Disabling SMTP in App.");
+                    _smtpServerCoordinator.SmtpServerEnabled = false;
+
+                    if (!string.IsNullOrWhiteSpace(exchangeEvent.MessageWritePath))
+                    {
+                        _logger.Debug(
+                            "Background Process Returned {@Event} -- Publishing",
+                            exchangeEvent);
+
+                        _publishEvent.Publish(exchangeEvent);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, BackendServiceFailureMessage);
             }
         }
 
@@ -157,7 +184,7 @@ namespace Papercut.Services
             }
             catch (Exception ex)
             {
-                _logger.Warning(ex, "Papercut Backend Service Exception Attempting to Contact");
+                _logger.Warning(ex, BackendServiceFailureMessage);
             }
         }
 

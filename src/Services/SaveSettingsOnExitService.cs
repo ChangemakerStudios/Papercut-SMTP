@@ -22,7 +22,7 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class SaveSettingsOnExitService : IHandleEvent<AppExitEvent>
+    public class SaveSettingsOnExitService : IHandleEvent<PapercutClientExitEvent>
     {
         readonly ILogger _logger;
 
@@ -31,7 +31,7 @@ namespace Papercut.Services
             _logger = logger;
         }
 
-        public void Handle(AppExitEvent @event)
+        public void Handle(PapercutClientExitEvent @event)
         {
             _logger.Debug("Saving Updated Settings...");
             Settings.Default.Save();

@@ -26,7 +26,7 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class SingleInstanceService : IDisposable, IHandleEvent<AppPreStartEvent>
+    public class SingleInstanceService : IDisposable, IHandleEvent<PapercutClientPreStartEvent>
     {
         readonly Mutex _appMutex = new Mutex(false, App.GlobalName);
 
@@ -52,7 +52,7 @@ namespace Papercut.Services
             }
         }
 
-        public void Handle(AppPreStartEvent @event)
+        public void Handle(PapercutClientPreStartEvent @event)
         {
             // papercut is not already running...
             if (_appMutex.WaitOne(0, false)) return;

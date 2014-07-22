@@ -18,23 +18,32 @@
 namespace Papercut.Services
 {
     using System;
+    using System.ComponentModel;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Linq;
+    using System.Runtime.CompilerServices;
 
+    using Papercut.Core.Annotations;
     using Papercut.Core.Events;
     using Papercut.Core.Network;
     using Papercut.Events;
+    using Papercut.Helpers;
     using Papercut.Properties;
 
     using Serilog;
 
-    public class SmtpServerCoordinator : IHandleEvent<AppReadyEvent>,
-        IHandleEvent<AppExitEvent>,
-        IHandleEvent<SettingsUpdatedEvent>
+    public class SmtpServerCoordinator : IHandleEvent<PapercutClientReadyEvent>,
+        IHandleEvent<PapercutClientExitEvent>,
+        IHandleEvent<SettingsUpdatedEvent>,
+        INotifyPropertyChanged
     {
+        readonly Func<ServerProtocolType, IServer> _serverFactory;
+
         readonly ILogger _logger;
 
         readonly IPublishEvent _publishEvent;
 
-        readonly IServer _smtpServer;
+        readonly Lazy<IServer> _smtpServer;
 
         bool _smtpServerEnabled = true;
 
@@ -43,7 +52,8 @@ namespace Papercut.Services
             ILogger logger,
             IPublishEvent publishEvent)
         {
-            _smtpServer = serverFactory(ServerProtocolType.Smtp);
+            _serverFactory = serverFactory;
+            _smtpServer = new Lazy<IServer>(() => _serverFactory(ServerProtocolType.Smtp));
             _logger = logger;
             _publishEvent = publishEvent;
         }
@@ -51,17 +61,31 @@ namespace Papercut.Services
         public bool SmtpServerEnabled
         {
             get { return _smtpServerEnabled; }
-            set { _smtpServerEnabled = value; }
+            set
+            {
+                if (value.Equals(_smtpServerEnabled)) return;
+                _smtpServerEnabled = value;
+                OnPropertyChanged();
+            }
         }
 
-        public void Handle(AppExitEvent @event)
+        public void Handle(PapercutClientExitEvent @event)
         {
-            _smtpServer.Stop();
+            _smtpServer.Value.Stop();
         }
 
-        public void Handle(AppReadyEvent @event)
+        public void Handle(PapercutClientReadyEvent @event)
         {
             if (SmtpServerEnabled) ListenSmtpServer();
+
+            // start listening to change events
+            this.GetPropertyValues(_ => _.SmtpServerEnabled, TaskPoolScheduler.Default)
+                .Subscribe(
+                    enabled =>
+                    {
+                        if (enabled) ListenSmtpServer();
+                        else _smtpServer.Value.Stop();
+                    });
         }
 
         public void Handle(SettingsUpdatedEvent @event)
@@ -69,16 +93,22 @@ namespace Papercut.Services
             if (SmtpServerEnabled) ListenSmtpServer();
         }
 
-        public bool ListenSmtpServer()
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        void ListenSmtpServer()
         {
             try
             {
-                _smtpServer.Stop();
-                _smtpServer.Listen(Settings.Default.IP, Settings.Default.Port);
-                _publishEvent.Publish(
-                    new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port));
-
-                return true;
+                _smtpServer.Value.BindObservable(
+                    Settings.Default.IP,
+                    Settings.Default.Port,
+                    TaskPoolScheduler.Default)
+                    .Delay(TimeSpan.FromMilliseconds(500)).Retry(5)
+                    .Subscribe(
+                        (b) => { },
+                        () => _publishEvent.Publish(
+                            new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
+                
             }
             catch (Exception ex)
             {
@@ -90,8 +120,13 @@ namespace Papercut.Services
 
                 _publishEvent.Publish(new SmtpServerBindFailedEvent());
             }
+        }
 
-            return false;
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
