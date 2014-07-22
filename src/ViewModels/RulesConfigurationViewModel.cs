@@ -18,16 +18,12 @@
 namespace Papercut.ViewModels
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Linq;
-    using System.Windows;
-
-    using Autofac.Features.Metadata;
 
     using Caliburn.Micro;
 
+    using Papercut.Core.Annotations;
     using Papercut.Core.Rules;
     using Papercut.Services;
 
@@ -44,6 +40,13 @@ namespace Papercut.ViewModels
             _ruleService = ruleService;
             RegisteredRules = new ObservableCollection<IRule>(registeredRules);
             Rules = _ruleService.Rules;
+            Rules.CollectionChanged += (sender, args) =>
+            {
+                if (!Rules.Contains(SelectedRule))
+                {
+                    SelectedRule = null;
+                }
+            };
         }
 
         public string WindowTitle
@@ -63,13 +66,21 @@ namespace Papercut.ViewModels
             {
                 _selectedRule = value;
                 NotifyOfPropertyChange(() => SelectedRule);
+                NotifyOfPropertyChange(() => HasSelectedRule);
             }
+        }
+
+        public bool HasSelectedRule
+        {
+            get { return _selectedRule != null; }
         }
 
         public ObservableCollection<IRule> RegisteredRules { get; private set; }
 
-        public void AddRule(IRule rule)
+        public void AddRule([NotNull] IRule rule)
         {
+            if (rule == null) throw new ArgumentNullException("rule");
+
             var newRule = Activator.CreateInstance(rule.GetType()) as IRule;
             Rules.Add(newRule);
             SelectedRule = newRule;
@@ -77,7 +88,7 @@ namespace Papercut.ViewModels
 
         public void DeleteRule()
         {
-            Rules.Remove(SelectedRule);
+            if (SelectedRule != null) Rules.Remove(SelectedRule);
         }
 
         public ObservableCollection<IRule> Rules { get; private set; }

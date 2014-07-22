@@ -18,6 +18,7 @@
 namespace Papercut.Core.Rules.Implementations
 {
     using System;
+    using System.Reactive.Linq;
 
     using MailKit.Net.Smtp;
 
@@ -42,39 +43,14 @@ namespace Papercut.Core.Rules.Implementations
             if (messageEntry == null) throw new ArgumentNullException("messageEntry");
 
             _mimeMessageLoader.Get(messageEntry)
+                .Select(m => m.CloneMessage())
                 .Subscribe(
-                    readOnlyMessage =>
+                    m =>
                     {
-                        MimeMessage message = readOnlyMessage.CloneMessage();
-
-                        using (var client = new SmtpClient())
+                        using (SmtpClient client = rule.CreateConnectedSmtpClient())
                         {
-                            client.Connect(rule.SMTPServer, rule.SMTPPort, rule.SmtpUseSSL);
-
-                            // Note: since we don't have an OAuth2 token, disable
-                            // the XOAUTH2 authentication mechanism.
-                            client.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                            if (!string.IsNullOrWhiteSpace(rule.SMTPPassword)
-                                && !string.IsNullOrWhiteSpace(rule.SMTPUsername))
-                            {
-                                // Note: only needed if the SMTP server requires authentication
-                                client.Authenticate(rule.SMTPUsername, rule.SMTPPassword);
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(rule.FromEmail))
-                            {
-                                message.From.Clear();
-                                message.From.Add(new MailboxAddress(rule.FromEmail, rule.FromEmail));
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(rule.ToEmail))
-                            {
-                                message.To.Clear();
-                                message.To.Add(new MailboxAddress(rule.ToEmail, rule.ToEmail));
-                            }
-
-                            client.Send(message);
+                            m.PopulateFromRule(rule);
+                            client.Send(m);
                             client.Disconnect(true);
                         }
                     });

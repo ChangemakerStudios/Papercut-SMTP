@@ -15,20 +15,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Service.Classes
+namespace Papercut.Service.Services
 {
     using System.IO;
 
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
+    using Papercut.Service.Helpers;
 
-    public class ReplyWithDefaultMessageSavePath : IHandleEvent<AppProcessExchangeEvent>
+    public class ReplyWithDefaultMessageSavePathService : IHandleEvent<AppProcessExchangeEvent>
     {
         readonly IMessagePathConfigurator _messagePathConfigurator;
 
         readonly PapercutServiceSettings _serviceSettings;
 
-        public ReplyWithDefaultMessageSavePath(IMessagePathConfigurator messagePathConfigurator, PapercutServiceSettings serviceSettings)
+        public ReplyWithDefaultMessageSavePathService(IMessagePathConfigurator messagePathConfigurator, PapercutServiceSettings serviceSettings)
         {
             _messagePathConfigurator = messagePathConfigurator;
             _serviceSettings = serviceSettings;

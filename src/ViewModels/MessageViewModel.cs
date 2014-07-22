@@ -19,7 +19,10 @@ namespace Papercut.ViewModels
 {
     using System;
     using System.Reactive.Linq;
+    using System.Runtime.InteropServices;
     using System.Windows;
+
+    using Caliburn.Micro;
 
     using MimeKit;
 
@@ -29,8 +32,6 @@ namespace Papercut.ViewModels
     using Papercut.Views;
 
     using Serilog;
-
-    using Screen = Caliburn.Micro.Screen;
 
     public class MessageViewModel : Screen
     {
@@ -59,6 +60,14 @@ namespace Papercut.ViewModels
             get { return !string.IsNullOrWhiteSpace(HtmlFile); }
         }
 
+        [DllImport("urlmon.dll")]
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.Error)]
+        static extern int CoInternetSetFeatureEnabled(
+            int featureEntry,
+            [MarshalAs(UnmanagedType.U4)] int dwFlags,
+            bool fEnable);
+
         public void ShowMessage([NotNull] MimeMessage mailMessageEx)
         {
             if (mailMessageEx == null) throw new ArgumentNullException("mailMessageEx");
@@ -85,14 +94,28 @@ namespace Papercut.ViewModels
 
         protected override void OnViewLoaded(object view)
         {
+            const int Feature = 21; //FEATURE_DISABLE_NAVIGATION_SOUNDS
+            const int SetFeatureOnProcess = 0x00000002;
+
             base.OnViewLoaded(view);
 
             var typedView = view as MessageView;
 
             if (typedView == null)
             {
-                _logger.Error("Unable to locate the MessageView to hook the Frame Control");
+                _logger.Error("Unable to locate the MessageView to hook the WebBrowser Control");
                 return;
+            }
+
+            try
+            {
+                // disable the stupid click sound on navigate
+                CoInternetSetFeatureEnabled(Feature, SetFeatureOnProcess, true);
+            }
+            catch (Exception ex)
+            {
+                // just have to live with the sound
+                _logger.Warning(ex, "Failed to disable the Navigation Sounds on the WebBrowser control");
             }
 
             this.GetPropertyValues(p => p.HtmlFile)
@@ -104,7 +127,8 @@ namespace Papercut.ViewModels
                     });
 
             Observable
-                .FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
+                .FromEvent
+                <DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
                     a => ((s, e) => a(e)),
                     h => typedView.IsEnabledChanged += h,
                     h => typedView.IsEnabledChanged -= h)

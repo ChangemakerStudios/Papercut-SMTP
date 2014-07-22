@@ -45,7 +45,7 @@ namespace Papercut
         protected override void Configure()
         {
             MessageBinder.SpecialValues.Add(
-                "$orignalsourcecontext",
+                "$originalsourcecontext",
                 context =>
                 {
                     var args = context.EventArgs as RoutedEventArgs;

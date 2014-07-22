@@ -17,16 +17,16 @@
 
 namespace Papercut.Service
 {
-    using System;
-    using System.IO;
     using System.Reflection;
 
     using Autofac;
-    using Autofac.Core;
 
+    using Papercut.Core;
     using Papercut.Core.Configuration;
+    using Papercut.Core.Helper;
     using Papercut.Core.Settings;
-    using Papercut.Service.Classes;
+    using Papercut.Service.Helpers;
+    using Papercut.Service.Services;
 
     using Module = Autofac.Module;
 
@@ -34,18 +34,8 @@ namespace Papercut.Service
     {
         protected override void Load(ContainerBuilder builder)
         {
-            // only used if primary papercut is not loaded.
-            builder.RegisterType<ServerPathTemplateProvider>()
-                .As<IPathTemplatesProvider>()
-                .AsSelf()
-                .PreserveExistingDefaults();
-
-            builder.RegisterType<ReplyWithDefaultMessageSavePath>()
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .SingleInstance();
-
-            builder.RegisterType<RuleService>()
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
                 .AsImplementedInterfaces()
                 .AsSelf()
                 .SingleInstance();
@@ -62,11 +52,6 @@ namespace Papercut.Service
 
             builder.Register((c) => new ApplicationMeta("Papercut.Service"))
                 .As<IAppMeta>()
-                .SingleInstance();
-
-            builder.RegisterType<PapercutService>()
-                .AsImplementedInterfaces()
-                .AsSelf()
                 .SingleInstance();
         }
     }

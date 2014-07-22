@@ -26,7 +26,7 @@ namespace Papercut.Services
     using Papercut.Events;
 
     public class NotificationMenuService : IDisposable,
-        IHandleEvent<AppReadyEvent>,
+        IHandleEvent<PapercutClientReadyEvent>,
         IHandleEvent<ShowBallonTip>
     {
         readonly IPublishEvent _publishEvent;
@@ -52,7 +52,7 @@ namespace Papercut.Services
             }
         }
 
-        public void Handle(AppReadyEvent message)
+        public void Handle(PapercutClientReadyEvent message)
         {
             if (_notification != null) return;
 

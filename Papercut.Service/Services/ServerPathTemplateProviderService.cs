@@ -15,26 +15,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Services
+namespace Papercut.Service.Services
 {
-    using Papercut.Core.Events;
-    using Papercut.Helpers;
+    using System.Collections.ObjectModel;
+    using System.Linq;
 
-    using Serilog;
+    using Papercut.Core.Configuration;
+    using Papercut.Service.Helpers;
 
-    public class TempFileCleanupService : IHandleEvent<PapercutClientExitEvent>
+    public class ServerPathTemplateProviderService : IPathTemplatesProvider
     {
-        readonly ILogger _logger;
-
-        public TempFileCleanupService(ILogger logger)
+        public ServerPathTemplateProviderService(PapercutServiceSettings serviceSettings)
         {
-            _logger = logger;
+            PathTemplates =
+                new ObservableCollection<string>(
+                    serviceSettings.MessagePath.Split(new[] { ';' })
+                        .Select(s => s.Trim())
+                        .Where(s => !string.IsNullOrWhiteSpace(s)));
         }
 
-        public void Handle(PapercutClientExitEvent @event)
-        {
-            // time for temp file cleanup
-            MailMessageHelper.TryCleanUpTempFiles(_logger);
-        }
+        public ObservableCollection<string> PathTemplates { get; private set; }
     }
 }

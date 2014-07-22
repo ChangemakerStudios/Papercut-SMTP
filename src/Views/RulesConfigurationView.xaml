@@ -19,15 +19,56 @@
         <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
     </i:Interaction.Behaviors>
     <DockPanel>
-        <ToolBarTray Height="Auto" DockPanel.Dock="Top">
-            <ToolBar BorderBrush="LightGray" BorderThickness="1" Width="Auto" Margin="2">
+        <ToolBarTray Height="Auto" DockPanel.Dock="Top" Background="WhiteSmoke">
+            <ToolBar Width="Auto" Margin="2">
                 <Menu>
-                    <MenuItem x:Name="RegisteredRules" Header="Add Rule" cal:Message.Attach="AddRule($orignalsourcecontext)">
+                    <MenuItem x:Name="RegisteredRules" Margin="1" Padding="8,4,8,4" cal:Message.Attach="AddRule($originalsourcecontext)">
+                        <MenuItem.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
+                                        <Rectangle.OpacityMask>
+                                            <VisualBrush Stretch="Fill"
+                                         Visual="{StaticResource appbar_layer_add}" />
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <TextBlock Margin="4 0 0 0"
+                               VerticalAlignment="Center"
+                               Text="Add Rule" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </MenuItem.HeaderTemplate>
                         <MenuItem.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Type}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
+                                        <Rectangle.OpacityMask>
+                                            <VisualBrush Stretch="Fill"
+                                         Visual="{StaticResource appbar_box}" />
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <TextBlock Margin="4 0 0 0" VerticalAlignment="Center" Text="{Binding Type}" />
+                                </StackPanel>
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
+                    </MenuItem>
+                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="4,2,4,2" />
+                    <MenuItem Padding="8,4,8,4" Margin="1" cal:Message.Attach="DeleteRule" IsEnabled="{Binding HasSelectedRule}">
+                        <MenuItem.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
+                                        <Rectangle.OpacityMask>
+                                            <VisualBrush Stretch="Fill"
+                                         Visual="{StaticResource appbar_layer_minus}" />
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <TextBlock Margin="4 0 0 0"
+                               VerticalAlignment="Center"
+                               Text="Delete Rule" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </MenuItem.HeaderTemplate>
                     </MenuItem>
                 </Menu>
             </ToolBar>
@@ -35,11 +76,6 @@
         <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto" 
                   SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
                   ItemsSource="{Binding Rules}" AutoGenerateColumns="False" IsReadOnly="True">
-            <DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Delete" cal:Message.Attach="DeleteRule" />
-                </ContextMenu>
-            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" />
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" />

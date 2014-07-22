@@ -31,7 +31,6 @@ namespace Papercut.ViewModels
     using MahApps.Metro.Controls.Dialogs;
 
     using Papercut.Core.Events;
-    using Papercut.Core.Message;
     using Papercut.Core.Rules.Implementations;
     using Papercut.Events;
     using Papercut.Helpers;
@@ -44,8 +43,6 @@ namespace Papercut.ViewModels
         IHandle<ShowOptionWindowEvent>
     {
         const string WindowTitleDefault = "Papercut";
-
-        readonly MessageRepository _messageRepository;
 
         readonly ForwardRuleDispatch _forwardRuleDispatch;
 
@@ -62,14 +59,12 @@ namespace Papercut.ViewModels
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
             IPublishEvent publishEvent,
-            MessageRepository messageRepository,
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
             Func<MessageDetailViewModel> messageDetailViewModelFactory)
         {
             _viewModelWindowManager = viewModelWindowManager;
             _publishEvent = publishEvent;
-            _messageRepository = messageRepository;
             _forwardRuleDispatch = forwardRuleDispatch;
 
             MessageListViewModel = messageListViewModelFactory();

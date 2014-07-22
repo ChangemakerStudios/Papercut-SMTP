@@ -106,11 +106,14 @@
   <ItemGroup>
     <Compile Include="Configuration\ApplicationMeta.cs" />
     <Compile Include="Configuration\IAppMeta.cs" />
-    <Compile Include="Events\AppExitEvent.cs" />
+    <Compile Include="Events\PapercutClientExitEvent.cs" />
     <Compile Include="Events\AppForceShutdownEvent.cs" />
-    <Compile Include="Events\AppPreStartEvent.cs" />
+    <Compile Include="Events\PapercutClientPreStartEvent.cs" />
     <Compile Include="Events\AppProcessExchangeEvent.cs" />
     <Compile Include="Events\NewMessageEvent.cs" />
+    <Compile Include="Events\PapercutServiceExitEvent.cs" />
+    <Compile Include="Events\PapercutServicePreStartEvent.cs" />
+    <Compile Include="Events\PapercutServiceReadyEvent.cs" />
     <Compile Include="Events\RulesUpdatedEvent.cs" />
     <Compile Include="Events\AutofacPublishEvent.cs" />
     <Compile Include="Events\BaseBindEvent.cs" />
@@ -119,7 +122,7 @@
     <Compile Include="Events\IDomainEvent.cs" />
     <Compile Include="Events\IPublishEvent.cs" />
     <Compile Include="Events\IHandleEvent.cs" />
-    <Compile Include="Events\AppReadyEvent.cs" />
+    <Compile Include="Events\PapercutClientReadyEvent.cs" />
     <Compile Include="Events\PublishEventExtensions.cs" />
     <Compile Include="Events\SmtpServerBindFailedEvent.cs" />
     <Compile Include="Events\SmtpServerBindEvent.cs" />
@@ -140,6 +143,7 @@
     <Compile Include="Helper\StreamExtensions.cs" />
     <Compile Include="Message\IFile.cs" />
     <Compile Include="Message\MessageWatcher.cs" />
+    <Compile Include="Network\ServerExtensions.cs" />
     <Compile Include="Rules\Implementations\ForwardRule.cs" />
     <Compile Include="Network\Connection.cs" />
     <Compile Include="Helper\ConnectionExtensions.cs" />
@@ -166,6 +170,7 @@
     <Compile Include="Network\SmtpProtocol.cs" />
     <Compile Include="Network\SmtpSession.cs" />
     <Compile Include="Rules\Implementations\ForwardRuleDispatch.cs" />
+    <Compile Include="Rules\Implementations\ForwardRuleExtensions.cs" />
     <Compile Include="Rules\IRule.cs" />
     <Compile Include="Rules\IRuleDispatcher.cs" />
     <Compile Include="Rules\IRulesRunner.cs" />

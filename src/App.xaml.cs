@@ -63,7 +63,7 @@ namespace Papercut
 
             try
             {
-                var appPreStartEvent = new AppPreStartEvent();
+                var appPreStartEvent = new PapercutClientPreStartEvent();
                 publishEvent.Publish(appPreStartEvent);
 
                 if (appPreStartEvent.CancelStart)
@@ -76,7 +76,7 @@ namespace Papercut
                 base.OnStartup(e);
 
                 // startup app
-                publishEvent.Publish(new AppReadyEvent());
+                publishEvent.Publish(new PapercutClientReadyEvent());
             }
             catch (Exception ex)
             {
@@ -91,7 +91,7 @@ namespace Papercut
 
             using (Container)
             {
-                Container.Resolve<IPublishEvent>().Publish(new AppExitEvent());
+                Container.Resolve<IPublishEvent>().Publish(new PapercutClientExitEvent());
             }
 
             _lifetimeScope = null;

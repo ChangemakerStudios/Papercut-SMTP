@@ -15,19 +15,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Service
+namespace Papercut.Service.Services
 {
     using System;
+    using System.Reactive;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Disposables;
+    using System.Reactive.Linq;
 
+    using Papercut.Core.Configuration;
     using Papercut.Core.Events;
     using Papercut.Core.Network;
     using Papercut.Core.Settings;
-    using Papercut.Service.Classes;
+    using Papercut.Service.Helpers;
 
     using Serilog;
 
-    public class PapercutService : IHandleEvent<SmtpServerBindEvent>
+    public class PapercutServerService : IHandleEvent<SmtpServerBindEvent>
     {
+        readonly IAppMeta _applicationMetaData;
+
         readonly ILogger _logger;
 
         readonly IServer _papercutServer;
@@ -38,13 +45,15 @@ namespace Papercut.Service
 
         readonly IServer _smtpServer;
 
-        public PapercutService(
+        public PapercutServerService(
             Func<ServerProtocolType, IServer> serverFactory,
             PapercutServiceSettings serviceSettings,
+            IAppMeta applicationMetaData,
             ILogger logger,
             IPublishEvent publishEvent)
         {
             _serviceSettings = serviceSettings;
+            _applicationMetaData = applicationMetaData;
             _logger = logger;
             _publishEvent = publishEvent;
             _smtpServer = serverFactory(ServerProtocolType.Smtp);
@@ -66,17 +75,30 @@ namespace Papercut.Service
             BindSMTPServer();
         }
 
-        public void Start()
-        {
-            BindSMTPServer();
-            BindPapercutServer();
-            _publishEvent.Publish(new AppReadyEvent());
-        }
-
         void BindSMTPServer()
         {
             _smtpServer.Stop();
             _smtpServer.Listen(_serviceSettings.IP, _serviceSettings.Port);
+        }
+
+        public void Start()
+        {
+            _publishEvent.Publish(
+                new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
+
+            BindPapercutServer();
+
+            _smtpServer.BindObservable(
+                _serviceSettings.IP,
+                _serviceSettings.Port,
+                TaskPoolScheduler.Default).Delay(TimeSpan.FromSeconds(1)).Retry(5)
+                .Subscribe(
+                    (u) =>
+                    {
+                        /* next is not used */
+                    },
+                    // on complete
+                    () => _publishEvent.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
         }
 
         void BindPapercutServer()
@@ -87,9 +109,9 @@ namespace Papercut.Service
 
         public void Stop()
         {
-            _publishEvent.Publish(new AppExitEvent());
             _smtpServer.Stop();
             _papercutServer.Stop();
+            _publishEvent.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
         }
     }
 }

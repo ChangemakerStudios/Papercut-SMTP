@@ -23,6 +23,7 @@ namespace Papercut.Service
 
     using Papercut.Core;
     using Papercut.Service.Logging;
+    using Papercut.Service.Services;
 
     using Serilog;
 
@@ -50,10 +51,10 @@ namespace Papercut.Service
         void ConfigureHost(HostConfigurator x)
         {
             x.UseSerilog(_container.Resolve<ILogger>());
-            x.Service<PapercutService>(
+            x.Service<PapercutServerService>(
                 s =>
                 {
-                    s.ConstructUsing(serviceFactory => _container.Resolve<PapercutService>());
+                    s.ConstructUsing(serviceFactory => _container.Resolve<PapercutServerService>());
                     s.WhenStarted(tc => tc.Start());
                     s.WhenStopped(tc => tc.Stop());
                     s.WhenShutdown(ts => _container.Dispose());
@@ -63,7 +64,7 @@ namespace Papercut.Service
 
             x.SetDescription("Papercut SMTP Backend Service");
             x.SetDisplayName("Papercut SMTP Service");
-            x.SetServiceName("PapercutService");
+            x.SetServiceName("PapercutServerService");
         }
     }
 }

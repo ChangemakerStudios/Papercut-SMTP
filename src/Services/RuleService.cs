@@ -31,8 +31,8 @@ namespace Papercut.Services
     using Serilog;
 
     public class RuleService : RuleServiceBase,
-        IHandleEvent<AppReadyEvent>,
-        IHandleEvent<AppExitEvent>
+        IHandleEvent<PapercutClientReadyEvent>,
+        IHandleEvent<PapercutClientExitEvent>
     {
         readonly PapercutServiceBackendCoordinator _coordinator;
 
@@ -57,12 +57,12 @@ namespace Papercut.Services
             _publishEvent = publishEvent;
         }
 
-        public void Handle(AppExitEvent @event)
+        public void Handle(PapercutClientExitEvent @event)
         {
             Save();
         }
 
-        public void Handle(AppReadyEvent @event)
+        public void Handle(PapercutClientReadyEvent @event)
         {
             _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
             try
