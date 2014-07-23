@@ -23,6 +23,8 @@ namespace Papercut.Core.Network
 
     using Autofac.Features.Indexed;
 
+    using Papercut.Core.Annotations;
+
     using Serilog;
 
     public class Server : IServer
@@ -39,11 +41,11 @@ namespace Papercut.Core.Network
 
         IPAddress _address;
 
-        bool _isRunning;
-
         Socket _listener;
 
         int _port;
+
+        bool _isActive;
 
         public Server(
             ServerProtocolType serverProtocolType,
@@ -56,6 +58,24 @@ namespace Papercut.Core.Network
             _serverProtocolType = serverProtocolType;
             Logger = logger.ForContext("ServerProtocolType", _serverProtocolType);
             ProtocolFactory = protocolFactory[_serverProtocolType];
+        }
+
+        public bool IsActive
+        {
+            get
+            {
+                lock (this)
+                {
+                    return _isActive;
+                }
+            }
+            private set
+            {
+                lock (this)
+                {
+                    _isActive = value;
+                }
+            }
         }
 
         #endregion
@@ -71,24 +91,33 @@ namespace Papercut.Core.Network
 
         public void Stop()
         {
-            if (!_isRunning) return;
+            if (!IsActive) return;
 
-            Logger.Information("Stopping Server...");
+            Logger.Information("Stopping Server {ProtocolType}", _serverProtocolType);
 
             try
             {
                 // Turn off the running bool
-                _isRunning = false;
+                IsActive = false;
 
-                // Stop the listener
-                _listener.Close();
+                _listener.Close(2);
 
                 ConnectionManager.CloseAll();
+
+                CleanupListener();
             }
             catch (Exception ex)
             {
                 Logger.Error(ex, "Exception Stopping Server");
             }
+        }
+
+        protected void CleanupListener()
+        {
+            if (_listener == null) return;
+
+            _listener.Dispose();
+            _listener = null;
         }
 
         #endregion
@@ -100,7 +129,7 @@ namespace Papercut.Core.Network
             try
             {
                 // If the listener isn't null, close before rebinding
-                if (_listener != null) _listener.Close();
+                CleanupListener();
 
                 // Bind to the listening port
                 _listener = new Socket(
@@ -109,17 +138,17 @@ namespace Papercut.Core.Network
                     ProtocolType.Tcp);
 
                 _listener.Bind(new IPEndPoint(_address, _port));
-                _listener.Listen(10);
+                _listener.Listen(20);
                 _listener.BeginAccept(OnClientAccept, null);
 
                 Logger.Information(
-                    "Server Ready - Listening for new connections {Address}:{ClientPort}",
+                    "Server Ready - Listening for New Connections {Address}:{ClientPort}",
                     _address,
                     _port);
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Exception in Starting Server");
+                Logger.Error(ex, "Exception Creating Listener");
                 throw;
             }
         }
@@ -127,18 +156,23 @@ namespace Papercut.Core.Network
         protected void SetEndpoint(string ip, int port)
         {
             // Load IP/ClientPort settings
-            if (string.IsNullOrWhiteSpace(ip)
-                || string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase)) _address = IPAddress.Any;
+            if (string.IsNullOrWhiteSpace(ip) ||
+                string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase)) _address = IPAddress.Any;
             else _address = IPAddress.Parse(ip);
 
             _port = port;
         }
 
-        void OnClientAccept(IAsyncResult ar)
+        void OnClientAccept([NotNull] IAsyncResult asyncResult)
         {
+            if (!IsActive || _listener == null)
+            {
+                return;
+            }
+
             try
             {
-                Socket clientSocket = _listener.EndAccept(ar);
+                Socket clientSocket = _listener.EndAccept(asyncResult);
                 ConnectionManager.CreateConnection(clientSocket, ProtocolFactory());
             }
             catch (ObjectDisposedException)
@@ -156,7 +190,7 @@ namespace Papercut.Core.Network
             }
             finally
             {
-                if (_isRunning)
+                if (IsActive)
                 {
                     try
                     {
@@ -177,13 +211,14 @@ namespace Papercut.Core.Network
             try
             {
                 // Set it as starting
-                _isRunning = true;
+                IsActive = true;
 
                 // Create and start new listener socket
                 CreateListener();
             }
             catch (Exception ex)
             {
+                IsActive = false;
                 Logger.Error(ex, "Exception Starting Server");
                 throw;
             }
@@ -193,7 +228,16 @@ namespace Papercut.Core.Network
 
         public void Dispose()
         {
-            Stop();
+            try
+            {
+                Stop();
+                CleanupListener();
+                ConnectionManager.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning(ex, "Exception Disposing Server Instance");
+            }
         }
     }
 }

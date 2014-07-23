@@ -18,7 +18,6 @@
 namespace Papercut.Core
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -32,6 +31,7 @@ namespace Papercut.Core
     using Papercut.Core.Message;
     using Papercut.Core.Network;
     using Papercut.Core.Rules;
+    using Papercut.Core.Settings;
 
     using Serilog;
 
@@ -95,17 +95,44 @@ namespace Papercut.Core
                 .AsSelf()
                 .SingleInstance();
 
+            builder.RegisterType<JsonSettingStore>()
+                .As<ISettingStore>()
+                .OnActivated(
+                    j =>
+                    {
+                        try
+                        {
+                            j.Instance.Load();
+                        }
+                        catch
+                        {
+                        }
+                    })
+                .OnRelease(
+                    j =>
+                    {
+                        try
+                        {
+                            j.Save();
+                        }
+                        catch
+                        {
+                        }
+                    })
+                .AsSelf()
+                .SingleInstance();
+
             builder.Register(
                 c =>
                 {
                     var appMeta = c.Resolve<IAppMeta>();
 
                     //var jsonSink = new RollingFileSink(@"papercut.json", new JsonFormatter(), null, null);
-                    var logFilePath = Path.Combine(
+                    string logFilePath = Path.Combine(
                         AppDomain.CurrentDomain.BaseDirectory,
                         string.Format("{0}.log", appMeta.AppName));
 
-                    var logConfiguration =
+                    LoggerConfiguration logConfiguration =
                         new LoggerConfiguration()
 #if DEBUG
                             .MinimumLevel.Debug()

@@ -28,10 +28,10 @@ namespace Papercut.Core.Network
 
         protected StringCommandProtocol(ILogger logger)
         {
-            Logger = logger;
+            _logger = logger;
         }
 
-        public ILogger Logger { get; set; }
+        protected ILogger _logger { get; set; }
 
         public abstract void Begin(Connection connection);
 
@@ -54,7 +54,7 @@ namespace Papercut.Core.Network
 
                 line = line.Substring(0, line.IndexOf("\n", StringComparison.Ordinal));
 
-                Logger.Debug("Received Line {Line}", line);
+                _logger.Debug("Received Line {Line}", line);
 
                 ProcessRequest(line);
 

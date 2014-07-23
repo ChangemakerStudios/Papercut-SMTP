@@ -40,11 +40,6 @@ namespace Papercut.Service
                 .AsSelf()
                 .SingleInstance();
 
-            builder.RegisterType<ApplicationJsonSettingStore>()
-                .As<ISettingStore>()
-                .AsSelf()
-                .SingleInstance();
-
             builder.Register(
                 ctx => ctx.Resolve<ISettingStore>().UseTyped<PapercutServiceSettings>())
                 .AsSelf()

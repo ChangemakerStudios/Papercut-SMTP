@@ -47,7 +47,7 @@ namespace Papercut.Core.Network
         public override void Begin(Connection connection)
         {
             Connection = connection;
-            Logger.ForContext("ConnectionId", Connection.Id);
+            _logger = _logger.ForContext("ConnectionId", Connection.Id);
             Session = new SmtpSession();
             Connection.SendLine("220 {0}", Dns.GetHostName().ToLower());
         }
@@ -124,6 +124,8 @@ namespace Papercut.Core.Network
                 return;
             }
 
+            string file;
+
             try
             {
                 List<string> output = Connection.Client.ReadTextStream(
@@ -145,24 +147,21 @@ namespace Papercut.Core.Network
                         return messageLines;
                     });
 
-                var file = _messageRepository.SaveMessage(output);
-                if (!string.IsNullOrWhiteSpace(file))
-                {
-                    _publishEvent.Publish(new NewMessageEvent(new MessageEntry(file)));
-                }
-               
+                file = _messageRepository.SaveMessage(output);
             }
             catch (IOException e)
             {
-                Logger.Warning(
-                    e,
-                    "IOException received in DATA while reading message.  Closing this.Connection.");
-
+                _logger.Warning(e, "IOException received in DATA while reading message. Closing connection.");
                 Connection.Close();
                 return;
             }
 
-            Connection.SendLine("250 OK");
+            Connection.SendLine("250 OK").Wait();
+
+            if (!string.IsNullOrWhiteSpace(file))
+            {
+                _publishEvent.Publish(new NewMessageEvent(new MessageEntry(file)));
+            }
         }
 
         void EHLO(string[] parts)

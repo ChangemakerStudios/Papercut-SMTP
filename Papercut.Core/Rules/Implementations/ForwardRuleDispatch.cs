@@ -22,17 +22,15 @@ namespace Papercut.Core.Rules.Implementations
 
     using MailKit.Net.Smtp;
 
-    using MimeKit;
-
     using Papercut.Core.Annotations;
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
 
     public class ForwardRuleDispatch : IRuleDispatcher<ForwardRule>
     {
-        readonly MimeMessageLoader _mimeMessageLoader;
+        readonly Lazy<MimeMessageLoader> _mimeMessageLoader;
 
-        public ForwardRuleDispatch(MimeMessageLoader mimeMessageLoader)
+        public ForwardRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader)
         {
             _mimeMessageLoader = mimeMessageLoader;
         }
@@ -42,7 +40,7 @@ namespace Papercut.Core.Rules.Implementations
             if (rule == null) throw new ArgumentNullException("rule");
             if (messageEntry == null) throw new ArgumentNullException("messageEntry");
 
-            _mimeMessageLoader.Get(messageEntry)
+            _mimeMessageLoader.Value.Get(messageEntry)
                 .Select(m => m.CloneMessage())
                 .Subscribe(
                     m =>

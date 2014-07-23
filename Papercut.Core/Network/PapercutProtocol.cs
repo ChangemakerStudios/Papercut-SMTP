@@ -58,7 +58,7 @@ namespace Papercut.Core.Network
         public override void Begin(Connection connection)
         {
             Connection = connection;
-            Logger.ForContext("ConnectionId", Connection.Id);
+            _logger.ForContext("ConnectionId", Connection.Id);
             Connection.SendLine("PAPERCUT");
         }
 
@@ -68,7 +68,7 @@ namespace Papercut.Core.Network
             {
                 var request = incomingRequest.FromJson<PapercutProtocolRequest>();
 
-                Logger.Verbose("Incoming Request Received {@Request}", request);
+                _logger.Verbose("Incoming Request Received {@Request}", request);
 
                 Connection.Send("ACK").Wait();
 
@@ -77,14 +77,14 @@ namespace Papercut.Core.Network
                 {
                     // read the rest of the object...
                     var @event = Connection.Client.ReadObj(request.Type, request.ByteSize);
-                    Logger.Information("Publishing Event Received {@Event} from Remote", @event);
+                    _logger.Information("Publishing Event Received {@Event} from Remote", @event);
 
                     _publishEvent.PublishObject(@event, request.Type);
 
                     if (request.CommandType == ProtocolCommandType.Exchange)
                     {
                         // send response back...
-                        Logger.Information("Exchanging Event {@Event} -- Pushing to Remote", @event);
+                        _logger.Information("Exchanging Event {@Event} -- Pushing to Remote", @event);
                         Connection.Send("REPLY").Wait();
                         Connection.SendLine(@event.ToJson()).Wait();
                     }
@@ -92,7 +92,7 @@ namespace Papercut.Core.Network
             }
             catch (IOException e)
             {
-                Logger.Error(e, "IOException received. Closing this connection.");
+                _logger.Error(e, "IOException received. Closing this connection.");
                 Connection.Close();
             }
         }

@@ -24,6 +24,8 @@ namespace Papercut.Core.Network
     /// </summary>
     public interface IServer : IDisposable
     {
+        bool IsActive { get; }
+
         void Listen(string ip, int port);
 
         void Stop();

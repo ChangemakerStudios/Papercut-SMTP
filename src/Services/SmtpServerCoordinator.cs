@@ -78,14 +78,20 @@ namespace Papercut.Services
         {
             if (SmtpServerEnabled) ListenSmtpServer();
 
-            // start listening to change events
-            this.GetPropertyValues(_ => _.SmtpServerEnabled, TaskPoolScheduler.Default)
-                .Subscribe(
-                    enabled =>
+            PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == "StmpServerEnabled")
+                {
+                    if (SmtpServerEnabled && !_smtpServer.Value.IsActive)
                     {
-                        if (enabled) ListenSmtpServer();
-                        else _smtpServer.Value.Stop();
-                    });
+                        ListenSmtpServer();
+                    }
+                    else if (!SmtpServerEnabled && _smtpServer.Value.IsActive)
+                    {
+                        _smtpServer.Value.Stop();
+                    }
+                }
+            };
         }
 
         public void Handle(SettingsUpdatedEvent @event)

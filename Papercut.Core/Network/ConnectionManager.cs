@@ -54,7 +54,23 @@ namespace Papercut.Core.Network
 
         public void Dispose()
         {
-            _disposables.Dispose();
+            try
+            {
+                CloseAll();
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning(ex, "Exception Calling CloseAll");
+            }
+
+            try
+            {
+                _disposables.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning(ex, "Exception Calling Disposable.Dispose");
+            }
         }
 
         public Connection CreateConnection(Socket clientSocket, IProtocol protocol)
@@ -128,6 +144,8 @@ namespace Papercut.Core.Network
             foreach (Connection connection in
                 _connections.Values.Where(connection => connection != null))
             {
+                Connection noneed;
+                _connections.TryRemove(connection.Id, out noneed);
                 connection.Close(false);
             }
         }
