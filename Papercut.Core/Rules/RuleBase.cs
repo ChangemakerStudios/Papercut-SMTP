@@ -25,6 +25,8 @@ namespace Papercut.Core.Rules
     [Serializable]
     public abstract class RuleBase : IRule
     {
+        bool _isEnabled;
+
         protected RuleBase()
         {
             Id = Guid.NewGuid();
@@ -32,6 +34,21 @@ namespace Papercut.Core.Rules
 
         [Category("Information")]
         public Guid Id { get; protected set; }
+
+        [Category("State")]
+        [Browsable(true)]
+        [DisplayName("Is Enabled")]
+        [Description("Is the Rule Enabled for Processing?")]
+        public virtual bool IsEnabled
+        {
+            get { return _isEnabled; }
+            set
+            {
+                if (value.Equals(_isEnabled)) return;
+                _isEnabled = value;
+                OnPropertyChanged("IsEnabled");
+            }
+        }
 
         [Category("Information")]
         [Browsable(false)]
@@ -52,7 +69,7 @@ namespace Papercut.Core.Rules
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged(string propertyName)
         {
-            var handler = PropertyChanged;
+            PropertyChangedEventHandler handler = PropertyChanged;
             if (handler != null)
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));

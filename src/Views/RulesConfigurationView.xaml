@@ -77,6 +77,7 @@
                   SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
                   ItemsSource="{Binding Rules}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" />
                 <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" />
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" />
             </DataGrid.Columns>

@@ -23,6 +23,7 @@ namespace Papercut.Core.Rules
     public interface IRule : INotifyPropertyChanged
     {
         Guid Id { get; }
+        bool IsEnabled { get; set; }
         string Type { get; }
         string Description { get; }
     }

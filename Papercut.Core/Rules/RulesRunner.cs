@@ -18,6 +18,7 @@
 namespace Papercut.Core.Rules
 {
     using System;
+    using System.Linq;
     using System.Reflection;
 
     using Autofac;
@@ -48,7 +49,7 @@ namespace Papercut.Core.Rules
             if (rules == null) throw new ArgumentNullException("rules");
             if (messageEntry == null) throw new ArgumentNullException("messageEntry");
 
-            foreach (IRule rule in rules)
+            foreach (IRule rule in rules.Where(_ => _.IsEnabled))
             {
                 _dispatchRuleMethod.MakeGenericMethod(rule.GetType())
                     .Invoke(this, new object[] { rule, messageEntry });
