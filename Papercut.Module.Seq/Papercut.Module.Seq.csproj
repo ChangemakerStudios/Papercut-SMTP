@@ -96,8 +96,6 @@ xcopy $(TargetDir)*.pdb $(SolutionDir)\src\bin\$(ConfigurationName)  /Y</PostBui
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
-<<<<<<< HEAD
-=======
   <PropertyGroup>
     <PostBuildEvent>xcopy $(TargetDir)*.dll $(SolutionDir)\src\bin\$(ConfigurationName)  /Y
 xcopy $(TargetDir)*.pdb $(SolutionDir)\src\bin\$(ConfigurationName)  /Y</PostBuildEvent>
@@ -107,5 +105,4 @@ xcopy $(TargetDir)*.pdb $(SolutionDir)\src\bin\$(ConfigurationName)  /Y</PostBui
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
     <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
   </Target>
->>>>>>> Added JsonSettingStore to Papercut Client. Upgraded nuget references. Modified the Server to support IsActive flag. Lots of tweaks and improvements.
 </Project>
