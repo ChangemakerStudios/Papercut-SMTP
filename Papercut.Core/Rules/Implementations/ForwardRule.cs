@@ -29,7 +29,7 @@ namespace Papercut.Core.Rules.Implementations
 
         int _smtpPort = 25;
 
-        string _smtpServer = "127.0.0.1";
+        string _smtpServer = "10.0.0.1";
 
         bool _smtpUseSsl;
 
