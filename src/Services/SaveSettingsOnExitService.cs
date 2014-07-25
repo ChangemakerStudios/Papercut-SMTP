@@ -17,6 +17,8 @@
 
 namespace Papercut.Services
 {
+    using System;
+
     using Papercut.Core.Events;
     using Papercut.Properties;
 
@@ -33,8 +35,15 @@ namespace Papercut.Services
 
         public void Handle(PapercutClientExitEvent @event)
         {
-            _logger.Debug("Saving Updated Settings...");
-            Settings.Default.Save();
+            try
+            {
+                _logger.Debug("Saving Updated Settings...");
+                Settings.Default.Save();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failure Saving Settings File");
+            }
         }
     }
 }
