@@ -47,6 +47,14 @@ namespace Papercut
         {
             // nothing can be called or loaded before this call is done.
             AssemblyResolutionHelper.SetupEmbeddedAssemblyResolve();
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                if (Log.Logger == null) return;
+                if (args.IsTerminating)
+                {
+                    Log.Logger.Fatal(args.ExceptionObject as Exception, "Unhandled Exception");
+                }
+            };
         }
 
         public ILifetimeScope Container
