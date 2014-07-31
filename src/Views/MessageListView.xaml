@@ -9,7 +9,7 @@
              xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="200">
-    <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended"
+    <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="false" 
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
              cal:Message.Attach="[Event KeyDown] = [Action MessageListKeyDown($eventArgs)]"
