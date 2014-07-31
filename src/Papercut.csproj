@@ -795,5 +795,5 @@
     </ItemGroup>
     <Message Importance="high" Text="Embedding: @(AssembliesToEmbed->'%(DestinationSubDirectory)%(Filename)%(Extension)', ', ')" />
   </Target>
-  <!--<Target Name="_CopyFilesMarkedCopyLocal" />-->
+  <Target Name="_CopyFilesMarkedCopyLocal" />
 </Project>

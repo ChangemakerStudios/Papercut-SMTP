@@ -18,6 +18,7 @@
 namespace Papercut.Core
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -148,9 +149,19 @@ namespace Papercut.Core
                             .WriteTo.RollingFile(logFilePath);
 
                     // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
-                    c.Resolve<IPublishEvent>().Publish(new ConfigureLoggerEvent(logConfiguration));
+                    try
+                    {
+                        c.Resolve<IPublishEvent>().Publish(new ConfigureLoggerEvent(logConfiguration));
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
+                    }
 
                     Log.Logger = logConfiguration.CreateLogger();
+
+                    // support self-logging
+                    Serilog.Debugging.SelfLog.Out = Console.Error;
 
                     return Log.Logger;
                 }).SingleInstance();
