@@ -103,29 +103,26 @@ namespace Papercut.Services
 
         void ListenSmtpServer()
         {
-            try
-            {
-                _smtpServer.Value.BindObservable(
-                    Settings.Default.IP,
-                    Settings.Default.Port,
-                    TaskPoolScheduler.Default)
-                    .Delay(TimeSpan.FromMilliseconds(500)).Retry(5)
-                    .Subscribe(
-                        (b) => { },
-                        () => _publishEvent.Publish(
-                            new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
-                
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning(
-                    ex,
-                    "Failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
-                    Settings.Default.IP,
-                    Settings.Default.Port);
+            _smtpServer.Value.BindObservable(
+                Settings.Default.IP,
+                Settings.Default.Port,
+                TaskPoolScheduler.Default)
+                .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
+                .Subscribe(
+                    (b) => { },
+                    (ex) =>
+                    {
+                        _logger.Warning(
+                            ex,
+                            "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
+                            Settings.Default.IP,
+                            Settings.Default.Port);
 
-                _publishEvent.Publish(new SmtpServerBindFailedEvent());
-            }
+                        _publishEvent.Publish(new SmtpServerBindFailedEvent());
+                    },
+                    () =>
+                    _publishEvent.Publish(
+                        new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
         }
 
         [NotifyPropertyChangedInvocator]

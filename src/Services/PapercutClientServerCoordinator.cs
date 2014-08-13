@@ -18,6 +18,8 @@
 namespace Papercut.Services
 {
     using System;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Linq;
 
     using Papercut.Core.Events;
     using Papercut.Core.Network;
@@ -46,18 +48,19 @@ namespace Papercut.Services
 
         public void Handle(PapercutClientReadyEvent @event)
         {
-            try
-            {
-                _papercutServer.Listen(PapercutClient.Localhost, PapercutClient.ClientPort);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning(
-                    ex,
-                    "Failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
-                    PapercutClient.Localhost,
-                    PapercutClient.ClientPort);
-            }
+            _papercutServer.BindObservable(
+                PapercutClient.Localhost,
+                PapercutClient.ClientPort,
+                TaskPoolScheduler.Default)
+                .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
+                .Subscribe(
+                    (b) => { },
+                    (ex) => _logger.Warning(
+                        ex,
+                        "Papercut Protocol failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
+                        PapercutClient.Localhost,
+                        PapercutClient.ClientPort),
+                    () => { });
         }
     }
 }

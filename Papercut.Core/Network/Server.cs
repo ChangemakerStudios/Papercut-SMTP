@@ -31,21 +31,13 @@ namespace Papercut.Core.Network
     {
         readonly ServerProtocolType _serverProtocolType;
 
-        public ConnectionManager ConnectionManager { get; set; }
-
-        public ILogger Logger { get; set; }
-
-        public Func<IProtocol> ProtocolFactory { get; set; }
-
-        #region Fields
-
         IPAddress _address;
+
+        bool _isActive;
 
         Socket _listener;
 
         int _port;
-
-        bool _isActive;
 
         public Server(
             ServerProtocolType serverProtocolType,
@@ -59,6 +51,12 @@ namespace Papercut.Core.Network
             Logger = logger.ForContext("ServerProtocolType", _serverProtocolType);
             ProtocolFactory = protocolFactory[_serverProtocolType];
         }
+
+        public ConnectionManager ConnectionManager { get; set; }
+
+        public ILogger Logger { get; set; }
+
+        public Func<IProtocol> ProtocolFactory { get; set; }
 
         public bool IsActive
         {
@@ -77,10 +75,6 @@ namespace Papercut.Core.Network
                 }
             }
         }
-
-        #endregion
-
-        #region Public Methods and Operators
 
         public void Listen(string ip, int port)
         {
@@ -112,6 +106,20 @@ namespace Papercut.Core.Network
             }
         }
 
+        public void Dispose()
+        {
+            try
+            {
+                Stop();
+                CleanupListener();
+                ConnectionManager.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning(ex, "Exception Disposing Server Instance");
+            }
+        }
+
         protected void CleanupListener()
         {
             if (_listener == null) return;
@@ -120,37 +128,25 @@ namespace Papercut.Core.Network
             _listener = null;
         }
 
-        #endregion
-
-        #region Methods
-
         protected void CreateListener()
         {
-            try
-            {
-                // If the listener isn't null, close before rebinding
-                CleanupListener();
+            // If the listener isn't null, close before rebinding
+            CleanupListener();
 
-                // Bind to the listening port
-                _listener = new Socket(
-                    AddressFamily.InterNetwork,
-                    SocketType.Stream,
-                    ProtocolType.Tcp);
+            // Bind to the listening port
+            _listener = new Socket(
+                AddressFamily.InterNetwork,
+                SocketType.Stream,
+                ProtocolType.Tcp);
 
-                _listener.Bind(new IPEndPoint(_address, _port));
-                _listener.Listen(20);
-                _listener.BeginAccept(OnClientAccept, null);
+            _listener.Bind(new IPEndPoint(_address, _port));
+            _listener.Listen(20);
+            _listener.BeginAccept(OnClientAccept, null);
 
-                Logger.Information(
-                    "Server Ready - Listening for New Connections {Address}:{ClientPort}",
-                    _address,
-                    _port);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Exception Creating Listener");
-                throw;
-            }
+            Logger.Information(
+                "Server Ready - Listening for New Connections {Address}:{ClientPort}",
+                _address,
+                _port);
         }
 
         protected void SetEndpoint(string ip, int port)
@@ -165,10 +161,7 @@ namespace Papercut.Core.Network
 
         void OnClientAccept([NotNull] IAsyncResult asyncResult)
         {
-            if (!IsActive || _listener == null)
-            {
-                return;
-            }
+            if (!IsActive || _listener == null) return;
 
             try
             {
@@ -219,24 +212,7 @@ namespace Papercut.Core.Network
             catch (Exception ex)
             {
                 IsActive = false;
-                Logger.Error(ex, "Exception Starting Server");
                 throw;
-            }
-        }
-
-        #endregion
-
-        public void Dispose()
-        {
-            try
-            {
-                Stop();
-                CleanupListener();
-                ConnectionManager.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Logger.Warning(ex, "Exception Disposing Server Instance");
             }
         }
     }

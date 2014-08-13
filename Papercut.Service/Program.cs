@@ -17,6 +17,9 @@
 
 namespace Papercut.Service
 {
+    using System;
+    using System.Diagnostics;
+
     using Papercut.Service.Helpers;
 
     class Program
@@ -25,9 +28,17 @@ namespace Papercut.Service
 
         static void Main(string[] args)
         {
-            AssemblyResolutionHelper.SetupEmbeddedAssemblyResolve();
-            app = new RunServiceApp();
-            app.Run();
+            try
+            {
+                AssemblyResolutionHelper.SetupEmbeddedAssemblyResolve();
+                app = new RunServiceApp();
+                app.Run();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Uncaught Exception: " + ex.ToString());
+                throw;
+            }
         }
     }
 }

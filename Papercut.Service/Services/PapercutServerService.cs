@@ -86,25 +86,41 @@ namespace Papercut.Service.Services
             _publishEvent.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
 
-            BindPapercutServer();
-
-            _smtpServer.BindObservable(
-                _serviceSettings.IP,
-                _serviceSettings.Port,
-                TaskPoolScheduler.Default).Delay(TimeSpan.FromSeconds(1)).Retry(5)
+            _papercutServer.BindObservable(
+                PapercutClient.Localhost,
+                PapercutClient.ServerPort,
+                TaskPoolScheduler.Default)
+                .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(
                     (u) =>
                     {
                         /* next is not used */
                     },
+                    (e) =>
+                    _logger.Warning(
+                        e,
+                        "Unable to Create Papercut Server Listener on {IP}:{Port}. After 5 Retries. Failing",
+                        PapercutClient.Localhost,
+                        PapercutClient.ServerPort),
                     // on complete
-                    () => _publishEvent.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
-        }
+                    () => { });
 
-        void BindPapercutServer()
-        {
-            _papercutServer.Stop();
-            _papercutServer.Listen(PapercutClient.Localhost, PapercutClient.ServerPort);
+            _smtpServer.BindObservable(_serviceSettings.IP,_serviceSettings.Port, TaskPoolScheduler.Default)
+                .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
+                .Subscribe(
+                    (u) =>
+                    {
+                        /* next is not used */
+                    },
+                    (e) =>
+                    _logger.Warning(
+                        e, "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
+                        _serviceSettings.IP,
+                        _serviceSettings.Port),
+                    // on complete
+                    () =>
+                    _publishEvent.Publish(
+                        new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
         }
 
         public void Stop()
