@@ -18,9 +18,10 @@
 namespace Papercut.Service
 {
     using System;
-    using System.Diagnostics;
 
     using Papercut.Service.Helpers;
+
+    using Serilog;
 
     class Program
     {
@@ -28,17 +29,21 @@ namespace Papercut.Service
 
         static void Main(string[] args)
         {
-            try
+            AssemblyResolutionHelper.SetupEmbeddedAssemblyResolve();
+            AppDomain.CurrentDomain.UnhandledException += (sender, a) =>
             {
-                AssemblyResolutionHelper.SetupEmbeddedAssemblyResolve();
-                app = new RunServiceApp();
-                app.Run();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Uncaught Exception: " + ex.ToString());
-                throw;
-            }
+                if (Log.Logger == null) return;
+                if (a.IsTerminating) Log.Logger.Fatal(a.ExceptionObject as Exception, "Unhandled Exception");
+                else
+                {
+                    Log.Logger.Information(
+                        a.ExceptionObject as Exception,
+                        "Non-Fatal Unhandled Exception");
+                }
+            };
+
+            app = new RunServiceApp();
+            app.Run();
         }
     }
 }
