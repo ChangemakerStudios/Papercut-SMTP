@@ -17,6 +17,7 @@
 
 namespace Papercut.Service.Services
 {
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
 
@@ -27,11 +28,11 @@ namespace Papercut.Service.Services
     {
         public ServerPathTemplateProviderService(PapercutServiceSettings serviceSettings)
         {
-            PathTemplates =
-                new ObservableCollection<string>(
-                    serviceSettings.MessagePath.Split(new[] { ';' })
-                        .Select(s => s.Trim())
-                        .Where(s => !string.IsNullOrWhiteSpace(s)));
+            var paths = serviceSettings.MessagePath.Split(new[] { ';' })
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s));
+
+            PathTemplates = new ObservableCollection<string>(paths);
         }
 
         public ObservableCollection<string> PathTemplates { get; private set; }

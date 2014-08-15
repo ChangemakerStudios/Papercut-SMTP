@@ -31,21 +31,15 @@ namespace Papercut.Core.Configuration
 
     public class MessagePathConfigurator : IMessagePathConfigurator
     {
-        readonly ILogger _logger;
-
-        readonly IPathTemplatesProvider _pathTemplateProvider;
-
-        #region Static Fields
-
         static readonly IDictionary<string, string> _templateDictionary;
 
         static readonly Regex _templateRegex = new Regex(
             @"\%(?<name>.+?)\%",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
 
-        #endregion
+        readonly ILogger _logger;
 
-        #region Constructors and Destructors
+        readonly IPathTemplatesProvider _pathTemplateProvider;
 
         static MessagePathConfigurator()
         {
@@ -80,7 +74,26 @@ namespace Papercut.Core.Configuration
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent()) isSystem = identity.IsSystem;
 
             if (!isSystem && LoadPaths.Any()) DefaultSavePath = LoadPaths.First();
+
+            if (!Directory.Exists(DefaultSavePath))
+            {
+                _logger.Information(
+                    "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
+                    DefaultSavePath);
+
+                Directory.CreateDirectory(DefaultSavePath);
+            }
+
+            _logger.Information(
+                "Default Message Save Path is Set to {DefaultSavePath}",
+                DefaultSavePath);
         }
+
+        public string DefaultSavePath { get; private set; }
+
+        public IEnumerable<string> LoadPaths { get; private set; }
+
+        public event EventHandler RefreshLoadPath;
 
         void PathTemplatesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -94,27 +107,15 @@ namespace Papercut.Core.Configuration
                 _pathTemplateProvider.PathTemplates.Select(RenderPathTemplate)
                     .Where(ValidatePathExists)
                     .ToList();
+
+            _logger.Debug("Message Load Path Templates are {@LoadPaths}", LoadPaths);
         }
-
-        #endregion
-
-        #region Public Properties
-
-        public string DefaultSavePath { get; private set; }
-
-        public IEnumerable<string> LoadPaths { get; private set; }
-
-        public event EventHandler RefreshLoadPath;
 
         protected virtual void OnRefreshLoadPath()
         {
             EventHandler handler = RefreshLoadPath;
             if (handler != null) handler(this, EventArgs.Empty);
         }
-
-        #endregion
-
-        #region Methods
 
         string RenderPathTemplate(string pathTemplate)
         {
@@ -155,7 +156,5 @@ namespace Papercut.Core.Configuration
 
             return false;
         }
-
-        #endregion
     }
 }

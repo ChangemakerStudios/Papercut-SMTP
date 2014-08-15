@@ -105,6 +105,8 @@ namespace Papercut.Core.Message
                 while (File.Exists(file));
 
                 File.WriteAllLines(file, output);
+
+                _logger.Debug("Successfully Saved email message: {EmailMessageFile}", file);
             }
             catch (Exception ex)
             {
