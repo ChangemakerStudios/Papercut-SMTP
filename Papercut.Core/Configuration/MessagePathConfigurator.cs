@@ -41,6 +41,8 @@ namespace Papercut.Core.Configuration
 
         readonly IPathTemplatesProvider _pathTemplateProvider;
 
+        string _defaultSavePath;
+
         static MessagePathConfigurator()
         {
             _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -72,21 +74,28 @@ namespace Papercut.Core.Configuration
 
             if (LoadPaths.Any()) DefaultSavePath = LoadPaths.First();
 
-            if (!Directory.Exists(DefaultSavePath))
-            {
-                _logger.Information(
-                    "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
-                    DefaultSavePath);
-
-                Directory.CreateDirectory(DefaultSavePath);
-            }
-
             _logger.Information(
                 "Default Message Save Path is Set to {DefaultSavePath}",
                 DefaultSavePath);
         }
 
-        public string DefaultSavePath { get; private set; }
+        public string DefaultSavePath
+        {
+            get
+            {
+                if (!Directory.Exists(_defaultSavePath))
+                {
+                    _logger.Information(
+                        "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
+                        _defaultSavePath);
+
+                    Directory.CreateDirectory(_defaultSavePath);
+                }
+
+                return _defaultSavePath;
+            }
+            private set { _defaultSavePath = value; }
+        }
 
         public IEnumerable<string> LoadPaths { get; private set; }
 

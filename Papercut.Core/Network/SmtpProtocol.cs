@@ -17,11 +17,14 @@
 
 namespace Papercut.Core.Network
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Threading.Tasks;
 
+    using Papercut.Core.Annotations;
     using Papercut.Core.Events;
     using Papercut.Core.Message;
 
@@ -124,11 +127,12 @@ namespace Papercut.Core.Network
                 return;
             }
 
-            string file;
+            List<string> output;
+            Task<int> confirmation;
 
             try
             {
-                List<string> output = Connection.Client.ReadTextStream(
+                 output = Connection.Client.ReadTextStream(
                     reader =>
                     {
                         var messageLines = new List<string>();
@@ -147,7 +151,7 @@ namespace Papercut.Core.Network
                         return messageLines;
                     });
 
-                file = _messageRepository.SaveMessage(output);
+                confirmation = Connection.SendLine("250 OK");
             }
             catch (IOException e)
             {
@@ -156,11 +160,25 @@ namespace Papercut.Core.Network
                 return;
             }
 
-            Connection.SendLine("250 OK").Wait();
+            SaveMessage(output);
+            confirmation.Wait();
+        }
 
-            if (!string.IsNullOrWhiteSpace(file))
+        void SaveMessage([NotNull] List<string> output)
+        {
+            if (output == null) throw new ArgumentNullException("output");
+
+            var file = _messageRepository.SaveMessage(output);
+            try
             {
-                _publishEvent.Publish(new NewMessageEvent(new MessageEntry(file)));
+                if (!string.IsNullOrWhiteSpace(file))
+                {
+                    _publishEvent.Publish(new NewMessageEvent(new MessageEntry(file)));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
             }
         }
 

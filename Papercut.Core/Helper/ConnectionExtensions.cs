@@ -47,7 +47,7 @@ namespace Papercut.Core.Network
 
         public static Task<int> SendLine(this Connection connection, string message)
         {
-            connection.Logger.Debug("Sending {Message}", message);
+            connection.Logger.Verbose("Sending {Message}", message);
             return connection.Send(Encoding.ASCII.GetBytes(message + "\r\n"));
         }
 
@@ -69,7 +69,7 @@ namespace Papercut.Core.Network
 
         public static Task<int> Send(this Connection connection, byte[] data)
         {
-            connection.Logger.Debug("Sending byte[] length of {ByteArrayLength}", data.Length);
+            connection.Logger.Verbose("Sending byte[] length of {ByteArrayLength}", data.Length);
 
             return connection.Client.Send(data, 0, data.Length);
         }

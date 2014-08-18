@@ -45,7 +45,8 @@ namespace Papercut.Core.Message
         public bool DeleteMessage(MessageEntry entry)
         {
             // Delete the file and remove the entry
-            if (!File.Exists(entry.File)) return false;
+            if (!File.Exists(entry.File))
+                return false;
 
             File.Delete(entry.File);
             return true;
@@ -53,7 +54,8 @@ namespace Papercut.Core.Message
 
         public byte[] GetMessage(string file)
         {
-            if (!File.Exists(file)) throw new IOException(string.Format("File {0} Does Not Exist", file));
+            if (!File.Exists(file))
+                throw new IOException(string.Format("File {0} Does Not Exist", file));
 
             var info = new FileInfo(file);
             byte[] data;

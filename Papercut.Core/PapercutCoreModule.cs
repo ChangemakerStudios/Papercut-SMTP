@@ -136,7 +136,7 @@ namespace Papercut.Core
                     LoggerConfiguration logConfiguration =
                         new LoggerConfiguration()
 #if DEBUG
-                            .MinimumLevel.Debug()
+                            .MinimumLevel.Verbose()
 #else
                             .MinimumLevel.Information()
 #endif
