@@ -70,10 +70,7 @@ namespace Papercut.Core.Configuration
             DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
             RenderLoadPaths();
 
-            bool isSystem;
-            using (WindowsIdentity identity = WindowsIdentity.GetCurrent()) isSystem = identity.IsSystem;
-
-            if (!isSystem && LoadPaths.Any()) DefaultSavePath = LoadPaths.First();
+            if (LoadPaths.Any()) DefaultSavePath = LoadPaths.First();
 
             if (!Directory.Exists(DefaultSavePath))
             {
