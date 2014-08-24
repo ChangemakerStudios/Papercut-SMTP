@@ -1,25 +1,25 @@
-From: "Papercut" <papercut@papercut.us>
-To: <HappyUser@Papercut.com>
-References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net> <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com> <01a901cf3f29$39dfc8d0$ad9f5a70$@test.me>
-In-Reply-To: <01a901cf3f29$39dfc8d0$ad9f5a70$@test.me>
+From: "Papercut" <User@Papercut.us>
+To: <papercut@papercut.us>
+References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net> <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com> <01a901cf3f29$39dfc8d0$ad9f5a70$@test.me> <024901cfa7bf$29f99b90$7decd2b0$@papercut.us>
+In-Reply-To: <024901cfa7bf$29f99b90$7decd2b0$@papercut.us>
 Subject: Welcome to Papercut!
-Date: Fri, 25 Jul 2014 00:16:09 -0400
-Message-ID: <024901cfa7bf$29f99b90$7decd2b0$@papercut.us>
+Date: Sat, 23 Aug 2014 23:47:00 -0400
+Message-ID: <000b01cfbf4e$103bc2e0$30b348a0$@Papercut.us>
 MIME-Version: 1.0
 Content-Type: multipart/related;
-	boundary="----=_NextPart_000_024A_01CFA79D.A2E90D00"
+	boundary="----=_NextPart_000_000C_01CFBF2C.892B3450"
 X-Mailer: Microsoft Outlook 15.0
+Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHogFmC3YJAeoq2WkChtkdlJoiWFFA
 Content-Language: en-us
-Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHogFmC3YJAeoq2WmaB2FL8A==
 
 This is a multipart message in MIME format.
 
-------=_NextPart_000_024A_01CFA79D.A2E90D00
+------=_NextPart_000_000C_01CFBF2C.892B3450
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_001_024B_01CFA79D.A2E90D00"
+	boundary="----=_NextPart_001_000D_01CFBF2C.892B3450"
 
 
-------=_NextPart_001_024B_01CFA79D.A2E90D00
+------=_NextPart_001_000D_01CFBF2C.892B3450
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -27,6 +27,47 @@ Content-Transfer-Encoding: 7bit
 
 
 The Simple Desktop Email Receiver.
+
+
+Papercut v4.2.0.0 [2014-8-23] Release Notes
+
+
+ 
+
+Fixed: #9859 Now using <pre> tag when displaying the text email so that
+carriage returns/linefeeds are displayed.
+
+Fixed: #9858 Now won't close the app when failing to delete a message.
+Displays the reason for the failure as well.
+
+Improvement: Increased the robustness and error handling of the SMTP FIle
+Receiving.
+
+Improvement: Now validates the existence of and creates (if necessary) the
+Default Message Save Path directory.
+
+Improvement: Improved the loading so that it catches all assembly loading
+errors and attempts to write them to the Event Log in case app load is
+failing.
+
+Changed: Set the protocol logging to "Verbose".
+
+Changed: Papercut.Service default save location now defaults to
+%BaseDirectory%\Incoming.
+
+Added: Remove the "read-only" flag from the message file when attempting to
+delete.
+
+Added: Example Papercut.Service.json file with comments to explain the
+settings.
+
+
+Papercut v4.1.0.0 [2014-8-13] Release Notes
+
+
+ 
+
+Fixed: #9851 Exception on TCP/IP port binding failure.
 
 
 Papercut v4.0.0.0 [2014-7-24] Release Notes
@@ -183,7 +224,7 @@ submitted by jasonpenny)
 Fix: Out dated URL references (Issue #5457, patch submitted by billrob458)
 
 
-------=_NextPart_001_024B_01CFA79D.A2E90D00
+------=_NextPart_001_000D_01CFBF2C.892B3450
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -192,8 +233,8 @@ Content-Transfer-Encoding: quoted-printable
 xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
 xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
 xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40"><head><meta =
-http-equiv=3DContent-Type content=3D"text/html; =
+xmlns=3D"http://www.w3.org/TR/REC-html40"><head><META =
+HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
 charset=3Dus-ascii"><meta name=3DGenerator content=3D"Microsoft Word 15 =
 (filtered medium)"><!--[if !mso]><style>v\:* =
 {behavior:url(#default#VML);}
@@ -202,9 +243,6 @@ w\:* {behavior:url(#default#VML);}
 .shape {behavior:url(#default#VML);}
 </style><![endif]--><style><!--
 /* Font Definitions */
-@font-face
-	{font-family:Wingdings;
-	panose-1:5 0 0 0 0 0 0 0 0 0;}
 @font-face
 	{font-family:"Cambria Math";
 	panose-1:2 4 5 3 5 4 6 3 2 4;}
@@ -363,6 +401,10 @@ span.EmailStyle30
 	font-family:"Calibri","sans-serif";
 	color:#1F497D;}
 span.EmailStyle31
+	{mso-style-type:personal;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+span.EmailStyle32
 	{mso-style-type:personal-reply;
 	font-family:"Calibri","sans-serif";
 	color:#1F497D;}
@@ -374,87 +416,6 @@ span.EmailStyle31
 	margin:1.0in 1.0in 1.0in 1.0in;}
 div.WordSection1
 	{page:WordSection1;}
-/* List Definitions */
-@list l0
-	{mso-list-id:2052920817;
-	mso-list-template-ids:-92624060;}
-@list l0:level1
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0B7;
-	mso-level-tab-stop:.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Symbol;}
-@list l0:level2
-	{mso-level-number-format:bullet;
-	mso-level-text:o;
-	mso-level-tab-stop:1.0in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:"Courier New";
-	mso-bidi-font-family:"Times New Roman";}
-@list l0:level3
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:1.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Wingdings;}
-@list l0:level4
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:2.0in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Wingdings;}
-@list l0:level5
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:2.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Wingdings;}
-@list l0:level6
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:3.0in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Wingdings;}
-@list l0:level7
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:3.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Wingdings;}
-@list l0:level8
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:4.0in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Wingdings;}
-@list l0:level9
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:4.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Wingdings;}
-ol
-	{margin-bottom:0in;}
-ul
-	{margin-bottom:0in;}
 --></style><!--[if gte mso 9]><xml>
 <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
 </xml><![endif]--><!--[if gte mso 9]><xml>
@@ -466,8 +427,32 @@ class=3DMsoNormal><img width=3D232 height=3D50 id=3D"Picture_x0020_1" =
 src=3D"cid:image001.png@01CE6622.AACEBDC0"><i><o:p></o:p></i></p><p =
 class=3DMsoNormal><i><span style=3D'font-size:10.0pt;font-family:"Segoe =
 UI","sans-serif";color:#A6A6A6'>The Simple Desktop Email =
-Receiver.<o:p></o:p></span></i></p><h1>Papercut v4.0.0.0 [2014-7-24] =
+Receiver.<o:p></o:p></span></i></p><h1>Papercut v4.2.0.0 [2014-8-23] =
 Release Notes<o:p></o:p></h1><p =
+class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Fixed: #9859 =
+Now using &lt;pre&gt; tag when displaying the text email so that =
+carriage returns/linefeeds are displayed.<o:p></o:p></p><p =
+class=3DMsoNormal>Fixed: #9858 Now won&#8217;t close the app when =
+failing to delete a message. Displays the reason for the failure as =
+well.<o:p></o:p></p><p class=3DMsoNormal>Improvement: Increased the =
+robustness and error handling of the SMTP FIle =
+Receiving.<o:p></o:p></p><p class=3DMsoNormal>Improvement: Now validates =
+the existence of and creates (if necessary) the Default Message Save =
+Path directory.<o:p></o:p></p><p class=3DMsoNormal>Improvement: Improved =
+the loading so that it catches all assembly loading errors and attempts =
+to write them to the Event Log in case app load is =
+failing.<o:p></o:p></p><p class=3DMsoNormal>Changed: Set the protocol =
+logging to &quot;Verbose&quot;.<o:p></o:p></p><p =
+class=3DMsoNormal>Changed: Papercut.Service default save location now =
+defaults to %BaseDirectory%\Incoming.<o:p></o:p></p><p =
+class=3DMsoNormal>Added: Remove the &quot;read-only&quot; flag from the =
+message file when attempting to delete.<o:p></o:p></p><p =
+class=3DMsoNormal>Added: Example Papercut.Service.json file with =
+comments to explain the settings.<o:p></o:p></p><h1>Papercut v4.1.0.0 =
+[2014-8-13] Release Notes<o:p></o:p></h1><p =
+class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Fixed: #9851 =
+Exception on TCP/IP port binding failure.<o:p></o:p></p><h1>Papercut =
+v4.0.0.0 [2014-7-24] Release Notes<o:p></o:p></h1><p =
 class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Added: =
 Automatic &#8220;rules&#8221; system and configuration. Currently only =
 supports a forward rule. But unlimited forwards can be =
@@ -578,9 +563,9 @@ networking and not handling a disposed object (patch submitted by =
 jasonpenny)<o:p></o:p></p><p class=3DMsoNormal>Fix: Out dated URL =
 references (Issue #5457, patch submitted by =
 billrob458)<o:p></o:p></p></div></body></html>
-------=_NextPart_001_024B_01CFA79D.A2E90D00--
+------=_NextPart_001_000D_01CFBF2C.892B3450--
 
-------=_NextPart_000_024A_01CFA79D.A2E90D00
+------=_NextPart_000_000C_01CFBF2C.892B3450
 Content-Type: image/png;
 	name="image001.png"
 Content-Transfer-Encoding: base64
@@ -677,5 +662,5 @@ zdYgDbdu2s7tPCMls1KV3b9oNqutvnR4S1jyGfz8ZprWPQu/QpmMLRzu27kzdEbbubNvuDAuzO+T
 xDcCjTlbv7eJqs/fH5s+m22JLZgIH3Uz561HYXIfFUnCZzWJKFl6Zr8cO+ug38R+AP0B9HsEmvh9
 AdVRVo3Goq88r0C/FmAAgaQssR9aes8AAAAASUVORK5CYII=
 
-------=_NextPart_000_024A_01CFA79D.A2E90D00--
+------=_NextPart_000_000C_01CFBF2C.892B3450--
 
