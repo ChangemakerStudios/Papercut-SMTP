@@ -109,8 +109,15 @@ namespace Papercut.Helpers
             TextPart mainBodyTextPart = mimeParts.GetMainBodyTextPart();
             string htmlText = mainBodyTextPart.Text;
 
-            if (mainBodyTextPart.IsContentHtml()) htmlText = _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
-            else htmlText = string.Format(UIStrings.HtmlFormatWrapper, htmlText);
+            if (mainBodyTextPart.IsContentHtml())
+            {
+                htmlText = _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
+            }
+            else
+            {
+                // add some html formatting to the display html
+                htmlText = string.Format(UIStrings.HtmlFormatWrapper, htmlText);
+            }
 
             foreach (
                 MimePart image in
