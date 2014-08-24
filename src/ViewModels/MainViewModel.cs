@@ -125,7 +125,14 @@ namespace Papercut.ViewModels
 
         void IHandle<ShowMessageEvent>.Handle(ShowMessageEvent message)
         {
-            MessageBox.Show(message.MessageText, message.Caption);
+            MessageDetailViewModel.IsLoading = true;
+            _window.ShowMessageAsync(message.Caption, message.MessageText).ContinueWith(
+                (r) =>
+                {
+                    var result = r.Result;
+                    MessageDetailViewModel.IsLoading = false;
+                },
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         void IHandle<ShowOptionWindowEvent>.Handle(ShowOptionWindowEvent message)

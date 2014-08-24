@@ -49,6 +49,7 @@ namespace Papercut.Core.Message
                 return false;
 
             File.Delete(entry.File);
+
             return true;
         }
 

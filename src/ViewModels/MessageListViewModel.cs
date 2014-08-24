@@ -68,10 +68,14 @@ namespace Papercut.ViewModels
             IPublishEvent publishEvent,
             ILogger logger)
         {
-            if (messageRepository == null) throw new ArgumentNullException("messageRepository");
-            if (messageWatcher == null) throw new ArgumentNullException("messageWatcher");
-            if (mimeMessageLoader == null) throw new ArgumentNullException("mimeMessageLoader");
-            if (publishEvent == null) throw new ArgumentNullException("publishEvent");
+            if (messageRepository == null)
+                throw new ArgumentNullException("messageRepository");
+            if (messageWatcher == null)
+                throw new ArgumentNullException("messageWatcher");
+            if (mimeMessageLoader == null)
+                throw new ArgumentNullException("mimeMessageLoader");
+            if (publishEvent == null)
+                throw new ArgumentNullException("publishEvent");
 
             _messageRepository = messageRepository;
             _messageWatcher = messageWatcher;
@@ -94,10 +98,7 @@ namespace Papercut.ViewModels
 
         public string DeleteText
         {
-            get
-            {
-                return UIStrings.DeleteTextTemplate.RenderTemplate(this);
-            }
+            get { return UIStrings.DeleteTextTemplate.RenderTemplate(this); }
         }
 
         public bool HasSelectedMessage
@@ -117,7 +118,8 @@ namespace Papercut.ViewModels
 
         int? GetIndexOfMessage(MessageEntry entry)
         {
-            if (entry == null) throw new ArgumentNullException("entry");
+            if (entry == null)
+                throw new ArgumentNullException("entry");
 
             int index = MessagesSorted.OfType<MessageEntry>().FindIndex(m => Equals(entry, m));
 
@@ -201,14 +203,17 @@ namespace Papercut.ViewModels
         {
             int messageCount = Messages.Count;
 
-            if (index.HasValue && index >= messageCount) index = null;
+            if (index.HasValue && index >= messageCount)
+                index = null;
 
-            if (!index.HasValue && messageCount > 0) index = messageCount - 1;
+            if (!index.HasValue && messageCount > 0)
+                index = messageCount - 1;
 
             if (index.HasValue)
             {
                 MimeMessageEntry m = GetMessageByIndex(index.Value);
-                if (m != null) m.IsSelected = true;
+                if (m != null)
+                    m.IsSelected = true;
             }
         }
 
@@ -222,7 +227,8 @@ namespace Papercut.ViewModels
         public void ValidateSelected()
         {
             List<MimeMessageEntry> selected = GetSelected().ToList();
-            if (!selected.Any() && Messages.Count > 0) SetSelectedIndex();
+            if (!selected.Any() && Messages.Count > 0)
+                SetSelectedIndex();
         }
 
         void NewMessage(object sender, NewMessageEventArgs e)
@@ -248,18 +254,43 @@ namespace Papercut.ViewModels
             // Lock to prevent rapid clicking issues
             lock (_deleteLockObject)
             {
-                List<MimeMessageEntry> selectedList = GetSelected().ToList();
+                List<string> failedEntries =
+                    GetSelected().ToList().Select(
+                        entry =>
+                        {
+                            try
+                            {
+                                _messageRepository.DeleteMessage(entry);
+                                return null;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Error(
+                                    ex,
+                                    "Failure Deleting Message {EmailMessageFile}",
+                                    entry.File);
 
-                foreach (MimeMessageEntry entry in selectedList)
+                                return ex.Message;
+                            }
+                        }).Where(f => f != null).ToList();
+
+                if (failedEntries.Any())
                 {
-                    _messageRepository.DeleteMessage(entry);
+                    // show errors...
+                    _publishEvent.Publish(
+                        new ShowMessageEvent(
+                            string.Join("\r\n", failedEntries),
+                            string.Format(
+                                "Failed to Delete Message{0}",
+                                failedEntries.Count() > 1 ? "s" : string.Empty)));
                 }
             }
         }
 
         public void MessageListKeyDown(KeyEventArgs e)
         {
-            if (e.Key != Key.Delete) return;
+            if (e.Key != Key.Delete)
+                return;
             DeleteSelected();
         }
 
