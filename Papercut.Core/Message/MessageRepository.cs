@@ -48,8 +48,25 @@ namespace Papercut.Core.Message
             if (!File.Exists(entry.File))
                 return false;
 
-            File.Delete(entry.File);
+            var attributes = File.GetAttributes(entry.File);
 
+            try
+            {
+                if (attributes.HasFlag(FileAttributes.ReadOnly))
+                {
+                    // remove read only attribute
+                    File.SetAttributes(entry.File, attributes ^ FileAttributes.ReadOnly);
+                }
+
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new UnauthorizedAccessException(
+                    string.Format("Unable to remove read-only attribute on file '{0}'", entry.File),
+                    ex);
+            }
+
+            File.Delete(entry.File);
             return true;
         }
 
