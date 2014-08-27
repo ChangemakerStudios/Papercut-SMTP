@@ -63,21 +63,6 @@ namespace Papercut.Core.Helper
         }
 
         /// <summary>
-        ///     The get ip address.
-        /// </summary>
-        /// <returns>
-        ///     The get ip address.
-        /// </returns>
-        public static string GetIPAddress()
-        {
-            IPAddress ip = GetExternalIp();
-
-            if (ip == null) return Dns.GetHostEntry(Dns.GetHostName()).HostName;
-
-            return Dns.GetHostEntry(ip).HostName;
-        }
-
-        /// <summary>
         ///     To FileSizeFormat... Thank you to "deepee1" on StackOverflow for this elegent solution:
         ///     http://stackoverflow.com/a/4975942
         /// </summary>
@@ -139,26 +124,6 @@ namespace Papercut.Core.Helper
             }
 
             return output;
-        }
-
-        /// <summary>
-        ///     The get external ip.
-        /// </summary>
-        /// <returns>
-        /// </returns>
-        static IPAddress GetExternalIp()
-        {
-            try
-            {
-                string whatIsMyIp = "http://www.whatismyip.com/automation/n09230945.asp";
-                var wc = new WebClient();
-                string requestHtml = Encoding.UTF8.GetString(wc.DownloadData(whatIsMyIp));
-                return IPAddress.Parse(requestHtml);
-            }
-            catch
-            {
-                return null;
-            }
         }
     }
 }
