@@ -36,7 +36,7 @@ namespace Papercut.Helpers
         {
             if (!format.StartsWith("Action Convention Not Applied"))
             {
-                _logger.Value.Debug(format, args);
+                _logger.Value.Verbose(format, args);
             }
         }
 

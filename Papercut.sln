@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut", "src\Papercut.csproj", "{AC067042-66BD-4110-ADA1-E2CEA43E7947}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Core", "Papercut.Core\Papercut.Core.csproj", "{EEDD1016-6442-48CE-8F8E-1D350829FBDE}"
@@ -17,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{C16CD0
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.VerboseJsonLog", "Papercut.Module.VerboseJsonLog\Papercut.Module.VerboseJsonLog.csproj", "{F60D44E1-100E-464A-A280-CA6BAF652177}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,11 +43,16 @@ Global
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F60D44E1-100E-464A-A280-CA6BAF652177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F60D44E1-100E-464A-A280-CA6BAF652177}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F60D44E1-100E-464A-A280-CA6BAF652177}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F60D44E1-100E-464A-A280-CA6BAF652177}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
+		{F60D44E1-100E-464A-A280-CA6BAF652177} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
 	EndGlobalSection
 EndGlobal

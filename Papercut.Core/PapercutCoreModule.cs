@@ -128,7 +128,6 @@ namespace Papercut.Core
                 {
                     var appMeta = c.Resolve<IAppMeta>();
 
-                    //var jsonSink = new RollingFileSink(@"papercut.json", new JsonFormatter(), null, null);
                     string logFilePath = Path.Combine(
                         AppDomain.CurrentDomain.BaseDirectory,
                         string.Format("{0}.log", appMeta.AppName));

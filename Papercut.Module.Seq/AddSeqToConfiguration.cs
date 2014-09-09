@@ -33,8 +33,6 @@ namespace Papercut.Module.Seq
             _settingStore = settingStore;
         }
 
-        #region Public Methods and Operators
-
         public void Handle(ConfigureLoggerEvent @event)
         {
             var seqEndPoint = _settingStore.Get("SeqEndpoint", "http://localhost:5341");
@@ -42,7 +40,5 @@ namespace Papercut.Module.Seq
 
             @event.LogConfiguration.WriteTo.Seq(seqEndPoint, logLevel);
         }
-
-        #endregion
     }
 }
