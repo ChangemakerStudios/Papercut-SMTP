@@ -20,6 +20,7 @@ namespace Papercut.Core.Helper
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Net;
     using System.Text;
@@ -81,49 +82,43 @@ namespace Papercut.Core.Helper
             return roundedNumber.ToString(CultureInfo.InvariantCulture) + suffixes[place];
         }
 
-        /// <summary>
-        ///     Truncates a string for readability.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="inputLimit"></param>
-        /// <param name="cutOff"></param>
-        /// <returns></returns>
-        public static string Truncate(
-            [CanBeNull] this string input,
-            int inputLimit,
-            [NotNull] string cutOff = "...")
+        public static string GetOriginalFileName([NotNull] string path, [NotNull] string fileName)
         {
-            if (cutOff == null) throw new ArgumentNullException("cutOff");
+            if (path == null)
+                throw new ArgumentNullException("path");
 
-            string output = input;
+            if (fileName == null)
+                throw new ArgumentNullException("fileName");
 
-            if (string.IsNullOrWhiteSpace(input)) return null;
+            return
+                GenerateFormattedFileNames(fileName)
+                    .Select(f => Path.Combine(path, f))
+                    .FirstOrDefault(f => !File.Exists(f));
+        }
 
-            int limit = inputLimit - cutOff.Length;
+        private static IEnumerable<string> GenerateFormattedFileNames([NotNull] string fileName)
+        {
+            if (fileName == null)
+                throw new ArgumentNullException("fileName");
 
-            // Check if the string is longer than the allowed amount
-            // otherwise do nothing
-            if (output.Length > limit && limit > 0)
+            var fileSansExtension = Path.GetFileNameWithoutExtension(fileName);
+            var extension = Path.GetExtension(fileName);
+            bool isFirst = true;
+
+            while (true)
             {
-                // cut the string down to the maximum number of characters
-                output = output.Substring(0, limit);
+                string randomString;
 
-                // Check if the space right after the truncate point 
-                // was a space. if not, we are in the middle of a word and 
-                // need to cut out the rest of it
-                if (input.Substring(output.Length, 1) != " ")
+                if (!isFirst)
+                    randomString = "-" + StringHelpers.SmallRandomString();
+                else
                 {
-                    int lastSpace = output.LastIndexOf(" ");
-
-                    // if we found a space then, cut back to that space
-                    if (lastSpace != -1) output = output.Substring(0, lastSpace);
+                    randomString = string.Empty;
+                    isFirst = false;
                 }
 
-                // Finally, add the the cut off string...
-                output += cutOff;
+                yield return "{0}{1}{2}".FormatWith(fileSansExtension, randomString, extension);
             }
-
-            return output;
         }
     }
 }

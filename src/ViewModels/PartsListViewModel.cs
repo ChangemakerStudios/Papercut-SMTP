@@ -17,12 +17,14 @@
 
 namespace Papercut.ViewModels
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Threading;
+    using System.Windows;
 
     using Caliburn.Micro;
 
@@ -64,7 +66,8 @@ namespace Papercut.ViewModels
                 _mimeMessage = value;
                 NotifyOfPropertyChange(() => MimeMessage);
 
-                if (_mimeMessage != null) RefreshParts();
+                if (_mimeMessage != null)
+                    RefreshParts();
             }
         }
 
@@ -98,30 +101,41 @@ namespace Papercut.ViewModels
                 var textPart = part as TextPart;
 
                 // show in the viewer...
-                _viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(
-                    vm => vm.PartText = textPart.Text);
+                _viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = textPart.Text);
             }
             else
             {
                 string tempFileName;
 
-                if (!string.IsNullOrWhiteSpace(part.FileName)) tempFileName = Path.Combine(Path.GetTempPath(), part.FileName);
+                if (part.FileName.IsSet())
+                {
+                    tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), part.FileName);
+                }
                 else
                 {
                     tempFileName = Path.GetTempFileName();
-
                     string extension = part.ContentType.GetExtension();
 
-                    if (!string.IsNullOrWhiteSpace(extension)) tempFileName = Path.ChangeExtension(tempFileName, extension);
+                    if (extension.IsSet())
+                        tempFileName = Path.ChangeExtension(tempFileName, extension);
                 }
 
-                using (FileStream outputFile = File.Open(tempFileName, FileMode.Create))
+                try
                 {
-                    part.ContentObject.DecodeTo(outputFile);
-                    outputFile.Close();
-                }
+                    using (FileStream outputFile = File.Open(tempFileName, FileMode.Create))
+                    {
+                        part.ContentObject.DecodeTo(outputFile);
+                        outputFile.Close();
+                    }
 
-                Process.Start(tempFileName);
+                    Process.Start(tempFileName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failure Creating and Opening Up Attachment File: {TempFileName}", tempFileName);
+                    MessageBox.Show(string.Format("Failed to Open Attachment File: {0}", ex.Message),
+                        "Unable to Open Attachment");
+                }
             }
         }
 
@@ -130,7 +144,8 @@ namespace Papercut.ViewModels
             MimePart part = SelectedPart;
 
             var dlg = new SaveFileDialog();
-            if (!string.IsNullOrWhiteSpace(part.FileName)) dlg.FileName = part.FileName;
+            if (!string.IsNullOrWhiteSpace(part.FileName))
+                dlg.FileName = part.FileName;
 
             var extensions = new List<string>();
             if (part.ContentType.MediaSubtype != "Unknown")
@@ -139,12 +154,9 @@ namespace Papercut.ViewModels
 
                 if (!string.IsNullOrWhiteSpace(extension))
                 {
-                    extensions.Add(
-                        string.Format(
-                            "{0} (*{1})|*{1}",
-                            Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(
-                                part.ContentType.MediaSubtype),
-                            extension));
+                    extensions.Add(string.Format("{0} (*{1})|*{1}",
+                        Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(part.ContentType.MediaSubtype),
+                        extension));
                 }
             }
 
@@ -155,10 +167,7 @@ namespace Papercut.ViewModels
 
             if (result.HasValue && result.Value)
             {
-                _logger.Debug(
-                    "Saving File {File} as Output for MimePart {PartFileName}",
-                    dlg.FileName,
-                    part.FileName);
+                _logger.Debug("Saving File {File} as Output for MimePart {PartFileName}", dlg.FileName, part.FileName);
 
                 // save it..
                 using (Stream outputFile = dlg.OpenFile())

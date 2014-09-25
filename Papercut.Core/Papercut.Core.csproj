@@ -140,6 +140,7 @@
     <Compile Include="Helper\CollectionExtensions.cs" />
     <Compile Include="Helper\ObjectExtensions.cs" />
     <Compile Include="Helper\StreamExtensions.cs" />
+    <Compile Include="Helper\StringHelpers.cs" />
     <Compile Include="Message\IFile.cs" />
     <Compile Include="Message\MessageWatcher.cs" />
     <Compile Include="Network\ServerExtensions.cs" />

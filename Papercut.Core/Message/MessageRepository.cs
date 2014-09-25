@@ -112,17 +112,10 @@ namespace Papercut.Core.Message
 
             try
             {
-                do
-                {
-                    // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
-                    string fileNameUnique = string.Format(
-                        "{0}-{1}.eml",
-                        DateTime.Now.ToString("yyyyMMddHHmmssFF"),
-                        Guid.NewGuid().ToString().Substring(0, 2));
+                // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
+                var fileName = string.Format("{0}.eml", DateTime.Now.ToString("yyyyMMddHHmmssFF"));
 
-                    file = Path.Combine(_messagePathConfigurator.DefaultSavePath, fileNameUnique);
-                }
-                while (File.Exists(file));
+                file = GeneralExtensions.GetOriginalFileName(_messagePathConfigurator.DefaultSavePath, fileName);
 
                 File.WriteAllLines(file, output);
 
