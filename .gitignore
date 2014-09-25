@@ -1,4 +1,4 @@
-﻿_ReSharper.Papercut
+_ReSharper.Papercut
 [Bb]in
 [Oo]bj
 *.user
@@ -11,3 +11,6 @@ Papercut.ncrunchsolution.*
 /packages
 *.hgignore
 *.ide
+deploy/
+changelog.bat
+graphics/
