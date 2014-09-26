@@ -18,9 +18,11 @@
 namespace Papercut.ViewModels
 {
     using System;
+    using System.Diagnostics;
     using System.Reactive.Linq;
     using System.Runtime.InteropServices;
     using System.Windows;
+    using System.Windows.Navigation;
 
     using Caliburn.Micro;
 
@@ -90,6 +92,15 @@ namespace Papercut.ViewModels
                     return null;
                 }).Subscribe(
                     h => { HtmlFile = h; });
+        }
+
+        public void OnNavigating(NavigatingCancelEventArgs e)
+        {
+            if (e.Uri.Scheme == Uri.UriSchemeHttp || e.Uri.Scheme == Uri.UriSchemeHttps)
+            {
+                e.Cancel = true;
+                Process.Start(e.Uri.ToString());
+            }
         }
 
         protected override void OnViewLoaded(object view)
