@@ -43,7 +43,7 @@
 
         public override string ToString()
         {
-            return string.Format("{0}\r\nRegexHeaderMatch: {1}\r\nRegexBodyMatch: {2}",
+            return string.Format("{0}\r\nRegex Header Match: {1}\r\nRegex Body Match: {2}",
                 base.ToString(),
                 RegexHeaderMatch,
                 RegexBodyMatch);
