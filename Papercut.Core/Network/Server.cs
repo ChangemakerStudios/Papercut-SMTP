@@ -209,9 +209,10 @@ namespace Papercut.Core.Network
                 // Create and start new listener socket
                 CreateListener();
             }
-            finally
+            catch
             {
                 IsActive = false;
+                throw;
             }
         }
     }
