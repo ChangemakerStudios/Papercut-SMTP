@@ -36,28 +36,7 @@ namespace Papercut
 
         protected override void Load(ContainerBuilder builder)
         {
-            //  register view models
-            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
-                .Where(type => type.Name.EndsWith("ViewModel"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .OnActivated(SubscribeEventAggregator)
-                .InstancePerDependency();
-
-            //  register views
-            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
-                .Where(type => type.Name.EndsWith("View"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .OnActivated(SubscribeEventAggregator)
-                .InstancePerDependency();
-
-            // register ui scope services
-            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
-                .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .InstancePerUIScope();
+            RegisterUI(builder);
 
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
@@ -82,6 +61,32 @@ namespace Papercut
             builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
 
             base.Load(builder);
+        }
+
+        static void RegisterUI(ContainerBuilder builder)
+        {
+            //  register view models
+            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
+                .Where(type => type.Name.EndsWith("ViewModel"))
+                .AsImplementedInterfaces()
+                .AsSelf()
+                .OnActivated(SubscribeEventAggregator)
+                .InstancePerDependency();
+
+            //  register views
+            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
+                .Where(type => type.Name.EndsWith("View"))
+                .AsImplementedInterfaces()
+                .AsSelf()
+                .OnActivated(SubscribeEventAggregator)
+                .InstancePerDependency();
+
+            // register ui scope services
+            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
+                .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
+                .AsImplementedInterfaces()
+                .AsSelf()
+                .InstancePerUIScope();
         }
 
         static void SubscribeEventAggregator(IActivatedEventArgs<object> e)

@@ -46,13 +46,8 @@ namespace Papercut.Helpers
         {
             if (templateString == null) throw new ArgumentNullException("templateString");
 
-            Tuple<Action<TextWriter, object>> parsedTemplate = _parsedCache.GetOrAdd(
-                templateString,
-                t => Tuple.Create(
-                    VailEngine.CompileNonGeneric(
-                        "handlebars",
-                        new StringReader(templateString),
-                        modelType)));
+            var parsedTemplate = _parsedCache.GetOrAdd(templateString,
+                t => Tuple.Create(VailEngine.CompileNonGeneric("handlebars", new StringReader(templateString), modelType)));
 
             return parsedTemplate.Item1;
         }
