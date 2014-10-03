@@ -108,25 +108,26 @@ namespace Papercut.Core.Message
 
         public string SaveMessage(IList<string> output)
         {
-            string file = null;
+            string fileName = null;
 
             try
             {
                 // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
-                var fileName = string.Format("{0}.eml", DateTime.Now.ToString("yyyyMMddHHmmssFF"));
+                fileName = Path.Combine(_messagePathConfigurator.DefaultSavePath,
+                    string.Format("{0}-{1}.eml",
+                        DateTime.Now.ToString("yyyyMMddHHmmssFF"),
+                        StringHelpers.SmallRandomString()));
 
-                file = GeneralExtensions.GetOriginalFileName(_messagePathConfigurator.DefaultSavePath, fileName);
+                File.WriteAllLines(fileName, output);
 
-                File.WriteAllLines(file, output);
-
-                _logger.Debug("Successfully Saved email message: {EmailMessageFile}", file);
+                _logger.Debug("Successfully Saved email message: {EmailMessageFile}", fileName);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failure saving email message: {EmailMessageFile}", file);
+                _logger.Error(ex, "Failure saving email message: {EmailMessageFile}", fileName);
             }
 
-            return file;
+            return fileName;
         }
     }
 }
