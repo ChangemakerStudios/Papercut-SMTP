@@ -136,6 +136,7 @@
     <Compile Include="Helper\NameValueCollectionHelpers.cs" />
     <Compile Include="Helper\PapercutProtocolHelpers.cs" />
     <Compile Include="Helper\PathHelpers.cs" />
+    <Compile Include="Helper\RegexHelpers.cs" />
     <Compile Include="Helper\SafeReadWriteProvider.cs" />
     <Compile Include="Helper\CollectionExtensions.cs" />
     <Compile Include="Helper\ObjectExtensions.cs" />
@@ -144,6 +145,8 @@
     <Compile Include="Message\IFile.cs" />
     <Compile Include="Message\MessageWatcher.cs" />
     <Compile Include="Network\ServerExtensions.cs" />
+    <Compile Include="Rules\Implementations\ConditionalForwardRule.cs" />
+    <Compile Include="Rules\Implementations\ConditionalForwardRuleDispatch.cs" />
     <Compile Include="Rules\Implementations\ForwardRule.cs" />
     <Compile Include="Network\Connection.cs" />
     <Compile Include="Helper\ConnectionExtensions.cs" />

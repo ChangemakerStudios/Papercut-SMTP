@@ -21,24 +21,6 @@ namespace Papercut.Core.Rules.Implementations
     using System.ComponentModel;
 
     [Serializable]
-    public class ConditionalForwardRule : ForwardRule
-    {
-        string _regexHeaderMatch;
-
-        public string RegexHeaderMatch
-        {
-            get { return _regexHeaderMatch; }
-            set
-            {
-                if (value == _regexHeaderMatch)
-                    return;
-                _regexHeaderMatch = value;
-                OnPropertyChanged("RegexHeaderMatch");
-            }
-        }
-    }
-
-    [Serializable]
     public class ForwardRule : RuleBase
     {
         string _fromEmail;
