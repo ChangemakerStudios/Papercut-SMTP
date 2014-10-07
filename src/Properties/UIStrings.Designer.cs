@@ -70,7 +70,7 @@ namespace Papercut.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;html&gt;&lt;head&gt;&lt;style&gt;body {{ padding: 0; margin: 0.5em; }} pre {{ font-family:Consolas,&quot;Courier New&quot;,monospace; line-height: 1.5em; font-size: 9pt; }}&lt;/style&gt;&lt;/head&gt;&lt;body oncontextmenu=&quot;return false;&quot;&gt;&lt;pre&gt;{0}&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;.
+        ///   Looks up a localized string similar to &lt;!-- saved from url=(0014)about:internet --&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;body {{ padding: 0; margin: 0.5em; }} pre {{ font-family:Consolas,&quot;Courier New&quot;,monospace; line-height: 1.5em; font-size: 9pt; }}&lt;/style&gt;&lt;/head&gt;&lt;body oncontextmenu=&quot;return false;&quot;&gt;&lt;pre&gt;{0}&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;.
         /// </summary>
         public static string HtmlFormatWrapper {
             get {
