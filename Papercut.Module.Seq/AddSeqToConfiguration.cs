@@ -17,11 +17,10 @@
 
 namespace Papercut.Module.Seq
 {
-    using global::Seq;
-
     using Papercut.Core.Events;
     using Papercut.Core.Settings;
 
+    using Serilog;
     using Serilog.Events;
 
     public class AddSeqToConfiguration : IHandleEvent<ConfigureLoggerEvent>
