@@ -38,8 +38,7 @@ namespace Papercut.Service.Services
         public void Handle(AppProcessExchangeEvent @event)
         {
             // respond with the current save path...
-            @event.MessageWritePath = Path.GetDirectoryName(
-                _messagePathConfigurator.DefaultSavePath);
+            @event.MessageWritePath = _messagePathConfigurator.DefaultSavePath;
 
             // share our current ip and port binding for the SMTP server.
             @event.IP = _serviceSettings.IP;
