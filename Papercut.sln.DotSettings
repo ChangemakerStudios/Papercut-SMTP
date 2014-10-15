@@ -25,7 +25,7 @@ Unless required by applicable law or agreed to in writing, software&#xD;
 distributed under the License is distributed on an "AS IS" BASIS,&#xD;
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#xD;
 See the License for the specific language governing permissions and&#xD;
-limitations under the License.</s:String>
+limitations under the License. </s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=SMTP/@EntryIndexedValue">SMTP</s:String>
 	<s:Boolean x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=13892BFD95551A46992EFE5075830912/@KeyIndexDefined">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=13892BFD95551A46992EFE5075830912/AbsolutePath/@EntryValue">C:\Projects\Papercut\Papercut.sln.DotSettings</s:String>
