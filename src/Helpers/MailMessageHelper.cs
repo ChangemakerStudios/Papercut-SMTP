@@ -111,12 +111,13 @@ namespace Papercut.Helpers
 
             if (mainBodyTextPart.IsContentHtml())
             {
-                htmlText = _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
+                // add the mark of the web plus the html text
+                htmlText = UIStrings.MarkOfTheWeb + _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
             }
             else
             {
                 // add some html formatting to the display html
-                htmlText = string.Format(UIStrings.HtmlFormatWrapper, htmlText);
+                htmlText = UIStrings.MarkOfTheWeb + string.Format(UIStrings.HtmlFormatWrapper, htmlText);
             }
 
             foreach (
