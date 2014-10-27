@@ -18,21 +18,25 @@
 namespace Papercut.ViewModels
 {
     using System;
-    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Reactive.Linq;
 
     using Caliburn.Micro;
+
+    using Microsoft.Build.Utilities;
 
     using MimeKit;
 
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
 
-    public class MessageDetailViewModel : Screen
+    public interface IMessageDetailItem
     {
-        readonly MimeMessageLoader _mimeMessageLoader;
+    }
 
+    public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
+    {
         int _attachmentCount;
 
         string _bcc;
@@ -63,14 +67,23 @@ namespace Papercut.ViewModels
 
         string _to;
 
+        readonly MimeMessageLoader _mimeMessageLoader;
+
         public MessageDetailViewModel(
-            Func<PartsListViewModel> partsListViewModelFactory,
-            Func<MessageViewModel> messagesViewModelFactory,
+            Func<MessageDetailPartsListViewModel> partsListViewModelFactory,
+            Func<MessageDetailHtmlViewModel> messagesViewModelFactory,
+            Func<MessageDetailRawViewModel> messageDetailRawViewModel,
             MimeMessageLoader mimeMessageLoader)
         {
             _mimeMessageLoader = mimeMessageLoader;
+
             PartsListViewModel = partsListViewModelFactory();
-            MessageViewModel = messagesViewModelFactory();
+            HtmlViewModel = messagesViewModelFactory();
+            RawViewModel = messageDetailRawViewModel();
+
+            Items.Add(HtmlViewModel);
+            Items.Add(PartsListViewModel);
+            Items.Add(RawViewModel);
         }
 
         public string Subject
@@ -219,36 +232,38 @@ namespace Papercut.ViewModels
             }
         }
 
-        public PartsListViewModel PartsListViewModel { get; private set; }
+        public MessageDetailPartsListViewModel PartsListViewModel { get; private set; }
 
-        public MessageViewModel MessageViewModel { get; private set; }
+        public MessageDetailHtmlViewModel HtmlViewModel { get; private set; }
+
+        public MessageDetailRawViewModel RawViewModel { get; private set; }
 
         public void LoadMessageEntry(MessageEntry messageEntry)
         {
-            if (_loadingDisposable != null) _loadingDisposable.Dispose();
+            if (_loadingDisposable != null)
+                _loadingDisposable.Dispose();
 
-            bool handleLoading = !IsLoading;
+            var handleLoading = !IsLoading;
 
             if (messageEntry == null)
             {
                 // show empty...
                 DisplayMimeMessage(null);
-                if (handleLoading) IsLoading = false;
+                if (handleLoading)
+                    IsLoading = false;
             }
             else
             {
-                if (handleLoading) IsLoading = true;
+                if (handleLoading)
+                    IsLoading = true;
 
                 // load and show it...
-                _loadingDisposable =
-                    _mimeMessageLoader.Get(messageEntry)
-                        .ObserveOnDispatcher()
-                        .Subscribe(
-                            m =>
-                            {
-                                DisplayMimeMessage(m);
-                                if (handleLoading) IsLoading = false;
-                            });
+                _loadingDisposable = _mimeMessageLoader.Get(messageEntry).ObserveOnDispatcher().Subscribe(m =>
+                {
+                    DisplayMimeMessage(m);
+                    if (handleLoading)
+                        IsLoading = false;
+                });
             }
         }
 
@@ -258,8 +273,8 @@ namespace Papercut.ViewModels
             {
                 Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
 
-                List<MimePart> parts = mailMessageEx.BodyParts.ToList();
-                TextPart mainBody = parts.GetMainBodyTextPart();
+                var parts = mailMessageEx.BodyParts.ToList();
+                var mainBody = parts.GetMainBodyTextPart();
                 Body = mainBody.Text;
 
                 From = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
@@ -271,7 +286,9 @@ namespace Papercut.ViewModels
                 Subject = mailMessageEx.Subject ?? string.Empty;
                 IsHtml = mainBody.IsContentHtml();
 
-                MessageViewModel.ShowMessage(mailMessageEx);
+                HtmlViewModel.ShowMessage(mailMessageEx);
+
+                RawViewModel.LoadMessage(mailMessageEx);
 
                 AttachmentCount = parts.GetAttachments().Count();
 
@@ -279,12 +296,13 @@ namespace Papercut.ViewModels
 
                 if (IsHtml)
                 {
-                    TextPart textPartNotHtml =
-                        parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
+                    var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
 
-                    if (textPartNotHtml != null) TextBody = textPartNotHtml.Text;
+                    if (textPartNotHtml != null)
+                        TextBody = textPartNotHtml.Text;
                 }
-                else TextBody = null;
+                else
+                    TextBody = null;
             }
             else
             {

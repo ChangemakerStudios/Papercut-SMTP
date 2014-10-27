@@ -20,11 +20,11 @@ namespace Papercut.Views
     using System.Windows.Controls;
 
     /// <summary>
-    ///     Interaction logic for PartsListView.xaml
+    ///     Interaction logic for MessageDetailPartsListView.xaml
     /// </summary>
-    public partial class PartsListView : UserControl
+    public partial class MessageDetailPartsListView : UserControl
     {
-        public PartsListView()
+        public MessageDetailPartsListView()
         {
             InitializeComponent();
         }

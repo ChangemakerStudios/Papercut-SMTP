@@ -1,0 +1,23 @@
+﻿<UserControl x:Class="Papercut.Views.MessageDetailRawView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
+             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White"
+             IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
+    <i:Interaction.Behaviors>
+        <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />
+    </i:Interaction.Behaviors>             
+	<Grid>
+		<Border BorderBrush="LightGray" BorderThickness="1">
+			<avalonEdit:TextEditor
+				xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+				Name="rawEdit"
+                Padding="4"
+				FontFamily="Consolas"
+				FontSize="9pt" IsReadOnly="True" />
+		</Border>
+	</Grid>
+</UserControl>

@@ -65,9 +65,9 @@
                 <TextBox Grid.Column="1" Name="Subject" Margin="2" FontWeight="Bold" IsReadOnly="True" />
             </Grid>
         </StackPanel>
-        <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}">
-            <TabItem Header="Message">
-                <ContentControl x:Name="MessageViewModel" VerticalAlignment="Stretch"
+        <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}" Name="Items">
+            <!--<TabItem Header="Message">
+                <ContentControl x:Name="HtmlViewModel" VerticalAlignment="Stretch"
                                 HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1"
                                 Visibility="{Binding Path=IsLoading, Converter={StaticResource CollapsedIfTrue}}" />
             </TabItem>
@@ -84,6 +84,11 @@
                 <TextBox Name="Body" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Width="Auto" Height="Auto"
                          VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
             </TabItem>
+            <TabItem Header="Raw" Name="rawViewTab">
+                <ContentControl x:Name="RawViewModel" VerticalAlignment="Stretch"
+                                HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1"
+                                Visibility="{Binding Path=IsLoading, Converter={StaticResource CollapsedIfTrue}}" />
+            </TabItem>-->            
         </TabControl>
     </Grid>
 </UserControl>

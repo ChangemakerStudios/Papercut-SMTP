@@ -102,6 +102,9 @@
     <Reference Include="Caliburn.Micro">
       <HintPath>..\packages\Caliburn.Micro.1.5.2\lib\net40\Caliburn.Micro.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>..\packages\AvalonEdit.4.4.2.9744\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
     <Reference Include="MahApps.Metro">
       <HintPath>..\packages\MahApps.Metro.0.14.0.0\lib\net40\MahApps.Metro.dll</HintPath>
     </Reference>
@@ -273,6 +276,10 @@
     <Compile Include="ViewModels\ForwardViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Events\ShowMainWindowEvent.cs" />
+    <Compile Include="ViewModels\MessageDetailRawViewModel.cs" />
+    <Compile Include="Views\MessageDetailRawView.xaml.cs">
+      <DependentUpon>MessageDetailRawView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RulesConfigurationView.xaml.cs">
       <DependentUpon>RulesConfigurationView.xaml</DependentUpon>
     </Compile>
@@ -280,7 +287,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\MessageView.xaml">
+    <Page Include="Views\MessageDetailRawView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MessageDetailHtmlView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -288,7 +299,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PartsListView.xaml">
+    <Page Include="Views\MessageDetailPartsListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -320,19 +331,19 @@
     </Page>
     <Compile Include="ViewModels\MessageDetailViewModel.cs" />
     <Compile Include="ViewModels\MessageListViewModel.cs" />
-    <Compile Include="ViewModels\MessageViewModel.cs" />
+    <Compile Include="ViewModels\MessageDetailHtmlViewModel.cs" />
     <Compile Include="ViewModels\MimePartViewModel.cs" />
     <Compile Include="ViewModels\OptionsViewModel.cs" />
-    <Compile Include="ViewModels\PartsListViewModel.cs" />
+    <Compile Include="ViewModels\MessageDetailPartsListViewModel.cs" />
     <Compile Include="ViewModels\RulesConfigurationViewModel.cs" />
-    <Compile Include="Views\MessageView.xaml.cs">
-      <DependentUpon>MessageView.xaml</DependentUpon>
+    <Compile Include="Views\MessageDetailHtmlView.xaml.cs">
+      <DependentUpon>MessageDetailHtmlView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MimePartView.xaml.cs">
       <DependentUpon>MimePartView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PartsListView.xaml.cs">
-      <DependentUpon>PartsListView.xaml</DependentUpon>
+    <Compile Include="Views\MessageDetailPartsListView.xaml.cs">
+      <DependentUpon>MessageDetailPartsListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>

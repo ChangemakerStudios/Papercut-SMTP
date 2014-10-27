@@ -35,14 +35,15 @@ namespace Papercut.ViewModels
 
     using Serilog;
 
-    public class MessageViewModel : Screen
+    public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
 
         string _htmlFile;
 
-        public MessageViewModel(ILogger logger)
+        public MessageDetailHtmlViewModel(ILogger logger)
         {
+            DisplayName = "Message";
             _logger = logger;
         }
 
@@ -110,11 +111,11 @@ namespace Papercut.ViewModels
 
             base.OnViewLoaded(view);
 
-            var typedView = view as MessageView;
+            var typedView = view as MessageDetailHtmlView;
 
             if (typedView == null)
             {
-                _logger.Error("Unable to locate the MessageView to hook the WebBrowser Control");
+                _logger.Error("Unable to locate the MessageDetailHtmlView to hook the WebBrowser Control");
                 return;
             }
 

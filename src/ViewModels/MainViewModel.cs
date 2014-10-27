@@ -36,7 +36,7 @@ namespace Papercut.ViewModels
     using Papercut.Helpers;
     using Papercut.Properties;
 
-    public class MainViewModel : Screen,
+    public class MainViewModel : Conductor<object>,
         IHandle<SmtpServerBindFailedEvent>,
         IHandle<ShowMessageEvent>,
         IHandle<ShowMainWindowEvent>,
@@ -69,6 +69,9 @@ namespace Papercut.ViewModels
 
             MessageListViewModel = messageListViewModelFactory();
             MessageDetailViewModel = messageDetailViewModelFactory();
+
+            MessageListViewModel.ConductWith(this);
+            MessageDetailViewModel.ConductWith(this);
 
             SetupObservables();
         }

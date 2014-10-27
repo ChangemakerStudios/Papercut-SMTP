@@ -37,7 +37,7 @@ namespace Papercut.ViewModels
 
     using Serilog;
 
-    public class PartsListViewModel : Screen
+    public class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
 
@@ -49,8 +49,9 @@ namespace Papercut.ViewModels
 
         MimePart _selectedPart;
 
-        public PartsListViewModel(IViewModelWindowManager viewModelWindowManager, ILogger logger)
+        public MessageDetailPartsListViewModel(IViewModelWindowManager viewModelWindowManager, ILogger logger)
         {
+            DisplayName = "Sections";
             _viewModelWindowManager = viewModelWindowManager;
             _logger = logger;
             Parts = new ObservableCollection<MimePart>();

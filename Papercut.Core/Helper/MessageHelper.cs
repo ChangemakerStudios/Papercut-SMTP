@@ -21,6 +21,7 @@ namespace Papercut.Core.Helper
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Text;
 
     using Microsoft.Win32;
 
@@ -32,16 +33,32 @@ namespace Papercut.Core.Helper
     {
         public static MimeMessage CloneMessage([NotNull] this MimeMessage mimeMessage)
         {
-            if (mimeMessage == null) throw new ArgumentNullException("mimeMessage");
+            if (mimeMessage == null)
+                throw new ArgumentNullException("mimeMessage");
 
             using (var ms = new MemoryStream())
             {
                 mimeMessage.WriteTo(FormatOptions.Default, ms);
                 ms.Seek(0, SeekOrigin.Begin);
-                MimeMessage clonedMessage = MimeMessage.Load(ParserOptions.Default, ms);
+                var clonedMessage = MimeMessage.Load(ParserOptions.Default, ms);
                 ms.Close();
 
                 return clonedMessage;
+            }
+        }
+
+        public static string GetStringDump([NotNull] this MimeMessage mimeMessage)
+        {
+            if (mimeMessage == null)
+                throw new ArgumentNullException("mimeMessage");
+
+            using (var ms = new MemoryStream())
+            {
+                mimeMessage.WriteTo(FormatOptions.Default, ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                var mail = ms.ToArray();
+                ms.Close();
+                return Encoding.ASCII.GetString(mail, 0, mail.Length);
             }
         }
 
@@ -52,14 +69,12 @@ namespace Papercut.Core.Helper
 
         public static string GetExtension([NotNull] this ContentType contentType)
         {
-            if (contentType == null) throw new ArgumentNullException("contentType");
+            if (contentType == null)
+                throw new ArgumentNullException("contentType");
 
             return
                 Registry.ClassesRoot.OpenSubKey(
-                    string.Format(
-                        @"MIME\Database\Content Type\{0}/{1}",
-                        contentType.MediaType,
-                        contentType.MediaSubtype),
+                    string.Format(@"MIME\Database\Content Type\{0}/{1}", contentType.MediaType, contentType.MediaSubtype),
                     false)
                     .ToEnumerable()
                     .Select(k => k.GetValue("Extension", null))
@@ -68,35 +83,31 @@ namespace Papercut.Core.Helper
                     .FirstOrDefault();
         }
 
-        public static IEnumerable<MimePart> GetImages(
-            [NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
+        public static IEnumerable<MimePart> GetImages([NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
         {
-            if (prefilteredMimeParts == null) throw new ArgumentNullException("prefilteredMimeParts");
+            if (prefilteredMimeParts == null)
+                throw new ArgumentNullException("prefilteredMimeParts");
 
             return prefilteredMimeParts.Where(e => e.ContentType.Matches("image", "*"));
         }
 
-        public static IEnumerable<MimePart> GetAttachments(
-            [NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
+        public static IEnumerable<MimePart> GetAttachments([NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
         {
-            if (prefilteredMimeParts == null) throw new ArgumentNullException("prefilteredMimeParts");
+            if (prefilteredMimeParts == null)
+                throw new ArgumentNullException("prefilteredMimeParts");
 
             return prefilteredMimeParts.Where(p => p.IsAttachment);
         }
 
-        public static TextPart GetMainBodyTextPart(
-            [NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
+        public static TextPart GetMainBodyTextPart([NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
         {
-            List<TextPart> mimeParts =
-                prefilteredMimeParts
-                    .OfType<TextPart>()
-                    .Where(s => !s.IsAttachment)
-                    .ToList();
+            var mimeParts = prefilteredMimeParts.OfType<TextPart>().Where(s => !s.IsAttachment).ToList();
 
             // return html if available first
-            TextPart html = mimeParts.FirstOrDefault(s => s.IsContentHtml());
+            var html = mimeParts.FirstOrDefault(s => s.IsContentHtml());
 
-            if (!html.IsDefault()) return html;
+            if (!html.IsDefault())
+                return html;
 
             // anything else available
             return mimeParts.FirstOrDefault();
