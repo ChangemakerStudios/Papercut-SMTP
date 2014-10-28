@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.ViewModels
 {
@@ -37,9 +37,9 @@ namespace Papercut.ViewModels
 
     public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
     {
-        readonly ILogger _logger;
-
         string _htmlFile;
+
+        readonly ILogger _logger;
 
         public MessageDetailHtmlViewModel(ILogger logger)
         {
@@ -73,26 +73,22 @@ namespace Papercut.ViewModels
 
         public void ShowMessage([NotNull] MimeMessage mailMessageEx)
         {
-            if (mailMessageEx == null) throw new ArgumentNullException("mailMessageEx");
+            if (mailMessageEx == null)
+                throw new ArgumentNullException("mailMessageEx");
 
-            Observable.Start(
-                () =>
+            Observable.Start(() =>
+            {
+                try
                 {
-                    try
-                    {
-                        return mailMessageEx.CreateHtmlPreviewFile();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(
-                            ex,
-                            "Exception Saving Browser Temp File for {MailMessage}",
-                            mailMessageEx.ToString());
-                    }
+                    return mailMessageEx.CreateHtmlPreviewFile();
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Exception Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
+                }
 
-                    return null;
-                }).Subscribe(
-                    h => { HtmlFile = h; });
+                return null;
+            }).Subscribe(h => { HtmlFile = h; });
         }
 
         public void OnNavigating(NavigatingCancelEventArgs e)
@@ -134,16 +130,13 @@ namespace Papercut.ViewModels
                 .Subscribe(
                     file =>
                     {
-                        typedView.htmlView.Source =
-                            new Uri(string.IsNullOrWhiteSpace(file) ? "about:blank" : file);
+                        typedView.htmlView.Source = new Uri(string.IsNullOrWhiteSpace(file) ? "about:blank" : file);
                     });
 
-            Observable
-                .FromEvent
-                <DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
-                    a => ((s, e) => a(e)),
-                    h => typedView.IsEnabledChanged += h,
-                    h => typedView.IsEnabledChanged -= h)
+            Observable.FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
+                a => ((s, e) => a(e)),
+                h => typedView.IsEnabledChanged += h,
+                h => typedView.IsEnabledChanged -= h)
                 .Throttle(TimeSpan.FromMilliseconds(100))
                 .ObserveOnDispatcher()
                 .Subscribe(

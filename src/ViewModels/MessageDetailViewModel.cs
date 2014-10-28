@@ -18,22 +18,15 @@
 namespace Papercut.ViewModels
 {
     using System;
-    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Reactive.Linq;
 
     using Caliburn.Micro;
 
-    using Microsoft.Build.Utilities;
-
     using MimeKit;
 
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
-
-    public interface IMessageDetailItem
-    {
-    }
 
     public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
     {
@@ -41,15 +34,11 @@ namespace Papercut.ViewModels
 
         string _bcc;
 
-        string _body;
-
         string _cc;
 
         string _date;
 
         string _from;
-
-        string _headers;
 
         string _htmlFile;
 
@@ -71,17 +60,23 @@ namespace Papercut.ViewModels
 
         public MessageDetailViewModel(
             Func<MessageDetailPartsListViewModel> partsListViewModelFactory,
-            Func<MessageDetailHtmlViewModel> messagesViewModelFactory,
-            Func<MessageDetailRawViewModel> messageDetailRawViewModel,
+            Func<MessageDetailHtmlViewModel> htmlViewModelFactory,
+            Func<MessageDetailRawViewModel> rawViewModelFactory,
+            Func<MessageDetailHeaderViewModel> headerViewModelFactory,
+            Func<MessageDetailBodyViewModel> bodyViewModelFactory,
             MimeMessageLoader mimeMessageLoader)
         {
             _mimeMessageLoader = mimeMessageLoader;
 
             PartsListViewModel = partsListViewModelFactory();
-            HtmlViewModel = messagesViewModelFactory();
-            RawViewModel = messageDetailRawViewModel();
+            HtmlViewModel = htmlViewModelFactory();
+            RawViewModel = rawViewModelFactory();
+            HeaderViewModel = headerViewModelFactory();
+            BodyViewModel = bodyViewModelFactory();
 
             Items.Add(HtmlViewModel);
+            Items.Add(HeaderViewModel);
+            Items.Add(BodyViewModel);
             Items.Add(PartsListViewModel);
             Items.Add(RawViewModel);
         }
@@ -146,16 +141,6 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string Headers
-        {
-            get { return _headers; }
-            set
-            {
-                _headers = value;
-                NotifyOfPropertyChange(() => Headers);
-            }
-        }
-
         public string TextBody
         {
             get { return _textBody; }
@@ -173,16 +158,6 @@ namespace Papercut.ViewModels
             {
                 _isLoading = value;
                 NotifyOfPropertyChange(() => IsLoading);
-            }
-        }
-
-        public string Body
-        {
-            get { return _body; }
-            set
-            {
-                _body = value;
-                NotifyOfPropertyChange(() => Body);
             }
         }
 
@@ -238,6 +213,10 @@ namespace Papercut.ViewModels
 
         public MessageDetailRawViewModel RawViewModel { get; private set; }
 
+        public MessageDetailHeaderViewModel HeaderViewModel { get; private set; }
+
+        public MessageDetailBodyViewModel BodyViewModel { get; private set; }
+
         public void LoadMessageEntry(MessageEntry messageEntry)
         {
             if (_loadingDisposable != null)
@@ -271,11 +250,11 @@ namespace Papercut.ViewModels
         {
             if (mailMessageEx != null)
             {
-                Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
+                HeaderViewModel.Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
 
                 var parts = mailMessageEx.BodyParts.ToList();
                 var mainBody = parts.GetMainBodyTextPart();
-                Body = mainBody.Text;
+                BodyViewModel.Body = mainBody.Text;
 
                 From = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
                 To = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
@@ -310,7 +289,7 @@ namespace Papercut.ViewModels
                 IsHtml = false;
                 HtmlFile = null;
                 TextBody = null;
-                Body = null;
+                BodyViewModel.Body = null;
             }
 
             SelectedTabIndex = 0;

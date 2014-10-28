@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.ViewModels
 {
@@ -22,7 +22,6 @@ namespace Papercut.ViewModels
     using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.IO;
-    using System.Linq;
     using System.Threading;
     using System.Windows;
 
@@ -39,15 +38,15 @@ namespace Papercut.ViewModels
 
     public class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
     {
-        readonly ILogger _logger;
-
-        readonly IViewModelWindowManager _viewModelWindowManager;
-
         bool _hasSelectedPart;
 
         MimeMessage _mimeMessage;
 
         MimePart _selectedPart;
+
+        readonly ILogger _logger;
+
+        readonly IViewModelWindowManager _viewModelWindowManager;
 
         public MessageDetailPartsListViewModel(IViewModelWindowManager viewModelWindowManager, ILogger logger)
         {
@@ -109,9 +108,7 @@ namespace Papercut.ViewModels
                 string tempFileName;
 
                 if (part.FileName.IsSet())
-                {
                     tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), part.FileName);
-                }
                 else
                 {
                     tempFileName = Path.GetTempFileName();
@@ -182,7 +179,7 @@ namespace Papercut.ViewModels
         void RefreshParts()
         {
             Parts.Clear();
-            Parts.AddRange(MimeMessage.BodyParts.ToList());
+            Parts.AddRange(MimeMessage.BodyParts);
         }
     }
 }

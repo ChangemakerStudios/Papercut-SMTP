@@ -70,7 +70,7 @@ namespace Papercut.ViewModels
         public MimeMessage CurrentMailMessage { get; private set; }
 
         public string CurrentLoadedMessageId { get; private set; }
-
+        
         protected override void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
@@ -83,8 +83,9 @@ namespace Papercut.ViewModels
                 return;
             }
 
-            this.GetPropertyValues(p => p.Raw).Subscribe(t =>
-            { typedView.rawEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
+            this.GetPropertyValues(p => p.Raw)
+                .Subscribe(
+                    t => { typedView.rawEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
         }
 
         protected override void OnActivate()

@@ -66,29 +66,6 @@
             </Grid>
         </StackPanel>
         <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}" Name="Items">
-            <!--<TabItem Header="Message">
-                <ContentControl x:Name="HtmlViewModel" VerticalAlignment="Stretch"
-                                HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1"
-                                Visibility="{Binding Path=IsLoading, Converter={StaticResource CollapsedIfTrue}}" />
-            </TabItem>
-            <TabItem Header="Header">
-                <TextBox Name="Headers" IsReadOnly="True" HorizontalScrollBarVisibility="Auto"
-                         Width="Auto" Height="Auto"
-                         VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
-            </TabItem>
-            <TabItem Header="Sections" Name="partsViewTab">
-                <ContentControl Grid.Column="2" x:Name="PartsListViewModel" VerticalAlignment="Stretch"
-                                HorizontalAlignment="Stretch" />
-            </TabItem>
-            <TabItem Header="Body" Name="bodyViewTab">
-                <TextBox Name="Body" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Width="Auto" Height="Auto"
-                         VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
-            </TabItem>
-            <TabItem Header="Raw" Name="rawViewTab">
-                <ContentControl x:Name="RawViewModel" VerticalAlignment="Stretch"
-                                HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1"
-                                Visibility="{Binding Path=IsLoading, Converter={StaticResource CollapsedIfTrue}}" />
-            </TabItem>-->            
         </TabControl>
     </Grid>
 </UserControl>

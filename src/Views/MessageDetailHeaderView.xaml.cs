@@ -20,11 +20,11 @@ namespace Papercut.Views
     using System.Windows.Controls;
 
     /// <summary>
-    /// Interaction logic for MessageDetailRawView.xaml
+    ///     Interaction logic for MessageDetailHeaderView.xaml
     /// </summary>
-    public partial class MessageDetailRawView : UserControl
+    public partial class MessageDetailHeaderView : UserControl
     {
-        public MessageDetailRawView()
+        public MessageDetailHeaderView()
         {
             InitializeComponent();
         }

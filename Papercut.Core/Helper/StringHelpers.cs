@@ -19,6 +19,8 @@
 namespace Papercut.Core.Helper
 {
     using System;
+    using System.Globalization;
+    using System.Threading;
 
     using Papercut.Core.Annotations;
 
@@ -38,6 +40,16 @@ namespace Papercut.Core.Helper
         public static bool IsSet([CanBeNull] this string str)
         {
             return !string.IsNullOrWhiteSpace(str);
+        }
+
+        public static string ToTitleCase([CanBeNull] this string str, CultureInfo culture = null)
+        {
+            if (str.IsNullOrWhiteSpace())
+            {
+                return str;
+            }
+
+            return (culture ?? Thread.CurrentThread.CurrentCulture).TextInfo.ToTitleCase(str);
         }
 
         public static bool IsNullOrWhiteSpace([CanBeNull] this string str)

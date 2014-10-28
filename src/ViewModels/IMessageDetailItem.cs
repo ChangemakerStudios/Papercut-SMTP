@@ -15,18 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Views
+namespace Papercut.ViewModels
 {
-    using System.Windows.Controls;
-
-    /// <summary>
-    /// Interaction logic for MessageDetailRawView.xaml
-    /// </summary>
-    public partial class MessageDetailRawView : UserControl
+    public interface IMessageDetailItem
     {
-        public MessageDetailRawView()
-        {
-            InitializeComponent();
-        }
     }
 }

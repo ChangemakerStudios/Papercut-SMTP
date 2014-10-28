@@ -274,11 +274,20 @@
     <Compile Include="Events\ShowBallonTip.cs" />
     <Compile Include="Helpers\UIHelper.cs" />
     <Compile Include="ViewModels\ForwardViewModel.cs" />
+    <Compile Include="ViewModels\IMessageDetailItem.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Events\ShowMainWindowEvent.cs" />
+    <Compile Include="ViewModels\MessageDetailBodyViewModel.cs" />
+    <Compile Include="ViewModels\MessageDetailHeaderViewModel.cs" />
     <Compile Include="ViewModels\MessageDetailRawViewModel.cs" />
+    <Compile Include="Views\MessageDetailBodyView.xaml.cs">
+      <DependentUpon>MessageDetailBodyView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MessageDetailRawView.xaml.cs">
       <DependentUpon>MessageDetailRawView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MessageDetailHeaderView.xaml.cs">
+      <DependentUpon>MessageDetailHeaderView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RulesConfigurationView.xaml.cs">
       <DependentUpon>RulesConfigurationView.xaml</DependentUpon>
@@ -287,11 +296,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\MessageDetailBodyView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MessageDetailRawView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MessageDetailHtmlView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MessageDetailHeaderView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -10,14 +10,14 @@
     <i:Interaction.Behaviors>
         <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />
     </i:Interaction.Behaviors>             
-	<Grid>
-		<Border BorderBrush="LightGray" BorderThickness="1">
-			<avalonEdit:TextEditor
-				xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
-				Name="rawEdit"
+    <Grid>
+        <Border BorderBrush="LightGray" BorderThickness="1">
+            <avalonEdit:TextEditor
+                xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+                Name="rawEdit"
                 Padding="4"
-				FontFamily="Consolas"
-				FontSize="9pt" IsReadOnly="True" />
-		</Border>
-	</Grid>
+                FontFamily="Consolas"
+                FontSize="9pt" IsReadOnly="True" />
+        </Border>
+    </Grid>
 </UserControl>
