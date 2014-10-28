@@ -94,7 +94,7 @@ namespace Papercut.ViewModels
             {
                 IsLoading = true;
 
-                Observable.Start(() => CurrentMailMessage.GetStringDump(), TaskPoolScheduler.Default)
+                Observable.Start(() => CurrentMailMessage.GetStringDump())
                     .ObserveOnDispatcher()
                     .Subscribe(h =>
                     {
