@@ -266,12 +266,9 @@ namespace Papercut.ViewModels
                 IsHtml = mainBody.IsContentHtml();
 
                 HtmlViewModel.ShowMessage(mailMessageEx);
-
-                RawViewModel.LoadMessage(mailMessageEx);
-
                 AttachmentCount = parts.GetAttachments().Count();
-
                 PartsListViewModel.MimeMessage = mailMessageEx;
+                RawViewModel.MimeMessage = mailMessageEx;
 
                 if (IsHtml)
                 {
@@ -289,7 +286,11 @@ namespace Papercut.ViewModels
                 IsHtml = false;
                 HtmlFile = null;
                 TextBody = null;
+
+                HtmlViewModel.HtmlFile = null;
+                HeaderViewModel.Headers = null;
                 BodyViewModel.Body = null;
+                PartsListViewModel.MimeMessage = null;
             }
 
             SelectedTabIndex = 0;

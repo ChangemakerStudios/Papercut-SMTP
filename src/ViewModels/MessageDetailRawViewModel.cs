@@ -37,6 +37,12 @@ namespace Papercut.ViewModels
     {
         bool _isLoading;
 
+        bool _messageLoaded;
+
+        IDisposable _messageLoader;
+
+        MimeMessage _mimeMessage;
+
         string _raw;
 
         readonly ILogger _logger;
@@ -57,6 +63,23 @@ namespace Papercut.ViewModels
             }
         }
 
+        public MimeMessage MimeMessage
+        {
+            get { return _mimeMessage; }
+            set
+            {
+                _mimeMessage = value;
+                NotifyOfPropertyChange(() => MimeMessage);
+                MessageLoaded = false;
+            }
+        }
+
+        public bool MessageLoaded
+        {
+            get { return _messageLoaded; }
+            set { _messageLoaded = value; }
+        }
+
         public bool IsLoading
         {
             get { return _isLoading; }
@@ -67,10 +90,30 @@ namespace Papercut.ViewModels
             }
         }
 
-        public MimeMessage CurrentMailMessage { get; private set; }
+        void RefreshDump()
+        {
+            if (MessageLoaded)
+                return;
 
-        public string CurrentLoadedMessageId { get; private set; }
-        
+            IsLoading = true;
+
+            if (_messageLoader != null)
+            {
+                _messageLoader.Dispose();
+                _messageLoader = null;
+            }
+
+            _messageLoader =
+                Observable.Start(() => _mimeMessage.GetStringDump(), TaskPoolScheduler.Default)
+                    .SubscribeOnDispatcher()
+                    .Subscribe(h =>
+                    {
+                        Raw = h;
+                        MessageLoaded = true;
+                        IsLoading = false;
+                    });
+        }
+
         protected override void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
@@ -90,29 +133,8 @@ namespace Papercut.ViewModels
 
         protected override void OnActivate()
         {
-            if (CurrentMailMessage != null && CurrentLoadedMessageId != CurrentMailMessage.MessageId)
-            {
-                IsLoading = true;
-
-                Observable.Start(() => CurrentMailMessage.GetStringDump())
-                    .ObserveOnDispatcher()
-                    .Subscribe(h =>
-                    {
-                        IsLoading = false;
-                        CurrentLoadedMessageId = CurrentMailMessage.MessageId;
-                        Raw = h;
-                    });
-            }
-
+            RefreshDump();
             base.OnActivate();
-        }
-
-        public void LoadMessage(MimeMessage mailMessageEx)
-        {
-            if (mailMessageEx == null)
-                throw new ArgumentNullException("mailMessageEx");
-
-            CurrentMailMessage = mailMessageEx;
         }
     }
 }
