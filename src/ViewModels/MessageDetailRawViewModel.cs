@@ -77,7 +77,14 @@ namespace Papercut.ViewModels
         public bool MessageLoaded
         {
             get { return _messageLoaded; }
-            set { _messageLoaded = value; }
+            set
+            {
+                _messageLoaded = value;
+                if (!_messageLoaded)
+                {
+                    Raw = null;
+                }
+            }
         }
 
         public bool IsLoading
@@ -104,13 +111,13 @@ namespace Papercut.ViewModels
             }
 
             _messageLoader =
-                Observable.Start(() => _mimeMessage.GetStringDump(), TaskPoolScheduler.Default)
-                    .SubscribeOnDispatcher()
+                Observable.Start(() => _mimeMessage.GetStringDump())
+                    .SubscribeOn(TaskPoolScheduler.Default)
+                    .ObserveOnDispatcher()
                     .Subscribe(h =>
                     {
                         Raw = h;
                         MessageLoaded = true;
-                        IsLoading = false;
                     });
         }
 
@@ -127,8 +134,12 @@ namespace Papercut.ViewModels
             }
 
             this.GetPropertyValues(p => p.Raw)
-                .Subscribe(
-                    t => { typedView.rawEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
+                .ObserveOnDispatcher()
+                .Subscribe(s =>
+                {
+                    typedView.rawEdit.Document = new TextDocument(new StringTextSource(s ?? string.Empty));
+                    IsLoading = false;
+                });
         }
 
         protected override void OnActivate()

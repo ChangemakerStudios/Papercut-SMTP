@@ -71,9 +71,7 @@
           ShowGridLines="False" Width="Auto">
         <Grid x:Name="Overlay" Panel.ZIndex="1000"
               Visibility="{Binding IsDeactivated,Converter={StaticResource CollapsedIfFalse}}">
-            <Grid.Background>
-                <SolidColorBrush Color="White" Opacity=".25" />
-            </Grid.Background>
+            <controls:ProgressRing IsActive="True" />
         </Grid>
         <Grid>
             <Grid.RowDefinitions>
