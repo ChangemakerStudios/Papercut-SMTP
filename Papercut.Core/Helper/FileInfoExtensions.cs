@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Core.Helper
 {
@@ -26,20 +26,20 @@ namespace Papercut.Core.Helper
         {
             if (file == null) throw new ArgumentNullException("file");
 
+            FileStream fileStream = null;
+
             try
             {
-                using (
-                    FileStream fileStream = file.Open(
-                        FileMode.Open,
-                        FileAccess.ReadWrite,
-                        FileShare.None))
-                {
-                    fileStream.Close();
-                }
+                fileStream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                fileStream = null;
             }
             catch (IOException)
             {
                 return false;
+            }
+            finally
+            {
+                if (fileStream != null) fileStream.Dispose();
             }
 
             return true;
@@ -50,24 +50,27 @@ namespace Papercut.Core.Helper
             if (file == null) throw new ArgumentNullException("file");
 
             fileBytes = null;
+            FileStream fileStream = null;
 
             try
             {
-                using (FileStream fileStream = file.OpenRead())
+                fileStream = file.OpenRead();
+                using (var ms = new MemoryStream())
                 {
-                    using (var ms = new MemoryStream())
-                    {
-                        fileStream.CopyTo(ms);
-                        fileBytes = ms.ToArray();
-                    }
-
-                    fileStream.Close();
+                    fileStream.CopyTo(ms);
+                    fileBytes = ms.ToArray();
+                    fileStream = null;
                 }
             }
             catch (IOException)
             {
                 // the file is unavailable because it is still being written by another thread or process
                 return false;
+            }
+            finally
+            {
+                if (fileStream != null)
+                    fileStream.Dispose();
             }
 
             return true;

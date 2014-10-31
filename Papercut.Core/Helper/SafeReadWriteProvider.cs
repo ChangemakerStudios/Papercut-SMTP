@@ -89,10 +89,18 @@ namespace Papercut.Core.Helper
                 }
             }
         }
-
         public void Dispose()
         {
-            _slimLock.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _slimLock.Dispose();
+            }
         }
     }
 }

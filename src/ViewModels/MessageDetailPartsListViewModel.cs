@@ -123,7 +123,6 @@ namespace Papercut.ViewModels
                     using (FileStream outputFile = File.Open(tempFileName, FileMode.Create))
                     {
                         part.ContentObject.DecodeTo(outputFile);
-                        outputFile.Close();
                     }
 
                     Process.Start(tempFileName);
@@ -171,7 +170,6 @@ namespace Papercut.ViewModels
                 using (Stream outputFile = dlg.OpenFile())
                 {
                     part.ContentObject.DecodeTo(outputFile);
-                    outputFile.Close();
                 }
             }
         }

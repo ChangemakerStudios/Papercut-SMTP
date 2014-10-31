@@ -35,13 +35,12 @@ namespace Papercut.Helpers
     {
         const string PreviewFilePrefix = "Papercut-";
 
-        const string BodyContentsDisableContextMenu =
-            @"<body${contents} oncontextmenu=""return false;"">";
+        const string BodyContentsDisableContextMenu = @"<body${contents} oncontextmenu=""return false;"">";
 
         const string HtmlBodyPattern = @"\<body(?<contents>[^\<]*?)\>";
 
-        static readonly Regex _htmlBodyReplaceRegex =
-            new Regex(HtmlBodyPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static readonly Regex _htmlBodyReplaceRegex = new Regex(HtmlBodyPattern,
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         internal static int TryCleanUpTempFiles(ILogger logger = null)
         {
@@ -53,11 +52,7 @@ namespace Papercut.Helpers
             // try cleanup...
             try
             {
-                string[] tmpFiles = Directory.GetFiles(
-                    tempPath,
-                    string.Format(
-                        "{0}*.html",
-                        PreviewFilePrefix));
+                string[] tmpFiles = Directory.GetFiles(tempPath, string.Format("{0}*.html", PreviewFilePrefix));
 
                 foreach (string tmpFile in tmpFiles)
                 {
@@ -81,11 +76,7 @@ namespace Papercut.Helpers
             }
 
             if (deleteCount > 0)
-            {
-                logger.Information(
-                    "Deleted {DeleteCount} temp files",
-                    deleteCount);
-            }
+                logger.Information("Deleted {DeleteCount} temp files", deleteCount);
 
             return deleteCount;
         }
@@ -97,10 +88,7 @@ namespace Papercut.Helpers
             var replaceEmbeddedImageFormats = new[] { @"cid:{0}", @"cid:'{0}'", @"cid:""{0}""" };
 
             string tempPath = Path.GetTempPath();
-            string tempFileName = string.Format(
-                "{0}{1}.html",
-                PreviewFilePrefix,
-                mailMessageEx.GetHashCode());
+            string tempFileName = string.Format("{0}{1}.html", PreviewFilePrefix, mailMessageEx.GetHashCode());
 
             string htmlFile = Path.Combine(tempPath, tempFileName);
 
@@ -121,21 +109,18 @@ namespace Papercut.Helpers
                 htmlText = UIStrings.MarkOfTheWeb + string.Format(UIStrings.HtmlFormatWrapper, htmlText);
             }
 
-            foreach (
-                MimePart image in
-                    mimeParts.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
+            foreach (MimePart image in mimeParts.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
             {
                 string fileName = Path.Combine(tempPath, image.ContentId);
-                using (FileStream fs = File.OpenWrite(fileName))
+
+                using (var fileStream = File.OpenWrite(fileName))
+                using (var content = image.ContentObject.Open())
                 {
-                    using (Stream content = image.ContentObject.Open()) content.CopyBufferedTo(fs);
-                    fs.Close();
+                    content.CopyBufferedTo(fileStream);
                 }
 
-                htmlText = replaceEmbeddedImageFormats.Aggregate(
-                    htmlText,
-                    (current, format) =>
-                    current.Replace(string.Format(format, image.ContentId), image.ContentId));
+                htmlText = replaceEmbeddedImageFormats.Aggregate(htmlText,
+                    (current, format) => current.Replace(string.Format(format, image.ContentId), image.ContentId));
             }
 
             File.WriteAllText(htmlFile, htmlText, Encoding.Unicode);

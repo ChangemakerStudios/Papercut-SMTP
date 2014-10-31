@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Core.Network
 {
@@ -51,7 +51,20 @@ namespace Papercut.Core.Network
 
         public void Dispose()
         {
-            Client.Close();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (Client != null)
+                {
+                    Client.Close();
+                    Client = null;
+                }
+            }
         }
 
         public bool ExchangeEventServer<TEvent>(ref TEvent @event) where TEvent : IDomainEvent
@@ -89,7 +102,6 @@ namespace Papercut.Core.Network
                     }
 
                     stream.Flush();
-                    stream.Close();
 
                     return isSuccessful;
                 }
@@ -124,7 +136,6 @@ namespace Papercut.Core.Network
                         ProtocolCommandType.Publish);
 
                     stream.Flush();
-                    stream.Close();
 
                     return isSuccessful;
                 }

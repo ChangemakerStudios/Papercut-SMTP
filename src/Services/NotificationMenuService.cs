@@ -45,10 +45,19 @@ namespace Papercut.Services
 
         public void Dispose()
         {
-            if (_notification != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                _notification.Dispose();
-                _notification = null;
+                if (_notification != null)
+                {
+                    _notification.Dispose();
+                    _notification = null;
+                }
             }
         }
 

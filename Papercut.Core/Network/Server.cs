@@ -108,17 +108,31 @@ namespace Papercut.Core.Network
 
         public void Dispose()
         {
-            try
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                Stop();
-                CleanupListener();
-                ConnectionManager.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Logger.Warning(ex, "Exception Disposing Server Instance");
+                try
+                {
+                    Stop();
+                    CleanupListener();
+                    if (ConnectionManager != null)
+                    {
+                        ConnectionManager.Dispose();
+                        ConnectionManager = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning(ex, "Exception Disposing Server Instance");
+                }
             }
         }
+
 
         protected void CleanupListener()
         {

@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Core.Message
 {
@@ -47,22 +47,29 @@ namespace Papercut.Core.Message
 
         public void Dispose()
         {
-            foreach (FileSystemWatcher watch in _watchers)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                DisposeWatch(watch);
+                foreach (FileSystemWatcher watch in _watchers)
+                {
+                    if (watch != null)
+                        DisposeWatch(watch);
+                }
             }
         }
 
         void OnRefreshLoadPaths(object sender, EventArgs eventArgs)
         {
             List<string> existingPaths = _watchers.Select(s => s.Path).ToList();
-            List<string> removePaths =
-                existingPaths.Except(_messagePathConfigurator.LoadPaths).ToList();
-            List<string> addPaths =
-                _messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
+            List<string> removePaths = existingPaths.Except(_messagePathConfigurator.LoadPaths).ToList();
+            List<string> addPaths = _messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
 
-            foreach (FileSystemWatcher watch in
-                _watchers.Where(s => removePaths.Contains(s.Path)).ToList())
+            foreach (FileSystemWatcher watch in _watchers.Where(s => removePaths.Contains(s.Path)).ToList())
             {
                 DisposeWatch(watch);
                 _watchers.Remove(watch);
@@ -151,8 +158,7 @@ namespace Papercut.Core.Message
                     }
 
                     return info;
-                })
-                .ContinueWith(r => OnNewMessage(new NewMessageEventArgs(new MessageEntry(r.Result))));
+                }).ContinueWith(r => OnNewMessage(new NewMessageEventArgs(new MessageEntry(r.Result))));
         }
 
         public event EventHandler<NewMessageEventArgs> NewMessage;

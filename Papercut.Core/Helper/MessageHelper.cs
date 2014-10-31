@@ -41,7 +41,6 @@ namespace Papercut.Core.Helper
                 mimeMessage.WriteTo(FormatOptions.Default, ms);
                 ms.Seek(0, SeekOrigin.Begin);
                 var clonedMessage = MimeMessage.Load(ParserOptions.Default, ms);
-                ms.Close();
 
                 return clonedMessage;
             }
@@ -57,7 +56,7 @@ namespace Papercut.Core.Helper
                 mimeMessage.WriteTo(FormatOptions.Default, ms);
                 ms.Seek(0, SeekOrigin.Begin);
                 var mail = ms.ToArray();
-                ms.Close();
+
                 return Encoding.ASCII.GetString(mail, 0, mail.Length);
             }
         }

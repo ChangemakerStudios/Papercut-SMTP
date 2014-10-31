@@ -31,12 +31,20 @@ namespace Papercut.Core.Network
         {
             TOut output;
 
-            using (var networkStream = new NetworkStream(socket, false))
+            NetworkStream networkStream = null;
+            try
             {
+                networkStream = new NetworkStream(socket, false);
                 using (var reader = new StreamReader(networkStream))
                 {
+                    networkStream = null;
                     output = read(reader);
                 }
+            }
+            finally
+            {
+                if (networkStream != null)
+                    networkStream.Dispose();
             }
 
             return output;

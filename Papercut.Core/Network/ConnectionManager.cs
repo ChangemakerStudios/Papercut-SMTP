@@ -54,22 +54,31 @@ namespace Papercut.Core.Network
 
         public void Dispose()
         {
-            try
-            {
-                CloseAll();
-            }
-            catch (Exception ex)
-            {
-                Logger.Warning(ex, "Exception Calling CloseAll");
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            try
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                _disposables.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Logger.Warning(ex, "Exception Calling Disposable.Dispose");
+                try
+                {
+                    CloseAll();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning(ex, "Exception Calling CloseAll");
+                }
+
+                try
+                {
+                    _disposables.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning(ex, "Exception Calling Disposable.Dispose");
+                }
             }
         }
 

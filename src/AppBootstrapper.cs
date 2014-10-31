@@ -22,12 +22,14 @@ namespace Papercut
 {
     using System;
     using System.Collections.Generic;
+    using System.Management.Instrumentation;
     using System.Windows;
 
     using Autofac;
 
     using Caliburn.Micro;
 
+    using Papercut.Core.Annotations;
     using Papercut.ViewModels;
 
     public class AppBootstrapper : Bootstrapper<MainViewModel>
@@ -74,9 +76,11 @@ namespace Papercut
                     .MakeGenericType(new Type[] { service })) as IEnumerable<object>;
         }
 
-        protected override object GetInstance(Type service, string key)
+        protected override object GetInstance([NotNull] Type service, string named = null)
         {
-            if (string.IsNullOrWhiteSpace(key))
+            if (service == null) throw new ArgumentNullException("service");
+
+            if (string.IsNullOrWhiteSpace(named))
             {
                 object result;
                 if (Container.TryResolve(service, out result)) return result;
@@ -84,10 +88,10 @@ namespace Papercut
             else
             {
                 object result;
-                if (Container.TryResolveNamed(key, service, out result)) return result;
+                if (Container.TryResolveNamed(named, service, out result)) return result;
             }
 
-            throw new Exception(string.Format("Could not locate any instances of contract {0}.", key ?? service.Name));
+            throw new InstanceNotFoundException(string.Format("Could not locate any instances of contract {0}.", named ?? service.Name));
         }
 
         protected override void BuildUp(object instance)

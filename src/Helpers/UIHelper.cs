@@ -26,8 +26,7 @@ namespace Papercut.Helpers
 
     public static class UIHelper
     {
-        public static T GetObjectDataFromPoint<T>([NotNull] this ListBox source, Point point)
-            where T : class
+        public static object GetObjectDataFromPoint([NotNull] this ListBox source, Point point)
         {
             if (source == null) throw new ArgumentNullException("source");
 
@@ -50,7 +49,7 @@ namespace Papercut.Helpers
                 if (Equals(element, source)) return null;
             }
 
-            return data as T;
+            return data;
         }
 
         public static T FindAncestor<T>(this DependencyObject dependencyObject)

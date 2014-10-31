@@ -35,9 +35,8 @@ namespace Papercut.Helpers
         {
             var ips = new List<string>();
 
-            using (
-                ManagementObjectCollection mgtObjects =
-                    new ManagementObjectSearcher(NetworkAdapterQuery).Get())
+            using (var managementObjectSearcher = new ManagementObjectSearcher(NetworkAdapterQuery))
+            using (var mgtObjects = managementObjectSearcher.Get())
             {
                 IEnumerable<PropertyData> addresses =
                     mgtObjects.OfType<ManagementObject>()

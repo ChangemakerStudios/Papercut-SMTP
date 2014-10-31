@@ -63,7 +63,7 @@ namespace Papercut.Behaviors
             if (potentialDragLength.Length > 10)
             {
                 // Get the object source for the selected item
-                var entry = parent.GetObjectDataFromPoint<IFile>(_dragStartPoint.Value);
+                var entry = parent.GetObjectDataFromPoint(_dragStartPoint.Value) as IFile;
 
                 // If the data is not null then start the drag drop operation
                 if (entry != null && !string.IsNullOrWhiteSpace(entry.File))

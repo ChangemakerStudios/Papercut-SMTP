@@ -48,14 +48,17 @@ namespace Papercut.Helpers
 
             var parsedTemplate = _parsedCache.GetOrAdd(templateString,
                 t =>
-                Tuple.Create(VailEngine.CompileNonGeneric("handlebars", new StringReader(templateString), modelType)));
+                {
+                    using (var sr = new StringReader(templateString))
+                        return Tuple.Create(VailEngine.CompileNonGeneric("handlebars", sr, modelType));
+                });
 
             return parsedTemplate.Item1;
         }
 
         public static string RenderTemplate([NotNull] this string template, [NotNull] object model)
         {
-            if (template == null) throw new ArgumentNullException("templateRender");
+            if (template == null) throw new ArgumentNullException("template");
             if (model == null) throw new ArgumentNullException("model");
 
             using (var writer = new StringWriter())

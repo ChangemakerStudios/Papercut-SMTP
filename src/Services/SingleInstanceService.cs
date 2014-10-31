@@ -42,13 +42,22 @@ namespace Papercut.Services
 
         public void Dispose()
         {
-            try
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                _appMutex.Close();
-                _appMutex.Dispose();
-            }
-            catch
-            {
+                try
+                {
+                    if (_appMutex != null)
+                        _appMutex.Dispose();
+                }
+                catch
+                {
+                }
             }
         }
 

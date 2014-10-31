@@ -118,7 +118,7 @@ namespace Papercut.ViewModels
             try
             {
                 // disable the stupid click sound on navigate
-                CoInternetSetFeatureEnabled(Feature, SetFeatureOnProcess, true);
+                var enabled = CoInternetSetFeatureEnabled(Feature, SetFeatureOnProcess, true);
             }
             catch (Exception ex)
             {
