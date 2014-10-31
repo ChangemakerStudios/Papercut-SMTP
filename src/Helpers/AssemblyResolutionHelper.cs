@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Helpers
 {
@@ -118,12 +118,16 @@ namespace Papercut.Helpers
                 EventLog.WriteEntry("Papercut", loadingException, EventLogEntryType.Error);
             }
             catch (Exception)
-            { }
+            {
+            }
         }
 
-        public static Tuple<Assembly, string> FindResource(AssemblyName asmName, string[] validExtensions, IList<Tuple<Assembly, string[]>> searchAssemblies)
+        public static Tuple<Assembly, string> FindResource(AssemblyName asmName,
+            string[] validExtensions,
+            IList<Tuple<Assembly, string[]>> searchAssemblies)
         {
-            List<string> possibleResourceNames = validExtensions.Select(ext => string.Format("{0}{1}", asmName.Name, ext)).ToList();
+            List<string> possibleResourceNames =
+                validExtensions.Select(ext => string.Format("{0}{1}", asmName.Name, ext)).ToList();
 
             return searchAssemblies.Select(
                 assembly =>

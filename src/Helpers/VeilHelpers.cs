@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Helpers
 {
@@ -42,12 +42,13 @@ namespace Papercut.Helpers
             get { return _lazyVailEngine.Value; }
         }
 
-        private static Action<TextWriter, object> GetCompiledTemplate([NotNull] string templateString, Type modelType)
+        static Action<TextWriter, object> GetCompiledTemplate([NotNull] string templateString, Type modelType)
         {
             if (templateString == null) throw new ArgumentNullException("templateString");
 
             var parsedTemplate = _parsedCache.GetOrAdd(templateString,
-                t => Tuple.Create(VailEngine.CompileNonGeneric("handlebars", new StringReader(templateString), modelType)));
+                t =>
+                Tuple.Create(VailEngine.CompileNonGeneric("handlebars", new StringReader(templateString), modelType)));
 
             return parsedTemplate.Item1;
         }

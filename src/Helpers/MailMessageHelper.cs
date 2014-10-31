@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Helpers
 {
@@ -112,7 +112,8 @@ namespace Papercut.Helpers
             if (mainBodyTextPart.IsContentHtml())
             {
                 // add the mark of the web plus the html text
-                htmlText = UIStrings.MarkOfTheWeb + _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
+                htmlText = UIStrings.MarkOfTheWeb
+                           + _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
             }
             else
             {

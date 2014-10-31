@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Services
 {
@@ -27,7 +27,6 @@ namespace Papercut.Services
     using Papercut.Core.Events;
     using Papercut.Core.Network;
     using Papercut.Events;
-    using Papercut.Helpers;
     using Papercut.Properties;
 
     using Serilog;
@@ -37,11 +36,11 @@ namespace Papercut.Services
         IHandleEvent<SettingsUpdatedEvent>,
         INotifyPropertyChanged
     {
-        readonly Func<ServerProtocolType, IServer> _serverFactory;
-
         readonly ILogger _logger;
 
         readonly IPublishEvent _publishEvent;
+
+        readonly Func<ServerProtocolType, IServer> _serverFactory;
 
         readonly Lazy<IServer> _smtpServer;
 
@@ -83,13 +82,9 @@ namespace Papercut.Services
                 if (args.PropertyName == "StmpServerEnabled")
                 {
                     if (SmtpServerEnabled && !_smtpServer.Value.IsActive)
-                    {
                         ListenSmtpServer();
-                    }
                     else if (!SmtpServerEnabled && _smtpServer.Value.IsActive)
-                    {
                         _smtpServer.Value.Stop();
-                    }
                 }
             };
         }
@@ -109,8 +104,8 @@ namespace Papercut.Services
                 TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
                 .Subscribe(
-                    (b) => { },
-                    (ex) =>
+                    b => { },
+                    ex =>
                     {
                         _logger.Warning(
                             ex,

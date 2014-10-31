@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Services
 {
@@ -54,8 +54,8 @@ namespace Papercut.Services
                 TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
                 .Subscribe(
-                    (b) => { },
-                    (ex) => _logger.Warning(
+                    b => { },
+                    ex => _logger.Warning(
                         ex,
                         "Papercut Protocol failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
                         PapercutClient.Localhost,

@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Helpers
 {
@@ -43,7 +43,8 @@ namespace Papercut.Helpers
                 data = source.ItemContainerGenerator.ItemFromContainer(element);
 
                 // Get the parent and we will iterate again
-                if (data == DependencyProperty.UnsetValue && element != null) element = VisualTreeHelper.GetParent(element) as UIElement;
+                if (data == DependencyProperty.UnsetValue && element != null)
+                    element = VisualTreeHelper.GetParent(element) as UIElement;
 
                 // If we reach the actual listbox then we must break to avoid an infinite loop
                 if (Equals(element, source)) return null;

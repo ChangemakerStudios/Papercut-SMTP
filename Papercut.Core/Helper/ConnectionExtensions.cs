@@ -36,10 +36,7 @@ namespace Papercut.Core.Network
                 using (var reader = new StreamReader(networkStream))
                 {
                     output = read(reader);
-                    reader.Close();
                 }
-
-                networkStream.Close();
             }
 
             return output;

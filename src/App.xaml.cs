@@ -1,22 +1,19 @@
-﻿/*  
- * Papercut
- *
- *  Copyright © 2008 - 2012 Ken Robertson
- *  Copyright © 2013 - 2014 Jaben Cargman
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *  
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  
- */
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License. 
 
 namespace Papercut
 {
@@ -37,7 +34,7 @@ namespace Papercut
     {
         public const string GlobalName = "Papercut.App";
 
-        public static string ExecutablePath = Assembly.GetExecutingAssembly().Location;
+        public static string ExecutablePath;
 
         Lazy<ILifetimeScope> _lifetimeScope =
             new Lazy<ILifetimeScope>(
@@ -45,6 +42,8 @@ namespace Papercut
 
         static App()
         {
+            ExecutablePath = Assembly.GetExecutingAssembly().Location;
+
             // nothing can be called or loaded before this call is done.
             AssemblyResolutionHelper.SetupEmbeddedAssemblyResolve();
 
@@ -52,22 +51,15 @@ namespace Papercut
             {
                 if (Log.Logger == null) return;
                 if (args.IsTerminating)
-                {
                     Log.Logger.Fatal(args.ExceptionObject as Exception, "Unhandled Exception");
-                }
                 else
-                {
                     Log.Logger.Information(args.ExceptionObject as Exception, "Non-Fatal Unhandled Exception");
-                }
             };
         }
 
         public ILifetimeScope Container
         {
-            get
-            {
-                return _lifetimeScope.Value;
-            }
+            get { return _lifetimeScope.Value; }
         }
 
         protected override void OnStartup(StartupEventArgs e)

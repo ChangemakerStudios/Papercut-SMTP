@@ -20,7 +20,7 @@ namespace Papercut.Core.Helper
     using System;
     using System.Threading;
 
-    public class SafeReadWriteProvider<T>
+    public class SafeReadWriteProvider<T> : IDisposable
         where T : class
     {
         readonly Func<T> _create;
@@ -88,6 +88,11 @@ namespace Papercut.Core.Helper
                     _slimLock.ExitWriteLock();
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            _slimLock.Dispose();
         }
     }
 }
