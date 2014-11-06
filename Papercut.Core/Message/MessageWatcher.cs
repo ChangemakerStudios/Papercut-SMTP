@@ -144,7 +144,7 @@ namespace Papercut.Core.Message
                     var info = new FileInfo(e.FullPath);
                     int retryCount = 0;
 
-                    while (!info.CanOpenFile())
+                    while (!info.CanReadFile())
                     {
                         Thread.Sleep(500);
                         if (++retryCount > 30)

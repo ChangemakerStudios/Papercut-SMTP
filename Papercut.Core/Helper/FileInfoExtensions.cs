@@ -22,13 +22,13 @@ namespace Papercut.Core.Helper
 
     public static class FileInfoExtensions
     {
-        public static bool CanOpenFile(this FileInfo file)
+        public static bool CanReadFile(this FileInfo file)
         {
             if (file == null) throw new ArgumentNullException("file");
 
             try
             {
-                using (var fileStream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     fileStream.Close();
                 }
