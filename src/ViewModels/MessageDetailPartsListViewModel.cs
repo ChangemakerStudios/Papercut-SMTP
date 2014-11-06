@@ -96,6 +96,11 @@ namespace Papercut.ViewModels
         {
             MimePart part = SelectedPart;
 
+            if (part == null)
+            {
+                return;
+            }
+
             if (part is TextPart)
             {
                 var textPart = part as TextPart;
