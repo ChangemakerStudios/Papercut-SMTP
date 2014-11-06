@@ -1,25 +1,25 @@
-From: "Papercut" <Papercut@User.us>
-To: <papercut@papercut.us>
-References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net> <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com> <01a901cf3f29$39dfc8d0$ad9f5a70$@test.me> <024901cfa7bf$29f99b90$7decd2b0$@papercut.us> <000b01cfbf4e$103bc2e0$30b348a0$@Papercut.us>
-In-Reply-To: <000b01cfbf4e$103bc2e0$30b348a0$@Papercut.us>
+From: "Papercut User" <user@papercut.us>
+To: <Papercut@user.com>
+References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net> <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com> <01a901cf3f29$39dfc8d0$ad9f5a70$@test.me> <024901cfa7bf$29f99b90$7decd2b0$@papercut.us> <000b01cfbf4e$103bc2e0$30b348a0$@Papercut.us> <048301cfe5c6$4d112bd0$e7338370$@User.us>
+In-Reply-To: <048301cfe5c6$4d112bd0$e7338370$@User.us>
 Subject: Welcome to Papercut!
-Date: Sat, 11 Oct 2014 22:43:26 -0400
-Message-ID: <048301cfe5c6$4d112bd0$e7338370$@User.us>
+Date: Wed, 5 Nov 2014 22:50:50 -0500
+Message-ID: <022501cff974$db7eda40$927c8ec0$@papercut.us>
 MIME-Version: 1.0
 Content-Type: multipart/related;
-	boundary="----=_NextPart_000_0484_01CFE5A4.C6007630"
+	boundary="----=_NextPart_000_0226_01CFF94A.F2A9BCA0"
 X-Mailer: Microsoft Outlook 15.0
+Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHogFmC3YJAeoq2WkChtkdlADunV07AIqJFaGaitsCAA==
 Content-Language: en-us
-Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHogFmC3YJAeoq2WkChtkdlADunV07mmfTV+A=
 
 This is a multipart message in MIME format.
 
-------=_NextPart_000_0484_01CFE5A4.C6007630
+------=_NextPart_000_0226_01CFF94A.F2A9BCA0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_001_0485_01CFE5A4.C6007630"
+	boundary="----=_NextPart_001_0227_01CFF94A.F2A9BCA0"
 
 
-------=_NextPart_001_0485_01CFE5A4.C6007630
+------=_NextPart_001_0227_01CFF94A.F2A9BCA0
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -27,6 +27,15 @@ Content-Transfer-Encoding: 7bit
 
 
 The Simple Desktop Email Receiver.
+
+
+Papercut v4.3.0.0 [2014-11-05] Release Notes
+
+
+ 
+
+Improvement: "Raw" message view re-added back as a view of the message data
+using AvalonEdit control for speed.
 
 
 Papercut v4.2.1.0 [2014-10-11] Release Notes
@@ -199,52 +208,7 @@ Fixed: fixed crash on start when there is an email with 0 byte.
 Fixed: Issue with email address parsing.
 
 
-Papercut v2013-6-10 Release Notes
-
-
- 
-
-Feature: Shows From, To, Date and Subject of Email. 
-
-Feature: Async UI and loading spinner.
-
-Enhancement: Improved speed when loading large attachments.
-
-Enhancement: Decoupled SMTP server into secondary assembly.
-
-Enhancement: Upgraded to .NET v4.
-
-Fix: Messages lost when received very fast.
-
-Fix: Email encoding issues on display/Automatically detect message Encoding
-
-
-Papercut v2010-3-3 Release Notes
-
-
- 
-
-This release includes a few bug fixes and updates, several of which were
-contributed patches (thanks!).
-
-Feature: Added support for embedded images (patch submitted by jasonpenny)
-
-Enhancement: Show an alert when trying to use port that is already in use
-(Issue #5405)
-
-Enhancement: Don't show the options dialog in the taskbar (patch submitted
-by dukesb11)
-
-Fix: Updates to fix issues with multipart messages (Issue #4959, patched
-submitted by jasonpenny)
-
-Fix: Issue with async networking and not handling a disposed object (patch
-submitted by jasonpenny)
-
-Fix: Out dated URL references (Issue #5457, patch submitted by billrob458)
-
-
-------=_NextPart_001_0485_01CFE5A4.C6007630
+------=_NextPart_001_0227_01CFF94A.F2A9BCA0
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -280,7 +244,7 @@ p.MsoNormal, li.MsoNormal, div.MsoNormal
 	{margin:0in;
 	margin-bottom:.0001pt;
 	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
+	font-family:"Calibri",sans-serif;}
 h1
 	{mso-style-priority:9;
 	mso-style-link:"Heading 1 Char";
@@ -291,7 +255,7 @@ h1
 	margin-bottom:.0001pt;
 	page-break-after:avoid;
 	font-size:16.0pt;
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#2E74B5;
 	font-weight:normal;}
 h2
@@ -304,7 +268,7 @@ h2
 	margin-bottom:.0001pt;
 	page-break-after:avoid;
 	font-size:13.0pt;
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#2E74B5;
 	font-weight:normal;}
 h3
@@ -317,7 +281,7 @@ h3
 	margin-bottom:.0001pt;
 	page-break-after:avoid;
 	font-size:12.0pt;
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#1F4D78;
 	font-weight:normal;}
 h4
@@ -330,7 +294,7 @@ h4
 	margin-bottom:.0001pt;
 	page-break-after:avoid;
 	font-size:11.0pt;
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#2E74B5;
 	font-weight:normal;
 	font-style:italic;}
@@ -344,7 +308,7 @@ h5
 	margin-bottom:.0001pt;
 	page-break-after:avoid;
 	font-size:11.0pt;
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#2E74B5;
 	font-weight:normal;}
 a:link, span.MsoHyperlink
@@ -360,83 +324,87 @@ p.MsoNoSpacing, li.MsoNoSpacing, div.MsoNoSpacing
 	margin:0in;
 	margin-bottom:.0001pt;
 	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
+	font-family:"Calibri",sans-serif;}
 span.Heading1Char
 	{mso-style-name:"Heading 1 Char";
 	mso-style-priority:9;
 	mso-style-link:"Heading 1";
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#2E74B5;}
 span.Heading2Char
 	{mso-style-name:"Heading 2 Char";
 	mso-style-priority:9;
 	mso-style-link:"Heading 2";
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#2E74B5;}
 span.Heading3Char
 	{mso-style-name:"Heading 3 Char";
 	mso-style-priority:9;
 	mso-style-link:"Heading 3";
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#1F4D78;}
 span.Heading4Char
 	{mso-style-name:"Heading 4 Char";
 	mso-style-priority:9;
 	mso-style-link:"Heading 4";
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#2E74B5;
 	font-style:italic;}
 span.Heading5Char
 	{mso-style-name:"Heading 5 Char";
 	mso-style-priority:9;
 	mso-style-link:"Heading 5";
-	font-family:"Calibri Light","sans-serif";
+	font-family:"Calibri Light",sans-serif;
 	color:#2E74B5;}
-span.EmailStyle22
-	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
 span.EmailStyle23
 	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
-	color:#1F497D;}
+	font-family:"Calibri",sans-serif;
+	color:windowtext;}
 span.EmailStyle24
 	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
+	font-family:"Calibri",sans-serif;
 	color:#1F497D;}
 span.EmailStyle25
 	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
+	font-family:"Calibri",sans-serif;
 	color:#1F497D;}
 span.EmailStyle26
 	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
+	font-family:"Calibri",sans-serif;
 	color:#1F497D;}
 span.EmailStyle27
 	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
+	font-family:"Calibri",sans-serif;
+	color:#1F497D;}
+span.EmailStyle28
+	{mso-style-type:personal;
+	font-family:"Calibri",sans-serif;
 	color:windowtext;}
 span.apple-converted-space
 	{mso-style-name:apple-converted-space;}
-span.EmailStyle29
-	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
-	color:#1F497D;}
 span.EmailStyle30
 	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
+	font-family:"Calibri",sans-serif;
 	color:#1F497D;}
 span.EmailStyle31
 	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
+	font-family:"Calibri",sans-serif;
 	color:#1F497D;}
 span.EmailStyle32
 	{mso-style-type:personal;
-	font-family:"Calibri","sans-serif";
+	font-family:"Calibri",sans-serif;
 	color:#1F497D;}
 span.EmailStyle33
+	{mso-style-type:personal;
+	font-family:"Calibri",sans-serif;
+	color:#1F497D;}
+span.EmailStyle34
+	{mso-style-type:personal;
+	font-family:"Calibri",sans-serif;
+	color:#1F497D;}
+span.EmailStyle35
 	{mso-style-type:personal-reply;
-	font-family:"Calibri","sans-serif";
+	font-family:"Calibri",sans-serif;
 	color:#1F497D;}
 .MsoChpDefault
 	{mso-style-type:export-only;
@@ -456,9 +424,13 @@ link=3D"#0563C1" vlink=3D"#954F72"><div class=3DWordSection1><p =
 class=3DMsoNormal><img width=3D232 height=3D50 id=3D"Picture_x0020_1" =
 src=3D"cid:image001.png@01CE6622.AACEBDC0"><i><o:p></o:p></i></p><p =
 class=3DMsoNormal><i><span style=3D'font-size:10.0pt;font-family:"Segoe =
-UI","sans-serif";color:#A6A6A6'>The Simple Desktop Email =
-Receiver.<o:p></o:p></span></i></p><h1>Papercut v4.2.1.0 [2014-10-11] =
+UI",sans-serif;color:#A6A6A6'>The Simple Desktop Email =
+Receiver.<o:p></o:p></span></i></p><h1>Papercut v4.3.0.0 [2014-11-05] =
 Release Notes<o:p></o:p></h1><p =
+class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Improvement: =
+&#8220;Raw&#8221; message view re-added back as a view of the message =
+data using AvalonEdit control for speed.<o:p></o:p></p><h1>Papercut =
+v4.2.1.0 [2014-10-11] Release Notes<o:p></o:p></h1><p =
 class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Fixed: #9861 =
 Exception if the specified file name for a mime part was =
 duplicate.<o:p></o:p></p><p class=3DMsoNormal>Added: Web links in emails =
@@ -544,10 +516,10 @@ style=3D'color:#1F497D'><o:p>&nbsp;</o:p></span></p><p =
 class=3DMsoNormal>Change: Application now using the excellent <a =
 href=3D"https://github.com/jstedfast/MimeKit"><span =
 style=3D'font-size:10.0pt;font-family:"Segoe =
-UI","sans-serif"'>MimeKit</span></a> library. Faster and better support =
+UI",sans-serif'>MimeKit</span></a> library. Faster and better support =
 for mime types.<span class=3Dapple-converted-space><span =
 style=3D'font-size:10.0pt;font-family:"Segoe =
-UI","sans-serif";color:#253340'>&nbsp;</span></span><br>Change: Removed =
+UI",sans-serif;color:#253340'>&nbsp;</span></span><br>Change: Removed =
 the the slow and annoying &quot;raw view&quot; and added &quot;header =
 view.&#8221;<br>Change: Removed the Redundant &quot;Html&quot; view and =
 added the &quot;Text&quot; view.<br>Change: Changed &quot;Close&quot; to =
@@ -558,8 +530,8 @@ stack overflow (<a =
 href=3D"http://stackoverflow.com/questions/14103159/previewmouseleftbutto=
 ndown-interferes-with-clic-selection"><span =
 style=3D'font-size:10.0pt;font-family:"Segoe =
-UI","sans-serif"'>http://stackoverflow.com/questions/14103159/previewmous=
-eleftbuttondown-interferes-with-clic-selection</span></a>) finally =
+UI",sans-serif'>http://stackoverflow.com/questions/14103159/previewmousel=
+eftbuttondown-interferes-with-clic-selection</span></a>) finally =
 implemented that drag&amp;drop message file feature. Now you can drag =
 and drop a message file.<br>Change: Saves and loads message in =
 AppData\Papercut.<br>Feature: Now you can delete a Message with the =
@@ -567,47 +539,16 @@ Delete Key (#9835) - message Content from last message is now correctly =
 cleared (#9840)<br>Feature: Changed Processing to Buffered File output =
 for speed, etc.<span class=3Dapple-converted-space><span =
 style=3D'font-size:10.0pt;font-family:"Segoe =
-UI","sans-serif";color:#253340'>&nbsp;</span></span><br>Fixed: Issue =
-#6026 -- Supports &quot;Minimize on Close&quot; option.<br>Feature: =
-Added CC and BCC to field list aka issue #9836.<br>Feature: Added =
-support for &quot;dot stuffing&quot;, per RFC 2821, section =
-4.5.2.<br>Fixed: FormatException on empty ReplyTo<br>Fixed: fixed crash =
-on start when there is an email with 0 byte.<o:p></o:p></p><p =
-class=3DMsoNormal>Fixed: Issue with email address =
-parsing.<o:p></o:p></p><h1>Papercut v2013-6-10 Release =
-Notes<o:p></o:p></h1><p class=3DMsoNormal><span =
-style=3D'font-size:10.0pt;font-family:"Segoe =
-UI","sans-serif"'><o:p>&nbsp;</o:p></span></p><p =
-class=3DMsoNormal>Feature: Shows From, To, Date and Subject of Email. =
-<o:p></o:p></p><p class=3DMsoNormal>Feature: Async UI and loading =
-spinner.<o:p></o:p></p><p class=3DMsoNormal>Enhancement: Improved speed =
-when loading large attachments.<o:p></o:p></p><p =
-class=3DMsoNormal>Enhancement: Decoupled SMTP server into secondary =
-assembly.<o:p></o:p></p><p class=3DMsoNormal>Enhancement: Upgraded to =
-.NET v4.<o:p></o:p></p><p class=3DMsoNormal>Fix: Messages lost when =
-received very fast.<o:p></o:p></p><p class=3DMsoNormal>Fix: Email =
-encoding issues on display/Automatically detect message =
-Encoding<o:p></o:p></p><h1>Papercut v2010-3-3 Release =
-Notes<o:p></o:p></h1><p class=3DMsoNormal><span =
-style=3D'font-size:10.0pt;font-family:"Segoe =
-UI","sans-serif"'><o:p>&nbsp;</o:p></span></p><p class=3DMsoNormal>This =
-release includes a few bug fixes and updates, several of which were =
-contributed patches (thanks!).<o:p></o:p></p><p =
-class=3DMsoNormal>Feature: Added support for embedded images (patch =
-submitted by jasonpenny)<o:p></o:p></p><p class=3DMsoNormal>Enhancement: =
-Show an alert when trying to use port that is already in use (Issue =
-#5405)<o:p></o:p></p><p class=3DMsoNormal>Enhancement: Don't show the =
-options dialog in the taskbar (patch submitted by =
-dukesb11)<o:p></o:p></p><p class=3DMsoNormal>Fix: Updates to fix issues =
-with multipart messages (Issue #4959, patched submitted by =
-jasonpenny)<o:p></o:p></p><p class=3DMsoNormal>Fix: Issue with async =
-networking and not handling a disposed object (patch submitted by =
-jasonpenny)<o:p></o:p></p><p class=3DMsoNormal>Fix: Out dated URL =
-references (Issue #5457, patch submitted by =
-billrob458)<o:p></o:p></p></div></body></html>
-------=_NextPart_001_0485_01CFE5A4.C6007630--
+UI",sans-serif;color:#253340'>&nbsp;</span></span><br>Fixed: Issue #6026 =
+-- Supports &quot;Minimize on Close&quot; option.<br>Feature: Added CC =
+and BCC to field list aka issue #9836.<br>Feature: Added support for =
+&quot;dot stuffing&quot;, per RFC 2821, section 4.5.2.<br>Fixed: =
+FormatException on empty ReplyTo<br>Fixed: fixed crash on start when =
+there is an email with 0 byte.<o:p></o:p></p><p class=3DMsoNormal>Fixed: =
+Issue with email address parsing.<o:p></o:p></p></div></body></html>
+------=_NextPart_001_0227_01CFF94A.F2A9BCA0--
 
-------=_NextPart_000_0484_01CFE5A4.C6007630
+------=_NextPart_000_0226_01CFF94A.F2A9BCA0
 Content-Type: image/png;
 	name="image001.png"
 Content-Transfer-Encoding: base64
@@ -704,5 +645,5 @@ zdYgDbdu2s7tPCMls1KV3b9oNqutvnR4S1jyGfz8ZprWPQu/QpmMLRzu27kzdEbbubNvuDAuzO+T
 xDcCjTlbv7eJqs/fH5s+m22JLZgIH3Uz561HYXIfFUnCZzWJKFl6Zr8cO+ug38R+AP0B9HsEmvh9
 AdVRVo3Goq88r0C/FmAAgaQssR9aes8AAAAASUVORK5CYII=
 
-------=_NextPart_000_0484_01CFE5A4.C6007630--
+------=_NextPart_000_0226_01CFF94A.F2A9BCA0--
 

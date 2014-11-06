@@ -113,10 +113,11 @@ namespace Papercut.Helpers
             {
                 string fileName = Path.Combine(tempPath, image.ContentId);
 
-                using (var fileStream = File.OpenWrite(fileName))
                 using (var content = image.ContentObject.Open())
+                using (var fileStream = File.OpenWrite(fileName))
                 {
                     content.CopyBufferedTo(fileStream);
+                    fileStream.Close();
                 }
 
                 htmlText = replaceEmbeddedImageFormats.Aggregate(htmlText,

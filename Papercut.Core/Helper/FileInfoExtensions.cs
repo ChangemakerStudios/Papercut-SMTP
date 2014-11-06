@@ -26,20 +26,16 @@ namespace Papercut.Core.Helper
         {
             if (file == null) throw new ArgumentNullException("file");
 
-            FileStream fileStream = null;
-
             try
             {
-                fileStream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-                fileStream = null;
+                using (var fileStream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                {
+                    fileStream.Close();
+                }
             }
             catch (IOException)
             {
                 return false;
-            }
-            finally
-            {
-                if (fileStream != null) fileStream.Dispose();
             }
 
             return true;
@@ -50,27 +46,21 @@ namespace Papercut.Core.Helper
             if (file == null) throw new ArgumentNullException("file");
 
             fileBytes = null;
-            FileStream fileStream = null;
 
             try
             {
-                fileStream = file.OpenRead();
                 using (var ms = new MemoryStream())
+                using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     fileStream.CopyTo(ms);
                     fileBytes = ms.ToArray();
-                    fileStream = null;
+                    fileStream.Close();
                 }
             }
             catch (IOException)
             {
                 // the file is unavailable because it is still being written by another thread or process
                 return false;
-            }
-            finally
-            {
-                if (fileStream != null)
-                    fileStream.Dispose();
             }
 
             return true;

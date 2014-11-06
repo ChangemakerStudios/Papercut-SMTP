@@ -30,15 +30,15 @@ namespace Papercut.Core.Network
             Func<StreamReader, TOut> read)
         {
             TOut output;
-
             NetworkStream networkStream = null;
+
             try
             {
                 networkStream = new NetworkStream(socket, false);
                 using (var reader = new StreamReader(networkStream))
                 {
-                    networkStream = null;
                     output = read(reader);
+                    networkStream.Close();
                 }
             }
             finally
