@@ -44,6 +44,8 @@ namespace Papercut.Core.Rules.Implementations
             if (!string.IsNullOrWhiteSpace(forwardRule.ToEmail))
             {
                 mimeMessage.To.Clear();
+                mimeMessage.Bcc.Clear();
+                mimeMessage.Cc.Clear();
                 mimeMessage.To.Add(new MailboxAddress(forwardRule.ToEmail, forwardRule.ToEmail));
             }
         }
