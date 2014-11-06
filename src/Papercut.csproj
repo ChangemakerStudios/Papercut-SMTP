@@ -820,7 +820,7 @@
         <LogicalName>%(AssembliesToEmbed.DestinationSubDirectory)%(AssembliesToEmbed.Filename)%(AssembliesToEmbed.Extension)</LogicalName>
       </EmbeddedResource>
       <!--no need to copy the assemblies locally anymore-->
-      <!--<ReferenceCopyLocalPaths Remove="@(AssembliesToEmbed)" />-->
+      <ReferenceCopyLocalPaths Remove="@(AssembliesToEmbed)" />
     </ItemGroup>
     <Message Importance="high" Text="Embedding: @(AssembliesToEmbed->'%(DestinationSubDirectory)%(Filename)%(Extension)', ', ')" />
   </Target>
