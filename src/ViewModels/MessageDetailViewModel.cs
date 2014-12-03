@@ -254,31 +254,40 @@ namespace Papercut.ViewModels
 
                 var parts = mailMessageEx.BodyParts.ToList();
                 var mainBody = parts.GetMainBodyTextPart();
-                BodyViewModel.Body = mainBody.Text;
 
                 From = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
                 To = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
                 CC = mailMessageEx.Cc.IfNotNull(s => s.ToString()) ?? string.Empty;
                 Bcc = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
                 Date = mailMessageEx.Date.IfNotNull(s => s.ToString()) ?? string.Empty;
-
                 Subject = mailMessageEx.Subject ?? string.Empty;
-                IsHtml = mainBody.IsContentHtml();
-
-                HtmlViewModel.ShowMessage(mailMessageEx);
+                
                 AttachmentCount = parts.GetAttachments().Count();
-                PartsListViewModel.MimeMessage = mailMessageEx;
                 RawViewModel.MimeMessage = mailMessageEx;
 
-                if (IsHtml)
-                {
-                    var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
+                if (mainBody != null) {
+                    BodyViewModel.Body = mainBody.Text;
+                    IsHtml = mainBody.IsContentHtml();
 
-                    if (textPartNotHtml != null)
-                        TextBody = textPartNotHtml.Text;
+                    HtmlViewModel.ShowMessage(mailMessageEx);
+                    PartsListViewModel.MimeMessage = mailMessageEx;
+
+                    if (IsHtml)
+                    {
+                        var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
+
+                        if (textPartNotHtml != null)
+                            TextBody = textPartNotHtml.Text;
+                    }
+                    else
+                        TextBody = null;
                 }
                 else
+                {
+                    IsHtml = false;
+                    BodyViewModel.Body = null;
                     TextBody = null;
+                }
             }
             else
             {

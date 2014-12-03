@@ -98,6 +98,7 @@ namespace Papercut.Core.Helper
             return prefilteredMimeParts.Where(p => p.IsAttachment);
         }
 
+        [CanBeNull]
         public static TextPart GetMainBodyTextPart([NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
         {
             var mimeParts = prefilteredMimeParts.OfType<TextPart>().Where(s => !s.IsAttachment).ToList();
