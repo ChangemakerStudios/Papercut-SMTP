@@ -285,8 +285,8 @@ namespace Papercut.ViewModels
                 else
                 {
                     IsHtml = false;
-                    BodyViewModel.Body = null;
-                    TextBody = null;
+                    BodyViewModel.Body = string.Empty;
+                    TextBody = string.Empty;
                 }
             }
             else
