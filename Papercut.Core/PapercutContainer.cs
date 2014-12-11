@@ -19,31 +19,70 @@ namespace Papercut.Core
 {
     using System;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Threading;
 
     using Autofac;
 
     using Papercut.Core.Helper;
 
+    using Serilog;
+    using Serilog.Events;
+    using Serilog.Formatting.Json;
+    using Serilog.Sinks.RollingFile;
+
     public static class PapercutContainer
     {
-        static readonly SafeReadWriteProvider<IContainer> _containerProvider
-            = new SafeReadWriteProvider<IContainer>(Build);
+        static readonly Lazy<IContainer> _containerProvider;
+
+        static readonly Lazy<ILogger> _rootLogger;
 
         public static readonly object UIScopeTag = new object();
 
         static readonly Lazy<Assembly[]> _extensionAssemblies = new Lazy<Assembly[]>(
-            () => new AssemblyScanner()
-                      .GetAll()
-                      .Except(Assembly.GetExecutingAssembly().ToEnumerable())
-                      .Where(s => s.FullName.StartsWith("Papercut"))
-                      .Distinct()
-                      .ToArray());
+            () =>
+            {
+                try
+                {
+                    return new AssemblyScanner(_rootLogger)
+                        .GetAll()
+                        .Except(Assembly.GetExecutingAssembly().ToEnumerable())
+                        .Where(s => s.FullName.StartsWith("Papercut"))
+                        .Distinct()
+                        .ToArray();
+                }
+                catch (Exception ex)
+                {
+                    _rootLogger.Value.Fatal(ex, "Fatal Failure Loading Extension Assemblies");
+                    throw;
+                }
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
 
         static PapercutContainer()
         {
+            _rootLogger = new Lazy<ILogger>(() =>
+            {
+                string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                    string.Format("{0}.json", "PapercutCoreFailure"));
+
+                var jsonSink = new RollingFileSink(logFilePath, new JsonFormatter(), null, null);
+
+                return
+                    new LoggerConfiguration().MinimumLevel.Debug().Enrich.WithMachineName().WriteTo.ColoredConsole()
+                        .WriteTo.Sink(jsonSink, LogEventLevel.Debug).CreateLogger();
+            });
+            _containerProvider = new Lazy<IContainer>(Build, LazyThreadSafetyMode.ExecutionAndPublication);
+
             AppDomain.CurrentDomain.ProcessExit += DisposeContainer;
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                if (args.IsTerminating)
+                    _rootLogger.Value.Fatal(args.ExceptionObject as Exception, "Unhandled Exception");
+                else
+                    _rootLogger.Value.Information(args.ExceptionObject as Exception, "Non-Fatal Unhandled Exception");
+            };
         }
 
         public static Assembly[] ExtensionAssemblies
@@ -53,7 +92,7 @@ namespace Papercut.Core
 
         public static IContainer Instance
         {
-            get { return _containerProvider.Instance; }
+            get { return _containerProvider.Value; }
         }
 
         static void DisposeContainer(object sender, EventArgs e)
@@ -62,10 +101,9 @@ namespace Papercut.Core
 
             try
             {
-                if (_containerProvider.Created)
+                if (_containerProvider.IsValueCreated)
                 {
-                    _containerProvider.Instance.Dispose();
-                    _containerProvider.Instance = null;
+                    _containerProvider.Value.Dispose();
                 }
             }
             catch (ObjectDisposedException)
@@ -75,11 +113,17 @@ namespace Papercut.Core
 
         static IContainer Build()
         {
-            var builder = new ContainerBuilder();
-
-            builder.RegisterModule<PapercutCoreModule>();
-
-            return builder.Build();
+            try
+            {
+                var builder = new ContainerBuilder();
+                builder.RegisterModule<PapercutCoreModule>();
+                return builder.Build();
+            }
+            catch (Exception ex)
+            {
+                _rootLogger.Value.Fatal(ex, "Fatal Failure Building Container");
+                throw;
+            }
         }
     }
 }

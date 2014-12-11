@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Core.Helper
 {
@@ -25,16 +25,18 @@ namespace Papercut.Core.Helper
 
     using Papercut.Core.Annotations;
 
+    using Serilog;
+
     public class AssemblyScanner
     {
-        static readonly Lazy<IEnumerable<Assembly>> _allAssemblies;
+        readonly Lazy<ILogger> _logger;
 
-        static AssemblyScanner()
+        public AssemblyScanner(Lazy<ILogger> logger)
         {
-            _allAssemblies = new Lazy<IEnumerable<Assembly>>(GetAssembliesList);
+            _logger = logger;
         }
 
-        static IList<Assembly> GetAssembliesList()
+        IEnumerable<Assembly> GetAssembliesList()
         {
             var filterAssemblies =
                 new Func<Assembly, bool>(a => !a.IsDynamic && !a.GlobalAssemblyCache);
@@ -50,9 +52,8 @@ namespace Papercut.Core.Helper
 
             // exclude currently loaded assemblies
             List<string> needsToBeLoaded = allFiles
-                .Where(
-                    f =>
-                    !loadedFiles.Contains(Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
+                .Where(f =>
+                       !loadedFiles.Contains(Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             // attempt to load files as an assembly and include already loaded
@@ -72,16 +73,16 @@ namespace Papercut.Core.Helper
                 TryLoadResourceAssemblies(assemblyResourcesToLoad)
                     .Where(filterAssemblies)
                     .Concat(aggregatedAssemblies)
-                    .ToList();
+                    .ToArray();
         }
 
         [NotNull]
         public IEnumerable<Assembly> GetAll()
         {
-            return _allAssemblies.Value;
+            return GetAssembliesList();
         }
 
-        static IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
+        IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
         {
             foreach (string assemblyFile in filenames.Where(File.Exists))
             {
@@ -96,12 +97,17 @@ namespace Papercut.Core.Helper
                     // fail on native images...
                     continue;
                 }
+                catch (FileLoadException ex)
+                {
+                    _logger.Value.Warning(ex, "Failure Loading Assembly File {AssemblyFile}", assemblyFile);
+                    continue;
+                }
 
                 yield return assembly;
             }
         }
 
-        static IEnumerable<Assembly> TryLoadResourceAssemblies(
+        IEnumerable<Assembly> TryLoadResourceAssemblies(
             [NotNull] IEnumerable<string> assemblyNames)
         {
             foreach (string assemblyName in assemblyNames)
@@ -117,20 +123,25 @@ namespace Papercut.Core.Helper
                     // fail on native images...
                     continue;
                 }
+                catch (FileLoadException ex)
+                {
+                    _logger.Value.Warning(ex, "Failure Loading Assembly Resource {AssemblyName}", assemblyName);
+                    continue;
+                }
 
                 yield return assembly;
             }
         }
 
         [NotNull]
-        static IEnumerable<string> GetAllFilesIn(string directory)
+        IEnumerable<string> GetAllFilesIn(string directory)
         {
             var lookFor = new[] { "*.dll" };
 
             return lookFor.SelectMany(s => Directory.GetFiles(directory, s)).ToArray();
         }
 
-        static IEnumerable<string> GetAllAssemblyResourcesIn(IEnumerable<Assembly> assemblies)
+        IEnumerable<string> GetAllAssemblyResourcesIn(IEnumerable<Assembly> assemblies)
         {
             var lookFor = new[] { ".dll", ".exe" };
 
