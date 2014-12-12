@@ -139,7 +139,7 @@ namespace Papercut.Core
 #else
                             .MinimumLevel.Information()
 #endif
-                            .Enrich.WithMachineName()
+                            .Enrich.With<EnvironmentEnricher>()
                             .Enrich.WithThreadId()
                             .Enrich.FromLogContext()
                             .Enrich.WithProperty("AppName", appMeta.AppName)

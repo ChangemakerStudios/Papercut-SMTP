@@ -70,7 +70,9 @@ namespace Papercut.Core
                 var jsonSink = new RollingFileSink(logFilePath, new JsonFormatter(), null, null);
 
                 return
-                    new LoggerConfiguration().MinimumLevel.Debug().Enrich.WithMachineName().WriteTo.ColoredConsole()
+                    new LoggerConfiguration().MinimumLevel.Debug()
+                        .Enrich.With<EnvironmentEnricher>()
+                        .WriteTo.ColoredConsole()
                         .WriteTo.Sink(jsonSink, LogEventLevel.Debug).CreateLogger();
             });
             _containerProvider = new Lazy<IContainer>(Build, LazyThreadSafetyMode.ExecutionAndPublication);
