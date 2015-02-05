@@ -130,6 +130,7 @@ namespace Papercut.Core
 
                     string logFilePath = Path.Combine(
                         AppDomain.CurrentDomain.BaseDirectory,
+                        "Logs",
                         string.Format("{0}.log", appMeta.AppName));
 
                     LoggerConfiguration logConfiguration =

@@ -16,9 +16,9 @@
                       Height="{Behaviors:SettingBinding Window_Height}" Width="{Behaviors:SettingBinding Window_Width}"
                       Icon="/Papercut;component/App.ico"
                       VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                      Title="{Binding WindowTitle}">
+                      Title="{Binding WindowTitle}" Background="White" BorderThickness="3" BorderBrush="Wheat">
     <i:Interaction.Behaviors>
-        <MahAppsBehaviors:BorderlessWindowBehavior ResizeWithGrip="True" EnableDWMDropShadow="True" />
+        <MahAppsBehaviors:BorderlessWindowBehavior EnableDWMDropShadow="True" />
     </i:Interaction.Behaviors>
     <controls:MetroWindow.RightWindowCommands>
         <controls:WindowCommands>

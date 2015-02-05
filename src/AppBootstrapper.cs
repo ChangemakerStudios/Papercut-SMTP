@@ -32,9 +32,14 @@ namespace Papercut
     using Papercut.Core.Annotations;
     using Papercut.ViewModels;
 
-    public class AppBootstrapper : Bootstrapper<MainViewModel>
+    public class AppBootstrapper : BootstrapperBase
     {
         readonly Lazy<ILifetimeScope> _lifetimeScope = new Lazy<ILifetimeScope>(() => ((App)Application.Current).Container);
+
+        public AppBootstrapper()
+        {
+            Initialize();
+        }
 
         protected IComponentContext Container
         {
@@ -42,6 +47,12 @@ namespace Papercut
             {
                 return _lifetimeScope.Value;
             }
+        }
+
+        protected override void OnStartup(object sender, StartupEventArgs e)
+        {
+            base.OnStartup(sender, e);
+            DisplayRootViewFor<MainViewModel>();
         }
 
         protected override void Configure()

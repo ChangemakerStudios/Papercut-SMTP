@@ -101,12 +101,15 @@ namespace Papercut.Helpers
             {
                 // add the mark of the web plus the html text
                 htmlText = UIStrings.MarkOfTheWeb
-                           + _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
+                            + Environment.NewLine
+                            + _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
             }
             else
             {
                 // add some html formatting to the display html
-                htmlText = UIStrings.MarkOfTheWeb + string.Format(UIStrings.HtmlFormatWrapper, htmlText);
+                htmlText = UIStrings.MarkOfTheWeb
+                            + Environment.NewLine
+                            + string.Format(UIStrings.HtmlFormatWrapper, htmlText);
             }
 
             foreach (MimePart image in mimeParts.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))

@@ -35,10 +35,9 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}" FontWeight="Bold"
-                               Foreground="#FF222222"
                                TextTrimming="CharacterEllipsis"
-                               Visibility="{Binding Subject,Converter={StaticResource CollapsedIfFalse}}" FontSize="14" />
-                    <TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding DisplayText}" Foreground="#FF646464"
+                               Visibility="{Binding Subject, Converter={StaticResource CollapsedIfFalse}}" FontSize="14"/>
+                    <TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding DisplayText}"
                                TextTrimming="CharacterEllipsis" />
                 </Grid>
             </DataTemplate>

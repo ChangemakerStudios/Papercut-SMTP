@@ -114,8 +114,8 @@ namespace Papercut.Core.Message
             {
                 // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
                 fileName = Path.Combine(_messagePathConfigurator.DefaultSavePath,
-                    string.Format("{0}-{1}.eml",
-                        DateTime.Now.ToString("yyyyMMddHHmmssFF"),
+                    string.Format("{0}{1}.eml",
+                        DateTime.Now.ToString("yyyyMMdd-HHmmss-FFF"),
                         StringHelpers.SmallRandomString()));
 
                 File.WriteAllLines(fileName, output);

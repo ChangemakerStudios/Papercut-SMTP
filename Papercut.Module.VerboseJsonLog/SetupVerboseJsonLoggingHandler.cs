@@ -39,6 +39,7 @@ namespace Papercut.Module.VerboseJsonLog
         public void Handle(ConfigureLoggerEvent @event)
         {
             string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                "Logs",
                 string.Format("{0}.json", _appMeta.AppName));
 
             var jsonSink = new RollingFileSink(logFilePath, new JsonFormatter(), null, null);

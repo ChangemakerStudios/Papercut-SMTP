@@ -65,6 +65,7 @@ namespace Papercut.Core
             _rootLogger = new Lazy<ILogger>(() =>
             {
                 string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                    "Logs",
                     string.Format("{0}.json", "PapercutCoreFailure"));
 
                 var jsonSink = new RollingFileSink(logFilePath, new JsonFormatter(), null, null);

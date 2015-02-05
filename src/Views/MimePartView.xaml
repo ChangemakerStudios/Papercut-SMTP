@@ -17,7 +17,7 @@
                       ShowIconOnTitleBar="false"
                       WindowStartupLocation="CenterOwner"
                       VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                      d:DesignHeight="300" d:DesignWidth="300">
+                      d:DesignHeight="300" d:DesignWidth="300" BorderThickness="3" BorderBrush="Wheat">
     <i:Interaction.Behaviors>
         <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
     </i:Interaction.Behaviors>
@@ -28,6 +28,6 @@
         </StackPanel>
         <TextBox
             Name="PartText" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" Height="Auto" Width="Auto"
-            VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" />
+            VerticalScrollBarVisibility="Auto" FontFamily="Consolas, Courier New" IsReadOnlyCaretVisible="True" />
     </DockPanel>
 </controls:MetroWindow>
