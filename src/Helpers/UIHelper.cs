@@ -40,16 +40,17 @@ namespace Papercut.Helpers
                 {
                     // No Need to to anything here
                 }
+
+                // Only add borders if above call succeded and Aero Not enabled
+                if (!aeroEnabled)
+                {
+                    w.Resources.Add("2dThick", new System.Windows.Thickness(3));
+                    w.Resources.Add("2dBrush", new SolidColorBrush(Color.FromRgb(66, 178, 231)));
+                }
             }
             catch
             {
                 // No Need to to anything here, may be older OS
-            }
-
-            if (!aeroEnabled)
-            {
-                w.Resources.Add("2dThick", new System.Windows.Thickness(3));
-                w.Resources.Add("2dBrush", new SolidColorBrush(Color.FromRgb(66, 178, 231)));
             }
         }
 
