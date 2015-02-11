@@ -17,7 +17,8 @@
                       ShowIconOnTitleBar="false"
                       WindowStartupLocation="CenterOwner"
                       VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                      d:DesignHeight="300" d:DesignWidth="300">
+                      d:DesignHeight="300" d:DesignWidth="300"
+                      BorderThickness="{DynamicResource 2dThick}" BorderBrush="{DynamicResource 2dBrush}">
     <i:Interaction.Behaviors>
         <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
     </i:Interaction.Behaviors>

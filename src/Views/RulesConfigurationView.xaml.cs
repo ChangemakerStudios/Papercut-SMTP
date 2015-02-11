@@ -26,6 +26,7 @@ namespace Papercut.Views
     {
         public RulesConfigurationView()
         {
+            Helpers.UIHelper.Add2dBorders(this);
             InitializeComponent();
         }
     }

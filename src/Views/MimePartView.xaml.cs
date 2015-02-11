@@ -26,6 +26,7 @@ namespace Papercut.Views
     {
         public MimePartView()
         {
+            Helpers.UIHelper.Add2dBorders(this);
             InitializeComponent();
         }
     }

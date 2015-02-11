@@ -23,6 +23,7 @@ namespace Papercut.Views
     {
         public ForwardView()
         {
+            Helpers.UIHelper.Add2dBorders(this);
             InitializeComponent();
         }
     }

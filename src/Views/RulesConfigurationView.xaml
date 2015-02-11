@@ -14,7 +14,8 @@
                       Title="{Binding WindowTitle}" Width="773" Height="400" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="CanResizeWithGrip"
-                      ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner">
+                      ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner"
+                      BorderThickness="{DynamicResource 2dThick}" BorderBrush="{DynamicResource 2dBrush}">
     <i:Interaction.Behaviors>
         <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
     </i:Interaction.Behaviors>

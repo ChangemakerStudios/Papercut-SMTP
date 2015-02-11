@@ -23,6 +23,7 @@ namespace Papercut.Views
     {
         public OptionsView()
         {
+            Helpers.UIHelper.Add2dBorders(this);
             InitializeComponent();
         }
     }

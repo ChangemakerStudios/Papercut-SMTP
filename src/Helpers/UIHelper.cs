@@ -23,9 +23,36 @@ namespace Papercut.Helpers
     using System.Windows.Media;
 
     using Papercut.Core.Annotations;
+    using System.Runtime.InteropServices;
+    using MahApps.Metro.Controls;
 
     public static class UIHelper
     {
+        [DllImport("dwmapi.dll")]
+        static extern IntPtr DwmIsCompositionEnabled(out bool pfEnabled);
+
+        public static void Add2dBorders(MetroWindow w)
+        {
+            bool aeroEnabled = false;
+            try
+            {
+                if (DwmIsCompositionEnabled(out aeroEnabled) == IntPtr.Zero)
+                {
+                    // No Need to to anything here
+                }
+            }
+            catch
+            {
+                // No Need to to anything here, may be older OS
+            }
+
+            if (!aeroEnabled)
+            {
+                w.Resources.Add("2dThick", new System.Windows.Thickness(3));
+                w.Resources.Add("2dBrush", new SolidColorBrush(Color.FromRgb(66, 178, 231)));
+            }
+        }
+
         public static object GetObjectDataFromPoint([NotNull] this ListBox source, Point point)
         {
             if (source == null) throw new ArgumentNullException("source");
