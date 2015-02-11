@@ -15,7 +15,7 @@
                       ResizeMode="NoResize" Width="274" Height="171"
                       WindowStyle="ToolWindow"
                       ShowIconOnTitleBar="false"
-                      WindowStartupLocation="CenterOwner" BorderThickness="3" BorderBrush="Wheat">
+                      WindowStartupLocation="CenterOwner">
     <i:Interaction.Behaviors>
         <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
     </i:Interaction.Behaviors>
