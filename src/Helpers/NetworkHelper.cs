@@ -17,10 +17,15 @@
 
 namespace Papercut.Helpers
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
     using System.Text.RegularExpressions;
+
+    using Papercut.Core.Helper;
+
+    using Serilog;
 
     public static class NetworkHelper
     {
@@ -33,27 +38,37 @@ namespace Papercut.Helpers
 
         public static IEnumerable<string> GetIPAddresses()
         {
-            var ips = new List<string>();
-
-            using (var managementObjectSearcher = new ManagementObjectSearcher(NetworkAdapterQuery))
-            using (var mgtObjects = managementObjectSearcher.Get())
+            try
             {
-                IEnumerable<PropertyData> addresses =
-                    mgtObjects.OfType<ManagementObject>()
-                        .Select(mo => mo.Properties["IPAddress"])
-                        .Where(ip => ip.IsLocal);
+                var ips = new List<string>();
 
-                foreach (PropertyData ipAddress in addresses)
+                using (var managementObjectSearcher = new ManagementObjectSearcher(NetworkAdapterQuery))
+                using (var mgtObjects = managementObjectSearcher.Get())
                 {
-                    if (ipAddress.IsArray) ips.AddRange((string[])ipAddress.Value);
-                    else ips.Add(ipAddress.Value.ToString());
+                    IEnumerable<PropertyData> addresses =
+                        mgtObjects.OfType<ManagementObject>()
+                            .Select(mo => mo.Properties["IPAddress"])
+                            .Where(ip => ip.IsLocal)
+                            .ToList();
+
+                    foreach (PropertyData ipAddress in addresses)
+                    {
+                        if (ipAddress.IsArray) ips.AddRange((string[])ipAddress.Value);
+                        else ips.Add(ipAddress.Value.ToString());
+                    }
                 }
+
+                return ips.Where(address => address.IsValidIP()).ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Warning(ex, "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
             }
 
-            return ips.Where(address => _ipv4.IsMatch(address)).ToList();
+            return new[] { "127.0.0.1" };
         }
 
-        public static bool IsValidIP(string ip)
+        internal static bool IsValidIP(this string ip)
         {
             if (ip == null) return false;
             return _ipv4.IsMatch(ip);
