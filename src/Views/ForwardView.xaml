@@ -9,16 +9,17 @@
                       xmlns:Helpers="clr-namespace:Papercut.Helpers"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
+                      xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:ForwardViewModel}"
                       Title="{Binding WindowTitle}"
                       ResizeMode="NoResize" Width="274" Height="171"
                       WindowStyle="ToolWindow"
                       ShowIconOnTitleBar="false"
-                      WindowStartupLocation="CenterOwner" BorderThickness="{DynamicResource 2dThick}" BorderBrush="{DynamicResource 2dBrush}">
-    <i:Interaction.Behaviors>
-        <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
-    </i:Interaction.Behaviors>
+                      WindowStartupLocation="CenterOwner" 
+                      BorderThickness="{DynamicResource AccentBorderThickness}" 
+                      GlowBrush="{DynamicResource AccentGlowBrush}"
+                      BorderBrush="{DynamicResource AccentBorderBrush}">
     <Grid>
         <DockPanel>
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="2"

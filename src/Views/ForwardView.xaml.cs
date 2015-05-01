@@ -19,11 +19,13 @@ namespace Papercut.Views
 {
     using MahApps.Metro.Controls;
 
+    using Papercut.Helpers;
+
     public partial class ForwardView : MetroWindow
     {
         public ForwardView()
         {
-            Helpers.UIHelper.Add2dBorders(this);
+            this.AutoAdjustBorders();
             InitializeComponent();
         }
     }

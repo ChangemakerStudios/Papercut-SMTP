@@ -18,10 +18,9 @@
                       WindowStartupLocation="CenterOwner"
                       VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
                       d:DesignHeight="300" d:DesignWidth="300"
-                      BorderThickness="{DynamicResource 2dThick}" BorderBrush="{DynamicResource 2dBrush}">
-    <i:Interaction.Behaviors>
-        <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
-    </i:Interaction.Behaviors>
+                      BorderThickness="{DynamicResource AccentBorderThickness}" 
+                      GlowBrush="{DynamicResource AccentGlowBrush}"
+                      BorderBrush="{DynamicResource AccentBorderBrush}">
     <DockPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="2"
                     FrameworkElement.FlowDirection="RightToLeft">

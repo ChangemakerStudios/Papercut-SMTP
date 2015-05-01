@@ -19,6 +19,8 @@ namespace Papercut.Views
 {
     using MahApps.Metro.Controls;
 
+    using Papercut.Helpers;
+
     /// <summary>
     ///     Interaction logic for RulesConfigurationView.xaml
     /// </summary>
@@ -26,7 +28,7 @@ namespace Papercut.Views
     {
         public RulesConfigurationView()
         {
-            Helpers.UIHelper.Add2dBorders(this);
+            this.AutoAdjustBorders();
             InitializeComponent();
         }
     }

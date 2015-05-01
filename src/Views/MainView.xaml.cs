@@ -19,11 +19,13 @@ namespace Papercut.Views
 {
     using MahApps.Metro.Controls;
 
+    using Papercut.Helpers;
+
     public partial class MainView : MetroWindow
     {
         public MainView()
         {
-            Helpers.UIHelper.Add2dBorders(this);
+            this.AutoAdjustBorders();
             InitializeComponent();
         }
     }

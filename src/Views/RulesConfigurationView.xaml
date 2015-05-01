@@ -15,10 +15,9 @@
                       WindowStyle="ToolWindow"
                       ResizeMode="CanResizeWithGrip"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner"
-                      BorderThickness="{DynamicResource 2dThick}" BorderBrush="{DynamicResource 2dBrush}">
-    <i:Interaction.Behaviors>
-        <behaviours:BorderlessWindowBehavior EnableDWMDropShadow="True" />
-    </i:Interaction.Behaviors>
+                      BorderThickness="{DynamicResource AccentBorderThickness}" 
+                      GlowBrush="{DynamicResource AccentGlowBrush}"
+                      BorderBrush="{DynamicResource AccentBorderBrush}">
     <DockPanel>
         <ToolBarTray Height="Auto" DockPanel.Dock="Top" Background="WhiteSmoke">
             <ToolBar Width="Auto" Margin="2">

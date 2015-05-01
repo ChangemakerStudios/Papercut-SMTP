@@ -18,39 +18,49 @@
 namespace Papercut.Helpers
 {
     using System;
+    using System.Runtime.InteropServices;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Media;
 
-    using Papercut.Core.Annotations;
-    using System.Runtime.InteropServices;
     using MahApps.Metro.Controls;
+
+    using Papercut.Core.Annotations;
 
     public static class UIHelper
     {
-        [DllImport("dwmapi.dll")]
-        static extern IntPtr DwmIsCompositionEnabled(out bool pfEnabled);
+        static readonly bool _isAeroEnabled;
 
-        public static void Add2dBorders(MetroWindow w)
+        static UIHelper()
         {
-            bool aeroEnabled = false;
+            // figure out if Aero is enabled/disabled
             try
             {
-                if (DwmIsCompositionEnabled(out aeroEnabled) == IntPtr.Zero)
-                {
-                    // No Need to to anything here
-                }
-
-                // Only add borders if above call succeded and Aero Not enabled
-                if (!aeroEnabled)
-                {
-                    w.Resources.Add("2dThick", new System.Windows.Thickness(3));
-                    w.Resources.Add("2dBrush", new SolidColorBrush(Color.FromRgb(66, 178, 231)));
-                }
+                DwmIsCompositionEnabled(out _isAeroEnabled);
             }
             catch
             {
-                // No Need to to anything here, may be older OS
+                // ignored
+            }
+        }
+
+        [DllImport("dwmapi.dll")]
+        static extern IntPtr DwmIsCompositionEnabled(out bool pfEnabled);
+
+        public static void AutoAdjustBorders(this MetroWindow window)
+        {
+            var color = Color.FromRgb(66, 178, 231);
+
+            // Only add borders if above call succeded and Aero Not enabled
+            if (_isAeroEnabled)
+            {
+                window.Resources.Add("AccentBorderThickness", new Thickness(1));
+                window.Resources.Add("AccentGlowBrush", new SolidColorBrush(color));
+            }
+            else
+            {
+                window.Resources.Add("AccentBorderThickness", new Thickness(3));
+                window.Resources.Add("AccentBorderBrush", new SolidColorBrush(color));
             }
         }
 
