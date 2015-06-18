@@ -57,6 +57,8 @@ namespace Papercut.Core.Rules.Implementations
                         client.Send(m);
                         client.Disconnect(true);
                     }
+                }, e => { 
+                    // NOOP -- exception is logged in the message loader
                 });
         }
 

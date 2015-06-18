@@ -59,6 +59,8 @@ namespace Papercut.Core.Network
         {
             string[] parts = request.Split(' ');
 
+            if (parts.Length == 0) return;
+
             switch (parts[0].ToUpper())
             {
                 case "HELO":

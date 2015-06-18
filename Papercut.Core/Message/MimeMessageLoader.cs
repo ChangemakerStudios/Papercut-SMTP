@@ -33,7 +33,7 @@ namespace Papercut.Core.Message
 
     public class MimeMessageLoader
     {
-        public static MemoryCache _mimeMessageCache;
+        public static MemoryCache MimeMessageCache;
 
         readonly ILogger _logger;
 
@@ -41,7 +41,7 @@ namespace Papercut.Core.Message
 
         static MimeMessageLoader()
         {
-            _mimeMessageCache = new MemoryCache("MimeMessage");
+            MimeMessageCache = new MemoryCache("MimeMessage");
         }
 
         public MimeMessageLoader(MessageRepository messageRepository, ILogger logger)
@@ -64,7 +64,7 @@ namespace Papercut.Core.Message
 
                     try
                     {
-                        var message = _mimeMessageCache.GetOrSet(
+                        var message = MimeMessageCache.GetOrSet(
                             messageEntry.File,
                             () =>
                             {
@@ -80,6 +80,7 @@ namespace Papercut.Core.Message
                                     _logger.Verbose(
                                         "MimeMessage Load for {@MessageEntry}",
                                         messageEntry);
+
                                     mimeMessage = MimeMessage.Load(
                                         ParserOptions.Default,
                                         ms,
@@ -95,7 +96,7 @@ namespace Papercut.Core.Message
                                     SlidingExpiration = TimeSpan.FromSeconds(300)
                                 };
 
-                                _mimeMessageCache.Add(messageEntry.File, m, policy);
+                                MimeMessageCache.Add(messageEntry.File, m, policy);
                             });
 
                         observer.OnNext(message);

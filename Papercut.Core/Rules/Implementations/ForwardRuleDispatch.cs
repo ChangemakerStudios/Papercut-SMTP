@@ -51,6 +51,10 @@ namespace Papercut.Core.Rules.Implementations
                             client.Send(m);
                             client.Disconnect(true);
                         }
+                    },
+                    e =>
+                    {
+                        // NOOP
                     });
         }
     }

@@ -72,8 +72,7 @@ namespace Papercut.Core.Network
 
                 Connection.Send("ACK").Wait();
 
-                if (request.CommandType == ProtocolCommandType.Publish
-                    || request.CommandType == ProtocolCommandType.Exchange)
+                if (request.CommandType.IsAny(ProtocolCommandType.Publish, ProtocolCommandType.Exchange))
                 {
                     // read the rest of the object...
                     var @event = Connection.Client.ReadObj(request.Type, request.ByteSize);

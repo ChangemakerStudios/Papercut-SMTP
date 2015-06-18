@@ -30,7 +30,11 @@ namespace Papercut.Helpers
         {
             IsSelected = entry.IsSelected;
 
-            loader.Get(this).Subscribe(m => { Subject = m.Subject; });
+            loader.Get(this).Subscribe(m => { Subject = m.Subject; },
+                e =>
+                {
+                    Subject = "Failure loading message: " + e.Message;
+                });
         }
 
         public string Subject

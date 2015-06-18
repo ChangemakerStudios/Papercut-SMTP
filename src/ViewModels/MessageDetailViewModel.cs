@@ -27,6 +27,7 @@ namespace Papercut.ViewModels
 
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
+    using Papercut.Helpers;
 
     public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
     {
@@ -242,7 +243,16 @@ namespace Papercut.ViewModels
                     DisplayMimeMessage(m);
                     if (handleLoading)
                         IsLoading = false;
-                });
+                },
+                    e =>
+                    {
+                        var failureMessage =
+                            MimeMessage.CreateFromMailMessage(MailMessageHelper.CreateFailureMailMessage(e.Message));
+
+                        DisplayMimeMessage(failureMessage);
+                        if (handleLoading)
+                            IsLoading = false;
+                    });
             }
         }
 

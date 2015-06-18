@@ -196,6 +196,10 @@ namespace Papercut.ViewModels
                         ClearSelected();
                         entry.IsSelected = true;
                         Messages.Add(new MimeMessageEntry(entry, _mimeMessageLoader));
+                    },
+                    e =>
+                    {
+                        // NOOP
                     });
         }
 

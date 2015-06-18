@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Core.Helper
 {
@@ -22,7 +22,6 @@ namespace Papercut.Core.Helper
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Net;
     using System.Text;
 
     using Papercut.Core.Annotations;
@@ -40,6 +39,11 @@ namespace Papercut.Core.Helper
             return byteEncoding.GetString(bytes);
         }
 
+        public static bool IsAny<T>(this T value, params T[] items)
+        {
+            return items.Contains(value);
+        }
+
         /// <summary>
         ///     Gets a enum as a list
         /// </summary>
@@ -51,7 +55,8 @@ namespace Papercut.Core.Helper
             Type enumType = typeof(TEnum);
 
             // Can't use type constraints on value types, so have to do check like this
-            if (enumType.BaseType != typeof(Enum)) throw new ArgumentException("EnumAsList does not support non-enum types");
+            if (enumType.BaseType != typeof(Enum))
+                throw new ArgumentException("EnumAsList does not support non-enum types");
 
             Array enumValArray = Enum.GetValues(enumType);
 
@@ -96,7 +101,7 @@ namespace Papercut.Core.Helper
                     .FirstOrDefault(f => !File.Exists(f));
         }
 
-        private static IEnumerable<string> GenerateFormattedFileNames([NotNull] string fileName)
+        static IEnumerable<string> GenerateFormattedFileNames([NotNull] string fileName)
         {
             if (fileName == null)
                 throw new ArgumentNullException("fileName");

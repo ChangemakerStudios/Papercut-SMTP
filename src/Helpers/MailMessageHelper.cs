@@ -21,6 +21,7 @@ namespace Papercut.Helpers
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Net.Mail;
     using System.Text;
     using System.Text.RegularExpressions;
 
@@ -41,6 +42,19 @@ namespace Papercut.Helpers
 
         static readonly Regex _htmlBodyReplaceRegex = new Regex(HtmlBodyPattern,
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        public static MailMessage CreateFailureMailMessage(string error)
+        {
+            var errorMessage = new MailMessage
+            {
+                From = new MailAddress("fail@papercut.com", "Papercut Failure"),
+                Subject = "Failure loading message: " + error,
+                Body = "Unable to load",
+                IsBodyHtml = false
+            };
+
+            return errorMessage;
+        }
 
         internal static int TryCleanUpTempFiles(ILogger logger = null)
         {
