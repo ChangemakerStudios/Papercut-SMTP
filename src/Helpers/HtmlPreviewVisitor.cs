@@ -81,39 +81,25 @@ namespace Papercut.Helpers
 			return false;
 		}
 
-		string SaveImage (MimePart image)
+		string SaveImage (MimePart image, string url)
 		{
-			string fileName, path = null;
+			string fileName = url.Replace (':', '_').Replace ('\\', '_').Replace ('/', '_');
 
-			if (!string.IsNullOrEmpty (image.FileName)) {
-				fileName = Path.GetFileName (image.FileName);
-
-				if (fileName.Length > 0) {
-					path = Path.Combine (tempDir, fileName);
-
-					if (File.Exists (path))
-						path = null;
-				}
+			// try to add a file extension for niceness
+			switch (image.ContentType.MimeType.ToLowerInvariant ()) {
+			case "image/jpeg": fileName += ".jpg"; break;
+			case "image/png": fileName += ".png"; break;
+			case "image/gif": fileName += ".gif"; break;
 			}
 
-			if (path == null) {
-				fileName = Guid.NewGuid ().ToString ();
+			string path = Path.Combine (tempDir, fileName);
 
-				// try to add a file extension for niceness
-				switch (image.ContentType.MimeType.ToLowerInvariant ()) {
-				case "image/jpeg": fileName += ".jpg"; break;
-				case "image/png": fileName += ".png"; break;
-				case "image/gif": fileName += ".gif"; break;
-				}
-
-				path = Path.Combine (tempDir, fileName);
+			if (!File.Exists (path)) {
+				using (var output = File.Create (path))
+					image.ContentObject.DecodeTo (output);
 			}
 
-			using (var output = File.Create (path)) {
-				image.ContentObject.DecodeTo (output);
-
-				return "file://" + path.Replace ('\\', '/');
-			}
+			return "file://" + path.Replace ('\\', '/');
 		}
 
 		void HtmlTagCallback (HtmlTagContext ctx, HtmlWriter htmlWriter)
@@ -135,7 +121,7 @@ namespace Papercut.Helpers
 							continue;
 						}
 
-						url = SaveImage (image);
+						url = SaveImage (image, attribute.Value);
 
 						htmlWriter.WriteAttributeName (attribute.Name);
 						htmlWriter.WriteAttributeValue (url);
