@@ -92,7 +92,7 @@ namespace Papercut.Helpers
         {
             if (mailMessageEx == null) throw new ArgumentNullException("mailMessageEx");
 
-			string tempDir = Path.Combine (Path.GetTempPath (), string.Format ("{0}{1}", PreviewFilePrefix, mailMessageEx.GetHashCode ()));
+			string tempDir = Path.Combine (Path.GetTempPath (), string.Format ("{0}{1}", PreviewFilePrefix, Guid.NewGuid ()));
 
 			Directory.CreateDirectory (tempDir);
 
