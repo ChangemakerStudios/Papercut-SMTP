@@ -36,13 +36,6 @@ namespace Papercut.Helpers
     {
         const string PreviewFilePrefix = "Papercut-";
 
-        const string BodyContentsDisableContextMenu = @"<body${contents} oncontextmenu=""return false;"">";
-
-        const string HtmlBodyPattern = @"\<body(?<contents>[^\<]*?)\>";
-
-        static readonly Regex _htmlBodyReplaceRegex = new Regex(HtmlBodyPattern,
-            RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
         public static MailMessage CreateFailureMailMessage(string error)
         {
             var errorMessage = new MailMessage

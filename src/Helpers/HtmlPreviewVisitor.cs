@@ -105,10 +105,7 @@ namespace Papercut.Helpers
 		void HtmlTagCallback (HtmlTagContext ctx, HtmlWriter htmlWriter)
 		{
 			if (ctx.TagId == HtmlTagId.Image && !ctx.IsEndTag && stack.Count > 0) {
-				if (ctx.IsEmptyElementTag)
-					htmlWriter.WriteEmptyElementTag (ctx.TagName);
-				else
-					htmlWriter.WriteStartTag (ctx.TagName);
+				ctx.WriteTag (htmlWriter, false);
 
 				// replace the src attribute with a file:// URL
 				foreach (var attribute in ctx.Attributes) {
@@ -129,15 +126,21 @@ namespace Papercut.Helpers
 						htmlWriter.WriteAttribute (attribute);
 					}
 				}
+			} else if (ctx.TagId == HtmlTagId.Body && !ctx.IsEndTag) {
+				ctx.WriteTag (htmlWriter, false);
+
+				// add and/or replace oncontextmenu="return false;"
+				foreach (var attribute in ctx.Attributes) {
+					if (attribute.Name.ToLowerInvariant () == "oncontextmenu")
+						continue;
+
+					htmlWriter.WriteAttribute (attribute);
+				}
+
+				htmlWriter.WriteAttribute ("oncontextmenu", "return false;");
 			} else {
 				// pass the tag through to the output
 				ctx.WriteTag (htmlWriter, true);
-
-				if (ctx.TagId == HtmlTagId.Body && !ctx.IsEndTag) {
-					// add oncontextmenu="return false;"
-					htmlWriter.WriteAttributeName ("oncontextmenu");
-					htmlWriter.WriteAttributeValue ("return false;");
-				}
 			}
 		}
 
