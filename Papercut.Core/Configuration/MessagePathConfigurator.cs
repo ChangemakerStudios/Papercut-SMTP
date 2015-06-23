@@ -114,7 +114,7 @@ namespace Papercut.Core.Configuration
                     .Where(ValidatePathExists)
                     .ToList();
 
-            _logger.Debug("Message Load Path Templates are {@LoadPaths}", LoadPaths);
+            _logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", LoadPaths);
         }
 
         protected virtual void OnRefreshLoadPath()
