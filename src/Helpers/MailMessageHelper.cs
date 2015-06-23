@@ -36,13 +36,6 @@ namespace Papercut.Helpers
     {
         const string PreviewFilePrefix = "Papercut-";
 
-        const string BodyContentsDisableContextMenu = @"<body${contents} oncontextmenu=""return false;"">";
-
-        const string HtmlBodyPattern = @"\<body(?<contents>[^\<]*?)\>";
-
-        static readonly Regex _htmlBodyReplaceRegex = new Regex(HtmlBodyPattern,
-            RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
         public static MailMessage CreateFailureMailMessage(string error)
         {
             var errorMessage = new MailMessage
@@ -66,18 +59,18 @@ namespace Papercut.Helpers
             // try cleanup...
             try
             {
-                string[] tmpFiles = Directory.GetFiles(tempPath, string.Format("{0}*.html", PreviewFilePrefix));
+                string[] tmpDirs = Directory.GetDirectories(tempPath, PreviewFilePrefix + "*");
 
-                foreach (string tmpFile in tmpFiles)
+                foreach (string tmpDir in tmpDirs)
                 {
                     try
                     {
-                        File.Delete(tmpFile);
+                        Directory.Delete(tmpDir, true);
                         deleteCount++;
                     }
                     catch (Exception ex)
                     {
-                        logger.Warning(ex, @"Unable to delete {TempFile}", tmpFile);
+                        logger.Warning(ex, @"Unable to delete {TempFile}", tmpDir);
                     }
                 }
             }
@@ -99,49 +92,16 @@ namespace Papercut.Helpers
         {
             if (mailMessageEx == null) throw new ArgumentNullException("mailMessageEx");
 
-            var replaceEmbeddedImageFormats = new[] { @"cid:{0}", @"cid:'{0}'", @"cid:""{0}""" };
+			string tempDir = Path.Combine (Path.GetTempPath (), string.Format ("{0}{1}", PreviewFilePrefix, Guid.NewGuid ()));
 
-            string tempPath = Path.GetTempPath();
-            string tempFileName = string.Format("{0}{1}.html", PreviewFilePrefix, mailMessageEx.GetHashCode());
+			Directory.CreateDirectory (tempDir);
 
-            string htmlFile = Path.Combine(tempPath, tempFileName);
+			HtmlPreviewVisitor visitor = new HtmlPreviewVisitor (tempDir);
+            string htmlFile = Path.Combine(tempDir, "index.html");
 
-            List<MimePart> mimeParts = mailMessageEx.BodyParts.ToList();
+			mailMessageEx.Accept (visitor);
 
-            TextPart mainBodyTextPart = mimeParts.GetMainBodyTextPart();
-            string htmlText = mainBodyTextPart.Text;
-
-            if (mainBodyTextPart.IsContentHtml())
-            {
-                // add the mark of the web plus the html text
-                htmlText = UIStrings.MarkOfTheWeb
-                            + Environment.NewLine
-                            + _htmlBodyReplaceRegex.Replace(htmlText, BodyContentsDisableContextMenu);
-            }
-            else
-            {
-                // add some html formatting to the display html
-                htmlText = UIStrings.MarkOfTheWeb
-                            + Environment.NewLine
-                            + string.Format(UIStrings.HtmlFormatWrapper, htmlText);
-            }
-
-            foreach (MimePart image in mimeParts.GetImages().Where(i => !string.IsNullOrWhiteSpace(i.ContentId)))
-            {
-                string fileName = Path.Combine(tempPath, image.ContentId);
-
-                using (var content = image.ContentObject.Open())
-                using (var fileStream = File.OpenWrite(fileName))
-                {
-                    content.CopyBufferedTo(fileStream);
-                    fileStream.Close();
-                }
-
-                htmlText = replaceEmbeddedImageFormats.Aggregate(htmlText,
-                    (current, format) => current.Replace(string.Format(format, image.ContentId), image.ContentId));
-            }
-
-            File.WriteAllText(htmlFile, htmlText, Encoding.Unicode);
+            File.WriteAllText(htmlFile, visitor.HtmlBody, Encoding.Unicode);
 
             return htmlFile;
         }

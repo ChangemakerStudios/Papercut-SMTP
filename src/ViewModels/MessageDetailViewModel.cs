@@ -262,7 +262,7 @@ namespace Papercut.ViewModels
             {
                 HeaderViewModel.Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
 
-                var parts = mailMessageEx.BodyParts.ToList();
+                var parts = mailMessageEx.BodyParts.OfType<MimePart> ().ToList();
                 var mainBody = parts.GetMainBodyTextPart();
 
                 From = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;

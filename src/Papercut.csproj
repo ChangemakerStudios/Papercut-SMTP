@@ -95,9 +95,9 @@
     <Reference Include="Autofac">
       <HintPath>..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="BouncyCastle, Version=1.8.5579.17021, Culture=neutral, PublicKeyToken=eec3120e64a3fcba, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MimeKit.1.0.13.0\lib\net40\BouncyCastle.dll</HintPath>
+    <Reference Include="BouncyCastle, Version=1.8.5650.38220, Culture=neutral, PublicKeyToken=eec3120e64a3fcba, processorArchitecture=MSIL">
+      <HintPath>..\packages\MimeKit.1.2.5.1\lib\net40\BouncyCastle.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Caliburn.Micro">
       <HintPath>..\packages\Caliburn.Micro.Core.2.0.2\lib\net40\Caliburn.Micro.dll</HintPath>
@@ -120,9 +120,9 @@
       <HintPath>..\packages\MahApps.Metro.1.1.2.0\lib\net40\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="MimeKit, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MimeKit.1.0.13.0\lib\net40\MimeKit.dll</HintPath>
+    <Reference Include="MimeKit, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
+      <HintPath>..\packages\MimeKit.1.2.5.1\lib\net40\MimeKit.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -241,6 +241,7 @@
     <Compile Include="Events\ShowOptionWindowEvent.cs" />
     <Compile Include="Helpers\AssemblyResolutionHelper.cs" />
     <Compile Include="Helpers\CalburnSerilogBridge.cs" />
+    <Compile Include="Helpers\HtmlPreviewVisitor.cs" />
     <Compile Include="Helpers\IViewModelWindowManager.cs" />
     <Compile Include="Helpers\LogClientSinkQueue.cs" />
     <Compile Include="Helpers\MailMessageHelper.cs" />
