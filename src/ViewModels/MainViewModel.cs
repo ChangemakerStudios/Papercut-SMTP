@@ -13,12 +13,14 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.ViewModels
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reflection;
@@ -35,6 +37,10 @@ namespace Papercut.ViewModels
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
+    using Papercut.Services;
+    using Papercut.Views;
+
+    using Serilog.Events;
 
     public class MainViewModel : Conductor<object>,
         IHandle<SmtpServerBindFailedEvent>,
@@ -46,11 +52,19 @@ namespace Papercut.ViewModels
 
         readonly ForwardRuleDispatch _forwardRuleDispatch;
 
+        readonly LogClientSinkQueue _logClientSinkQueue;
+
         readonly IPublishEvent _publishEvent;
+
+        readonly AppResourceLocator _resourceLocator;
 
         readonly IViewModelWindowManager _viewModelWindowManager;
 
         bool _isDeactivated;
+
+        bool _isLogOpen;
+
+        string _logText;
 
         MetroWindow _window;
 
@@ -61,7 +75,9 @@ namespace Papercut.ViewModels
             IPublishEvent publishEvent,
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
-            Func<MessageDetailViewModel> messageDetailViewModelFactory)
+            Func<MessageDetailViewModel> messageDetailViewModelFactory,
+            LogClientSinkQueue logClientSinkQueue,
+            AppResourceLocator resourceLocator)
         {
             _viewModelWindowManager = viewModelWindowManager;
             _publishEvent = publishEvent;
@@ -73,12 +89,27 @@ namespace Papercut.ViewModels
             MessageListViewModel.ConductWith(this);
             MessageDetailViewModel.ConductWith(this);
 
+            _logClientSinkQueue = logClientSinkQueue;
+            _resourceLocator = resourceLocator;
+
+            LogText = _resourceLocator.GetResourceString("LogClientSink.html");
+
             SetupObservables();
         }
 
         public MessageListViewModel MessageListViewModel { get; private set; }
 
         public MessageDetailViewModel MessageDetailViewModel { get; private set; }
+
+        public string LogText
+        {
+            get { return _logText; }
+            set
+            {
+                _logText = value;
+                NotifyOfPropertyChange(() => LogText);
+            }
+        }
 
         public bool IsDeactivated
         {
@@ -110,6 +141,16 @@ namespace Papercut.ViewModels
             }
         }
 
+        public bool IsLogOpen
+        {
+            get { return _isLogOpen; }
+            set
+            {
+                _isLogOpen = value;
+                NotifyOfPropertyChange(() => IsLogOpen);
+            }
+        }
+
         void IHandle<ShowMainWindowEvent>.Handle(ShowMainWindowEvent message)
         {
             if (!_window.IsVisible) _window.Show();
@@ -130,7 +171,7 @@ namespace Papercut.ViewModels
         {
             MessageDetailViewModel.IsLoading = true;
             _window.ShowMessageAsync(message.Caption, message.MessageText).ContinueWith(
-                (r) =>
+                r =>
                 {
                     var result = r.Result;
                     MessageDetailViewModel.IsLoading = false;
@@ -152,6 +193,30 @@ namespace Papercut.ViewModels
             ShowOptions();
         }
 
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewLoaded(view);
+
+            var typedView = view as MainView;
+
+            var logPanel = typedView.LogPanel;
+            logPanel.Text = _resourceLocator.GetResourceString("LogClientSink.html");
+
+            this.GetPropertyValues(m => m.LogText)
+                .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
+                .ObserveOnDispatcher()
+                .Subscribe(m => logPanel.Text = m);
+        }
+
+        public IEnumerable<string> RenderLogEventParts(LogEvent e)
+        {
+            yield return string.Format(@"<div class=""logEntry {0}"">", e.Level);
+            yield return string.Format(@"<span class=""date"">{0}</span>", e.Timestamp.ToString("G"));
+            yield return string.Format(@"[<span class=""errorLevel"">{0}</span>]", e.Level);
+            yield return e.RenderMessage();
+            yield return @"</div>";
+        }
+
         void SetupObservables()
         {
             MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
@@ -160,6 +225,25 @@ namespace Papercut.ViewModels
                 .Subscribe(
                     m =>
                     MessageDetailViewModel.LoadMessageEntry(MessageListViewModel.SelectedMessage));
+
+            Observable.FromEventPattern<EventHandler, EventArgs>(h => new EventHandler(h),
+                h => _logClientSinkQueue.LogEvent += h,
+                h => _logClientSinkQueue.LogEvent -= h).ObserveOnDispatcher().Subscribe(o =>
+                {
+                    foreach (var e in _logClientSinkQueue.GetLastEvents().ToList())
+                    {
+                        LogText = LogText.Replace("<body>",
+                            "<body>" + string.Join(" ", RenderLogEventParts(e)));
+                    }
+                });
+
+            this.GetPropertyValues(m => m.IsLogOpen)
+                .ObserveOnDispatcher()
+                .Subscribe(m =>
+                {
+                    MessageListViewModel.IsLoading = m;
+                    MessageDetailViewModel.IsLoading = m;
+                });
         }
 
         public void GoToSite()
@@ -169,11 +253,20 @@ namespace Papercut.ViewModels
 
         public void ShowRulesConfiguration()
         {
+            if (IsLogOpen) IsLogOpen = false;
+
             _viewModelWindowManager.ShowDialogWithViewModel<RulesConfigurationViewModel>();
+        }
+
+        public void ToggleLog()
+        {
+            IsLogOpen = !IsLogOpen;
         }
 
         public void ShowOptions()
         {
+            if (IsLogOpen) IsLogOpen = false;
+            
             _viewModelWindowManager.ShowDialogWithViewModel<OptionsViewModel>();
         }
 
@@ -202,7 +295,7 @@ namespace Papercut.ViewModels
                     progressDialog.SetCancelable(false);
                     progressDialog.SetIndeterminate();
 
-                    var forwardRule = new ForwardRule()
+                    var forwardRule = new ForwardRule
                     {
                         SMTPServer = forwardViewModel.Server,
                         FromEmail = forwardViewModel.From,
@@ -227,9 +320,11 @@ namespace Papercut.ViewModels
         {
             base.OnViewAttached(view, context);
 
-            _window = view as MetroWindow;
+            _window = view as MainView;
 
             if (_window == null) return;
+
+            //_window.Flyouts.FindChild<FlyoutsControl>("LogFlyouts")
 
             _window.StateChanged += (sender, args) =>
             {

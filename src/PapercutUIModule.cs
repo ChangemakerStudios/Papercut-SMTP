@@ -45,6 +45,9 @@ namespace Papercut
                 .As<IAppMeta>()
                 .SingleInstance();
 
+            // must be single instance
+            builder.RegisterType<LogClientSinkQueue>().AsImplementedInterfaces().AsSelf().SingleInstance();
+
             builder.RegisterType<ViewModelWindowManager>()
                 .As<IViewModelWindowManager>()
                 .As<IWindowManager>()

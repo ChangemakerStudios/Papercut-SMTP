@@ -107,7 +107,7 @@ namespace Papercut.Core.Message
 
         void AddWatcher(string path)
         {
-            _logger.Information("Adding FileSystemWatcher for {Path}", path);
+            _logger.Debug("Adding FileSystemWatcher for {Path}", path);
 
             var watcher = new FileSystemWatcher(path, MessageRepository.MessageFileSearchPattern)
             {

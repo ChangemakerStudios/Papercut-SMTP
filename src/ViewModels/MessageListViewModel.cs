@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.ViewModels
 {
@@ -60,6 +60,8 @@ namespace Papercut.ViewModels
         readonly MimeMessageLoader _mimeMessageLoader;
 
         readonly IPublishEvent _publishEvent;
+
+        bool _isLoading;
 
         public MessageListViewModel(
             MessageRepository messageRepository,
@@ -109,6 +111,16 @@ namespace Papercut.ViewModels
         public int SelectedMessageCount
         {
             get { return GetSelected().Count(); }
+        }
+
+        public bool IsLoading
+        {
+            get { return _isLoading; }
+            set
+            {
+                _isLoading = value;
+                NotifyOfPropertyChange(() => IsLoading);
+            }
         }
 
         MimeMessageEntry GetMessageByIndex(int index)

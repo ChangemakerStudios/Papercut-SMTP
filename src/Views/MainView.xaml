@@ -10,6 +10,7 @@
                       xmlns:cal="http://www.caliburnproject.org"
                       xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
                       xmlns:MahAppsBehaviors="http://metro.mahapps.com/winfx/xaml/shared"
+                      xmlns:Wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:MainViewModel}"
                       ResizeMode="CanResizeWithGrip"
@@ -25,6 +26,21 @@
     </i:Interaction.Behaviors>
     <controls:MetroWindow.RightWindowCommands>
         <controls:WindowCommands>
+            <Button ToolTip="View Log"
+                    cal:Message.Attach="[Event Click] = [Action ToggleLog]">
+                <StackPanel Orientation="Horizontal">
+                    <Rectangle Width="20" Height="20"
+                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
+                        <Rectangle.OpacityMask>
+                            <VisualBrush Stretch="Fill"
+                                         Visual="{StaticResource appbar_layer}" />
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                    <TextBlock Margin="4 0 0 0"
+                               VerticalAlignment="Center"
+                               Text="Log" />
+                </StackPanel>
+            </Button>
             <Button ToolTip="Configure Automatic Rules"
                     cal:Message.Attach="[Event Click] = [Action ShowRulesConfiguration]">
                 <StackPanel Orientation="Horizontal">
@@ -70,6 +86,17 @@
             </Button>
         </controls:WindowCommands>
     </controls:MetroWindow.RightWindowCommands>
+
+    <controls:MetroWindow.Flyouts>
+        <controls:FlyoutsControl>
+            <controls:Flyout Header="Log" IsOpen="{Binding IsLogOpen}" Name="LogFlyout" Position="Bottom">
+                <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto">
+                    <Wpf:HtmlPanel x:Name="LogPanel" MaxHeight="300" Background="#282828" />    
+                </StackPanel>
+            </controls:Flyout>
+        </controls:FlyoutsControl>
+    </controls:MetroWindow.Flyouts>
+
     <Grid IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
           ShowGridLines="False" Width="Auto">
         <Grid x:Name="Overlay" Panel.ZIndex="1000"

@@ -64,7 +64,8 @@ namespace Papercut.Services
 
         public void Handle(PapercutClientReadyEvent @event)
         {
-            _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+            _logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+
             try
             {
                 // accessing "Rules" forces the collection to be loaded

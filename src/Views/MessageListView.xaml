@@ -8,7 +8,11 @@
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
              mc:Ignorable="d"
-             d:DesignHeight="400" d:DesignWidth="200">
+             d:DesignHeight="400" d:DesignWidth="200"
+             IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
+    <i:Interaction.Behaviors>
+        <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />
+    </i:Interaction.Behaviors>
     <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="false" 
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
