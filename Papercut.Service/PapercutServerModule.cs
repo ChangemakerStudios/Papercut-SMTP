@@ -21,12 +21,9 @@ namespace Papercut.Service
 
     using Autofac;
 
-    using Papercut.Core;
     using Papercut.Core.Configuration;
-    using Papercut.Core.Helper;
     using Papercut.Core.Settings;
     using Papercut.Service.Helpers;
-    using Papercut.Service.Services;
 
     using Module = Autofac.Module;
 

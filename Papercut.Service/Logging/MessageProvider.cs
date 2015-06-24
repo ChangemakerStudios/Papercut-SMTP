@@ -30,9 +30,9 @@ namespace Papercut.Service.Logging
 
         public override string ToString()
         {
-            return _messageProvider != null ?
-                       (_message = _message ?? _messageProvider()).ToString() :
-                       "";
+            return _messageProvider != null
+                       ? (_message = _message ?? _messageProvider()).ToString()
+                       : "";
         }
     }
 }

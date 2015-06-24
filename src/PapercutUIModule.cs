@@ -32,8 +32,6 @@ namespace Papercut
 
     public class PapercutUIModule : Module
     {
-        #region Methods
-
         protected override void Load(ContainerBuilder builder)
         {
             RegisterUI(builder);
@@ -97,7 +95,5 @@ namespace Papercut
             // Automatically calls subscribe on activated Windows, Views and ViewModels
             e.Context.Resolve<IEventAggregator>().Subscribe(e.Instance);
         }
-
-        #endregion
     }
 }

@@ -28,7 +28,7 @@ namespace Papercut.Service.Services
     {
         public ServerPathTemplateProviderService(PapercutServiceSettings serviceSettings)
         {
-            var paths = serviceSettings.MessagePath.Split(new[] { ';' })
+            var paths = serviceSettings.MessagePath.Split(';')
                 .Select(s => s.Trim())
                 .Where(s => !string.IsNullOrWhiteSpace(s));
 
