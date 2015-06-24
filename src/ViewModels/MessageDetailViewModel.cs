@@ -258,11 +258,13 @@ namespace Papercut.ViewModels
 
         void DisplayMimeMessage(MimeMessage mailMessageEx)
         {
+            ResetMessage();
+
             if (mailMessageEx != null)
             {
                 HeaderViewModel.Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
 
-                var parts = mailMessageEx.BodyParts.OfType<MimePart> ().ToList();
+                var parts = mailMessageEx.BodyParts.OfType<MimePart>().ToList();
                 var mainBody = parts.GetMainBodyTextPart();
 
                 From = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
@@ -274,45 +276,39 @@ namespace Papercut.ViewModels
                 
                 AttachmentCount = parts.GetAttachments().Count();
                 RawViewModel.MimeMessage = mailMessageEx;
+                PartsListViewModel.MimeMessage = mailMessageEx;
+
+                BodyViewModel.Body = mainBody != null ? mainBody.Text : string.Empty;
 
                 if (mainBody != null) {
-                    BodyViewModel.Body = mainBody.Text;
                     IsHtml = mainBody.IsContentHtml();
-
                     HtmlViewModel.ShowMessage(mailMessageEx);
-                    PartsListViewModel.MimeMessage = mailMessageEx;
 
                     if (IsHtml)
                     {
                         var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
-
                         if (textPartNotHtml != null)
                             TextBody = textPartNotHtml.Text;
                     }
                     else
                         TextBody = null;
                 }
-                else
-                {
-                    IsHtml = false;
-                    BodyViewModel.Body = string.Empty;
-                    TextBody = string.Empty;
-                }
-            }
-            else
-            {
-                AttachmentCount = 0;
-                IsHtml = false;
-                HtmlFile = null;
-                TextBody = null;
-
-                HtmlViewModel.HtmlFile = null;
-                HeaderViewModel.Headers = null;
-                BodyViewModel.Body = null;
-                PartsListViewModel.MimeMessage = null;
             }
 
             SelectedTabIndex = 0;
+        }
+
+        void ResetMessage()
+        {
+            AttachmentCount = 0;
+            IsHtml = false;
+            HtmlFile = null;
+            TextBody = null;
+
+            HtmlViewModel.HtmlFile = null;
+            HeaderViewModel.Headers = null;
+            BodyViewModel.Body = null;
+            PartsListViewModel.MimeMessage = null;
         }
     }
 }
