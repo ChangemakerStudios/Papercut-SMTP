@@ -290,8 +290,6 @@ namespace Papercut.ViewModels
                         if (textPartNotHtml != null)
                             TextBody = textPartNotHtml.Text;
                     }
-                    else
-                        TextBody = null;
                 }
             }
 
