@@ -18,17 +18,11 @@
 namespace Papercut.Helpers
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Net.Mail;
     using System.Text;
-    using System.Text.RegularExpressions;
 
     using MimeKit;
-
-    using Papercut.Core.Helper;
-    using Papercut.Properties;
 
     using Serilog;
 
@@ -92,14 +86,15 @@ namespace Papercut.Helpers
         {
             if (mailMessageEx == null) throw new ArgumentNullException("mailMessageEx");
 
-			string tempDir = Path.Combine (Path.GetTempPath (), string.Format ("{0}{1}", PreviewFilePrefix, Guid.NewGuid ()));
+            string tempDir = Path.Combine(Path.GetTempPath(), string.Format("{0}{1}", PreviewFilePrefix, Guid.NewGuid()));
 
-			Directory.CreateDirectory (tempDir);
+            Directory.CreateDirectory(tempDir);
 
-			HtmlPreviewVisitor visitor = new HtmlPreviewVisitor (tempDir);
+            HtmlPreviewVisitor visitor = new HtmlPreviewVisitor(tempDir);
+
             string htmlFile = Path.Combine(tempDir, "index.html");
 
-			mailMessageEx.Accept (visitor);
+            mailMessageEx.Accept(visitor);
 
             File.WriteAllText(htmlFile, visitor.HtmlBody, Encoding.Unicode);
 

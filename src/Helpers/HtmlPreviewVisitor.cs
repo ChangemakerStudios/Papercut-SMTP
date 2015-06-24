@@ -1,221 +1,271 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Collections.Generic;
-
-using MimeKit;
-using MimeKit.Text;
-using MimeKit.Tnef;
-
-using Papercut.Properties;
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2014 Jaben Cargman
+//  
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//  
+// http://www.apache.org/licenses/LICENSE-2.0
+//  
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License. 
 
 namespace Papercut.Helpers
 {
-	class HtmlPreviewVisitor : MimeVisitor
-	{
-		List<MultipartRelated> stack = new List<MultipartRelated> ();
-		List<MimeEntity> attachments = new List<MimeEntity> ();
-		readonly string tempDir;
-		string body;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
 
-		public HtmlPreviewVisitor (string tempDirectory)
-		{
-			tempDir = tempDirectory;
-		}
+    using MimeKit;
+    using MimeKit.Text;
+    using MimeKit.Tnef;
 
-		public IList<MimeEntity> Attachments {
-			get { return attachments; }
-		}
+    using Papercut.Properties;
 
-		public string HtmlBody {
-			get { return body ?? string.Empty; }
-		}
+    class HtmlPreviewVisitor : MimeVisitor
+    {
+        readonly List<MimeEntity> _attachments = new List<MimeEntity>();
 
-		protected override void VisitMultipartAlternative (MultipartAlternative alternative)
-		{
-			// walk the multipart/alternative children backwards from greatest level of faithfulness to the least faithful
-			for (int i = alternative.Count - 1; i >= 0 && body == null; i--)
-				alternative[i].Accept (this);
-		}
+        readonly List<MultipartRelated> _stack = new List<MultipartRelated>();
 
-		protected override void VisitMultipartRelated (MultipartRelated related)
-		{
-			var root = related.Root;
+        readonly string _tempDir;
 
-			stack.Add (related);
-			root.Accept (this);
-			stack.RemoveAt (stack.Count - 1);
-		}
+        string _body;
 
-		bool TryGetImage (string url, out MimePart image)
-		{
-			UriKind kind;
-			int index;
-			Uri uri;
+        public HtmlPreviewVisitor(string tempDirectory)
+        {
+            _tempDir = tempDirectory;
+        }
 
-			if (Uri.IsWellFormedUriString (url, UriKind.Absolute))
-				kind = UriKind.Absolute;
-			else if (Uri.IsWellFormedUriString (url, UriKind.Relative))
-				kind = UriKind.Relative;
-			else
-				kind = UriKind.RelativeOrAbsolute;
+        public IList<MimeEntity> Attachments
+        {
+            get { return _attachments; }
+        }
 
-			try {
-				uri = new Uri (url, kind);
-			} catch {
-				image = null;
-				return false;
-			}
+        public string HtmlBody
+        {
+            get { return _body ?? string.Empty; }
+        }
 
-			for (int i = stack.Count - 1; i >= 0; i--) {
-				if ((index = stack[i].IndexOf (uri)) == -1)
-					continue;
+        protected override void VisitMultipartAlternative(MultipartAlternative alternative)
+        {
+            // walk the multipart/alternative children backwards from greatest level of faithfulness to the least faithful
+            for (int i = alternative.Count - 1; i >= 0 && _body == null; i--)
+            {
+                alternative[i].Accept(this);
+            }
+        }
 
-				image = stack[i][index] as MimePart;
-				return image != null;
-			}
+        protected override void VisitMultipartRelated(MultipartRelated related)
+        {
+            var root = related.Root;
+            _stack.Add(related);
+            root.Accept(this);
+            _stack.RemoveAt(_stack.Count - 1);
+        }
 
-			image = null;
+        bool TryGetImage(string url, out MimePart image)
+        {
+            UriKind kind;
+            Uri uri;
 
-			return false;
-		}
+            if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                kind = UriKind.Absolute;
+            else if (Uri.IsWellFormedUriString(url, UriKind.Relative))
+                kind = UriKind.Relative;
+            else
+                kind = UriKind.RelativeOrAbsolute;
 
-		string SaveImage (MimePart image, string url)
-		{
-			string fileName = url.Replace (':', '_').Replace ('\\', '_').Replace ('/', '_');
+            try
+            {
+                uri = new Uri(url, kind);
+            }
+            catch (UriFormatException)
+            {
+                image = null;
+                return false;
+            }
 
-			// try to add a file extension for niceness
-			switch (image.ContentType.MimeType.ToLowerInvariant ()) {
-			case "image/jpeg": fileName += ".jpg"; break;
-			case "image/png": fileName += ".png"; break;
-			case "image/gif": fileName += ".gif"; break;
-			}
+            for (int i = _stack.Count - 1; i >= 0; i--)
+            {
+                int index;
+                if ((index = _stack[i].IndexOf(uri)) == -1)
+                    continue;
 
-			string path = Path.Combine (tempDir, fileName);
+                image = _stack[i][index] as MimePart;
+                return image != null;
+            }
 
-			if (!File.Exists (path)) {
-				using (var output = File.Create (path))
-					image.ContentObject.DecodeTo (output);
-			}
+            image = null;
 
-			return "file://" + path.Replace ('\\', '/');
-		}
+            return false;
+        }
 
-		void HtmlTagCallback (HtmlTagContext ctx, HtmlWriter htmlWriter)
-		{
-			if (ctx.TagId == HtmlTagId.Image && !ctx.IsEndTag && stack.Count > 0) {
-				ctx.WriteTag (htmlWriter, false);
+        string SaveImage(MimePart image, string url)
+        {
+            string fileName = url.Replace(':', '_').Replace('\\', '_').Replace('/', '_');
 
-				// replace the src attribute with a file:// URL
-				foreach (var attribute in ctx.Attributes) {
-					if (attribute.Id == HtmlAttributeId.Src) {
-						MimePart image;
-						string url;
+            // try to add a file extension for niceness
+            switch (image.ContentType.MimeType.ToLowerInvariant())
+            {
+                case "image/jpeg":
+                    fileName += ".jpg";
+                    break;
+                case "image/png":
+                    fileName += ".png";
+                    break;
+                case "image/gif":
+                    fileName += ".gif";
+                    break;
+            }
 
-						if (!TryGetImage (attribute.Value, out image)) {
-							htmlWriter.WriteAttribute (attribute);
-							continue;
-						}
+            string path = Path.Combine(_tempDir, fileName);
 
-						url = SaveImage (image, attribute.Value);
+            if (!File.Exists(path))
+            {
+                using (var output = File.Create(path))
+                    image.ContentObject.DecodeTo(output);
+            }
 
-						htmlWriter.WriteAttributeName (attribute.Name);
-						htmlWriter.WriteAttributeValue (url);
-					} else {
-						htmlWriter.WriteAttribute (attribute);
-					}
-				}
-			} else if (ctx.TagId == HtmlTagId.Body && !ctx.IsEndTag) {
-				ctx.WriteTag (htmlWriter, false);
+            return "file://" + path.Replace('\\', '/');
+        }
 
-				// add and/or replace oncontextmenu="return false;"
-				foreach (var attribute in ctx.Attributes) {
-					if (attribute.Name.ToLowerInvariant () == "oncontextmenu")
-						continue;
+        void HtmlTagCallback(HtmlTagContext ctx, HtmlWriter htmlWriter)
+        {
+            if (ctx.TagId == HtmlTagId.Image && !ctx.IsEndTag && _stack.Count > 0)
+            {
+                ctx.WriteTag(htmlWriter, false);
 
-					htmlWriter.WriteAttribute (attribute);
-				}
+                // replace the src attribute with a file:// URL
+                foreach (var attribute in ctx.Attributes)
+                {
+                    if (attribute.Id == HtmlAttributeId.Src)
+                    {
+                        MimePart image;
 
-				htmlWriter.WriteAttribute ("oncontextmenu", "return false;");
-			} else {
-				// pass the tag through to the output
-				ctx.WriteTag (htmlWriter, true);
-			}
-		}
+                        if (!TryGetImage(attribute.Value, out image))
+                        {
+                            htmlWriter.WriteAttribute(attribute);
+                            continue;
+                        }
 
-		static void GetHeaderFooter (out string header, out string footer)
-		{
-			var format = UIStrings.HtmlFormatWrapper;
-			int index = format.IndexOf ("{0}");
+                        var url = SaveImage(image, attribute.Value);
 
-			header = format.Substring (0, index);
-			footer = format.Substring (index + 3);
-		}
+                        htmlWriter.WriteAttributeName(attribute.Name);
+                        htmlWriter.WriteAttributeValue(url);
+                    }
+                    else
+                        htmlWriter.WriteAttribute(attribute);
+                }
+            }
+            else if (ctx.TagId == HtmlTagId.Body && !ctx.IsEndTag)
+            {
+                ctx.WriteTag(htmlWriter, false);
 
-		protected override void VisitTextPart (TextPart entity)
-		{
-			TextConverter converter;
-			string header, footer;
+                // add and/or replace oncontextmenu="return false;"
+                foreach (var attribute in ctx.Attributes)
+                {
+                    if (attribute.Name.ToLowerInvariant() == "oncontextmenu")
+                        continue;
 
-			if (body != null) {
-				// since we've already found the body, treat this as an attachment
-				attachments.Add (entity);
-				return;
-			}
+                    htmlWriter.WriteAttribute(attribute);
+                }
 
-			GetHeaderFooter (out header, out footer);
+                htmlWriter.WriteAttribute("oncontextmenu", "return false;");
+            }
+            else
+            {
+                // pass the tag through to the output
+                ctx.WriteTag(htmlWriter, true);
+            }
+        }
 
-			if (entity.IsHtml) {
-				converter = new HtmlToHtml {
-					Header = UIStrings.MarkOfTheWeb,
-					HeaderFormat = HeaderFooterFormat.Html,
-					HtmlTagCallback = HtmlTagCallback
-				};
-			} else if (entity.IsFlowed) {
-				var flowed = new FlowedToHtml {
-					Header = UIStrings.MarkOfTheWeb + header,
-					HeaderFormat = HeaderFooterFormat.Html,
-					Footer = footer,
-					FooterFormat = HeaderFooterFormat.Html
-				};
-				string delsp;
+        static void GetHeaderFooter(out string header, out string footer)
+        {
+            var format = UIStrings.HtmlFormatWrapper;
+            int index = format.IndexOf("{0}");
 
-				if (entity.ContentType.Parameters.TryGetValue ("delsp", out delsp))
-					flowed.DeleteSpace = delsp.ToLowerInvariant () == "yes";
+            header = format.Substring(0, index);
+            footer = format.Substring(index + 3);
+        }
 
-				converter = flowed;
-			} else {
-				converter = new TextToHtml {
-					Header = UIStrings.MarkOfTheWeb + header,
-					HeaderFormat = HeaderFooterFormat.Html,
-					Footer = footer,
-					FooterFormat = HeaderFooterFormat.Html
-				};
-			}
+        protected override void VisitTextPart(TextPart entity)
+        {
+            TextConverter converter;
+            string header, footer;
 
-			string text = entity.Text;
+            if (_body != null)
+            {
+                // since we've already found the body, treat this as an attachment
+                _attachments.Add(entity);
+                return;
+            }
 
-			body = converter.Convert (entity.Text);
-		}
+            GetHeaderFooter(out header, out footer);
 
-		protected override void VisitTnefPart (TnefPart entity)
-		{
-			// extract any attachments in the MS-TNEF part
-			attachments.AddRange (entity.ExtractAttachments ());
-		}
+            if (entity.IsHtml)
+            {
+                converter = new HtmlToHtml
+                {
+                    Header = UIStrings.MarkOfTheWeb + Environment.NewLine,
+                    HeaderFormat = HeaderFooterFormat.Html,
+                    HtmlTagCallback = HtmlTagCallback
+                };
+            }
+            else if (entity.IsFlowed)
+            {
+                var flowed = new FlowedToHtml
+                {
+                    Header = UIStrings.MarkOfTheWeb + Environment.NewLine + header,
+                    HeaderFormat = HeaderFooterFormat.Html,
+                    Footer = footer,
+                    FooterFormat = HeaderFooterFormat.Html
+                };
+                string delsp;
 
-		protected override void VisitMessagePart (MessagePart entity)
-		{
-			// treat message/rfc822 parts as attachments
-			attachments.Add (entity);
-		}
+                if (entity.ContentType.Parameters.TryGetValue("delsp", out delsp))
+                    flowed.DeleteSpace = delsp.ToLowerInvariant() == "yes";
 
-		protected override void VisitMimePart (MimePart entity)
-		{
-			// realistically, if we've gotten this far, then we can treat this as an attachment
-			// even if the IsAttachment property is false.
-			attachments.Add (entity);
-		}
-	}
+                converter = flowed;
+            }
+            else
+            {
+                converter = new TextToHtml
+                {
+                    Header = UIStrings.MarkOfTheWeb + Environment.NewLine + header,
+                    HeaderFormat = HeaderFooterFormat.Html,
+                    Footer = footer,
+                    FooterFormat = HeaderFooterFormat.Html
+                };
+            }
+
+            string text = entity.Text;
+
+            _body = converter.Convert(entity.Text);
+        }
+
+        protected override void VisitTnefPart(TnefPart entity)
+        {
+            // extract any attachments in the MS-TNEF part
+            _attachments.AddRange(entity.ExtractAttachments());
+        }
+
+        protected override void VisitMessagePart(MessagePart entity)
+        {
+            // treat message/rfc822 parts as attachments
+            _attachments.Add(entity);
+        }
+
+        protected override void VisitMimePart(MimePart entity)
+        {
+            // realistically, if we've gotten this far, then we can treat this as an attachment
+            // even if the IsAttachment property is false.
+            _attachments.Add(entity);
+        }
+    }
 }
