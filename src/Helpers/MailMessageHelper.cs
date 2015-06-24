@@ -17,19 +17,10 @@
 
 namespace Papercut.Helpers
 {
-    using System;
-    using System.IO;
     using System.Net.Mail;
-    using System.Text;
-
-    using MimeKit;
-
-    using Serilog;
 
     public static class MailMessageHelper
     {
-        const string PreviewFilePrefix = "Papercut-";
-
         public static MailMessage CreateFailureMailMessage(string error)
         {
             var errorMessage = new MailMessage
@@ -41,64 +32,6 @@ namespace Papercut.Helpers
             };
 
             return errorMessage;
-        }
-
-        internal static int TryCleanUpTempFiles(ILogger logger = null)
-        {
-            int deleteCount = 0;
-            string tempPath = Path.GetTempPath();
-
-            logger = logger ?? Log.Logger;
-
-            // try cleanup...
-            try
-            {
-                string[] tmpDirs = Directory.GetDirectories(tempPath, PreviewFilePrefix + "*");
-
-                foreach (string tmpDir in tmpDirs)
-                {
-                    try
-                    {
-                        Directory.Delete(tmpDir, true);
-                        deleteCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Warning(ex, @"Unable to delete {TempFile}", tmpDir);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Warning(
-                    ex,
-                    @"Failure running temp file cleanup task on path delete {TempPath}",
-                    tempPath);
-            }
-
-            if (deleteCount > 0)
-                logger.Information("Deleted {DeleteCount} temp files", deleteCount);
-
-            return deleteCount;
-        }
-
-        internal static string CreateHtmlPreviewFile(this MimeMessage mailMessageEx)
-        {
-            if (mailMessageEx == null) throw new ArgumentNullException("mailMessageEx");
-
-            string tempDir = Path.Combine(Path.GetTempPath(), string.Format("{0}{1}", PreviewFilePrefix, Guid.NewGuid()));
-
-            Directory.CreateDirectory(tempDir);
-
-            HtmlPreviewVisitor visitor = new HtmlPreviewVisitor(tempDir);
-
-            string htmlFile = Path.Combine(tempDir, "index.html");
-
-            mailMessageEx.Accept(visitor);
-
-            File.WriteAllText(htmlFile, visitor.HtmlBody, Encoding.Unicode);
-
-            return htmlFile;
         }
     }
 }

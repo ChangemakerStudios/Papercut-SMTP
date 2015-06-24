@@ -31,6 +31,7 @@ namespace Papercut.ViewModels
     using Papercut.Core.Annotations;
     using Papercut.Core.Helper;
     using Papercut.Helpers;
+    using Papercut.Services;
     using Papercut.Views;
 
     using Serilog;
@@ -41,10 +42,13 @@ namespace Papercut.ViewModels
 
         readonly ILogger _logger;
 
-        public MessageDetailHtmlViewModel(ILogger logger)
+        readonly IHtmlPreviewGenerator _previewGenerator;
+
+        public MessageDetailHtmlViewModel(ILogger logger, IHtmlPreviewGenerator previewGenerator)
         {
             DisplayName = "Message";
             _logger = logger;
+            _previewGenerator = previewGenerator;
         }
 
         public string HtmlFile
@@ -80,11 +84,11 @@ namespace Papercut.ViewModels
             {
                 try
                 {
-                    return mailMessageEx.CreateHtmlPreviewFile();
+                    return _previewGenerator.CreateFile(mailMessageEx);
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Exception Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
+                    _logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
                 }
 
                 return null;
