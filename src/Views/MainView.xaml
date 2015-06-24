@@ -33,7 +33,7 @@
                                Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
                         <Rectangle.OpacityMask>
                             <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_layer}" />
+                                         Visual="{StaticResource appbar_console}" />
                         </Rectangle.OpacityMask>
                     </Rectangle>
                     <TextBlock Margin="4 0 0 0"

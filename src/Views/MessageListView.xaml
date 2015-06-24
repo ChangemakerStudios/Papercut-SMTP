@@ -29,7 +29,7 @@
         </i:Interaction.Behaviors>
         <ListBox.ItemTemplate>
             <DataTemplate>
-                <Grid ToolTip="{Binding File}">
+                <Grid ToolTip="{Binding File}" Margin="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition
                             Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
