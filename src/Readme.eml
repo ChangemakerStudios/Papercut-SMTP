@@ -1,25 +1,25 @@
-From: "Papercut User" <user@papercut.us>
+From: "Jaben" <jaben@test.me>
 To: <Papercut@user.com>
-References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net> <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com> <01a901cf3f29$39dfc8d0$ad9f5a70$@test.me> <024901cfa7bf$29f99b90$7decd2b0$@papercut.us> <000b01cfbf4e$103bc2e0$30b348a0$@Papercut.us> <048301cfe5c6$4d112bd0$e7338370$@User.us>
-In-Reply-To: <048301cfe5c6$4d112bd0$e7338370$@User.us>
+References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net> <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com> <01a901cf3f29$39dfc8d0$ad9f5a70$@test.me> <024901cfa7bf$29f99b90$7decd2b0$@papercut.us> <000b01cfbf4e$103bc2e0$30b348a0$@Papercut.us> <048301cfe5c6$4d112bd0$e7338370$@User.us> <022501cff974$db7eda40$927c8ec0$@papercut.us>
+In-Reply-To: <022501cff974$db7eda40$927c8ec0$@papercut.us>
 Subject: Welcome to Papercut!
-Date: Wed, 5 Nov 2014 22:50:50 -0500
-Message-ID: <022501cff974$db7eda40$927c8ec0$@papercut.us>
+Date: Thu, 25 Jun 2015 18:17:04 -0400
+Message-ID: <017d01d0af94$ab0c3930$0124ab90$@test.me>
 MIME-Version: 1.0
 Content-Type: multipart/related;
-	boundary="----=_NextPart_000_0226_01CFF94A.F2A9BCA0"
+	boundary="----=_NextPart_000_017E_01D0AF73.23FBAAA0"
 X-Mailer: Microsoft Outlook 15.0
-Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHogFmC3YJAeoq2WkChtkdlADunV07AIqJFaGaitsCAA==
+Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHogFmC3YJAeoq2WkChtkdlADunV07AIqJFaEC/HIbVZvfOqsA
 Content-Language: en-us
 
 This is a multipart message in MIME format.
 
-------=_NextPart_000_0226_01CFF94A.F2A9BCA0
+------=_NextPart_000_017E_01D0AF73.23FBAAA0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_001_0227_01CFF94A.F2A9BCA0"
+	boundary="----=_NextPart_001_017F_01D0AF73.23FBAAA0"
 
 
-------=_NextPart_001_0227_01CFF94A.F2A9BCA0
+------=_NextPart_001_017F_01D0AF73.23FBAAA0
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -27,6 +27,36 @@ Content-Transfer-Encoding: 7bit
 
 
 The Simple Desktop Email Receiver.
+
+
+Papercut v4.4.0.0 [2015-06-25] Release Notes
+
+
+ 
+
+Improvement: #9864 "Log View" added to show all internal logging information
+for that session.
+
+Fixed: #9874 Message loading exception was not properly handled causing an
+unhandled exception and failure.
+
+Fixed: #9872 On some systems there were permissions issues accessing the IP
+addresses for the local system causing an unhandled exception and failure.
+
+Thanks to Jstedfast (author of MimeKit
+<https://github.com/jstedfast/mailkit> ) for his contribution:
+
+.         Rewrote and improved the logic that renders the email HTML.
+
+Thanks to MikeWill34 for his contributions:
+
+.         Fixed: #9870 When Aero is disabled (on servers, for example), the
+windows didn't have a drop shadow. Now they have a solid border
+
+.         Fixed: Mark of the Web "ActiveX" security warning on email
+display.
+
+.         Improvement: Upgraded to Calburn Micro v2.0
 
 
 Papercut v4.3.0.0 [2014-11-05] Release Notes
@@ -208,7 +238,7 @@ Fixed: fixed crash on start when there is an email with 0 byte.
 Fixed: Issue with email address parsing.
 
 
-------=_NextPart_001_0227_01CFF94A.F2A9BCA0
+------=_NextPart_001_017F_01D0AF73.23FBAAA0
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -217,8 +247,8 @@ Content-Transfer-Encoding: quoted-printable
 xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
 xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
 xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40"><head><meta =
-http-equiv=3DContent-Type content=3D"text/html; =
+xmlns=3D"http://www.w3.org/TR/REC-html40"><head><META =
+HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
 charset=3Dus-ascii"><meta name=3DGenerator content=3D"Microsoft Word 15 =
 (filtered medium)"><!--[if !mso]><style>v\:* =
 {behavior:url(#default#VML);}
@@ -403,6 +433,10 @@ span.EmailStyle34
 	font-family:"Calibri",sans-serif;
 	color:#1F497D;}
 span.EmailStyle35
+	{mso-style-type:personal;
+	font-family:"Calibri",sans-serif;
+	color:#1F497D;}
+span.EmailStyle36
 	{mso-style-type:personal-reply;
 	font-family:"Calibri",sans-serif;
 	color:#1F497D;}
@@ -425,8 +459,33 @@ class=3DMsoNormal><img width=3D232 height=3D50 id=3D"Picture_x0020_1" =
 src=3D"cid:image001.png@01CE6622.AACEBDC0"><i><o:p></o:p></i></p><p =
 class=3DMsoNormal><i><span style=3D'font-size:10.0pt;font-family:"Segoe =
 UI",sans-serif;color:#A6A6A6'>The Simple Desktop Email =
-Receiver.<o:p></o:p></span></i></p><h1>Papercut v4.3.0.0 [2014-11-05] =
+Receiver.<o:p></o:p></span></i></p><h1>Papercut v4.4.0.0 [2015-06-25] =
 Release Notes<o:p></o:p></h1><p =
+class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Improvement: =
+#9864 &#8220;Log View&#8221; added to show all internal logging =
+information for that session.<o:p></o:p></p><p class=3DMsoNormal>Fixed: =
+#9874 Message loading exception was not properly handled causing an =
+unhandled exception and failure.<o:p></o:p></p><p =
+class=3DMsoNormal>Fixed: #9872 On some systems there were permissions =
+issues accessing the IP addresses for the local system causing an =
+unhandled exception and failure.<o:p></o:p></p><p =
+class=3DMsoNormal>Thanks to Jstedfast (author of <a =
+href=3D"https://github.com/jstedfast/mailkit">MimeKit</a>) for his =
+contribution:<o:p></o:p></p><p =
+class=3DMsoNormal>&middot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+; Rewrote and improved the logic that renders the email =
+HTML.<o:p></o:p></p><p class=3DMsoNormal>Thanks to MikeWill34 for his =
+contributions:<o:p></o:p></p><p =
+class=3DMsoNormal>&middot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+; Fixed: #9870 When Aero is disabled (on servers, for example), the =
+windows didn&#8217;t have a drop shadow. Now they have a solid =
+border<o:p></o:p></p><p =
+class=3DMsoNormal>&middot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+; Fixed: Mark of the Web &#8220;ActiveX&#8221; security warning on email =
+display.<o:p></o:p></p><p =
+class=3DMsoNormal>&middot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+; Improvement: Upgraded to Calburn Micro v2.0<o:p></o:p></p><h1>Papercut =
+v4.3.0.0 [2014-11-05] Release Notes<o:p></o:p></h1><p =
 class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Improvement: =
 &#8220;Raw&#8221; message view re-added back as a view of the message =
 data using AvalonEdit control for speed.<o:p></o:p></p><h1>Papercut =
@@ -546,9 +605,9 @@ and BCC to field list aka issue #9836.<br>Feature: Added support for =
 FormatException on empty ReplyTo<br>Fixed: fixed crash on start when =
 there is an email with 0 byte.<o:p></o:p></p><p class=3DMsoNormal>Fixed: =
 Issue with email address parsing.<o:p></o:p></p></div></body></html>
-------=_NextPart_001_0227_01CFF94A.F2A9BCA0--
+------=_NextPart_001_017F_01D0AF73.23FBAAA0--
 
-------=_NextPart_000_0226_01CFF94A.F2A9BCA0
+------=_NextPart_000_017E_01D0AF73.23FBAAA0
 Content-Type: image/png;
 	name="image001.png"
 Content-Transfer-Encoding: base64
@@ -645,5 +704,5 @@ zdYgDbdu2s7tPCMls1KV3b9oNqutvnR4S1jyGfz8ZprWPQu/QpmMLRzu27kzdEbbubNvuDAuzO+T
 xDcCjTlbv7eJqs/fH5s+m22JLZgIH3Uz561HYXIfFUnCZzWJKFl6Zr8cO+ug38R+AP0B9HsEmvh9
 AdVRVo3Goq88r0C/FmAAgaQssR9aes8AAAAASUVORK5CYII=
 
-------=_NextPart_000_0226_01CFF94A.F2A9BCA0--
+------=_NextPart_000_017E_01D0AF73.23FBAAA0--
 
