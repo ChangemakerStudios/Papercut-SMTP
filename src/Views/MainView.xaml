@@ -21,9 +21,6 @@
                       BorderThickness="{DynamicResource AccentBorderThickness}" 
                       GlowBrush="{DynamicResource AccentGlowBrush}"
                       BorderBrush="{DynamicResource AccentBorderBrush}">
-    <i:Interaction.Behaviors>
-        <MahAppsBehaviors:BorderlessWindowBehavior />
-    </i:Interaction.Behaviors>
     <controls:MetroWindow.RightWindowCommands>
         <controls:WindowCommands>
             <Button ToolTip="View Log"
