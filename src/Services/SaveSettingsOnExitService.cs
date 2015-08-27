@@ -37,6 +37,15 @@ namespace Papercut.Services
         {
             try
             {
+                if (Settings.Default.Window_Height < 300)
+                {
+                    Settings.Default.Window_Height = 300;
+                }
+                if (Settings.Default.Window_Width < 400)
+                {
+                    Settings.Default.Window_Width = 400;
+                }
+
                 _logger.Debug("Saving Updated Settings...");
                 Settings.Default.Save();
             }
