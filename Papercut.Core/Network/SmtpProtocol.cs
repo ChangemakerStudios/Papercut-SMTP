@@ -32,15 +32,12 @@ namespace Papercut.Core.Network
 
     public class SmtpProtocol : StringCommandProtocol
     {
-        readonly MessageRepository _messageRepository;
+        readonly IReceivedDataHandler _receivedDataHandler;
 
-        readonly IPublishEvent _publishEvent;
-
-        public SmtpProtocol(MessageRepository messageRepository, IPublishEvent publishEvent, ILogger logger)
+        public SmtpProtocol(IReceivedDataHandler receivedDataHandler, ILogger logger)
             : base(logger)
         {
-            _messageRepository = messageRepository;
-            _publishEvent = publishEvent;
+            _receivedDataHandler = receivedDataHandler;
         }
 
         public Connection Connection { get; protected set; }
@@ -162,26 +159,9 @@ namespace Papercut.Core.Network
                 return;
             }
 
-            SaveMessage(output);
+            _receivedDataHandler.HandleReceived(output);
+
             confirmation.Wait();
-        }
-
-        void SaveMessage([NotNull] List<string> output)
-        {
-            if (output == null) throw new ArgumentNullException("output");
-
-            var file = _messageRepository.SaveMessage(output);
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(file))
-                {
-                    _publishEvent.Publish(new NewMessageEvent(new MessageEntry(file)));
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
-            }
         }
 
         void EHLO(string[] parts)

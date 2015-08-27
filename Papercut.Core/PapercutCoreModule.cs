@@ -90,6 +90,7 @@ namespace Papercut.Core
             builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
             builder.RegisterType<RuleRespository>().AsSelf().SingleInstance();
             builder.RegisterType<MimeMessageLoader>().AsSelf().SingleInstance();
+            builder.RegisterType<ReceivedDataMessageHandler>().AsSelf().As<IReceivedDataHandler>().SingleInstance();
 
             builder.RegisterType<MessagePathConfigurator>()
                 .As<IMessagePathConfigurator>()
