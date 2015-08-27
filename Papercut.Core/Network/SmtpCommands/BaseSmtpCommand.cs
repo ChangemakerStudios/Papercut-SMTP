@@ -27,21 +27,26 @@ namespace Papercut.Core.Network.SmtpCommands
     {
         protected SmtpSession Session
         {
-            get { return CommandContext.Session; }
+            get { return this.Context.Session; }
         }
 
         protected Connection Connection
         {
-            get { return CommandContext.Connection; }
+            get { return this.Context.Connection; }
         }
 
-        public ISmtpContext CommandContext { protected get; set; }
+        public ISmtpContext Context { protected get; set; }
 
-        public virtual SmtpCommandResult Execute(string command, string[] args)
+        public virtual SmtpCommandResult Execute(ISmtpContext context, string request)
         {
+            this.Context = context;
+
+            var parts = request.Split(' ');
+            var command = parts[0].ToUpper().Trim();
+
             if (GetMatchCommands().IfNullEmpty().Any(c => c.Equals(command, StringComparison.OrdinalIgnoreCase)))
             {
-                Run(command, args);
+                Run(command, parts.Skip(1).ToArray());
                 return SmtpCommandResult.Done;
             }
 
@@ -50,6 +55,6 @@ namespace Papercut.Core.Network.SmtpCommands
 
         protected abstract IEnumerable<string> GetMatchCommands();
 
-        protected abstract void Run(string command, string[] args);
+        protected abstract void Run(string command, string[] requestParts);
     }
 }

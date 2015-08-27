@@ -28,42 +28,37 @@ namespace Papercut.Core.Network
 
     public class SmtpProtocol : StringCommandProtocol
     {
-        protected IList<ISmtpCommand> Commands;
-
         public SmtpProtocol(Func<IEnumerable<ISmtpCommand>> smtpCommandsFactory, ILogger logger)
             : base(logger)
         {
             Commands = smtpCommandsFactory().ToList();
         }
 
-        protected Connection Connection { get; set; }
-
-        protected SmtpSession Session { get; set; }
-
         protected SmtpContext Context { get; set; }
+
+        protected Connection Connection
+        {
+            get { return Context.Connection; }
+        }
+
+        protected IList<ISmtpCommand> Commands { get; set; }
 
         public override void Begin(Connection connection)
         {
-            Connection = connection;
-            _logger = _logger.ForContext("ConnectionId", Connection.Id);
-            Session = new SmtpSession();
-            Context = new SmtpContext(connection, Session);
+            _logger = _logger.ForContext("ConnectionId", connection.Id);
+
+            Context = new SmtpContext(connection, new SmtpSession());
 
             Connection.SendLine("220 {0}", NetworkHelper.GetLocalDnsHostName());
         }
 
         protected override void ProcessRequest(string request)
         {
-            string[] parts = request.Split(' ');
-            if (parts.Length == 0) return;
+            if (string.IsNullOrWhiteSpace(request)) return;
 
-            var commandText = parts[0].ToUpper().Trim();
-            var args = parts.Skip(1).ToArray();
-
-            foreach (var command in Commands)
+            foreach (var command in Commands.IfNullEmpty())
             {
-                command.CommandContext = Context;
-                if (command.Execute(commandText, args) == SmtpCommandResult.Done)
+                if (command.Execute(Context, request) == SmtpCommandResult.Done)
                 {
                     //_logger.Debug("Executed {CommandType} with {CommandText} {Request}", command.GetType(), commandText, request);
                     return;

@@ -25,8 +25,6 @@ namespace Papercut.Core.Network
 
     public interface ISmtpCommand
     {
-        ISmtpContext CommandContext { set; }
-
-        SmtpCommandResult Execute(string command, string[] args);
+        SmtpCommandResult Execute(ISmtpContext context, string request);
     }
 }
