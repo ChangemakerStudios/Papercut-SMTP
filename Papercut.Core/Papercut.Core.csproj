@@ -68,6 +68,7 @@
     <Reference Include="System.IO">
       <HintPath>..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.IO.dll</HintPath>
     </Reference>
+    <Reference Include="System.Management" />
     <Reference Include="System.Net" />
     <Reference Include="System.Reactive.Core">
       <HintPath>..\packages\Rx-Core.2.2.5\lib\net40\System.Reactive.Core.dll</HintPath>
@@ -129,6 +130,7 @@
     <Compile Include="Helper\JsonHelpers.cs" />
     <Compile Include="Helper\MemoryCacheExtensions.cs" />
     <Compile Include="Helper\NameValueCollectionHelpers.cs" />
+    <Compile Include="Helper\NetworkHelper.cs" />
     <Compile Include="Helper\PapercutProtocolHelpers.cs" />
     <Compile Include="Helper\PathHelpers.cs" />
     <Compile Include="Helper\RegexHelpers.cs" />
@@ -141,6 +143,19 @@
     <Compile Include="Message\ReceivedDataMessageHandler.cs" />
     <Compile Include="Message\IReceivedDataHandler.cs" />
     <Compile Include="Network\ServerExtensions.cs" />
+    <Compile Include="Network\SmtpCommands\BaseSmtpCommand.cs" />
+    <Compile Include="Network\SmtpCommands\DataSmtpCommand.cs" />
+    <Compile Include="Network\SmtpCommands\EhloSmtpCommand.cs" />
+    <Compile Include="Network\SmtpCommands\HeloSmtpCommand.cs" />
+    <Compile Include="Network\SmtpCommands\NoopSmtpCommand.cs" />
+    <Compile Include="Network\SmtpCommands\NotImplementedSmtpCommands.cs" />
+    <Compile Include="Network\SmtpCommands\QuitSmtpCommand.cs" />
+    <Compile Include="Network\SmtpCommands\RcptSmtpCommand.cs" />
+    <Compile Include="Network\SmtpCommands\RsetSmtpCommand.cs" />
+    <Compile Include="Network\SmtpCommands\SendSmtpCommand.cs" />
+    <Compile Include="Network\SmtpContext.cs" />
+    <Compile Include="Network\ISmtpCommand.cs" />
+    <Compile Include="Network\ISmtpContext.cs" />
     <Compile Include="Rules\Implementations\ConditionalForwardRule.cs" />
     <Compile Include="Rules\Implementations\ConditionalForwardRuleDispatch.cs" />
     <Compile Include="Rules\Implementations\ForwardRule.cs" />

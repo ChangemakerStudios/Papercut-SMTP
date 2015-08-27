@@ -13,17 +13,17 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
-namespace Papercut.Helpers
+namespace Papercut.Core.Helper
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
+    using System.Net;
+    using System.Net.Sockets;
     using System.Text.RegularExpressions;
-
-    using Papercut.Core.Helper;
 
     using Serilog;
 
@@ -35,6 +35,21 @@ namespace Papercut.Helpers
         static readonly Regex _ipv4 = new Regex(
             @"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
             RegexOptions.Compiled);
+
+        public static string GetLocalDnsHostName()
+        {
+            string hostName = "localhost";
+            try
+            {
+                hostName = Dns.GetHostName().ToLower();
+            }
+            catch (SocketException socketException)
+            {
+                Log.Logger.Warning(socketException, "Failure Getting the Local Hostname");
+            }
+
+            return hostName;
+        }
 
         public static IEnumerable<string> GetIPAddresses()
         {
@@ -62,13 +77,14 @@ namespace Papercut.Helpers
             }
             catch (Exception ex)
             {
-                Log.Logger.Warning(ex, "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
+                Log.Logger.Warning(ex,
+                    "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
             }
 
             return new[] { "127.0.0.1" };
         }
 
-        internal static bool IsValidIP(this string ip)
+        public static bool IsValidIP(this string ip)
         {
             if (ip == null) return false;
             return _ipv4.IsMatch(ip);
