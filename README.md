@@ -10,15 +10,15 @@ Ever need to test emails from an application or web site but don't want them acc
 ####[ClickOnce](https://papercut.codeplex.com/downloads/get/clickOnce/Papercut.application)
 
 ##Features
-###Instant Feedback When New Email Arrives
+####Instant Feedback When New Email Arrives
 ![Instant Feedback When New Email Arrives](http://www.tinygecko.com/downloads/Papercut-v3.1.0-S2.png)
-###Rich and Detailed View of Received Email
+####Rich and Detailed View of Received Email
 ![Rich and Detailed View of Received Email](http://www.tinygecko.com/images/Papercut/Papercut-Main.png)
-###View and Download the Mime Sections of your Email
+####View and Download the Mime Sections of your Email
 ![View and Download the Mime Sections of your Email](http://www.tinygecko.com/images/Papercut/Papercut-Mime.png)
-###In Version 4 the Raw View Returns
+####In Version 4 the Raw View Returns
 ![In Version 4 the Raw View Returns](http://www.tinygecko.com/images/Papercut/Papercut-Raw.png)
-###New in Version 4.4: Logging View
+####New in Version 4.4: Logging View
 ![In Version 4.4: Logging View](http://www.tinygecko.com/images/Papercut/Papercut-Log.png)
 
 ##License
