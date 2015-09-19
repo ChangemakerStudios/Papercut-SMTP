@@ -29,7 +29,7 @@ namespace Papercut.Core.Helper
         public static ILookup<string, string> ToLookup(
             [NotNull] this NameValueCollection nameValueCollection)
         {
-            if (nameValueCollection == null) throw new ArgumentNullException("nameValueCollection");
+            if (nameValueCollection == null) throw new ArgumentNullException(nameof(nameValueCollection));
 
             return nameValueCollection.ToKeyValuePairs().ToLookup(k => k.Key, v => v.Value);
         }
@@ -37,7 +37,7 @@ namespace Papercut.Core.Helper
         public static IEnumerable<KeyValuePair<string, string>> ToKeyValuePairs(
             [NotNull] this NameValueCollection nameValueCollection)
         {
-            if (nameValueCollection == null) throw new ArgumentNullException("nameValueCollection");
+            if (nameValueCollection == null) throw new ArgumentNullException(nameof(nameValueCollection));
 
             return nameValueCollection.AllKeys.SelectMany(
                 k =>

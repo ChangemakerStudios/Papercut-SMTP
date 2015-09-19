@@ -47,7 +47,7 @@ namespace Papercut.Core.Rules.Implementations
             {
                 if (value == _smtpPassword) return;
                 _smtpPassword = value;
-                OnPropertyChanged("SMTPPassword");
+                OnPropertyChanged(nameof(SMTPPassword));
             }
         }
 
@@ -60,7 +60,7 @@ namespace Papercut.Core.Rules.Implementations
             {
                 if (value == _smtpUsername) return;
                 _smtpUsername = value;
-                OnPropertyChanged("SMTPUsername");
+                OnPropertyChanged(nameof(SMTPUsername));
             }
         }
 
@@ -73,7 +73,7 @@ namespace Papercut.Core.Rules.Implementations
             {
                 if (value == _smtpPort) return;
                 _smtpPort = value;
-                OnPropertyChanged("SMTPPort");
+                OnPropertyChanged(nameof(SMTPPort));
             }
         }
 
@@ -86,15 +86,12 @@ namespace Papercut.Core.Rules.Implementations
             {
                 if (value.Equals(_smtpUseSsl)) return;
                 _smtpUseSsl = value;
-                OnPropertyChanged("SmtpUseSSL");
+                OnPropertyChanged(nameof(SmtpUseSSL));
             }
         }
 
         [Category("Information")]
-        public override string Type
-        {
-            get { return "Forward"; }
-        }
+        public override string Type => "Forward";
 
         [Category("Settings")]
         [DisplayName("From Email")]
@@ -106,7 +103,7 @@ namespace Papercut.Core.Rules.Implementations
             {
                 if (value == _fromEmail) return;
                 _fromEmail = value;
-                OnPropertyChanged("FromEmail");
+                OnPropertyChanged(nameof(FromEmail));
             }
         }
 
@@ -120,7 +117,7 @@ namespace Papercut.Core.Rules.Implementations
             {
                 if (value == _smtpServer) return;
                 _smtpServer = value;
-                OnPropertyChanged("SMTPServer");
+                OnPropertyChanged(nameof(SMTPServer));
             }
         }
 
@@ -134,7 +131,7 @@ namespace Papercut.Core.Rules.Implementations
             {
                 if (value == _toEmail) return;
                 _toEmail = value;
-                OnPropertyChanged("ToEmail");
+                OnPropertyChanged(nameof(ToEmail));
             }
         }
 

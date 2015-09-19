@@ -60,31 +60,13 @@ namespace Papercut.Core.Message
         {
         }
 
-        public DateTime ModifiedDate
-        {
-            get { return _info.LastWriteTime; }
-        }
+        public DateTime ModifiedDate => _info.LastWriteTime;
 
-        public string Name
-        {
-            get { return _info.Name; }
-        }
+        public string Name => _info.Name;
 
-        public string FileSize
-        {
-            get { return _info.Length.ToFileSizeFormat(); }
-        }
+        public string FileSize => _info.Length.ToFileSizeFormat();
 
-        public string DisplayText
-        {
-            get
-            {
-                return string.Format(
-                    "{0} ({1})",
-                    _created.HasValue ? _created.Value.ToString("G") : _info.Name,
-                    (FileSize));
-            }
-        }
+        public string DisplayText => $"{_created?.ToString("G") ?? _info.Name} ({(FileSize)})";
 
         public bool IsSelected
         {
@@ -92,7 +74,7 @@ namespace Papercut.Core.Message
             set
             {
                 _isSelected = value;
-                OnPropertyChanged("IsSelected");
+                OnPropertyChanged(nameof(IsSelected));
             }
         }
 
@@ -101,10 +83,7 @@ namespace Papercut.Core.Message
             return Equals(_info, other._info);
         }
 
-        public string File
-        {
-            get { return _info.FullName; }
-        }
+        public string File => _info.FullName;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -121,16 +100,13 @@ namespace Papercut.Core.Message
             return Equals((MessageEntry)obj);
         }
 
-        public override int GetHashCode()
-        {
-            return (_info != null ? _info.GetHashCode() : 0);
-        }
+        public override int GetHashCode() => _info?.GetHashCode() ?? 0;
 
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

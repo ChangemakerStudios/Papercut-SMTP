@@ -106,12 +106,12 @@ namespace Papercut.Core.Network
 
         protected void OnConnectionClosed(EventArgs e)
         {
-            if (ConnectionClosed != null) ConnectionClosed(this, e);
+            ConnectionClosed?.Invoke(this, e);
         }
 
         protected bool ContinueProcessReceive([NotNull] IAsyncResult result)
         {
-            if (result == null) throw new ArgumentNullException("result");
+            if (result == null) throw new ArgumentNullException(nameof(result));
 
             try
             {

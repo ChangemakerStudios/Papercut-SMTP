@@ -25,15 +25,9 @@ namespace Papercut.Core.Network.SmtpCommands
 
     public abstract class BaseSmtpCommand : ISmtpCommand
     {
-        protected SmtpSession Session
-        {
-            get { return this.Context.Session; }
-        }
+        protected SmtpSession Session => this.Context.Session;
 
-        protected Connection Connection
-        {
-            get { return this.Context.Connection; }
-        }
+        protected Connection Connection => this.Context.Connection;
 
         public ISmtpContext Context { protected get; set; }
 

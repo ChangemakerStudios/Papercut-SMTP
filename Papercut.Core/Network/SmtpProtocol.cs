@@ -36,10 +36,7 @@ namespace Papercut.Core.Network
 
         protected SmtpContext Context { get; set; }
 
-        protected Connection Connection
-        {
-            get { return Context.Connection; }
-        }
+        protected Connection Connection => Context.Connection;
 
         protected IList<ISmtpCommand> Commands { get; set; }
 

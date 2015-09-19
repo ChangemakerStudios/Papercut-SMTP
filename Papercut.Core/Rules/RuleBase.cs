@@ -46,23 +46,17 @@ namespace Papercut.Core.Rules
             {
                 if (value.Equals(_isEnabled)) return;
                 _isEnabled = value;
-                OnPropertyChanged("IsEnabled");
+                OnPropertyChanged(nameof(IsEnabled));
             }
         }
 
         [Category("Information")]
         [Browsable(false)]
-        public virtual string Type
-        {
-            get { return GetType().Name; }
-        }
+        public virtual string Type => GetType().Name;
 
         [Category("Information")]
         [Browsable(false)]
-        public virtual string Description
-        {
-            get { return ToString(); }
-        }
+        public virtual string Description => ToString();
 
         public event PropertyChangedEventHandler PropertyChanged;
 

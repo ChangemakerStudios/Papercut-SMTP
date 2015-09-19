@@ -29,17 +29,14 @@ namespace Papercut.ViewModels
 
     public class RulesConfigurationViewModel : Screen
     {
-        readonly RuleService _ruleService;
-
         IRule _selectedRule;
 
         string _windowTitle = "Rules Configuration";
 
         public RulesConfigurationViewModel(RuleService ruleService, IEnumerable<IRule> registeredRules)
         {
-            _ruleService = ruleService;
             RegisteredRules = new ObservableCollection<IRule>(registeredRules);
-            Rules = _ruleService.Rules;
+            Rules = ruleService.Rules;
             Rules.CollectionChanged += (sender, args) =>
             {
                 if (!Rules.Contains(SelectedRule))
@@ -70,16 +67,13 @@ namespace Papercut.ViewModels
             }
         }
 
-        public bool HasSelectedRule
-        {
-            get { return _selectedRule != null; }
-        }
+        public bool HasSelectedRule => _selectedRule != null;
 
         public ObservableCollection<IRule> RegisteredRules { get; private set; }
 
         public void AddRule([NotNull] IRule rule)
         {
-            if (rule == null) throw new ArgumentNullException("rule");
+            if (rule == null) throw new ArgumentNullException(nameof(rule));
 
             var newRule = Activator.CreateInstance(rule.GetType()) as IRule;
             Rules.Add(newRule);

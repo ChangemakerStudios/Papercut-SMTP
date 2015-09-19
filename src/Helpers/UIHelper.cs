@@ -66,7 +66,7 @@ namespace Papercut.Helpers
 
         public static object GetObjectDataFromPoint([NotNull] this ListBox source, Point point)
         {
-            if (source == null) throw new ArgumentNullException("source");
+            if (source == null) throw new ArgumentNullException(nameof(source));
 
             var element = source.InputHitTest(point) as UIElement;
             if (element == null) return null;
@@ -93,7 +93,7 @@ namespace Papercut.Helpers
         public static T FindAncestor<T>(this DependencyObject dependencyObject)
             where T : DependencyObject
         {
-            if (dependencyObject == null) throw new ArgumentNullException("dependencyObject");
+            if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
 
             DependencyObject parent = VisualTreeHelper.GetParent(dependencyObject);
             if (parent == null) return null;

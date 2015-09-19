@@ -45,7 +45,7 @@ namespace Papercut.Services
         public string GetResourceString([NotNull] string resourceName)
         {
             if (resourceName == null)
-                throw new ArgumentNullException("resourceName");
+                throw new ArgumentNullException(nameof(resourceName));
 
             var resource =
                 Assembly.GetExecutingAssembly()

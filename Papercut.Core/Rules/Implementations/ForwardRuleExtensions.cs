@@ -31,8 +31,8 @@ namespace Papercut.Core.Rules.Implementations
             [NotNull] this MimeMessage mimeMessage,
             [NotNull] ForwardRule forwardRule)
         {
-            if (forwardRule == null) throw new ArgumentNullException("forwardRule");
-            if (mimeMessage == null) throw new ArgumentNullException("mimeMessage");
+            if (forwardRule == null) throw new ArgumentNullException(nameof(forwardRule));
+            if (mimeMessage == null) throw new ArgumentNullException(nameof(mimeMessage));
 
             if (!string.IsNullOrWhiteSpace(forwardRule.FromEmail))
             {
@@ -52,7 +52,7 @@ namespace Papercut.Core.Rules.Implementations
 
         public static SmtpClient CreateConnectedSmtpClient([NotNull] this ForwardRule forwardRule)
         {
-            if (forwardRule == null) throw new ArgumentNullException("forwardRule");
+            if (forwardRule == null) throw new ArgumentNullException(nameof(forwardRule));
 
             var client = new SmtpClient();
 

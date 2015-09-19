@@ -27,7 +27,7 @@ namespace Papercut.Core.Helper
     {
         public static string GetPath([NotNull] this Assembly assembly)
         {
-            if (assembly == null) throw new ArgumentNullException("assembly");
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 
             string filePath = new Uri(assembly.CodeBase).LocalPath;
             return Path.GetDirectoryName(filePath);

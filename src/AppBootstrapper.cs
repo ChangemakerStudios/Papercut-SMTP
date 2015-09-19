@@ -41,13 +41,7 @@ namespace Papercut
             Initialize();
         }
 
-        protected IComponentContext Container
-        {
-            get
-            {
-                return _lifetimeScope.Value;
-            }
-        }
+        protected IComponentContext Container => _lifetimeScope.Value;
 
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
@@ -62,18 +56,9 @@ namespace Papercut
                 context =>
                 {
                     var args = context.EventArgs as RoutedEventArgs;
-                    if (args == null)
-                    {
-                        return null;
-                    }
+                    var fe = args?.OriginalSource as FrameworkElement;
 
-                    var fe = args.OriginalSource as FrameworkElement;
-                    if (fe == null)
-                    {
-                        return null;
-                    }
-
-                    return fe.DataContext;
+                    return fe?.DataContext;
                 });
 
             base.Configure();
@@ -84,12 +69,12 @@ namespace Papercut
             return
                 Container.Resolve(
                     typeof(IEnumerable<>)
-                    .MakeGenericType(new Type[] { service })) as IEnumerable<object>;
+                    .MakeGenericType(service)) as IEnumerable<object>;
         }
 
         protected override object GetInstance([NotNull] Type service, string named = null)
         {
-            if (service == null) throw new ArgumentNullException("service");
+            if (service == null) throw new ArgumentNullException(nameof(service));
 
             if (string.IsNullOrWhiteSpace(named))
             {
@@ -102,7 +87,7 @@ namespace Papercut
                 if (Container.TryResolveNamed(named, service, out result)) return result;
             }
 
-            throw new InstanceNotFoundException(string.Format("Could not locate any instances of contract {0}.", named ?? service.Name));
+            throw new InstanceNotFoundException($"Could not locate any instances of contract {named ?? service.Name}.");
         }
 
         protected override void BuildUp(object instance)

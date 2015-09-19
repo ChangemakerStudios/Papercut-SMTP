@@ -28,8 +28,8 @@ namespace Papercut.Core.Settings
             [NotNull] this IWriteValue<string> writeValue,
             [NotNull] string key, object value)
         {
-            if (writeValue == null) throw new ArgumentNullException("writeValue");
-            if (key == null) throw new ArgumentNullException("key");
+            if (writeValue == null) throw new ArgumentNullException(nameof(writeValue));
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             writeValue.Set(key, value.ToType<string>());
         }
@@ -39,9 +39,9 @@ namespace Papercut.Core.Settings
             [NotNull] string key,
             [NotNull] Func<T> getDefaultValue)
         {
-            if (readValue == null) throw new ArgumentNullException("readValue");
-            if (key == null) throw new ArgumentNullException("key");
-            if (getDefaultValue == null) throw new ArgumentNullException("getDefaultValue");
+            if (readValue == null) throw new ArgumentNullException(nameof(readValue));
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (getDefaultValue == null) throw new ArgumentNullException(nameof(getDefaultValue));
 
             string value = readValue.Get(key);
             return value.IsDefault() ? getDefaultValue() : value.ToType<T>();
@@ -52,8 +52,8 @@ namespace Papercut.Core.Settings
             [NotNull] string key,
             [CanBeNull] T defaultValue = default(T))
         {
-            if (readValue == null) throw new ArgumentNullException("readValue");
-            if (key == null) throw new ArgumentNullException("key");
+            if (readValue == null) throw new ArgumentNullException(nameof(readValue));
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string value = readValue.Get(key);
             return value.IsDefault() ? defaultValue : value.ToType<T>();

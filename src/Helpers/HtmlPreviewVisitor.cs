@@ -42,15 +42,9 @@ namespace Papercut.Helpers
             _tempDir = tempDirectory;
         }
 
-        public IList<MimeEntity> Attachments
-        {
-            get { return _attachments; }
-        }
+        public IList<MimeEntity> Attachments => _attachments;
 
-        public string HtmlBody
-        {
-            get { return _body ?? string.Empty; }
-        }
+        public string HtmlBody => _body ?? string.Empty;
 
         protected override void VisitMultipartAlternative(MultipartAlternative alternative)
         {

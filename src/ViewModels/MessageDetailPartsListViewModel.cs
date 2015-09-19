@@ -135,7 +135,7 @@ namespace Papercut.ViewModels
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Failure Creating and Opening Up Attachment File: {TempFileName}", tempFileName);
-                    MessageBox.Show(string.Format("Failed to Open Attachment File: {0}", ex.Message),
+                    MessageBox.Show($"Failed to Open Attachment File: {ex.Message}",
                         "Unable to Open Attachment");
                 }
             }

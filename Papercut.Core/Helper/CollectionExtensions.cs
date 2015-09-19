@@ -29,7 +29,7 @@ namespace Papercut.Core.Helper
         public static IDictionary<TKey, TValue> ToDictionary<TKey, TValue>(
             [NotNull] this IEnumerable<KeyValuePair<TKey, TValue>> keyValuePairs)
         {
-            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+            if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
             return keyValuePairs.ToDictionary(s => s.Key, s => s.Value);
         }
@@ -48,9 +48,9 @@ namespace Papercut.Core.Helper
             this ICollection<TValue> destinationCollection,
             IEnumerable<TValue> sourceCollection)
         {
-            if (destinationCollection == null) throw new ArgumentNullException("destinationCollection");
+            if (destinationCollection == null) throw new ArgumentNullException(nameof(destinationCollection));
 
-            if (sourceCollection == null) throw new ArgumentNullException("sourceCollection");
+            if (sourceCollection == null) throw new ArgumentNullException(nameof(sourceCollection));
 
             foreach (TValue item in (sourceCollection as IList<TValue> ?? sourceCollection.ToList())
                 )
@@ -61,9 +61,9 @@ namespace Papercut.Core.Helper
 
         public static void AddRange(this IList destinationList, IEnumerable sourceList)
         {
-            if (destinationList == null) throw new ArgumentNullException("destinationList");
+            if (destinationList == null) throw new ArgumentNullException(nameof(destinationList));
 
-            if (sourceList == null) throw new ArgumentNullException("sourceList");
+            if (sourceList == null) throw new ArgumentNullException(nameof(sourceList));
 
             foreach (object item in sourceList.Cast<object>().ToList())
             {
@@ -75,8 +75,8 @@ namespace Papercut.Core.Helper
             [NotNull] this IEnumerable<T> items,
             [NotNull] Predicate<T> predicate)
         {
-            if (items == null) throw new ArgumentNullException("items");
-            if (predicate == null) throw new ArgumentNullException("predicate");
+            if (items == null) throw new ArgumentNullException(nameof(items));
+            if (predicate == null) throw new ArgumentNullException(nameof(predicate));
 
             int index = 0;
             foreach (T item in items)
@@ -90,7 +90,7 @@ namespace Papercut.Core.Helper
 
         public static IEnumerable<T> ForEach<T>(this IEnumerable<T> source, Action<T> act)
         {
-            if (source == null) throw new ArgumentNullException("source");
+            if (source == null) throw new ArgumentNullException(nameof(source));
 
             foreach (T element in (source as IList<T> ?? source.ToList()))
             {

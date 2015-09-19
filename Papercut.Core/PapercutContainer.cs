@@ -66,7 +66,7 @@ namespace Papercut.Core
             {
                 string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
                     "Logs",
-                    string.Format("{0}.json", "PapercutCoreFailure"));
+                    $"{"PapercutCoreFailure"}.json");
 
                 var jsonSink = new RollingFileSink(logFilePath, new JsonFormatter(), null, null);
 
@@ -88,15 +88,9 @@ namespace Papercut.Core
             };
         }
 
-        public static Assembly[] ExtensionAssemblies
-        {
-            get { return _extensionAssemblies.Value; }
-        }
+        public static Assembly[] ExtensionAssemblies => _extensionAssemblies.Value;
 
-        public static IContainer Instance
-        {
-            get { return _containerProvider.Value; }
-        }
+        public static IContainer Instance => _containerProvider.Value;
 
         static void DisposeContainer(object sender, EventArgs e)
         {

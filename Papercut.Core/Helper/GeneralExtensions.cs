@@ -33,7 +33,7 @@ namespace Papercut.Core.Helper
     {
         public static string AsString(this byte[] bytes, Encoding byteEncoding = null)
         {
-            if (bytes == null) throw new ArgumentNullException("bytes");
+            if (bytes == null) throw new ArgumentNullException(nameof(bytes));
 
             byteEncoding = byteEncoding ?? Encoding.UTF8;
             return byteEncoding.GetString(bytes);
@@ -90,10 +90,10 @@ namespace Papercut.Core.Helper
         public static string GetOriginalFileName([NotNull] string path, [NotNull] string fileName)
         {
             if (path == null)
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
 
             if (fileName == null)
-                throw new ArgumentNullException("fileName");
+                throw new ArgumentNullException(nameof(fileName));
 
             return
                 GenerateFormattedFileNames(fileName)
@@ -104,7 +104,7 @@ namespace Papercut.Core.Helper
         static IEnumerable<string> GenerateFormattedFileNames([NotNull] string fileName)
         {
             if (fileName == null)
-                throw new ArgumentNullException("fileName");
+                throw new ArgumentNullException(nameof(fileName));
 
             var fileSansExtension = Path.GetFileNameWithoutExtension(fileName);
             var extension = Path.GetExtension(fileName);

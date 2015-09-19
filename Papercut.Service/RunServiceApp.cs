@@ -22,7 +22,6 @@ namespace Papercut.Service
     using Autofac;
 
     using Papercut.Core;
-    using Papercut.Service.Logging;
     using Papercut.Service.Services;
 
     using Serilog;
@@ -50,7 +49,7 @@ namespace Papercut.Service
 
         void ConfigureHost(HostConfigurator x)
         {
-            x.UseSerilog(_container.Resolve<ILogger>());
+            x.UseSerilog();
             x.Service<PapercutServerService>(
                 s =>
                 {

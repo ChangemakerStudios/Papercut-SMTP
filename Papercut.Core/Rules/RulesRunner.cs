@@ -46,8 +46,8 @@ namespace Papercut.Core.Rules
 
         public void Run([NotNull] IRule[] rules, [NotNull] MessageEntry messageEntry)
         {
-            if (rules == null) throw new ArgumentNullException("rules");
-            if (messageEntry == null) throw new ArgumentNullException("messageEntry");
+            if (rules == null) throw new ArgumentNullException(nameof(rules));
+            if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
             foreach (IRule rule in rules.Where(_ => _.IsEnabled))
             {

@@ -42,7 +42,7 @@ namespace Papercut.Services
 
         public string CreateFile(MimeMessage mailMessageEx)
         {
-            if (mailMessageEx == null) throw new ArgumentNullException("mailMessageEx");
+            if (mailMessageEx == null) throw new ArgumentNullException(nameof(mailMessageEx));
 
             var tempDir = CreateUniqueTempDirectory();
             var visitor = new HtmlPreviewVisitor(tempDir);

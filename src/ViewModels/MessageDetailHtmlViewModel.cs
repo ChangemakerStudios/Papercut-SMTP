@@ -62,10 +62,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public bool HasHtmlFile
-        {
-            get { return !string.IsNullOrWhiteSpace(HtmlFile); }
-        }
+        public bool HasHtmlFile => !string.IsNullOrWhiteSpace(HtmlFile);
 
         [DllImport("urlmon.dll")]
         [PreserveSig]
@@ -78,7 +75,7 @@ namespace Papercut.ViewModels
         public void ShowMessage([NotNull] MimeMessage mailMessageEx)
         {
             if (mailMessageEx == null)
-                throw new ArgumentNullException("mailMessageEx");
+                throw new ArgumentNullException(nameof(mailMessageEx));
 
             Observable.Start(() =>
             {

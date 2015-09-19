@@ -34,7 +34,7 @@ namespace Papercut.Core.Helper
         public static MimeMessage CloneMessage([NotNull] this MimeMessage mimeMessage)
         {
             if (mimeMessage == null)
-                throw new ArgumentNullException("mimeMessage");
+                throw new ArgumentNullException(nameof(mimeMessage));
 
             using (var ms = new MemoryStream())
             {
@@ -49,7 +49,7 @@ namespace Papercut.Core.Helper
         public static string GetStringDump([NotNull] this MimeMessage mimeMessage)
         {
             if (mimeMessage == null)
-                throw new ArgumentNullException("mimeMessage");
+                throw new ArgumentNullException(nameof(mimeMessage));
 
             using (var ms = new MemoryStream())
             {
@@ -69,11 +69,11 @@ namespace Papercut.Core.Helper
         public static string GetExtension([NotNull] this ContentType contentType)
         {
             if (contentType == null)
-                throw new ArgumentNullException("contentType");
+                throw new ArgumentNullException(nameof(contentType));
 
             return
                 Registry.ClassesRoot.OpenSubKey(
-                    string.Format(@"MIME\Database\Content Type\{0}/{1}", contentType.MediaType, contentType.MediaSubtype),
+                    $@"MIME\Database\Content Type\{contentType.MediaType}/{contentType.MediaSubtype}",
                     false)
                     .ToEnumerable()
                     .Select(k => k.GetValue("Extension", null))
@@ -85,7 +85,7 @@ namespace Papercut.Core.Helper
         public static IEnumerable<MimePart> GetImages([NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
         {
             if (prefilteredMimeParts == null)
-                throw new ArgumentNullException("prefilteredMimeParts");
+                throw new ArgumentNullException(nameof(prefilteredMimeParts));
 
             return prefilteredMimeParts.Where(e => e.ContentType.Matches("image", "*"));
         }
@@ -93,7 +93,7 @@ namespace Papercut.Core.Helper
         public static IEnumerable<MimePart> GetAttachments([NotNull] this IEnumerable<MimePart> prefilteredMimeParts)
         {
             if (prefilteredMimeParts == null)
-                throw new ArgumentNullException("prefilteredMimeParts");
+                throw new ArgumentNullException(nameof(prefilteredMimeParts));
 
             return prefilteredMimeParts.Where(p => p.IsAttachment);
         }

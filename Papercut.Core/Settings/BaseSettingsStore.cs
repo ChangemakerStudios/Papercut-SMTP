@@ -47,14 +47,14 @@ namespace Papercut.Core.Settings
         {
             get
             {
-                if (key == null) throw new ArgumentNullException("key");
+                if (key == null) throw new ArgumentNullException(nameof(key));
 
                 string value;
                 return CurrentSettings.TryGetValue(key, out value) ? value : null;
             }
             set
             {
-                if (key == null) throw new ArgumentNullException("key");
+                if (key == null) throw new ArgumentNullException(nameof(key));
 
                 CurrentSettings.AddOrUpdate(key, value, (k, v) => value);
             }

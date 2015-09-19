@@ -28,7 +28,7 @@ namespace Papercut.Core.Helper
             int bufferSize = 0xFF0,
             Encoding encoding = null)
         {
-            if (stream == null) throw new ArgumentNullException("stream");
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             var serverbuff = new byte[bufferSize];
 
@@ -41,14 +41,14 @@ namespace Papercut.Core.Helper
 
         public static void WriteFormat(this Stream stream, string format, params object[] args)
         {
-            if (stream == null) throw new ArgumentNullException("stream");
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             stream.WriteStr(string.Format(format, args));
         }
 
         public static void WriteLine(this Stream stream, string str, Encoding encoding = null)
         {
-            if (stream == null) throw new ArgumentNullException("stream");
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             encoding = encoding ?? Encoding.ASCII;
 
@@ -57,7 +57,7 @@ namespace Papercut.Core.Helper
 
         public static void WriteStr(this Stream stream, string str, Encoding encoding = null)
         {
-            if (stream == null) throw new ArgumentNullException("stream");
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             encoding = encoding ?? Encoding.ASCII;
 

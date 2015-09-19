@@ -42,10 +42,7 @@ namespace Papercut.Core.Rules
 
         public string RuleFileName { get; set; }
 
-        public ObservableCollection<IRule> Rules
-        {
-            get { return _rules.Value; }
-        }
+        public ObservableCollection<IRule> Rules => _rules.Value;
 
         protected virtual ObservableCollection<IRule> GetRulesCollection()
         {

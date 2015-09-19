@@ -26,21 +26,21 @@ namespace Papercut.Core.Settings
         public static T UseTyped<T>([NotNull] this ISettingStore settingStore)
             where T : ISettingsTyped, new()
         {
-            if (settingStore == null) throw new ArgumentNullException("settingStore");
+            if (settingStore == null) throw new ArgumentNullException(nameof(settingStore));
 
             return new T { Settings = settingStore };
         }
 
         public static void Save([NotNull] this ISettingsTyped typedSettings)
         {
-            if (typedSettings == null) throw new ArgumentNullException("typedSettings");
+            if (typedSettings == null) throw new ArgumentNullException(nameof(typedSettings));
 
             typedSettings.Settings.Save();
         }
 
         public static void Load([NotNull] this ISettingsTyped typedSettings)
         {
-            if (typedSettings == null) throw new ArgumentNullException("typedSettings");
+            if (typedSettings == null) throw new ArgumentNullException(nameof(typedSettings));
 
             typedSettings.Settings.Load();
         }

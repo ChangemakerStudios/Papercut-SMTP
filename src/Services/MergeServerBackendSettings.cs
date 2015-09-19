@@ -40,7 +40,7 @@ namespace Papercut.Services
 
         public void Handle([NotNull] AppProcessExchangeEvent @event)
         {
-            if (@event == null) throw new ArgumentNullException("event");
+            if (@event == null) throw new ArgumentNullException(nameof(@event));
 
             if (string.IsNullOrWhiteSpace(@event.MessageWritePath))
                 return;

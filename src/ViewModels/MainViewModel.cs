@@ -131,15 +131,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string Version
-        {
-            get
-            {
-                return string.Format(
-                    "Papercut v{0}",
-                    Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
-            }
-        }
+        public string Version => $"Papercut v{Assembly.GetExecutingAssembly().GetName().Version.ToString(3)}";
 
         public bool IsLogOpen
         {

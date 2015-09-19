@@ -19,7 +19,7 @@
                 if (value == _regexHeaderMatch)
                     return;
                 _regexHeaderMatch = value.IsSet() && value.IsValidRegex() ? value : null; ;
-                OnPropertyChanged("RegexHeaderMatch");
+                OnPropertyChanged(nameof(RegexHeaderMatch));
             }
         }
 
@@ -32,21 +32,15 @@
                     return;
 
                 _regexBodyMatch = value.IsSet() && value.IsValidRegex() ? value : null;
-                OnPropertyChanged("RegexBodyMatch");
+                OnPropertyChanged(nameof(RegexBodyMatch));
             }
         }
 
-        public override string Type
-        {
-            get { return "Conditional Forward"; }
-        }
+        public override string Type => "Conditional Forward";
 
         public override string ToString()
         {
-            return string.Format("{0}\r\nRegex Header Match: {1}\r\nRegex Body Match: {2}",
-                base.ToString(),
-                RegexHeaderMatch,
-                RegexBodyMatch);
+            return $"{base.ToString()}\r\nRegex Header Match: {RegexHeaderMatch}\r\nRegex Body Match: {RegexBodyMatch}";
         }
     }
 }

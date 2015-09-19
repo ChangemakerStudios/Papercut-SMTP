@@ -33,7 +33,7 @@ namespace Papercut.Core.Network
             int port,
             IScheduler scheduler = null)
         {
-            if (server == null) throw new ArgumentNullException("server");
+            if (server == null) throw new ArgumentNullException(nameof(server));
 
             IObservable<bool> bindObservable = Observable.Create(
                 (IObserver<bool> o) =>

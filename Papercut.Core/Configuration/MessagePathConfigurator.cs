@@ -62,8 +62,8 @@ namespace Papercut.Core.Configuration
 
         public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
         {
-            if (pathTemplateProvider == null) throw new ArgumentNullException("pathTemplateProvider");
-            if (logger == null) throw new ArgumentNullException("logger");
+            if (pathTemplateProvider == null) throw new ArgumentNullException(nameof(pathTemplateProvider));
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
 
             _logger = logger;
             _pathTemplateProvider = pathTemplateProvider;
@@ -120,7 +120,7 @@ namespace Papercut.Core.Configuration
         protected virtual void OnRefreshLoadPath()
         {
             EventHandler handler = RefreshLoadPath;
-            if (handler != null) handler(this, EventArgs.Empty);
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         string RenderPathTemplate(string pathTemplate)
@@ -137,7 +137,7 @@ namespace Papercut.Core.Configuration
                 if (_templateDictionary.TryGetValue(pathKeyName, out path))
                 {
                     renderedPath =
-                        renderedPath.Replace(string.Format("%{0}%", pathKeyName), path)
+                        renderedPath.Replace($"%{pathKeyName}%", path)
                             .Replace(@"\\", @"\");
                 }
             }
@@ -147,7 +147,7 @@ namespace Papercut.Core.Configuration
 
         bool ValidatePathExists(string path)
         {
-            if (path == null) throw new ArgumentNullException("path");
+            if (path == null) throw new ArgumentNullException(nameof(path));
 
             try
             {

@@ -48,10 +48,7 @@ namespace Papercut
             AssemblyResolutionHelper.SetupEmbeddedAssemblyResolve();
         }
 
-        public ILifetimeScope Container
-        {
-            get { return _lifetimeScope.Value; }
-        }
+        public ILifetimeScope Container => _lifetimeScope.Value;
 
         protected override void OnStartup(StartupEventArgs e)
         {

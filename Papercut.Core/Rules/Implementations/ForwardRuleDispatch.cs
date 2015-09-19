@@ -37,8 +37,8 @@ namespace Papercut.Core.Rules.Implementations
 
         public void Dispatch([NotNull] ForwardRule rule, [NotNull] MessageEntry messageEntry)
         {
-            if (rule == null) throw new ArgumentNullException("rule");
-            if (messageEntry == null) throw new ArgumentNullException("messageEntry");
+            if (rule == null) throw new ArgumentNullException(nameof(rule));
+            if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
             _mimeMessageLoader.Value.Get(messageEntry)
                 .Select(m => m.CloneMessage())

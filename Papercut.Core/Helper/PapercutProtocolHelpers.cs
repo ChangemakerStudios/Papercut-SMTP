@@ -26,8 +26,8 @@ namespace Papercut.Core.Helper
     {
         public static object ReadObj(this Socket socket, Type type, int payloadSize)
         {
-            if (socket == null) throw new ArgumentNullException("socket");
-            if (type == null) throw new ArgumentNullException("type");
+            if (socket == null) throw new ArgumentNullException(nameof(socket));
+            if (type == null) throw new ArgumentNullException(nameof(type));
 
             using (var networkStream = new NetworkStream(socket, false))
             using (var memoryStream = new MemoryStream())

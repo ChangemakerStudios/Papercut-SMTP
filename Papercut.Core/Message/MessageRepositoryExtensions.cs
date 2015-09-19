@@ -25,8 +25,8 @@ namespace Papercut.Core.Message
             this MessageRepository messageRepository,
             MessageEntry entry)
         {
-            if (messageRepository == null) throw new ArgumentNullException("messageRepository");
-            if (entry == null) throw new ArgumentNullException("entry");
+            if (messageRepository == null) throw new ArgumentNullException(nameof(messageRepository));
+            if (entry == null) throw new ArgumentNullException(nameof(entry));
 
             return messageRepository.GetMessage(entry.File);
         }

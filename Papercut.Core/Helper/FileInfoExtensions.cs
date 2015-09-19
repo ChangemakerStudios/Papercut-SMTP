@@ -24,7 +24,7 @@ namespace Papercut.Core.Helper
     {
         public static bool CanReadFile(this FileInfo file)
         {
-            if (file == null) throw new ArgumentNullException("file");
+            if (file == null) throw new ArgumentNullException(nameof(file));
 
             try
             {
@@ -43,7 +43,7 @@ namespace Papercut.Core.Helper
 
         public static bool TryReadFile(this FileInfo file, out byte[] fileBytes)
         {
-            if (file == null) throw new ArgumentNullException("file");
+            if (file == null) throw new ArgumentNullException(nameof(file));
 
             fileBytes = null;
 

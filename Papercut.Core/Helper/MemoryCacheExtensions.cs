@@ -62,9 +62,9 @@ namespace Papercut.Core.Helper
             [NotNull] Func<T> getValue,
             [NotNull] Action<T> addToCacheFunction)
         {
-            if (key == null) throw new ArgumentNullException("key");
-            if (getValue == null) throw new ArgumentNullException("getValue");
-            if (addToCacheFunction == null) throw new ArgumentNullException("addToCacheFunction");
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (getValue == null) throw new ArgumentNullException(nameof(getValue));
+            if (addToCacheFunction == null) throw new ArgumentNullException(nameof(addToCacheFunction));
 
             var cachedItem = (T)(cache[key]);
 
@@ -106,7 +106,7 @@ namespace Papercut.Core.Helper
         [NotNull]
         static object GetLockObject([NotNull] string originalKey)
         {
-            if (originalKey == null) throw new ArgumentNullException("originalKey");
+            if (originalKey == null) throw new ArgumentNullException(nameof(originalKey));
 
             int keyHash = originalKey.GetHashCode();
 

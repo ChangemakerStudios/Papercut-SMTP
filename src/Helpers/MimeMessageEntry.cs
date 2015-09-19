@@ -43,7 +43,7 @@ namespace Papercut.Helpers
             protected set
             {
                 _subject = value;
-                OnPropertyChanged("Subject");
+                OnPropertyChanged(nameof(Subject));
             }
         }
     }

@@ -193,10 +193,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public bool HasAttachments
-        {
-            get { return AttachmentCount > 0; }
-        }
+        public bool HasAttachments => AttachmentCount > 0;
 
         public string HtmlFile
         {
@@ -220,8 +217,7 @@ namespace Papercut.ViewModels
 
         public void LoadMessageEntry(MessageEntry messageEntry)
         {
-            if (_loadingDisposable != null)
-                _loadingDisposable.Dispose();
+            _loadingDisposable?.Dispose();
 
             var handleLoading = !IsLoading;
 

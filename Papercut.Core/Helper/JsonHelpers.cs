@@ -45,8 +45,8 @@ namespace Papercut.Core.Helper
             JsonSerializerSettings setting = null)
             where T : class
         {
-            if (obj == null) throw new ArgumentNullException("obj");
-            if (path == null) throw new ArgumentNullException("path");
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+            if (path == null) throw new ArgumentNullException(nameof(path));
 
             string json = JsonConvert.SerializeObject(
                 obj,
@@ -63,9 +63,9 @@ namespace Papercut.Core.Helper
             JsonSerializerSettings setting = null)
             where T : class
         {
-            if (path == null) throw new ArgumentNullException("path");
+            if (path == null) throw new ArgumentNullException(nameof(path));
 
-            if (!File.Exists(path)) return defaultValueFunc == null ? default(T) : defaultValueFunc();
+            if (!File.Exists(path)) return defaultValueFunc?.Invoke();
 
             string json = File.ReadAllText(path, textEncoding ?? Encoding.UTF8);
 

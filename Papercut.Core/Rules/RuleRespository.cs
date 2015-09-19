@@ -27,15 +27,15 @@ namespace Papercut.Core.Rules
     {
         public void SaveRules([NotNull] IList<IRule> rules, string path)
         {
-            if (rules == null) throw new ArgumentNullException("rules");
-            if (path == null) throw new ArgumentNullException("path");
+            if (rules == null) throw new ArgumentNullException(nameof(rules));
+            if (path == null) throw new ArgumentNullException(nameof(path));
 
             JsonHelpers.SaveJson(rules, path);
         }
 
         public IList<IRule> LoadRules([NotNull] string path)
         {
-            if (path == null) throw new ArgumentNullException("path");
+            if (path == null) throw new ArgumentNullException(nameof(path));
 
             return JsonHelpers.LoadJson<IList<IRule>>(path, () => new List<IRule>(0));
         }

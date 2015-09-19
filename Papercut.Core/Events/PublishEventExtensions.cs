@@ -29,7 +29,7 @@ namespace Papercut.Core.Events
             object @event,
             Type eventType)
         {
-            if (publishEvent == null) throw new ArgumentNullException("publishEvent");
+            if (publishEvent == null) throw new ArgumentNullException(nameof(publishEvent));
 
             MethodInfo publishMethod = _publishMethodInfo.MakeGenericMethod(eventType);
             publishMethod.Invoke(publishEvent, new[] { @event });

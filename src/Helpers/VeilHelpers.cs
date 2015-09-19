@@ -37,14 +37,11 @@ namespace Papercut.Helpers
             _lazyVailEngine = new Lazy<VeilEngine>(() => new VeilEngine());
         }
 
-        static VeilEngine VailEngine
-        {
-            get { return _lazyVailEngine.Value; }
-        }
+        static VeilEngine VailEngine => _lazyVailEngine.Value;
 
         static Action<TextWriter, object> GetCompiledTemplate([NotNull] string templateString, Type modelType)
         {
-            if (templateString == null) throw new ArgumentNullException("templateString");
+            if (templateString == null) throw new ArgumentNullException(nameof(templateString));
 
             var parsedTemplate = _parsedCache.GetOrAdd(templateString,
                 t =>
@@ -58,8 +55,8 @@ namespace Papercut.Helpers
 
         public static string RenderTemplate([NotNull] this string template, [NotNull] object model)
         {
-            if (template == null) throw new ArgumentNullException("template");
-            if (model == null) throw new ArgumentNullException("model");
+            if (template == null) throw new ArgumentNullException(nameof(template));
+            if (model == null) throw new ArgumentNullException(nameof(model));
 
             using (var writer = new StringWriter())
             {

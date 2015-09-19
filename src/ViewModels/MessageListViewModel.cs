@@ -71,13 +71,13 @@ namespace Papercut.ViewModels
             ILogger logger)
         {
             if (messageRepository == null)
-                throw new ArgumentNullException("messageRepository");
+                throw new ArgumentNullException(nameof(messageRepository));
             if (messageWatcher == null)
-                throw new ArgumentNullException("messageWatcher");
+                throw new ArgumentNullException(nameof(messageWatcher));
             if (mimeMessageLoader == null)
-                throw new ArgumentNullException("mimeMessageLoader");
+                throw new ArgumentNullException(nameof(mimeMessageLoader));
             if (publishEvent == null)
-                throw new ArgumentNullException("publishEvent");
+                throw new ArgumentNullException(nameof(publishEvent));
 
             _messageRepository = messageRepository;
             _messageWatcher = messageWatcher;
@@ -93,25 +93,13 @@ namespace Papercut.ViewModels
 
         public ICollectionView MessagesSorted { get; private set; }
 
-        public MimeMessageEntry SelectedMessage
-        {
-            get { return GetSelected().FirstOrDefault(); }
-        }
+        public MimeMessageEntry SelectedMessage => GetSelected().FirstOrDefault();
 
-        public string DeleteText
-        {
-            get { return UIStrings.DeleteTextTemplate.RenderTemplate(this); }
-        }
+        public string DeleteText => UIStrings.DeleteTextTemplate.RenderTemplate(this);
 
-        public bool HasSelectedMessage
-        {
-            get { return GetSelected().Any(); }
-        }
+        public bool HasSelectedMessage => GetSelected().Any();
 
-        public int SelectedMessageCount
-        {
-            get { return GetSelected().Count(); }
-        }
+        public int SelectedMessageCount => GetSelected().Count();
 
         public bool IsLoading
         {
@@ -131,7 +119,7 @@ namespace Papercut.ViewModels
         int? GetIndexOfMessage(MessageEntry entry)
         {
             if (entry == null)
-                throw new ArgumentNullException("entry");
+                throw new ArgumentNullException(nameof(entry));
 
             int index = MessagesSorted.OfType<MessageEntry>().FindIndex(m => Equals(entry, m));
 
@@ -198,10 +186,7 @@ namespace Papercut.ViewModels
                             new ShowBallonTip(
                                 5000,
                                 "New Message Received",
-                                string.Format(
-                                    "From: {0}\r\nSubject: {1}",
-                                    message.From.ToString().Truncate(50),
-                                    message.Subject.Truncate(50)),
+                                $"From: {message.From.ToString().Truncate(50)}\r\nSubject: {message.Subject.Truncate(50)}",
                                 ToolTipIcon.Info));
 
                         // Add it to the list box
@@ -296,9 +281,7 @@ namespace Papercut.ViewModels
                     _publishEvent.Publish(
                         new ShowMessageEvent(
                             string.Join("\r\n", failedEntries),
-                            string.Format(
-                                "Failed to Delete Message{0}",
-                                failedEntries.Count() > 1 ? "s" : string.Empty)));
+                            $"Failed to Delete Message{(failedEntries.Count() > 1 ? "s" : string.Empty)}"));
                 }
             }
         }
