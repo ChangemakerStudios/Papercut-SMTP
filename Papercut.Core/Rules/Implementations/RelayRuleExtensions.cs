@@ -18,33 +18,32 @@
 namespace Papercut.Core.Rules.Implementations
 {
     using System;
-    using MimeKit;
-
+    using MailKit.Net.Smtp;
     using Papercut.Core.Annotations;
 
-    public static class ForwardRuleExtensions
+
+    public static class RelayRuleExtensions
     {
-        public static void PopulateFromRule(
-            [NotNull] this MimeMessage mimeMessage,
-            [NotNull] ForwardRule forwardRule)
+        public static SmtpClient CreateConnectedSmtpClient([NotNull] this RelayRule forwardRule)
         {
             if (forwardRule == null) throw new ArgumentNullException(nameof(forwardRule));
-            if (mimeMessage == null) throw new ArgumentNullException(nameof(mimeMessage));
 
-            if (!string.IsNullOrWhiteSpace(forwardRule.FromEmail))
+            var client = new SmtpClient();
+
+            client.Connect(forwardRule.SmtpServer, forwardRule.SmtpPort, forwardRule.SmtpUseSSL);
+
+            // Note: since we don't have an OAuth2 token, disable
+            // the XOAUTH2 authentication mechanism.
+            client.AuthenticationMechanisms.Remove("XOAUTH2");
+
+            if (!string.IsNullOrWhiteSpace(forwardRule.SmtpPassword)
+                && !string.IsNullOrWhiteSpace(forwardRule.SmtpUsername))
             {
-                mimeMessage.From.Clear();
-                mimeMessage.From.Add(
-                    new MailboxAddress(forwardRule.FromEmail, forwardRule.FromEmail));
+                // Note: only needed if the SMTP server requires authentication
+                client.Authenticate(forwardRule.SmtpUsername, forwardRule.SmtpPassword);
             }
 
-            if (!string.IsNullOrWhiteSpace(forwardRule.ToEmail))
-            {
-                mimeMessage.To.Clear();
-                mimeMessage.Bcc.Clear();
-                mimeMessage.Cc.Clear();
-                mimeMessage.To.Add(new MailboxAddress(forwardRule.ToEmail, forwardRule.ToEmail));
-            }
+            return client;
         }
     }
 }

@@ -15,25 +15,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using MimeKit;
 using Serilog;
 
 namespace Papercut.Core.Rules.Implementations
 {
     using System;
+    using MimeKit;
     using Papercut.Core.Message;
 
-    public class ForwardRuleDispatch : BaseRelayRuleDispatch<ForwardRule>
+    public class RelayRuleDispatch : BaseRelayRuleDispatch<RelayRule>
     {
-        public ForwardRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
+        public RelayRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
             : base(mimeMessageLoader, logger)
         {
-        }
-
-        protected override void PopulateMessageFromRule(ForwardRule rule, MimeMessage mimeMessage)
-        {
-            base.PopulateMessageFromRule(rule, mimeMessage);
-            mimeMessage.PopulateFromRule(rule);
         }
     }
 }

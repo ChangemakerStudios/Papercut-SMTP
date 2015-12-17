@@ -58,13 +58,14 @@ namespace Papercut.Core.Message
                 o =>
                 {
                     // in case of multiple subscriptions...
-                    var observer = Observer.Synchronize(o);
-
+                    var observer = Observer.Synchronize(o, true);
                     var disposable = new CancellationDisposable();
+
+                    MimeMessage message = null;
 
                     try
                     {
-                        var message = MimeMessageCache.GetOrSet(
+                         message = MimeMessageCache.GetOrSet(
                             messageEntry.File,
                             () =>
                             {
@@ -98,9 +99,6 @@ namespace Papercut.Core.Message
 
                                 MimeMessageCache.Add(messageEntry.File, m, policy);
                             });
-
-                        observer.OnNext(message);
-                        observer.OnCompleted();
                     }
                     catch (OperationCanceledException)
                     {
@@ -110,6 +108,12 @@ namespace Papercut.Core.Message
                     {
                         _logger.Error(ex, "Exception Loading {@MessageEntry}", messageEntry);
                         observer.OnError(ex);
+                    }
+
+                    if (message != null)
+                    {
+                        observer.OnNext(message);
+                        observer.OnCompleted();
                     }
 
                     return disposable;

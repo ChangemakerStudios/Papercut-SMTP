@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Collections.Generic;
+
 namespace Papercut.Core.Helper
 {
     using System;
@@ -40,6 +42,11 @@ namespace Papercut.Core.Helper
         public static bool IsSet([CanBeNull] this string str)
         {
             return !string.IsNullOrWhiteSpace(str);
+        }
+
+        public static string Join([CanBeNull] this IEnumerable<string> strings, string seperator)
+        {
+            return string.Join(seperator, strings.IfNullEmpty());
         }
 
         public static string ToTitleCase([CanBeNull] this string str, CultureInfo culture = null)

@@ -18,9 +18,11 @@
 namespace Papercut.Core.Rules
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
-
+    using System.Linq;
     using Papercut.Core.Annotations;
+    using Papercut.Core.Helper;
 
     [Serializable]
     public abstract class RuleBase : IRule
@@ -56,7 +58,18 @@ namespace Papercut.Core.Rules
 
         [Category("Information")]
         [Browsable(false)]
-        public virtual string Description => ToString();
+        public virtual string Description
+            =>
+                GetPropertiesForDescription()
+                    .Where(s => !s.Key.IsAny("Id", "Type", "Description"))
+                    .OrderBy(s => s.Key)
+                    .ToFormattedPairs()
+                    .Join("\r\n");
+
+        protected virtual IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
+        {
+            return this.GetProperties();
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

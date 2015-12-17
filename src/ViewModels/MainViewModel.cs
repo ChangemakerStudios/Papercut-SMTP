@@ -289,12 +289,12 @@ namespace Papercut.ViewModels
 
                     var forwardRule = new ForwardRule
                     {
-                        SMTPServer = forwardViewModel.Server,
+                        SmtpServer = forwardViewModel.Server,
                         FromEmail = forwardViewModel.From,
                         ToEmail = forwardViewModel.To
                     };
 
-                    // send message using forward dispatcher...
+                    // send message using relay dispatcher...
                     _forwardRuleDispatch.Dispatch(
                         forwardRule,
                         MessageListViewModel.SelectedMessage);

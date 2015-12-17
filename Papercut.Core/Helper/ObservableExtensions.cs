@@ -18,24 +18,20 @@
 namespace Papercut.Core.Helper
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    using System.Reactive.Linq;
 
-    public static class EnumerableExtensions
+    public static class ObservableExtensions
     {
-        public static IEnumerable<T> IfNullEmpty<T>(this IEnumerable<T> enumerable)
+        public static IObservable<T> RetryWithDelay<T>(this IObservable<T> source, int retryCount, TimeSpan timeSpan)
         {
-            if (enumerable == null)
-                return Enumerable.Empty<T>();
+            if (source == null)
+                throw new ArgumentNullException("source");
+            if (timeSpan < TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException("timeSpan");
+            if (timeSpan == TimeSpan.Zero)
+                return source.Retry(retryCount);
 
-            return enumerable;
-        }
-
-        public static IEnumerable<string> ToFormattedPairs(this IEnumerable<KeyValuePair<string, Lazy<object>>> keyValuePairs)
-        {
-            return keyValuePairs.IfNullEmpty().Select(s => KeyValuePair.Create(s.Key, string.Format("{0}", s.Value.Value)))
-                .Where(s => s.Value.IsSet())
-                .Select(s => $"{s.Key}: {s.Value}");
+            return source.Catch(Observable.Timer(timeSpan).SelectMany(_ => source).Retry(retryCount));
         }
     }
 }

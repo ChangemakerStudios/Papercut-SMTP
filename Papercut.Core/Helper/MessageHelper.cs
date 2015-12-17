@@ -63,7 +63,7 @@ namespace Papercut.Core.Helper
 
         public static bool IsContentHtml([NotNull] this TextPart textPart)
         {
-            return textPart.ContentType.Matches("text", "html");
+            return textPart.ContentType.IsMimeType("text", "html");
         }
 
         public static string GetExtension([NotNull] this ContentType contentType)
@@ -87,7 +87,7 @@ namespace Papercut.Core.Helper
             if (prefilteredMimeParts == null)
                 throw new ArgumentNullException(nameof(prefilteredMimeParts));
 
-            return prefilteredMimeParts.Where(e => e.ContentType.Matches("image", "*"));
+            return prefilteredMimeParts.Where(e => e.ContentType.IsMimeType("image", "*"));
         }
 
         public static IEnumerable<MimePart> GetAttachments([NotNull] this IEnumerable<MimePart> prefilteredMimeParts)

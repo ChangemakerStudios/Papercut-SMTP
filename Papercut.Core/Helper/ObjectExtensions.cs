@@ -15,13 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using Papercut.Core.Annotations;
+
 namespace Papercut.Core.Helper
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-
-    using Papercut.Core.Annotations;
+    using System.Reflection;
 
     public static class ObjectExtensions
     {
@@ -46,15 +48,16 @@ namespace Papercut.Core.Helper
             else if (!(instance is IConvertible) && !instance.GetType().IsValueType)
             {
                 // just cast since it's a class....
-                return (T)instance;
+                return (T) instance;
             }
 
-            Type conversionType = typeof(T);
+            var conversionType = typeof (T);
 
             if (conversionType.IsGenericType
-                && conversionType.GetGenericTypeDefinition() == typeof(Nullable<>)) conversionType = (new NullableConverter(conversionType)).UnderlyingType;
+                && conversionType.GetGenericTypeDefinition() == typeof (Nullable<>))
+                conversionType = new NullableConverter(conversionType).UnderlyingType;
 
-            return (T)Convert.ChangeType(instance, conversionType);
+            return (T) Convert.ChangeType(instance, conversionType);
         }
 
         /// <summary>
@@ -91,6 +94,36 @@ namespace Papercut.Core.Helper
         public static IEnumerable<T> ToEnumerable<T>(this T obj)
         {
             if (!obj.IsDefault()) yield return obj;
+        }
+
+        /// <summary>
+        /// Gets all properties on T obj as an IEnumerable of key/value pairs.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static IEnumerable<KeyValuePair<string, Lazy<object>>> GetProperties<T>([NotNull] this T obj)
+            where T : class
+        {
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+
+            var type = typeof (T);
+
+            var properties =
+                type.GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance |
+                                   BindingFlags.GetProperty);
+
+            foreach (var prop in properties)
+            {
+                var displayName =
+                    prop.GetCustomAttributes(typeof (DisplayNameAttribute), false)
+                        .OfType<DisplayNameAttribute>()
+                        .FirstOrDefault();
+
+                yield return
+                    KeyValuePair.Create(displayName?.DisplayName ?? prop.Name,
+                        new Lazy<object>(() => prop.GetValue(obj, null)));
+            }
         }
     }
 }
