@@ -175,16 +175,16 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!--<Target Name="EmbedReferencedAssemblies" AfterTargets="ResolveAssemblyReferences">
+  <Target Name="EmbedReferencedAssemblies" AfterTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <AssembliesToEmbed Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
       <EmbeddedResource Include="@(AssembliesToEmbed)">
         <LogicalName>%(AssembliesToEmbed.DestinationSubDirectory)%(AssembliesToEmbed.Filename)%(AssembliesToEmbed.Extension)</LogicalName>
       </EmbeddedResource>
-      --><!--<ReferenceCopyLocalPaths Remove="@(AssembliesToEmbed)" />--><!--
+      <!--<ReferenceCopyLocalPaths Remove="@(AssembliesToEmbed)" />-->
     </ItemGroup>
     <Message Importance="high" Text="Embedding: @(AssembliesToEmbed->'%(DestinationSubDirectory)%(Filename)%(Extension)', ', ')" />
-  </Target>-->
-  <!--<Target Name="_CopyFilesMarkedCopyLocal" />-->
+  </Target>
+  <Target Name="_CopyFilesMarkedCopyLocal" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
 </Project>

@@ -172,7 +172,7 @@ namespace Papercut.Core
 #if DEBUG
                         .MinimumLevel.Verbose()
 #else
-                            .MinimumLevel.Information()
+                         .MinimumLevel.Information()
 #endif
                         .Enrich.With<EnvironmentEnricher>()
                         .Enrich.WithThreadId()
@@ -192,6 +192,9 @@ namespace Papercut.Core
                     Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
                 }
 
+                // support self-logging
+                Serilog.Debugging.SelfLog.Out = Console.Error;
+
                 return logConfiguration;
             }).AsSelf().SingleInstance();
 
@@ -200,11 +203,8 @@ namespace Papercut.Core
                 {
                     Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
 
-                    // support self-logging
-                    Serilog.Debugging.SelfLog.Out = Console.Error;
-
                     return Log.Logger;
-                }).As<ILogger>().SingleInstance();
+                }).As<ILogger>();
         }
 
         protected override void AttachToComponentRegistration(
