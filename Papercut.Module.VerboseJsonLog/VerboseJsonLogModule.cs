@@ -17,13 +17,22 @@
 
 namespace Papercut.Module.VerboseJsonLog
 {
+    using System.Collections.Generic;
     using Autofac;
+    using Autofac.Core;
+    using Papercut.Core.Helper;
+    using Papercut.Core.Plugins;
 
-    public class VerboseJsonLogModule : Autofac.Module
+    public class VerboseJsonLogModule : Module, IPluginModule
     {
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<SetupVerboseJsonLoggingHandler>().AsImplementedInterfaces();
         }
+
+        public string Name => "Verbose (JSON) Serilog Logging";
+        public string Version => ThisAssembly.GetVersion();
+        public string Description => "Verbose (JSON) Serilog Logging Support for Papercut";
+        public IEnumerable<IModule> Modules => new[] {this};
     }
 }
