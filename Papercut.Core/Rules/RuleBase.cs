@@ -21,6 +21,7 @@ namespace Papercut.Core.Rules
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
+    using Newtonsoft.Json;
     using Papercut.Core.Annotations;
     using Papercut.Core.Helper;
 
@@ -58,6 +59,7 @@ namespace Papercut.Core.Rules
 
         [Category("Information")]
         [Browsable(false)]
+        [JsonIgnore]
         public virtual string Description
             =>
                 GetPropertiesForDescription()
