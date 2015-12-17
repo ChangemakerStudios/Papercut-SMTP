@@ -17,6 +17,8 @@
 
 namespace Papercut
 {
+    using System.Collections.Generic;
+    using System.Reflection;
     using Autofac;
     using Autofac.Core;
 
@@ -27,10 +29,12 @@ namespace Papercut
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
+    using Papercut.Core.Plugins;
     using Papercut.Events;
     using Papercut.Helpers;
+    using Module = Autofac.Module;
 
-    public class PapercutUIModule : Module
+    public class PapercutUIModule : Module, IPluginModule
     {
         protected override void Load(ContainerBuilder builder)
         {
@@ -39,7 +43,7 @@ namespace Papercut
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
 
-            builder.Register((c) => new ApplicationMeta("Papercut"))
+            builder.Register(c => new ApplicationMeta("Papercut"))
                 .As<IAppMeta>()
                 .SingleInstance();
 
@@ -94,6 +98,14 @@ namespace Papercut
         {
             // Automatically calls subscribe on activated Windows, Views and ViewModels
             e.Context.Resolve<IEventAggregator>().Subscribe(e.Instance);
+        }
+
+        public string Name => "Papercut UI";
+        public string Version => Assembly.GetExecutingAssembly().GetVersion();
+        public string Description => "Papercut WPF UI";
+        public IEnumerable<IModule> Modules
+        {
+            get { yield return this; }
         }
     }
 }

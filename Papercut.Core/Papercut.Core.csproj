@@ -119,6 +119,7 @@
     <Compile Include="Events\PublishEventExtensions.cs" />
     <Compile Include="Events\SmtpServerBindFailedEvent.cs" />
     <Compile Include="Events\SmtpServerBindEvent.cs" />
+    <Compile Include="Helper\AssemblyHelper.cs" />
     <Compile Include="Helper\AssemblyScanner.cs" />
     <Compile Include="Configuration\IMessagePathConfigurator.cs" />
     <Compile Include="Configuration\IPathTemplatesProvider.cs" />
@@ -140,6 +141,8 @@
     <Compile Include="Helper\ObjectExtensions.cs" />
     <Compile Include="Helper\StreamExtensions.cs" />
     <Compile Include="Helper\StringHelpers.cs" />
+    <Compile Include="Plugins\IPluginModule.cs" />
+    <Compile Include="Plugins\IPluginStore.cs" />
     <Compile Include="Message\IFile.cs" />
     <Compile Include="Message\MessageWatcher.cs" />
     <Compile Include="Message\ReceivedDataMessageHandler.cs" />
@@ -158,6 +161,8 @@
     <Compile Include="Network\SmtpContext.cs" />
     <Compile Include="Network\ISmtpCommand.cs" />
     <Compile Include="Network\ISmtpContext.cs" />
+    <Compile Include="Plugins\PluginMetrics.cs" />
+    <Compile Include="Plugins\PluginStore.cs" />
     <Compile Include="Rules\Implementations\BaseRelayRuleDispatch.cs" />
     <Compile Include="Rules\Implementations\ConditionalForwardRuleExtensions.cs" />
     <Compile Include="Rules\Implementations\ConditionalForwardRule.cs" />

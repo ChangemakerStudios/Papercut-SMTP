@@ -13,7 +13,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Core
 {
@@ -22,29 +22,49 @@ namespace Papercut.Core
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using Autofac;
     using Autofac.Core;
-
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
     using Papercut.Core.Network;
+    using Papercut.Core.Plugins;
     using Papercut.Core.Rules;
     using Papercut.Core.Settings;
-
     using Serilog;
-
     using Module = Autofac.Module;
 
-    class PapercutCoreModule : Module
+    internal class PapercutCoreModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
             Assembly[] scannableAssemblies = PapercutContainer.ExtensionAssemblies;
 
-            builder.RegisterAssemblyModules<IModule>(scannableAssemblies);
+            var pluginModules =
+                scannableAssemblies.SelectMany(a => a.GetExportedTypes())
+                    .Where(s => s.GetInterfaces().Contains(typeof (IPluginModule)))
+                    .Distinct()
+                    .ToList();
+
+            foreach (var pluginType in pluginModules)
+            {
+                // register and load...
+                var plugin = Activator.CreateInstance(pluginType) as IPluginModule;
+
+                if (plugin != null)
+                {
+                    foreach (var module in plugin.Modules)
+                    {
+                        builder.RegisterModule(module);
+                    }
+
+                    PluginStore.Instance.Add(plugin);
+                }
+            }
+
+            builder.Register(c => PluginStore.Instance).As<IPluginStore>().SingleInstance();
+            builder.RegisterType<PluginMetrics>().AsImplementedInterfaces().SingleInstance();
 
             // server/connections
             builder.RegisterType<SmtpProtocol>()
@@ -131,50 +151,60 @@ namespace Papercut.Core
                 .AsSelf()
                 .SingleInstance();
 
-            builder.Register(
-                c =>
-                {
-                    var appMeta = c.Resolve<IAppMeta>();
+            RegisterLogger(builder);
 
-                    string logFilePath = Path.Combine(
-                        AppDomain.CurrentDomain.BaseDirectory,
-                        "Logs",
-                        string.Format("{0}.log", appMeta.AppName));
+            base.Load(builder);
+        }
 
-                    LoggerConfiguration logConfiguration =
-                        new LoggerConfiguration()
+        private static void RegisterLogger(ContainerBuilder builder)
+        {
+            builder.Register(c =>
+            {
+                var appMeta = c.Resolve<IAppMeta>();
+
+                string logFilePath = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "Logs",
+                    string.Format("{0}.log", appMeta.AppName));
+
+                LoggerConfiguration logConfiguration =
+                    new LoggerConfiguration()
 #if DEBUG
-                            .MinimumLevel.Verbose()
+                        .MinimumLevel.Verbose()
 #else
                             .MinimumLevel.Information()
 #endif
-                            .Enrich.With<EnvironmentEnricher>()
-                            .Enrich.WithThreadId()
-                            .Enrich.FromLogContext()
-                            .Enrich.WithProperty("AppName", appMeta.AppName)
-                            .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-                            .WriteTo.ColoredConsole()
-                            .WriteTo.RollingFile(logFilePath);
+                        .Enrich.With<EnvironmentEnricher>()
+                        .Enrich.WithThreadId()
+                        .Enrich.FromLogContext()
+                        .Enrich.WithProperty("AppName", appMeta.AppName)
+                        .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
+                        .WriteTo.ColoredConsole()
+                        .WriteTo.RollingFile(logFilePath);
 
-                    // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
-                    try
-                    {
-                        c.Resolve<IPublishEvent>().Publish(new ConfigureLoggerEvent(logConfiguration));
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
-                    }
+                // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
+                try
+                {
+                    c.Resolve<IPublishEvent>().Publish(new ConfigureLoggerEvent(logConfiguration));
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
+                }
 
-                    Log.Logger = logConfiguration.CreateLogger();
+                return logConfiguration;
+            }).AsSelf().SingleInstance();
+
+            builder.Register(
+                c =>
+                {
+                    Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
 
                     // support self-logging
                     Serilog.Debugging.SelfLog.Out = Console.Error;
 
                     return Log.Logger;
-                }).SingleInstance();
-
-            base.Load(builder);
+                }).As<ILogger>().SingleInstance();
         }
 
         protected override void AttachToComponentRegistration(

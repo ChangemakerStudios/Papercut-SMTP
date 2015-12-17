@@ -15,25 +15,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Module.Seq
+namespace Papercut.Core.Helper
 {
-    using System.Collections.Generic;
-    using Autofac;
-    using Autofac.Core;
-    using Papercut.Core.Plugins;
+    using System;
+    using System.Reflection;
+    using Papercut.Core.Annotations;
 
-    public class SeqLoggingModule : Module, IPluginModule
+    public static class AssemblyHelper
     {
-        public string Name => "Papercut Seq Logging";
-        public string Version => "1.0.0.0";
-        public string Description => "Papercut Serilog to Seq (http://getseq.net) local instance";
-        public IEnumerable<IModule> Modules => new[] {this};
-
-        protected override void Load(ContainerBuilder builder)
+        public static string GetVersion([NotNull] this Assembly assembly)
         {
-            builder.RegisterType<AddSeqToConfiguration>().AsImplementedInterfaces();
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 
-            base.Load(builder);
+            return assembly.GetName().Version.ToString(4);
         }
     }
 }

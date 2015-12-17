@@ -13,22 +13,28 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Service
 {
+    using System.Collections.Generic;
     using System.Reflection;
-
     using Autofac;
-
+    using Autofac.Core;
     using Papercut.Core.Configuration;
+    using Papercut.Core.Helper;
+    using Papercut.Core.Plugins;
     using Papercut.Core.Settings;
     using Papercut.Service.Helpers;
-
     using Module = Autofac.Module;
 
-    public class PapercutServiceModule : Module
+    public class PapercutServiceModule : Module, IPluginModule
     {
+        public string Name => "Papercut Service";
+        public string Version => Assembly.GetExecutingAssembly().GetVersion();
+        public string Description => "Papercut's Backend Service";
+        public IEnumerable<IModule> Modules => new[] {this};
+
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -45,6 +51,8 @@ namespace Papercut.Service
             builder.Register((c) => new ApplicationMeta("Papercut.Service"))
                 .As<IAppMeta>()
                 .SingleInstance();
+
+            base.Load(builder);
         }
     }
 }
