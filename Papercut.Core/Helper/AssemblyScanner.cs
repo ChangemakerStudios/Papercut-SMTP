@@ -36,7 +36,7 @@ namespace Papercut.Core.Helper
             _logger = logger;
         }
 
-        IEnumerable<Assembly> GetAssembliesList(params string[] pluginDirectories)
+        IEnumerable<Assembly> GetAssembliesList(IEnumerable<string> pluginDirectories)
         {
             var filterAssemblies =
                 new Func<Assembly, bool>(a => !a.IsDynamic && !a.GlobalAssemblyCache);
@@ -80,9 +80,14 @@ namespace Papercut.Core.Helper
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-            return GetAssembliesList(baseDirectory,
-                Path.Combine(baseDirectory, @"\\modules"),
-                Path.Combine(baseDirectory, @"\\plugins"));
+            var directories = new string[]
+            {
+                baseDirectory,
+                Path.Combine(baseDirectory, @"modules"),
+                Path.Combine(baseDirectory, @"plugins")
+            };
+
+            return GetAssembliesList(directories.Where(Directory.Exists));
         }
 
         IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
