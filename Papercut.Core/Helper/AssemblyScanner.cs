@@ -36,7 +36,7 @@ namespace Papercut.Core.Helper
             _logger = logger;
         }
 
-        IEnumerable<Assembly> GetAssembliesList()
+        IEnumerable<Assembly> GetAssembliesList(params string[] pluginDirectories)
         {
             var filterAssemblies =
                 new Func<Assembly, bool>(a => !a.IsDynamic && !a.GlobalAssemblyCache);
@@ -48,12 +48,11 @@ namespace Papercut.Core.Helper
                 loadedAssemblies.Select(a => Path.GetFileName(a.CodeBase)).ToList();
 
             // get all files...
-            List<string> allFiles = GetAllFilesIn(AppDomain.CurrentDomain.BaseDirectory).ToList();
+            List<string> allFiles = pluginDirectories.SelectMany(GetAllFilesIn).Distinct().ToList();
 
             // exclude currently loaded assemblies
             List<string> needsToBeLoaded = allFiles
-                .Where(f =>
-                       !loadedFiles.Contains(Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
+                .Where(f => !loadedFiles.Contains(Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             // attempt to load files as an assembly and include already loaded
@@ -79,7 +78,11 @@ namespace Papercut.Core.Helper
         [NotNull]
         public IEnumerable<Assembly> GetAll()
         {
-            return GetAssembliesList();
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            return GetAssembliesList(baseDirectory,
+                Path.Combine(baseDirectory, @"\\modules"),
+                Path.Combine(baseDirectory, @"\\plugins"));
         }
 
         IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)

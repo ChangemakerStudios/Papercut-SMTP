@@ -41,30 +41,10 @@ namespace Papercut.Core
         {
             Assembly[] scannableAssemblies = PapercutContainer.ExtensionAssemblies;
 
-            var pluginModules =
-                scannableAssemblies.SelectMany(a => a.GetExportedTypes())
-                    .Where(s => s.GetInterfaces().Contains(typeof (IPluginModule)))
-                    .Distinct()
-                    .ToList();
-
-            foreach (var pluginType in pluginModules)
-            {
-                // register and load...
-                var plugin = Activator.CreateInstance(pluginType) as IPluginModule;
-
-                if (plugin != null)
-                {
-                    foreach (var module in plugin.Modules)
-                    {
-                        builder.RegisterModule(module);
-                    }
-
-                    PluginStore.Instance.Add(plugin);
-                }
-            }
+            RegisterPluginArchitecture(builder);
 
             builder.Register(c => PluginStore.Instance).As<IPluginStore>().SingleInstance();
-            builder.RegisterType<PluginMetrics>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<PluginReport>().AsImplementedInterfaces().SingleInstance();
 
             // server/connections
             builder.RegisterType<SmtpProtocol>()
@@ -154,6 +134,40 @@ namespace Papercut.Core
             RegisterLogger(builder);
 
             base.Load(builder);
+        }
+
+        private void RegisterPluginArchitecture(ContainerBuilder builder)
+        {
+            var scannableAssemblies = PapercutContainer.ExtensionAssemblies;
+
+            var pluginModules =
+                scannableAssemblies.SelectMany(a => a.GetExportedTypes())
+                    .Where(s => s.GetInterfaces().Contains(typeof(IPluginModule)))
+                    .Distinct()
+                    .ToList();
+
+            foreach (var pluginType in pluginModules)
+            {
+                try
+                {
+                    // register and load...
+                    var plugin = Activator.CreateInstance(pluginType) as IPluginModule;
+
+                    if (plugin != null)
+                    {
+                        foreach (var module in plugin.Modules)
+                        {
+                            builder.RegisterModule(module);
+                        }
+
+                        PluginStore.Instance.Add(plugin);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, "Failure Loading Plugin Module Type {PluginModuleType}", pluginType.FullName);
+                }
+            }
         }
 
         private static void RegisterLogger(ContainerBuilder builder)

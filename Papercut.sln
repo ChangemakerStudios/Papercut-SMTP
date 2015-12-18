@@ -1,7 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 14.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut", "src\Papercut.csproj", "{AC067042-66BD-4110-ADA1-E2CEA43E7947}"
 EndProject
@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Core", "Papercut.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Service", "Papercut.Service\Papercut.Service.csproj", "{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{8B3498DF-6DDE-44F5-8428-1B82749933BE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{8B3498DF-6DDE-44F5-8428-1B82749933BE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.Seq", "Papercut.Module.Seq\Papercut.Module.Seq.csproj", "{5E6526B3-4DA9-41F4-8171-C34146AC2E55}"
 EndProject
@@ -41,11 +41,8 @@ Global
 		{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F60D44E1-100E-464A-A280-CA6BAF652177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F60D44E1-100E-464A-A280-CA6BAF652177}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F60D44E1-100E-464A-A280-CA6BAF652177}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F60D44E1-100E-464A-A280-CA6BAF652177}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

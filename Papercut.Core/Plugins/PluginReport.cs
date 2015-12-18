@@ -20,12 +20,12 @@ namespace Papercut.Core.Plugins
     using Autofac;
     using Serilog;
 
-    public class PluginMetrics : IStartable
+    public class PluginReport : IStartable
     {
         private readonly ILogger _logger;
         private readonly IPluginStore _pluginStore;
 
-        public PluginMetrics(ILogger logger, IPluginStore pluginStore)
+        public PluginReport(ILogger logger, IPluginStore pluginStore)
         {
             _logger = logger;
             _pluginStore = pluginStore;
