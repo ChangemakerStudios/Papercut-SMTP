@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Network
+namespace Papercut.Network.Smtp
 {
     using System;
     using System.Net;
@@ -24,6 +24,8 @@ namespace Papercut.Core.Network
     using Autofac.Features.Indexed;
 
     using Papercut.Core.Annotations;
+    using Papercut.Core.Network;
+    using Papercut.Network.Protocols;
 
     using Serilog;
 

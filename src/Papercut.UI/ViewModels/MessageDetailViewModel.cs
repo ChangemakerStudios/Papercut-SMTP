@@ -28,6 +28,8 @@ namespace Papercut.ViewModels
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
     using Papercut.Helpers;
+    using Papercut.Message;
+    using Papercut.Message.Helpers;
 
     public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
     {

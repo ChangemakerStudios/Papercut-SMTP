@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Helper
+namespace Papercut.Message.Helpers
 {
     using System;
     using System.Collections.Generic;
@@ -28,6 +28,7 @@ namespace Papercut.Core.Helper
     using MimeKit;
 
     using Papercut.Core.Annotations;
+    using Papercut.Core.Helper;
 
     public static class MessageHelper
     {

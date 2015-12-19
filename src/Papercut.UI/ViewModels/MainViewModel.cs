@@ -33,10 +33,10 @@ namespace Papercut.ViewModels
     using MahApps.Metro.Controls.Dialogs;
 
     using Papercut.Core.Events;
-    using Papercut.Core.Rules.Implementations;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
+    using Papercut.Rules.Implementations;
     using Papercut.Services;
     using Papercut.Views;
 

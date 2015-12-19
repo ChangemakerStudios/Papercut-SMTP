@@ -19,11 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Papercut.Core.Annotations;
 
 namespace Papercut.Core.Helper
 {
     using System.Reflection;
+
+    using Papercut.Core.Annotations;
 
     public static class ObjectExtensions
     {

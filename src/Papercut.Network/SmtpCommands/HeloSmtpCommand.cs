@@ -15,13 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Network.SmtpCommands
+namespace Papercut.Network.SmtpCommands
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
 
     using Papercut.Core.Helper;
+    using Papercut.Core.Network;
 
     public class HeloSmtpCommand : BaseSmtpCommand
     {

@@ -27,6 +27,8 @@ namespace Papercut.Services
     using Papercut.Core.Events;
     using Papercut.Core.Message;
     using Papercut.Core.Rules;
+    using Papercut.Message;
+    using Papercut.Rules;
 
     using Serilog;
 

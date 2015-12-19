@@ -19,6 +19,7 @@ namespace Papercut.Core.Plugins
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+
     using Papercut.Core.Annotations;
 
     public sealed class PluginStore : IPluginStore

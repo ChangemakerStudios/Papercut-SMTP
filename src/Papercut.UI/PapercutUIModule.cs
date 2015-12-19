@@ -32,6 +32,8 @@ namespace Papercut
     using Papercut.Core.Plugins;
     using Papercut.Events;
     using Papercut.Helpers;
+    using Papercut.Message;
+
     using Module = Autofac.Module;
 
     public class PapercutUIModule : Module, IPluginModule

@@ -15,13 +15,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Rules
+namespace Papercut.Rules
 {
     using System;
     using System.Collections.Generic;
 
     using Papercut.Core.Annotations;
     using Papercut.Core.Helper;
+    using Papercut.Core.Rules;
 
     public class RuleRespository
     {

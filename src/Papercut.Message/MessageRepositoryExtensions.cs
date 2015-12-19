@@ -15,9 +15,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Message
+namespace Papercut.Message
 {
     using System;
+
+    using Papercut.Core.Message;
 
     public static class MessageRepositoryExtensions
     {

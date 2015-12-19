@@ -15,12 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Rules.Implementations
+namespace Papercut.Rules.Implementations
 {
     using System;
-    using System.Linq;
-    using Papercut.Core.Helper;
     using System.ComponentModel;
+    using System.Linq;
+
+    using Papercut.Core.Helper;
 
     [Serializable]
     public class ConditionalForwardWithRetryRule : ConditionalForwardRule

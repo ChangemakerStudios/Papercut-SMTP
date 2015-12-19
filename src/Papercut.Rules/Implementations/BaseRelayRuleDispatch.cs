@@ -16,7 +16,7 @@
 // limitations under the License. 
 
 
-namespace Papercut.Core.Rules.Implementations
+namespace Papercut.Rules.Implementations
 {
     using System;
     using System.Reactive.Linq;
@@ -26,6 +26,9 @@ namespace Papercut.Core.Rules.Implementations
     using Papercut.Core.Annotations;
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
+    using Papercut.Core.Rules;
+    using Papercut.Message;
+    using Papercut.Message.Helpers;
 
     using Serilog;
 

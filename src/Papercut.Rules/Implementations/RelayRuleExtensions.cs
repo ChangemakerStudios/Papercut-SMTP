@@ -15,13 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Rules.Implementations
+namespace Papercut.Rules.Implementations
 {
     using System;
 
     using MailKit.Net.Smtp;
-    using Papercut.Core.Annotations;
 
+    using Papercut.Core.Annotations;
 
     public static class RelayRuleExtensions
     {

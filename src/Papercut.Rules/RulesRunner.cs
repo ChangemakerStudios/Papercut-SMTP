@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Rules
+namespace Papercut.Rules
 {
     using System;
     using System.Linq;
@@ -25,6 +25,7 @@ namespace Papercut.Core.Rules
 
     using Papercut.Core.Annotations;
     using Papercut.Core.Message;
+    using Papercut.Core.Rules;
 
     using Serilog;
 

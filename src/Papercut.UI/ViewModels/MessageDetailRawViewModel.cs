@@ -29,6 +29,7 @@ namespace Papercut.ViewModels
 
     using Papercut.Core.Helper;
     using Papercut.Helpers;
+    using Papercut.Message.Helpers;
     using Papercut.Views;
 
     using Serilog;

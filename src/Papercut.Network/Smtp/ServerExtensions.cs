@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Network
+namespace Papercut.Network.Smtp
 {
     using System;
     using System.Reactive;
@@ -24,6 +24,7 @@ namespace Papercut.Core.Network
     using System.Reactive.Linq;
 
     using Papercut.Core.Annotations;
+    using Papercut.Core.Network;
 
     public static class ServerExtensions
     {

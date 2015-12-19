@@ -15,12 +15,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Rules
+namespace Papercut.Rules
 {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.IO;
+
+    using Papercut.Core.Rules;
 
     using Serilog;
 

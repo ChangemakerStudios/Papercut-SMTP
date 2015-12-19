@@ -15,8 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Network
+namespace Papercut.Network.Smtp
 {
+    using Papercut.Core.Network;
+
     public class SmtpContext : ISmtpContext
     {
         public SmtpContext(IConnection connection, SmtpSession session)

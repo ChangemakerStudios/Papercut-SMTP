@@ -15,14 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.ComponentModel;
-using System.Linq;
-using Papercut.Core.Helper;
 
-namespace Papercut.Core.Rules.Implementations
+namespace Papercut.Rules.Implementations
 {
+    using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Linq;
+
+    using Papercut.Core.Helper;
 
     [Serializable]
     public class ForwardRule : RelayRule

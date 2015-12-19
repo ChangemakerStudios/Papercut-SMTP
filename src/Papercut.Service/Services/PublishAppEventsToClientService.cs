@@ -21,6 +21,7 @@ namespace Papercut.Service.Services
 
     using Papercut.Core.Events;
     using Papercut.Core.Network;
+    using Papercut.Network;
 
     using Serilog;
 

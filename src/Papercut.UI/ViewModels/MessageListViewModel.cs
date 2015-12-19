@@ -39,6 +39,7 @@ namespace Papercut.ViewModels
     using Papercut.Core.Message;
     using Papercut.Events;
     using Papercut.Helpers;
+    using Papercut.Message;
     using Papercut.Properties;
 
     using Serilog;

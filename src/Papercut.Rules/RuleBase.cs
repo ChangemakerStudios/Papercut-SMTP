@@ -15,15 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Rules
+namespace Papercut.Rules
 {
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
+
     using Newtonsoft.Json;
+
     using Papercut.Core.Annotations;
     using Papercut.Core.Helper;
+    using Papercut.Core.Rules;
 
     [Serializable]
     public abstract class RuleBase : IRule

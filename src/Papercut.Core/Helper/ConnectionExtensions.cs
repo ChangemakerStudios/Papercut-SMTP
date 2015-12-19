@@ -15,13 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Network
+namespace Papercut.Core.Helper
 {
     using System;
     using System.IO;
     using System.Net.Sockets;
     using System.Text;
     using System.Threading.Tasks;
+
+    using Papercut.Core.Network;
 
     public static class ConnectionExtensions
     {

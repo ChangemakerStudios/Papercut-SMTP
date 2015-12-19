@@ -15,13 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Network.SmtpCommands
+namespace Papercut.Network.SmtpCommands
 {
     using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
 
+    using Papercut.Core.Helper;
     using Papercut.Core.Message;
+    using Papercut.Core.Network;
 
     using Serilog;
 

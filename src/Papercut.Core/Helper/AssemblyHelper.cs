@@ -19,6 +19,7 @@ namespace Papercut.Core.Helper
 {
     using System;
     using System.Reflection;
+
     using Papercut.Core.Annotations;
 
     public static class AssemblyHelper

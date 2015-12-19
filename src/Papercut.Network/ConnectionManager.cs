@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Network
+namespace Papercut.Network
 {
     using System;
     using System.Collections.Concurrent;
@@ -26,6 +26,8 @@ namespace Papercut.Core.Network
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
     using System.Threading;
+
+    using Papercut.Core.Network;
 
     using Serilog;
 

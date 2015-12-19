@@ -27,6 +27,8 @@ namespace Papercut.Services
     using Papercut.Core.Events;
     using Papercut.Core.Network;
     using Papercut.Events;
+    using Papercut.Network.Protocols;
+    using Papercut.Network.Smtp;
     using Papercut.Properties;
 
     using Serilog;

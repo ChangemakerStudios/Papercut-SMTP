@@ -20,6 +20,7 @@ namespace Papercut.Helpers
     using System;
 
     using Papercut.Core.Message;
+    using Papercut.Message;
 
     public class MimeMessageEntry : MessageEntry
     {

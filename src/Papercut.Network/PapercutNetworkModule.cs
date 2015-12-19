@@ -15,9 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Network
+namespace Papercut.Network
 {
     using Autofac;
+
+    using Papercut.Core.Network;
+    using Papercut.Network.Protocols;
+    using Papercut.Network.Smtp;
 
     public class PapercutNetworkModule : Module
     {

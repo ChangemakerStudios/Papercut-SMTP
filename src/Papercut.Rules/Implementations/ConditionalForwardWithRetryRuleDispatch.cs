@@ -15,13 +15,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Rules.Implementations
+namespace Papercut.Rules.Implementations
 {
     using System;
     using System.Reactive.Linq;
+
     using MimeKit;
+
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
+    using Papercut.Core.Rules;
+    using Papercut.Message;
+    using Papercut.Message.Helpers;
+
     using Serilog;
 
     public class ConditionalForwardWithRetryRuleDispatch : IRuleDispatcher<ConditionalForwardWithRetryRule>

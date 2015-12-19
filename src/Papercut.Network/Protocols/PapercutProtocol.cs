@@ -15,13 +15,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Network
+namespace Papercut.Network.Protocols
 {
     using System;
     using System.IO;
 
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
+    using Papercut.Core.Network;
 
     using Serilog;
 

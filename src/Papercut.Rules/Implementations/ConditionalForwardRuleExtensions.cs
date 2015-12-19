@@ -15,12 +15,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Rules.Implementations
+namespace Papercut.Rules.Implementations
 {
     using System;
     using System.Linq;
     using System.Text.RegularExpressions;
+
     using MimeKit;
+
     using Papercut.Core.Annotations;
     using Papercut.Core.Helper;
 
