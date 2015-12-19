@@ -18,6 +18,7 @@
 namespace Papercut.Core.Rules.Implementations
 {
     using System;
+
     using MailKit.Net.Smtp;
     using Papercut.Core.Annotations;
 

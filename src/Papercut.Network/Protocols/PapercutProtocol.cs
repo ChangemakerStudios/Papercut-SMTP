@@ -53,9 +53,9 @@ namespace Papercut.Core.Network
             _publishEvent = publishEvent;
         }
 
-        public Connection Connection { get; protected set; }
+        public IConnection Connection { get; protected set; }
 
-        public override void Begin(Connection connection)
+        public override void Begin(IConnection connection)
         {
             Connection = connection;
             _logger.ForContext("ConnectionId", Connection.Id);

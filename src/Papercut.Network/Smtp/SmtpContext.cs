@@ -17,9 +17,16 @@
 
 namespace Papercut.Core.Network
 {
-    public interface ISmtpContext
+    public class SmtpContext : ISmtpContext
     {
-        IConnection Connection { get; }
-        SmtpSession Session { get; }
+        public SmtpContext(IConnection connection, SmtpSession session)
+        {
+            Connection = connection;
+            Session = session;
+        }
+
+        public IConnection Connection { get; protected set; }
+
+        public SmtpSession Session { get; protected set; }
     }
 }

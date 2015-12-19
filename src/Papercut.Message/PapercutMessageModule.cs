@@ -14,19 +14,18 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
-
-namespace Papercut.Core.Network
+namespace Papercut.Core.Message
 {
-    public class SmtpContext : ISmtpContext
+    using Autofac;
+
+    public class PapercutMessageModule : Autofac.Module
     {
-        public SmtpContext(Connection connection, SmtpSession session)
+        protected override void Load(ContainerBuilder builder)
         {
-            Connection = connection;
-            Session = session;
+            builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
+            builder.RegisterType<MimeMessageLoader>().AsSelf().SingleInstance();
+
+            builder.RegisterType<ReceivedDataMessageHandler>().AsSelf().As<IReceivedDataHandler>().SingleInstance();
         }
-
-        public Connection Connection { get; protected set; }
-
-        public SmtpSession Session { get; protected set; }
     }
 }

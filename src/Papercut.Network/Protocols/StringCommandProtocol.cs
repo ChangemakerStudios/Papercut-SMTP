@@ -33,7 +33,7 @@ namespace Papercut.Core.Network
 
         protected ILogger _logger { get; set; }
 
-        public abstract void Begin(Connection connection);
+        public abstract void Begin(IConnection connection);
 
         public virtual void ProcessIncomingBuffer(byte[] bufferedData)
         {

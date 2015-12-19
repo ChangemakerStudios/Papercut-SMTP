@@ -43,21 +43,20 @@ namespace Papercut.Core.Network
             }
             finally
             {
-                if (networkStream != null)
-                    networkStream.Dispose();
+                networkStream?.Dispose();
             }
 
             return output;
         }
 
-        public static Task<int> SendLine(this Connection connection, string message)
+        public static Task<int> SendLine(this IConnection connection, string message)
         {
             connection.Logger.Verbose("Sending {Message}", message);
             return connection.Send(Encoding.ASCII.GetBytes(message + "\r\n"));
         }
 
         public static Task<int> SendLine(
-            this Connection connection,
+            this IConnection connection,
             string message,
             params object[] args)
         {
@@ -65,14 +64,14 @@ namespace Papercut.Core.Network
         }
 
         public static Task<int> Send(
-            this Connection connection,
+            this IConnection connection,
             string message,
             params object[] args)
         {
             return connection.Send(Encoding.ASCII.GetBytes(string.Format(message, args)));
         }
 
-        public static Task<int> Send(this Connection connection, byte[] data)
+        public static Task<int> Send(this IConnection connection, byte[] data)
         {
             connection.Logger.Verbose("Sending byte[] length of {ByteArrayLength}", data.Length);
 

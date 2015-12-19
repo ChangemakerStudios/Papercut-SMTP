@@ -17,8 +17,6 @@
 
 namespace Papercut.Core.Network
 {
-    #region Using
-
     using System;
     using System.Net.Sockets;
 
@@ -26,12 +24,10 @@ namespace Papercut.Core.Network
 
     using Serilog;
 
-    #endregion
-
     /// <summary>
     ///     A connection.
     /// </summary>
-    public class Connection
+    public class Connection : IConnection
     {
         const int BufferSize = 64;
 

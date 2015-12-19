@@ -46,21 +46,7 @@ namespace Papercut.Core
             builder.Register(c => PluginStore.Instance).As<IPluginStore>().SingleInstance();
             builder.RegisterType<PluginReport>().AsImplementedInterfaces().SingleInstance();
 
-            // server/connections
-            builder.RegisterType<SmtpProtocol>()
-                .Keyed<IProtocol>(ServerProtocolType.Smtp)
-                .InstancePerDependency();
 
-            builder.RegisterType<PapercutProtocol>()
-                .Keyed<IProtocol>(ServerProtocolType.Papercut)
-                .InstancePerDependency();
-
-            builder.RegisterType<PapercutClient>().AsSelf().InstancePerDependency();
-            //builder.RegisterType<SmtpClient>().AsSelf().InstancePerDependency();
-
-            builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
-            builder.RegisterType<Connection>().AsSelf().InstancePerDependency();
-            builder.RegisterType<Server>().As<IServer>().InstancePerDependency();
 
             builder.RegisterType<AutofacServiceProvider>()
                 .As<IServiceProvider>()
@@ -73,25 +59,6 @@ namespace Papercut.Core
                 .InstancePerLifetimeScope()
                 .PreserveExistingDefaults();
 
-            // rules and rule dispatchers
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                .AssignableTo<IRule>()
-                .As<IRule>()
-                .InstancePerDependency();
-
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                .AsClosedTypesOf(typeof(IRuleDispatcher<>))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .InstancePerDependency();
-
-            builder.RegisterType<RulesRunner>().As<IRulesRunner>().SingleInstance();
-
-            builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
-            builder.RegisterType<RuleRespository>().AsSelf().SingleInstance();
-            builder.RegisterType<MimeMessageLoader>().AsSelf().SingleInstance();
-
-            builder.RegisterType<ReceivedDataMessageHandler>().AsSelf().As<IReceivedDataHandler>().SingleInstance();
 
             // register smtp commands
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())

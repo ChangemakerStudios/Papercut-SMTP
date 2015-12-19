@@ -17,11 +17,7 @@
 
 namespace Papercut.Core.Network
 {
-    #region Using
-
     using System.Collections.Generic;
-
-    #endregion
 
     /// <summary>
     ///     The smtp session.

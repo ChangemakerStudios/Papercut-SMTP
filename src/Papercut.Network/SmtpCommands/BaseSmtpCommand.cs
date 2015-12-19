@@ -27,7 +27,7 @@ namespace Papercut.Core.Network.SmtpCommands
     {
         protected SmtpSession Session => this.Context.Session;
 
-        protected Connection Connection => this.Context.Connection;
+        protected IConnection Connection => this.Context.Connection;
 
         public ISmtpContext Context { protected get; set; }
 

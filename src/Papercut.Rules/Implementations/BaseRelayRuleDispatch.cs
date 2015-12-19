@@ -13,18 +13,22 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
-using System;
-using System.Reactive.Linq;
-using MimeKit;
-using Papercut.Core.Annotations;
-using Papercut.Core.Helper;
-using Papercut.Core.Message;
-using Serilog;
 
 namespace Papercut.Core.Rules.Implementations
 {
+    using System;
+    using System.Reactive.Linq;
+
+    using MimeKit;
+
+    using Papercut.Core.Annotations;
+    using Papercut.Core.Helper;
+    using Papercut.Core.Message;
+
+    using Serilog;
+
     public abstract class BaseRelayRuleDispatch<T> : IRuleDispatcher<T>
         where T : RelayRule
     {

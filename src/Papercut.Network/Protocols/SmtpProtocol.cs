@@ -36,11 +36,11 @@ namespace Papercut.Core.Network
 
         protected SmtpContext Context { get; set; }
 
-        protected Connection Connection => Context.Connection;
+        protected IConnection Connection => Context.Connection;
 
         protected IList<ISmtpCommand> Commands { get; set; }
 
-        public override void Begin(Connection connection)
+        public override void Begin(IConnection connection)
         {
             _logger = _logger.ForContext("ConnectionId", connection.Id);
 
