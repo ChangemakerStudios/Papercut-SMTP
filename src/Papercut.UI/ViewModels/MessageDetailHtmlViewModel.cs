@@ -97,7 +97,7 @@ namespace Papercut.ViewModels
             if (e.Uri.Scheme == Uri.UriSchemeHttp || e.Uri.Scheme == Uri.UriSchemeHttps)
             {
                 e.Cancel = true;
-                Process.Start(e.Uri.ToString());
+                Process.Start(e.Uri.AbsoluteUri);
             }
         }
 
