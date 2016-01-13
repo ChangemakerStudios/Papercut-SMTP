@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="Connection.cs" />
     <Compile Include="ConnectionManager.cs" />
+    <Compile Include="Helpers\PapercutProtocolHelpers.cs" />
     <Compile Include="PapercutClient.cs" />
     <Compile Include="PapercutNetworkModule.cs" />
     <Compile Include="Protocols\PapercutProtocol.cs" />
