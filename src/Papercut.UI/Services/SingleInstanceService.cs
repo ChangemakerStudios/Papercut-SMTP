@@ -21,7 +21,6 @@ namespace Papercut.Services
     using System.Threading;
 
     using Papercut.Core.Events;
-    using Papercut.Core.Network;
     using Papercut.Events;
     using Papercut.Network;
 
@@ -53,8 +52,7 @@ namespace Papercut.Services
             {
                 try
                 {
-                    if (_appMutex != null)
-                        _appMutex.Dispose();
+                    _appMutex?.Dispose();
                 }
                 catch
                 {

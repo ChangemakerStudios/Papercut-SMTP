@@ -38,7 +38,6 @@ namespace Papercut.Core.Plugins
                 _logger.Information("Loaded Plug-In {PluginName} {PluginVersion} {PluginDescription}", pluginModule.Name,
                     pluginModule.Version, pluginModule.Description);
             }
-
         }
     }
 }

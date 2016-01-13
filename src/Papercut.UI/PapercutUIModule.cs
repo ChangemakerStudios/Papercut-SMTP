@@ -36,7 +36,7 @@ namespace Papercut
 
     using Module = Autofac.Module;
 
-    public class PapercutUIModule : Module, IPluginModule
+    public class PapercutUIModule : Module, IDiscoverableModule
     {
         protected override void Load(ContainerBuilder builder)
         {
@@ -102,12 +102,6 @@ namespace Papercut
             e.Context.Resolve<IEventAggregator>().Subscribe(e.Instance);
         }
 
-        public string Name => "Papercut UI";
-        public string Version => Assembly.GetExecutingAssembly().GetVersion();
-        public string Description => "Papercut WPF UI";
-        public IEnumerable<IModule> Modules
-        {
-            get { yield return this; }
-        }
+        public IModule Module => this;
     }
 }

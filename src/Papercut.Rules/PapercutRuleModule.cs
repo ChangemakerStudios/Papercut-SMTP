@@ -15,18 +15,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
+
 namespace Papercut.Rules
 {
     using System.Reflection;
 
     using Autofac;
+    using Autofac.Core;
 
+    using Papercut.Core.Plugins;
     using Papercut.Core.Rules;
 
     using Module = Autofac.Module;
 
-    public class PapercutRuleModule : Module
+    public class PapercutRuleModule : Module, IDiscoverableModule
     {
+        public IModule Module => this;
+
         protected override void Load(ContainerBuilder builder)
         {
             // rules and rule dispatchers

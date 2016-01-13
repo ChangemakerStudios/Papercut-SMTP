@@ -14,7 +14,8 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>af7046c6</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -66,12 +67,12 @@
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="BouncyCastle, Version=1.8.0.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MimeKit.1.2.18\lib\net40\BouncyCastle.dll</HintPath>
+    <Reference Include="BouncyCastle, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MimeKit.1.2.19\lib\net40\BouncyCastle.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MimeKit, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MimeKit.1.2.18\lib\net40\MimeKit.dll</HintPath>
+      <HintPath>..\..\packages\MimeKit.1.2.19\lib\net40\MimeKit.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
@@ -127,7 +128,6 @@
     <Compile Include="Helpers\PapercutServiceSettings.cs" />
     <Compile Include="Services\RuleService.cs" />
     <Compile Include="Services\PublishAppEventsToClientService.cs" />
-    <Compile Include="Helpers\AssemblyResolutionHelper.cs" />
     <Compile Include="PapercutServerModule.cs" />
     <Compile Include="Services\PapercutServerService.cs" />
     <Compile Include="Services\ReplyWithDefaultMessageSavePathService.cs" />
@@ -144,12 +144,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
     <Content Include="Papercut-Service-icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj">
       <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
       <Name>Papercut.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
+      <Project>{cb1f4128-be3e-42bd-ae04-fcbbe5692e14}</Project>
+      <Name>Papercut.Message</Name>
     </ProjectReference>
     <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj">
       <Project>{C87AB840-625A-4661-AA36-369ADDC6CF7F}</Project>
@@ -183,16 +188,15 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EmbedReferencedAssemblies" AfterTargets="ResolveAssemblyReferences">
-    <ItemGroup>
-      <AssembliesToEmbed Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
-      <EmbeddedResource Include="@(AssembliesToEmbed)">
-        <LogicalName>%(AssembliesToEmbed.DestinationSubDirectory)%(AssembliesToEmbed.Filename)%(AssembliesToEmbed.Extension)</LogicalName>
-      </EmbeddedResource>
-      <!--<ReferenceCopyLocalPaths Remove="@(AssembliesToEmbed)" />-->
-    </ItemGroup>
-    <Message Importance="high" Text="Embedding: @(AssembliesToEmbed->'%(DestinationSubDirectory)%(Filename)%(Extension)', ', ')" />
-  </Target>
-  <Target Name="_CopyFilesMarkedCopyLocal" />
   <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Target AfterTargets="AfterBuild;NonWinFodyTarget" Name="CleanReferenceCopyLocalPaths">
+    <Delete Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" />
+  </Target>
+  <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets'))" />
+  </Target>
 </Project>

@@ -17,14 +17,22 @@
 
 namespace Papercut.Network
 {
+    using System.Reflection;
+
     using Autofac;
+    using Autofac.Core;
 
     using Papercut.Core.Network;
+    using Papercut.Core.Plugins;
     using Papercut.Network.Protocols;
     using Papercut.Network.Smtp;
 
-    public class PapercutNetworkModule : Module
+    using Module = Autofac.Module;
+
+    public class PapercutNetworkModule : Module, IDiscoverableModule
     {
+        public IModule Module => this;
+
         protected override void Load(ContainerBuilder builder)
         {
             // server/connections
@@ -38,6 +46,12 @@ namespace Papercut.Network
 
             builder.RegisterType<PapercutClient>().AsSelf().InstancePerDependency();
             //builder.RegisterType<SmtpClient>().AsSelf().InstancePerDependency();
+
+            // register smtp commands
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .AssignableTo<ISmtpCommand>()
+                .As<ISmtpCommand>()
+                .InstancePerDependency();
 
             builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
             builder.RegisterType<Connection>().AsSelf().InstancePerDependency();

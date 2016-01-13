@@ -27,10 +27,8 @@ namespace Papercut.Core
     using Papercut.Core.Configuration;
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
-    using Papercut.Core.Message;
     using Papercut.Core.Network;
     using Papercut.Core.Plugins;
-    using Papercut.Core.Rules;
     using Papercut.Core.Settings;
     using Serilog;
     using Module = Autofac.Module;
@@ -39,14 +37,12 @@ namespace Papercut.Core
     {
         protected override void Load(ContainerBuilder builder)
         {
-            Assembly[] scannableAssemblies = PapercutContainer.ExtensionAssemblies;
-
             RegisterPluginArchitecture(builder);
+
+            //builder.RegisterAssemblyModules(PapercutContainer.ExtensionAssemblies);
 
             builder.Register(c => PluginStore.Instance).As<IPluginStore>().SingleInstance();
             builder.RegisterType<PluginReport>().AsImplementedInterfaces().SingleInstance();
-
-
 
             builder.RegisterType<AutofacServiceProvider>()
                 .As<IServiceProvider>()
@@ -58,13 +54,6 @@ namespace Papercut.Core
                 .AsSelf()
                 .InstancePerLifetimeScope()
                 .PreserveExistingDefaults();
-
-
-            // register smtp commands
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                .AssignableTo<ISmtpCommand>()
-                .As<ISmtpCommand>()
-                .InstancePerDependency();
 
             builder.RegisterType<MessagePathConfigurator>()
                 .As<IMessagePathConfigurator>()
@@ -99,8 +88,6 @@ namespace Papercut.Core
                 .SingleInstance();
 
             RegisterLogger(builder);
-
-            base.Load(builder);
         }
 
         private void RegisterPluginArchitecture(ContainerBuilder builder)
@@ -109,7 +96,11 @@ namespace Papercut.Core
 
             var pluginModules =
                 scannableAssemblies.SelectMany(a => a.GetExportedTypes())
-                    .Where(s => s.GetInterfaces().Contains(typeof(IPluginModule)))
+                    .Where(s =>
+                    {
+                        var interfaces = s.GetInterfaces();
+                        return interfaces.Contains(typeof(IDiscoverableModule)) || interfaces.Contains(typeof(IPluginModule));
+                    })
                     .Distinct()
                     .ToList();
 
@@ -118,15 +109,16 @@ namespace Papercut.Core
                 try
                 {
                     // register and load...
-                    var plugin = Activator.CreateInstance(pluginType) as IPluginModule;
+                    var module = Activator.CreateInstance(pluginType) as IDiscoverableModule;
+                    
+                    if (module != null)
+                    {
+                        builder.RegisterModule(module.Module);
+                    }
 
+                    var plugin = module as IPluginModule;
                     if (plugin != null)
                     {
-                        foreach (var module in plugin.Modules)
-                        {
-                            builder.RegisterModule(module);
-                        }
-
                         PluginStore.Instance.Add(plugin);
                     }
                 }
@@ -146,7 +138,7 @@ namespace Papercut.Core
                 string logFilePath = Path.Combine(
                     AppDomain.CurrentDomain.BaseDirectory,
                     "Logs",
-                    string.Format("{0}.log", appMeta.AppName));
+                    $"{appMeta.AppName}.log");
 
                 LoggerConfiguration logConfiguration =
                     new LoggerConfiguration()

@@ -17,7 +17,6 @@
 
 namespace Papercut.Module.Seq
 {
-    using System.Collections.Generic;
     using Autofac;
     using Autofac.Core;
     using Papercut.Core.Plugins;
@@ -27,7 +26,7 @@ namespace Papercut.Module.Seq
         public string Name => "Papercut Seq Logging";
         public string Version => "1.0.0.0";
         public string Description => "Papercut Serilog to Seq (http://getseq.net) local instance";
-        public IEnumerable<IModule> Modules => new[] {this};
+        public IModule Module => this;
 
         protected override void Load(ContainerBuilder builder)
         {

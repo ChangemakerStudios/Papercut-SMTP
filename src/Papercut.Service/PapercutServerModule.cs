@@ -28,12 +28,9 @@ namespace Papercut.Service
     using Papercut.Service.Helpers;
     using Module = Autofac.Module;
 
-    public class PapercutServiceModule : Module, IPluginModule
+    public class PapercutServiceModule : Module, IDiscoverableModule
     {
-        public string Name => "Papercut Service";
-        public string Version => Assembly.GetExecutingAssembly().GetVersion();
-        public string Description => "Papercut's Backend Service";
-        public IEnumerable<IModule> Modules => new[] {this};
+        public IModule Module => this;
 
         protected override void Load(ContainerBuilder builder)
         {

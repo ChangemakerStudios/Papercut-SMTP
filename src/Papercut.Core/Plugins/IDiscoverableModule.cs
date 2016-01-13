@@ -17,12 +17,10 @@
 
 namespace Papercut.Core.Plugins
 {
-    public interface IPluginModule : IDiscoverableModule
+    using Autofac.Core;
+
+    public interface IDiscoverableModule
     {
-        string Name { get; }
-
-        string Version { get; }
-
-        string Description { get; }
+        IModule Module { get; }
     }
 }

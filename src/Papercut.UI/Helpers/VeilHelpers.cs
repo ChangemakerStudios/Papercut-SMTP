@@ -43,6 +43,9 @@ namespace Papercut.Helpers
         {
             if (templateString == null) throw new ArgumentNullException(nameof(templateString));
 
+            // requires this reference so it pulls this assembly
+            var parser = new Veil.Handlebars.HandlebarsParser();
+            
             var parsedTemplate = _parsedCache.GetOrAdd(templateString,
                 t =>
                 {

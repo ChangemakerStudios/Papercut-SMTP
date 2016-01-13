@@ -14,14 +14,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
+
 namespace Papercut.Message
 {
     using Autofac;
+    using Autofac.Core;
 
     using Papercut.Core.Message;
+    using Papercut.Core.Plugins;
 
-    public class PapercutMessageModule : Autofac.Module
+    public class PapercutMessageModule : Autofac.Module, IDiscoverableModule
     {
+        public IModule Module => this;
+
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();

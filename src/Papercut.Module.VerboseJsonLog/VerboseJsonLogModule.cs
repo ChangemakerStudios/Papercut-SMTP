@@ -33,6 +33,6 @@ namespace Papercut.Module.VerboseJsonLog
         public string Name => "Verbose (JSON) Serilog Logging";
         public string Version => ThisAssembly.GetVersion();
         public string Description => "Verbose (JSON) Serilog Logging Support for Papercut";
-        public IEnumerable<IModule> Modules => new[] {this};
+        public IModule Module => this;
     }
 }

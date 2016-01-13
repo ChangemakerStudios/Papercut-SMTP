@@ -44,6 +44,7 @@ namespace Papercut.Core.Helper
             // get all currently loaded assemblies sans GAC and Dynamic assemblies.
             List<Assembly> loadedAssemblies =
                 AppDomain.CurrentDomain.GetAssemblies().Where(filterAssemblies).ToList();
+
             List<string> loadedFiles =
                 loadedAssemblies.Select(a => Path.GetFileName(a.CodeBase)).ToList();
 
@@ -61,18 +62,55 @@ namespace Papercut.Core.Helper
                 .Concat(loadedAssemblies)
                 .ToList();
 
-            // load resource assemblies
-            string[] loadedAssemblyNames = loadedAssemblies.Select(a => a.GetName().Name).ToArray();
-            string[] assemblyResourcesToLoad =
-                GetAllAssemblyResourcesIn(loadedAssemblies)
-                    .Where(s => !loadedAssemblyNames.Contains(s, StringComparer.OrdinalIgnoreCase))
-                    .ToArray();
+            // get referenced assemblies...
+            var allReferenced = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().IfNullEmpty().Distinct().ToList();
 
-            return
-                TryLoadResourceAssemblies(assemblyResourcesToLoad)
-                    .Where(filterAssemblies)
-                    .Concat(aggregatedAssemblies)
-                    .ToArray();
+            // load resource assemblies
+            //string[] loadedAssemblyNames = loadedAssemblies.Select(a => a.GetName().Name).ToArray();
+            //string[] assemblyResourcesToLoad =
+            //    GetAllAssemblyResourcesIn(loadedAssemblies)
+            //        .Where(s => !loadedAssemblyNames.Contains(s, StringComparer.OrdinalIgnoreCase))
+            //        .ToArray();
+
+            return TryLoadReferenced(allReferenced).Where(filterAssemblies).Concat(aggregatedAssemblies).ToArray();
+        }
+
+        private IEnumerable<Assembly> TryLoadReferenced(List<AssemblyName> allReferenced)
+        {
+            var currentlyLoaded = AppDomain.CurrentDomain.GetAssemblies().Select(s => s.GetName().FullName).ToList();
+
+            var excludedStartsWith = new[] { "mscorlib", "System." };
+
+            var assemblyNames = allReferenced
+                .Where(s => !currentlyLoaded.Contains(s.FullName) &&
+                            !excludedStartsWith.Any(_ => s.FullName.StartsWith(_)))
+                .ToList();
+
+            foreach (var assemblyName in assemblyNames)
+            {
+                Assembly assembly;
+
+                try
+                {
+                    assembly = Assembly.Load(assemblyName);
+                }
+                catch (BadImageFormatException)
+                {
+                    // fail on native images...
+                    continue;
+                }
+                catch (FileLoadException ex)
+                {
+                    _logger.Value.Warning(ex, "Failure Loading Assembly Named {@AssemblyName}", assemblyName);
+                    continue;
+                }
+
+                yield return assembly;
+
+                // attempt to load additional dependencies
+                foreach (var a in TryLoadReferenced(assembly.GetReferencedAssemblies().IfNullEmpty().ToList()))
+                    yield return a;
+            }
         }
 
         [NotNull]
