@@ -23,6 +23,7 @@ namespace Papercut.Network.Protocols
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
     using Papercut.Core.Network;
+    using Papercut.Network.Helpers;
 
     using Serilog;
 

@@ -27,6 +27,7 @@ namespace Papercut.Rules.Implementations
     using Papercut.Core.Rules;
     using Papercut.Message;
     using Papercut.Message.Helpers;
+    using Papercut.Rules.Helpers;
 
     using Serilog;
 
