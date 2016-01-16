@@ -19,7 +19,11 @@ namespace Papercut.Message
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
+    using System.Text;
+
+    using MimeKit;
 
     using Papercut.Core.Annotations;
     using Papercut.Core.Events;
@@ -45,9 +49,39 @@ namespace Papercut.Message
             _logger = logger;
         }
 
-        public void HandleReceived([CanBeNull] IEnumerable<string> data)
+        public void HandleReceived(string messageData, [CanBeNull] IList<string> recipients)
         {
-            var file = _messageRepository.SaveMessage(data.IfNullEmpty().ToList());
+            using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(messageData)))
+            {
+                var message = MimeMessage.Load(ParserOptions.Default, ms, true);
+
+                var lookup = recipients.IfNullEmpty()
+                    .ToDictionary(s => s, s => s, StringComparer.OrdinalIgnoreCase);
+
+                // remove TO:
+                lookup.RemoveRange(
+                    message.To.Mailboxes.Select(s => s.ToString(FormatOptions.Default, false))
+                        .Where(s => lookup.ContainsKey(s)));
+
+                // remove CC:
+                lookup.RemoveRange(
+                    message.Cc.Mailboxes.Select(s => s.ToString(FormatOptions.Default, false))
+                        .Where(s => lookup.ContainsKey(s)));
+                
+                if (lookup.Any())
+                {
+                    // Bcc is remaining, add to message
+                    foreach (var r in lookup)
+                    {
+                        message.Bcc.Add(MailboxAddress.Parse(r.Key));
+                    }
+
+                    messageData = message.ToString();
+                }
+            }
+
+            var file = _messageRepository.SaveMessage(messageData);
+
             try
             {
                 if (!string.IsNullOrWhiteSpace(file))

@@ -4,6 +4,6 @@ namespace Papercut.Core.Message
 
     public interface IReceivedDataHandler
     {
-        void HandleReceived(IEnumerable<string> data);
+        void HandleReceived(string message, IList<string> recipients);
     }
 }

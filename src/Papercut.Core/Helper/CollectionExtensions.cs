@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2015 Jaben Cargman
+// Copyright © 2013 - 2016 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
+
 
 namespace Papercut.Core.Helper
 {
@@ -34,8 +35,32 @@ namespace Papercut.Core.Helper
             return keyValuePairs.ToDictionary(s => s.Key, s => s.Value);
         }
 
+        public static int RemoveRange<TKey, TValue>([NotNull] this IDictionary<TKey, TValue> dictionary, IEnumerable<KeyValuePair<TKey, TValue>> keyValuePairs)
+        {
+            if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
+            if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
+
+            return dictionary.RemoveRange(keyValuePairs.Select(s => s.Key));
+        }
+
+        public static int RemoveRange<TKey, TValue>([NotNull] this IDictionary<TKey, TValue> dictionary, IEnumerable<TKey> keys)
+        {
+            if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
+            if (keys == null) throw new ArgumentNullException(nameof(keys));
+
+            var count = 0;
+
+            foreach (var key in keys.ToList().Where(dictionary.ContainsKey)) {
+                dictionary.Remove(key);
+                count++;
+            }
+
+            return count;
+        }
+
         public static IDictionary<TKey, TValue> FlattenToDictionary<TKey, TValue>(
-            [NotNull] this ILookup<TKey, TValue> lookup, Func<IEnumerable<TValue>, TValue> flattenFunc = null)
+            [NotNull] this ILookup<TKey, TValue> lookup,
+            Func<IEnumerable<TValue>, TValue> flattenFunc = null)
         {
             if (lookup == null) throw new ArgumentNullException("nameValueCollection");
 
@@ -52,8 +77,7 @@ namespace Papercut.Core.Helper
 
             if (sourceCollection == null) throw new ArgumentNullException(nameof(sourceCollection));
 
-            foreach (TValue item in (sourceCollection as IList<TValue> ?? sourceCollection.ToList())
-                )
+            foreach (TValue item in sourceCollection as IList<TValue> ?? sourceCollection.ToList())
             {
                 destinationCollection.Add(item);
             }

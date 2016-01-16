@@ -63,7 +63,7 @@ namespace Papercut.Message
             catch (UnauthorizedAccessException ex)
             {
                 throw new UnauthorizedAccessException(
-                    string.Format("Unable to remove read-only attribute on file '{0}'", entry.File),
+                    $"Unable to remove read-only attribute on file '{entry.File}'",
                     ex);
             }
 
@@ -74,7 +74,7 @@ namespace Papercut.Message
         public byte[] GetMessage(string file)
         {
             if (!File.Exists(file))
-                throw new IOException(string.Format("File {0} Does Not Exist", file));
+                throw new IOException($"File {file} Does Not Exist");
 
             var info = new FileInfo(file);
             byte[] data;
@@ -87,7 +87,7 @@ namespace Papercut.Message
                 if (++retryCount > 10)
                 {
                     throw new IOException(
-                        string.Format("Cannot Load File {0} After 5 Seconds", file));
+                        $"Cannot Load File {file} After 5 Seconds");
                 }
             }
 
@@ -107,7 +107,7 @@ namespace Papercut.Message
                     .ToList();
         }
 
-        public string SaveMessage(IList<string> output)
+        public string SaveMessage(string output)
         {
             string fileName = null;
 
@@ -115,11 +115,9 @@ namespace Papercut.Message
             {
                 // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
                 fileName = Path.Combine(_messagePathConfigurator.DefaultSavePath,
-                    string.Format("{0}{1}.eml",
-                        DateTime.Now.ToString("yyyyMMdd-HHmmss-FFF"),
-                        StringHelpers.SmallRandomString()));
+                    $"{DateTime.Now.ToString("yyyyMMdd-HHmmss-FFF")}{StringHelpers.SmallRandomString()}.eml");
 
-                File.WriteAllLines(fileName, output);
+                File.WriteAllText(fileName, output);
 
                 _logger.Debug("Successfully Saved email message: {EmailMessageFile}", fileName);
             }

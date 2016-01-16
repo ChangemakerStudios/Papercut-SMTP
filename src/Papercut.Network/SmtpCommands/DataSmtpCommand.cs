@@ -17,6 +17,7 @@
 
 namespace Papercut.Network.SmtpCommands
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
@@ -53,12 +54,12 @@ namespace Papercut.Network.SmtpCommands
                 return;
             }
 
-            List<string> output;
+            List<string> data;
             Task<int> confirmation;
 
             try
             {
-                output = Connection.Client.ReadTextStream(
+                data = Connection.Client.ReadTextStream(
                     reader =>
                     {
                         var messageLines = new List<string>();
@@ -86,7 +87,7 @@ namespace Papercut.Network.SmtpCommands
                 return;
             }
 
-            _receivedDataHandler.HandleReceived(output);
+            _receivedDataHandler.HandleReceived(string.Join(Environment.NewLine, data), Session.Recipients);
             confirmation.Wait();
         }
     }
