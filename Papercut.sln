@@ -1,25 +1,31 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 14.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut", "src\Papercut.csproj", "{AC067042-66BD-4110-ADA1-E2CEA43E7947}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut", "src\Papercut.UI\Papercut.csproj", "{AC067042-66BD-4110-ADA1-E2CEA43E7947}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Core", "Papercut.Core\Papercut.Core.csproj", "{EEDD1016-6442-48CE-8F8E-1D350829FBDE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Core", "src\Papercut.Core\Papercut.Core.csproj", "{EEDD1016-6442-48CE-8F8E-1D350829FBDE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Service", "Papercut.Service\Papercut.Service.csproj", "{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Service", "src\Papercut.Service\Papercut.Service.csproj", "{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{8B3498DF-6DDE-44F5-8428-1B82749933BE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{8B3498DF-6DDE-44F5-8428-1B82749933BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.Seq", "Papercut.Module.Seq\Papercut.Module.Seq.csproj", "{5E6526B3-4DA9-41F4-8171-C34146AC2E55}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.Seq", "src\Papercut.Module.Seq\Papercut.Module.Seq.csproj", "{5E6526B3-4DA9-41F4-8171-C34146AC2E55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.VerboseJsonLog", "Papercut.Module.VerboseJsonLog\Papercut.Module.VerboseJsonLog.csproj", "{F60D44E1-100E-464A-A280-CA6BAF652177}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.VerboseJsonLog", "src\Papercut.Module.VerboseJsonLog\Papercut.Module.VerboseJsonLog.csproj", "{F60D44E1-100E-464A-A280-CA6BAF652177}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extras", "Extras", "{66E83B2B-F2C9-4CAA-A519-E4C48566D6BE}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Message", "src\Papercut.Message\Papercut.Message.csproj", "{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Rules", "src\Papercut.Rules\Papercut.Rules.csproj", "{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Network", "src\Papercut.Network\Papercut.Network.csproj", "{C87AB840-625A-4661-AA36-369ADDC6CF7F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,11 +47,20 @@ Global
 		{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5E6526B3-4DA9-41F4-8171-C34146AC2E55}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F60D44E1-100E-464A-A280-CA6BAF652177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F60D44E1-100E-464A-A280-CA6BAF652177}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F60D44E1-100E-464A-A280-CA6BAF652177}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F60D44E1-100E-464A-A280-CA6BAF652177}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C87AB840-625A-4661-AA36-369ADDC6CF7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C87AB840-625A-4661-AA36-369ADDC6CF7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C87AB840-625A-4661-AA36-369ADDC6CF7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C87AB840-625A-4661-AA36-369ADDC6CF7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
