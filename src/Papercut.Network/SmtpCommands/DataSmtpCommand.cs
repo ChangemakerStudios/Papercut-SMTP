@@ -70,8 +70,7 @@ namespace Papercut.Network.SmtpCommands
                         while ((line = reader.ReadLine()) != ".")
                         {
                             // reverse any dot-stuffing per RFC 2821, section 4.5.2
-                            if (line.StartsWith(".") && line.Length > 1) line = line.Substring(1);
-
+                            if (line?.Length > 1 && line[0] == '.') line = line.Substring(1);
                             messageLines.Add(line);
                         }
 

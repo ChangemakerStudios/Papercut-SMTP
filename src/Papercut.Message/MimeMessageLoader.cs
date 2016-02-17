@@ -95,7 +95,7 @@ namespace Papercut.Message
                             {
                                 var policy = new CacheItemPolicy
                                 {
-                                    SlidingExpiration = TimeSpan.FromSeconds(300)
+                                    SlidingExpiration = TimeSpan.FromSeconds(10)
                                 };
 
                                 MimeMessageCache.Add(messageEntry.File, m, policy);
