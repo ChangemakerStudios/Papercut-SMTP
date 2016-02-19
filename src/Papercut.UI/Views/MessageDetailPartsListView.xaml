@@ -20,6 +20,7 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
+                <DataGridTextColumn Header="Content Id" Binding="{Binding ContentId}" />
                 <DataGridTextColumn Header="Media Type" Binding="{Binding ContentType.MediaType}" />
                 <DataGridTextColumn Header="Media Subtype" Binding="{Binding ContentType.MediaSubtype}" />
                 <DataGridTextColumn Header="Charset" Binding="{Binding ContentType.Charset}" />
