@@ -17,7 +17,5 @@
 
 namespace Papercut.ViewModels
 {
-    public interface IMessageDetailItem
-    {
-    }
+    public interface IMessageDetailItem { }
 }

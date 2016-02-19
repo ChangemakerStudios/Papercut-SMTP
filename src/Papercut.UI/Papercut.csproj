@@ -291,6 +291,7 @@
     <Compile Include="Events\ShowMainWindowEvent.cs" />
     <Compile Include="ViewModels\MessageDetailBodyViewModel.cs" />
     <Compile Include="ViewModels\MessageDetailHeaderViewModel.cs" />
+    <Compile Include="Helpers\MessageDetailItemHelper.cs" />
     <Compile Include="ViewModels\MessageDetailRawViewModel.cs" />
     <Compile Include="Views\MessageDetailBodyView.xaml.cs">
       <DependentUpon>MessageDetailBodyView.xaml</DependentUpon>
