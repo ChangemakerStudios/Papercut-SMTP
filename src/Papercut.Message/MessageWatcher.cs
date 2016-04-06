@@ -54,13 +54,12 @@ namespace Papercut.Message
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!disposing) return;
+
+            foreach (FileSystemWatcher watch in _watchers)
             {
-                foreach (FileSystemWatcher watch in _watchers)
-                {
-                    if (watch != null)
-                        DisposeWatch(watch);
-                }
+                if (watch != null)
+                    DisposeWatch(watch);
             }
         }
 
@@ -145,9 +144,10 @@ namespace Papercut.Message
                     var info = new FileInfo(e.FullPath);
                     int retryCount = 0;
 
-                    while (!info.CanReadFile())
+                    do
                     {
-                        Thread.Sleep(500);
+                        var timeout = 500 + retryCount * 100;
+                        Thread.Sleep(timeout);
                         if (++retryCount > 30)
                         {
                             _logger.Error(
@@ -157,6 +157,7 @@ namespace Papercut.Message
                             break;
                         }
                     }
+                    while (!info.CanReadFile());
 
                     return info;
                 }).ContinueWith(r => OnNewMessage(new NewMessageEventArgs(new MessageEntry(r.Result))));
@@ -169,13 +170,13 @@ namespace Papercut.Message
         protected virtual void OnRefreshNeeded()
         {
             EventHandler handler = RefreshNeeded;
-            if (handler != null) handler(this, EventArgs.Empty);
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         protected virtual void OnNewMessage(NewMessageEventArgs e)
         {
             EventHandler<NewMessageEventArgs> handler = NewMessage;
-            if (handler != null) handler(this, e);
+            handler?.Invoke(this, e);
         }
     }
 }

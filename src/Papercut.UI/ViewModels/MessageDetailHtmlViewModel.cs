@@ -19,6 +19,7 @@ namespace Papercut.ViewModels
 {
     using System;
     using System.Diagnostics;
+    using System.Linq;
     using System.Reactive.Linq;
     using System.Runtime.InteropServices;
     using System.Windows;
@@ -48,8 +49,7 @@ namespace Papercut.ViewModels
         {
             DisplayName = "Message";
             _logger = logger;
-            _previewGenerator = previewGenerator;
-        }
+            _previewGenerator = previewGenerator;        }
 
         public string HtmlFile
         {
@@ -98,6 +98,18 @@ namespace Papercut.ViewModels
             {
                 e.Cancel = true;
                 Process.Start(e.Uri.AbsoluteUri);
+            }
+            else if (e.Uri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
+            {
+                e.Cancel = true;
+
+                // direct to the parts area...
+                var model = this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
+                var part = model.Parts.FirstOrDefault(s => s.ContentId == e.Uri.AbsolutePath);
+                if (part != null)
+                {
+                    model.SelectedPart = part;
+                }
             }
         }
 
