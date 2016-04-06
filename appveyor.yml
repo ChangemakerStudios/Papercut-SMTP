@@ -6,9 +6,9 @@ before_build:
   - nuget restore
 
 after_build:
-  - 7z a Papercut.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\$(configuration)\Papercut.exe
-  - 7z a Papercut.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\$(configuration)\Papercut.exe.*
-  - 7z a Papercut.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\$(configuration)\Readme.eml
+  - 7z a Papercut.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release\Papercut.exe
+  - 7z a Papercut.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release\Papercut.exe.*
+  - 7z a Papercut.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release\Readme.eml
 
 artifacts:
   - path: Papercut.zip
