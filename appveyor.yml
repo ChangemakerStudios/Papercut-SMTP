@@ -3,4 +3,12 @@ os: Visual Studio 2015
 configuration: Release
 
 before_build:
-- nuget restore
+  - nuget restore
+
+after_build:
+  - 7z a Papercut.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\$(configuration)\Papercut.exe
+  - 7z a Papercut.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\$(configuration)\Papercut.exe.*
+  - 7z a Papercut.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\$(configuration)\Readme.eml
+
+artifacts:
+  - path: Papercut.zip
