@@ -13,8 +13,8 @@ after_build:
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Install-Papercut-Service.bat
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Uninstall-Papercut-Service.bat
   - nuget pack chocolately\Papercut.nuspec -version %APPVEYOR_BUILD_VERSION%
+  - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.nupkg
 
 artifacts:
   - path: Papercut.%APPVEYOR_BUILD_VERSION%.zip
-  - path: PapercutService.%APPVEYOR_BUILD_VERSION%.zip
-  - path: Papercut.%APPVEYOR_BUILD_VERSION%.nupkg
+  - path: PapercutService.%APPVEYOR_BUILD_VERSION%.zip  
