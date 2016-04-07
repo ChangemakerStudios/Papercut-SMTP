@@ -71,9 +71,7 @@ namespace Papercut.Helpers
 
         protected virtual void OnLogEvent()
         {
-            EventHandler handler = LogEvent;
-            if (handler != null)
-                handler(this, EventArgs.Empty);
+            LogEvent?.Invoke(this, EventArgs.Empty);
         }
     }
 }
