@@ -17,11 +17,11 @@ Papercut is the answer. Papercut is a simplified SMTP server designed to only re
         <tags>dummy smtp papercut</tags>
     </metadata>
     <files>
-        <file src="..\src\bin\Release\Papercut.application" target="bin\Papercut.application" />
-        <file src="..\src\bin\Release\Papercut.exe" target="bin\Papercut.exe" />
-        <file src="..\src\bin\Release\Papercut.exe.config" target="bin\Papercut.exe.config" />
-        <file src="..\src\bin\Release\Readme.eml" target="bin\Readme.eml" />
-        <file src="..\src\bin\Release\Readme.eml" target="bin\Readme.eml" />
-        <file src="tools\Papercut.exe.gui" target="bin\Papercut.exe.gui" />        
+        <file src="..\src\Papercut.UI\bin\Release\Papercut.application" target="bin\Papercut.application" />
+        <file src="..\src\Papercut.UI\bin\Release\Papercut.exe" target="bin\Papercut.exe" />
+        <file src="..\src\Papercut.UI\bin\Release\Papercut.exe.config" target="bin\Papercut.exe.config" />
+        <file src="..\src\Papercut.UI\bin\Release\Readme.eml" target="bin\Readme.eml" />
+        <file src="..\src\Papercut.UI\bin\Release\Readme.eml" target="bin\Readme.eml" />
+        <file src="tools\Papercut.exe.gui" target="bin\Papercut.exe.gui" />
     </files>
 </package>
