@@ -31,7 +31,7 @@
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <PublishUrl>C:\Projects\Papercut\deploy\</PublishUrl>
+    <PublishUrl>..\deploy\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -46,8 +46,8 @@
     <ProductName>Papercut</ProductName>
     <PublisherName>Papercut</PublisherName>
     <MinimumRequiredVersion>3.0.0.0</MinimumRequiredVersion>
-    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
+    <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>4.5.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>

@@ -202,9 +202,9 @@ namespace Papercut.ViewModels
 
         public IEnumerable<string> RenderLogEventParts(LogEvent e)
         {
-            yield return string.Format(@"<div class=""logEntry {0}"">", e.Level);
-            yield return string.Format(@"<span class=""date"">{0}</span>", e.Timestamp.ToString("G"));
-            yield return string.Format(@"[<span class=""errorLevel"">{0}</span>]", e.Level);
+            yield return $@"<div class=""logEntry {e.Level}"">";
+            yield return $@"<span class=""date"">{e.Timestamp.ToString("G")}</span>";
+            yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
             yield return e.RenderMessage();
             yield return @"</div>";
         }
@@ -218,16 +218,28 @@ namespace Papercut.ViewModels
                     m =>
                     MessageDetailViewModel.LoadMessageEntry(MessageListViewModel.SelectedMessage));
 
-            Observable.FromEventPattern<EventHandler, EventArgs>(h => new EventHandler(h),
+            Observable.FromEventPattern<EventHandler, EventArgs>(
+                h => new EventHandler(h),
                 h => _logClientSinkQueue.LogEvent += h,
-                h => _logClientSinkQueue.LogEvent -= h).ObserveOnDispatcher().Subscribe(o =>
-                {
-                    foreach (var e in _logClientSinkQueue.GetLastEvents().ToList())
+                h => _logClientSinkQueue.LogEvent -= h,
+                TaskPoolScheduler.Default)
+                .Buffer(TimeSpan.FromSeconds(1))
+                .Select(
+                    s =>
                     {
-                        LogText = LogText.Replace("<body>",
-                            "<body>" + string.Join(" ", RenderLogEventParts(e)));
-                    }
-                });
+                        return
+                            _logClientSinkQueue.GetLastEvents()
+                                .Select(e => string.Join(" ", RenderLogEventParts(e)))
+                                .Reverse()
+                                .ToList();
+                    })
+                .ObserveOnDispatcher().Subscribe(
+                    o =>
+                    {
+                        LogText = LogText.Replace(
+                            "<body>",
+                            $"<body>{string.Join("", o)}");
+                    });
 
             this.GetPropertyValues(m => m.IsLogOpen)
                 .ObserveOnDispatcher()

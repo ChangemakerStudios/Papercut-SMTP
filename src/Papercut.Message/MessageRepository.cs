@@ -119,7 +119,7 @@ namespace Papercut.Message
 
                 File.WriteAllText(fileName, output);
 
-                _logger.Debug("Successfully Saved email message: {EmailMessageFile}", fileName);
+                _logger.Information("Successfully Saved email message: {EmailMessageFile}", fileName);
             }
             catch (Exception ex)
             {
