@@ -57,14 +57,10 @@ namespace Papercut.Helpers
         {
             LogEvent logEvent;
 
-            do
+            while ((logEvent = GetLastEvent()) != null)
             {
-                logEvent = GetLastEvent();
-
-                if (logEvent != null)
-                    yield return logEvent;
+               yield return logEvent;
             }
-            while (logEvent != null);
         }
 
         public event EventHandler LogEvent;

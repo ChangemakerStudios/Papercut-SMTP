@@ -19,21 +19,27 @@ namespace Papercut.Services
 {
     using System;
     using System.Drawing;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Linq;
+    using System.Reactive.Subjects;
     using System.Windows.Forms;
-    using System.Windows.Threading;
 
     using Papercut.Core.Events;
     using Papercut.Events;
 
-    public class NotificationMenuService : IDisposable,
+    using Disposable = Autofac.Util.Disposable;
+
+    public class NotificationMenuService : Disposable,
         IHandleEvent<PapercutClientReadyEvent>,
         IHandleEvent<ShowBallonTip>
     {
         readonly IPublishEvent _publishEvent;
 
         readonly AppResourceLocator _resourceLocator;
-
+            
         NotifyIcon _notification;
+
+        Subject<ShowBallonTip> _notificationSubject;
 
         public NotificationMenuService(
             AppResourceLocator resourceLocator,
@@ -41,23 +47,35 @@ namespace Papercut.Services
         {
             _resourceLocator = resourceLocator;
             _publishEvent = publishEvent;
+            _notificationSubject = new Subject<ShowBallonTip>();
+
+            InitObservables();
         }
 
-        public void Dispose()
+        void InitObservables()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _notificationSubject
+                .Sample(TimeSpan.FromSeconds(1), TaskPoolScheduler.Default)
+                .ObserveOnDispatcher()
+                .Subscribe(
+                    @event =>
+                    {
+                        _notification.ShowBalloonTip(
+                            @event.Timeout,
+                            @event.TipTitle,
+                            @event.TipText,
+                            @event.ToolTipIcon);
+                    });
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (_notification != null)
-                {
-                    _notification.Dispose();
-                    _notification = null;
-                }
+                _notificationSubject?.Dispose();
+                _notificationSubject = null;
+                _notification?.Dispose();
+                _notification = null;
             }
         }
 
@@ -65,6 +83,11 @@ namespace Papercut.Services
         {
             if (_notification != null) return;
 
+            SetupNotification();
+        }
+
+        void SetupNotification()
+        {
             // Set up the notification icon
             _notification = new NotifyIcon
             {
@@ -106,14 +129,7 @@ namespace Papercut.Services
 
         public void Handle(ShowBallonTip @event)
         {
-            Dispatcher.CurrentDispatcher.BeginInvoke(
-                new Action(
-                    () =>
-                    _notification.ShowBalloonTip(
-                        @event.Timeout,
-                        @event.TipTitle,
-                        @event.TipText,
-                        @event.ToolTipIcon)));
+            _notificationSubject.OnNext(@event);
         }
     }
 }
