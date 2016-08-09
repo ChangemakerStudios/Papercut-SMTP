@@ -49,7 +49,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Serilog.Sinks.Seq, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.Seq.1.5.27\lib\net40\Serilog.Sinks.Seq.dll</HintPath>
+      <HintPath>..\..\packages\Serilog.Sinks.Seq.1.5.36\lib\net40\Serilog.Sinks.Seq.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

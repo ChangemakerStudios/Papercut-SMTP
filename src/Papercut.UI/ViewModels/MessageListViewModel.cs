@@ -142,7 +142,8 @@ namespace Papercut.ViewModels
                 e => _messageWatcher.RefreshNeeded -= e,
                 TaskPoolScheduler.Default)
                 .Throttle(TimeSpan.FromMilliseconds(100))
-                .Subscribe(e => Execute.OnUIThread(RefreshMessageList));
+                .ObserveOnDispatcher()
+                .Subscribe(e => RefreshMessageList());
 
             Messages.CollectionChanged += CollectionChanged;
         }
@@ -178,27 +179,27 @@ namespace Papercut.ViewModels
 
         void AddNewMessage(MessageEntry entry)
         {
-            _mimeMessageLoader.Get(entry)
-                .ObserveOnDispatcher()
-                .Subscribe(
-                    message =>
-                    {
-                        _publishEvent.Publish(
-                            new ShowBallonTip(
-                                5000,
-                                "New Message Received",
-                                $"From: {message.From.ToString().Truncate(50)}\r\nSubject: {message.Subject.Truncate(50)}",
-                                ToolTipIcon.Info));
+            var observable = _mimeMessageLoader.Get(entry);
 
-                        // Add it to the list box
-                        ClearSelected();
-                        entry.IsSelected = true;
-                        Messages.Add(new MimeMessageEntry(entry, _mimeMessageLoader));
-                    },
-                    e =>
-                    {
-                        // NOOP
-                    });
+            observable.ObserveOnDispatcher().Subscribe(
+                message =>
+                {
+                    _publishEvent.Publish(
+                        new ShowBallonTip(
+                            3500,
+                            "New Message Received",
+                            $"From: {message.From.ToString().Truncate(50)}\r\nSubject: {message.Subject.Truncate(50)}",
+                            ToolTipIcon.Info));
+
+                    // Add it to the list box
+                    ClearSelected();
+                    entry.IsSelected = true;
+                    Messages.Add(new MimeMessageEntry(entry, _mimeMessageLoader));
+                },
+                e =>
+                {
+                    // NOOP
+                });
         }
 
         public void SetSelectedIndex(int? index = null)
