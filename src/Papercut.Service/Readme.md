@@ -10,4 +10,4 @@ A listing of all command line options are avaliable by entering: `Papercut.Servi
 
 _Papercut.Service_ should not need manual configuration. When the service and the client (_Papercut.exe_) processes, are run at the same time, they will sync their configurations automatically. For example, when the SMTP settings is modified in the UI options, the service will automatically update with these changes. Same thing happens with rule changes.
 
- But, the configuration file for Papercut.Service is located in the same directory as the _Papercut.Service.exe_: `Papercut.Service.json` -- but requires the service to be restarted if modified. 
+ If desired, the configuration file for _Papercut.Service_ can be found in the same directory as the _Papercut.Service.exe_. `Papercut.Service.json` contains the configuration with comments. Modification will require the service to be restarted to take effect.
