@@ -1,9 +1,9 @@
 ## How to Run Papercut.Service
 
 - Option 1:
- Run from the command line by entering: `Papercut.Service.exe`.
+Run from the command line by entering: `Papercut.Service.exe`
 - Option 2: Install as a service by entering `Install-Papercut-Service.bat` and the service will be installed. Enter `Papercut.Service.exe install --sudo` to immediately start the service.
-- 
+
 A listing of all command line options are avaliable by entering: `Papercut.Service.exe help`
 
 ## How to Configure Papercut.Service
