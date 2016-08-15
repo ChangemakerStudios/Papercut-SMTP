@@ -6,6 +6,8 @@
 
 ## How to Configure Papercut.Service
 
-Topshelf offers an array of configuration options from the command line. Type "Papercut.Service.exe help" for a listing of the options.
+A listing of command line option is avaliable by entering: 
+
+` Papercut.Service.exe help`
 
 Papercut.Service does not require manual editing of files to run or configure. The Papercut.exe and Papercut.Service.exe processes, when run at the same time, will communicate and handle configuration automatically. e.g. When you change the SMTP settings in the UI options, it automatically pushes those changes (and saves them) in the Service. But, if you do need to manually configure, all the settings are in the default Papercut.Service.json file with comments.
