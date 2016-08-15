@@ -1,13 +1,13 @@
 ## How to Run Papercut.Service
 
 - Option 1:
- Run from the command line: "Papercut.Service.exe" runs the process directly from the the command line.	Then you can configure the Service by running the Papercut.exe.
-- Option 2: Install as a service: From command line run the "Install-Papercut-Service.bat" and it will install using one command: "Papercut.Service.exe install --sudo" and start the service.	Then you can configure the Service by running the Papercut.exe.
+ Run from the command line by entering: `Papercut.Service.exe`.
+- Option 2: Install as a service by entering `Install-Papercut-Service.bat` and the service will be installed. Enter `Papercut.Service.exe install --sudo` to immediately start the service.
+- 
+A listing of all command line options are avaliable by entering: `Papercut.Service.exe help`
 
 ## How to Configure Papercut.Service
 
-A listing of command line option is avaliable by entering: 
+_Papercut.Service_ should not need manual configuration. When the service and the client (_Papercut.exe_) processes, are run at the same time, they will sync their configurations automatically. For example, when the SMTP settings is modified in the UI options, the service will automatically update with these changes. Same thing happens with rule changes.
 
-` Papercut.Service.exe help`
-
-Papercut.Service does not require manual editing of files to run or configure. The Papercut.exe and Papercut.Service.exe processes, when run at the same time, will communicate and handle configuration automatically. e.g. When you change the SMTP settings in the UI options, it automatically pushes those changes (and saves them) in the Service. But, if you do need to manually configure, all the settings are in the default Papercut.Service.json file with comments.
+ But, the configuration file for Papercut.Service is located in the same directory as the _Papercut.Service.exe_: `Papercut.Service.json` -- but requires the service to be restarted if modified. 
