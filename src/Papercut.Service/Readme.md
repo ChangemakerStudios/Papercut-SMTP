@@ -7,7 +7,8 @@ Papercut.Service.exe uses Topshelf library (http://topshelf-project.com) which g
 - Option 1:
  Run from the command line: "Papercut.Service.exe" runs the process directly from the the command line.	Then you can configure the Service by running the Papercut.exe.
 - Option 2: Install as a service: From command line run the "Install-Papercut-Service.bat" and it will install using one command: "Papercut.Service.exe install --sudo" and start the service.	Then you can configure the Service by running the Papercut.exe.
-Additional Service Options:
+
+**Additional Service Options:**
 
 Topshelf offers an array of configuration options from the command line. Type "Papercut.Service.exe help" for a listing of the options.
 
