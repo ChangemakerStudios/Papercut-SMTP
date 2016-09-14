@@ -1,5 +1,5 @@
-![Papercut Logo](https://raw.githubusercontent.com/ChangemakerStudios/Papercut/develop/graphics/PapercutLogo.png)
-#####The Simple SMTP Desktop Email Receiver
+![Papercut Logo](https://raw.githubusercontent.com/ChangemakerStudios/Papercut/develop/graphics/PapercutLogo.png)<br>
+The Simple SMTP Desktop Email Receiver
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Jaben/Papercut?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Build status](https://ci.appveyor.com/api/projects/status/bs2asxoafdwbkcxa?svg=true)](https://ci.appveyor.com/project/Jaben/papercut)
 
