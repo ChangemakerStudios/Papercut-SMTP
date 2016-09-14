@@ -1,7 +1,10 @@
 ![Papercut Logo](https://raw.githubusercontent.com/ChangemakerStudios/Papercut/develop/graphics/PapercutLogo.png)<br>
 The Simple SMTP Desktop Email Receiver
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Jaben/Papercut?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Build status](https://ci.appveyor.com/api/projects/status/bs2asxoafdwbkcxa?svg=true)](https://ci.appveyor.com/project/Jaben/papercut)
+<br>
+[![Build status](https://ci.appveyor.com/api/projects/status/bs2asxoafdwbkcxa?svg=true)](https://ci.appveyor.com/project/Jaben/papercut)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Jaben/Papercut?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 
 ##What it does
 Ever need to test emails from an application or web site but don't want them accidently being sent or having to deal with the hassle of setting up a test email server? Papercut is a quick email viewer with a built-in SMTP server designed to only receive messages. It doesn't enforce any restrictions how you send your email. It allows you to view the whole email-chilada: body, html, headers, attachment down to the naughty raw bits. It can be set to run on startup and sits quietly minimized in the tray giving you a balloon popup when a new message arrives.
