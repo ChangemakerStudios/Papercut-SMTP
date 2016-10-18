@@ -25,7 +25,7 @@ Ever need to test emails from an application or web site but don't want them acc
 ![In Version 4.4: Logging View](http://www.tinygecko.com/images/Papercut/Papercut-Log.png)
 
 ##Papercut Background Service
-Papercut has an optional "always on" service to receive emails even when the client is not running. [More information about installing the service](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service)
+Papercut has an optional "always on" service to receive emails even when the client is not running. It's manually installed by [Downloading the Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
 
 ##License
 Papercut is Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0"> Apache License, Version 2.0.
