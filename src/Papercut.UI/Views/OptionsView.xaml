@@ -10,7 +10,7 @@
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:OptionsViewModel}"
-                      Title="{Binding WindowTitle}" Width="328" Height="220" Icon="/Papercut;component/App.ico"
+                      Title="{Binding WindowTitle}" Width="313" Height="240" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="NoResize"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner"
@@ -23,10 +23,11 @@
             <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
             <Button Width="75" Margin="2" Name="Save" IsDefault="True">Save</Button>
         </StackPanel>
-        <Grid>
+        <Grid Width="310">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="466*" />
+                <ColumnDefinition Width="97*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -35,18 +36,22 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Label Grid.Column="0" Grid.Row="0">IP Address:</Label>
-            <Label Grid.Column="0" Grid.Row="1">Port:</Label>
+            <Label Grid.Column="0" Grid.Row="0" Margin="0,2,0,29" Grid.RowSpan="2">IP Address:</Label>
+            <Label Grid.Column="0" Grid.Row="1" Margin="0,2,10,0" Grid.RowSpan="3">Port:</Label>
             <ComboBox Grid.Column="1" Grid.Row="0" Margin="2,2,0,2" Width="170" HorizontalAlignment="Left"
-                      Name="IPs" SelectedItem="{Binding IP}" />
-            <Grid Grid.Column="1" Grid.Row="1">
+                      Name="IPs" SelectedItem="{Binding IP}" Grid.ColumnSpan="2" />
+            <Grid Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2">
                 <TextBox Margin="2,2,0,2" Width="100" HorizontalAlignment="Left" Name="Port" />
                 <Label Margin="102,0,0,0">(default is 25)</Label>
             </Grid>
-            <CheckBox Grid.Column="1" Grid.Row="2" Margin="5" Name="RunOnStartup" VerticalAlignment="Bottom"
-                      Content="Run On Startup" />
-            <CheckBox Grid.Column="1" Grid.Row="3" Margin="5" Name="StartMinimized" VerticalAlignment="Bottom">Start Minimized</CheckBox>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5" Name="MinimizeOnClose" VerticalAlignment="Bottom">Minimize On Close</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-64" Name="RunOnStartup" VerticalAlignment="Bottom"
+                      Content="Run On Startup" Grid.ColumnSpan="2" Height="18" />
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-18" Name="StartMinimized" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18">Start Minimized</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-41" Name="MinimizeOnClose" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18">Minimize On Close</CheckBox>
+            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2,3,0,7"
+                x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2">
+            </ComboBox>
+            <Label Grid.Column="0" Grid.Row="4" Content="Message Sort Order:" Margin="0,3,3,4"/>
         </Grid>
     </DockPanel>
 </controls:MetroWindow>

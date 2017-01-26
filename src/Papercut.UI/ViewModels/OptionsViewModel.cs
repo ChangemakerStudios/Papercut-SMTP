@@ -20,6 +20,7 @@ namespace Papercut.ViewModels
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.ComponentModel;
     using System.Linq;
     using System.Net;
 
@@ -44,6 +45,8 @@ namespace Papercut.ViewModels
 
         int _port = 25;
 
+        string _messageListSortOrder = "Descending";
+
         bool _runOnStartup;
 
         bool _startMinimized;
@@ -54,6 +57,7 @@ namespace Papercut.ViewModels
         {
             this._messageBus = messageBus;
             IPs = new ObservableCollection<string>(_ipList.Value);
+            SortOrders = new ObservableCollection<string>(Enum.GetNames(typeof(ListSortDirection)));
             Load();
         }
 
@@ -64,6 +68,16 @@ namespace Papercut.ViewModels
             {
                 _windowTitle = value;
                 NotifyOfPropertyChange(() => WindowTitle);
+            }
+        }
+
+        public string MessageListSortOrder
+        {
+            get { return this._messageListSortOrder; }
+            set
+            {
+                this._messageListSortOrder = value;
+                NotifyOfPropertyChange(() => this.MessageListSortOrder);
             }
         }
 
@@ -119,10 +133,13 @@ namespace Papercut.ViewModels
 
         public ObservableCollection<string> IPs { get; private set; }
 
+        public ObservableCollection<string> SortOrders { get; private set; }
+
         public void Load()
         {
             _ip = Settings.Default.IP;
             _port = Settings.Default.Port;
+            _messageListSortOrder = Settings.Default.MessageListSortOrder;
             _startMinimized = Settings.Default.StartMinimized;
             _minimizeOnClose = Settings.Default.MinimizeOnClose;
             _runOnStartup = Settings.Default.RunOnStartup;
@@ -150,6 +167,7 @@ namespace Papercut.ViewModels
             Settings.Default.RunOnStartup = RunOnStartup;
             Settings.Default.StartMinimized = StartMinimized;
             Settings.Default.MinimizeOnClose = MinimizeOnClose;
+            Settings.Default.MessageListSortOrder = MessageListSortOrder;
 
             Settings.Default.Save();
 

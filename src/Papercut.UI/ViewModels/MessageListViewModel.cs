@@ -48,7 +48,7 @@ namespace Papercut.ViewModels
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
     using Screen = Caliburn.Micro.Screen;
 
-    public class MessageListViewModel : Screen
+    public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
     {
         readonly object _deleteLockObject = new object();
 
@@ -131,8 +131,10 @@ namespace Papercut.ViewModels
         {
             Messages = new ObservableCollection<MimeMessageEntry>();
             MessagesSorted = CollectionViewSource.GetDefaultView(Messages);
-            MessagesSorted.SortDescriptions.Add(
-                new SortDescription("ModifiedDate", ListSortDirection.Ascending));
+
+            ListSortDirection sortOrder;
+            Enum.TryParse<ListSortDirection>(Settings.Default.MessageListSortOrder, out sortOrder);
+            MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", sortOrder));
 
             // Begin listening for new messages
             _messageWatcher.NewMessage += NewMessage;
@@ -315,6 +317,14 @@ namespace Papercut.ViewModels
             MessagesSorted.Refresh();
 
             ValidateSelected();
+        }
+
+        public void Handle(SettingsUpdatedEvent message)
+        {
+            ListSortDirection sortOrder;
+            Enum.TryParse<ListSortDirection>(Settings.Default.MessageListSortOrder, out sortOrder);
+            MessagesSorted.SortDescriptions.Clear();
+            MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", sortOrder));
         }
     }
 }
