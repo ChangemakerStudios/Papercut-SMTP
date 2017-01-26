@@ -60,7 +60,7 @@ namespace Papercut.ViewModels
 
         readonly MimeMessageLoader _mimeMessageLoader;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
         bool _isLoading;
 
@@ -68,7 +68,7 @@ namespace Papercut.ViewModels
             MessageRepository messageRepository,
             [NotNull] MessageWatcher messageWatcher,
             MimeMessageLoader mimeMessageLoader,
-            IPublishEvent publishEvent,
+            IMessageBus messageBus,
             ILogger logger)
         {
             if (messageRepository == null)
@@ -77,13 +77,13 @@ namespace Papercut.ViewModels
                 throw new ArgumentNullException(nameof(messageWatcher));
             if (mimeMessageLoader == null)
                 throw new ArgumentNullException(nameof(mimeMessageLoader));
-            if (publishEvent == null)
-                throw new ArgumentNullException(nameof(publishEvent));
+            if (messageBus == null)
+                throw new ArgumentNullException(nameof(messageBus));
 
             _messageRepository = messageRepository;
             _messageWatcher = messageWatcher;
             _mimeMessageLoader = mimeMessageLoader;
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
             _logger = logger;
 
             SetupMessages();
@@ -184,7 +184,7 @@ namespace Papercut.ViewModels
             observable.ObserveOnDispatcher().Subscribe(
                 message =>
                 {
-                    _publishEvent.Publish(
+                    this._messageBus.Publish(
                         new ShowBallonTip(
                             3500,
                             "New Message Received",
@@ -280,7 +280,7 @@ namespace Papercut.ViewModels
                 if (failedEntries.Any())
                 {
                     // show errors...
-                    _publishEvent.Publish(
+                    this._messageBus.Publish(
                         new ShowMessageEvent(
                             string.Join("\r\n", failedEntries),
                             $"Failed to Delete Message{(failedEntries.Count() > 1 ? "s" : string.Empty)}"));

@@ -51,7 +51,7 @@ namespace Papercut.Network.Smtp
                         o.OnError(ex);
                     }
 
-                    return Disposable.Create(() => server?.Stop());
+                    return Disposable.Empty;
                 }).ObserveOn(scheduler ?? Scheduler.Default);
 
             return bindObservable;

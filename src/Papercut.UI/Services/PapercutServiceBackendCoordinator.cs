@@ -31,12 +31,12 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class PapercutServiceBackendCoordinator : IHandleEvent<PapercutClientPreStartEvent>,
-        IHandleEvent<SettingsUpdatedEvent>,
-        IHandleEvent<RulesUpdatedEvent>,
-        IHandleEvent<PapercutServicePreStartEvent>,
-        IHandleEvent<PapercutServiceReadyEvent>,
-        IHandleEvent<PapercutServiceExitEvent>
+    public class PapercutServiceBackendCoordinator : IEventHandler<PapercutClientPreStartEvent>,
+        IEventHandler<SettingsUpdatedEvent>,
+        IEventHandler<RulesUpdatedEvent>,
+        IEventHandler<PapercutServicePreStartEvent>,
+        IEventHandler<PapercutServiceReadyEvent>,
+        IEventHandler<PapercutServiceExitEvent>
     {
         const string BackendServiceFailureMessage =
             "Papercut Backend Service Exception Attempting to Contact";
@@ -45,7 +45,7 @@ namespace Papercut.Services
 
         readonly Func<PapercutClient> _papercutClientFactory;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
         readonly SmtpServerCoordinator _smtpServerCoordinator;
 
@@ -53,12 +53,12 @@ namespace Papercut.Services
 
         public PapercutServiceBackendCoordinator(
             ILogger logger,
-            IPublishEvent publishEvent,
+            IMessageBus messageBus,
             Func<PapercutClient> papercutClientFactory,
             SmtpServerCoordinator smtpServerCoordinator)
         {
             _logger = logger;
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
             _papercutClientFactory = papercutClientFactory;
             _smtpServerCoordinator = smtpServerCoordinator;
 
@@ -158,7 +158,7 @@ namespace Papercut.Services
                             "Background Process Returned {@Event} -- Publishing",
                             exchangeEvent);
 
-                        _publishEvent.Publish(exchangeEvent);
+                        this._messageBus.Publish(exchangeEvent);
                     }
                 }
             }

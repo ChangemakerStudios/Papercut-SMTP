@@ -17,10 +17,8 @@
 
 namespace Papercut.Core.Events
 {
-    using Papercut.Core.Configuration;
-
-    public class PapercutServiceExitEvent : IDomainEvent
+    public interface IMessageBus
     {
-        public IAppMeta AppMeta { get; set; }
+        void Publish<T>(T eventObject) where T : IEvent;
     }
 }

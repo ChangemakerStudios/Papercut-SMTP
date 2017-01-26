@@ -23,7 +23,7 @@ namespace Papercut.Module.Seq
     using Serilog;
     using Serilog.Events;
 
-    public class AddSeqToConfiguration : IHandleEvent<ConfigureLoggerEvent>
+    public class AddSeqToConfiguration : IEventHandler<ConfigureLoggerEvent>
     {
         readonly ISettingStore _settingStore;
 

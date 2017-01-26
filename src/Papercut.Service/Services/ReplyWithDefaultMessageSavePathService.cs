@@ -23,7 +23,7 @@ namespace Papercut.Service.Services
     using Papercut.Core.Events;
     using Papercut.Service.Helpers;
 
-    public class ReplyWithDefaultMessageSavePathService : IHandleEvent<AppProcessExchangeEvent>
+    public class ReplyWithDefaultMessageSavePathService : IEventHandler<AppProcessExchangeEvent>
     {
         readonly IMessagePathConfigurator _messagePathConfigurator;
 

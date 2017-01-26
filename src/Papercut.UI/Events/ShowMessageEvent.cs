@@ -19,7 +19,7 @@ namespace Papercut.Events
 {
     using Papercut.Core.Events;
 
-    public class ShowMessageEvent : IDomainEvent
+    public class ShowMessageEvent : IEvent
     {
         public ShowMessageEvent(string messageText, string caption)
         {

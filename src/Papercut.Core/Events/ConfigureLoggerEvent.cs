@@ -19,7 +19,7 @@ namespace Papercut.Core.Events
 {
     using Serilog;
 
-    public class ConfigureLoggerEvent : IDomainEvent
+    public class ConfigureLoggerEvent : IEvent
     {
         public ConfigureLoggerEvent(LoggerConfiguration logConfiguration)
         {

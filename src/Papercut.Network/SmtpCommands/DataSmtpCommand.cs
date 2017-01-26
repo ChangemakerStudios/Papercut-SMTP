@@ -78,6 +78,8 @@ namespace Papercut.Network.SmtpCommands
                     });
 
                 confirmation = Connection.SendLine("250 OK");
+
+                _receivedDataHandler.HandleReceived(string.Join(Environment.NewLine, data), Session.Recipients);
             }
             catch (IOException e)
             {
@@ -86,7 +88,6 @@ namespace Papercut.Network.SmtpCommands
                 return;
             }
 
-            _receivedDataHandler.HandleReceived(string.Join(Environment.NewLine, data), Session.Recipients);
             confirmation.Wait();
         }
     }

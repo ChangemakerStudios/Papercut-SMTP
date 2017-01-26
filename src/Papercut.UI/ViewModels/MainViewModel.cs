@@ -54,7 +54,7 @@ namespace Papercut.ViewModels
 
         readonly LogClientSinkQueue _logClientSinkQueue;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
         readonly AppResourceLocator _resourceLocator;
 
@@ -72,7 +72,7 @@ namespace Papercut.ViewModels
 
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
-            IPublishEvent publishEvent,
+            IMessageBus messageBus,
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
             Func<MessageDetailViewModel> messageDetailViewModelFactory,
@@ -80,7 +80,7 @@ namespace Papercut.ViewModels
             AppResourceLocator resourceLocator)
         {
             _viewModelWindowManager = viewModelWindowManager;
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
             _forwardRuleDispatch = forwardRuleDispatch;
 
             MessageListViewModel = messageListViewModelFactory();
@@ -276,7 +276,7 @@ namespace Papercut.ViewModels
 
         public void Exit()
         {
-            _publishEvent.Publish(new AppForceShutdownEvent());
+            this._messageBus.Publish(new AppForceShutdownEvent());
         }
 
         public void ForwardSelected()

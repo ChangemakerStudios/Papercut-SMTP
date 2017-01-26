@@ -26,16 +26,16 @@ namespace Papercut.Services
     using Papercut.Events;
     using Papercut.Properties;
 
-    public class MergeServerBackendSettings : IHandleEvent<AppProcessExchangeEvent>
+    public class MergeServerBackendSettings : IEventHandler<AppProcessExchangeEvent>
     {
         readonly IMessagePathConfigurator _configurator;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
-        public MergeServerBackendSettings(IMessagePathConfigurator configurator, IPublishEvent publishEvent)
+        public MergeServerBackendSettings(IMessagePathConfigurator configurator, IMessageBus messageBus)
         {
             _configurator = configurator;
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
         }
 
         public void Handle([NotNull] AppProcessExchangeEvent @event)
@@ -59,7 +59,7 @@ namespace Papercut.Services
             Settings.Default.Port = @event.Port;
             Settings.Default.Save();
 
-            _publishEvent.Publish(new SettingsUpdatedEvent());
+            this._messageBus.Publish(new SettingsUpdatedEvent());
         }
     }
 }

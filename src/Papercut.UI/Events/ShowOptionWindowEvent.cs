@@ -19,7 +19,7 @@ namespace Papercut.Events
 {
     using Papercut.Core.Events;
 
-    public class ShowOptionWindowEvent : IDomainEvent
+    public class ShowOptionWindowEvent : IEvent
     {
         
     }

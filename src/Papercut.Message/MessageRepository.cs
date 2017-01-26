@@ -107,7 +107,7 @@ namespace Papercut.Message
                     .ToList();
         }
 
-        public string SaveMessage(string output)
+        public string SaveMessage(Action<FileStream> writeTo)
         {
             string fileName = null;
 
@@ -115,9 +115,12 @@ namespace Papercut.Message
             {
                 // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
                 fileName = Path.Combine(_messagePathConfigurator.DefaultSavePath,
-                    $"{DateTime.Now.ToString("yyyyMMdd-HHmmss-FFF")}{StringHelpers.SmallRandomString()}.eml");
-
-                File.WriteAllText(fileName, output);
+                    $"{DateTime.Now:yyyyMMdd-HHmmss-FFF}{StringHelpers.SmallRandomString()}.eml");
+                
+                using (var fileStream = File.Create(fileName))
+                {
+                    writeTo(fileStream);
+                }
 
                 _logger.Information("Successfully Saved email message: {EmailMessageFile}", fileName);
             }

@@ -36,7 +36,7 @@ namespace Papercut.ViewModels
 
         static readonly Lazy<IList<string>> _ipList = new Lazy<IList<string>>(GetIPs);
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
         string _ip = "Any";
 
@@ -50,9 +50,9 @@ namespace Papercut.ViewModels
 
         string _windowTitle = WindowTitleDefault;
 
-        public OptionsViewModel(IPublishEvent publishEvent)
+        public OptionsViewModel(IMessageBus messageBus)
         {
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
             IPs = new ObservableCollection<string>(_ipList.Value);
             Load();
         }
@@ -153,7 +153,7 @@ namespace Papercut.ViewModels
 
             Settings.Default.Save();
 
-            _publishEvent.Publish(new SettingsUpdatedEvent());
+            this._messageBus.Publish(new SettingsUpdatedEvent());
 
             TryClose(true);
         }

@@ -24,7 +24,7 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class SaveSettingsOnExitService : IHandleEvent<PapercutClientExitEvent>
+    public class SaveSettingsOnExitService : IEventHandler<PapercutClientExitEvent>
     {
         readonly ILogger _logger;
 

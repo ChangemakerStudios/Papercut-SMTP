@@ -21,7 +21,7 @@ namespace Papercut.Events
 
     using Papercut.Core.Events;
 
-    public class ShowBallonTip : IDomainEvent
+    public class ShowBallonTip : IEvent
     {
         public ShowBallonTip(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon)
         {

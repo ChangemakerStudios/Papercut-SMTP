@@ -49,8 +49,8 @@ namespace Papercut.Core
                 .InstancePerLifetimeScope();
 
             // events
-            builder.RegisterType<AutofacPublishEvent>()
-                .As<IPublishEvent>()
+            builder.RegisterType<AutofacMessageBus>()
+                .As<IMessageBus>()
                 .AsSelf()
                 .InstancePerLifetimeScope()
                 .PreserveExistingDefaults();
@@ -158,7 +158,7 @@ namespace Papercut.Core
                 // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
                 try
                 {
-                    c.Resolve<IPublishEvent>().Publish(new ConfigureLoggerEvent(logConfiguration));
+                    c.Resolve<IMessageBus>().Publish(new ConfigureLoggerEvent(logConfiguration));
                 }
                 catch (Exception ex)
                 {

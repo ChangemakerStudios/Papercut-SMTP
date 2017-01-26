@@ -17,13 +17,10 @@
 
 namespace Papercut.Core.Events
 {
-    public class PapercutClientPreStartEvent : IDomainEvent
-    {
-        public PapercutClientPreStartEvent(bool cancelStart = false)
-        {
-            CancelStart = cancelStart;
-        }
+    using Papercut.Core.Configuration;
 
-        public bool CancelStart { get; set; }
+    public class PapercutClientReadyEvent : IEvent
+    {
+        public IAppMeta AppMeta { get; set; }
     }
 }

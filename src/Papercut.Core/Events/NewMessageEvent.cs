@@ -19,7 +19,7 @@ namespace Papercut.Core.Events
 {
     using Papercut.Core.Message;
 
-    public class NewMessageEvent : IDomainEvent
+    public class NewMessageEvent : IEvent
     {
         public NewMessageEvent(MessageEntry newMessage)
         {

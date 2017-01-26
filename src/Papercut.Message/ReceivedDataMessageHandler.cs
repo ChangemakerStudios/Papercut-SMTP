@@ -38,36 +38,33 @@ namespace Papercut.Message
 
         readonly MessageRepository _messageRepository;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
         public ReceivedDataMessageHandler(MessageRepository messageRepository,
-            IPublishEvent publishEvent,
+            IMessageBus messageBus,
             ILogger logger)
         {
             _messageRepository = messageRepository;
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
             _logger = logger;
         }
 
         public void HandleReceived(string messageData, [CanBeNull] IList<string> recipients)
         {
+            string file;
+
             using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(messageData)))
             {
                 var message = MimeMessage.Load(ParserOptions.Default, ms, true);
 
-                var lookup = recipients.IfNullEmpty()
-                    .ToDictionary(s => s, s => s, StringComparer.OrdinalIgnoreCase);
+                var lookup = recipients.IfNullEmpty().ToDictionary(s => s, s => s, StringComparer.OrdinalIgnoreCase);
 
                 // remove TO:
-                lookup.RemoveRange(
-                    message.To.Mailboxes.Select(s => s.ToString(FormatOptions.Default, false))
-                        .Where(s => lookup.ContainsKey(s)));
+                lookup.RemoveRange(message.To.Mailboxes.Select(s => s.Address));
 
                 // remove CC:
-                lookup.RemoveRange(
-                    message.Cc.Mailboxes.Select(s => s.ToString(FormatOptions.Default, false))
-                        .Where(s => lookup.ContainsKey(s)));
-                
+                lookup.RemoveRange(message.Cc.Mailboxes.Select(s => s.Address));
+
                 if (lookup.Any())
                 {
                     // Bcc is remaining, add to message
@@ -75,17 +72,15 @@ namespace Papercut.Message
                     {
                         message.Bcc.Add(MailboxAddress.Parse(r.Key));
                     }
-
-                    messageData = message.ToString();
                 }
-            }
 
-            var file = _messageRepository.SaveMessage(messageData);
+                file = _messageRepository.SaveMessage(fs => message.WriteTo(fs));
+            }
 
             try
             {
                 if (!string.IsNullOrWhiteSpace(file))
-                    _publishEvent.Publish(new NewMessageEvent(new MessageEntry(file)));
+                    this._messageBus.Publish(new NewMessageEvent(new MessageEntry(file)));
             }
             catch (Exception ex)
             {

@@ -17,15 +17,7 @@
 
 namespace Papercut.Core.Events
 {
-    using Papercut.Core.Rules;
-
-    public class RulesUpdatedEvent : IDomainEvent
+    public class SmtpServerForceRebindEvent : IEvent
     {
-        public RulesUpdatedEvent(IRule[] rules)
-        {
-            Rules = rules;
-        }
-
-        public IRule[] Rules { get; set; }
     }
 }

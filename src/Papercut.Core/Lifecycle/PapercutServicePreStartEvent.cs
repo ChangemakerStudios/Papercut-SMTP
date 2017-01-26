@@ -17,7 +17,10 @@
 
 namespace Papercut.Core.Events
 {
-    public class SmtpServerForceRebindEvent : IDomainEvent
+    using Papercut.Core.Configuration;
+
+    public class PapercutServicePreStartEvent : IEvent
     {
+        public IAppMeta AppMeta { get; set; }
     }
 }

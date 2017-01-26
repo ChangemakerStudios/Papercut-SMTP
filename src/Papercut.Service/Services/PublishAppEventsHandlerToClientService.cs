@@ -25,15 +25,15 @@ namespace Papercut.Service.Services
 
     using Serilog;
 
-    public class PublishAppEventsToClientService : IHandleEvent<PapercutServiceExitEvent>,
-        IHandleEvent<PapercutServiceReadyEvent>,
-        IHandleEvent<PapercutServicePreStartEvent>
+    public class PublishAppEventsHandlerToClientService : IEventHandler<PapercutServiceExitEvent>,
+        IEventHandler<PapercutServiceReadyEvent>,
+        IEventHandler<PapercutServicePreStartEvent>
     {
         readonly ILogger _logger;
 
         readonly Func<PapercutClient> _papercutClientFactory;
 
-        public PublishAppEventsToClientService(
+        public PublishAppEventsHandlerToClientService(
             Func<PapercutClient> papercutClientFactory,
             ILogger logger)
         {
@@ -64,7 +64,7 @@ namespace Papercut.Service.Services
         }
 
         public void Publish<T>(T @event)
-            where T : IDomainEvent
+            where T : IEvent
         {
             try
             {

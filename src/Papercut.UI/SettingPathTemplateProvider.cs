@@ -30,7 +30,7 @@ namespace Papercut
     using Serilog;
 
     public class SettingPathTemplateProvider : IPathTemplatesProvider,
-        IHandleEvent<SettingsUpdatedEvent>
+        IEventHandler<SettingsUpdatedEvent>
     {
         readonly ILogger _logger;
 

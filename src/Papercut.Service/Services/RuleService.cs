@@ -30,9 +30,9 @@ namespace Papercut.Service.Services
     using Serilog;
 
     public class RuleService : RuleServiceBase,
-        IHandleEvent<RulesUpdatedEvent>,
-        IHandleEvent<PapercutClientReadyEvent>,
-        IHandleEvent<NewMessageEvent>
+        IEventHandler<RulesUpdatedEvent>,
+        IEventHandler<PapercutClientReadyEvent>,
+        IEventHandler<NewMessageEvent>
     {
         readonly IRulesRunner _rulesRunner;
 

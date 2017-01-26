@@ -27,7 +27,7 @@ namespace Papercut.Module.VerboseJsonLog
     using Serilog.Formatting.Json;
     using Serilog.Sinks.RollingFile;
 
-    public class SetupVerboseJsonLoggingHandler : IHandleEvent<ConfigureLoggerEvent>
+    public class SetupVerboseJsonLoggingHandler : IEventHandler<ConfigureLoggerEvent>
     {
         readonly IAppMeta _appMeta;
 

@@ -127,7 +127,7 @@
   <ItemGroup>
     <Compile Include="Helpers\PapercutServiceSettings.cs" />
     <Compile Include="Services\RuleService.cs" />
-    <Compile Include="Services\PublishAppEventsToClientService.cs" />
+    <Compile Include="Services\PublishAppEventsHandlerToClientService.cs" />
     <Compile Include="PapercutServerModule.cs" />
     <Compile Include="Services\PapercutServerService.cs" />
     <Compile Include="Services\ReplyWithDefaultMessageSavePathService.cs" />

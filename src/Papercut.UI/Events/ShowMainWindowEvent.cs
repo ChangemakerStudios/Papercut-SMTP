@@ -19,7 +19,7 @@ namespace Papercut.Events
 {
     using Papercut.Core.Events;
 
-    public class ShowMainWindowEvent : IDomainEvent
+    public class ShowMainWindowEvent : IEvent
     {
         public ShowMainWindowEvent(bool selectMostRecentMessage = false)
         {

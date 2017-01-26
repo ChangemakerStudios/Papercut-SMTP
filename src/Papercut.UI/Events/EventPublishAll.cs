@@ -21,23 +21,23 @@ namespace Papercut.Events
 
     using Papercut.Core.Events;
 
-    public class EventPublishAll : IPublishEvent
+    public class EventPublishAll : IMessageBus
     {
-        readonly AutofacPublishEvent _autofacPublishEvent;
+        readonly AutofacMessageBus _autofacMessageBus;
 
         readonly IEventAggregator _uiEventAggregator;
 
         public EventPublishAll(
-            AutofacPublishEvent autofacPublishEvent,
+            AutofacMessageBus autofacMessageBus,
             IEventAggregator uiEventAggregator)
         {
-            _autofacPublishEvent = autofacPublishEvent;
+            this._autofacMessageBus = autofacMessageBus;
             _uiEventAggregator = uiEventAggregator;
         }
 
-        public void Publish<T>(T eventObject) where T : IDomainEvent
+        public void Publish<T>(T eventObject) where T : IEvent
         {
-            _autofacPublishEvent.Publish(eventObject);
+            this._autofacMessageBus.Publish(eventObject);
             _uiEventAggregator.PublishOnUIThread(eventObject);
         }
     }

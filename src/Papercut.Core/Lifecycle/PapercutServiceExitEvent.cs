@@ -19,7 +19,7 @@ namespace Papercut.Core.Events
 {
     using Papercut.Core.Configuration;
 
-    public class PapercutServiceReadyEvent : IDomainEvent
+    public class PapercutServiceExitEvent : IEvent
     {
         public IAppMeta AppMeta { get; set; }
     }
