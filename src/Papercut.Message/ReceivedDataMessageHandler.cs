@@ -57,7 +57,7 @@ namespace Papercut.Message
             {
                 var message = MimeMessage.Load(ParserOptions.Default, ms, true);
 
-                var lookup = recipients.IfNullEmpty().ToDictionary(s => s, s => s, StringComparer.OrdinalIgnoreCase);
+                var lookup = recipients.Distinct(StringComparer.CurrentCultureIgnoreCase).IfNullEmpty().ToDictionary(s => s, s => s, StringComparer.OrdinalIgnoreCase);
 
                 // remove TO:
                 lookup.RemoveRange(message.To.Mailboxes.Select(s => s.Address));
