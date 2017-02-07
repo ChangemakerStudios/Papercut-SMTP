@@ -57,20 +57,20 @@ namespace Papercut.Message
             {
                 var message = MimeMessage.Load(ParserOptions.Default, ms, true);
 
-                var lookup = recipients.Distinct(StringComparer.CurrentCultureIgnoreCase).IfNullEmpty().ToDictionary(s => s, s => s, StringComparer.OrdinalIgnoreCase);
+                var lookup = recipients.ToHashSet(StringComparer.CurrentCultureIgnoreCase);
 
                 // remove TO:
-                lookup.RemoveRange(message.To.Mailboxes.Select(s => s.Address));
+                lookup.ExceptWith(message.To.Mailboxes.Select(s => s.Address));
 
                 // remove CC:
-                lookup.RemoveRange(message.Cc.Mailboxes.Select(s => s.Address));
+                lookup.ExceptWith(message.Cc.Mailboxes.Select(s => s.Address));
 
                 if (lookup.Any())
                 {
                     // Bcc is remaining, add to message
                     foreach (var r in lookup)
                     {
-                        message.Bcc.Add(MailboxAddress.Parse(r.Key));
+                        message.Bcc.Add(MailboxAddress.Parse(r));
                     }
                 }
 

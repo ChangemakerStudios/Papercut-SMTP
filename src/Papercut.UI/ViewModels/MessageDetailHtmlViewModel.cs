@@ -50,7 +50,8 @@ namespace Papercut.ViewModels
         {
             DisplayName = "Message";
             _logger = logger;
-            _previewGenerator = previewGenerator;        }
+            _previewGenerator = previewGenerator;
+        }
 
         public string HtmlFile
         {
