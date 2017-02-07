@@ -80,6 +80,7 @@
     <Compile Include="Configuration\IPathTemplatesProvider.cs" />
     <Compile Include="Configuration\MessagePathConfigurator.cs" />
     <Compile Include="Events\IOrderable.cs" />
+    <Compile Include="Helper\TaskHelpers.cs" />
     <Compile Include="Lifecycle\AppForceShutdownEvent.cs" />
     <Compile Include="Events\AppProcessExchangeEvent.cs" />
     <Compile Include="Events\AutofacMessageBus.cs" />
@@ -131,7 +132,6 @@
     <Compile Include="Message\IReceivedDataHandler.cs" />
     <Compile Include="Plugins\PluginReport.cs" />
     <Compile Include="Plugins\PluginStore.cs" />
-    <Compile Include="Helper\ConnectionExtensions.cs" />
     <Compile Include="Message\MessageEntry.cs" />
     <Compile Include="Message\NewMessageEventArgs.cs" />
     <Compile Include="PapercutContainer.cs" />

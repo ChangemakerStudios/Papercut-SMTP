@@ -177,7 +177,7 @@ namespace Papercut.Core
                     Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
 
                     return Log.Logger;
-                }).As<ILogger>();
+                }).As<ILogger>().SingleInstance();
         }
 
         protected override void AttachToComponentRegistration(

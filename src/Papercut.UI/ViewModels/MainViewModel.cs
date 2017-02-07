@@ -203,7 +203,7 @@ namespace Papercut.ViewModels
         public IEnumerable<string> RenderLogEventParts(LogEvent e)
         {
             yield return $@"<div class=""logEntry {e.Level}"">";
-            yield return $@"<span class=""date"">{e.Timestamp.ToString("G")}</span>";
+            yield return $@"<span class=""date"">{e.Timestamp:G}</span>";
             yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
             yield return e.RenderMessage();
             yield return @"</div>";

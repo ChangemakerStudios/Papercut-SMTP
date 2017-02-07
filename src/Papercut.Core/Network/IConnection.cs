@@ -2,6 +2,9 @@ namespace Papercut.Core.Network
 {
     using System;
     using System.Net.Sockets;
+    using System.Security.Cryptography;
+    using System.Text;
+    using System.Threading.Tasks;
 
     using Serilog;
 
@@ -22,5 +25,9 @@ namespace Papercut.Core.Network
         DateTime LastActivity { get; set; }
 
         void Close(bool triggerEvent = true);
+
+        Encoding Encoding { get; set; }
+
+        Task SendData(byte[] data);
     }
 }

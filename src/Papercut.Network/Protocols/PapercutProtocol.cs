@@ -78,7 +78,7 @@ namespace Papercut.Network.Protocols
                 {
                     // read the rest of the object...
                     var @event = Connection.Client.ReadObj(request.Type, request.ByteSize);
-                    _logger.Information("Publishing Event Received {@Event} from Remote", @event);
+                    this._logger.Information("Publishing Event Received {@Event} from Remote", @event);
 
                     this._messageBus.PublishObject(@event, request.Type);
 

@@ -78,6 +78,8 @@
     <Compile Include="Helpers\PapercutProtocolHelpers.cs" />
     <Compile Include="PapercutClient.cs" />
     <Compile Include="PapercutNetworkModule.cs" />
+    <Compile Include="Protocols\ConnectionExtensions.cs" />
+    <Compile Include="Protocols\IConnectionOutputAsync.cs" />
     <Compile Include="Protocols\PapercutProtocol.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Smtp\Server.cs" />

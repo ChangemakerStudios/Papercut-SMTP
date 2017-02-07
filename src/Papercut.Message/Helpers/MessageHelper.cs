@@ -58,7 +58,7 @@ namespace Papercut.Message.Helpers
                 ms.Seek(0, SeekOrigin.Begin);
                 var mail = ms.ToArray();
 
-                return Encoding.ASCII.GetString(mail, 0, mail.Length);
+                return Encoding.UTF8.GetString(mail, 0, mail.Length);
             }
         }
 

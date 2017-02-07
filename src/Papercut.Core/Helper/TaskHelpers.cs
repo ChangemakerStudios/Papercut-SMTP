@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2016 Jaben Cargman
+// Copyright © 2013 - 2017 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,24 +15,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Network.SmtpCommands
+namespace Papercut.Core.Helper
 {
-    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
-    using Papercut.Core.Helper;
-    using Papercut.Core.Network;
-    using Papercut.Network.Protocols;
-
-    public class NoopSmtpCommand : BaseSmtpCommand
+    public static class TaskHelpers
     {
-        protected override IEnumerable<string> GetMatchCommands()
+        private static readonly Task<object> _completed;
+        
+        static TaskHelpers()
         {
-            return new[] { "NOOP" };
+            _completed = FromResult<object>(null);
         }
 
-        protected override void Run(string command, string[] args)
+        public static Task<T> FromResult<T>(T value)
         {
-            Connection.SendLine("250 OK");
+            var tcs = new TaskCompletionSource<T>();
+            tcs.SetResult(value);
+            return tcs.Task;
+        }
+
+        public static Task Completed()
+        {
+            return _completed;
         }
     }
 }

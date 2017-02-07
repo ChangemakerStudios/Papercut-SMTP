@@ -32,7 +32,7 @@ namespace Papercut.Core.Helper
 
             var serverbuff = new byte[bufferSize];
 
-            encoding = encoding ?? Encoding.ASCII;
+            encoding = encoding ?? Encoding.UTF8;
 
             int count = stream.Read(serverbuff, 0, bufferSize);
 
@@ -50,7 +50,7 @@ namespace Papercut.Core.Helper
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            encoding = encoding ?? Encoding.ASCII;
+            encoding = encoding ?? Encoding.UTF8;
 
             stream.WriteBytes(encoding.GetBytes(str + "\r\n"));
         }
@@ -59,7 +59,7 @@ namespace Papercut.Core.Helper
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            encoding = encoding ?? Encoding.ASCII;
+            encoding = encoding ?? Encoding.UTF8;
 
             stream.WriteBytes(encoding.GetBytes(str));
         }

@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2016 Jaben Cargman
+// Copyright © 2013 - 2017 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
+
 
 namespace Papercut.Network.Protocols
 {
@@ -37,10 +38,10 @@ namespace Papercut.Network.Protocols
 
         public abstract void Begin(IConnection connection);
 
-        public virtual void ProcessIncomingBuffer(byte[] bufferedData)
+        public virtual void ProcessIncomingBuffer(byte[] bufferedData, Encoding encoding)
         {
             // Get the string data and append to buffer
-            string data = Encoding.ASCII.GetString(bufferedData, 0, bufferedData.Length);
+            string data = encoding.GetString(bufferedData, 0, bufferedData.Length);
 
             _stringBuffer.Append(data);
 
