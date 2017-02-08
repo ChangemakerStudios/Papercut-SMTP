@@ -33,14 +33,14 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class SmtpServerCoordinator : IHandleEvent<PapercutClientReadyEvent>,
-        IHandleEvent<PapercutClientExitEvent>,
-        IHandleEvent<SettingsUpdatedEvent>,
+    public class SmtpServerCoordinator : IEventHandler<PapercutClientReadyEvent>,
+        IEventHandler<PapercutClientExitEvent>,
+        IEventHandler<SettingsUpdatedEvent>,
         INotifyPropertyChanged
     {
         readonly ILogger _logger;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
         readonly Func<ServerProtocolType, IServer> _serverFactory;
 
@@ -51,12 +51,12 @@ namespace Papercut.Services
         public SmtpServerCoordinator(
             Func<ServerProtocolType, IServer> serverFactory,
             ILogger logger,
-            IPublishEvent publishEvent)
+            IMessageBus messageBus)
         {
             _serverFactory = serverFactory;
             _smtpServer = new Lazy<IServer>(() => _serverFactory(ServerProtocolType.Smtp));
             _logger = logger;
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
         }
 
         public bool SmtpServerEnabled
@@ -115,10 +115,10 @@ namespace Papercut.Services
                             Settings.Default.IP,
                             Settings.Default.Port);
 
-                        _publishEvent.Publish(new SmtpServerBindFailedEvent());
+                        this._messageBus.Publish(new SmtpServerBindFailedEvent());
                     },
                     () =>
-                    _publishEvent.Publish(
+                    this._messageBus.Publish(
                         new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
         }
 

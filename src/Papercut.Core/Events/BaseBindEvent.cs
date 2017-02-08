@@ -17,7 +17,7 @@
 
 namespace Papercut.Core.Events
 {
-    public class BaseBindEvent : IDomainEvent
+    public class BaseBindEvent : IEvent
     {
         public string IP { get; set; }
 

@@ -54,7 +54,7 @@ namespace Papercut.ViewModels
 
         readonly LogClientSinkQueue _logClientSinkQueue;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
         readonly AppResourceLocator _resourceLocator;
 
@@ -72,7 +72,7 @@ namespace Papercut.ViewModels
 
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
-            IPublishEvent publishEvent,
+            IMessageBus messageBus,
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
             Func<MessageDetailViewModel> messageDetailViewModelFactory,
@@ -80,7 +80,7 @@ namespace Papercut.ViewModels
             AppResourceLocator resourceLocator)
         {
             _viewModelWindowManager = viewModelWindowManager;
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
             _forwardRuleDispatch = forwardRuleDispatch;
 
             MessageListViewModel = messageListViewModelFactory();
@@ -203,7 +203,7 @@ namespace Papercut.ViewModels
         public IEnumerable<string> RenderLogEventParts(LogEvent e)
         {
             yield return $@"<div class=""logEntry {e.Level}"">";
-            yield return $@"<span class=""date"">{e.Timestamp.ToString("G")}</span>";
+            yield return $@"<span class=""date"">{e.Timestamp:G}</span>";
             yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
             yield return e.RenderMessage();
             yield return @"</div>";
@@ -276,7 +276,7 @@ namespace Papercut.ViewModels
 
         public void Exit()
         {
-            _publishEvent.Publish(new AppForceShutdownEvent());
+            this._messageBus.Publish(new AppForceShutdownEvent());
         }
 
         public void ForwardSelected()

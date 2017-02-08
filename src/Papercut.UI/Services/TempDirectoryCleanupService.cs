@@ -25,7 +25,7 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class TempDirectoryCleanupService : IHandleEvent<PapercutClientExitEvent>
+    public class TempDirectoryCleanupService : IEventHandler<PapercutClientExitEvent>
     {
         readonly IAppMeta _appMeta;
 

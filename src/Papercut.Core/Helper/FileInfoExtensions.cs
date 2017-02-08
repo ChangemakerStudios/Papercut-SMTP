@@ -19,6 +19,7 @@ namespace Papercut.Core.Helper
 {
     using System;
     using System.IO;
+    using System.Text;
 
     public static class FileInfoExtensions
     {

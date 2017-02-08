@@ -22,17 +22,17 @@ namespace Papercut.Core.Events
 
     public static class PublishEventExtensions
     {
-        static readonly MethodInfo _publishMethodInfo = typeof(IPublishEvent).GetMethod("Publish");
+        static readonly MethodInfo _publishMethodInfo = typeof(IMessageBus).GetMethod("Publish");
 
         public static void PublishObject(
-            this IPublishEvent publishEvent,
+            this IMessageBus messageBus,
             object @event,
             Type eventType)
         {
-            if (publishEvent == null) throw new ArgumentNullException(nameof(publishEvent));
+            if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
 
             MethodInfo publishMethod = _publishMethodInfo.MakeGenericMethod(eventType);
-            publishMethod.Invoke(publishEvent, new[] { @event });
+            publishMethod.Invoke(messageBus, new[] { @event });
         }
     }
 }

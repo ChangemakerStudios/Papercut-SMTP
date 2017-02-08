@@ -35,6 +35,12 @@ namespace Papercut.Core.Helper
             return keyValuePairs.ToDictionary(s => s.Key, s => s.Value);
         }
 
+        [NotNull]
+        public static HashSet<T> ToHashSet<T>([CanBeNull] this IEnumerable<T> items, IEqualityComparer<T> comparer = null)
+        {
+            return new HashSet<T>(items.IfNullEmpty(), comparer ?? EqualityComparer<T>.Default);
+        }
+
         public static int RemoveRange<TKey, TValue>([NotNull] this IDictionary<TKey, TValue> dictionary, IEnumerable<KeyValuePair<TKey, TValue>> keyValuePairs)
         {
             if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));

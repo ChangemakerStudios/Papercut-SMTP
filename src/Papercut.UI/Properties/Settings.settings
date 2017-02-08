@@ -23,9 +23,6 @@
     <Setting Name="MinimizeOnClose" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="MessagePaths" Type="System.String" Scope="User">
-      <Value Profile="(Default)">%ApplicationData%\Papercut;%BaseDirectory%\Incoming</Value>
-    </Setting>
     <Setting Name="RunOnStartup" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
@@ -34,6 +31,12 @@
     </Setting>
     <Setting Name="Window_Width" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">700</Value>
+    </Setting>
+    <Setting Name="MessagePaths" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%ApplicationData%\Papercut;%BaseDirectory%;%BaseDirectory%\Incoming</Value>
+    </Setting>
+    <Setting Name="MessageListSortOrder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Ascending</Value>
     </Setting>
   </Settings>
 </SettingsFile>

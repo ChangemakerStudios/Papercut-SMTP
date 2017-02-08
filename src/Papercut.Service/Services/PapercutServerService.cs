@@ -32,7 +32,7 @@ namespace Papercut.Service.Services
 
     using Serilog;
 
-    public class PapercutServerService : IHandleEvent<SmtpServerBindEvent>
+    public class PapercutServerService : IEventHandler<SmtpServerBindEvent>, IDisposable
     {
         readonly IAppMeta _applicationMetaData;
 
@@ -40,7 +40,7 @@ namespace Papercut.Service.Services
 
         readonly IServer _papercutServer;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
         readonly PapercutServiceSettings _serviceSettings;
 
@@ -51,12 +51,12 @@ namespace Papercut.Service.Services
             PapercutServiceSettings serviceSettings,
             IAppMeta applicationMetaData,
             ILogger logger,
-            IPublishEvent publishEvent)
+            IMessageBus messageBus)
         {
             _serviceSettings = serviceSettings;
             _applicationMetaData = applicationMetaData;
             _logger = logger;
-            _publishEvent = publishEvent;
+            _messageBus = messageBus;
             _smtpServer = serverFactory(ServerProtocolType.Smtp);
             _papercutServer = serverFactory(ServerProtocolType.Papercut);
         }
@@ -84,7 +84,7 @@ namespace Papercut.Service.Services
 
         public void Start()
         {
-            _publishEvent.Publish(
+            this._messageBus.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
 
             _papercutServer.BindObservable(
@@ -120,15 +120,21 @@ namespace Papercut.Service.Services
                         _serviceSettings.Port),
                     // on complete
                     () =>
-                    _publishEvent.Publish(
+                    this._messageBus.Publish(
                         new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
         }
 
         public void Stop()
         {
-            _smtpServer.Stop();
             _papercutServer.Stop();
-            _publishEvent.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
+            _smtpServer.Stop();
+            _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
+        }
+
+        public void Dispose()
+        {
+            this._papercutServer?.Dispose();
+            this._smtpServer?.Dispose();
         }
     }
 }

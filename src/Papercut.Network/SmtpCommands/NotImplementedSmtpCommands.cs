@@ -21,6 +21,7 @@ namespace Papercut.Network.SmtpCommands
 
     using Papercut.Core.Helper;
     using Papercut.Core.Network;
+    using Papercut.Network.Protocols;
 
     public class NotImplementedSmtpCommands : BaseSmtpCommand
     {

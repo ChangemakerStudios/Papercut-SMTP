@@ -28,18 +28,18 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class AppStartupService : IHandleEvent<SettingsUpdatedEvent>
+    public class AppStartupService : IEventHandler<SettingsUpdatedEvent>
     {
         const string AppStartupKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
         readonly ILogger _logger;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
-        public AppStartupService(ILogger logger, IPublishEvent publishEvent)
+        public AppStartupService(ILogger logger, IMessageBus messageBus)
         {
             _logger = logger;
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
         }
 
         public void Handle(SettingsUpdatedEvent @event)
@@ -75,7 +75,7 @@ namespace Papercut.Services
             catch (SecurityException ex)
             {
                 _logger.Error(ex, "Error Opening Registry for App Startup Service");
-                _publishEvent.Publish(
+                this._messageBus.Publish(
                     new ShowMessageEvent(
                         "Failed to set Papercut to load at startup due to lack of permission. To fix, exit and run Papercut again with elevated (Admin) permissions.",
                         "Failed"));

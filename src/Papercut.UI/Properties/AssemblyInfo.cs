@@ -28,7 +28,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Papercut")]
 [assembly: AssemblyProduct("Papercut")]
-[assembly: AssemblyCopyright("Copyright © 2008 - 2014 Ken Robertson & Jaben Cargman")]
+[assembly: AssemblyCopyright("Copyright © 2008 - 2017 Ken Robertson & Jaben Cargman")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -67,5 +67,5 @@ using System.Windows;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("4.5.0.0")]
-[assembly: AssemblyFileVersion("4.5.0.0")]
+[assembly: AssemblyVersion("4.6.0.0")]
+[assembly: AssemblyFileVersion("4.6.0.0")]

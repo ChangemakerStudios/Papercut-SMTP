@@ -29,8 +29,8 @@ namespace Papercut.Services
 
     using Serilog;
 
-    public class PapercutClientServerCoordinator : IHandleEvent<PapercutClientReadyEvent>,
-        IHandleEvent<PapercutClientExitEvent>
+    public class PapercutClientServerCoordinator : IEventHandler<PapercutClientReadyEvent>,
+        IEventHandler<PapercutClientExitEvent>
     {
         readonly ILogger _logger;
 

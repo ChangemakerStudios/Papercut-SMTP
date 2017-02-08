@@ -17,10 +17,12 @@
 
 namespace Papercut.Network.SmtpCommands
 {
+    using System;
     using System.Collections.Generic;
 
     using Papercut.Core.Helper;
     using Papercut.Core.Network;
+    using Papercut.Network.Protocols;
 
     public class RcptSmtpCommand : BaseSmtpCommand
     {
@@ -47,13 +49,17 @@ namespace Papercut.Network.SmtpCommands
                 return;
             }
 
+            var toItems = line.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)[1].Split(
+                new[] { ' ' },
+                StringSplitOptions.RemoveEmptyEntries);
+
             string address =
-                line.Substring(line.IndexOf(":") + 1)
+                toItems[0]
                     .Replace("<", string.Empty)
                     .Replace(">", string.Empty)
                     .Trim();
 
-            if (!Session.Recipients.Contains(address)) Session.Recipients.Add(address);
+            Session.Recipients.Add(address);
 
             Connection.SendLine("250 <{0}> OK", address);
         }

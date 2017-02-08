@@ -33,14 +33,14 @@ namespace Papercut.Services
     using Serilog;
 
     public class RuleService : RuleServiceBase,
-        IHandleEvent<PapercutClientReadyEvent>,
-        IHandleEvent<PapercutClientExitEvent>
+        IEventHandler<PapercutClientReadyEvent>,
+        IEventHandler<PapercutClientExitEvent>
     {
         readonly PapercutServiceBackendCoordinator _coordinator;
 
         readonly MessageWatcher _messageWatcher;
 
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
         readonly IRulesRunner _rulesRunner;
 
@@ -50,13 +50,13 @@ namespace Papercut.Services
             PapercutServiceBackendCoordinator coordinator,
             MessageWatcher messageWatcher,
             IRulesRunner rulesRunner,
-            IPublishEvent publishEvent)
+            IMessageBus messageBus)
             : base(ruleRespository, logger)
         {
             _coordinator = coordinator;
             _messageWatcher = messageWatcher;
             _rulesRunner = rulesRunner;
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
         }
 
         public void Handle(PapercutClientExitEvent @event)
@@ -85,7 +85,7 @@ namespace Papercut.Services
             }
 
             // rules loaded/updated event
-            _publishEvent.Publish(new RulesUpdatedEvent(Rules.ToArray()));
+            this._messageBus.Publish(new RulesUpdatedEvent(Rules.ToArray()));
 
             Rules.CollectionChanged += RuleCollectionChanged;
             HookPropertyChangedForRules(Rules);
@@ -107,7 +107,7 @@ namespace Papercut.Services
 
         void PublishUpdateEvent()
         {
-            _publishEvent.Publish(new RulesUpdatedEvent(Rules.ToArray()));
+            this._messageBus.Publish(new RulesUpdatedEvent(Rules.ToArray()));
         }
 
         void RuleCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)

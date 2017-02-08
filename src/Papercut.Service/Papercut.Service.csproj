@@ -67,12 +67,12 @@
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="BouncyCastle, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MimeKit.1.2.22\lib\net40\BouncyCastle.dll</HintPath>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MimeKit, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MimeKit.1.2.22\lib\net40\MimeKit.dll</HintPath>
+    <Reference Include="MimeKit, Version=1.10.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MimeKit.1.10.0\lib\net40\MimeKit.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
@@ -127,7 +127,7 @@
   <ItemGroup>
     <Compile Include="Helpers\PapercutServiceSettings.cs" />
     <Compile Include="Services\RuleService.cs" />
-    <Compile Include="Services\PublishAppEventsToClientService.cs" />
+    <Compile Include="Services\PublishAppEventsHandlerToClientService.cs" />
     <Compile Include="PapercutServerModule.cs" />
     <Compile Include="Services\PapercutServerService.cs" />
     <Compile Include="Services\ReplyWithDefaultMessageSavePathService.cs" />

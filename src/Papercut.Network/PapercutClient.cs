@@ -68,7 +68,7 @@ namespace Papercut.Network
             }
         }
 
-        public bool ExchangeEventServer<TEvent>(ref TEvent @event) where TEvent : IDomainEvent
+        public bool ExchangeEventServer<TEvent>(ref TEvent @event) where TEvent : IEvent
         {
             try
             {
@@ -113,7 +113,7 @@ namespace Papercut.Network
             }
         }
 
-        public bool PublishEventServer<TEvent>(TEvent @event) where TEvent : IDomainEvent
+        public bool PublishEventServer<TEvent>(TEvent @event) where TEvent : IEvent
         {
             try
             {
@@ -150,7 +150,7 @@ namespace Papercut.Network
         bool HandlePublishEvent<TEvent>(
             NetworkStream stream,
             TEvent @event,
-            ProtocolCommandType protocolCommandType) where TEvent : IDomainEvent
+            ProtocolCommandType protocolCommandType) where TEvent : IEvent
         {
             string response = stream.ReadString().Trim();
 

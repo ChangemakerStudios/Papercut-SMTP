@@ -66,12 +66,12 @@ namespace Papercut.Core
             {
                 string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
                     "Logs",
-                    $"{"PapercutCoreFailure"}.json");
+                    "PapercutCoreFailure.json");
 
                 var jsonSink = new RollingFileSink(logFilePath, new JsonFormatter(), null, null);
 
                 return
-                    new LoggerConfiguration().MinimumLevel.Debug()
+                    new LoggerConfiguration().MinimumLevel.Verbose()
                         .Enrich.With<EnvironmentEnricher>()
                         .WriteTo.ColoredConsole()
                         .WriteTo.Sink(jsonSink, LogEventLevel.Debug).CreateLogger();

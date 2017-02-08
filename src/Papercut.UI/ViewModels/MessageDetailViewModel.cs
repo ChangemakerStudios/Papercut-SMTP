@@ -20,6 +20,7 @@ namespace Papercut.ViewModels
     using System;
     using System.Linq;
     using System.Reactive.Linq;
+    using System.Text;
 
     using Caliburn.Micro;
 
@@ -276,7 +277,7 @@ namespace Papercut.ViewModels
                 RawViewModel.MimeMessage = mailMessageEx;
                 PartsListViewModel.MimeMessage = mailMessageEx;
 
-                BodyViewModel.Body = mainBody != null ? mainBody.Text : string.Empty;
+                BodyViewModel.Body = mainBody != null ? mainBody.GetText(Encoding.UTF8) : string.Empty;
 
                 if (mainBody != null) {
                     IsHtml = mainBody.IsContentHtml();
@@ -286,7 +287,7 @@ namespace Papercut.ViewModels
                     {
                         var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
                         if (textPartNotHtml != null)
-                            TextBody = textPartNotHtml.Text;
+                            TextBody = textPartNotHtml.GetText(Encoding.UTF8);
                     }
                 }
             }

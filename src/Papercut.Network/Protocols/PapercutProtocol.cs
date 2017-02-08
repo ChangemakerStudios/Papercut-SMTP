@@ -47,12 +47,12 @@ namespace Papercut.Network.Protocols
 
     public class PapercutProtocol : StringCommandProtocol
     {
-        readonly IPublishEvent _publishEvent;
+        readonly IMessageBus _messageBus;
 
-        public PapercutProtocol(ILogger logger, IPublishEvent publishEvent)
+        public PapercutProtocol(ILogger logger, IMessageBus messageBus)
             : base(logger)
         {
-            _publishEvent = publishEvent;
+            this._messageBus = messageBus;
         }
 
         public IConnection Connection { get; protected set; }
@@ -78,9 +78,9 @@ namespace Papercut.Network.Protocols
                 {
                     // read the rest of the object...
                     var @event = Connection.Client.ReadObj(request.Type, request.ByteSize);
-                    _logger.Information("Publishing Event Received {@Event} from Remote", @event);
+                    this._logger.Information("Publishing Event Received {@Event} from Remote", @event);
 
-                    _publishEvent.PublishObject(@event, request.Type);
+                    this._messageBus.PublishObject(@event, request.Type);
 
                     if (request.CommandType == ProtocolCommandType.Exchange)
                     {

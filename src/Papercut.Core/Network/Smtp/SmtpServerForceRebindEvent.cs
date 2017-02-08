@@ -17,9 +17,7 @@
 
 namespace Papercut.Core.Events
 {
-    public interface IHandleEvent<in TEvent>
-        where TEvent : IDomainEvent
+    public class SmtpServerForceRebindEvent : IEvent
     {
-        void Handle(TEvent @event);
     }
 }

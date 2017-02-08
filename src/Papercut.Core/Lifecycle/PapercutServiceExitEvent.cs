@@ -1,7 +1,7 @@
-ï»¿// Papercut
+// Papercut
 // 
-// Copyright Â© 2008 - 2012 Ken Robertson
-// Copyright Â© 2013 - 2016 Jaben Cargman
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2016 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,13 +17,10 @@
 
 namespace Papercut.Core.Events
 {
-    public class PapercutClientPreStartEvent : IDomainEvent
-    {
-        public PapercutClientPreStartEvent(bool cancelStart = false)
-        {
-            CancelStart = cancelStart;
-        }
+    using Papercut.Core.Configuration;
 
-        public bool CancelStart { get; set; }
+    public class PapercutServiceExitEvent : IEvent
+    {
+        public IAppMeta AppMeta { get; set; }
     }
 }

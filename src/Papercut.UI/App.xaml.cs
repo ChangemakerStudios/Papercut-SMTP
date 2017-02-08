@@ -49,7 +49,7 @@ namespace Papercut
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            var publishEvent = Container.Resolve<IPublishEvent>();
+            var publishEvent = Container.Resolve<IMessageBus>();
 
             try
             {
@@ -81,7 +81,7 @@ namespace Papercut
 
             using (Container)
             {
-                Container.Resolve<IPublishEvent>().Publish(new PapercutClientExitEvent());
+                Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent());
             }
 
             _lifetimeScope = null;

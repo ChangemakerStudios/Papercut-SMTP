@@ -17,11 +17,14 @@
 
 namespace Papercut.Network.SmtpCommands
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
 
     using Papercut.Core.Helper;
     using Papercut.Core.Network;
+    using Papercut.Network.Protocols;
 
     public class SendSmtpCommand : BaseSmtpCommand
     {
@@ -58,8 +61,12 @@ namespace Papercut.Network.SmtpCommands
             // Set the from settings
             Session.Reset();
 
+            var fromItems = line.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)[1].Split(
+                new[] { ' ' },
+                StringSplitOptions.RemoveEmptyEntries);
+
             string address =
-                line.Substring(line.IndexOf(":") + 1)
+                fromItems[0]
                     .Replace("<", string.Empty)
                     .Replace(">", string.Empty)
                     .Trim();
@@ -67,11 +74,12 @@ namespace Papercut.Network.SmtpCommands
             Session.MailFrom = address;
 
             // Check for encoding
-            var anyEncoding = args.Where(part => part.ToUpper().StartsWith("BODY="))
+            var anyEncoding = fromItems.Skip(1)
                 .Select(p => p.ToUpper().Replace("BODY=", string.Empty).Trim())
-                .Any(p => p == "8BITMIME");
+                .ToList();
 
-            Session.UseUtf8 = anyEncoding;
+            Session.UseUtf8 = anyEncoding.Contains("8BITMIME") || anyEncoding.Contains("SMTPUTF8");
+            Connection.Encoding = Session.UseUtf8 ? Encoding.UTF8 : Encoding.ASCII;
 
             Connection.SendLine("250 <{0}> OK", address);
         }

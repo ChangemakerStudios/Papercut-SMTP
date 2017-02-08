@@ -1,7 +1,7 @@
-ï»¿// Papercut
+// Papercut
 // 
-// Copyright Â© 2008 - 2012 Ken Robertson
-// Copyright Â© 2013 - 2016 Jaben Cargman
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2016 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,20 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Events
+namespace Papercut.Core.Events
 {
-    using Papercut.Core.Events;
-
-    public class ShowMessageEvent : IEvent
+    public class SmtpServerBindFailedEvent : IEvent
     {
-        public ShowMessageEvent(string messageText, string caption)
-        {
-            MessageText = messageText;
-            Caption = caption;
-        }
-
-        public string MessageText { get; set; }
-
-        public string Caption { get; set; }
     }
 }

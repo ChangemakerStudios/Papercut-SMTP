@@ -17,13 +17,15 @@
 
 namespace Papercut.Core.Network
 {
+    using System.Text;
+
     public interface IProtocol
     {
         #region Public Methods and Operators
 
         void Begin(IConnection connection);
 
-        void ProcessIncomingBuffer(byte[] bufferedData);
+        void ProcessIncomingBuffer(byte[] bufferedData, Encoding encoding);
 
         #endregion
     }

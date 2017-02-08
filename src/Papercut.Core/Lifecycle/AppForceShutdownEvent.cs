@@ -1,7 +1,7 @@
-ï»¿// Papercut
+// Papercut
 // 
-// Copyright Â© 2008 - 2012 Ken Robertson
-// Copyright Â© 2013 - 2016 Jaben Cargman
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2016 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 
 namespace Papercut.Core.Events
 {
-    public class SmtpServerForceRebindEvent : IDomainEvent
+    public class AppForceShutdownEvent : IEvent
     {
+        public AppForceShutdownEvent(int exitCode = 0)
+        {
+            ExitCode = exitCode;
+        }
+
+        public int ExitCode { get; set; }
     }
 }

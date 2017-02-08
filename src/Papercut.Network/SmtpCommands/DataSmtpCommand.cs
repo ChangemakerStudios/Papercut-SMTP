@@ -20,11 +20,13 @@ namespace Papercut.Network.SmtpCommands
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Papercut.Core.Helper;
     using Papercut.Core.Message;
     using Papercut.Core.Network;
+    using Papercut.Network.Protocols;
 
     using Serilog;
 
@@ -55,7 +57,7 @@ namespace Papercut.Network.SmtpCommands
             }
 
             List<string> data;
-            Task<int> confirmation;
+            Task confirmation;
 
             try
             {
@@ -78,6 +80,8 @@ namespace Papercut.Network.SmtpCommands
                     });
 
                 confirmation = Connection.SendLine("250 OK");
+
+                _receivedDataHandler.HandleReceived(string.Join(Environment.NewLine, data), Session.Recipients.ToArray(), Connection.Encoding);
             }
             catch (IOException e)
             {
@@ -86,7 +90,6 @@ namespace Papercut.Network.SmtpCommands
                 return;
             }
 
-            _receivedDataHandler.HandleReceived(string.Join(Environment.NewLine, data), Session.Recipients);
             confirmation.Wait();
         }
     }

@@ -27,7 +27,7 @@ namespace Papercut.Helpers
 
     using Serilog.Events;
 
-    public class LogClientSinkQueue : IHandleEvent<ConfigureLoggerEvent>
+    public class LogClientSinkQueue : IEventHandler<ConfigureLoggerEvent>
     {
         static readonly ConcurrentQueue<LogEvent> _logQueue = new ConcurrentQueue<LogEvent>();
 

@@ -21,7 +21,7 @@ namespace Papercut.Services
 
     using Papercut.Core.Events;
 
-    public class ShutdownService : IHandleEvent<AppForceShutdownEvent>
+    public class ShutdownService : IEventHandler<AppForceShutdownEvent>
     {
         public void Handle(AppForceShutdownEvent @event)
         {
