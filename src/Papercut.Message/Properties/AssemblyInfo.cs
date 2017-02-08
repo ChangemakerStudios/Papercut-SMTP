@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Papercut.Message")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCopyright("Copyright © 2008 - 2017 Ken Robertson & Jaben Cargman")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
