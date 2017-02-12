@@ -148,6 +148,10 @@
     <Content Include="Papercut-Service-icon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Papercut.Common\Papercut.Common.csproj">
+      <Project>{5fa0e4aa-27af-4801-b6ca-8c97dadd6da6}</Project>
+      <Name>Papercut.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj">
       <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
       <Name>Papercut.Core</Name>

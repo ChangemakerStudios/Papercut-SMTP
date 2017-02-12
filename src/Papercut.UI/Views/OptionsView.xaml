@@ -55,7 +55,7 @@
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-70" Name="MinimizeToTray" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Content="Minimize to tray"/>
             <Label Grid.Column="0" Grid.Row="4" Content="Theme:" Margin="0,33,3,-26"/>
             <ComboBox Grid.Column="1" Grid.Row="4" Margin="2,33,0,-23"
-                x:Name="Themes" SelectedItem="{Binding SelectedTheme}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2"/>
+                x:Name="Themes" SelectedItem="{Binding Theme}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2"/>
         </Grid>
     </DockPanel>
 </controls:MetroWindow>

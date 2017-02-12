@@ -56,7 +56,7 @@ namespace Papercut.ViewModels
 
         private bool _minimizeToTray;
 
-        private string _selectedTheme;
+        private string _theme;
 
         public OptionsViewModel(IMessageBus messageBus)
         {
@@ -87,16 +87,16 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string SelectedTheme
+        public string Theme
         {
             get
             {
-                return this._selectedTheme;
+                return this._theme;
             }
             set
             {
-                this._selectedTheme = value;
-                NotifyOfPropertyChange(() => this.SelectedTheme);
+                this._theme = value;
+                NotifyOfPropertyChange(() => this.Theme);
             }
         }
 
@@ -179,7 +179,7 @@ namespace Papercut.ViewModels
             _minimizeToTray = Settings.Default.MinimizeToTray;
             _minimizeOnClose = Settings.Default.MinimizeOnClose;
             _runOnStartup = Settings.Default.RunOnStartup;
-            _selectedTheme = Settings.Default.Theme;
+            _theme = Settings.Default.Theme;
         }
 
         static IList<string> GetIPs()
@@ -206,7 +206,7 @@ namespace Papercut.ViewModels
             Settings.Default.MinimizeOnClose = MinimizeOnClose;
             Settings.Default.MinimizeToTray = MinimizeToTray;
             Settings.Default.MessageListSortOrder = MessageListSortOrder;
-            Settings.Default.Theme = SelectedTheme;
+            Settings.Default.Theme = Theme;
 
             Settings.Default.Save();
 
