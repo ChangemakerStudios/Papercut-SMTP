@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Message
+namespace Papercut.Core.Domain.Message
 {
     using System;
     using System.ComponentModel;
@@ -23,8 +23,8 @@ namespace Papercut.Core.Message
     using System.IO;
     using System.Text.RegularExpressions;
 
+    using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
 
     /// <summary>
     ///     The message entry.
@@ -43,12 +43,12 @@ namespace Papercut.Core.Message
 
         public MessageEntry(FileInfo fileInfo)
         {
-            _info = fileInfo;
+            this._info = fileInfo;
 
-            Match match = _nameFormat.Match(_info.Name);
+            Match match = _nameFormat.Match(this._info.Name);
             if (match.Success)
             {
-                _created = DateTime.ParseExact(
+                this._created = DateTime.ParseExact(
                     match.Groups["date"].Value,
                     "yyyyMMddHHmmssFF",
                     CultureInfo.InvariantCulture);
@@ -60,52 +60,52 @@ namespace Papercut.Core.Message
         {
         }
 
-        public DateTime ModifiedDate => _info.LastWriteTime;
+        public DateTime ModifiedDate => this._info.LastWriteTime;
 
-        public string Name => _info.Name;
+        public string Name => this._info.Name;
 
-        public string FileSize => _info.Length.ToFileSizeFormat();
+        public string FileSize => this._info.Length.ToFileSizeFormat();
 
-        public string DisplayText => $"{_created?.ToString("G") ?? _info.Name} ({(FileSize)})";
+        public string DisplayText => $"{this._created?.ToString("G") ?? this._info.Name} ({(FileSize)})";
 
         public bool IsSelected
         {
-            get { return _isSelected; }
+            get { return this._isSelected; }
             set
             {
-                _isSelected = value;
-                OnPropertyChanged(nameof(IsSelected));
+                this._isSelected = value;
+                this.OnPropertyChanged(nameof(this.IsSelected));
             }
         }
 
         public bool Equals(MessageEntry other)
         {
-            return Equals(_info, other._info);
+            return Equals(this._info, other._info);
         }
 
-        public string File => _info.FullName;
+        public string File => this._info.FullName;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public override string ToString()
         {
-            return DisplayText;
+            return this.DisplayText;
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((MessageEntry)obj);
+            if (obj.GetType() != this.GetType()) return false;
+            return this.Equals((MessageEntry)obj);
         }
 
-        public override int GetHashCode() => _info?.GetHashCode() ?? 0;
+        public override int GetHashCode() => this._info?.GetHashCode() ?? 0;
 
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            PropertyChangedEventHandler handler = this.PropertyChanged;
             handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }

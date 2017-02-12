@@ -15,14 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Events
+namespace Papercut.Core.Domain.Network.Smtp
 {
+    using Papercut.Core.Infrastructure.Network;
+
     public class SmtpServerBindEvent : BaseBindEvent
     {
         public SmtpServerBindEvent(string ip, int port)
         {
-            IP = ip;
-            Port = port;
+            this.IP = ip;
+            this.Port = port;
         }
     }
 }

@@ -26,8 +26,8 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;

@@ -19,7 +19,8 @@ namespace Papercut.Events
 {
     using Caliburn.Micro;
 
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.MessageBus;
 
     public class EventPublishAll : IMessageBus
     {

@@ -16,14 +16,14 @@
 // limitations under the License.
 
 
-using System.Collections.Generic;
-
-namespace Papercut.Core.Helper
+namespace Papercut.Common.Helper
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Threading;
 
+    using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
 
     public static class StringHelpers

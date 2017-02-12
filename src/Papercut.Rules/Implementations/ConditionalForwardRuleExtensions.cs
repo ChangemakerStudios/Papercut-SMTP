@@ -23,8 +23,8 @@ namespace Papercut.Rules.Implementations
 
     using MimeKit;
 
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
 
     public static class ConditionalForwardRuleExtensions
     {

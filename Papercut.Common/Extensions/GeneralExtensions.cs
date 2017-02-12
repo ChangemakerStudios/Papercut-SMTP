@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Helper
+namespace Papercut.Common.Extensions
 {
     using System;
     using System.Collections.Generic;
@@ -24,6 +24,7 @@ namespace Papercut.Core.Helper
     using System.Linq;
     using System.Text;
 
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
 
     /// <summary>

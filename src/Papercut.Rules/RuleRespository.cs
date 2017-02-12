@@ -21,8 +21,8 @@ namespace Papercut.Rules
     using System.Collections.Generic;
 
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Rules;
+    using Papercut.Core.Domain.Rules;
+    using Papercut.Core.Infrastructure.Json;
 
     public class RuleRespository
     {

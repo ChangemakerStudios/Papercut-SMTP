@@ -23,7 +23,7 @@ namespace Papercut.Services
 
     using MimeKit;
 
-    using Papercut.Core.Configuration;
+    using Papercut.Core.Domain.Application;
     using Papercut.Helpers;
 
     using Serilog;

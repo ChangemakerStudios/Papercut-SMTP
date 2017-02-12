@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Helper
+namespace Papercut.Core.Infrastructure.Logging
 {
     using System;
     using System.Collections.Concurrent;
@@ -38,14 +38,14 @@ namespace Papercut.Core.Helper
         {
             var properties = new List<LogEventProperty>
             {
-                _cachedProperties.GetOrAdd("MachineName",
+                this._cachedProperties.GetOrAdd("MachineName",
                     k => propertyFactory.CreateProperty(k, Environment.MachineName)),
-                _cachedProperties.GetOrAdd("Is64BitOperatingSystem",
+                this._cachedProperties.GetOrAdd("Is64BitOperatingSystem",
                     k => propertyFactory.CreateProperty(k, Environment.Is64BitOperatingSystem)),
-                _cachedProperties.GetOrAdd("OSVersion", k => propertyFactory.CreateProperty(k, Environment.OSVersion)),
-                _cachedProperties.GetOrAdd("ProcessorCount",
+                this._cachedProperties.GetOrAdd("OSVersion", k => propertyFactory.CreateProperty(k, Environment.OSVersion)),
+                this._cachedProperties.GetOrAdd("ProcessorCount",
                     k => propertyFactory.CreateProperty(k, Environment.ProcessorCount)),
-                _cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, Environment.Version))
+                this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, Environment.Version))
             };
 
             foreach (var p in properties)

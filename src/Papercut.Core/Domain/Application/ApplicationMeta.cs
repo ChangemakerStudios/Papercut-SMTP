@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 ﻿
-﻿namespace Papercut.Core.Configuration
+﻿namespace Papercut.Core.Domain.Application
 {
     using System.Reflection;
 
@@ -23,8 +23,8 @@
     {
         public ApplicationMeta(string appName, string appVersion = null)
         {
-            AppName = appName;
-            AppVersion = appVersion ?? Assembly.GetCallingAssembly().GetName().Version.ToString(3);
+            this.AppName = appName;
+            this.AppVersion = appVersion ?? Assembly.GetCallingAssembly().GetName().Version.ToString(3);
         }
 
         public string AppName { get; private set; }

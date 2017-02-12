@@ -15,29 +15,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core
+namespace Papercut.Core.Infrastructure.Container
 {
     using System;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
+
     using Autofac;
     using Autofac.Core;
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Network;
-    using Papercut.Core.Plugins;
-    using Papercut.Core.Settings;
+
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Application;
+    using Papercut.Core.Domain.Paths;
+    using Papercut.Core.Domain.Settings;
+    using Papercut.Core.Infrastructure.Logging;
+    using Papercut.Core.Infrastructure.MessageBus;
+    using Papercut.Core.Infrastructure.Plugins;
+
     using Serilog;
+
     using Module = Autofac.Module;
 
     internal class PapercutCoreModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
-            RegisterPluginArchitecture(builder);
+            this.RegisterPluginArchitecture(builder);
 
             //builder.RegisterAssemblyModules(PapercutContainer.ExtensionAssemblies);
 
@@ -185,7 +189,7 @@ namespace Papercut.Core
             IComponentRegistration registration)
         {
             // Handle constructor parameters.
-            registration.Preparing += OnComponentPreparing;
+            registration.Preparing += this.OnComponentPreparing;
         }
 
         void OnComponentPreparing(object sender, PreparingEventArgs e)

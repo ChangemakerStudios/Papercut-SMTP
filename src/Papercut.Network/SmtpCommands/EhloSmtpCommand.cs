@@ -3,8 +3,7 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    using Papercut.Core.Helper;
-    using Papercut.Core.Network;
+    using Papercut.Core.Infrastructure.Network;
     using Papercut.Network.Protocols;
 
     public class EhloSmtpCommand : BaseSmtpCommand

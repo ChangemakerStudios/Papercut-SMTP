@@ -15,12 +15,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Settings
+namespace Papercut.Core.Domain.Settings
 {
     using System;
 
+    using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
 
     public static class ReadWriteValueExtensions
     {

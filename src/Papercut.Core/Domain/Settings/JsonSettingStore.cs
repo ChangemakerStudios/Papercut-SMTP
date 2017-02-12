@@ -15,20 +15,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Settings
+namespace Papercut.Core.Domain.Settings
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
 
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Helper;
+    using Papercut.Core.Domain.Application;
+    using Papercut.Core.Infrastructure.Json;
 
     public class JsonSettingStore : BaseSettingsStore
     {
         public JsonSettingStore(IAppMeta appMeta)
         {
-            SettingsFilePath = Path.Combine(
+            this.SettingsFilePath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
                 appMeta.AppName + ".json");
         }
@@ -37,16 +37,16 @@ namespace Papercut.Core.Settings
 
         public override void Load()
         {
-            if (SettingsFilePath == null) return;
+            if (this.SettingsFilePath == null) return;
 
-            LoadSettings(JsonHelpers.LoadJson<Dictionary<string, string>>(SettingsFilePath));
+            this.LoadSettings(JsonHelpers.LoadJson<Dictionary<string, string>>(this.SettingsFilePath));
         }
 
         public override void Save()
         {
-            if (SettingsFilePath == null) return;
+            if (this.SettingsFilePath == null) return;
 
-            JsonHelpers.SaveJson(GetSettingSnapshot(), SettingsFilePath);
+            JsonHelpers.SaveJson(this.GetSettingSnapshot(), this.SettingsFilePath);
         }
     }
 }

@@ -20,9 +20,11 @@ namespace Papercut.Network.Protocols
     using System;
     using System.IO;
 
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Network;
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
+    using Papercut.Core.Domain.Network;
+    using Papercut.Core.Infrastructure.Json;
+    using Papercut.Core.Infrastructure.MessageBus;
     using Papercut.Network.Helpers;
 
     using Serilog;

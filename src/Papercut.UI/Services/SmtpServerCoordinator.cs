@@ -23,9 +23,11 @@ namespace Papercut.Services
     using System.Reactive.Linq;
     using System.Runtime.CompilerServices;
 
+    using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Events;
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Network;
+    using Papercut.Core.Domain.Network.Smtp;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Network.Protocols;
     using Papercut.Network.Smtp;

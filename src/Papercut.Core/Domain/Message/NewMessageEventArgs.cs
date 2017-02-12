@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Message
+namespace Papercut.Core.Domain.Message
 {
     using System;
 
@@ -23,7 +23,7 @@ namespace Papercut.Core.Message
     {
         public NewMessageEventArgs(MessageEntry newMessage)
         {
-            NewMessage = newMessage;
+            this.NewMessage = newMessage;
         }
 
         public MessageEntry NewMessage { get; set; }

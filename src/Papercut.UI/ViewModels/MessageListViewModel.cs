@@ -33,10 +33,11 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Message;
+    using Papercut.Core.Domain.Message;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Message;

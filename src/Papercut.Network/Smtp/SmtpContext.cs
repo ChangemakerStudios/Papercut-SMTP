@@ -17,7 +17,8 @@
 
 namespace Papercut.Network.Smtp
 {
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Network;
+    using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Network.Protocols;
 
     public class SmtpContext : ISmtpContext

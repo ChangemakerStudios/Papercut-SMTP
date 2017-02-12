@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Helper
+namespace Papercut.Common.Helper
 {
     using System;
     using System.Collections.Generic;

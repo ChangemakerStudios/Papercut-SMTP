@@ -16,7 +16,7 @@
 // limitations under the License. 
 
 
-namespace Papercut.Core.Helper
+namespace Papercut.Common.Extensions
 {
     using System;
     using System.Collections;

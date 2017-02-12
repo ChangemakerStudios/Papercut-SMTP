@@ -1,8 +1,7 @@
-namespace Papercut.Core.Network
+namespace Papercut.Core.Domain.Network
 {
     using System;
     using System.Net.Sockets;
-    using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
 

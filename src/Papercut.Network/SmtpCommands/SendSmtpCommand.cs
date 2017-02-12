@@ -22,8 +22,6 @@ namespace Papercut.Network.SmtpCommands
     using System.Linq;
     using System.Text;
 
-    using Papercut.Core.Helper;
-    using Papercut.Core.Network;
     using Papercut.Network.Protocols;
 
     public class SendSmtpCommand : BaseSmtpCommand

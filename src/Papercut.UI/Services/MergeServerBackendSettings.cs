@@ -20,9 +20,10 @@ namespace Papercut.Services
     using System;
     using System.Linq;
 
+    using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Events;
+    using Papercut.Core.Domain.Paths;
+    using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
     using Papercut.Properties;
 

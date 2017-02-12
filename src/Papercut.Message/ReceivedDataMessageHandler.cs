@@ -25,10 +25,10 @@ namespace Papercut.Message
 
     using MimeKit;
 
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Message;
+    using Papercut.Core.Domain.Message;
 
     using Serilog;
 

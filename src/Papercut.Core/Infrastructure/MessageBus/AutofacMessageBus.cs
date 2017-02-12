@@ -15,12 +15,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Events
+namespace Papercut.Core.Infrastructure.MessageBus
 {
     using System.Collections.Generic;
     using System.Linq;
 
     using Autofac;
+
+    using Papercut.Common.Domain;
 
     public class AutofacMessageBus : IMessageBus
     {
@@ -28,12 +30,12 @@ namespace Papercut.Core.Events
 
         public AutofacMessageBus(ILifetimeScope lifetimeScope)
         {
-            _lifetimeScope = lifetimeScope;
+            this._lifetimeScope = lifetimeScope;
         }
 
         public void Publish<T>(T eventObject) where T : IEvent
         {
-            foreach (var @event in MaybeByOrderable(_lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>()))
+            foreach (var @event in this.MaybeByOrderable(this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>()))
             {
                 @event.Handle(eventObject);
             }

@@ -14,7 +14,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
-namespace Papercut.Core.Plugins
+namespace Papercut.Core.Infrastructure.Plugins
 {
     using System;
     using System.Collections.Concurrent;
@@ -29,13 +29,13 @@ namespace Papercut.Core.Plugins
 
         public static PluginStore Instance { get; } = new PluginStore();
 
-        public IEnumerable<IPluginModule> Plugins => _loadedPlugins.ToArray();
+        public IEnumerable<IPluginModule> Plugins => this._loadedPlugins.ToArray();
 
         public void Add([NotNull] IPluginModule module)
         {
             if (module == null) throw new ArgumentNullException(nameof(module));
 
-            _loadedPlugins.Add(module);
+            this._loadedPlugins.Add(module);
         }
     }
 }

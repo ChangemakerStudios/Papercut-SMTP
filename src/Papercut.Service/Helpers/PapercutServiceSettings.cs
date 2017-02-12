@@ -17,7 +17,7 @@
 
 namespace Papercut.Service.Helpers
 {
-    using Papercut.Core.Settings;
+    using Papercut.Core.Domain.Settings;
 
     public class PapercutServiceSettings : ISettingsTyped
     {

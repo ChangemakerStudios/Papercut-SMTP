@@ -27,7 +27,6 @@ namespace Papercut.ViewModels
 
     using MimeKit;
 
-    using Papercut.Core.Helper;
     using Papercut.Helpers;
     using Papercut.Message.Helpers;
     using Papercut.Views;

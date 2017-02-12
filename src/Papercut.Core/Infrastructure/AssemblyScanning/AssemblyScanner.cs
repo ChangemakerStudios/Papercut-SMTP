@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Helper
+namespace Papercut.Core.Infrastructure.AssemblyScanning
 {
     using System;
     using System.Collections.Generic;
@@ -23,6 +23,7 @@ namespace Papercut.Core.Helper
     using System.Linq;
     using System.Reflection;
 
+    using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
 
     using Serilog;
@@ -33,7 +34,7 @@ namespace Papercut.Core.Helper
 
         public AssemblyScanner(Lazy<ILogger> logger)
         {
-            _logger = logger;
+            this._logger = logger;
         }
 
         IEnumerable<Assembly> GetAssembliesList(IEnumerable<string> pluginDirectories)
@@ -49,7 +50,7 @@ namespace Papercut.Core.Helper
                 loadedAssemblies.Select(a => Path.GetFileName(a.CodeBase)).ToList();
 
             // get all files...
-            List<string> allFiles = pluginDirectories.SelectMany(GetAllFilesIn).Distinct().ToList();
+            List<string> allFiles = pluginDirectories.SelectMany(this.GetAllFilesIn).Distinct().ToList();
 
             // exclude currently loaded assemblies
             List<string> needsToBeLoaded = allFiles
@@ -57,7 +58,7 @@ namespace Papercut.Core.Helper
                 .ToList();
 
             // attempt to load files as an assembly and include already loaded
-            List<Assembly> aggregatedAssemblies = TryLoadAssemblies(needsToBeLoaded)
+            List<Assembly> aggregatedAssemblies = this.TryLoadAssemblies(needsToBeLoaded)
                 .Where(filterAssemblies)
                 .Concat(loadedAssemblies)
                 .ToList();
@@ -72,7 +73,7 @@ namespace Papercut.Core.Helper
             //        .Where(s => !loadedAssemblyNames.Contains(s, StringComparer.OrdinalIgnoreCase))
             //        .ToArray();
 
-            return TryLoadReferenced(allReferenced).Where(filterAssemblies).Concat(aggregatedAssemblies).ToArray();
+            return this.TryLoadReferenced(allReferenced).Where(filterAssemblies).Concat(aggregatedAssemblies).ToArray();
         }
 
         private IEnumerable<Assembly> TryLoadReferenced(List<AssemblyName> allReferenced)
@@ -101,14 +102,14 @@ namespace Papercut.Core.Helper
                 }
                 catch (FileLoadException ex)
                 {
-                    _logger.Value.Warning(ex, "Failure Loading Assembly Named {@AssemblyName}", assemblyName);
+                    this._logger.Value.Warning(ex, "Failure Loading Assembly Named {@AssemblyName}", assemblyName);
                     continue;
                 }
 
                 yield return assembly;
 
                 // attempt to load additional dependencies
-                foreach (var a in TryLoadReferenced(assembly.GetReferencedAssemblies().IfNullEmpty().ToList()))
+                foreach (var a in this.TryLoadReferenced(assembly.GetReferencedAssemblies().IfNullEmpty().ToList()))
                     yield return a;
             }
         }
@@ -125,7 +126,7 @@ namespace Papercut.Core.Helper
                 Path.Combine(baseDirectory, @"plugins")
             };
 
-            return GetAssembliesList(directories.Where(Directory.Exists));
+            return this.GetAssembliesList(directories.Where(Directory.Exists));
         }
 
         IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
@@ -145,7 +146,7 @@ namespace Papercut.Core.Helper
                 }
                 catch (FileLoadException ex)
                 {
-                    _logger.Value.Warning(ex, "Failure Loading Assembly File {AssemblyFile}", assemblyFile);
+                    this._logger.Value.Warning(ex, "Failure Loading Assembly File {AssemblyFile}", assemblyFile);
                     continue;
                 }
 
@@ -171,7 +172,7 @@ namespace Papercut.Core.Helper
                 }
                 catch (FileLoadException ex)
                 {
-                    _logger.Value.Warning(ex, "Failure Loading Assembly Resource {AssemblyName}", assemblyName);
+                    this._logger.Value.Warning(ex, "Failure Loading Assembly Resource {AssemblyName}", assemblyName);
                     continue;
                 }
 

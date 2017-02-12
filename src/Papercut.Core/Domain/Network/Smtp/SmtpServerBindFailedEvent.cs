@@ -15,8 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Events
+namespace Papercut.Core.Domain.Network.Smtp
 {
+    using Papercut.Common.Domain;
+
     public class SmtpServerBindFailedEvent : IEvent
     {
     }

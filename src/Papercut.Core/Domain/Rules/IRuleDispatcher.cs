@@ -15,9 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Rules
+namespace Papercut.Core.Domain.Rules
 {
-    using Papercut.Core.Message;
+    using Papercut.Core.Domain.Message;
 
     public interface IRuleDispatcher<in TRule>
         where TRule : IRule

@@ -22,6 +22,7 @@ namespace Papercut.Service
     using Autofac;
 
     using Papercut.Core;
+    using Papercut.Core.Infrastructure.Container;
     using Papercut.Service.Services;
 
     using Serilog;

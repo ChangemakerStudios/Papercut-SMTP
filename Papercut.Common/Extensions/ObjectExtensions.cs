@@ -15,13 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 
-namespace Papercut.Core.Helper
+namespace Papercut.Common.Extensions
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Linq;
     using System.Reflection;
 
     using Papercut.Core.Annotations;

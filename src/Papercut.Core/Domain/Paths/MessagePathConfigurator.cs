@@ -15,17 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Configuration
+namespace Papercut.Core.Domain.Paths
 {
     using System;
     using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.IO;
     using System.Linq;
-    using System.Security.Principal;
     using System.Text.RegularExpressions;
 
-    using Papercut.Core.Helper;
+    using Papercut.Common.Extensions;
 
     using Serilog;
 
@@ -65,36 +64,36 @@ namespace Papercut.Core.Configuration
             if (pathTemplateProvider == null) throw new ArgumentNullException(nameof(pathTemplateProvider));
             if (logger == null) throw new ArgumentNullException(nameof(logger));
 
-            _logger = logger;
-            _pathTemplateProvider = pathTemplateProvider;
-            _pathTemplateProvider.PathTemplates.CollectionChanged += PathTemplatesCollectionChanged;
+            this._logger = logger;
+            this._pathTemplateProvider = pathTemplateProvider;
+            this._pathTemplateProvider.PathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
 
-            DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
-            RenderLoadPaths();
+            this.DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
+            this.RenderLoadPaths();
 
-            if (LoadPaths.Any()) DefaultSavePath = LoadPaths.First();
+            if (this.LoadPaths.Any()) this.DefaultSavePath = this.LoadPaths.First();
 
-            _logger.Information(
+            this._logger.Information(
                 "Default Message Save Path is Set to {DefaultSavePath}",
-                DefaultSavePath);
+                this.DefaultSavePath);
         }
 
         public string DefaultSavePath
         {
             get
             {
-                if (!Directory.Exists(_defaultSavePath))
+                if (!Directory.Exists(this._defaultSavePath))
                 {
-                    _logger.Information(
+                    this._logger.Information(
                         "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
-                        _defaultSavePath);
+                        this._defaultSavePath);
 
-                    Directory.CreateDirectory(_defaultSavePath);
+                    Directory.CreateDirectory(this._defaultSavePath);
                 }
 
-                return _defaultSavePath;
+                return this._defaultSavePath;
             }
-            private set { _defaultSavePath = value; }
+            private set { this._defaultSavePath = value; }
         }
 
         public IEnumerable<string> LoadPaths { get; private set; }
@@ -103,23 +102,23 @@ namespace Papercut.Core.Configuration
 
         void PathTemplatesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            RenderLoadPaths();
-            OnRefreshLoadPath();
+            this.RenderLoadPaths();
+            this.OnRefreshLoadPath();
         }
 
         void RenderLoadPaths()
         {
-            LoadPaths =
-                _pathTemplateProvider.PathTemplates.Select(RenderPathTemplate)
-                    .Where(ValidatePathExists)
+            this.LoadPaths =
+                this._pathTemplateProvider.PathTemplates.Select(this.RenderPathTemplate)
+                    .Where(this.ValidatePathExists)
                     .ToList();
 
-            _logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", LoadPaths);
+            this._logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", this.LoadPaths);
         }
 
         protected virtual void OnRefreshLoadPath()
         {
-            EventHandler handler = RefreshLoadPath;
+            EventHandler handler = this.RefreshLoadPath;
             handler?.Invoke(this, EventArgs.Empty);
         }
 
@@ -157,7 +156,7 @@ namespace Papercut.Core.Configuration
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
+                this._logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
             }
 
             return false;

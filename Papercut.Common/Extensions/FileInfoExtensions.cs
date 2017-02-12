@@ -15,11 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Helper
+namespace Papercut.Common.Extensions
 {
     using System;
     using System.IO;
-    using System.Text;
 
     public static class FileInfoExtensions
     {

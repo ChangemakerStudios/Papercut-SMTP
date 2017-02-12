@@ -20,7 +20,8 @@ namespace Papercut.Services
     using System;
     using System.Threading;
 
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Network;
 

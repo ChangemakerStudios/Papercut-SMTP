@@ -20,8 +20,8 @@ namespace Papercut.Message
     using Autofac;
     using Autofac.Core;
 
-    using Papercut.Core.Message;
-    using Papercut.Core.Plugins;
+    using Papercut.Core.Domain.Message;
+    using Papercut.Core.Infrastructure.Plugins;
 
     public class PapercutMessageModule : Autofac.Module, IDiscoverableModule
     {

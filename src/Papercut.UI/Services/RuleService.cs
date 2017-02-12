@@ -24,9 +24,10 @@ namespace Papercut.Services
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
 
-    using Papercut.Core.Events;
-    using Papercut.Core.Message;
-    using Papercut.Core.Rules;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Message;
+    using Papercut.Core.Domain.Rules;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Message;
     using Papercut.Rules;
 

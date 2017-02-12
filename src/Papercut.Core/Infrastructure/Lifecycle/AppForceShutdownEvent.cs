@@ -15,13 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Events
+namespace Papercut.Core.Infrastructure.Lifecycle
 {
+    using Papercut.Common.Domain;
+
     public class AppForceShutdownEvent : IEvent
     {
         public AppForceShutdownEvent(int exitCode = 0)
         {
-            ExitCode = exitCode;
+            this.ExitCode = exitCode;
         }
 
         public int ExitCode { get; set; }

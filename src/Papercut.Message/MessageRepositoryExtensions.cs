@@ -19,7 +19,7 @@ namespace Papercut.Message
 {
     using System;
 
-    using Papercut.Core.Message;
+    using Papercut.Core.Domain.Message;
 
     public static class MessageRepositoryExtensions
     {

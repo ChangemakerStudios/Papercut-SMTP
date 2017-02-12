@@ -20,8 +20,6 @@ namespace Papercut.Network.SmtpCommands
     using System;
     using System.Collections.Generic;
 
-    using Papercut.Core.Helper;
-    using Papercut.Core.Network;
     using Papercut.Network.Protocols;
 
     public class RcptSmtpCommand : BaseSmtpCommand

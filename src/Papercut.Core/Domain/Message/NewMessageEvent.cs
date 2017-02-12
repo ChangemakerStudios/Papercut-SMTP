@@ -15,15 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Events
+namespace Papercut.Core.Domain.Message
 {
-    using Papercut.Core.Message;
+    using Papercut.Common.Domain;
 
     public class NewMessageEvent : IEvent
     {
         public NewMessageEvent(MessageEntry newMessage)
         {
-            NewMessage = newMessage;
+            this.NewMessage = newMessage;
         }
 
         public MessageEntry NewMessage { get; set; }

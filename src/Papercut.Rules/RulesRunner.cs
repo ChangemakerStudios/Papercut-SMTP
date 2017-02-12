@@ -24,8 +24,8 @@ namespace Papercut.Rules
     using Autofac;
 
     using Papercut.Core.Annotations;
-    using Papercut.Core.Message;
-    using Papercut.Core.Rules;
+    using Papercut.Core.Domain.Message;
+    using Papercut.Core.Domain.Rules;
 
     using Serilog;
 

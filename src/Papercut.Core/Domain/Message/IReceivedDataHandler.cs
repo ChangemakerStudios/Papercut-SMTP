@@ -1,6 +1,5 @@
-namespace Papercut.Core.Message
+namespace Papercut.Core.Domain.Message
 {
-    using System.Collections.Generic;
     using System.Text;
 
     public interface IReceivedDataHandler

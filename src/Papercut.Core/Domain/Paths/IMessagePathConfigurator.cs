@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Configuration
+namespace Papercut.Core.Domain.Paths
 {
     using System;
     using System.Collections.Generic;

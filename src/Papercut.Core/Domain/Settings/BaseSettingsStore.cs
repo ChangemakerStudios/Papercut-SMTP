@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Settings
+namespace Papercut.Core.Domain.Settings
 {
     using System;
     using System.Collections.Concurrent;
@@ -27,20 +27,20 @@ namespace Papercut.Core.Settings
     {
         protected BaseSettingsStore()
         {
-            CurrentSettings = new ConcurrentDictionary<string, string>();
+            this.CurrentSettings = new ConcurrentDictionary<string, string>();
         }
 
         protected ConcurrentDictionary<string, string> CurrentSettings { get; set; }
 
         protected Dictionary<string, string> GetSettingSnapshot()
         {
-            return new Dictionary<string, string>(CurrentSettings);
+            return new Dictionary<string, string>(this.CurrentSettings);
         }
 
         protected void LoadSettings(IEnumerable<KeyValuePair<string, string>> settings = null)
         {
-            if (settings != null) CurrentSettings = new ConcurrentDictionary<string, string>(settings);
-            else CurrentSettings.Clear();
+            if (settings != null) this.CurrentSettings = new ConcurrentDictionary<string, string>(settings);
+            else this.CurrentSettings.Clear();
         }
 
         public string this[[NotNull] string key]
@@ -50,13 +50,13 @@ namespace Papercut.Core.Settings
                 if (key == null) throw new ArgumentNullException(nameof(key));
 
                 string value;
-                return CurrentSettings.TryGetValue(key, out value) ? value : null;
+                return this.CurrentSettings.TryGetValue(key, out value) ? value : null;
             }
             set
             {
                 if (key == null) throw new ArgumentNullException(nameof(key));
 
-                CurrentSettings.AddOrUpdate(key, value, (k, v) => value);
+                this.CurrentSettings.AddOrUpdate(key, value, (k, v) => value);
             }
         }
 

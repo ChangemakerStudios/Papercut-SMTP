@@ -24,7 +24,7 @@ namespace Papercut.Network.Smtp
     using Autofac.Features.Indexed;
 
     using Papercut.Core.Annotations;
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Network;
     using Papercut.Network.Protocols;
 
     using Serilog;

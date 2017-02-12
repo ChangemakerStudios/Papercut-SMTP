@@ -15,9 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Events
+namespace Papercut.Core.Infrastructure.Lifecycle
 {
-    using Papercut.Core.Configuration;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Application;
 
     public class PapercutClientReadyEvent : IEvent
     {

@@ -23,8 +23,8 @@ namespace Papercut.Rules
     using Autofac;
     using Autofac.Core;
 
-    using Papercut.Core.Plugins;
-    using Papercut.Core.Rules;
+    using Papercut.Core.Domain.Rules;
+    using Papercut.Core.Infrastructure.Plugins;
 
     using Module = Autofac.Module;
 

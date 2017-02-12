@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core
+namespace Papercut.Core.Infrastructure.Container
 {
     using System;
     using System.Diagnostics;
@@ -26,7 +26,9 @@ namespace Papercut.Core
 
     using Autofac;
 
-    using Papercut.Core.Helper;
+    using Papercut.Common.Extensions;
+    using Papercut.Core.Infrastructure.AssemblyScanning;
+    using Papercut.Core.Infrastructure.Logging;
 
     using Serilog;
     using Serilog.Events;

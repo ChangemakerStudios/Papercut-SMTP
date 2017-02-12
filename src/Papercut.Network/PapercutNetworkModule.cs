@@ -22,8 +22,9 @@ namespace Papercut.Network
     using Autofac;
     using Autofac.Core;
 
-    using Papercut.Core.Network;
-    using Papercut.Core.Plugins;
+    using Papercut.Core.Domain.Network;
+    using Papercut.Core.Domain.Network.Smtp;
+    using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Network.Protocols;
     using Papercut.Network.Smtp;
 

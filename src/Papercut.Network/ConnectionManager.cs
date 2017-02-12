@@ -27,7 +27,7 @@ namespace Papercut.Network
     using System.Reactive.Linq;
     using System.Threading;
 
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Network;
 
     using Serilog;
 

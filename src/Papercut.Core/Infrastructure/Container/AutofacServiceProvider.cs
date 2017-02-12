@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Helper
+namespace Papercut.Core.Infrastructure.Container
 {
     using System;
 
@@ -27,12 +27,12 @@ namespace Papercut.Core.Helper
 
         public AutofacServiceProvider(ILifetimeScope lifetimeScope)
         {
-            _lifetimeScope = lifetimeScope;
+            this._lifetimeScope = lifetimeScope;
         }
 
         public object GetService(Type serviceType)
         {
-            return _lifetimeScope.Resolve(serviceType);
+            return this._lifetimeScope.Resolve(serviceType);
         }
     }
 }

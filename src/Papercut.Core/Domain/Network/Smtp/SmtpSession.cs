@@ -16,7 +16,7 @@
 // limitations under the License. 
 
 
-namespace Papercut.Core.Network
+namespace Papercut.Core.Domain.Network.Smtp
 {
     using System.Collections.Generic;
 

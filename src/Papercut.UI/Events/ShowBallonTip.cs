@@ -19,7 +19,7 @@ namespace Papercut.Events
 {
     using System.Windows.Forms;
 
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
 
     public class ShowBallonTip : IEvent
     {

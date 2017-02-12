@@ -19,7 +19,8 @@ namespace Papercut.Services
 {
     using System.Windows;
 
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.Lifecycle;
 
     public class ShutdownService : IEventHandler<AppForceShutdownEvent>
     {

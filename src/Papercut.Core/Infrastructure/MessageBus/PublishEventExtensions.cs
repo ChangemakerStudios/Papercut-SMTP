@@ -15,10 +15,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Events
+namespace Papercut.Core.Infrastructure.MessageBus
 {
     using System;
     using System.Reflection;
+
+    using Papercut.Common.Domain;
 
     public static class PublishEventExtensions
     {

@@ -21,8 +21,8 @@ namespace Papercut.Services
 
     using Microsoft.Win32;
 
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
     using Papercut.Events;
     using Papercut.Properties;
 

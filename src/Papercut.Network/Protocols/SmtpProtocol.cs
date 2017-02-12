@@ -21,8 +21,10 @@ namespace Papercut.Network.Protocols
     using System.Collections.Generic;
     using System.Linq;
 
-    using Papercut.Core.Helper;
-    using Papercut.Core.Network;
+    using Papercut.Common.Extensions;
+    using Papercut.Core.Domain.Network;
+    using Papercut.Core.Domain.Network.Smtp;
+    using Papercut.Core.Infrastructure.Network;
     using Papercut.Network.Smtp;
 
     using Serilog;

@@ -21,9 +21,9 @@ namespace Papercut
     using System.Collections.ObjectModel;
     using System.Linq;
 
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
+    using Papercut.Core.Domain.Paths;
     using Papercut.Events;
     using Papercut.Properties;
 

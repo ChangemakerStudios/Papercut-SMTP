@@ -17,7 +17,7 @@
 
 namespace Papercut.Events
 {
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
 
     public class SettingsUpdatedEvent : IEvent
     {

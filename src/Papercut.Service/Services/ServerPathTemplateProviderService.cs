@@ -21,7 +21,7 @@ namespace Papercut.Service.Services
     using System.Collections.ObjectModel;
     using System.Linq;
 
-    using Papercut.Core.Configuration;
+    using Papercut.Core.Domain.Paths;
     using Papercut.Service.Helpers;
 
     public class ServerPathTemplateProviderService : IPathTemplatesProvider

@@ -23,7 +23,7 @@ namespace Papercut.Network.Protocols
     using System.Net.Sockets;
     using System.Threading.Tasks;
 
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Network;
 
     public static class ConnectionExtensions
     {

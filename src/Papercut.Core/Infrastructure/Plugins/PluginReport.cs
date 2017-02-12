@@ -15,9 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Plugins
+namespace Papercut.Core.Infrastructure.Plugins
 {
     using Autofac;
+
     using Serilog;
 
     public class PluginReport : IStartable
@@ -27,15 +28,15 @@ namespace Papercut.Core.Plugins
 
         public PluginReport(ILogger logger, IPluginStore pluginStore)
         {
-            _logger = logger;
-            _pluginStore = pluginStore;
+            this._logger = logger;
+            this._pluginStore = pluginStore;
         }
 
         public void Start()
         {
-            foreach (var pluginModule in _pluginStore.Plugins)
+            foreach (var pluginModule in this._pluginStore.Plugins)
             {
-                _logger.Information("Loaded Plug-In {PluginName} {PluginVersion} {PluginDescription}", pluginModule.Name,
+                this._logger.Information("Loaded Plug-In {PluginName} {PluginVersion} {PluginDescription}", pluginModule.Name,
                     pluginModule.Version, pluginModule.Description);
             }
         }

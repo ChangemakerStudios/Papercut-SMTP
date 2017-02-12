@@ -24,7 +24,7 @@ namespace Papercut.Network.Smtp
     using System.Reactive.Linq;
 
     using Papercut.Core.Annotations;
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Network;
 
     public static class ServerExtensions
     {
