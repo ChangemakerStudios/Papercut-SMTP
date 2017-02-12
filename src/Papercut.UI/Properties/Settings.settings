@@ -38,5 +38,11 @@
     <Setting Name="MessageListSortOrder" Type="System.String" Scope="User">
       <Value Profile="(Default)">Ascending</Value>
     </Setting>
+    <Setting Name="Theme" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Cyan</Value>
+    </Setting>
+    <Setting Name="MinimizeToTray" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -26,7 +26,6 @@ namespace Papercut
 
     using Papercut.Core;
     using Papercut.Core.Events;
-    using Papercut.Helpers;
 
     using Serilog;
 
@@ -46,6 +45,7 @@ namespace Papercut
         }
 
         public ILifetimeScope Container => _lifetimeScope.Value;
+
 
         protected override void OnStartup(StartupEventArgs e)
         {

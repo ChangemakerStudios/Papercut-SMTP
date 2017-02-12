@@ -260,6 +260,7 @@
     <Compile Include="Helpers\MailMessageHelper.cs" />
     <Compile Include="Helpers\MimeMessageEntry.cs" />
     <Compile Include="Helpers\NotifyPropertyChangeReactiveExtensions.cs" />
+    <Compile Include="Helpers\Themes.cs" />
     <Compile Include="Helpers\VeilHelpers.cs" />
     <Compile Include="Helpers\ViewModelWindowManager.cs" />
     <Compile Include="Helpers\WireupLogBridge.cs" />
@@ -281,6 +282,7 @@
     <Compile Include="Services\SingleInstanceService.cs" />
     <Compile Include="Services\SmtpServerCoordinator.cs" />
     <Compile Include="Services\TempDirectoryCleanupService.cs" />
+    <Compile Include="Services\ThemeManagerService.cs" />
     <Compile Include="SettingPathTemplateProvider.cs" />
     <Compile Include="PapercutUIModule.cs" />
     <Compile Include="Services\AppResourceLocator.cs" />

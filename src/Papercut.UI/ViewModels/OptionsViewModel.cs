@@ -29,6 +29,7 @@ namespace Papercut.ViewModels
     using Papercut.Core.Events;
     using Papercut.Core.Helper;
     using Papercut.Events;
+    using Papercut.Helpers;
     using Papercut.Properties;
 
     public class OptionsViewModel : Screen
@@ -53,11 +54,16 @@ namespace Papercut.ViewModels
 
         string _windowTitle = WindowTitleDefault;
 
+        private bool _minimizeToTray;
+
+        private string _selectedTheme;
+
         public OptionsViewModel(IMessageBus messageBus)
         {
-            this._messageBus = messageBus;
+            _messageBus = messageBus;
             IPs = new ObservableCollection<string>(_ipList.Value);
             SortOrders = new ObservableCollection<string>(Enum.GetNames(typeof(ListSortDirection)));
+            Themes = new ObservableCollection<string>(Enum.GetNames(typeof(Themes)));
             Load();
         }
 
@@ -78,6 +84,19 @@ namespace Papercut.ViewModels
             {
                 this._messageListSortOrder = value;
                 NotifyOfPropertyChange(() => this.MessageListSortOrder);
+            }
+        }
+
+        public string SelectedTheme
+        {
+            get
+            {
+                return this._selectedTheme;
+            }
+            set
+            {
+                this._selectedTheme = value;
+                NotifyOfPropertyChange(() => this.SelectedTheme);
             }
         }
 
@@ -121,6 +140,19 @@ namespace Papercut.ViewModels
             }
         }
 
+        public bool MinimizeToTray
+        {
+            get
+            {
+                return this._minimizeToTray;
+            }
+            set
+            {
+                this._minimizeToTray = value;
+                NotifyOfPropertyChange(() => MinimizeToTray);
+            }
+        }
+
         public bool StartMinimized
         {
             get { return _startMinimized; }
@@ -135,14 +167,19 @@ namespace Papercut.ViewModels
 
         public ObservableCollection<string> SortOrders { get; private set; }
 
+        public ObservableCollection<string> Themes { get; private set; }
+
         public void Load()
         {
             _ip = Settings.Default.IP;
             _port = Settings.Default.Port;
+
             _messageListSortOrder = Settings.Default.MessageListSortOrder;
             _startMinimized = Settings.Default.StartMinimized;
+            _minimizeToTray = Settings.Default.MinimizeToTray;
             _minimizeOnClose = Settings.Default.MinimizeOnClose;
             _runOnStartup = Settings.Default.RunOnStartup;
+            _selectedTheme = Settings.Default.Theme;
         }
 
         static IList<string> GetIPs()
@@ -167,7 +204,9 @@ namespace Papercut.ViewModels
             Settings.Default.RunOnStartup = RunOnStartup;
             Settings.Default.StartMinimized = StartMinimized;
             Settings.Default.MinimizeOnClose = MinimizeOnClose;
+            Settings.Default.MinimizeToTray = MinimizeToTray;
             Settings.Default.MessageListSortOrder = MessageListSortOrder;
+            Settings.Default.Theme = SelectedTheme;
 
             Settings.Default.Save();
 
