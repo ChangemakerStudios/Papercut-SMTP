@@ -24,8 +24,10 @@ namespace Papercut
 
     using Autofac;
 
+    using Papercut.Common.Domain;
     using Papercut.Core;
-    using Papercut.Core.Events;
+    using Papercut.Core.Infrastructure.Container;
+    using Papercut.Core.Infrastructure.Lifecycle;
 
     using Serilog;
 

@@ -24,7 +24,8 @@ namespace Papercut.Services
     using System.Reactive.Subjects;
     using System.Windows.Forms;
 
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
 
     using Disposable = Autofac.Util.Disposable;

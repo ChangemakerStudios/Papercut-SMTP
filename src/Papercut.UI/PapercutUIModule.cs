@@ -24,12 +24,11 @@ namespace Papercut
 
     using Caliburn.Micro;
 
+    using Papercut.Common.Domain;
     using Papercut.Core;
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Message;
-    using Papercut.Core.Plugins;
+    using Papercut.Core.Domain.Application;
+    using Papercut.Core.Infrastructure.Container;
+    using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Message;

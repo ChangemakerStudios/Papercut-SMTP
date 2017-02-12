@@ -23,7 +23,7 @@ namespace Papercut.Behaviors
     using System.Windows.Input;
     using System.Windows.Interactivity;
 
-    using Papercut.Core.Message;
+    using Papercut.Core.Domain.Message;
     using Papercut.Helpers;
 
     public class DragDropIFile : Behavior<ListBox>

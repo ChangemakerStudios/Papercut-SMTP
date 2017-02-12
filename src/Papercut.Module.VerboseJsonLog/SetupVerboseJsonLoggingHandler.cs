@@ -20,8 +20,9 @@ namespace Papercut.Module.VerboseJsonLog
     using System;
     using System.IO;
 
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Application;
+    using Papercut.Core.Infrastructure.Logging;
 
     using Serilog.Events;
     using Serilog.Formatting.Json;

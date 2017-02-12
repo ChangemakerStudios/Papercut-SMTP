@@ -6,13 +6,25 @@ before_build:
   - nuget restore
 
 after_build:
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release\Papercut.exe
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release\Papercut.exe.*
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release\Readme.eml
+  # Papercut
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release
+  - md plugins
+  - move Papercut.Module.*.dll plugins
+  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip plugins
+  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe
+  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe.*
+  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Readme.eml
   - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.zip
-  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\Papercut.Service.*
+  # Papercut Service
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release
+  - md plugins
+  - move Papercut.Module.*.dll plugins
+  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip plugins  
+  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip Papercut.Service.*
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Install-Papercut-Service.bat
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Uninstall-Papercut-Service.bat
   - appveyor PushArtifact PapercutService.%APPVEYOR_BUILD_VERSION%.zip
+  - cd %APPVEYOR_BUILD_FOLDER%
+  # Chocolately
   - nuget pack chocolately\Papercut.nuspec -version %APPVEYOR_BUILD_VERSION%
   - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.nupkg

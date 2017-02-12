@@ -21,7 +21,7 @@ namespace Papercut.Network.Protocols
     using System;
     using System.Text;
 
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Network;
 
     using Serilog;
 

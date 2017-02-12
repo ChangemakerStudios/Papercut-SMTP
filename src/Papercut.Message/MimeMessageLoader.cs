@@ -27,8 +27,8 @@ namespace Papercut.Message
 
     using MimeKit;
 
-    using Papercut.Core.Helper;
-    using Papercut.Core.Message;
+    using Papercut.Common.Extensions;
+    using Papercut.Core.Domain.Message;
 
     using Serilog;
 

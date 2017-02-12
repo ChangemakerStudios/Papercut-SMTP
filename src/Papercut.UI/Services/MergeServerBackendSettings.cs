@@ -20,9 +20,11 @@ namespace Papercut.Services
     using System;
     using System.Linq;
 
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Events;
+    using Papercut.Core.Domain.Paths;
+    using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
     using Papercut.Properties;
 
@@ -49,17 +51,18 @@ namespace Papercut.Services
                 s => s.StartsWith(@event.MessageWritePath, StringComparison.OrdinalIgnoreCase)))
             {
                 // add it for watching...
-                Settings.Default.MessagePaths = string.Format("{0};{1}",
-                    Settings.Default.MessagePaths,
-                    @event.MessageWritePath);
+                Settings.Default.MessagePaths = $"{Settings.Default.MessagePaths};{@event.MessageWritePath}";
             }
+
+            var previousSettings = new Settings();
+            Settings.Default.CopyTo(previousSettings);
 
             // save ip:port bindings as our own to keep in sync...
             Settings.Default.IP = @event.IP;
             Settings.Default.Port = @event.Port;
             Settings.Default.Save();
 
-            this._messageBus.Publish(new SettingsUpdatedEvent());
+            this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
         }
     }
 }

@@ -22,7 +22,8 @@ namespace Papercut.Network.Helpers
     using System.Net.Sockets;
     using System.Text;
 
-    using Papercut.Core.Helper;
+    using Papercut.Common.Extensions;
+    using Papercut.Core.Infrastructure.Json;
 
     public static class PapercutProtocolHelpers
     {

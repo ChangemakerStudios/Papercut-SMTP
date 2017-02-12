@@ -22,7 +22,7 @@ namespace Papercut.Rules
     using System.Collections.ObjectModel;
     using System.IO;
 
-    using Papercut.Core.Rules;
+    using Papercut.Core.Domain.Rules;
 
     using Serilog;
 

@@ -21,8 +21,8 @@ namespace Papercut.Services
 
     using Microsoft.Win32;
 
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
     using Papercut.Events;
     using Papercut.Properties;
 
@@ -44,20 +44,30 @@ namespace Papercut.Services
 
         public void Handle(SettingsUpdatedEvent @event)
         {
+            // check if the setting changed
+            if (@event.PreviousSettings.RunOnStartup == @event.NewSettings.RunOnStartup)
+                return;
+
             try
             {
                 RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(AppStartupKey, true);
 
-                // is key currenctly set to this app executable?
-                bool runOnStartup = registryKey.GetValue(App.GlobalName, null).ToType<string>()
-                                    == App.ExecutablePath;
+                if (registryKey == null)
+                {
+                    this._logger.Error("Failure opening registry key {AppStartupKey}", AppStartupKey);
+                    return;
+                }
+
+                // is key currently set to this app executable?
+                bool runOnStartup = registryKey.GetValue(App.GlobalName, null)
+                                        .ToType<string>() == App.ExecutablePath;
 
                 if (Settings.Default.RunOnStartup && !runOnStartup)
                 {
                     // turn on..
                     _logger.Information(
                         "Setting AppStartup Registry {Key} to Run Papercut at {ExecutablePath}",
-                        string.Format("{0}\\{1}", AppStartupKey, App.GlobalName),
+                        $"{AppStartupKey}\\{App.GlobalName}",
                         App.ExecutablePath);
 
                     registryKey.SetValue(App.GlobalName, App.ExecutablePath);
@@ -67,7 +77,7 @@ namespace Papercut.Services
                     // turn off...
                     _logger.Information(
                         "Attempting to Delete AppStartup Registry {Key}",
-                        string.Format("{0}\\{1}", AppStartupKey, App.GlobalName));
+                        $"{AppStartupKey}\\{App.GlobalName}");
 
                     registryKey.DeleteValue(App.GlobalName, false);
                 }

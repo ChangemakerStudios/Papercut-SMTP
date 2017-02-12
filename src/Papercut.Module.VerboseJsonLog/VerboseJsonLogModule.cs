@@ -20,8 +20,9 @@ namespace Papercut.Module.VerboseJsonLog
     using System.Collections.Generic;
     using Autofac;
     using Autofac.Core;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Plugins;
+
+    using Papercut.Common.Helper;
+    using Papercut.Core.Infrastructure.Plugins;
 
     public class VerboseJsonLogModule : Module, IPluginModule
     {

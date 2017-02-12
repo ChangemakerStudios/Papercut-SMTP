@@ -24,9 +24,10 @@ namespace Papercut.Rules
 
     using Newtonsoft.Json;
 
+    using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Rules;
+    using Papercut.Core.Domain.Rules;
 
     [Serializable]
     public abstract class RuleBase : IRule

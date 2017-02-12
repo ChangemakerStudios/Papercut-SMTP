@@ -23,7 +23,8 @@ namespace Papercut.Helpers
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
 
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.Logging;
 
     using Serilog.Events;
 

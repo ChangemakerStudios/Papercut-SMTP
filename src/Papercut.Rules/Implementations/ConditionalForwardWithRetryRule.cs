@@ -21,7 +21,8 @@ namespace Papercut.Rules.Implementations
     using System.ComponentModel;
     using System.Linq;
 
-    using Papercut.Core.Helper;
+    using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
 
     [Serializable]
     public class ConditionalForwardWithRetryRule : ConditionalForwardRule

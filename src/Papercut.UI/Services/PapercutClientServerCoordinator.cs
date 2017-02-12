@@ -21,8 +21,9 @@ namespace Papercut.Services
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
 
-    using Papercut.Core.Events;
-    using Papercut.Core.Network;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Network;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Network;
     using Papercut.Network.Protocols;
     using Papercut.Network.Smtp;

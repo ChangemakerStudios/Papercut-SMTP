@@ -23,9 +23,7 @@ namespace Papercut.Network.SmtpCommands
     using System.Linq;
     using System.Threading.Tasks;
 
-    using Papercut.Core.Helper;
-    using Papercut.Core.Message;
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Message;
     using Papercut.Network.Protocols;
 
     using Serilog;

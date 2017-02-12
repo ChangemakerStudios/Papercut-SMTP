@@ -19,7 +19,8 @@ namespace Papercut.Module.Seq
 {
     using Autofac;
     using Autofac.Core;
-    using Papercut.Core.Plugins;
+
+    using Papercut.Core.Infrastructure.Plugins;
 
     public class SeqLoggingModule : Module, IPluginModule
     {

@@ -23,9 +23,11 @@ namespace Papercut.Services
     using System.Reactive.Linq;
     using System.Runtime.CompilerServices;
 
+    using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Events;
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Network;
+    using Papercut.Core.Domain.Network.Smtp;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Network.Protocols;
     using Papercut.Network.Smtp;
@@ -93,7 +95,10 @@ namespace Papercut.Services
 
         public void Handle(SettingsUpdatedEvent @event)
         {
-            if (SmtpServerEnabled) ListenSmtpServer();
+            if (!SmtpServerEnabled) return;
+            if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
+
+            ListenSmtpServer();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -24,9 +24,8 @@ namespace Papercut.Rules.Implementations
     using MimeKit;
 
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Message;
-    using Papercut.Core.Rules;
+    using Papercut.Core.Domain.Message;
+    using Papercut.Core.Domain.Rules;
     using Papercut.Message;
     using Papercut.Message.Helpers;
 

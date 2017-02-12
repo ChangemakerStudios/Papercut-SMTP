@@ -20,8 +20,9 @@ namespace Papercut.Services
     using System;
     using System.IO;
 
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Application;
+    using Papercut.Core.Infrastructure.Lifecycle;
 
     using Serilog;
 

@@ -19,8 +19,9 @@ namespace Papercut.Service.Services
 {
     using System.IO;
 
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Paths;
+    using Papercut.Core.Infrastructure.Network;
     using Papercut.Service.Helpers;
 
     public class ReplyWithDefaultMessageSavePathService : IEventHandler<AppProcessExchangeEvent>

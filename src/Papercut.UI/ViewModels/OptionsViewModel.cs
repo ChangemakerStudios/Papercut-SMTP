@@ -26,8 +26,10 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
+    using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
@@ -56,14 +58,14 @@ namespace Papercut.ViewModels
 
         private bool _minimizeToTray;
 
-        private string _selectedTheme;
+        private string _theme;
 
         public OptionsViewModel(IMessageBus messageBus)
         {
             _messageBus = messageBus;
             IPs = new ObservableCollection<string>(_ipList.Value);
-            SortOrders = new ObservableCollection<string>(Enum.GetNames(typeof(ListSortDirection)));
-            Themes = new ObservableCollection<string>(Enum.GetNames(typeof(Themes)));
+            SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
+            Themes = new ObservableCollection<string>(EnumHelpers.GetNames<Themes>());
             Load();
         }
 
@@ -87,16 +89,16 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string SelectedTheme
+        public string Theme
         {
             get
             {
-                return this._selectedTheme;
+                return this._theme;
             }
             set
             {
-                this._selectedTheme = value;
-                NotifyOfPropertyChange(() => this.SelectedTheme);
+                this._theme = value;
+                NotifyOfPropertyChange(() => this.Theme);
             }
         }
 
@@ -171,15 +173,7 @@ namespace Papercut.ViewModels
 
         public void Load()
         {
-            _ip = Settings.Default.IP;
-            _port = Settings.Default.Port;
-
-            _messageListSortOrder = Settings.Default.MessageListSortOrder;
-            _startMinimized = Settings.Default.StartMinimized;
-            _minimizeToTray = Settings.Default.MinimizeToTray;
-            _minimizeOnClose = Settings.Default.MinimizeOnClose;
-            _runOnStartup = Settings.Default.RunOnStartup;
-            _selectedTheme = Settings.Default.Theme;
+            Settings.Default.CopyTo(this);
         }
 
         static IList<string> GetIPs()
@@ -198,19 +192,14 @@ namespace Papercut.ViewModels
 
         public void Save()
         {
-            Settings.Default.IP = IP;
-            Settings.Default.Port = Port;
+            var previousSettings = new Settings();
+            Settings.Default.CopyTo(previousSettings);
 
-            Settings.Default.RunOnStartup = RunOnStartup;
-            Settings.Default.StartMinimized = StartMinimized;
-            Settings.Default.MinimizeOnClose = MinimizeOnClose;
-            Settings.Default.MinimizeToTray = MinimizeToTray;
-            Settings.Default.MessageListSortOrder = MessageListSortOrder;
-            Settings.Default.Theme = SelectedTheme;
+            this.CopyTo(Settings.Default);
 
             Settings.Default.Save();
 
-            this._messageBus.Publish(new SettingsUpdatedEvent());
+            this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
 
             TryClose(true);
         }

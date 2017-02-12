@@ -20,7 +20,6 @@ namespace Papercut.Rules.Implementations
 {
     using System;
 
-    using Papercut.Core.Message;
     using Papercut.Message;
 
     using Serilog;

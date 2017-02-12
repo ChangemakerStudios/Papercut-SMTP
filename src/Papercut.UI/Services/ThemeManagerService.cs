@@ -22,7 +22,8 @@ namespace Papercut.Services
 
     using MahApps.Metro;
 
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Properties;
 
@@ -35,6 +36,8 @@ namespace Papercut.Services
 
         public void Handle(SettingsUpdatedEvent @event)
         {
+            if (@event.PreviousSettings.Theme == @event.NewSettings.Theme) return;
+
             SetTheme();
         }
 

@@ -27,8 +27,8 @@ namespace Papercut.Message.Helpers
 
     using MimeKit;
 
+    using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
 
     public static class MessageHelper
     {

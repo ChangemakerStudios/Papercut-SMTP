@@ -32,7 +32,9 @@ namespace Papercut.ViewModels
     using MahApps.Metro.Controls;
     using MahApps.Metro.Controls.Dialogs;
 
-    using Papercut.Core.Events;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Network.Smtp;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;

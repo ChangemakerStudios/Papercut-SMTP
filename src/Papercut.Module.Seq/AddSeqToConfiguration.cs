@@ -17,8 +17,9 @@
 
 namespace Papercut.Module.Seq
 {
-    using Papercut.Core.Events;
-    using Papercut.Core.Settings;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Settings;
+    using Papercut.Core.Infrastructure.Logging;
 
     using Serilog;
     using Serilog.Events;

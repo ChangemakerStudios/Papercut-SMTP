@@ -24,7 +24,7 @@ namespace Papercut.ViewModels
     using Caliburn.Micro;
 
     using Papercut.Core.Annotations;
-    using Papercut.Core.Rules;
+    using Papercut.Core.Domain.Rules;
     using Papercut.Services;
 
     public class RulesConfigurationViewModel : Screen

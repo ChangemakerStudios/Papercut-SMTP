@@ -20,6 +20,7 @@ namespace Papercut.Helpers
     using System;
     using System.Linq;
     using Caliburn.Micro;
+
     using Papercut.Core.Annotations;
     using Papercut.ViewModels;
 

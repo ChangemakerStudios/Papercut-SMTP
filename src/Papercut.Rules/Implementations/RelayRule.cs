@@ -23,7 +23,7 @@ namespace Papercut.Rules.Implementations
     using System.ComponentModel;
     using System.Linq;
 
-    using Papercut.Core.Helper;
+    using Papercut.Common.Extensions;
 
     [Serializable]
     public class RelayRule : RuleBase

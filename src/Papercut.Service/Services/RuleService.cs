@@ -22,9 +22,11 @@ namespace Papercut.Service.Services
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Papercut.Core.Events;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Rules;
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
+    using Papercut.Core.Domain.Message;
+    using Papercut.Core.Domain.Rules;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Rules;
 
     using Serilog;

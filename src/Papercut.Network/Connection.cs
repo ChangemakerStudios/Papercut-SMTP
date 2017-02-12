@@ -23,9 +23,9 @@ namespace Papercut.Network
     using System.Text;
     using System.Threading.Tasks;
 
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Network;
+    using Papercut.Core.Domain.Network;
 
     using Serilog;
 

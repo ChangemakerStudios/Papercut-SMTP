@@ -23,9 +23,10 @@ namespace Papercut.Message
     using System.Linq;
     using System.Threading;
 
-    using Papercut.Core.Configuration;
-    using Papercut.Core.Helper;
-    using Papercut.Core.Message;
+    using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
+    using Papercut.Core.Domain.Message;
+    using Papercut.Core.Domain.Paths;
 
     using Serilog;
 

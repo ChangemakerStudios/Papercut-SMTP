@@ -21,7 +21,6 @@ namespace Papercut.Rules.Implementations
 
     using MimeKit;
 
-    using Papercut.Core.Message;
     using Papercut.Message;
 
     using Serilog;

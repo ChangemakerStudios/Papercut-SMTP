@@ -19,8 +19,6 @@ namespace Papercut.Network.SmtpCommands
 {
     using System.Collections.Generic;
 
-    using Papercut.Core.Helper;
-    using Papercut.Core.Network;
     using Papercut.Network.Protocols;
 
     public class QuitSmtpCommand : BaseSmtpCommand

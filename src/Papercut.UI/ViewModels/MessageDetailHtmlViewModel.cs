@@ -30,8 +30,8 @@ namespace Papercut.ViewModels
 
     using MimeKit;
 
+    using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Helper;
     using Papercut.Helpers;
     using Papercut.Services;
     using Papercut.Views;
