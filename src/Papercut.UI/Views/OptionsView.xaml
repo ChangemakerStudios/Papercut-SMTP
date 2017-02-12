@@ -10,7 +10,7 @@
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:OptionsViewModel}"
-                      Title="{Binding WindowTitle}" Width="313" Height="240" Icon="/Papercut;component/App.ico"
+                      Title="{Binding WindowTitle}" Width="313" Height="290" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="NoResize"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner"
@@ -44,14 +44,18 @@
                 <TextBox Margin="2,2,0,2" Width="100" HorizontalAlignment="Left" Name="Port" />
                 <Label Margin="102,0,0,0">(default is 25)</Label>
             </Grid>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-64" Name="RunOnStartup" VerticalAlignment="Bottom"
-                      Content="Run On Startup" Grid.ColumnSpan="2" Height="18" />
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-18" Name="StartMinimized" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18">Start Minimized</CheckBox>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-41" Name="MinimizeOnClose" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18">Minimize On Close</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-116" Name="RunOnStartup" VerticalAlignment="Bottom"
+                      Content="Run on startup" Grid.ColumnSpan="2" Height="18" />
+            <CheckBox Grid.Row="4" Margin="5,0,5,-47" Name="StartMinimized" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Grid.Column="1">Start minimized</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-93" Name="MinimizeOnClose" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18">Minimize on close</CheckBox>
             <ComboBox Grid.Column="1" Grid.Row="4" Margin="2,3,0,7"
                 x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2">
             </ComboBox>
             <Label Grid.Column="0" Grid.Row="4" Content="Message Sort Order:" Margin="0,3,3,4"/>
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-70" Name="MinimizeToTray" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Content="Minimize to tray"/>
+            <Label Grid.Column="0" Grid.Row="4" Content="Theme:" Margin="0,33,3,-26"/>
+            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2,33,0,-23"
+                x:Name="Themes" SelectedItem="{Binding SelectedTheme}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2"/>
         </Grid>
     </DockPanel>
 </controls:MetroWindow>

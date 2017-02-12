@@ -332,8 +332,11 @@ namespace Papercut.ViewModels
 
             _window.StateChanged += (sender, args) =>
             {
-                // Hide the window if minimized so it doesn't show up on the task bar
-                if (_window.WindowState == WindowState.Minimized) _window.Hide();
+                if (_window.WindowState == WindowState.Minimized && Settings.Default.MinimizeToTray)
+                {
+                    // Hide the window if minimized so it doesn't show up on the task bar
+                    _window.Hide();
+                }
             };
 
             _window.Closing += (sender, args) =>
