@@ -10,7 +10,7 @@ after_build:
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release\Papercut.exe.*
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release\Readme.eml
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release\Papercut.Module.*.dll
-  - 7z rm Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.Module.*.dll \plugins\
+  - 7z rn Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.Module.*.dll \plugins\
   - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.zip
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\Papercut.Service.*
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Install-Papercut-Service.bat
