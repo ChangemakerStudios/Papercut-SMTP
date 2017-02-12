@@ -61,7 +61,7 @@
     <Compile Include="VerboseJsonLogModule.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Papercut.Common\Papercut.Common.csproj">
+    <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
       <Project>{5fa0e4aa-27af-4801-b6ca-8c97dadd6da6}</Project>
       <Name>Papercut.Common</Name>
     </ProjectReference>

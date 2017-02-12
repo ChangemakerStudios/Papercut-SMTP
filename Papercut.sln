@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Rules", "src\Paper
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Network", "src\Papercut.Network\Papercut.Network.csproj", "{C87AB840-625A-4661-AA36-369ADDC6CF7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Common", "Papercut.Common\Papercut.Common.csproj", "{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Common", "src\Papercut.Common\Papercut.Common.csproj", "{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
