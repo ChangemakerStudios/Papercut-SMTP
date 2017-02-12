@@ -15,7 +15,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 namespace Papercut.Common.Extensions
 {
     using System;
@@ -23,6 +22,7 @@ namespace Papercut.Common.Extensions
     using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.InteropServices.ComTypes;
 
     using Papercut.Core.Annotations;
 
@@ -44,7 +44,7 @@ namespace Papercut.Common.Extensions
             var str = instance as string;
             if (str != null)
             {
-                if (string.IsNullOrEmpty(str)) return default(T);
+                if (String.IsNullOrEmpty(str)) return default(T);
             }
             else if (!(instance is IConvertible) && !instance.GetType().IsValueType)
             {
@@ -61,17 +61,33 @@ namespace Papercut.Common.Extensions
             return (T) Convert.ChangeType(instance, conversionType);
         }
 
-        /// <summary>
-        ///     If value is not null, calls continueFunc with value, else, returns default(TOut).
-        /// </summary>
-        /// <typeparam name="TIn"></typeparam>
-        /// <typeparam name="TOut"></typeparam>
-        /// <param name="value"></param>
-        /// <param name="continueFunc"></param>
-        /// <returns></returns>
-        public static TOut IfNotNull<TIn, TOut>(this TIn value, Func<TIn, TOut> continueFunc)
+        public static void CopyTo<TFrom, TTo>([NotNull] this TFrom obj, TTo other)
+            where TFrom : class
+            where TTo : class
         {
-            return value.IsDefault() ? default(TOut) : continueFunc(value);
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+
+            var otherProps = other.GetType().GetProperties(
+                BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance |
+                BindingFlags.SetProperty);
+
+            foreach (var props in obj.GetType().GetProperties(
+                BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance |
+                BindingFlags.GetProperty))
+            {
+                var matchingProp = otherProps.FirstOrDefault(s => s.Name.Equals(props.Name, StringComparison.OrdinalIgnoreCase));
+
+                if (matchingProp != null)
+                {
+                    var value = props.GetValue(obj, null);
+                    matchingProp.SetValue(other, value, null);
+                }
+            }
+        }
+
+        public static bool IsAny<T>(this T value, params T[] items)
+        {
+            return items.Contains(value);
         }
 
         /// <summary>

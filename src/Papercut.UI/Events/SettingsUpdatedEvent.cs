@@ -18,8 +18,18 @@
 namespace Papercut.Events
 {
     using Papercut.Common.Domain;
+    using Papercut.Properties;
 
     public class SettingsUpdatedEvent : IEvent
     {
+        public Settings PreviousSettings { get; }
+
+        public Settings NewSettings { get; }
+
+        public SettingsUpdatedEvent(Settings previousSettings, Settings newSettings = null)
+        {
+            this.PreviousSettings = previousSettings;
+            this.NewSettings = newSettings ?? Settings.Default;
+        }
     }
 }

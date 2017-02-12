@@ -25,6 +25,7 @@ namespace Papercut.Core.Domain.Paths
     using System.Text.RegularExpressions;
 
     using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
 
     using Serilog;
 
@@ -51,7 +52,7 @@ namespace Papercut.Core.Domain.Paths
 
             foreach (
                 Environment.SpecialFolder specialPath in
-                    GeneralExtensions.EnumAsList<Environment.SpecialFolder>())
+                    EnumHelpers.GetEnumList<Environment.SpecialFolder>())
             {
                 string specialPathName = specialPath.ToString();
 

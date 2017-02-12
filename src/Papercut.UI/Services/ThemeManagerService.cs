@@ -36,6 +36,8 @@ namespace Papercut.Services
 
         public void Handle(SettingsUpdatedEvent @event)
         {
+            if (@event.PreviousSettings.Theme == @event.NewSettings.Theme) return;
+
             SetTheme();
         }
 

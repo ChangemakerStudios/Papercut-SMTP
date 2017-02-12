@@ -114,6 +114,9 @@ namespace Papercut.Services
         {
             if (!IsBackendServiceOnline) return;
 
+            // check if the setting changed
+            if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
+
             try
             {
                 using (PapercutClient client = GetClient())

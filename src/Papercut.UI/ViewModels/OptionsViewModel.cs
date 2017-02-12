@@ -27,6 +27,8 @@ namespace Papercut.ViewModels
     using Caliburn.Micro;
 
     using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
     using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
     using Papercut.Helpers;
@@ -62,8 +64,8 @@ namespace Papercut.ViewModels
         {
             _messageBus = messageBus;
             IPs = new ObservableCollection<string>(_ipList.Value);
-            SortOrders = new ObservableCollection<string>(Enum.GetNames(typeof(ListSortDirection)));
-            Themes = new ObservableCollection<string>(Enum.GetNames(typeof(Themes)));
+            SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
+            Themes = new ObservableCollection<string>(EnumHelpers.GetNames<Themes>());
             Load();
         }
 
@@ -171,15 +173,7 @@ namespace Papercut.ViewModels
 
         public void Load()
         {
-            _ip = Settings.Default.IP;
-            _port = Settings.Default.Port;
-
-            _messageListSortOrder = Settings.Default.MessageListSortOrder;
-            _startMinimized = Settings.Default.StartMinimized;
-            _minimizeToTray = Settings.Default.MinimizeToTray;
-            _minimizeOnClose = Settings.Default.MinimizeOnClose;
-            _runOnStartup = Settings.Default.RunOnStartup;
-            _theme = Settings.Default.Theme;
+            Settings.Default.CopyTo(this);
         }
 
         static IList<string> GetIPs()
@@ -198,19 +192,14 @@ namespace Papercut.ViewModels
 
         public void Save()
         {
-            Settings.Default.IP = IP;
-            Settings.Default.Port = Port;
+            var previousSettings = new Settings();
+            Settings.Default.CopyTo(previousSettings);
 
-            Settings.Default.RunOnStartup = RunOnStartup;
-            Settings.Default.StartMinimized = StartMinimized;
-            Settings.Default.MinimizeOnClose = MinimizeOnClose;
-            Settings.Default.MinimizeToTray = MinimizeToTray;
-            Settings.Default.MessageListSortOrder = MessageListSortOrder;
-            Settings.Default.Theme = Theme;
+            this.CopyTo(Settings.Default);
 
             Settings.Default.Save();
 
-            this._messageBus.Publish(new SettingsUpdatedEvent());
+            this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
 
             TryClose(true);
         }

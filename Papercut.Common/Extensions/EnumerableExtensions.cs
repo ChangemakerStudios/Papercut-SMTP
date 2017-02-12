@@ -35,7 +35,7 @@ namespace Papercut.Common.Extensions
 
         public static IEnumerable<string> ToFormattedPairs(this IEnumerable<KeyValuePair<string, Lazy<object>>> keyValuePairs)
         {
-            return keyValuePairs.IfNullEmpty().Select(s => KeyValuePair.Create(s.Key, string.Format("{0}", s.Value.Value)))
+            return keyValuePairs.IfNullEmpty().Select(s => KeyValuePair.Create(s.Key, $"{s.Value.Value}"))
                 .Where(s => s.Value.IsSet())
                 .Select(s => $"{s.Key}: {s.Value}");
         }

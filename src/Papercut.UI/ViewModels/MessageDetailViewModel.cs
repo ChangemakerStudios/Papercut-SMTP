@@ -266,11 +266,11 @@ namespace Papercut.ViewModels
                 var parts = mailMessageEx.BodyParts.OfType<MimePart>().ToList();
                 var mainBody = parts.GetMainBodyTextPart();
 
-                From = mailMessageEx.From.IfNotNull(s => s.ToString()) ?? string.Empty;
-                To = mailMessageEx.To.IfNotNull(s => s.ToString()) ?? string.Empty;
-                CC = mailMessageEx.Cc.IfNotNull(s => s.ToString()) ?? string.Empty;
-                Bcc = mailMessageEx.Bcc.IfNotNull(s => s.ToString()) ?? string.Empty;
-                Date = mailMessageEx.Date.IfNotNull(s => s.ToString()) ?? string.Empty;
+                From = mailMessageEx.From?.ToString() ?? string.Empty;
+                To = mailMessageEx.To?.ToString() ?? string.Empty;
+                CC = mailMessageEx.Cc?.ToString() ?? string.Empty;
+                Bcc = mailMessageEx.Bcc?.ToString() ?? string.Empty;
+                Date = mailMessageEx.Date.ToString();
                 Subject = mailMessageEx.Subject ?? string.Empty;
                 
                 AttachmentCount = parts.GetAttachments().Count();

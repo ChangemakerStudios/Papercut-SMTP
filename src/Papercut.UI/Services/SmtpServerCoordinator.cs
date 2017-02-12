@@ -95,7 +95,10 @@ namespace Papercut.Services
 
         public void Handle(SettingsUpdatedEvent @event)
         {
-            if (SmtpServerEnabled) ListenSmtpServer();
+            if (!SmtpServerEnabled) return;
+            if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
+
+            ListenSmtpServer();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -40,37 +40,8 @@ namespace Papercut.Common.Extensions
             return byteEncoding.GetString(bytes);
         }
 
-        public static bool IsAny<T>(this T value, params T[] items)
-        {
-            return items.Contains(value);
-        }
-
         /// <summary>
-        ///     Gets a enum as a list
-        /// </summary>
-        /// <typeparam name="TEnum"></typeparam>
-        /// <returns></returns>
-        public static List<TEnum> EnumAsList<TEnum>()
-            where TEnum : struct
-        {
-            Type enumType = typeof(TEnum);
-
-            // Can't use type constraints on value types, so have to do check like this
-            if (enumType.BaseType != typeof(Enum))
-                throw new ArgumentException("EnumAsList does not support non-enum types");
-
-            Array enumValArray = Enum.GetValues(enumType);
-
-            var enumValues = new List<TEnum>(enumValArray.Length);
-
-            enumValues.AddRange(
-                enumValArray.Cast<int>().Select(val => (TEnum)Enum.Parse(enumType, val.ToString())));
-
-            return enumValues;
-        }
-
-        /// <summary>
-        ///     To FileSizeFormat... Thank you to "deepee1" on StackOverflow for this elegent solution:
+        ///     To FileSizeFormat... Thank you to "deepee1" on StackOverflow for this elegant solution:
         ///     http://stackoverflow.com/a/4975942
         /// </summary>
         /// <param name="bytes"></param>
@@ -79,7 +50,7 @@ namespace Papercut.Common.Extensions
         {
             string[] suffixes = { "B", "KB", "MB", "GB", "TB", "PB" };
 
-            if (bytes == 0) return string.Format("0{0}", suffixes[0]);
+            if (bytes == 0) return $"0{suffixes[0]}";
 
             var place = Convert.ToInt64(Math.Floor(Math.Log(bytes, 1024)));
 

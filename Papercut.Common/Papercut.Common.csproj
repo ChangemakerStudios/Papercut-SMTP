@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\IEventHandler.cs" />
+    <Compile Include="Helper\EnumHelpers.cs" />
     <Compile Include="Helper\AssemblyHelper.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
