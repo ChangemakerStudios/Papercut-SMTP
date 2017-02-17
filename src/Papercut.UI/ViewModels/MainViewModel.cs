@@ -208,6 +208,10 @@ namespace Papercut.ViewModels
             yield return $@"<span class=""date"">{e.Timestamp:G}</span>";
             yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
             yield return e.RenderMessage();
+            if (e.Exception != null)
+            {
+                yield return $@"<span class=""fatal"">Exception: {e.Exception.Message}</span>";
+            }
             yield return @"</div>";
         }
 
