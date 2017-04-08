@@ -41,7 +41,7 @@ namespace Papercut.Core.Infrastructure.Container
     {
         protected override void Load(ContainerBuilder builder)
         {
-            this.RegisterPluginArchitecture(builder);
+            new RegisterPlugins(Log.Logger).Register(builder, PapercutContainer.ExtensionAssemblies);
 
             //builder.RegisterAssemblyModules(PapercutContainer.ExtensionAssemblies);
 
@@ -91,97 +91,7 @@ namespace Papercut.Core.Infrastructure.Container
                 .AsSelf()
                 .SingleInstance();
 
-            RegisterLogger(builder);
-        }
-
-        private void RegisterPluginArchitecture(ContainerBuilder builder)
-        {
-            var scannableAssemblies = PapercutContainer.ExtensionAssemblies;
-
-            var pluginModules =
-                scannableAssemblies.SelectMany(a => a.GetExportedTypes())
-                    .Where(s =>
-                    {
-                        var interfaces = s.GetInterfaces();
-                        return interfaces.Contains(typeof(IDiscoverableModule)) || interfaces.Contains(typeof(IPluginModule));
-                    })
-                    .Distinct()
-                    .ToList();
-
-            foreach (var pluginType in pluginModules)
-            {
-                try
-                {
-                    // register and load...
-                    var module = Activator.CreateInstance(pluginType) as IDiscoverableModule;
-                    
-                    if (module != null)
-                    {
-                        builder.RegisterModule(module.Module);
-                    }
-
-                    var plugin = module as IPluginModule;
-                    if (plugin != null)
-                    {
-                        PluginStore.Instance.Add(plugin);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error(ex, "Failure Loading Plugin Module Type {PluginModuleType}", pluginType.FullName);
-                }
-            }
-        }
-
-        private static void RegisterLogger(ContainerBuilder builder)
-        {
-            builder.Register(c =>
-            {
-                var appMeta = c.Resolve<IAppMeta>();
-
-                string logFilePath = Path.Combine(
-                    AppDomain.CurrentDomain.BaseDirectory,
-                    "Logs",
-                    $"{appMeta.AppName}.log");
-
-                LoggerConfiguration logConfiguration =
-                    new LoggerConfiguration()
-#if DEBUG
-                        .MinimumLevel.Verbose()
-#else
-                         .MinimumLevel.Information()
-#endif
-                        .Enrich.With<EnvironmentEnricher>()
-                        .Enrich.WithThreadId()
-                        .Enrich.FromLogContext()
-                        .Enrich.WithProperty("AppName", appMeta.AppName)
-                        .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-                        .WriteTo.ColoredConsole()
-                        .WriteTo.RollingFile(logFilePath);
-
-                // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
-                try
-                {
-                    c.Resolve<IMessageBus>().Publish(new ConfigureLoggerEvent(logConfiguration));
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
-                }
-
-                // support self-logging
-                Serilog.Debugging.SelfLog.Out = Console.Error;
-
-                return logConfiguration;
-            }).AsSelf().SingleInstance();
-
-            builder.Register(
-                c =>
-                {
-                    Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
-
-                    return Log.Logger;
-                }).As<ILogger>().SingleInstance();
+            new RegisterLogger().Register(builder);
         }
 
         protected override void AttachToComponentRegistration(
