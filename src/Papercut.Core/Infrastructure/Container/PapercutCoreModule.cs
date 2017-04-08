@@ -139,10 +139,10 @@ namespace Papercut.Core.Infrastructure.Container
             {
                 var appMeta = c.Resolve<IAppMeta>();
 
-                //string logFilePath = Path.Combine(
-                //    AppDomain.CurrentDomain.BaseDirectory,
-                //    "Logs",
-                //    $"{appMeta.AppName}.log");
+                string logFilePath = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "Logs",
+                    $"{appMeta.AppName}.log");
 
                 LoggerConfiguration logConfiguration =
                     new LoggerConfiguration()
@@ -156,8 +156,8 @@ namespace Papercut.Core.Infrastructure.Container
                         .Enrich.FromLogContext()
                         .Enrich.WithProperty("AppName", appMeta.AppName)
                         .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-                        .WriteTo.ColoredConsole();
-                        //.WriteTo.RollingFile(logFilePath);
+                        .WriteTo.ColoredConsole()
+                        .WriteTo.RollingFile(logFilePath);
 
                 // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
                 try
