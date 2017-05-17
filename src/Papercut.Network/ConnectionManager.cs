@@ -122,7 +122,7 @@ namespace Papercut.Network
                             foreach (int key in keys)
                             {
                                 // If they have been idle for too long, disconnect them
-                                if (DateTime.Now < _connections[key].LastActivity.AddMinutes(20))
+                                if (DateTime.Now > _connections[key].LastActivity.AddMinutes(20))
                                 {
                                     Logger.Information(
                                         "Session timeout, disconnecting {ConnectionId}",
