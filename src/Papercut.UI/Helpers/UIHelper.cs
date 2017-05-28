@@ -23,6 +23,7 @@ namespace Papercut.Helpers
     using System.Windows.Controls;
     using System.Windows.Media;
 
+    using MahApps.Metro;
     using MahApps.Metro.Controls;
 
     using Papercut.Core.Annotations;
@@ -49,19 +50,46 @@ namespace Papercut.Helpers
 
         public static void AutoAdjustBorders(this MetroWindow window)
         {
-            var color = Color.FromRgb(66, 178, 231);
+            var brushObjectName = "HighlightBrush";
+
+            var appStyle = ThemeManager.DetectAppStyle(Application.Current);
 
             // Only add borders if above call succeded and Aero Not enabled
+            var resourceDictionary = window.Resources;
+
+            SetBorder(resourceDictionary, appStyle.Item2.Resources[brushObjectName]);
+
+            ThemeManager.IsThemeChanged += (sender, args) =>
+            {
+                SetBorder(resourceDictionary, args.Accent.Resources[brushObjectName]);
+            };
+        }
+
+        private static void SetBorder(ResourceDictionary resourceDictionary, object brush)
+        {
+            TryRemoveFromResourceDictionary(resourceDictionary, "AccentBorderThickness");
+            TryRemoveFromResourceDictionary(resourceDictionary, "AccentBorderBrush");
+            TryRemoveFromResourceDictionary(resourceDictionary, "AccentGlowBrush");
+
             if (_isAeroEnabled)
             {
-                window.Resources.Add("AccentBorderThickness", new Thickness(1));
-                window.Resources.Add("AccentGlowBrush", new SolidColorBrush(color));
+                resourceDictionary.Add("AccentBorderThickness", new Thickness(1));
+                resourceDictionary.Add("AccentGlowBrush", brush);
             }
             else
             {
-                window.Resources.Add("AccentBorderThickness", new Thickness(3));
-                window.Resources.Add("AccentBorderBrush", new SolidColorBrush(color));
+                resourceDictionary.Add("AccentBorderThickness", new Thickness(3));
+                resourceDictionary.Add("AccentBorderBrush", brush);
             }
+        }
+
+        private static bool TryRemoveFromResourceDictionary(ResourceDictionary resourceDictionary, string keyName)
+        {
+            if (!resourceDictionary.Contains(keyName)) return false;
+
+            resourceDictionary.Remove(keyName);
+
+            return true;
         }
 
         public static object GetObjectDataFromPoint([NotNull] this ListBox source, Point point)
