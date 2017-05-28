@@ -117,27 +117,27 @@ namespace Papercut.Network
             try
             {
                 // Receive the rest of the data
-                int bytes = Client.EndReceive(result);
+                int sizeReceived = Client.EndReceive(result);
                 LastActivity = DateTime.Now;
 
                 // Ensure we received bytes
-                if (bytes <= 0 || (_receiveBuffer.Length == 64 && _receiveBuffer[0] == '\0'))
+                if (sizeReceived <= 0 || (_receiveBuffer.Length == 64 && _receiveBuffer[0] == '\0'))
                 {
                     // nothing received, close and return;
                     Close();
                     return false;
                 }
 
-                var incoming = new byte[bytes];
-                Array.Copy(_receiveBuffer, incoming, bytes);
+                var incoming = new byte[sizeReceived];
+                Array.Copy(_receiveBuffer, incoming, sizeReceived);
                 Protocol.ProcessIncomingBuffer(incoming, Encoding);
 
                 // continue receiving...
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Logger.Warning(ex, "Failed to End Receive on Async Socket");
+                Logger.Warning(exception, "Failed to End Receive on Async Socket");
             }
 
             return false;

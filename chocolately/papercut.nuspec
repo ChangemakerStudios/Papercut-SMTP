@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>papercut</id>
-        <version>2016.4.3</version>
+        <version>4.8.0.0</version>
         <title>Papercut</title>
         <authors>Jaben</authors>
         <owners>Jaben</owners>
@@ -20,7 +20,6 @@ Papercut is the answer. Papercut is a simplified SMTP server designed to only re
         <file src="..\src\Papercut.UI\bin\Release\Papercut.application" target="bin\Papercut.application" />
         <file src="..\src\Papercut.UI\bin\Release\Papercut.exe" target="bin\Papercut.exe" />
         <file src="..\src\Papercut.UI\bin\Release\Papercut.exe.config" target="bin\Papercut.exe.config" />
-        <file src="..\src\Papercut.UI\bin\Release\Readme.eml" target="bin\Readme.eml" />
         <file src="..\src\Papercut.UI\bin\Release\Readme.eml" target="bin\Readme.eml" />
         <file src="tools\Papercut.exe.gui" target="bin\Papercut.exe.gui" />
     </files>

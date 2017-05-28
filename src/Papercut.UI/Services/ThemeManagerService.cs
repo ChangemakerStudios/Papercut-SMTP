@@ -18,6 +18,7 @@
 
 namespace Papercut.Services
 {
+    using System.Linq;
     using System.Windows;
 
     using MahApps.Metro;

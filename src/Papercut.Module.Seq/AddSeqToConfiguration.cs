@@ -37,8 +37,9 @@ namespace Papercut.Module.Seq
         {
             var seqEndPoint = _settingStore.Get("SeqEndpoint", "http://localhost:5341");
             var logLevel = _settingStore.Get<LogEventLevel>("SeqLogLevel", LogEventLevel.Verbose);
+            var apiKey = _settingStore.Get<string>("SeqApiKey", (string)null);
 
-            @event.LogConfiguration.WriteTo.Seq(seqEndPoint, logLevel);
+            @event.LogConfiguration.WriteTo.Seq(seqEndPoint, logLevel, apiKey: apiKey);
         }
     }
 }

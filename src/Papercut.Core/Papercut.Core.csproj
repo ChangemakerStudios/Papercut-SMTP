@@ -39,9 +39,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.8.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.10.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Serilog.1.5.14\lib\net40\Serilog.dll</HintPath>
@@ -80,6 +79,7 @@
     <Compile Include="Domain\Paths\IPathTemplatesProvider.cs" />
     <Compile Include="Domain\Paths\MessagePathConfigurator.cs" />
     <Compile Include="Infrastructure\Lifecycle\AppForceShutdownEvent.cs" />
+    <Compile Include="Infrastructure\Logging\RegisterLogger.cs" />
     <Compile Include="Infrastructure\Network\AppProcessExchangeEvent.cs" />
     <Compile Include="Infrastructure\MessageBus\AutofacMessageBus.cs" />
     <Compile Include="Infrastructure\Network\BaseBindEvent.cs" />
@@ -119,6 +119,7 @@
     <Compile Include="Domain\Message\NewMessageEventArgs.cs" />
     <Compile Include="Infrastructure\Container\PapercutContainer.cs" />
     <Compile Include="Infrastructure\Container\PapercutCoreModule.cs" />
+    <Compile Include="Infrastructure\Plugins\RegisterPlugins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Domain\Rules\IRule.cs" />
     <Compile Include="Domain\Rules\IRuleDispatcher.cs" />
