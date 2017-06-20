@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <?define Manufacturer="Changemaker Studios" ?>
+    <?define Version="4.8.0.0" ?>
+    <?define BinPath="bin\$(var.Configuration)\" ?>
+    <?define AppBinPath="..\Papercut.UI\$(var.BinPath)" ?>
+    <?define SrvBinPath="..\Papercut.Service\$(var.BinPath)" ?>
+
+    <Product Id="*"
+             Name="Papercut"
+             Language="1033"
+             Version="$(var.Version)"
+             Manufacturer="$(var.Manufacturer)"
+             UpgradeCode="4ff0774f-3e17-42e1-936f-09877834669a">
+
+        <Package InstallerVersion="405"
+                 Manufacturer="$(var.Manufacturer)"
+                 Compressed="yes" 
+                 InstallScope="perMachine" />
+
+        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+        <MediaTemplate EmbedCab="yes" />
+
+        <FeatureGroupRef Id="InstallFeatures"/>
+    </Product>
+
+    <Fragment>
+        <FeatureGroup Id="InstallFeatures">
+            <Feature Id="FeatureApplication" Title="Papercut Application" Level="1">
+                <ComponentGroupRef Id="ComponentApplication" />
+                <!--<ComponentGroupRef Id="ComponentPlugins" />-->
+            </Feature>
+
+            <Feature Id="FeatureService" Title="Papercut Service" Level="1">
+                <ComponentGroupRef Id="ComponentService" />
+                <!--<ComponentGroupRef Id="ComponentPlugins" />-->
+            </Feature>
+            
+        </FeatureGroup>
+
+    </Fragment>
+
+    <Fragment>
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="ManufacturerFolder" Name="Changemaker Studios">
+                    <Directory Id="INSTALLFOLDER" Name="Papercut">
+                        <Directory Id="PLUGINSFOLDER" Name="Plugins"/>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </Directory>
+    </Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="ComponentApplication" Directory="INSTALLFOLDER">
+            <Component Guid="*" DiskId="1">
+                <File Source="$(var.AppBinPath)Papercut.exe" KeyPath="yes"/>
+            </Component>
+            <Component Guid="*" DiskId="1">
+                <File Source="$(var.AppBinPath)Papercut.exe.config" KeyPath="yes"/>
+            </Component>
+            <Component Guid="*" DiskId="1">
+                <File Source="$(var.AppBinPath)Papercut.exe.manifest" KeyPath="yes"/>
+            </Component>
+            <Component Guid="*" DiskId="1">
+                <File Source="$(var.AppBinPath)Readme.eml" KeyPath="yes"/>
+            </Component>
+        </ComponentGroup>
+
+        <ComponentGroup Id="ComponentService" Directory="INSTALLFOLDER">
+            <Component Guid="*" DiskId="1">
+                <File Source="$(var.SrvBinPath)Papercut.Service.exe" KeyPath="yes"/>
+            </Component>
+            <Component Guid="*" DiskId="1">
+                <File Source="$(var.SrvBinPath)Papercut.Service.exe.config" KeyPath="yes"/>
+            </Component>
+            <Component Guid="*" DiskId="1">
+                <File Source="$(var.SrvBinPath)Papercut.Service.json" KeyPath="yes"/>
+            </Component>
+        </ComponentGroup>
+
+        <!--<ComponentGroup Id="ComponentPlugins" Directory="PLUGINSFOLDER">
+            <Component Guid="*" DiskId="1">
+                <File Source="$(var.AppBinPath)plugins\Papercut.Module.Seq.dll" KeyPath="yes" />
+            </Component>
+            <Component Guid="*" DiskId="1">
+                <File Source="$(var.AppBinPath)plugins\Papercut.Module.VerboseJsonLog.dll" KeyPath="yes" />
+            </Component>
+        </ComponentGroup>-->
+    </Fragment>
+</Wix>
