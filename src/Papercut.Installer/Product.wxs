@@ -1,44 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+     >
 
     <?define Manufacturer="Changemaker Studios" ?>
-    <?define Version="4.8.0.0" ?>
     <?define BinPath="bin\$(var.Configuration)\" ?>
     <?define AppBinPath="..\Papercut.UI\$(var.BinPath)" ?>
     <?define SrvBinPath="..\Papercut.Service\$(var.BinPath)" ?>
+
+    <?ifndef env.APPVEYOR_BUILD_VERSION ?>
+    <?define Version="4.8.0.0" ?>
+    <?else?>
+    <?define Version=$(env.APPVEYOR_BUILD_VERSION) ?>
+    <?endif?>
 
     <Product Id="*"
              Name="Papercut"
              Language="1033"
              Version="$(var.Version)"
              Manufacturer="$(var.Manufacturer)"
-             UpgradeCode="4ff0774f-3e17-42e1-936f-09877834669a">
+             UpgradeCode="4ff0774f-3e17-42e1-936f-09877834669a"
+        >
 
         <Package InstallerVersion="405"
                  Manufacturer="$(var.Manufacturer)"
-                 Compressed="yes" 
+                 Compressed="yes"
                  InstallScope="perMachine" />
 
-        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="no" />
 
         <MediaTemplate EmbedCab="yes" />
 
         <FeatureGroupRef Id="InstallFeatures"/>
+
+        <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+        <Property Id="INSTALLLEVEL" Value="10" />
+
+        <UIRef Id="WixUI_Mondo" />
+
     </Product>
 
     <Fragment>
         <FeatureGroup Id="InstallFeatures">
             <Feature Id="FeatureApplication" Title="Papercut Application" Level="1">
                 <ComponentGroupRef Id="ComponentApplication" />
-                <!--<ComponentGroupRef Id="ComponentPlugins" />-->
             </Feature>
 
             <Feature Id="FeatureService" Title="Papercut Service" Level="1">
                 <ComponentGroupRef Id="ComponentService" />
-                <!--<ComponentGroupRef Id="ComponentPlugins" />-->
             </Feature>
-            
+
+            <?if $(var.Configuration) = Release ?>
+            <Feature Id="FeaturePlugins" Title="Plugins" Level="1">
+                <Feature Id="FeaturePluginsSeq" Title="Papercut Seq Logging" Level="10">
+                    <ComponentRef Id="ComponentPluginsSeq"/>
+                </Feature>
+
+                <Feature Id="FeaturePluginsLog" Title="Papercut Serilog Logging" Level="10">
+                    <ComponentRef Id="ComponentPluginsLog" />
+                </Feature>
+            </Feature>
+            <?endif?>
+
         </FeatureGroup>
 
     </Fragment>
@@ -52,44 +75,91 @@
                     </Directory>
                 </Directory>
             </Directory>
+
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="Changemaker Studios" />
+            </Directory>
         </Directory>
     </Fragment>
 
     <Fragment>
-        <ComponentGroup Id="ComponentApplication" Directory="INSTALLFOLDER">
-            <Component Guid="*" DiskId="1">
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Component Id="Papercut.exe" Guid="*" DiskId="1">
                 <File Source="$(var.AppBinPath)Papercut.exe" KeyPath="yes"/>
             </Component>
-            <Component Guid="*" DiskId="1">
+
+            <Component Id="Papercut.exe.config" Guid="*" DiskId="1">
                 <File Source="$(var.AppBinPath)Papercut.exe.config" KeyPath="yes"/>
             </Component>
-            <Component Guid="*" DiskId="1">
+
+            <Component Id="Papercut.exe.manifest" Guid="*" DiskId="1">
                 <File Source="$(var.AppBinPath)Papercut.exe.manifest" KeyPath="yes"/>
             </Component>
-            <Component Guid="*" DiskId="1">
+
+            <Component Id="Readme.eml" Guid="*" DiskId="1">
                 <File Source="$(var.AppBinPath)Readme.eml" KeyPath="yes"/>
             </Component>
-        </ComponentGroup>
 
-        <ComponentGroup Id="ComponentService" Directory="INSTALLFOLDER">
-            <Component Guid="*" DiskId="1">
+            <Component Id="Papercut.Service.exe" Guid="*" DiskId="1">
                 <File Source="$(var.SrvBinPath)Papercut.Service.exe" KeyPath="yes"/>
             </Component>
-            <Component Guid="*" DiskId="1">
+            
+            <Component Id="Papercut.Service.exe.config" Guid="*" DiskId="1">
                 <File Source="$(var.SrvBinPath)Papercut.Service.exe.config" KeyPath="yes"/>
             </Component>
-            <Component Guid="*" DiskId="1">
+            
+            <Component Id="Papercut.Service.json" Guid="*" DiskId="1">
                 <File Source="$(var.SrvBinPath)Papercut.Service.json" KeyPath="yes"/>
             </Component>
+
+        </DirectoryRef>
+
+        <DirectoryRef Id="ApplicationProgramsFolder">
+            <Component Id="ApplicationShortcut" Guid="8B319445-90CE-490E-A9E4-E2834E1C76E5">
+
+                <Shortcut Id="ApplicationStartMenuShortcut"
+                          Name="Papercut"
+                          Description="Launch Papercut"
+                          Target="[#Papercut.exe]"
+                          WorkingDirectory="INSTALLFOLDER"/>
+
+                <RemoveFolder Id="CleanUpShortCut"
+                              Directory="ApplicationProgramsFolder"
+                              On="uninstall"/>
+
+                <RegistryValue Root="HKCU" Key="Software\Microsoft\Papercut"
+                               Name="installed"
+                               Type="integer"
+                               Value="1"
+                               KeyPath="yes"/>
+            </Component>
+        </DirectoryRef>
+    </Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="ComponentApplication">
+            <ComponentRef Id="Papercut.exe"/>
+            <ComponentRef Id="Papercut.exe.config"/>
+            <ComponentRef Id="Papercut.exe.manifest"/>
+            <ComponentRef Id="Readme.eml"/>
+            <ComponentRef Id="ApplicationShortcut"/>
         </ComponentGroup>
 
-        <!--<ComponentGroup Id="ComponentPlugins" Directory="PLUGINSFOLDER">
-            <Component Guid="*" DiskId="1">
-                <File Source="$(var.AppBinPath)plugins\Papercut.Module.Seq.dll" KeyPath="yes" />
+        <ComponentGroup Id="ComponentService">
+            <ComponentRef Id="Papercut.Service.exe"/>
+            <ComponentRef Id="Papercut.Service.exe.config"/>
+            <ComponentRef Id="Papercut.Service.json"/>
+        </ComponentGroup>
+        <?if $(var.Configuration) = Release ?>
+
+        <ComponentGroup Id="ComponentPlugins" Directory="PLUGINSFOLDER">
+            <Component Id="ComponentPluginsSeq" Guid="*" DiskId="1">
+                <File Source="..\Papercut.Module.Seq\bin\$(var.Configuration)\Papercut.Module.Seq.dll" KeyPath="yes" />
             </Component>
-            <Component Guid="*" DiskId="1">
-                <File Source="$(var.AppBinPath)plugins\Papercut.Module.VerboseJsonLog.dll" KeyPath="yes" />
+            <Component Id="ComponentPluginsLog" Guid="*" DiskId="1">
+                <File Source="..\Papercut.Module.VerboseJsonLog\bin\$(var.Configuration)\Papercut.Module.VerboseJsonLog.dll" KeyPath="yes" />
             </Component>
-        </ComponentGroup>-->
+        </ComponentGroup>
+    <?endif?>
     </Fragment>
 </Wix>
