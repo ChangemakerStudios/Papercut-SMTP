@@ -100,6 +100,8 @@ namespace Papercut.Network
         public int Id { get; protected set; }
 
         public DateTime LastActivity { get; set; }
+        
+        public Encoding Encoding { get; set; } = Encoding.UTF8;
 
         #endregion
 
@@ -217,8 +219,6 @@ namespace Papercut.Network
 
             return TaskHelpers.FromResult(0);
         }
-
-        public Encoding Encoding { get; set; } = Encoding.ASCII;
 
         #endregion
     }
