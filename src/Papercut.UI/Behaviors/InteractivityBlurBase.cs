@@ -34,8 +34,8 @@ namespace Papercut.Behaviors
 
         public int BlurRadius
         {
-            get => (int)GetValue(BlurRadiusProperty);
-            set => SetValue(BlurRadiusProperty, value);
+            get { return (int) GetValue(BlurRadiusProperty); }
+            set { SetValue(BlurRadiusProperty, value); }
         }
 
         protected virtual BlurEffect GetBlurEffect()
