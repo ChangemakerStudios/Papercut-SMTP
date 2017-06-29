@@ -33,6 +33,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Papercut.Installer", "src\Papercut.Installer\Papercut.Installer.wixproj", "{BE653826-1E09-4905-B03D-2A68633BE2F8}"
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Papercut.Bootstrapper", "src\Papercut.Bootstrapper\Papercut.Bootstrapper.wixproj", "{72719C72-122E-4313-8A57-0A0FC666BA75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -119,6 +121,14 @@ Global
 		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|Any CPU.Build.0 = Release|x86
 		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|x86.ActiveCfg = Release|x86
 		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|x86.Build.0 = Release|x86
+		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|Any CPU.Build.0 = Debug|x86
+		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|x86.ActiveCfg = Debug|x86
+		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|x86.Build.0 = Debug|x86
+		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|Any CPU.ActiveCfg = Release|x86
+		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|Any CPU.Build.0 = Release|x86
+		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|x86.ActiveCfg = Release|x86
+		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,5 +137,6 @@ Global
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
 		{F60D44E1-100E-464A-A280-CA6BAF652177} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
 		{BE653826-1E09-4905-B03D-2A68633BE2F8} = {35B8CB67-143F-44FA-9481-4DE42ECC1091}
+		{72719C72-122E-4313-8A57-0A0FC666BA75} = {35B8CB67-143F-44FA-9481-4DE42ECC1091}
 	EndGlobalSection
 EndGlobal

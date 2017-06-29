@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+     xmlns:fw="http://schemas.microsoft.com/wix/FirewallExtension"
      >
 
     <?define Manufacturer="Changemaker Studios" ?>
@@ -33,10 +34,12 @@
 
         <FeatureGroupRef Id="InstallFeatures"/>
 
-        <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-        <Property Id="INSTALLLEVEL" Value="10" />
+        <Property Id="WIXUI_INSTALLDIR"   Value="INSTALLDIR" />
+        <Property Id="INSTALLLEVEL"       Value="10" />
+        <WixVariable Id="WixUIBannerBmp"  Value="Resources\Papercut-banner.bmp" />
+        <WixVariable Id="WixUIDialogBmp"  Value="Resources\Papercut-dialog.bmp" />
 
-        <UIRef Id="WixUI_Mondo" />
+        <UIRef Id="UI_FeatureTree" />
 
     </Product>
 
@@ -101,7 +104,34 @@
             </Component>
 
             <Component Id="Papercut.Service.exe" Guid="*" DiskId="1">
-                <File Source="$(var.SrvBinPath)Papercut.Service.exe" KeyPath="yes"/>
+                <File Id="PapercutServiceExe" Source="$(var.SrvBinPath)Papercut.Service.exe" KeyPath="yes"/>
+
+
+                <ServiceInstall Id="PapercutService"
+                                DisplayName="Papercut SMTP Service"
+                                Name="PapercutServerService"
+                                Description="Papercut SMTP Backend Service"
+                                ErrorControl="normal"
+                                Start="auto"
+                                Type="ownProcess"
+                                Account="LOCALSYSTEM"
+                                Vital="yes"
+                                Interactive="no">
+                </ServiceInstall>
+
+                <ServiceControl Id="PapercutServiceControl"
+                                Name="PapercutServerService"
+                                Stop="uninstall"
+                                Remove="uninstall"
+                                Wait="yes"/>
+
+                <fw:FirewallException Id="PapercutServerException"
+                                      Name="Papercut SMTP Backend Service"
+                                      Program="[#PapercutServiceExe]"
+                                      IgnoreFailure="yes"
+                                      Protocol="tcp"
+                                      Scope="localSubnet"/>
+
             </Component>
             
             <Component Id="Papercut.Service.exe.config" Guid="*" DiskId="1">
