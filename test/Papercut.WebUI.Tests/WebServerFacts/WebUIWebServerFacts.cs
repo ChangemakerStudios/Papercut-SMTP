@@ -16,27 +16,29 @@
 // limitations under the License. 
 
 
-namespace Papercut.WebUI
+namespace Papercut.WebUI.Test.WebServerFacts
 {
-    using Autofac;
-    using Autofac.Core;
+    using System.Net;
 
-    using Core.Infrastructure.Lifecycle;
-    using Core.Infrastructure.Plugins;
+    using Autofac;
 
     using Common.Domain;
 
-    public class WebUIPluginModule : Module, IPluginModule
-    {
-        public IModule Module => this;
-        public string Name => "WebUI";
-        public string Version => "1.0.0";
-        public string Description => "Provides a web UI to manage the email messages for Papercut.";
+    using Core.Domain.Application;
+    using Core.Infrastructure.Lifecycle;
 
-        protected override void Load(ContainerBuilder builder)
+    using Xunit;
+
+    public class WebUIWebServerFacts : FactsBase
+    {
+        [Fact]
+        void should_bootstrap_http_server_and_serve_health_check()
         {
-            builder.RegisterType<WebServer>().As<IEventHandler<PapercutServiceReadyEvent>>().SingleInstance();
-            base.Load(builder);
+            Scope.Resolve<IMessageBus>().Publish(new PapercutServiceReadyEvent {AppMeta = Scope.Resolve<IAppMeta>()});
+
+            var content = new WebClient().DownloadString($"{BaseAddress}/health");
+
+            Assert.Equal("Papercut WebUI Server Start Success", content);
         }
     }
 }

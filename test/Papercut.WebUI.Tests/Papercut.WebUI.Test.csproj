@@ -7,8 +7,8 @@
     <ProjectGuid>{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Papercut.WebUI.Tests</RootNamespace>
-    <AssemblyName>Papercut.WebUI.Tests</AssemblyName>
+    <RootNamespace>Papercut.WebUI.Test</RootNamespace>
+    <AssemblyName>Papercut.WebUI.Test</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -52,7 +52,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="WebUIWebServerFacts.cs" />
+    <Compile Include="FactsBase.cs" />
+    <Compile Include="WebServerFacts\WebUIWebServerFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -72,6 +73,9 @@
       <Project>{a1c924f3-3cfb-4844-b79f-8bffec60eebf}</Project>
       <Name>Papercut.WebUI</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MessageFacts\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

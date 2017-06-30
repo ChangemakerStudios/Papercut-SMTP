@@ -33,7 +33,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.WebUI", "src\Paper
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2D6337D4-FD59-49E0-9209-4B06219DB29D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.WebUI.Tests", "test\Papercut.WebUI.Tests\Papercut.WebUI.Tests.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.WebUI.Test", "test\Papercut.WebUI.Tests\Papercut.WebUI.Test.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

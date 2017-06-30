@@ -18,25 +18,29 @@
 
 namespace Papercut.WebUI
 {
-    using Autofac;
-    using Autofac.Core;
-
-    using Core.Infrastructure.Lifecycle;
-    using Core.Infrastructure.Plugins;
+    using System;
+    using System.Web.Http;
+    using System.Web.Http.SelfHost;
 
     using Common.Domain;
 
-    public class WebUIPluginModule : Module, IPluginModule
-    {
-        public IModule Module => this;
-        public string Name => "WebUI";
-        public string Version => "1.0.0";
-        public string Description => "Provides a web UI to manage the email messages for Papercut.";
+    using Core.Infrastructure.Lifecycle;
 
-        protected override void Load(ContainerBuilder builder)
+    class WebServer : IEventHandler<PapercutServiceReadyEvent>
+    {
+        const string baseAddress = "http://localhost:6789";
+
+        public void Handle(PapercutServiceReadyEvent @event)
         {
-            builder.RegisterType<WebServer>().As<IEventHandler<PapercutServiceReadyEvent>>().SingleInstance();
-            base.Load(builder);
+            var configuration = new HttpSelfHostConfiguration(baseAddress);
+
+            configuration.Routes.MapHttpRoute("health", "health", new {controller = "Health"});
+
+            Console.WriteLine("WebUI Server Start ...");
+
+            var server = new HttpSelfHostServer(configuration);
+
+            server.OpenAsync().Wait();
         }
     }
 }

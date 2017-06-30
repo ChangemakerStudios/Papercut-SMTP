@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\HealthController.cs" />
+    <Compile Include="WebServer.cs" />
     <Compile Include="WebUIPluginModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
