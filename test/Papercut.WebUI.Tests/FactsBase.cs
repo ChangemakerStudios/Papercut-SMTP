@@ -19,11 +19,19 @@
 namespace Papercut.WebUI.Test
 {
     using System;
+    using System.Collections.ObjectModel;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
 
     using Autofac;
 
+    using Common.Domain;
+
     using Core.Domain.Application;
+    using Core.Domain.Paths;
     using Core.Infrastructure.Container;
+    using Core.Infrastructure.Lifecycle;
 
     using WebServerFacts;
 
@@ -31,11 +39,15 @@ namespace Papercut.WebUI.Test
     {
         protected ILifetimeScope Scope;
         protected string BaseAddress;
+        readonly WebClient webClient;
 
         public FactsBase()
         {
             BaseAddress = "http://localhost:6789";
+            webClient = new WebClient();
+
             Scope = BuildContainer(MockDependencies).BeginLifetimeScope();
+            Scope.Resolve<IMessageBus>().Publish(new PapercutServiceReadyEvent { AppMeta = Scope.Resolve<IAppMeta>() });
         }
 
         void IDisposable.Dispose()
@@ -48,17 +60,47 @@ namespace Papercut.WebUI.Test
             PapercutContainer.SpecifiedEntryAssembly = typeof(WebUIWebServerFacts).Assembly;
 
             var builder = new ContainerBuilder();
-
             builder.RegisterModule<PapercutCoreModule>();
 
             configurer?.Invoke(builder);
-
             return builder.Build();
         }
 
         protected virtual void MockDependencies(ContainerBuilder builder)
         {
             builder.Register(c => new ApplicationMeta("Papercut.WebUI.Tests")).As<IAppMeta>().SingleInstance();
+            builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().SingleInstance(); 
         }
+
+
+        protected string ApiPath(string relativePath)
+        {
+            relativePath = relativePath.TrimStart('/');
+            return $"{BaseAddress}/{relativePath}";
+        }
+
+        protected string GetApiContent(string apiRelativePath)
+        {
+            return webClient.DownloadString(ApiPath(apiRelativePath));
+        }
+    }
+
+
+    class ServerPathTemplateProviderService : IPathTemplatesProvider
+    {
+        public ServerPathTemplateProviderService()
+        {
+            var basePath = Path.GetDirectoryName(typeof(ServerPathTemplateProviderService).Assembly.Location);
+            var messageStoragePath = Path.Combine(basePath, "IncomingMessages");
+
+            if (!Directory.Exists(messageStoragePath))
+            {
+                Directory.CreateDirectory(messageStoragePath);
+            }
+
+            PathTemplates = new ObservableCollection<string>(new [] { messageStoragePath });
+        }
+
+        public ObservableCollection<string> PathTemplates { get; private set; }
     }
 }

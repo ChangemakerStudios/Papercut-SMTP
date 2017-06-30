@@ -16,19 +16,28 @@
 // limitations under the License. 
 
 
-namespace Papercut.WebUI.Test.WebServerFacts
+namespace Papercut.WebUI.Test.MessageFacts
 {
-    using System.Net;
+    using Autofac;
+    using Message;
+    using MimeKit;
     using Xunit;
 
-    public class WebUIWebServerFacts : FactsBase
+    public class LoadMessageFacts : FactsBase
     {
         [Fact]
-        void should_bootstrap_http_server_and_serve_health_check()
+        void should_load_messages_after_send()
         {
-            var content = new WebClient().DownloadString($"{BaseAddress}/health");
+            var messageRepository = Scope.Resolve<MessageRepository>();
 
-            Assert.Equal("Papercut WebUI Server Start Success", content);
+            var message = new MimeMessage()
+            {
+                From = { new MailboxAddress("mffen@gmail.com") }
+            };
+            messageRepository.SaveMessage(fs => message.WriteTo(fs));
+
+            var content = GetApiContent("/messages");
+            Assert.NotNull(content);
         }
     }
 }
