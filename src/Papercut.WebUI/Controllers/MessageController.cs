@@ -18,19 +18,33 @@
 
 namespace Papercut.WebUI.Controllers
 {
+    using System.Linq;
     using System.Net;
     using System.Net.Http;
-    using System.Text;
     using System.Web.Http;
 
-    public class HealthController : ApiController
+    using Autofac;
+
+    using Message;
+
+    using Models;
+
+    public class MessageController : ApiController
     {
-        [HttpGet]
-        public HttpResponseMessage Check()
+        readonly MessageRepository messageRepository;
+        readonly MimeMessageLoader messageLoader;
+
+        public MessageController(MessageRepository messageRepository, MimeMessageLoader messageLoader)
         {
-            var response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StringContent("Papercut WebUI Server Start Success", Encoding.UTF8);
-            return response;
+            this.messageRepository = messageRepository;
+            this.messageLoader = messageLoader;
+        }
+
+        [HttpGet]
+        public HttpResponseMessage GetAll()
+        {
+            var messages = messageRepository.LoadMessages().Select(e => new MimeMessageModel(e, messageLoader)).ToList();
+            return Request.CreateResponse(HttpStatusCode.OK, messages);
         }
     }
 }
