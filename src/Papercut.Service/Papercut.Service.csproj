@@ -166,10 +166,6 @@
       <Project>{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}</Project>
       <Name>Papercut.Rules</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Papercut.WebUI\Papercut.WebUI.csproj">
-      <Project>{a1c924f3-3cfb-4844-b79f-8bffec60eebf}</Project>
-      <Name>Papercut.WebUI</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
