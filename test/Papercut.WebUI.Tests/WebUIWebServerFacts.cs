@@ -15,7 +15,7 @@
 
     public class WebUIWebServerFacts : IDisposable
     {
-        private readonly ILifetimeScope _scope;
+        readonly ILifetimeScope _scope;
 
         public WebUIWebServerFacts()
         {
@@ -28,7 +28,8 @@
             _scope.Resolve<IMessageBus>().Publish(new PapercutServiceReadyEvent { AppMeta = _scope.Resolve<IAppMeta>() });
             
             var content = new WebClient().DownloadString("http://localhost:6789/health");
-            Assert.Equal("Papercut WebUI Start Success", content);
+
+            Assert.Equal("Papercut WebUI Server Start Success", content);
         }
 
         void IDisposable.Dispose()
