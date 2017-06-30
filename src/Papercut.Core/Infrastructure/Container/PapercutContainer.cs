@@ -43,12 +43,14 @@ namespace Papercut.Core.Infrastructure.Container
 
         public static readonly object UIScopeTag = new object();
 
+        public static Assembly SpecifiedEntryAssembly { get; set; }
+
         static readonly Lazy<Assembly[]> _extensionAssemblies = new Lazy<Assembly[]>(
             () =>
             {
                 try
                 {
-                    return new AssemblyScanner(_rootLogger)
+                    return new AssemblyScanner(_rootLogger, () => SpecifiedEntryAssembly)
                         .GetAll()
                         .Except(Assembly.GetExecutingAssembly().ToEnumerable())
                         .Where(s => s.FullName.StartsWith("Papercut"))

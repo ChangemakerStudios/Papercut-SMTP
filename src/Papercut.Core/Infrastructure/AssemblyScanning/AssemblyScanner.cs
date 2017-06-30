@@ -31,10 +31,12 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
     public class AssemblyScanner
     {
         readonly Lazy<ILogger> _logger;
+        readonly Func<Assembly> _getEntryAssembly;
 
-        public AssemblyScanner(Lazy<ILogger> logger)
+        public AssemblyScanner(Lazy<ILogger> logger, Func<Assembly> getEntryAssembly = null)
         {
             this._logger = logger;
+            this._getEntryAssembly = getEntryAssembly ?? Assembly.GetEntryAssembly;
         }
 
         IEnumerable<Assembly> GetAssembliesList(IEnumerable<string> pluginDirectories)
@@ -64,7 +66,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
                 .ToList();
 
             // get referenced assemblies...
-            var allReferenced = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().IfNullEmpty().Distinct().ToList();
+            var allReferenced = _getEntryAssembly()?.GetReferencedAssemblies().IfNullEmpty().Distinct().ToList();
 
             // load resource assemblies
             //string[] loadedAssemblyNames = loadedAssemblies.Select(a => a.GetName().Name).ToArray();
