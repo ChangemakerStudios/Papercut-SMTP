@@ -53,6 +53,7 @@ namespace Papercut.WebUI.Test.Base
 
         void IDisposable.Dispose()
         {
+            Client.Dispose();
             Scope.Dispose();
         }
 
@@ -75,32 +76,14 @@ namespace Papercut.WebUI.Test.Base
 
         protected string Get(string uri)
         {
-            try
-            {
-                return Client.DownloadString($"{BaseAddress}/{uri.TrimStart('/')}");
-            }
-            catch (WebException exception)
-            {
-                Console.WriteLine(GetResposneContent(exception.Response.GetResponseStream(), exception.Response.ContentLength));
-                throw;
-            }
+            var downloadString = Client.DownloadString($"{BaseAddress}/{uri.TrimStart('/')}");
+            return downloadString;
         }
 
         protected T Get<T>(string uri)
         {
-            return JsonConvert.DeserializeObject<T>(Get(uri));
-        }
-
-
-
-        string GetResposneContent(Stream responseStream, long length)
-        {
-            using (responseStream)
-            {
-                var buffer = new byte[length];
-                responseStream.Read(buffer, 0, (int)length);
-                return System.Text.Encoding.UTF8.GetString(buffer);
-            }
+            var value = Get(uri);
+            return JsonConvert.DeserializeObject<T>(value);
         }
     }
 }

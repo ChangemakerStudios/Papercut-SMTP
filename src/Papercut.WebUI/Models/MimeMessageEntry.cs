@@ -24,12 +24,11 @@ namespace Papercut.WebUI.Models
 
     using Message;
 
-    public class MimeMessageModel : MessageEntry
+    public class MimeMessageEntry : MessageEntry
     {
         string _subject;
 
-        public MimeMessageModel(MessageEntry entry, MimeMessageLoader loader)
-            : base(entry.File)
+        public MimeMessageEntry(MessageEntry entry, MimeMessageLoader loader) : base(entry.File)
         {
             IsSelected = entry.IsSelected;
 

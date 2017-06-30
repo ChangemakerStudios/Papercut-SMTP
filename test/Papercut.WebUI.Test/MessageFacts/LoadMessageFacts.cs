@@ -28,8 +28,6 @@ namespace Papercut.WebUI.Test.MessageFacts
     using Message;
     using MimeKit;
 
-    using Models;
-
     using Xunit;
 
     public class LoadMessageFacts : ApiFactBase
@@ -45,11 +43,11 @@ namespace Papercut.WebUI.Test.MessageFacts
 
             Scope.Resolve<MessageRepository>().SaveMessage(fs => existedMail.WriteTo(fs));
 
-            var messages = Get<List<MimeMessageModel>>("/messages");
+            var messages = Get<List<dynamic>>("/messages");
             Assert.Equal(1, messages.Count);
 
             var message = messages.First();
-            Assert.Equal("Test", message.Subject);
+            Assert.Equal("Test", message.Subject.ToString());
         }
     }
 }

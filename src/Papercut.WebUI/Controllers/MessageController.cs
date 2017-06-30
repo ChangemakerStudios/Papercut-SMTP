@@ -43,7 +43,7 @@ namespace Papercut.WebUI.Controllers
         [HttpGet]
         public HttpResponseMessage GetAll()
         {
-            var messages = messageRepository.LoadMessages().Select(e => new MimeMessageModel(e, messageLoader)).ToList();
+            var messages = messageRepository.LoadMessages().Select(e => new MimeMessageEntry(e, messageLoader)).ToList();
             return Request.CreateResponse(HttpStatusCode.OK, messages);
         }
     }
