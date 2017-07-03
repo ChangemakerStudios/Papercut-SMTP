@@ -26,19 +26,47 @@ namespace Papercut.WebUI.Test.MessageFacts
     using Base;
 
     using Message;
+
     using MimeKit;
+
+    using Models;
 
     using Xunit;
 
     public class LoadMessageFacts : ApiFactBase
     {
         [Fact]
-        void should_load_messages_after_send()
+        void should_load_all_messages()
         {
             var existedMail = new MimeMessage
             {
                 Subject = "Test",
-                From = { new MailboxAddress("mffen@gmail.com") }
+                From = {new MailboxAddress("mffeng@gmail.com")}
+            };
+
+            Scope.Resolve<MessageRepository>().SaveMessage(fs => existedMail.WriteTo(fs));
+
+            var messages = Get<List<MimeMessageEntry.Dto>>("/messages");
+            Assert.Equal(1, messages.Count);
+
+            var message = messages.First();
+            Assert.NotNull(message.Id);
+            Assert.NotNull(message.CreatedAt);
+            Assert.NotNull(message.Size);
+            Assert.Equal("Test", message.Subject);
+        }
+
+        [Fact]
+        void should_load_message_detail()
+        {
+            var existedMail = new MimeMessage
+            {
+                Subject = "Test",
+                From = {new MailboxAddress("mffeng@gmail.com")},
+                To = { new MailboxAddress("xwliu@gmail.com") },
+                Cc = {new MailboxAddress("jjchen@gmail.com"), new MailboxAddress("ygma@gmail.com") },
+                Bcc = {new MailboxAddress("rzhe@gmail.com"), new MailboxAddress("xueting@gmail.com") },
+                Body = new TextPart("text/plain") {Text = "Hello Buddy"}
             };
 
             Scope.Resolve<MessageRepository>().SaveMessage(fs => existedMail.WriteTo(fs));

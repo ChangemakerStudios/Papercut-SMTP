@@ -84,6 +84,7 @@
   <ItemGroup>
     <Compile Include="Controllers\MessageController.cs" />
     <Compile Include="Controllers\HealthController.cs" />
+    <Compile Include="Models\MessageDetail.cs" />
     <Compile Include="Models\MimeMessageEntry.cs" />
     <Compile Include="WebServer.cs" />
     <Compile Include="WebUIPluginModule.cs" />

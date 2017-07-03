@@ -23,8 +23,6 @@ namespace Papercut.WebUI.Controllers
     using System.Net.Http;
     using System.Web.Http;
 
-    using Autofac;
-
     using Message;
 
     using Models;
@@ -43,7 +41,9 @@ namespace Papercut.WebUI.Controllers
         [HttpGet]
         public HttpResponseMessage GetAll()
         {
-            var messages = messageRepository.LoadMessages().Select(e => new MimeMessageEntry(e, messageLoader)).ToList();
+            var messages = messageRepository.LoadMessages()
+                .Select(e => MimeMessageEntry.Dto.From(new MimeMessageEntry(e, messageLoader)))
+                .ToList();
             return Request.CreateResponse(HttpStatusCode.OK, messages);
         }
     }

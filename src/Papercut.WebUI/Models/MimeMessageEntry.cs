@@ -19,6 +19,7 @@
 namespace Papercut.WebUI.Models
 {
     using System;
+    using System.Threading.Tasks;
 
     using Core.Domain.Message;
 
@@ -26,24 +27,51 @@ namespace Papercut.WebUI.Models
 
     public class MimeMessageEntry : MessageEntry
     {
-        string _subject;
+        public string Subject { get; protected set; }
 
         public MimeMessageEntry(MessageEntry entry, MimeMessageLoader loader) : base(entry.File)
         {
-            IsSelected = entry.IsSelected;
-
-            loader.Get(this).Subscribe(m => { Subject = m.Subject; },
-                e => { Subject = "Failure loading message: " + e.Message; });
+            loader.Get(this).ToTask().ContinueWith(e =>
+            {
+                Subject = e.IsFaulted ? "Failure loading message: " + e.Exception?.Message : e.Result.Subject;
+            }).Wait();
         }
 
-        public string Subject
+        public class Dto
         {
-            get { return _subject; }
-            protected set
+            public static Dto From(MimeMessageEntry messageEntry)
             {
-                _subject = value;
-                OnPropertyChanged(nameof(Subject));
+                return new Dto
+                {
+                    Subject = messageEntry.Subject,
+                    CreatedAt = messageEntry._created,
+                    Id = messageEntry.Name,
+                    Size = messageEntry.FileSize
+                };
             }
+
+            public string Size { get; set; }
+
+            public string Id { get; set; }
+
+            public DateTime? CreatedAt { get; set; }
+
+            public string Subject { get; set; }
+        }
+    }
+
+
+    static class ObservableExtensions
+    {
+        public static Task<T> ToTask<T>(this IObservable<T> observable)
+        {
+            var taskCompleteSource = new TaskCompletionSource<T>();
+
+            observable.Subscribe(
+                m => { taskCompleteSource.SetResult(m); },
+                e => { taskCompleteSource.SetException(e); });
+
+            return taskCompleteSource.Task;
         }
     }
 }

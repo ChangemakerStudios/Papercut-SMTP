@@ -76,14 +76,12 @@ namespace Papercut.WebUI.Test.Base
 
         protected string Get(string uri)
         {
-            var downloadString = Client.DownloadString($"{BaseAddress}/{uri.TrimStart('/')}");
-            return downloadString;
+            return Client.DownloadString($"{BaseAddress}/{uri.TrimStart('/')}");
         }
 
         protected T Get<T>(string uri)
         {
-            var value = Get(uri);
-            return JsonConvert.DeserializeObject<T>(value);
+            return JsonConvert.DeserializeObject<T>(Get(uri));
         }
     }
 }
