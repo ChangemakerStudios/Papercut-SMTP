@@ -18,6 +18,7 @@
 
 namespace Papercut.WebUI.Controllers
 {
+    using System;
     using System.Linq;
     using System.Net;
     using System.Net.Http;
@@ -43,7 +44,7 @@ namespace Papercut.WebUI.Controllers
         public HttpResponseMessage GetAll()
         {
             var messages = messageRepository.LoadMessages()
-                .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, LoadMailMessage(messageLoader, e))))
+                .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, messageLoader.LoadMailMessage(e))))
                 .ToList();
             return Request.CreateResponse(HttpStatusCode.OK, messages);
         }
@@ -52,16 +53,32 @@ namespace Papercut.WebUI.Controllers
         public HttpResponseMessage Get(string id)
         {
             var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
-            var dto = MimeMessageEntry.Dto.CreateFrom(new MimeMessageEntry(messageEntry, LoadMailMessage(messageLoader, messageEntry)));
+            var dto = MimeMessageEntry.Dto.CreateFrom(new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry)));
             return Request.CreateResponse(HttpStatusCode.OK, dto);
         }
 
 
-        static MimeMessage LoadMailMessage(MimeMessageLoader loader, MessageEntry entry)
+    }
+
+
+    static class ExtensionMethods
+    {
+        public static MimeMessage LoadMailMessage(this MimeMessageLoader loader,  MessageEntry entry)
         {
             var loadTask = loader.Get(entry).ToTask();
             loadTask.Wait();
             return loadTask.Result;
+        }
+
+        public static Task<T> ToTask<T>(this IObservable<T> observable)
+        {
+            var taskCompleteSource = new TaskCompletionSource<T>();
+
+            observable.Subscribe(
+                m => { taskCompleteSource.SetResult(m); },
+                e => { taskCompleteSource.SetException(e); });
+
+            return taskCompleteSource.Task;
         }
     }
 }

@@ -21,7 +21,6 @@ namespace Papercut.WebUI.Models
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
 
     using Core.Domain.Message;
     using MimeKit;
@@ -126,20 +125,6 @@ namespace Papercut.WebUI.Models
         {
             public string Name { get; set; }
             public string Address { get; set; }
-        }
-    }
-
-    static class ObservableExtensions
-    {
-        public static Task<T> ToTask<T>(this IObservable<T> observable)
-        {
-            var taskCompleteSource = new TaskCompletionSource<T>();
-
-            observable.Subscribe(
-                m => { taskCompleteSource.SetResult(m); },
-                e => { taskCompleteSource.SetException(e); });
-
-            return taskCompleteSource.Task;
         }
     }
 }
