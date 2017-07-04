@@ -19,18 +19,14 @@
 namespace Papercut.WebUI.Test.Base
 {
     using System;
-    using System.IO;
-    using System.Net;
     using System.Net.Http;
+    using System.Web.Http;
 
     using Autofac;
-
-    using Common.Domain;
 
     using Core.Domain.Application;
     using Core.Domain.Paths;
     using Core.Infrastructure.Container;
-    using Core.Infrastructure.Lifecycle;
 
     using Newtonsoft.Json;
 
@@ -40,15 +36,25 @@ namespace Papercut.WebUI.Test.Base
     {
         protected ILifetimeScope Scope;
         protected string BaseAddress;
-        readonly WebClient Client;
+        readonly HttpClient Client;
 
         public ApiFactBase()
         {
-            BaseAddress = "http://localhost:6789";
-            Client = new WebClient();
-
+            BaseAddress = "http://webui.papercut.com";
             Scope = BuildContainer(MockDependencies).BeginLifetimeScope();
-            Scope.Resolve<IMessageBus>().Publish(new PapercutServiceReadyEvent {AppMeta = Scope.Resolve<IAppMeta>()});
+            Client = BuildClient();
+        }
+
+        HttpClient BuildClient()
+        {
+            var config = new HttpConfiguration();
+
+            RouteConfig.Init(config, Scope);
+
+            return new HttpClient(new HttpServer(config))
+            {
+                BaseAddress = new Uri(BaseAddress)
+            };
         }
 
         void IDisposable.Dispose()
@@ -76,7 +82,7 @@ namespace Papercut.WebUI.Test.Base
 
         protected string Get(string uri)
         {
-            return Client.DownloadString($"{BaseAddress}/{uri.TrimStart('/')}");
+            return Client.GetStringAsync($"{uri}").Result;
         }
 
         protected T Get<T>(string uri)

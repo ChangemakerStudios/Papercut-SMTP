@@ -21,6 +21,8 @@ namespace Papercut.WebUI.Test.Base
     using System.Collections.ObjectModel;
     using System.IO;
 
+    using Common.Helper;
+
     using Core.Domain.Paths;
 
     class ServerPathTemplateProviderService : IPathTemplatesProvider
@@ -28,7 +30,7 @@ namespace Papercut.WebUI.Test.Base
         public ServerPathTemplateProviderService()
         {
             var basePath = Path.GetDirectoryName(typeof(ServerPathTemplateProviderService).Assembly.Location);
-            var messageStoragePath = Path.Combine(basePath, "IncomingMessages");
+            var messageStoragePath = Path.Combine(basePath, $"Incoming-{StringHelpers.SmallRandomString()}");
 
             if (!Directory.Exists(messageStoragePath))
             {

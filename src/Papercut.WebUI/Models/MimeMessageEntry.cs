@@ -60,7 +60,6 @@ namespace Papercut.WebUI.Models
         }
     }
 
-
     static class ObservableExtensions
     {
         public static Task<T> ToTask<T>(this IObservable<T> observable)

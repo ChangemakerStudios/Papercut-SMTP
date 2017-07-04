@@ -19,48 +19,33 @@
 namespace Papercut.WebUI
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using System.Web.Http;
-    using System.Web.Http.Dependencies;
     using System.Web.Http.SelfHost;
 
     using Autofac;
-    using Autofac.Integration.WebApi;
+
     using Common.Domain;
 
     using Core.Infrastructure.Lifecycle;
 
     class WebServer : IEventHandler<PapercutServiceReadyEvent>
     {
-        readonly ILifetimeScope container;
-        public WebServer(ILifetimeScope container)
-        {
-            this.container = container;
-        }
-
-
+        readonly ILifetimeScope scope;
         const string BaseAddress = "http://localhost:6789";
+
+        public WebServer(ILifetimeScope scope)
+        {
+            this.scope = scope;
+        }
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
             Console.WriteLine("WebUI Server Start ...");
 
             var config = new HttpSelfHostConfiguration(BaseAddress);
-            config.DependencyResolver =  new AutofacWebApiDependencyResolver(this.container);
 
-            config.Routes.MapHttpRoute("health", "health", new {controller = "Health"});
-            config.Routes.MapHttpRoute("load all message", "messages", new {controller = "Message", action = "GetAll"});
+            RouteConfig.Init(config, scope);
 
-            var server = new HttpSelfHostServer(config);
-            server.OpenAsync().Wait();
-        }
-
-
-        public static void RegisterControllerTypes(ContainerBuilder builder)
-        {
-            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+            new HttpSelfHostServer(config).OpenAsync().Wait();
         }
     }
 }

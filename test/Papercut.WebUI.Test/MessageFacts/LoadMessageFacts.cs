@@ -35,6 +35,13 @@ namespace Papercut.WebUI.Test.MessageFacts
 
     public class LoadMessageFacts : ApiFactBase
     {
+        readonly MessageRepository messageRepository;
+
+        public LoadMessageFacts()
+        {
+            messageRepository = Scope.Resolve<MessageRepository>();
+        }
+
         [Fact]
         void should_load_all_messages()
         {
@@ -44,7 +51,7 @@ namespace Papercut.WebUI.Test.MessageFacts
                 From = {new MailboxAddress("mffeng@gmail.com")}
             };
 
-            Scope.Resolve<MessageRepository>().SaveMessage(fs => existedMail.WriteTo(fs));
+            messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
 
             var messages = Get<List<MimeMessageEntry.Dto>>("/messages");
             Assert.Equal(1, messages.Count);
@@ -63,19 +70,16 @@ namespace Papercut.WebUI.Test.MessageFacts
             {
                 Subject = "Test",
                 From = {new MailboxAddress("mffeng@gmail.com")},
-                To = { new MailboxAddress("xwliu@gmail.com") },
-                Cc = {new MailboxAddress("jjchen@gmail.com"), new MailboxAddress("ygma@gmail.com") },
-                Bcc = {new MailboxAddress("rzhe@gmail.com"), new MailboxAddress("xueting@gmail.com") },
+                To = {new MailboxAddress("xwliu@gmail.com")},
+                Cc = {new MailboxAddress("jjchen@gmail.com"), new MailboxAddress("ygma@gmail.com")},
+                Bcc = {new MailboxAddress("rzhe@gmail.com"), new MailboxAddress("xueting@gmail.com")},
                 Body = new TextPart("text/plain") {Text = "Hello Buddy"}
             };
 
-            Scope.Resolve<MessageRepository>().SaveMessage(fs => existedMail.WriteTo(fs));
+            messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
 
-            var messages = Get<List<dynamic>>("/messages");
+            var messages = Get<List<MimeMessageEntry.Dto>>("/messages");
             Assert.Equal(1, messages.Count);
-
-            var message = messages.First();
-            Assert.Equal("Test", message.Subject.ToString());
         }
     }
 }

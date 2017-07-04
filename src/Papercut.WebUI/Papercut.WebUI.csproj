@@ -86,6 +86,7 @@
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="Models\MessageDetail.cs" />
     <Compile Include="Models\MimeMessageEntry.cs" />
+    <Compile Include="RouteConfig.cs" />
     <Compile Include="WebServer.cs" />
     <Compile Include="WebUIPluginModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

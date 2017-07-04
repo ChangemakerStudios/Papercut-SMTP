@@ -18,13 +18,18 @@
 
 namespace Papercut.WebUI
 {
+    using System.Reflection;
+
     using Autofac;
     using Autofac.Core;
+    using Autofac.Integration.WebApi;
 
     using Core.Infrastructure.Lifecycle;
     using Core.Infrastructure.Plugins;
 
     using Common.Domain;
+
+    using Module = Autofac.Module;
 
     public class WebUIPluginModule : Module, IPluginModule
     {
@@ -36,7 +41,7 @@ namespace Papercut.WebUI
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<WebServer>().As<IEventHandler<PapercutServiceReadyEvent>>().SingleInstance();
-            WebServer.RegisterControllerTypes(builder);
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
 
             base.Load(builder);
         }
