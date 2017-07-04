@@ -20,17 +20,11 @@ namespace Papercut.WebUI.Test.MessageFacts
 {
     using System.Collections.Generic;
     using System.Linq;
-
     using Autofac;
-
     using Base;
-
     using Message;
-
     using MimeKit;
-
     using Models;
-
     using Xunit;
 
     public class LoadMessageFacts : ApiFactBase
@@ -53,7 +47,7 @@ namespace Papercut.WebUI.Test.MessageFacts
 
             messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
 
-            var messages = Get<List<MimeMessageEntry.Dto>>("/messages");
+            var messages = Get<List<MimeMessageEntry.RefDto>>("/messages");
             Assert.Equal(1, messages.Count);
 
             var message = messages.First();
@@ -64,7 +58,7 @@ namespace Papercut.WebUI.Test.MessageFacts
         }
 
         [Fact]
-        void should_load_message_detail()
+        void should_load_message_detail_by_id()
         {
             var existedMail = new MimeMessage
             {
@@ -73,13 +67,36 @@ namespace Papercut.WebUI.Test.MessageFacts
                 To = {new MailboxAddress("xwliu@gmail.com")},
                 Cc = {new MailboxAddress("jjchen@gmail.com"), new MailboxAddress("ygma@gmail.com")},
                 Bcc = {new MailboxAddress("rzhe@gmail.com"), new MailboxAddress("xueting@gmail.com")},
-                Body = new TextPart("text/plain") {Text = "Hello Buddy"}
+                Body = new TextPart("plain") {Text = "Hello Buddy"}
             };
-
             messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            var messages = Get<List<MimeMessageEntry.RefDto>>("/messages");
+            var id = messages.First().Id;
 
-            var messages = Get<List<MimeMessageEntry.Dto>>("/messages");
-            Assert.Equal(1, messages.Count);
+
+            var detail = Get<MimeMessageEntry.Dto>($"/messages/{id}");
+            Assert.Equal(id, detail.Id);
+            Assert.NotNull(detail.CreatedAt);
+
+            Assert.Equal(1, detail.From.Count);
+            Assert.Equal("mffeng@gmail.com", detail.From.First().Address);
+
+
+            Assert.Equal(1, detail.To.Count);
+            Assert.Equal("xwliu@gmail.com", detail.To.First().Address);
+
+
+            Assert.Equal(2, detail.Cc.Count);
+            Assert.Equal("jjchen@gmail.com", detail.Cc.First().Address);
+            Assert.Equal("ygma@gmail.com", detail.Cc.Last().Address);
+
+            Assert.Equal(2, detail.BCc.Count);
+            Assert.Equal("rzhe@gmail.com", detail.BCc.First().Address);
+            Assert.Equal("xueting@gmail.com", detail.BCc.Last().Address);
+            
+            Assert.Equal("Test", detail.Subject);
+            Assert.Equal("Hello Buddy", detail.TextBody?.Trim());
+            Assert.Null(detail.HtmlBody);
         }
     }
 }

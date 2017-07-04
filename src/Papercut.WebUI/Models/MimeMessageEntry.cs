@@ -19,33 +19,37 @@
 namespace Papercut.WebUI.Models
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Core.Domain.Message;
-
-    using Message;
+    using MimeKit;
 
     public class MimeMessageEntry : MessageEntry
     {
-        public string Subject { get; protected set; }
+        public string Subject => MailMessage?.Subject;
 
-        public MimeMessageEntry(MessageEntry entry, MimeMessageLoader loader) : base(entry.File)
+        public DateTime? Created => _created;
+
+        public string Id => this.Name;
+
+        public MimeMessage MailMessage { get; }
+
+        public MimeMessageEntry(MessageEntry entry, MimeMessage message) : base(entry.File)
         {
-            loader.Get(this).ToTask().ContinueWith(e =>
-            {
-                Subject = e.IsFaulted ? "Failure loading message: " + e.Exception?.Message : e.Result.Subject;
-            }).Wait();
+            MailMessage = message;
         }
 
-        public class Dto
+        public class RefDto
         {
-            public static Dto From(MimeMessageEntry messageEntry)
+            public static RefDto CreateFrom(MimeMessageEntry messageEntry)
             {
-                return new Dto
+                return new RefDto
                 {
                     Subject = messageEntry.Subject,
-                    CreatedAt = messageEntry._created,
-                    Id = messageEntry.Name,
+                    CreatedAt = messageEntry.Created,
+                    Id = messageEntry.Id,
                     Size = messageEntry.FileSize
                 };
             }
@@ -57,6 +61,71 @@ namespace Papercut.WebUI.Models
             public DateTime? CreatedAt { get; set; }
 
             public string Subject { get; set; }
+        }
+
+
+        public class Dto
+        {
+            public static Dto CreateFrom(MimeMessageEntry messageEntry)
+            {
+                var mail = messageEntry.MailMessage;
+
+                return new Dto
+                {
+                    Subject = messageEntry.Subject,
+                    CreatedAt = messageEntry.Created,
+                    Id = messageEntry.Id,
+                    From = ToAddressList(mail?.From),
+                    To = ToAddressList(mail?.To),
+                    Cc = ToAddressList(mail?.Cc),
+                    BCc = ToAddressList(mail?.Bcc),
+                    HtmlBody = mail?.HtmlBody,
+                    TextBody = mail?.TextBody,
+                };
+            }
+
+            static List<EmailAddressDto> ToAddressList(IList<InternetAddress> mailAddresses)
+            {
+                if (mailAddresses == null)
+                {
+                    return new List<EmailAddressDto>();
+                }
+
+                return mailAddresses
+                    .OfType<MailboxAddress>()
+                    .Select(f => new EmailAddressDto {Address = f.Address, Name = f.Name})
+                    .ToList();
+            }
+
+
+
+            public string Id { get; set; }
+
+            public DateTime? CreatedAt { get; set; }
+
+            public string Subject { get; set; }
+
+
+            public List<EmailAddressDto> From { get; set; } = new List<EmailAddressDto>();
+
+            public List<EmailAddressDto> To { get; set; } = new List<EmailAddressDto>();
+
+            public List<EmailAddressDto> Cc { get; set; } = new List<EmailAddressDto>();
+
+            public List<EmailAddressDto> BCc { get; set; } = new List<EmailAddressDto>();
+
+
+            public string HtmlBody { get; set; }
+            
+            public string TextBody { get; set; }
+
+           
+        }
+
+        public class EmailAddressDto
+        {
+            public string Name { get; set; }
+            public string Address { get; set; }
         }
     }
 

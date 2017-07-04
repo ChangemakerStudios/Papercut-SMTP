@@ -21,10 +21,11 @@ namespace Papercut.WebUI.Controllers
     using System.Linq;
     using System.Net;
     using System.Net.Http;
+    using System.Threading.Tasks;
     using System.Web.Http;
-
+    using Core.Domain.Message;
     using Message;
-
+    using MimeKit;
     using Models;
 
     public class MessageController : ApiController
@@ -42,9 +43,25 @@ namespace Papercut.WebUI.Controllers
         public HttpResponseMessage GetAll()
         {
             var messages = messageRepository.LoadMessages()
-                .Select(e => MimeMessageEntry.Dto.From(new MimeMessageEntry(e, messageLoader)))
+                .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, LoadMailMessage(messageLoader, e))))
                 .ToList();
             return Request.CreateResponse(HttpStatusCode.OK, messages);
+        }
+
+        [HttpGet]
+        public HttpResponseMessage Get(string id)
+        {
+            var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
+            var dto = MimeMessageEntry.Dto.CreateFrom(new MimeMessageEntry(messageEntry, LoadMailMessage(messageLoader, messageEntry)));
+            return Request.CreateResponse(HttpStatusCode.OK, dto);
+        }
+
+
+        static MimeMessage LoadMailMessage(MimeMessageLoader loader, MessageEntry entry)
+        {
+            var loadTask = loader.Get(entry).ToTask();
+            loadTask.Wait();
+            return loadTask.Result;
         }
     }
 }
