@@ -18,8 +18,12 @@
 
 namespace Papercut.WebUI.Test.MessageFacts
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+
     using Autofac;
     using Base;
     using Message;
@@ -93,10 +97,17 @@ namespace Papercut.WebUI.Test.MessageFacts
             Assert.Equal(2, detail.BCc.Count);
             Assert.Equal("rzhe@gmail.com", detail.BCc.First().Address);
             Assert.Equal("xueting@gmail.com", detail.BCc.Last().Address);
-            
+
             Assert.Equal("Test", detail.Subject);
             Assert.Equal("Hello Buddy", detail.TextBody?.Trim());
             Assert.Null(detail.HtmlBody);
+        }
+
+        [Fact]
+        void should_return_404_if_not_found_by_id()
+        {
+            var response = Client.GetAsync("/messages/some-strange-id").Result;
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }
 }

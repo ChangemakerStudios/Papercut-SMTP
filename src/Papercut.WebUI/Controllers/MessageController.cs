@@ -53,11 +53,13 @@ namespace Papercut.WebUI.Controllers
         public HttpResponseMessage Get(string id)
         {
             var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
+            if (messageEntry == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+            }
             var dto = MimeMessageEntry.Dto.CreateFrom(new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry)));
             return Request.CreateResponse(HttpStatusCode.OK, dto);
         }
-
-
     }
 
 

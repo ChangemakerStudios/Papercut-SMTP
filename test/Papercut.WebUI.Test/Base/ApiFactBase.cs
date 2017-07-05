@@ -36,7 +36,7 @@ namespace Papercut.WebUI.Test.Base
     {
         protected ILifetimeScope Scope;
         protected string BaseAddress;
-        readonly HttpClient Client;
+        protected readonly HttpClient Client;
 
         public ApiFactBase()
         {

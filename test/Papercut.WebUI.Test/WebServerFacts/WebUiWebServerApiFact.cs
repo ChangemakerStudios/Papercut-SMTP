@@ -29,7 +29,7 @@ namespace Papercut.WebUI.Test.WebServerFacts
         {
             var content = Get("/health");
 
-            Assert.Equal("Papercut WebUI Server Start Success", content);
+            Assert.Equal("Papercut WebUI server started successfully.", content);
         }
     }
 }

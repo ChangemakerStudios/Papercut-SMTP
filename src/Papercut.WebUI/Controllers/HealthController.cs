@@ -29,7 +29,7 @@ namespace Papercut.WebUI.Controllers
         public HttpResponseMessage Check()
         {
             var response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StringContent("Papercut WebUI Server Start Success", Encoding.UTF8);
+            response.Content = new StringContent("Papercut WebUI server started successfully.", Encoding.UTF8);
             return response;
         }
     }
