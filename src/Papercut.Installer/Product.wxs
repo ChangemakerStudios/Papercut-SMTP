@@ -23,7 +23,7 @@
              UpgradeCode="4ff0774f-3e17-42e1-936f-09877834669a"
         >
 
-        <Package InstallerVersion="405"
+        <Package InstallerVersion="301"
                  Manufacturer="$(var.Manufacturer)"
                  Compressed="yes"
                  InstallScope="perMachine" />
