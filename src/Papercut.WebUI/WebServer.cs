@@ -39,7 +39,7 @@ namespace Papercut.WebUI
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
-            Console.WriteLine("WebUI Server Start ...");
+            Console.WriteLine("Starting WebUI server...");
 
             var config = new HttpSelfHostConfiguration(BaseAddress);
 
