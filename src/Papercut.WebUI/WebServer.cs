@@ -39,13 +39,11 @@ namespace Papercut.WebUI
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
-            Console.WriteLine("Starting WebUI server...");
-
             var config = new HttpSelfHostConfiguration(BaseAddress);
-
             RouteConfig.Init(config, scope);
-
             new HttpSelfHostServer(config).OpenAsync().Wait();
+
+            Console.WriteLine("WebUI server started.");
         }
     }
 }

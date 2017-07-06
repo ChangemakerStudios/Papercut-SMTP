@@ -14,6 +14,12 @@ namespace Papercut.WebUI
 
             config.Routes.MapHttpRoute("load all messages", "messages", new {controller = "Message", action = "GetAll"});
             config.Routes.MapHttpRoute("load message detail", "messages/{id}", new { controller = "Message", action = "Get" });
+
+
+
+
+            config.Routes.MapHttpRoute("Serve other requests as static content", routeTemplate: "{*anything}", defaults: new { controller = "StaticContent", uri = RouteParameter.Optional });
+
         }
     }
 }
