@@ -51,7 +51,7 @@ namespace Papercut.WebUI.Test.MessageFacts
 
             messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
 
-            var messages = Get<List<MimeMessageEntry.RefDto>>("/messages");
+            var messages = Get<List<MimeMessageEntry.RefDto>>("/api/messages");
             Assert.Equal(1, messages.Count);
 
             var message = messages.First();
@@ -74,11 +74,11 @@ namespace Papercut.WebUI.Test.MessageFacts
                 Body = new TextPart("plain") {Text = "Hello Buddy"}
             };
             messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
-            var messages = Get<List<MimeMessageEntry.RefDto>>("/messages");
+            var messages = Get<List<MimeMessageEntry.RefDto>>("/api/messages");
             var id = messages.First().Id;
 
 
-            var detail = Get<MimeMessageEntry.Dto>($"/messages/{id}");
+            var detail = Get<MimeMessageEntry.Dto>($"/api/messages/{id}");
             Assert.Equal(id, detail.Id);
             Assert.NotNull(detail.CreatedAt);
 
@@ -106,7 +106,7 @@ namespace Papercut.WebUI.Test.MessageFacts
         [Fact]
         void should_return_404_if_not_found_by_id()
         {
-            var response = Client.GetAsync("/messages/some-strange-id").Result;
+            var response = Client.GetAsync("/api/messages/some-strange-id").Result;
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }

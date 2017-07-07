@@ -1,7 +1,7 @@
-<!DOCTYPE html>
-<html ng-app="mailhogApp">
+﻿<!DOCTYPE html>
+<html ng-app="papercutApp">
   <head>
-    <title>MailHog</title>
+    <title>Papercut</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,13 +19,13 @@
         <div class="col-md-2 col-sm-3">
           <div class="navbar-header">
             <a class="navbar-brand" href="#">
-              <img src="images/hog.png" height="20" alt="MailHog"> MailHog
+              <img src="images/papercut-logo.png" height="20" alt="Papercut">
             </a>
           </div>
         </div>
 
         <div class="col-md-10 col-sm-9">
-          <form class="navbar-form navbar-left" role="search">
+          <form ng-if="false" class="navbar-form navbar-left" role="search">
             <div class="form-group left-inner-addon">
               <i class="glyphicon glyphicon-search"></i>
 
@@ -47,7 +47,7 @@
 
           <ul class="nav navbar-nav navbar-right">
             <li>
-              <a target="_blank" href="https://github.com/mailhog/MailHog">
+              <a target="_blank" href="https://github.com/ChangemakerStudios/Papercut">
                 <img src="images/github.png" height="16" alt="GitHub"> GitHub
               </a>
             </li>
@@ -60,7 +60,7 @@
       <div class="row">
         <div class="col-md-2 col-sm-3">
           <ul class="nav nav-pills nav-stacked">
-            <li>
+            <li ng-if="false">
               <a href="#" title="Event stream connected" ng-click="toggleStream()">
                 <span class="glyphicon glyphicon-off {{ hasEventSource ? 'has-event-source' : 'no-event-source' }}"></span>
                 {{ hasEventSource ? 'Connected' : 'Disconnected' }}
@@ -73,61 +73,13 @@
               </a>
             </li>
 
-            <li>
+            <li ng-if="false">
               <a href="#" ng-click="deleteAll()">
                 <span class="glyphicon glyphicon-remove-circle"></span>
                 Delete all messages
               </a>
             </li>
           </ul>
-
-          <div class="well jim-well">
-            <h3>Jim</h3>
-            <p>
-              Jim is a chaos monkey.<br>
-              <a href="https://github.com/mailhog/MailHog/blob/master/docs/JIM.md" target="_blank">Find out more at GitHub</a>.
-            </p>
-            <div ng-if="jim">
-              <a href="#" ng-click="disableJim()" class="btn btn-xs btn-danger">Disable Jim</a>
-            </div>
-            <div ng-if="jim" class="jim-config">
-              <div class="jim-config-item">
-                <strong>Accept chance</strong>
-                <span>{{ jim.AcceptChance * 100 }}%</span>
-              </div>
-              <div class="jim-config-item">
-                <strong>Disconnect chance</strong>
-                <span>{{ jim.DisconnectChance * 100 }}%</span>
-              </div>
-              <div class="jim-config-item">
-                <strong>Link speed affect chance</strong>
-                <span>{{ jim.LinkSpeedAffect * 100}}%</span>
-              </div>
-              <div class="jim-config-item">
-                <strong>Link speed minimum</strong>
-                <span>{{ jim.LinkSpeedMin }}kbps</span>
-              </div>
-              <div class="jim-config-item">
-                <strong>Link speed maximum</strong>
-                <span>{{ jim.LinkSpeedMax }}kbps</span>
-              </div>
-              <div class="jim-config-item">
-                <strong>Reject sender chance</strong>
-                <span>{{ jim.RejectSenderChance * 100 }}%</span>
-              </div>
-              <div class="jim-config-item">
-                <strong>Reject recipient chance</strong>
-                <span>{{ jim.RejectRecipientChance * 100 }}%</span>
-              </div>
-              <div class="jim-config-item">
-                <strong>Reject auth chance</strong>
-                <span>{{ jim.RejectAuthChance * 100 }}%</span>
-              </div>
-            </div>
-            <div ng-if="!jim">
-              <a href="#" ng-click="enableJim()" class="btn btn-xs btn-default">Enable Jim</a>
-            </div>
-          </div>
         </div>
 
         <div class="col-md-10 col-sm-9 content">
@@ -162,32 +114,16 @@
 
 <div class="messages container-fluid" ng-if="!preview && !searching">
   <div class="msglist-message row" ng-repeat="message in messages" ng-click="selectMessage(message)">
-    <div class="col-md-3 col-sm-4">
-      {{ getSender(message) }}
-
-      <div ng-if="message.Content.Headers['To']">
-        <div ng-repeat="to in message.Content.Headers['To']" style="color: #777">
-          {{ getDisplayName(tryDecodeMime(to)) }}
-        </div>
-      </div>
-
-      <div ng-if="!message.Content.Headers['To']">
-        <div ng-repeat="to in message.To" style="color: #777">
-          {{ to.Mailbox }}@{{ to.Domain }}
-        </div>
-      </div>
-    </div>
-
     <div class="col-md-5 col-sm-5">
-      <span class="subject unread">{{ tryDecodeMime(message.Content.Headers["Subject"][0]) }}</span>
+      <span class="subject unread">{{ message.Subject }}</span>
     </div>
     <div class="col-md-4 col-sm-3">
       <div class="row">
         <div class="col-md-9 col-sm-12 text-right">
-          {{ getMoment(date(message.Created)).fromNow() }}
+            {{ getMoment(date(message.CreatedAt)).fromNow() }}
         </div>
         <div class="col-md-3 col-sm-12 text-right">
-          {{ fileSize(message.Raw.Data.length) }}
+          {{ message.Size }}
         </div>
       </div>
     </div>
@@ -258,16 +194,8 @@
 
   <div class="spacer"></div>
 
-  <button class="btn btn-default" ng-click="deleteOne(preview); preview = null">
+  <button ng-if="false" class="btn btn-default" ng-click="deleteOne(preview); preview = null">
     <i class="glyphicon glyphicon-trash"></i>
-  </button>
-
-  <a class="btn btn-default" title="Download" href="{{ host }}api/v1/messages/{{ preview.ID }}/download">
-    <i class="glyphicon glyphicon-save"></i>
-  </a>
-
-  <button class="btn btn-default" title="Release" ng-click="releaseOne(preview)">
-    <i class="glyphicon glyphicon-share"></i>
   </button>
 </div>
 
@@ -278,26 +206,36 @@
         <tbody ng-if="!previewAllHeaders">
           <tr>
             <th>From</th>
-            <td>{{ tryDecodeMime(preview.Content.Headers["From"][0] || preview.From.Mailbox + "@" + preview.From.Domain) }}</td>
+            <td><span ng-if="!!preview.From[0].Name">{{preview.From[0].Name}}(</span>   {{ preview.From[0].Address }}<span ng-if="!!preview.From[0].Name">)</span></td>
           </tr>
           <tr>
             <th>Subject</th>
-            <td><strong>{{ tryDecodeMime(preview.Content.Headers["Subject"][0]) }}</strong></td>
+            <td><strong>{{ preview.Subject }}</strong></td>
           </tr>
-          <tr>
+        <tr>
             <th>To</th>
             <td>
-              {{ tryDecodeMime((preview.Content.Headers["To"] || []).join(', ') || preview.To[0].Mailbox + "@" + preview.To[0].Domain) }}
+                <p ng-repeat="to in preview.To">
+                    <span ng-if="!!to.Name">{{to.Name}}(</span>   {{ to.Address }}<span ng-if="!!to.Name">)</span>
+                </p>
             </td>
-          </tr>
-        </tbody>
-        <tbody ng-if="previewAllHeaders">
-          <tr ng-repeat="(header, value) in preview.Content.Headers">
-            <th>{{ tryDecodeMime(header) }}</th>
+        </tr>
+        <tr ng-if="!!(preview.Cc && preview.Cc.length)">
+            <th>CC</th>
             <td>
-              <div ng-repeat="v in value">{{ v }}</div>
+                <p ng-repeat="c in preview.Cc">
+                    <span ng-if="!!c.Name">{{c.Name}}(</span>   {{ c.Address }}<span ng-if="!!c.Name">)</span>
+                </p>
             </td>
-          </tr>
+        </tr>
+        <tr ng-if="!!(preview.BCc && preview.BCc.length)">
+            <th>BCC</th>
+            <td>
+                <p ng-repeat="b in preview.BCc">
+                    <span ng-if="!!b.Name">{{b.Name}}(</span>   {{ b.Address }}<span ng-if="!!b.Name">)</span>
+                </p>
+            </td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -316,23 +254,11 @@
     <ul class="nav nav-tabs">
       <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
       <li ng-class="{ active: !hasHTML(preview) }"><a href="#preview-plain" data-toggle="tab">Plain text</a></li>
-      <li><a href="#preview-source" data-toggle="tab">Source</a></li>
-      <li ng-if="preview.MIME"><a href="#preview-mime" data-toggle="tab">MIME</a></li>
     </ul>
 
     <div class="tab-content">
       <iframe target-blank="" ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }" class="tab-pane" id="preview-html" srcdoc="{{preview.previewHTML}}" seamless frameborder="0" style="width: 100%"></iframe>
       <div class="tab-pane" ng-class="{ active: !hasHTML(preview) }" id="preview-plain" ng-bind-html="formatMessagePlain(preview)"></div>
-      <div class="tab-pane" id="preview-source">{{ getSource(preview) }}</div>
-      <div class="tab-pane" id="preview-mime">
-        <div ng-repeat="part in preview.MIME.Parts" class="mime-part">
-          <a href="{{ host }}api/v1/messages/{{ preview.ID }}/mime/part/{{ $index }}/download" type="button" class="btn btn-default btn-sm">
-            <i class="glyphicon glyphicon-save"></i>
-            Download
-          </a>
-          {{ tryDecodeMime(part.Headers["Content-Type"][0] || "Unknown type") }} ({{ part.Size }} bytes)
-        </div>
-      </div>
     </div>
   </div>
 </div>

@@ -1,40 +1,7 @@
-var mailhogApp = angular.module('mailhogApp', []);
+var papercutApp = angular.module('papercutApp', []);
 
-mailhogApp.directive('targetBlank', function(){
-  return {
-    link : function(scope, element, attributes){
-      element.on('load', function() {
-        var a = element.contents().find('a');
-        a.attr('target', '_blank');
-      });
-    }
-  };
-});
 
-function guid() {
-  function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-               .toString(16)
-               .substring(1);
-  }
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-         s4() + '-' + s4() + s4() + s4();
-}
-
-mailhogApp.directive('ngKeyEnter', function () {
-  return function (scope, element, attrs) {
-    element.bind("keydown keypress", function (event) {
-      if(event.which === 13) {
-        scope.$apply(function (){
-          scope.$eval(attrs.ngKeyEnter);
-        });
-        event.preventDefault();
-      }
-    });
-  };
-});
-
-mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
+papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   $scope.host = apiHost;
 
   $scope.cache = {};
@@ -67,34 +34,10 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   $scope.countSearchMessages = 0
   $scope.totalSearchMessages = 0
 
-  $scope.jim = null
 
   $scope.smtpmech = "NONE"
   $scope.selectedOutgoingSMTP = ""
   $scope.saveSMTPServer = false;
-
-  $scope.getJim = function() {
-    var url = $scope.host + 'api/v2/jim'
-    $http.get(url).success(function(data) {
-      $scope.jim = data
-    }).error(function() {
-      $scope.jim = null
-    })
-  }
-  $scope.getJim()
-
-  $scope.enableJim = function() {
-    var url = $scope.host + 'api/v2/jim'
-    $http.post(url).success(function(data) {
-      $scope.getJim()
-    })
-  }
-  $scope.disableJim = function() {
-    var url = $scope.host + 'api/v2/jim'
-    $http.delete(url).success(function(data) {
-      $scope.getJim()
-    })
-  }
 
   $(function() {
     $scope.openStream();
@@ -170,8 +113,8 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     var title = "Mail from " + $scope.getSender(message);
     var options = {
       body: $scope.tryDecodeMime(message.Content.Headers["Subject"][0]),
-      tag: "MailHog",
-      icon: "images/hog.png"
+      tag: "Papercut",
+      icon: "images/papercut-logo.png"
     };
     var notification = new Notification(title, options);
     notification.addEventListener('click', function(e) {
@@ -188,25 +131,6 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   $scope.resizePreview = function() {
     $('.tab-content').height($(window).innerHeight() - $('.tab-content').offset().top);
     $('.tab-content .tab-pane').height($(window).innerHeight() - $('.tab-content').offset().top);
-  }
-
-  $scope.getSender = function(message) {
-    return $scope.tryDecodeMime($scope.getDisplayName(message.Content.Headers["From"][0]) ||
-                                message.From.Mailbox + "@" + message.From.Domain);
-  }
-
-  $scope.getDisplayName = function(value) {
-    if(!value) { return ""; }
-
-    res = value.match(/(.*)\<(.*)\>/);
-
-    if(res) {
-      if(res[1].trim().length > 0) {
-        return res[1].trim();
-      }
-      return res[2];
-    }
-    return value
   }
 
   $scope.startEvent = function(name, args, glyphicon) {
@@ -274,17 +198,17 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
       return $scope.refreshSearch();
     }
     var e = $scope.startEvent("Loading messages", null, "glyphicon-download");
-    var url = $scope.host + 'api/v2/messages'
+    var url = $scope.host + 'api/messages'
     if($scope.startIndex > 0) {
       url += "?start=" + $scope.startIndex + "&limit=" + $scope.itemsPerPage;
     } else {
       url += "?limit=" + $scope.itemsPerPage;
     }
     $http.get(url).success(function(data) {
-      $scope.messages = data.items;
-      $scope.totalMessages = data.total;
-      $scope.countMessages = data.count;
-      $scope.startMessages = data.start;
+      $scope.messages = data;
+      $scope.totalMessages = data.length;
+      $scope.countMessages = data.length;
+      $scope.startMessages = 0;
       e.done();
     });
   }
@@ -323,7 +247,7 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   }
 
   $scope.refreshSearch = function() {
-    var url = $scope.host + 'api/v2/search?kind=' + $scope.searchKind + '&query=' + $scope.searchedText;
+    var url = $scope.host + 'api/v1/search?kind=' + $scope.searchKind + '&query=' + $scope.searchedText;
     if($scope.startIndex > 0) {
       url += "&start=" + $scope.startIndex;
     }
@@ -343,43 +267,18 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     $timeout(function(){
       $scope.resizePreview();
     }, 0);
-  	if($scope.cache[message.ID]) {
-  		$scope.preview = $scope.cache[message.ID];
+  	if($scope.cache[message.Id]) {
+  		$scope.preview = $scope.cache[message.Id];
       //reflow();
   	} else {
-  		$scope.preview = message;
-      var e = $scope.startEvent("Loading message", message.ID, "glyphicon-download-alt");
-	  	$http.get($scope.host + 'api/v1/messages/' + message.ID).success(function(data) {
-	  	  $scope.cache[message.ID] = data;
+  	  $scope.preview = message;
+      var e = $scope.startEvent("Loading message", message.Id, "glyphicon-download-alt");
+	  	$http.get($scope.host + 'api/messages/' + message.Id).success(function(data) {
+	  	  $scope.cache[message.Id] = data;
 
-        // FIXME
-        // - nested mime parts can't be downloaded
-
-        data.$cidMap = {};
-        if(data.MIME && data.MIME.Parts.length) {
-          for(p in data.MIME.Parts) {
-            for(h in data.MIME.Parts[p].Headers) {
-              if(h.toLowerCase() == "content-id") {
-                cid = data.MIME.Parts[p].Headers[h][0]
-                cid = cid.substr(1,cid.length-2)
-                data.$cidMap[cid] = "api/v1/messages/" + message.ID + "/mime/part/" + p + "/download"
-              }
-            }
-          }
-        }
-        console.log(data.$cidMap)
-        // TODO
-        // - scan HTML parts for elements containing CID URI and replace
-
-        h = $scope.getMessageHTML(data)
-        for(c in data.$cidMap) {
-          h = h.replace("cid:" + c, data.$cidMap[c])
-        }
-	      data.previewHTML = $sce.trustAsHtml(h);
+	  	  data.previewHTML = $sce.trustAsHtml(data.HtmlBody);
   		  $scope.preview = data;
-  		  preview = $scope.cache[message.ID];
-        //reflow();
-        e.done();
+          e.done();
 	    });
 	   }
   }
@@ -435,7 +334,7 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   }
 
   $scope.formatMessagePlain = function(message) {
-    var body = $scope.getMessagePlain(message);
+    var body = message.TextBody || '';
     var escaped = $scope.escapeHtml(body);
     var formatted = escaped.replace(/(https?:\/\/)([-[\]A-Za-z0-9._~:/?#@!$()*+,;=%]|&amp;|&#39;)+/g, '<a href="$&" target="_blank">$&</a>');
     return $sce.trustAsHtml(formatted);
@@ -452,17 +351,6 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     return html.replace(/[&<>"']/g, function (s) {
       return entityMap[s];
     });
-  }
-
-  $scope.getMessagePlain = function(message) {
-    if (message.Content.Headers && message.Content.Headers["Content-Type"] && message.Content.Headers["Content-Type"][0].match("text/plain")) {
-      return $scope.tryDecode(message.Content);
-    }
-    var l = $scope.findMatchingMIME(message, "text/plain");
-    if(l != null && l !== "undefined") {
-      return $scope.tryDecode(l);
-    }
-    return message.Content.Body;
   }
 
   $scope.findMatchingMIME = function(part, mime) {
@@ -486,20 +374,7 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     return null;
   }
   $scope.hasHTML = function(message) {
-    // TODO cache this
-    for(var header in message.Content.Headers) {
-      if(header.toLowerCase() == 'content-type') {
-        if(message.Content.Headers[header][0].match("text/html")) {
-          return true
-        }
-      }
-    }
-
-    var l = $scope.findMatchingMIME(message, "text/html");
-    if(l != null && l !== "undefined") {
-      return true
-    }
-    return false;
+      return !!message.HtmlBody;
   }
   $scope.getMessageHTML = function(message) {
     console.log(message);
@@ -546,7 +421,7 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     var message = $scope.releasing;
     $scope.releasing = null;
 
-    var e = $scope.startEvent("Releasing message", message.ID, "glyphicon-share");
+    var e = $scope.startEvent("Releasing message", message.Id, "glyphicon-share");
 
     if($('#release-message-outgoing').val().length > 0) {
       authcfg = {
@@ -566,7 +441,7 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
       }
     }
 
-    $http.post($scope.host + 'api/v1/messages/' + message.ID + '/release', authcfg).success(function() {
+    $http.post($scope.host + 'api/v1/messages/' + message.Id + '/release', authcfg).success(function() {
       e.done();
     }).error(function(err) {
       e.fail();
@@ -587,7 +462,7 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   $scope.deleteAllConfirm = function() {
   	$('#confirm-delete-all').modal('hide');
     var e = $scope.startEvent("Deleting all messages", null, "glyphicon-remove-circle");
-  	$http.delete($scope.host + 'api/v1/messages').success(function() {
+  	$http.delete($scope.host + 'api/messages').success(function() {
   		$scope.refresh();
   		$scope.preview = null;
       e.done()
@@ -595,11 +470,48 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   }
 
   $scope.deleteOne = function(message) {
-    var e = $scope.startEvent("Deleting message", message.ID, "glyphicon-remove");
-  	$http.delete($scope.host + 'api/v1/messages/' + message.ID).success(function() {
+    var e = $scope.startEvent("Deleting message", message.Id, "glyphicon-remove");
+  	$http.delete($scope.host + 'api/messages/' + message.Id).success(function() {
   		if($scope.preview._id == message._id) $scope.preview = null;
   		$scope.refresh();
       e.done();
   	});
   }
 });
+
+
+
+papercutApp.directive('targetBlank', function () {
+    return {
+        link: function (scope, element, attributes) {
+            element.on('load', function () {
+                var a = element.contents().find('a');
+                a.attr('target', '_blank');
+            });
+        }
+    };
+});
+
+function guid() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+                   .toString(16)
+                   .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+           s4() + '-' + s4() + s4() + s4();
+}
+
+papercutApp.directive('ngKeyEnter', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if (event.which === 13) {
+                scope.$apply(function () {
+                    scope.$eval(attrs.ngKeyEnter);
+                });
+                event.preventDefault();
+            }
+        });
+    };
+});
+
