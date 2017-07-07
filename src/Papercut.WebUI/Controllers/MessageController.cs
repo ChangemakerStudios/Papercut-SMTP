@@ -41,12 +41,22 @@ namespace Papercut.WebUI.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage GetAll()
+        public HttpResponseMessage GetAll(int limit = 10, int start = 0)
         {
-            var messages = messageRepository.LoadMessages()
+            var messageEntries = messageRepository.LoadMessages();
+
+            var messages = messageEntries
+                .OrderByDescending(msg => msg.ModifiedDate)
+                .Skip(start)
+                .Take(limit)
                 .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, messageLoader.LoadMailMessage(e))))
                 .ToList();
-            return Request.CreateResponse(HttpStatusCode.OK, messages);
+
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                TotalMessageCount = messageEntries.Count,
+                Messages = messages
+            });
         }
 
         [HttpGet]

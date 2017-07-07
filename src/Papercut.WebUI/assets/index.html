@@ -215,25 +215,25 @@
         <tr>
             <th>To</th>
             <td>
-                <p ng-repeat="to in preview.To">
+                <label class="mail-address" ng-repeat="to in preview.To">
                     <span ng-if="!!to.Name">{{to.Name}}(</span>   {{ to.Address }}<span ng-if="!!to.Name">)</span>
-                </p>
+                </label>
             </td>
         </tr>
         <tr ng-if="!!(preview.Cc && preview.Cc.length)">
             <th>CC</th>
             <td>
-                <p ng-repeat="c in preview.Cc">
+                <label class="mail-address" ng-repeat="c in preview.Cc">
                     <span ng-if="!!c.Name">{{c.Name}}(</span>   {{ c.Address }}<span ng-if="!!c.Name">)</span>
-                </p>
+                </label>
             </td>
         </tr>
         <tr ng-if="!!(preview.BCc && preview.BCc.length)">
             <th>BCC</th>
             <td>
-                <p ng-repeat="b in preview.BCc">
+                <label class="mail-address" ng-repeat="b in preview.BCc">
                     <span ng-if="!!b.Name">{{b.Name}}(</span>   {{ b.Address }}<span ng-if="!!b.Name">)</span>
-                </p>
+                </label>
             </td>
         </tr>
         </tbody>

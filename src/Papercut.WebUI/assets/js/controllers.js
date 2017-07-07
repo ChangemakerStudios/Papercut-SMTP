@@ -78,7 +78,7 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
           return
         }
         if ($scope.countMessages < $scope.itemsPerPage) {
-          $scope.countMessages++;
+          $scope.countMessagescountMessages++;
         }
         var message = JSON.parse(e.data);
         $scope.messages.unshift(message);
@@ -205,10 +205,10 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
       url += "?limit=" + $scope.itemsPerPage;
     }
     $http.get(url).success(function(data) {
-      $scope.messages = data;
-      $scope.totalMessages = data.length;
-      $scope.countMessages = data.length;
-      $scope.startMessages = 0;
+      $scope.messages = data.Messages;
+      $scope.totalMessages = data.TotalMessageCount;
+      $scope.countMessages = data.Messages.length;
+      $scope.startMessages = $scope.startIndex;
       e.done();
     });
   }
@@ -227,6 +227,8 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     if(typeof(Storage) !== "undefined") {
         localStorage.setItem("itemsPerPage", $scope.itemsPerPage)
     }
+
+    $scope.startIndex = 0;
     $scope.refresh();
   }
 
