@@ -29,6 +29,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Network", "src\Pap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Common", "src\Papercut.Common\Papercut.Common.csproj", "{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.WebUI", "src\Papercut.WebUI\Papercut.WebUI.csproj", "{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2D6337D4-FD59-49E0-9209-4B06219DB29D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.WebUI.Test", "test\Papercut.WebUI.Test\Papercut.WebUI.Test.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +75,14 @@ Global
 		{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,5 +90,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
 		{F60D44E1-100E-464A-A280-CA6BAF652177} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
+		{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
+		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA} = {2D6337D4-FD59-49E0-9209-4B06219DB29D}
 	EndGlobalSection
 EndGlobal
