@@ -19,27 +19,35 @@
 namespace Papercut.WebUI
 {
     using System;
+    using System.ServiceModel;
     using System.Web.Http.SelfHost;
 
     using Autofac;
 
     using Common.Domain;
 
+    using Core.Domain.Settings;
     using Core.Infrastructure.Lifecycle;
 
     class WebServer : IEventHandler<PapercutServiceReadyEvent>
     {
         readonly ILifetimeScope scope;
-        const string BaseAddress = "http://localhost:6789";
+        readonly int httpPort;
+        const string BaseAddress = "http://localhost:{0}";
+        const int DefaultHttpPort = 37408;
 
-        public WebServer(ILifetimeScope scope)
+        public WebServer(ILifetimeScope scope, ISettingStore settingStore)
         {
             this.scope = scope;
+            httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
         }
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
-            var config = new HttpSelfHostConfiguration(BaseAddress);
+            var config = new HttpSelfHostConfiguration(string.Format(BaseAddress, httpPort))
+            {
+                HostNameComparisonMode = HostNameComparisonMode.WeakWildcard
+            };
             RouteConfig.Init(config, scope);
             new HttpSelfHostServer(config).OpenAsync().Wait();
 
