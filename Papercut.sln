@@ -29,11 +29,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Network", "src\Pap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Common", "src\Papercut.Common\Papercut.Common.csproj", "{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.WebUI", "src\Papercut.WebUI\Papercut.WebUI.csproj", "{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Modeule.WebUI", "src\Papercut.Module.WebUI\Papercut.Modeule.WebUI.csproj", "{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2D6337D4-FD59-49E0-9209-4B06219DB29D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.WebUI.Test", "test\Papercut.WebUI.Test\Papercut.WebUI.Test.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.WebUI.Tests", "test\Papercut.Module.WebUI.Tests\Papercut.Module.WebUI.Tests.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

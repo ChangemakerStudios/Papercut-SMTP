@@ -1,6 +1,6 @@
 using System.Web.Http;
 
-namespace Papercut.WebUI
+namespace Papercut.Module.WebUI
 {
     using Autofac;
     using Autofac.Integration.WebApi;

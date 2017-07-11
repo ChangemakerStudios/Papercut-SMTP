@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}</ProjectGuid>
+    <ProjectGuid>{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Papercut.WebUI.Test</RootNamespace>
-    <AssemblyName>Papercut.WebUI.Test</AssemblyName>
+    <RootNamespace>Papercut.Module.WebUI</RootNamespace>
+    <AssemblyName>Papercut.Module.WebUI</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,26 +32,22 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
-      <HintPath>..\..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
+    <Reference Include="Autofac.Integration.WebApi, Version=3.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.WebApi.3.1.0\lib\net40\Autofac.Integration.WebApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MimeKit, Version=1.16.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
+    <Reference Include="MimeKit">
       <HintPath>..\..\packages\MimeKit.1.16.1\lib\net40\MimeKit.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.10.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RestSharp.105.2.3\lib\net4\RestSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -79,11 +76,18 @@
       <HintPath>..\..\packages\Microsoft.Net.Http.2.2.29\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\..\packages\Rx-Core.2.2.5\lib\net40\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Rx-Interfaces.2.2.5\lib\net40\System.Reactive.Interfaces.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Runtime, Version=2.6.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.Runtime.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Security" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Threading.Tasks, Version=2.6.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.Threading.Tasks.dll</HintPath>
       <Private>True</Private>
@@ -92,59 +96,94 @@
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Core.4.0.20710.0\lib\net40\System.Web.Http.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web.Http.SelfHost, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.SelfHost.4.0.30506.0\lib\net40\System.Web.Http.SelfHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="xunit, Version=1.9.2.1705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Base\ApiFactBase.cs" />
-    <Compile Include="Base\ServerPathTemplateProviderService.cs" />
-    <Compile Include="MessageFacts\LoadMessageFacts.cs" />
-    <Compile Include="WebServerFacts\WebUiWebServerApiFact.cs" />
+    <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Controllers\HealthController.cs" />
+    <Compile Include="Controllers\StaticContentController.cs" />
+    <Compile Include="Models\MessageDetail.cs" />
+    <Compile Include="Models\MimeMessageEntry.cs" />
+    <Compile Include="RouteConfig.cs" />
+    <Compile Include="WebServer.cs" />
+    <Compile Include="WebUIPluginModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Papercut.Common\Papercut.Common.csproj">
-      <Project>{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}</Project>
+    <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
+      <Project>{5fa0e4aa-27af-4801-b6ca-8c97dadd6da6}</Project>
       <Name>Papercut.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Papercut.Core\Papercut.Core.csproj">
+    <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj">
       <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
       <Name>Papercut.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Papercut.Message\Papercut.Message.csproj">
+    <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
       <Project>{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}</Project>
       <Name>Papercut.Message</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Papercut.WebUI\Papercut.WebUI.csproj">
-      <Project>{a1c924f3-3cfb-4844-b79f-8bffec60eebf}</Project>
-      <Name>Papercut.WebUI</Name>
-    </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="app.config" />
+    <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.ttf" />
+    <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.woff" />
+    <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.woff2" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\css\bootstrap-3.3.2.min.css" />
+    <EmbeddedResource Include="assets\css\jquery-ui-1.10.4-smoothness.css" />
+    <EmbeddedResource Include="assets\css\style.css" />
+    <EmbeddedResource Include="assets\fonts\glyphicons-halflings-regular.svg" />
+    <EmbeddedResource Include="assets\images\github.png" />
+    <EmbeddedResource Include="assets\index.html" />
+    <EmbeddedResource Include="assets\js\angular-1.3.8.js" />
+    <EmbeddedResource Include="assets\js\bootstrap-3.3.2.min.js" />
+    <EmbeddedResource Include="assets\js\controllers.js" />
+    <EmbeddedResource Include="assets\js\filesize-3.1.2.min.js" />
+    <EmbeddedResource Include="assets\js\iso88591_map.js" />
+    <EmbeddedResource Include="assets\js\jquery-1.11.0.min.js" />
+    <EmbeddedResource Include="assets\js\jquery-ui-1.10.4.min.js" />
+    <EmbeddedResource Include="assets\js\moment-2.8.4.js" />
+    <EmbeddedResource Include="assets\js\punycode.js" />
+    <EmbeddedResource Include="assets\js\sjis_map.js" />
+    <EmbeddedResource Include="assets\js\strutil.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\images\papercut-logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\images\papercut.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Target AfterTargets="AfterBuild;NonWinFodyTarget" Name="CleanReferenceCopyLocalPaths">
+    <Delete Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" />
+  </Target>
+  <Import Project="..\..\packages\Fody.2.0.10\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.2.0.10\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>if  "$(Configuration)"=="Debug" mkdir $(ProjectDir)..\Papercut.Service\bin\Debug\plugins
+if  "$(Configuration)"=="Debug" copy $(ProjectDir)$(OutDir)$(AssemblyName).dll $(ProjectDir)..\Papercut.Service\bin\Debug\plugins\$(AssemblyName).dll
+if  "$(Configuration)"=="Debug" copy $(ProjectDir)$(OutDir)$(AssemblyName).config $(ProjectDir)..\Papercut.Service\bin\Debug\plugins\$(AssemblyName).config
+if  "$(Configuration)"=="Debug" copy $(ProjectDir)$(OutDir)$(AssemblyName).pdb $(ProjectDir)..\Papercut.Service\bin\Debug\plugins\$(AssemblyName).pdb</PostBuildEvent>
+  </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Fody.2.0.10\build\portable-net+sl+win+wpa+wp\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Fody.2.0.10\build\portable-net+sl+win+wpa+wp\Fody.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Costura.Fody.1.5.1\build\portable-net+sl+win+wpa+wp\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Costura.Fody.1.5.1\build\portable-net+sl+win+wpa+wp\Costura.Fody.targets'))" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\packages\Costura.Fody.1.5.1\build\portable-net+sl+win+wpa+wp\Costura.Fody.targets" Condition="Exists('..\..\packages\Costura.Fody.1.5.1\build\portable-net+sl+win+wpa+wp\Costura.Fody.targets')" />
 </Project>

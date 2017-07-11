@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Test.Base
+namespace Papercut.Module.WebUI.Test.Base
 {
     using System.Collections.ObjectModel;
     using System.IO;

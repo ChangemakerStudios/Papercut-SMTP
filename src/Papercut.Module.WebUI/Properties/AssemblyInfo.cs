@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Papercut.WebUI.Tests")]
+[assembly: AssemblyTitle("Papercut.Module.WebUI")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Papercut.WebUI.Tests")]
+[assembly: AssemblyProduct("Papercut.Module.WebUI")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("9ea3d96f-4b03-404d-bd2d-ebe12c1c1ffa")]
+[assembly: Guid("a1c924f3-3cfb-4844-b79f-8bffec60eebf")]
 
 // Version information for an assembly consists of the following four values:
 //

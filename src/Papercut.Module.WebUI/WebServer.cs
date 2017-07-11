@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI
+namespace Papercut.Module.WebUI
 {
     using System;
     using System.ServiceModel;

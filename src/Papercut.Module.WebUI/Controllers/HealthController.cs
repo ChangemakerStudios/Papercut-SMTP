@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Controllers
+namespace Papercut.Module.WebUI.Controllers
 {
     using System.Net;
     using System.Net.Http;

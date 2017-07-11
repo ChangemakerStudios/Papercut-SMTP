@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Test.MessageFacts
+namespace Papercut.Module.WebUI.Test.MessageFacts
 {
     using System.Collections.Generic;
     using System.Linq;

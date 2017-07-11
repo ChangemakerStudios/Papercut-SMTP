@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Test.WebServerFacts
+namespace Papercut.Module.WebUI.Test.WebServerFacts
 {
     using Base;
 

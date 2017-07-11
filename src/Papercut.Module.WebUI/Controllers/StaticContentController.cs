@@ -1,6 +1,6 @@
 ﻿
 
-namespace Papercut.WebUI.Controllers
+namespace Papercut.Module.WebUI.Controllers
 {
     using System;
     using System.Collections.Generic;

@@ -55,4 +55,4 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyVersion("4.8.0.0")]
 [assembly: AssemblyFileVersion("4.8.0.0")]
-[assembly:InternalsVisibleTo("Papercut.WebUI.Test")]
+[assembly:InternalsVisibleTo("Papercut.Module.WebUI.Test")]
