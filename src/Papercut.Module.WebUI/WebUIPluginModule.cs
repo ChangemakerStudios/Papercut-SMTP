@@ -40,7 +40,10 @@ namespace Papercut.Module.WebUI
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<WebServer>().As<IEventHandler<PapercutServiceReadyEvent>>().SingleInstance();
+            builder.RegisterType<WebServer>()
+                .As<IEventHandler<PapercutServiceReadyEvent>>()
+                .As<IEventHandler<PapercutClientReadyEvent>>()
+                .SingleInstance();
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
 
             base.Load(builder);

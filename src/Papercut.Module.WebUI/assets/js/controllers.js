@@ -39,12 +39,6 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   $scope.selectedOutgoingSMTP = ""
   $scope.saveSMTPServer = false;
 
-  $(function() {
-    $scope.openStream();
-    if(typeof(Notification) !== "undefined") {
-      Notification.requestPermission();
-    }
-  });
 
   $scope.getMoment = function(a) {
     return moment(a)

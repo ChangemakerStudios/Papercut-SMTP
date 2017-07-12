@@ -29,29 +29,51 @@ namespace Papercut.Module.WebUI
     using Core.Domain.Settings;
     using Core.Infrastructure.Lifecycle;
 
-    class WebServer : IEventHandler<PapercutServiceReadyEvent>
+    using Serilog;
+
+    class WebServer : IEventHandler<PapercutServiceReadyEvent>, IEventHandler<PapercutClientReadyEvent>
     {
         readonly ILifetimeScope scope;
+        readonly ILogger logger;
+
         readonly int httpPort;
         const string BaseAddress = "http://localhost:{0}";
         const int DefaultHttpPort = 37408;
 
-        public WebServer(ILifetimeScope scope, ISettingStore settingStore)
+        public WebServer(ILifetimeScope scope, ISettingStore settingStore, ILogger logger)
         {
             this.scope = scope;
+            this.logger = logger;
             httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
         }
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
-            var config = new HttpSelfHostConfiguration(string.Format(BaseAddress, httpPort))
-            {
-                HostNameComparisonMode = HostNameComparisonMode.WeakWildcard
-            };
-            RouteConfig.Init(config, scope);
-            new HttpSelfHostServer(config).OpenAsync().Wait();
+            StartHttpServer();
+        }
 
-            Console.WriteLine("WebUI server started.");
+        public void Handle(PapercutClientReadyEvent @event)
+        {
+            StartHttpServer();
+        }
+
+        void StartHttpServer()
+        {
+            try
+            {
+                var config = new HttpSelfHostConfiguration(string.Format(BaseAddress, httpPort))
+                {
+                    HostNameComparisonMode = HostNameComparisonMode.WeakWildcard
+                };
+                RouteConfig.Init(config, scope);
+                new HttpSelfHostServer(config).OpenAsync().Wait();
+
+                logger.Information($"WebUI server started at port {httpPort}.");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"Can not start HTTP server at port {httpPort}.");
+            }
         }
     }
 }
