@@ -181,15 +181,15 @@
   </Target>
   <Import Project="..\..\packages\Fody.2.0.10\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.2.0.10\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>if  "$(Configuration)"=="Debug" mkdir $(ProjectDir)..\Papercut.Service\bin\Debug\plugins
-if  "$(Configuration)"=="Debug" copy $(ProjectDir)$(OutDir)$(AssemblyName).dll $(ProjectDir)..\Papercut.Service\bin\Debug\plugins\$(AssemblyName).dll
-if  "$(Configuration)"=="Debug" copy $(ProjectDir)$(OutDir)$(AssemblyName).config $(ProjectDir)..\Papercut.Service\bin\Debug\plugins\$(AssemblyName).config
-if  "$(Configuration)"=="Debug" copy $(ProjectDir)$(OutDir)$(AssemblyName).pdb $(ProjectDir)..\Papercut.Service\bin\Debug\plugins\$(AssemblyName).pdb
+    <PostBuildEvent>mkdir $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins
+copy $(ProjectDir)$(OutDir)$(AssemblyName).dll $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins\$(AssemblyName).dll
+copy $(ProjectDir)$(OutDir)$(AssemblyName).dll.config $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins\$(AssemblyName).dll.config
+copy $(ProjectDir)$(OutDir)$(AssemblyName).pdb $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins\$(AssemblyName).pdb
 
-if  "$(Configuration)"=="Debug" mkdir $(ProjectDir)..\Papercut.UI\bin\Debug\plugins
-if  "$(Configuration)"=="Debug" copy $(ProjectDir)$(OutDir)$(AssemblyName).dll $(ProjectDir)..\Papercut.UI\bin\Debug\plugins\$(AssemblyName).dll
-if  "$(Configuration)"=="Debug" copy $(ProjectDir)$(OutDir)$(AssemblyName).config $(ProjectDir)..\Papercut.UI\bin\Debug\plugins\$(AssemblyName).config
-if  "$(Configuration)"=="Debug" copy $(ProjectDir)$(OutDir)$(AssemblyName).pdb $(ProjectDir)..\Papercut.UI\bin\Debug\plugins\$(AssemblyName).pdb</PostBuildEvent>
+mkdir $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins
+copy $(ProjectDir)$(OutDir)$(AssemblyName).dll $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins\$(AssemblyName).dll
+copy $(ProjectDir)$(OutDir)$(AssemblyName).dll.config $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins\$(AssemblyName).dll.config
+copy $(ProjectDir)$(OutDir)$(AssemblyName).pdb $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins\$(AssemblyName).pdb</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
