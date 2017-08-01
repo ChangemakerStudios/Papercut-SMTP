@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Weavers>
+  <Costura>
+    <IncludeAssemblies>
+      Autofac.Integration.WebApi
+      System.Web.Http
+      System.Net.Http
+      System.Web.Http.SelfHost
+      System.Net.Http.Extensions
+      System.Net.Http.Formatting
+      System.Net.Http.Primitives
+      System.Net.Http.WebRequest
+    </IncludeAssemblies>
+  </Costura>
+</Weavers>
