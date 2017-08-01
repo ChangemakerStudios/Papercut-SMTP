@@ -93,7 +93,6 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -126,7 +125,7 @@
       <Project>{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}</Project>
       <Name>Papercut.Message</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Papercut.Module.WebUI\Papercut.Modeule.WebUI.csproj">
+    <ProjectReference Include="..\..\src\Papercut.Module.WebUI\Papercut.Module.WebUI.csproj">
       <Project>{a1c924f3-3cfb-4844-b79f-8bffec60eebf}</Project>
       <Name>Papercut.Modeule.WebUI</Name>
     </ProjectReference>
