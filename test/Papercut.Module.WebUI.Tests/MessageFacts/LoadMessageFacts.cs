@@ -40,7 +40,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             this._messageRepository = Scope.Resolve<MessageRepository>();
         }
 
-        [Test]
+        [Test, Order(1)]
         public void ShouldLoadAllMessages()
         {
             var existedMail = new MimeMessage
@@ -49,7 +49,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 From = {new MailboxAddress("mffeng@gmail.com")}
             };
 
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            var fileName = this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
 
             var messages = Get<MessageListResponse>("/api/messages").Messages;
             Assert.AreEqual(1, messages.Count);
@@ -61,8 +61,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.AreEqual("Test", message.Subject);
         }
 
-
-        [Test]
+        [Test, Order(2)]
         public void ShouldLoadMessagesByPagination()
         {
             var existedMail = new MimeMessage
@@ -70,15 +69,18 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                                   From = { new MailboxAddress("mffeng@gmail.com") }
                               };
 
-            var counts = 10;
-            var counter = 1;
-            do
+            // clear out existing messages
+            foreach (var message in this._messageRepository.LoadMessages())
             {
-                existedMail.Subject = "Test" + counter;
+                this._messageRepository.DeleteMessage(message);
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                existedMail.Subject = $"Test {i+1}";
                 this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
                 Thread.Sleep(10);
             }
-            while (++counter <= counts);
 
             var messageResponse = Get<MessageListResponse>("/api/messages?limit=2&start=3");
             var messages = messageResponse.Messages;
@@ -89,16 +91,16 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.NotNull(message1.Id);
             Assert.NotNull(message1.CreatedAt);
             Assert.NotNull(message1.Size);
-            Assert.AreEqual("Test7", message1.Subject);
+            Assert.AreEqual("Test 7", message1.Subject);
 
             var message2 = messages.Last();
             Assert.NotNull(message2.Id);
             Assert.NotNull(message2.CreatedAt);
             Assert.NotNull(message2.Size);
-            Assert.AreEqual("Test6", message2.Subject);
+            Assert.AreEqual("Test 6", message2.Subject);
         }
 
-        [Test]
+        [Test, Order(3)]
         public void ShouldLoadMessageDetailByID()
         {
             var existedMail = new MimeMessage
@@ -140,7 +142,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.Null(detail.HtmlBody);
         }
 
-        [Test]
+        [Test, Order(4)]
         public void ShouldReturn404IfNotFoundByID()
         {
             var response = Client.GetAsync("/api/messages/some-strange-id").Result;

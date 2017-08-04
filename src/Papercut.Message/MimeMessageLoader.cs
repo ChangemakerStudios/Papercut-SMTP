@@ -24,6 +24,8 @@ namespace Papercut.Message
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
     using System.Runtime.Caching;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using MimeKit;
 
@@ -66,40 +68,7 @@ namespace Papercut.Message
 
                     try
                     {
-                         message = MimeMessageCache.GetOrSet(
-                            messageEntry.File,
-                            () =>
-                            {
-                                _logger.Verbose(
-                                    "Getting Message Data from Cached Message Repository",
-                                    messageEntry);
-                                var messageData = _messageRepository.GetMessage(messageEntry);
-                                MimeMessage mimeMessage;
-
-                                // wrap in a memorystream...
-                                using (var ms = new MemoryStream(messageData))
-                                {
-                                    _logger.Verbose(
-                                        "MimeMessage Load for {@MessageEntry}",
-                                        messageEntry);
-
-                                    mimeMessage = MimeMessage.Load(
-                                        ParserOptions.Default,
-                                        ms,
-                                        disposable.Token);
-                                }
-
-                                return mimeMessage;
-                            },
-                            m =>
-                            {
-                                var policy = new CacheItemPolicy
-                                {
-                                    SlidingExpiration = TimeSpan.FromSeconds(10)
-                                };
-
-                                MimeMessageCache.Add(messageEntry.File, m, policy);
-                            });
+                        message = this.GetMimeMessageFromCache(messageEntry);
                     }
                     catch (OperationCanceledException)
                     {
@@ -119,6 +88,42 @@ namespace Papercut.Message
 
                     return disposable;
                 }).SubscribeOn(TaskPoolScheduler.Default);
+        }
+
+        private MimeMessage GetMimeMessageFromCache(MessageEntry messageEntry)
+        {
+            return MimeMessageCache.GetOrSet(
+                messageEntry.File,
+                () =>
+                {
+                    this._logger.Verbose(
+                        "Getting Message Data from Message Repository",
+                        messageEntry);
+
+                    var messageData = this._messageRepository.GetMessage(messageEntry);
+                    MimeMessage mimeMessage;
+
+                    // wrap in a memorystream...
+                    using (var ms = new MemoryStream(messageData))
+                    {
+                        this._logger.Verbose(
+                            "MimeMessage Load for {@MessageEntry}",
+                            messageEntry);
+
+                        mimeMessage = MimeMessage.Load(ParserOptions.Default, ms);
+                    }
+
+                    return mimeMessage;
+                },
+                m =>
+                {
+                    var policy = new CacheItemPolicy
+                                 {
+                                     SlidingExpiration = TimeSpan.FromSeconds(10)
+                                 };
+
+                    MimeMessageCache.Add(messageEntry.File, m, policy);
+                });
         }
     }
 }
