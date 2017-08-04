@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2016 Jaben Cargman
+// Copyright © 2013 - 2017 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,11 +26,11 @@ namespace Papercut.Core.Infrastructure.Json
 
     public static class JsonHelpers
     {
-        static readonly JsonSerializerSettings _serializationSettings =
+        private static readonly JsonSerializerSettings _serializationSettings =
             new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Auto,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
             };
 
         public static string ToJson(this object obj, JsonSerializerSettings setting = null)

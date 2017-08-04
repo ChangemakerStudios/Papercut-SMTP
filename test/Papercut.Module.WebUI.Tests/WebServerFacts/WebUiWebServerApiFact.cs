@@ -20,16 +20,18 @@ namespace Papercut.Module.WebUI.Test.WebServerFacts
 {
     using Base;
 
-    using Xunit;
+    using NUnit.Framework;
 
-    public class WebUiWebServerApiFact : ApiFactBase
+    
+    [TestFixture]
+    public class WebUiWebServerApiFact : ApiTestBase
     {
-        [Fact]
-        void should_bootstrap_http_server_and_serve_health_check()
+        [Test]
+        public void ShouldBootstrapHttpServerAndServeHealthCheck()
         {
             var content = Get("/health");
 
-            Assert.Equal("Papercut WebUI server started successfully.", content);
+            Assert.AreEqual("Papercut WebUI server started successfully.", content);
         }
     }
 }

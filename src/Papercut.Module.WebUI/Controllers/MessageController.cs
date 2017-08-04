@@ -29,6 +29,8 @@ namespace Papercut.Module.WebUI.Controllers
     using MimeKit;
     using Models;
 
+    using Papercut.Message.Helpers;
+
     public class MessageController : ApiController
     {
         readonly MessageRepository messageRepository;
@@ -69,28 +71,6 @@ namespace Papercut.Module.WebUI.Controllers
             }
             var dto = MimeMessageEntry.Dto.CreateFrom(new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry)));
             return Request.CreateResponse(HttpStatusCode.OK, dto);
-        }
-    }
-
-
-    static class ExtensionMethods
-    {
-        public static MimeMessage LoadMailMessage(this MimeMessageLoader loader,  MessageEntry entry)
-        {
-            var loadTask = loader.Get(entry).ToTask();
-            loadTask.Wait();
-            return loadTask.Result;
-        }
-
-        public static Task<T> ToTask<T>(this IObservable<T> observable)
-        {
-            var taskCompleteSource = new TaskCompletionSource<T>();
-
-            observable.Subscribe(
-                m => { taskCompleteSource.SetResult(m); },
-                e => { taskCompleteSource.SetException(e); });
-
-            return taskCompleteSource.Task;
         }
     }
 }

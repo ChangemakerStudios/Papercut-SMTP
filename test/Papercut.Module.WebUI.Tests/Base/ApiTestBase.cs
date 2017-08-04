@@ -32,13 +32,13 @@ namespace Papercut.Module.WebUI.Test.Base
 
     using WebServerFacts;
 
-    public class ApiFactBase : IDisposable
+    public class ApiTestBase : IDisposable
     {
         protected ILifetimeScope Scope;
         protected string BaseAddress;
         protected readonly HttpClient Client;
 
-        public ApiFactBase()
+        public ApiTestBase()
         {
             BaseAddress = "http://webui.papercut.com";
             Scope = BuildContainer(MockDependencies).BeginLifetimeScope();

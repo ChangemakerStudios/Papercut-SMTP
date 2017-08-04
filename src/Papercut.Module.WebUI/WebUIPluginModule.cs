@@ -44,7 +44,8 @@ namespace Papercut.Module.WebUI
                 .As<IEventHandler<PapercutServiceReadyEvent>>()
                 .As<IEventHandler<PapercutClientReadyEvent>>()
                 .SingleInstance();
-            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+
+            builder.RegisterApiControllers(ThisAssembly);
 
             base.Load(builder);
         }
