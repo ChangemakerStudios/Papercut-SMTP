@@ -84,7 +84,6 @@ namespace Papercut.Core.Infrastructure.Logging
                         Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
                         return Log.Logger;
                     })
-                .As<ILogger>()
                 .AutoActivate()
                 .SingleInstance();
 

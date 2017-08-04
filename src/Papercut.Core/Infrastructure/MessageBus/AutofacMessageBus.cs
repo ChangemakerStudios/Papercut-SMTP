@@ -31,12 +31,9 @@ namespace Papercut.Core.Infrastructure.MessageBus
     {
         readonly ILifetimeScope _lifetimeScope;
 
-        private readonly ILogger _logger;
-
-        public AutofacMessageBus(ILifetimeScope lifetimeScope, ILogger logger)
+        public AutofacMessageBus(ILifetimeScope lifetimeScope)
         {
             this._lifetimeScope = lifetimeScope;
-            this._logger = logger;
         }
 
         public void Publish<T>(T eventObject) where T : IEvent
@@ -49,7 +46,11 @@ namespace Papercut.Core.Infrastructure.MessageBus
                 }
                 catch (Exception ex)
                 {
-                    this._logger.Error(ex, "Failed publishing {EventType} to {EventHandler}", typeof(T), @event.GetType());
+                    this._lifetimeScope.Resolve<ILogger>().ForContext<AutofacMessageBus>().Error(
+                        ex,
+                        "Failed publishing {EventType} to {EventHandler}",
+                        typeof(T),
+                        @event.GetType());
                 }
             }
         }

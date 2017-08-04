@@ -17,28 +17,49 @@
 
 namespace Papercut.Core.Infrastructure.Plugins
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+
     using Autofac;
+
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.Lifecycle;
 
     using Serilog;
 
-    public class PluginReport : IStartable
+    public class PluginReport : IEventHandler<PapercutClientReadyEvent>, IEventHandler<PapercutServiceReadyEvent>
     {
-        private readonly ILogger _logger;
         private readonly IPluginStore _pluginStore;
+        private readonly ILifetimeScope _scope;
 
-        public PluginReport(ILogger logger, IPluginStore pluginStore)
+        public PluginReport(IPluginStore pluginStore, ILifetimeScope scope)
         {
-            this._logger = logger;
             this._pluginStore = pluginStore;
+            this._scope = scope;
         }
 
-        public void Start()
+        private void PluginInfoDump()
         {
+            var logger = this._scope.Resolve<ILogger>().ForContext<PluginReport>();
+
             foreach (var pluginModule in this._pluginStore.Plugins)
             {
-                this._logger.Information("Loaded Plug-In {PluginName} {PluginVersion} {PluginDescription}", pluginModule.Name,
-                    pluginModule.Version, pluginModule.Description);
+                logger.Information(
+                    "Running Plug-In {PluginName} {PluginVersion} {PluginDescription}",
+                    pluginModule.Name,
+                    pluginModule.Version,
+                    pluginModule.Description);
             }
+        }
+
+        public void Handle(PapercutClientReadyEvent @event)
+        {
+            this.PluginInfoDump();
+        }
+
+        public void Handle(PapercutServiceReadyEvent @event)
+        {
+            this.PluginInfoDump();
         }
     }
 }
