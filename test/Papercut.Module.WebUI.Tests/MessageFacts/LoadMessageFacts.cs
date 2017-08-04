@@ -28,19 +28,20 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
     using Message;
     using MimeKit;
     using Models;
-    using Xunit;
 
-    public class LoadMessageFacts : ApiFactBase
+    using NUnit.Framework;
+
+    public class LoadMessageFacts : ApiTestBase
     {
-        readonly MessageRepository messageRepository;
+        readonly MessageRepository _messageRepository;
 
         public LoadMessageFacts()
         {
-            messageRepository = Scope.Resolve<MessageRepository>();
+            this._messageRepository = Scope.Resolve<MessageRepository>();
         }
 
-        [Fact]
-        void should_load_all_messages()
+        [Test, Order(1)]
+        public void ShouldLoadAllMessages()
         {
             var existedMail = new MimeMessage
             {
@@ -48,56 +49,59 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 From = {new MailboxAddress("mffeng@gmail.com")}
             };
 
-            messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            var fileName = this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
 
             var messages = Get<MessageListResponse>("/api/messages").Messages;
-            Assert.Equal(1, messages.Count);
+            Assert.AreEqual(1, messages.Count);
 
             var message = messages.First();
             Assert.NotNull(message.Id);
             Assert.NotNull(message.CreatedAt);
             Assert.NotNull(message.Size);
-            Assert.Equal("Test", message.Subject);
+            Assert.AreEqual("Test", message.Subject);
         }
 
-
-        [Fact]
-        void should_load_messages_by_pagination()
+        [Test, Order(2)]
+        public void ShouldLoadMessagesByPagination()
         {
             var existedMail = new MimeMessage
-            {
-                From = { new MailboxAddress("mffeng@gmail.com") }
-            };
+                              {
+                                  From = { new MailboxAddress("mffeng@gmail.com") }
+                              };
 
-            var counts = 10;
-            var counter = 1;
-            do
+            // clear out existing messages
+            foreach (var message in this._messageRepository.LoadMessages())
             {
-                existedMail.Subject = "Test" + counter;
-                messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+                this._messageRepository.DeleteMessage(message);
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                existedMail.Subject = $"Test {i+1}";
+                this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
                 Thread.Sleep(10);
-            } while (++counter <= counts);
+            }
 
             var messageResponse = Get<MessageListResponse>("/api/messages?limit=2&start=3");
             var messages = messageResponse.Messages;
-            Assert.Equal(10, messageResponse.TotalMessageCount);
-            Assert.Equal(2, messages.Count);
+            Assert.AreEqual(10, messageResponse.TotalMessageCount);
+            Assert.AreEqual(2, messages.Count);
 
             var message1 = messages.First();
             Assert.NotNull(message1.Id);
             Assert.NotNull(message1.CreatedAt);
             Assert.NotNull(message1.Size);
-            Assert.Equal("Test7", message1.Subject);
+            Assert.AreEqual("Test 7", message1.Subject);
 
             var message2 = messages.Last();
             Assert.NotNull(message2.Id);
             Assert.NotNull(message2.CreatedAt);
             Assert.NotNull(message2.Size);
-            Assert.Equal("Test6", message2.Subject);
+            Assert.AreEqual("Test 6", message2.Subject);
         }
 
-        [Fact]
-        void should_load_message_detail_by_id()
+        [Test, Order(3)]
+        public void ShouldLoadMessageDetailByID()
         {
             var existedMail = new MimeMessage
             {
@@ -108,41 +112,41 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 Bcc = {new MailboxAddress("rzhe@gmail.com"), new MailboxAddress("xueting@gmail.com")},
                 Body = new TextPart("plain") {Text = "Hello Buddy"}
             };
-            messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
             var messages = Get<MessageListResponse>("/api/messages").Messages;
             var id = messages.First().Id;
 
 
             var detail = Get<MimeMessageEntry.Dto>($"/api/messages/{id}");
-            Assert.Equal(id, detail.Id);
+            Assert.AreEqual(id, detail.Id);
             Assert.NotNull(detail.CreatedAt);
 
-            Assert.Equal(1, detail.From.Count);
-            Assert.Equal("mffeng@gmail.com", detail.From.First().Address);
+            Assert.AreEqual(1, detail.From.Count);
+            Assert.AreEqual("mffeng@gmail.com", detail.From.First().Address);
 
 
-            Assert.Equal(1, detail.To.Count);
-            Assert.Equal("xwliu@gmail.com", detail.To.First().Address);
+            Assert.AreEqual(1, detail.To.Count);
+            Assert.AreEqual("xwliu@gmail.com", detail.To.First().Address);
 
 
-            Assert.Equal(2, detail.Cc.Count);
-            Assert.Equal("jjchen@gmail.com", detail.Cc.First().Address);
-            Assert.Equal("ygma@gmail.com", detail.Cc.Last().Address);
+            Assert.AreEqual(2, detail.Cc.Count);
+            Assert.AreEqual("jjchen@gmail.com", detail.Cc.First().Address);
+            Assert.AreEqual("ygma@gmail.com", detail.Cc.Last().Address);
 
-            Assert.Equal(2, detail.BCc.Count);
-            Assert.Equal("rzhe@gmail.com", detail.BCc.First().Address);
-            Assert.Equal("xueting@gmail.com", detail.BCc.Last().Address);
+            Assert.AreEqual(2, detail.BCc.Count);
+            Assert.AreEqual("rzhe@gmail.com", detail.BCc.First().Address);
+            Assert.AreEqual("xueting@gmail.com", detail.BCc.Last().Address);
 
-            Assert.Equal("Test", detail.Subject);
-            Assert.Equal("Hello Buddy", detail.TextBody?.Trim());
+            Assert.AreEqual("Test", detail.Subject);
+            Assert.AreEqual("Hello Buddy", detail.TextBody?.Trim());
             Assert.Null(detail.HtmlBody);
         }
 
-        [Fact]
-        void should_return_404_if_not_found_by_id()
+        [Test, Order(4)]
+        public void ShouldReturn404IfNotFoundByID()
         {
             var response = Client.GetAsync("/api/messages/some-strange-id").Result;
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         }
 
 

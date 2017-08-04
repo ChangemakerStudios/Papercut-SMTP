@@ -48,31 +48,34 @@ namespace Papercut.Core.Infrastructure.Plugins
                             var interfaces = s.GetInterfaces();
                             return interfaces.Contains(typeof(IDiscoverableModule)) || interfaces.Contains(typeof(IPluginModule));
                         })
-                    .Distinct()
                     .ToList();
 
-            foreach (var pluginType in pluginModules)
+            var modules = pluginModules.Select(
+                type =>
+                {
+                    try
+                    {
+                        return Activator.CreateInstance(type) as IDiscoverableModule;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, "Failure Loading Plugin Module Type {PluginModuleType}", type.FullName);
+                    }
+
+                    return null;
+                }).Where(s => s != null).ToList();
+
+            var plugins = modules.OfType<IPluginModule>().Distinct(PluginModuleEqualityComparer.Instance).ToList();
+
+            foreach (var plugin in plugins)
             {
-                try
-                {
-                    // register and load...
-                    var module = Activator.CreateInstance(pluginType) as IDiscoverableModule;
+                builder.RegisterModule(plugin.Module);
+                PluginStore.Instance.Add(plugin);
+            }
 
-                    if (module != null)
-                    {
-                        builder.RegisterModule(module.Module);
-                    }
-
-                    var plugin = module as IPluginModule;
-                    if (plugin != null)
-                    {
-                        PluginStore.Instance.Add(plugin);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "Failure Loading Plugin Module Type {PluginModuleType}", pluginType.FullName);
-                }
+            foreach (var plugin in modules.Except(plugins))
+            {
+                builder.RegisterModule(plugin.Module);
             }
         }
     }

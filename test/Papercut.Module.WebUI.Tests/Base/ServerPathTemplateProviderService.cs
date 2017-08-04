@@ -25,7 +25,7 @@ namespace Papercut.Module.WebUI.Test.Base
 
     using Core.Domain.Paths;
 
-    class ServerPathTemplateProviderService : IPathTemplatesProvider
+    public class ServerPathTemplateProviderService : IPathTemplatesProvider
     {
         public ServerPathTemplateProviderService()
         {
