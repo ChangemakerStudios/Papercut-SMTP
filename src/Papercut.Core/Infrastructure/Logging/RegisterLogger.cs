@@ -24,6 +24,8 @@ namespace Papercut.Core.Infrastructure.Logging
 
     using Autofac;
 
+    using AutofacSerilogIntegration;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
 
@@ -80,11 +82,13 @@ namespace Papercut.Core.Infrastructure.Logging
                     c =>
                     {
                         Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
-
                         return Log.Logger;
                     })
                 .As<ILogger>()
+                .AutoActivate()
                 .SingleInstance();
+
+            builder.RegisterLogger();
         }
     }
 }

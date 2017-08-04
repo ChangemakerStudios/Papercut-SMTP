@@ -13,10 +13,12 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Events
 {
+    using System;
+
     using Caliburn.Micro;
 
     using Papercut.Common.Domain;
@@ -36,7 +38,8 @@ namespace Papercut.Events
             _uiEventAggregator = uiEventAggregator;
         }
 
-        public void Publish<T>(T eventObject) where T : IEvent
+        public void Publish<T>(T eventObject)
+            where T : IEvent
         {
             this._autofacMessageBus.Publish(eventObject);
             _uiEventAggregator.PublishOnUIThread(eventObject);

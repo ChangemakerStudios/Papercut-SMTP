@@ -17,6 +17,7 @@
 
 namespace Papercut.Core.Infrastructure.MessageBus
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -24,20 +25,32 @@ namespace Papercut.Core.Infrastructure.MessageBus
 
     using Papercut.Common.Domain;
 
+    using Serilog;
+
     public class AutofacMessageBus : IMessageBus
     {
         readonly ILifetimeScope _lifetimeScope;
 
-        public AutofacMessageBus(ILifetimeScope lifetimeScope)
+        private readonly ILogger _logger;
+
+        public AutofacMessageBus(ILifetimeScope lifetimeScope, ILogger logger)
         {
             this._lifetimeScope = lifetimeScope;
+            this._logger = logger;
         }
 
         public void Publish<T>(T eventObject) where T : IEvent
         {
             foreach (var @event in this.MaybeByOrderable(this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>()))
             {
-                @event.Handle(eventObject);
+                try
+                {
+                    @event.Handle(eventObject);
+                }
+                catch (Exception ex)
+                {
+                    this._logger.Error(ex, "Failed publishing {EventType} to {EventHandler}", typeof(T), @event.GetType());
+                }
             }
         }
 
