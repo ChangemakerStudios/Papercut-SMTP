@@ -8,8 +8,6 @@ before_build:
 after_build:
   # Papercut
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release # md plugins
-  - move Papercut.Module.*.dll plugins
-  - move Papercut.Module.*.config plugins
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip plugins
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe.*
@@ -17,8 +15,6 @@ after_build:
   - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.zip
   # Papercut Service
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release # md plugins
-  - move Papercut.Module.*.dll plugins
-  - move Papercut.Module.*.config plugins
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip plugins  
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip Papercut.Service.*
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Install-Papercut-Service.bat
