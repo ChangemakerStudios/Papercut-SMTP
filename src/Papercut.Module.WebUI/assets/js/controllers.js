@@ -40,8 +40,8 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   $scope.saveSMTPServer = false;
 
 
-  $scope.getMoment = function(a) {
-    return moment(a)
+  $scope.getMoment = function (a) {
+      return moment.utc(a, 'YYYY-MM-DDTHH:mm:ss.SSSZ').local();
   }
 
   $scope.backToInbox = function() {

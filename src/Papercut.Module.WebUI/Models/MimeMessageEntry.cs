@@ -47,7 +47,7 @@ namespace Papercut.Module.WebUI.Models
                 return new RefDto
                 {
                     Subject = messageEntry.Subject,
-                    CreatedAt = messageEntry.Created,
+                    CreatedAt = messageEntry.Created?.ToUniversalTime(),
                     Id = messageEntry.Id,
                     Size = messageEntry.FileSize
                 };
@@ -72,7 +72,7 @@ namespace Papercut.Module.WebUI.Models
                 return new Dto
                 {
                     Subject = messageEntry.Subject,
-                    CreatedAt = messageEntry.Created,
+                    CreatedAt = messageEntry.Created?.ToUniversalTime(),
                     Id = messageEntry.Id,
                     From = ToAddressList(mail?.From),
                     To = ToAddressList(mail?.To),

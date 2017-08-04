@@ -18,15 +18,13 @@
 
 namespace Papercut.Module.WebUI.Controllers
 {
-    using System;
     using System.Linq;
     using System.Net;
     using System.Net.Http;
-    using System.Threading.Tasks;
     using System.Web.Http;
-    using Core.Domain.Message;
+
     using Message;
-    using MimeKit;
+
     using Models;
 
     using Papercut.Message.Helpers;
