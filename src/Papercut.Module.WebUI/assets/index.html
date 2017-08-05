@@ -120,7 +120,7 @@
     <div class="col-md-4 col-sm-3">
       <div class="row">
         <div class="col-md-9 col-sm-12 text-right">
-            {{ getMoment(date(message.CreatedAt)).fromNow() }}
+            {{ getMoment(message.CreatedAt).fromNow() }}
         </div>
         <div class="col-md-3 col-sm-12 text-right">
           {{ message.Size }}
@@ -182,7 +182,7 @@
     </div>
 
     <div class="col-md-3 col-md-offset-3 col-sm-3 text-right">
-      {{ getMoment(date(message.Created)).fromNow() }}
+      {{ getMoment(message.CreatedAt).fromNow() }}
     </div>
   </div>
 </div>
