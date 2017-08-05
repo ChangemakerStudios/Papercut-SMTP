@@ -511,3 +511,19 @@ papercutApp.directive('ngKeyEnter', function () {
     };
 });
 
+
+papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout) {
+    return {
+        link: function (scope, element, attrs) {
+            element.attr('src', "about:blank");
+            element.on('load', function () {
+                var body = $(element).contents().find('body');
+                body.empty().append($sce.getTrustedHtml(scope.$eval(attrs.bodyHtml)));
+
+                $timeout(function () {
+                    element.css('height', $(body[0].ownerDocument.documentElement).height() + 100);
+                }, 50);
+            });
+        }
+    };
+}]);
