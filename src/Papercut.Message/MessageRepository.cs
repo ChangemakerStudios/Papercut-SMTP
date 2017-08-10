@@ -116,7 +116,7 @@ namespace Papercut.Message
             {
                 // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
                 fileName = Path.Combine(_messagePathConfigurator.DefaultSavePath,
-                    $"{DateTime.Now:yyyyMMddHHmmssFFF}-{StringHelpers.SmallRandomString()}.eml");
+                    $"{DateTime.Now:yyyyMMddHHmmssfff}-{StringHelpers.SmallRandomString()}.eml");
 
                 using (var fileStream = File.Create(fileName))
                 {

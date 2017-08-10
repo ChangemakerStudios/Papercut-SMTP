@@ -18,6 +18,7 @@
 
 namespace Papercut.Module.WebUI.Test.MessageFacts
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net;
@@ -59,6 +60,11 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.NotNull(message.CreatedAt);
             Assert.NotNull(message.Size);
             Assert.AreEqual("Test", message.Subject);
+
+
+            // Should serve CreatedAt as UTC value.
+            var dateDiff = DateTime.UtcNow - message.CreatedAt.Value;
+            Assert.Less(Math.Abs(dateDiff.TotalMinutes), 1);
         }
 
         [Test, Order(2)]

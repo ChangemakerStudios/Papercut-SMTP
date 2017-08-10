@@ -135,7 +135,7 @@
 }
 
 .preview .tab-content {
-  overflow-y: scroll;
+  overflow-y: visible;
 }
 
 .headers {
