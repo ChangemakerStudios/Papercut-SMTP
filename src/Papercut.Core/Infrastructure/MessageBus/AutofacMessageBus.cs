@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2016 Jaben Cargman
+// Copyright © 2013 - 2017 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@
 
 namespace Papercut.Core.Infrastructure.MessageBus
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
     using Autofac;
 
     using Papercut.Common.Domain;
+
+    using Serilog;
 
     public class AutofacMessageBus : IMessageBus
     {
@@ -37,7 +40,18 @@ namespace Papercut.Core.Infrastructure.MessageBus
         {
             foreach (var @event in this.MaybeByOrderable(this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>()))
             {
-                @event.Handle(eventObject);
+                try
+                {
+                    @event.Handle(eventObject);
+                }
+                catch (Exception ex)
+                {
+                    this._lifetimeScope.Resolve<ILogger>().ForContext<AutofacMessageBus>().Error(
+                        ex,
+                        "Failed publishing {EventType} to {EventHandler}",
+                        typeof(T),
+                        @event.GetType());
+                }
             }
         }
 

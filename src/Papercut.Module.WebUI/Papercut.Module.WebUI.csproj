@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Papercut.Module.WebUI</RootNamespace>
+    <AssemblyName>Papercut.Module.WebUI</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.6.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.4.6.1\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.WebApi, Version=4.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.WebApi2.4.1.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
+    </Reference>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="Costura, Version=1.6.2.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Costura.Fody.1.6.2\lib\dotnet\Costura.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MimeKit, Version=1.16.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MimeKit.1.16.2\lib\net45\MimeKit.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Serilog.2.5.0\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.SelfHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.SelfHost.5.2.3\lib\net45\System.Web.Http.SelfHost.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Controllers\HealthController.cs" />
+    <Compile Include="Controllers\StaticContentController.cs" />
+    <Compile Include="Models\MessageDetail.cs" />
+    <Compile Include="Models\MimeMessageEntry.cs" />
+    <Compile Include="RouteConfig.cs" />
+    <Compile Include="WebServer.cs" />
+    <Compile Include="WebUIPluginModule.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
+      <Project>{5fa0e4aa-27af-4801-b6ca-8c97dadd6da6}</Project>
+      <Name>Papercut.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj">
+      <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
+      <Name>Papercut.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
+      <Project>{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}</Project>
+      <Name>Papercut.Message</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.ttf" />
+    <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.woff" />
+    <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.woff2" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\css\bootstrap-3.3.2.min.css" />
+    <EmbeddedResource Include="assets\css\jquery-ui-1.10.4-smoothness.css" />
+    <EmbeddedResource Include="assets\css\style.css" />
+    <EmbeddedResource Include="assets\fonts\glyphicons-halflings-regular.svg" />
+    <EmbeddedResource Include="assets\images\github.png" />
+    <EmbeddedResource Include="assets\index.html" />
+    <EmbeddedResource Include="assets\js\angular-1.3.8.js" />
+    <EmbeddedResource Include="assets\js\bootstrap-3.3.2.min.js" />
+    <EmbeddedResource Include="assets\js\controllers.js" />
+    <EmbeddedResource Include="assets\js\filesize-3.1.2.min.js" />
+    <EmbeddedResource Include="assets\js\iso88591_map.js" />
+    <EmbeddedResource Include="assets\js\jquery-1.11.0.min.js" />
+    <EmbeddedResource Include="assets\js\jquery-ui-1.10.4.min.js" />
+    <EmbeddedResource Include="assets\js\moment-2.8.4.js" />
+    <EmbeddedResource Include="assets\js\punycode.js" />
+    <EmbeddedResource Include="assets\js\sjis_map.js" />
+    <EmbeddedResource Include="assets\js\strutil.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\images\papercut-logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\images\papercut.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FodyWeavers.xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>mkdir $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins
+copy $(ProjectDir)$(OutDir)$(AssemblyName).dll $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins\$(AssemblyName).dll
+copy $(ProjectDir)$(OutDir)$(AssemblyName).dll.config $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins\$(AssemblyName).dll.config
+copy $(ProjectDir)$(OutDir)$(AssemblyName).pdb $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins\$(AssemblyName).pdb
+
+mkdir $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins
+copy $(ProjectDir)$(OutDir)$(AssemblyName).dll $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins\$(AssemblyName).dll
+copy $(ProjectDir)$(OutDir)$(AssemblyName).dll.config $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins\$(AssemblyName).dll.config
+copy $(ProjectDir)$(OutDir)$(AssemblyName).pdb $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins\$(AssemblyName).pdb</PostBuildEvent>
+  </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Fody.2.1.2\build\netstandard1.0\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Fody.2.1.2\build\netstandard1.0\Fody.targets'))" />
+  </Target>
+  <Import Project="..\..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets" Condition="Exists('..\..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets')" />
+  <Import Project="..\..\packages\Fody.2.1.2\build\netstandard1.0\Fody.targets" Condition="Exists('..\..\packages\Fody.2.1.2\build\netstandard1.0\Fody.targets')" />
+</Project>

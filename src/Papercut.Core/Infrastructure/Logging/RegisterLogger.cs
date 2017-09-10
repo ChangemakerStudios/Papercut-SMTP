@@ -24,6 +24,8 @@ namespace Papercut.Core.Infrastructure.Logging
 
     using Autofac;
 
+    using AutofacSerilogIntegration;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
 
@@ -52,11 +54,10 @@ namespace Papercut.Core.Infrastructure.Logging
                          .MinimumLevel.Information()
 #endif
                                 .Enrich.With<EnvironmentEnricher>()
-                                .Enrich.WithThreadId()
                                 .Enrich.FromLogContext()
                                 .Enrich.WithProperty("AppName", appMeta.AppName)
                                 .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-                                .WriteTo.ColoredConsole()
+                                .WriteTo.LiterateConsole()
                                 .WriteTo.RollingFile(logFilePath);
 
                         // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
@@ -70,7 +71,7 @@ namespace Papercut.Core.Infrastructure.Logging
                         }
 
                         // support self-logging
-                        SelfLog.Out = Console.Error;
+                        SelfLog.Enable(s => Console.Error.WriteLine(s));
 
                         return logConfiguration;
                     })
@@ -81,11 +82,12 @@ namespace Papercut.Core.Infrastructure.Logging
                     c =>
                     {
                         Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
-
                         return Log.Logger;
                     })
-                .As<ILogger>()
+                .AutoActivate()
                 .SingleInstance();
+
+            builder.RegisterLogger();
         }
     }
 }

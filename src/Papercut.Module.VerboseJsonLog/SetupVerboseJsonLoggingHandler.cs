@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2016 Jaben Cargman
+// Copyright © 2013 - 2017 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ namespace Papercut.Module.VerboseJsonLog
         {
             string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
                 "Logs",
-                string.Format("{0}.json", _appMeta.AppName));
+                $"{this._appMeta.AppName}.json");
 
             var jsonSink = new RollingFileSink(logFilePath, new JsonFormatter(), null, null);
             @event.LogConfiguration.MinimumLevel.Debug().WriteTo.Sink(jsonSink, LogEventLevel.Debug);

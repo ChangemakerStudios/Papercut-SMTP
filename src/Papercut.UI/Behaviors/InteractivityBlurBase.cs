@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2016 Jaben Cargman
+// Copyright © 2013 - 2017 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ namespace Papercut.Behaviors
 
         public int BlurRadius
         {
-            get => (int)GetValue(BlurRadiusProperty);
-            set => SetValue(BlurRadiusProperty, value);
+            get { return (int) GetValue(BlurRadiusProperty); }
+            set { SetValue(BlurRadiusProperty, value); }
         }
 
         protected virtual BlurEffect GetBlurEffect()
