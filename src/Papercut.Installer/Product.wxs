@@ -10,7 +10,7 @@
     <?define SrvBinPath="..\Papercut.Service\$(var.BinPath)" ?>
 
     <?ifndef env.APPVEYOR_BUILD_VERSION ?>
-    <?define Version="4.8.0.0" ?>
+    <?define Version="5.0.0.0" ?>
     <?else?>
     <?define Version=$(env.APPVEYOR_BUILD_VERSION) ?>
     <?endif?>
@@ -23,7 +23,7 @@
              UpgradeCode="4ff0774f-3e17-42e1-936f-09877834669a"
         >
 
-        <Package InstallerVersion="301"
+        <Package InstallerVersion="405"
                  Manufacturer="$(var.Manufacturer)"
                  Compressed="yes"
                  InstallScope="perMachine" />

@@ -21,7 +21,7 @@
         <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]!(bind.packageManufacturer.PapercutMsi)\Papercut"/>
 
         <Chain>
-            <PackageGroupRef Id="NetFx40Web" />
+            <PackageGroupRef Id="NetFx45Web" />
 
             <RollbackBoundary />
 
