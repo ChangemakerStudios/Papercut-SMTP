@@ -54,6 +54,7 @@
             </Feature>
 
             <?if $(var.Configuration) = Release ?>
+            
             <Feature Id="FeaturePlugins" Title="Plugins" Level="1">
                 <Feature Id="FeaturePluginsSeq" Title="Papercut Seq Logging" Level="10">
                     <ComponentRef Id="ComponentPluginsSeq"/>
@@ -62,7 +63,13 @@
                 <Feature Id="FeaturePluginsLog" Title="Papercut Serilog Logging" Level="10">
                     <ComponentRef Id="ComponentPluginsLog" />
                 </Feature>
+
+                <Feature Id="FeaturePluginsWebUI" Title="Papercut Web UI" Level="10">
+                    <ComponentRef Id="ComponentPluginsWeb" />
+                    <ComponentRef Id="ComponentPluginsWebconfig"/>
+                </Feature>
             </Feature>
+            
             <?endif?>
 
         </FeatureGroup>
@@ -197,8 +204,17 @@
             <Component Id="ComponentPluginsSeq" Guid="*" DiskId="1">
                 <File Source="..\Papercut.Module.Seq\bin\$(var.Configuration)\Papercut.Module.Seq.dll" KeyPath="yes" />
             </Component>
+        
             <Component Id="ComponentPluginsLog" Guid="*" DiskId="1">
                 <File Source="..\Papercut.Module.VerboseJsonLog\bin\$(var.Configuration)\Papercut.Module.VerboseJsonLog.dll" KeyPath="yes" />
+            </Component>
+        
+            <Component Id="ComponentPluginsWeb" Guid="*" DiskId="1">
+                <File Id="Papercut.Module.WebUI.dll" Source="..\Papercut.Module.WebUI\bin\$(var.Configuration)\Papercut.Module.WebUI.dll" KeyPath="yes" />
+            </Component>
+        
+            <Component Id="ComponentPluginsWebconfig" Guid="669C4125-5B7E-40F7-80D5-3DC0955D7625" DiskId="1">
+                <File Source="..\Papercut.Module.WebUI\bin\$(var.Configuration)\Papercut.Module.WebUI.dll.config" CompanionFile="Papercut.Module.WebUI.dll" />
             </Component>
         </ComponentGroup>
     <?endif?>
