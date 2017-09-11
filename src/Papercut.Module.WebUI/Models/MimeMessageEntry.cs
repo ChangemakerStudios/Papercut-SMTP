@@ -80,6 +80,7 @@ namespace Papercut.Module.WebUI.Models
                     BCc = ToAddressList(mail?.Bcc),
                     HtmlBody = mail?.HtmlBody,
                     TextBody = mail?.TextBody,
+                    Headers = (mail?.Headers ?? new HeaderList()).Select(h => new HeaderDto { Name = h.Field, Value = h.Value}).ToList()
                 };
             }
 
@@ -115,10 +116,9 @@ namespace Papercut.Module.WebUI.Models
 
 
             public string HtmlBody { get; set; }
-            
-            public string TextBody { get; set; }
 
-           
+            public string TextBody { get; set; }
+            public List<HeaderDto> Headers { get; set; }
         }
 
         public class EmailAddressDto
@@ -126,5 +126,12 @@ namespace Papercut.Module.WebUI.Models
             public string Name { get; set; }
             public string Address { get; set; }
         }
+
+        public class HeaderDto
+        {
+            public string Name { get; set; }
+            public string Value { get; set; }
+        }
     }
+
 }

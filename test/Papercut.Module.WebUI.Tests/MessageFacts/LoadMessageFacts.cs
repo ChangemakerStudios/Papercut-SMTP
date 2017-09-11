@@ -149,6 +149,31 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         }
 
         [Test, Order(4)]
+        public void ShouldContainHeadersInMessageDetail()
+        {
+            var existedMail = new MimeMessage
+            {
+                Subject = "Test",
+                From = {new MailboxAddress("mffeng@gmail.com")},
+                To = {new MailboxAddress("xwliu@gmail.com")},
+                Body = new TextPart("plain") {Text = "Hello Buddy"}
+            };
+            existedMail.Headers.Add(HeaderId.ReplyTo, "one@replyto.com");
+            existedMail.Headers.Add("X-Extended", "extended value");
+            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            var messages = Get<MessageListResponse>("/api/messages").Messages;
+            var id = messages.First().Id;
+
+
+            var detail = Get<MimeMessageEntry.Dto>($"/api/messages/{id}");
+            Assert.AreEqual(id, detail.Id);
+
+            var headers = detail.Headers;
+            Assert.AreEqual("one@replyto.com",  headers.First(h => h.Name == "Reply-To").Value);
+            Assert.AreEqual("extended value", headers.First(h => h.Name == "X-Extended").Value);
+        }
+
+        [Test, Order(0)]
         public void ShouldReturn404IfNotFoundByID()
         {
             var response = Client.GetAsync("/api/messages/some-strange-id").Result;

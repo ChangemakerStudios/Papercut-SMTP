@@ -145,14 +145,22 @@
   </div>
 
   <div class="mail-content">
-    <ul class="nav nav-tabs">
-      <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
-      <li ng-class="{ active: !hasHTML(preview) }"><a href="#preview-plain" data-toggle="tab">Plain text</a></li>
+      <ul class="nav nav-tabs">
+        <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
+          <li ng-class="{ active: !hasHTML(preview) }"><a href="#preview-plain" data-toggle="tab">Plain text</a></li>
+          <li><a href="#preview-headers" data-toggle="tab">Headers</a></li>
     </ul>
 
     <div class="tab-content">
       <iframe target-blank="" ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }" class="tab-pane" id="preview-html" body-html="preview.previewHTML" seamless frameborder="0" style="width: 100%"></iframe>
       <div class="tab-pane" ng-class="{ active: !hasHTML(preview) }" id="preview-plain" ng-bind-html="formatMessagePlain(preview)"></div>
+        <div class="tab-pane" id="preview-headers">
+            <ul>
+                <li ng-repeat="header in preview.Headers">
+                    <span class="header-name">{{header.Name}}</span>: {{header.Value}}
+                </li>
+            </ul>
+        </div>
     </div>
   </div>
 </div>
