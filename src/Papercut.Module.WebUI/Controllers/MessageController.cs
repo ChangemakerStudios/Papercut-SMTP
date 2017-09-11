@@ -68,7 +68,7 @@ namespace Papercut.Module.WebUI.Controllers
                 return Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
-            var dto = MimeMessageEntry.Dto.CreateFrom(new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry)));
+            var dto = MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry)));
             return Request.CreateResponse(HttpStatusCode.OK, dto);
         }
     }

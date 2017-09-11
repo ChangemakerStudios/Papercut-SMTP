@@ -20,8 +20,10 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Text;
     using System.Threading;
 
     using Autofac;
@@ -50,7 +52,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 From = {new MailboxAddress("mffeng@gmail.com")}
             };
 
-            var fileName = this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
 
             var messages = Get<MessageListResponse>("/api/messages").Messages;
             Assert.AreEqual(1, messages.Count);
@@ -71,9 +73,9 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         public void ShouldLoadMessagesByPagination()
         {
             var existedMail = new MimeMessage
-                              {
-                                  From = { new MailboxAddress("mffeng@gmail.com") }
-                              };
+            {
+                From = {new MailboxAddress("mffeng@gmail.com")}
+            };
 
             // clear out existing messages
             foreach (var message in this._messageRepository.LoadMessages())
@@ -122,8 +124,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             var messages = Get<MessageListResponse>("/api/messages").Messages;
             var id = messages.First().Id;
 
-
-            var detail = Get<MimeMessageEntry.Dto>($"/api/messages/{id}");
+            var detail = Get<MimeMessageEntry.DetailDto>($"/api/messages/{id}");
             Assert.AreEqual(id, detail.Id);
             Assert.NotNull(detail.CreatedAt);
 
@@ -165,7 +166,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             var id = messages.First().Id;
 
 
-            var detail = Get<MimeMessageEntry.Dto>($"/api/messages/{id}");
+            var detail = Get<MimeMessageEntry.DetailDto>($"/api/messages/{id}");
             Assert.AreEqual(id, detail.Id);
 
             var headers = detail.Headers;
@@ -180,6 +181,35 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         }
 
+        [Test, Order(5)]
+        public void ShouldLoadAttachments()
+        {
+            var existedMail = new MimeMessage
+            {
+                Subject = "Test",
+                From = {new MailboxAddress("mffeng@gmail.com")},
+                Body = new Multipart
+                {
+                    new MimePart(new ContentType("image", "jpeg") {Charset = Encoding.UTF8.EncodingName})
+                    {
+                        FileName = "sample.pdf",
+                        ContentId = Guid.Empty.ToString()
+                    }
+                }
+            };
+            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+
+            var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
+
+            var detail = Get<MimeMessageEntry.DetailDto>($"/api/messages/{messageId}");
+            Assert.AreEqual(messageId, detail.Id);
+
+            var attachments = detail.Attachments;
+            Assert.AreEqual(1, attachments.Count);
+            Assert.AreEqual(Guid.Empty.ToString(), attachments.First().Id);
+            Assert.AreEqual("image/jpeg", attachments.First().MediaType);
+            Assert.AreEqual("sample.pdf", attachments.First().FileName);
+        }
 
         class MessageListResponse
         {

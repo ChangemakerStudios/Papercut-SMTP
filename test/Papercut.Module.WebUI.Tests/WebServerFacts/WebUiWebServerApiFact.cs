@@ -22,7 +22,7 @@ namespace Papercut.Module.WebUI.Test.WebServerFacts
 
     using NUnit.Framework;
 
-    
+
     [TestFixture]
     public class WebUiWebServerApiFact : ApiTestBase
     {
