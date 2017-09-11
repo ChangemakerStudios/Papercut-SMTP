@@ -30,10 +30,6 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   $scope.countMessages = 0
   $scope.totalMessages = 0
 
-  $scope.startSearchMessages = 0
-  $scope.countSearchMessages = 0
-  $scope.totalSearchMessages = 0
-
 
   $scope.smtpmech = "NONE"
   $scope.selectedOutgoingSMTP = ""
@@ -46,76 +42,12 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
 
   $scope.backToInbox = function() {
     $scope.preview = null;
-    $scope.searching = false;
   }
   $scope.backToInboxFirst = function() {
     $scope.preview = null;
     $scope.startIndex = 0;
     $scope.startMessages = 0;
-    $scope.searching = false;
     $scope.refresh();
-  }
-
-  $scope.toggleStream = function() {
-    $scope.source == null ? $scope.openStream() : $scope.closeStream();
-  }
-  $scope.openStream = function() {
-    var host = $scope.host.replace(/^http/, 'ws') ||
-               (location.protocol.replace(/^http/, 'ws') + '//' + location.hostname + (location.port ? ':' + location.port : '') + location.pathname);
-    $scope.source = new WebSocket(host + 'api/v2/websocket');
-    $scope.source.addEventListener('message', function(e) {
-      $scope.$apply(function() {
-        $scope.totalMessages++;
-        if ($scope.startIndex > 0) {
-          $scope.startIndex++;
-          $scope.startMessages++;
-          return
-        }
-        if ($scope.countMessages < $scope.itemsPerPage) {
-          $scope.countMessagescountMessages++;
-        }
-        var message = JSON.parse(e.data);
-        $scope.messages.unshift(message);
-        while($scope.messages.length > $scope.itemsPerPage) {
-          $scope.messages.pop();
-        }
-        if(typeof(Notification) !== "undefined") {
-          $scope.createNotification(message);
-        }
-      });
-    }, false);
-    $scope.source.addEventListener('open', function(e) {
-      $scope.$apply(function() {
-        $scope.hasEventSource = true;
-      });
-    }, false);
-    $scope.source.addEventListener('error', function(e) {
-      //if(e.readyState == EventSource.CLOSED) {
-        $scope.$apply(function() {
-          $scope.hasEventSource = false;
-        });
-      //}
-    }, false);
-  }
-  $scope.closeStream = function() {
-    $scope.source.close();
-    $scope.source = null;
-    $scope.hasEventSource = false;
-  }
-
-  $scope.createNotification = function(message) {
-    var title = "Mail from " + $scope.getSender(message);
-    var options = {
-      body: $scope.tryDecodeMime(message.Content.Headers["Subject"][0]),
-      tag: "Papercut",
-      icon: "images/papercut-logo.png"
-    };
-    var notification = new Notification(title, options);
-    notification.addEventListener('click', function(e) {
-      $scope.selectMessage(message);
-      window.focus();
-      notification.close();
-    });
   }
 
   $scope.tryDecodeMime = function(str) {
@@ -188,9 +120,6 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   }
 
   $scope.refresh = function() {
-    if ($scope.searching) {
-      return $scope.refreshSearch();
-    }
     var e = $scope.startEvent("Loading messages", null, "glyphicon-download");
     var url = $scope.host + 'api/messages'
     if($scope.startIndex > 0) {
@@ -231,30 +160,6 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     $scope.refresh();
   }
 
-  $scope.search = function(kind, text) {
-    $scope.searching = true;
-    $scope.searchKind = kind;
-    $scope.searchedText = text;
-    $scope.searchText = "";
-    $scope.startSearchMessages = 0
-    $scope.countSearchMessages = 0
-    $scope.totalSearchMessages = 0
-    $scope.refreshSearch()
-  }
-
-  $scope.refreshSearch = function() {
-    var url = $scope.host + 'api/v1/search?kind=' + $scope.searchKind + '&query=' + $scope.searchedText;
-    if($scope.startIndex > 0) {
-      url += "&start=" + $scope.startIndex;
-    }
-    $http.get(url).success(function(data) {
-      $scope.searchMessages = data.items;
-      $scope.totalSearchMessages = data.total;
-      $scope.countSearchMessages = data.count;
-      $scope.startSearchMessages = data.start;
-    });
-  }
-
   $scope.hasSelection = function() {
     return $(".messages :checked").length > 0 ? true : false;
   }
@@ -279,25 +184,6 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
 	   }
   }
 
-  $scope.toggleHeaders = function(val) {
-    $scope.previewAllHeaders = val;
-    $timeout(function(){
-      $scope.resizePreview();
-    }, 0);
-    var t = window.setInterval(function() {
-      if(val) {
-        if($('#hide-headers').length) {
-          window.clearInterval(t);
-          //reflow();
-        }
-      } else {
-        if($('#show-headers').length) {
-          window.clearInterval(t);
-          //reflow();
-        }
-      }
-    }, 10);
-  }
 
   $scope.fileSize = function(bytes) {
     return filesize(bytes)
@@ -400,51 +286,6 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   	return (new Date(timestamp)).toString();
   };
 
-  $scope.deleteAll = function() {
-  	$('#confirm-delete-all').modal('show');
-  }
-
-  $scope.releaseOne = function(message) {
-    $scope.releasing = message;
-
-    $http.get($scope.host + 'api/v2/outgoing-smtp').success(function(data) {
-      $scope.outgoingSMTP = data;
-      $('#release-one').modal('show');
-    })
-  }
-  $scope.confirmReleaseMessage = function() {
-    $('#release-one').modal('hide');
-    var message = $scope.releasing;
-    $scope.releasing = null;
-
-    var e = $scope.startEvent("Releasing message", message.Id, "glyphicon-share");
-
-    if($('#release-message-outgoing').val().length > 0) {
-      authcfg = {
-        name: $('#release-message-outgoing').val(),
-        email: $('#release-message-email').val(),
-      }
-    } else {
-      authcfg = {
-        email: $('#release-message-email').val(),
-        host: $('#release-message-smtp-host').val(),
-        port: $('#release-message-smtp-port').val(),
-        mechanism: $('#release-message-smtp-mechanism').val(),
-        username: $('#release-message-smtp-username').val(),
-        password: $('#release-message-smtp-password').val(),
-        save: $('#release-message-save').is(":checked") ? true : false,
-        name: $('#release-message-server-name').val(),
-      }
-    }
-
-    $http.post($scope.host + 'api/v1/messages/' + message.Id + '/release', authcfg).success(function() {
-      e.done();
-    }).error(function(err) {
-      e.fail();
-      e.error = err;
-    });
-  }
-
   $scope.getSource = function(message) {
   	var source = "";
   	$.each(message.Content.Headers, function(k, v) {
@@ -453,25 +294,6 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
 	source += "\n";
 	source += message.Content.Body;
 	return source;
-  }
-
-  $scope.deleteAllConfirm = function() {
-  	$('#confirm-delete-all').modal('hide');
-    var e = $scope.startEvent("Deleting all messages", null, "glyphicon-remove-circle");
-  	$http.delete($scope.host + 'api/messages').success(function() {
-  		$scope.refresh();
-  		$scope.preview = null;
-      e.done()
-  	});
-  }
-
-  $scope.deleteOne = function(message) {
-    var e = $scope.startEvent("Deleting message", message.Id, "glyphicon-remove");
-  	$http.delete($scope.host + 'api/messages/' + message.Id).success(function() {
-  		if($scope.preview._id == message._id) $scope.preview = null;
-  		$scope.refresh();
-      e.done();
-  	});
   }
 });
 
