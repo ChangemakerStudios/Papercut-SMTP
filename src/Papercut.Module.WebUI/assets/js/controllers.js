@@ -258,6 +258,11 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   $scope.hasHTML = function(message) {
       return !!message.HtmlBody;
   }
+
+  $scope.hasText = function (message) {
+      return !!message.TextBody;
+  }
+
   $scope.getMessageHTML = function(message) {
     console.log(message);
     for(var header in message.Content.Headers) {
@@ -339,8 +344,12 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
         link: function (scope, element, attrs) {
             element.attr('src', "about:blank");
             element.on('load', function () {
+                var messageId = scope.$eval(attrs.contentLinkMessageId);
+                var htmlContent = $sce.getTrustedHtml(scope.$eval(attrs.bodyHtml));
+                htmlContent = htmlContent.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/g, '/api/messages/' + messageId + '/attachments/$1');
+
                 var body = $(element).contents().find('body');
-                body.empty().append($sce.getTrustedHtml(scope.$eval(attrs.bodyHtml)));
+                body.empty().append( htmlContent );
 
                 $timeout(function () {
                     element.css('height', $(body[0].ownerDocument.documentElement).height() + 100);

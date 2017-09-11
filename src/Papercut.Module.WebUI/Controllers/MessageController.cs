@@ -23,19 +23,13 @@ namespace Papercut.Module.WebUI.Controllers
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Net.Mime;
-    using System.Text;
-    using System.Web;
     using System.Web.Http;
-
     using Helpers;
-
     using Message;
-
     using MimeKit;
-
     using Models;
-
     using Papercut.Message.Helpers;
+    using System;
 
     public class MessageController : ApiController
     {
@@ -95,15 +89,17 @@ namespace Papercut.Module.WebUI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound);
             }
-
-            var response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StreamContent(mimePart.ContentObject.Stream);
+            
+            var response = new MimePartResponseMessage(Request, mimePart.ContentObject);
             response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(DispositionTypeNames.Attachment)
             {
-                FileName = HttpUtility.UrlEncode(FileHelper.NormalizeFilename(mimePart.FileName), Encoding.UTF8)
+                FileName = Uri.EscapeDataString(FileHelper.NormalizeFilename(mimePart.FileName ?? mimePart.ContentId))
             };
             response.Content.Headers.ContentType = new MediaTypeHeaderValue($"{mimePart.ContentType.MediaType}/{mimePart.ContentType.MediaSubtype}");
             return response;
         }
+
+
+
     }
 }

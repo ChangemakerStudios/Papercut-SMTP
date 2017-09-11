@@ -46,6 +46,13 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             this._messageRepository = Scope.Resolve<MessageRepository>();
         }
 
+        [Test, Order(0)]
+        public void ShouldReturn404IfNotFoundByID()
+        {
+            var response = Client.GetAsync("/api/messages/some-strange-id").Result;
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
         [Test, Order(1)]
         public void ShouldLoadAllMessages()
         {
@@ -176,14 +183,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.AreEqual("one@replyto.com",  headers.First(h => h.Name == "Reply-To").Value);
             Assert.AreEqual("extended value", headers.First(h => h.Name == "X-Extended").Value);
         }
-
-        [Test, Order(0)]
-        public void ShouldReturn404IfNotFoundByID()
-        {
-            var response = Client.GetAsync("/api/messages/some-strange-id").Result;
-            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-        }
-
+        
         [Test, Order(5)]
         public void ShouldLoadDeatailWithAttachments()
         {
