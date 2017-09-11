@@ -23,6 +23,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Net.Mime;
     using System.Text;
     using System.Threading;
 
@@ -33,6 +34,8 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
     using Models;
 
     using NUnit.Framework;
+
+    using ContentType = MimeKit.ContentType;
 
     public class LoadMessageFacts : ApiTestBase
     {
@@ -182,12 +185,10 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         }
 
         [Test, Order(5)]
-        public void ShouldLoadAttachments()
+        public void ShouldLoadDeatailWithAttachments()
         {
             var existedMail = new MimeMessage
             {
-                Subject = "Test",
-                From = {new MailboxAddress("mffeng@gmail.com")},
                 Body = new Multipart
                 {
                     new MimePart(new ContentType("image", "jpeg") {Charset = Encoding.UTF8.EncodingName})
@@ -209,6 +210,36 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.AreEqual(Guid.Empty.ToString(), attachments.First().Id);
             Assert.AreEqual("image/jpeg", attachments.First().MediaType);
             Assert.AreEqual("sample.pdf", attachments.First().FileName);
+        }
+
+        [Test, Order(6)]
+        public void ShouldDownloadAttachment()
+        {
+            var attachmentId = Guid.NewGuid().ToString();
+            var existedMail = new MimeMessage
+            {
+                Body = new Multipart
+                {
+                    new MimePart(new ContentType("image", "jpeg") {Charset = Encoding.UTF8.EncodingName})
+                    {
+                        FileName = "sample.pdf",
+                        ContentId = attachmentId,
+                        ContentObject = new ContentObject(
+                            new MemoryStream(Encoding.UTF8.GetBytes("Content")), ContentEncoding.Binary)
+                    }
+                }
+            };
+            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+
+            var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
+
+            var response = Get($"/api/messages/{messageId}/attachments/{attachmentId}");
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+            var disposition = response.Content.Headers.ContentDisposition;
+            Assert.AreEqual(DispositionTypeNames.Attachment, disposition.DispositionType);
+            Assert.AreEqual("sample.pdf", disposition.FileName);
+            Assert.AreEqual("image/jpeg", response.Content.Headers.ContentType.MediaType);
         }
 
         class MessageListResponse

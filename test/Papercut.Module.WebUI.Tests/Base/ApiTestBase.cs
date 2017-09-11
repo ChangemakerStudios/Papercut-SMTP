@@ -20,6 +20,7 @@ namespace Papercut.Module.WebUI.Test.Base
 {
     using System;
     using System.Net.Http;
+    using System.Threading.Tasks;
     using System.Web.Http;
 
     using Autofac;
@@ -80,14 +81,14 @@ namespace Papercut.Module.WebUI.Test.Base
             builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().SingleInstance();
         }
 
-        protected string Get(string uri)
+        protected HttpResponseMessage Get(string uri)
         {
-            return Client.GetStringAsync($"{uri}").Result;
+            return Client.GetAsync(uri).Result;
         }
 
         protected T Get<T>(string uri)
         {
-            return JsonConvert.DeserializeObject<T>(Get(uri));
+            return Get(uri).Content.ReadAsAsync<T>().Result;
         }
     }
 }

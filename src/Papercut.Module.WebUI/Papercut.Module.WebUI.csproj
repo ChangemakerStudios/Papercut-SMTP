@@ -66,6 +66,7 @@
     </Reference>
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
     </Reference>
@@ -78,6 +79,7 @@
     <Compile Include="Controllers\MessageController.cs" />
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="Controllers\StaticContentController.cs" />
+    <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Models\MessageDetail.cs" />
     <Compile Include="Models\MimeMessageEntry.cs" />
     <Compile Include="RouteConfig.cs" />

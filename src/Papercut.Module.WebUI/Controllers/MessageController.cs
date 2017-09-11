@@ -21,9 +21,17 @@ namespace Papercut.Module.WebUI.Controllers
     using System.Linq;
     using System.Net;
     using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Net.Mime;
+    using System.Text;
+    using System.Web;
     using System.Web.Http;
 
+    using Helpers;
+
     using Message;
+
+    using MimeKit;
 
     using Models;
 
@@ -70,6 +78,32 @@ namespace Papercut.Module.WebUI.Controllers
 
             var dto = MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry)));
             return Request.CreateResponse(HttpStatusCode.OK, dto);
+        }
+
+        [HttpGet]
+        public HttpResponseMessage DownloadAttachment(string messageId, string attachmentId)
+        {
+            var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+            if (messageEntry == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+            }
+
+            var mimeMessage = new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry));
+            var mimePart = mimeMessage.MailMessage.BodyParts.FirstOrDefault(e => e.ContentId == attachmentId) as MimePart;
+            if (mimePart == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+            }
+
+            var response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StreamContent(mimePart.ContentObject.Stream);
+            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(DispositionTypeNames.Attachment)
+            {
+                FileName = HttpUtility.UrlEncode(FileHelper.NormalizeFilename(mimePart.FileName), Encoding.UTF8)
+            };
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue($"{mimePart.ContentType.MediaType}/{mimePart.ContentType.MediaSubtype}");
+            return response;
         }
     }
 }
