@@ -173,9 +173,7 @@
                 <tr ng-repeat="section in preview.Sections">
                     <td>{{section.MediaType}}</td>
                     <td>{{section.FileName}}</td>
-                    <td class="operations">
-                        <a ng-href="/api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank">Save</a>
-                    </td>
+                    <td><a ng-href="/api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank">Save</a>
                 </tr>
                 </tbody>
             </table>

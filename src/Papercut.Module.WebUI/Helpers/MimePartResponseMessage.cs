@@ -6,20 +6,19 @@ namespace Papercut.Module.WebUI.Helpers
 {
     public class MimePartResponseMessage : HttpResponseMessage
     {
-        private IContentObject _contentObject;
-        private string _tempFilePath;
+        readonly string tempFilePath;
 
         public MimePartResponseMessage(HttpRequestMessage requestMessage, IContentObject contentObject)
         {
-            RequestMessage = requestMessage;
-            this._contentObject = contentObject;
-            _tempFilePath = Path.GetTempFileName();
+            tempFilePath = Path.GetTempFileName();
 
-            using (var tempFile = File.OpenWrite(_tempFilePath))
+            RequestMessage = requestMessage;
+
+            using (var tempFile = File.OpenWrite(tempFilePath))
             {
                 contentObject.DecodeTo(tempFile);
             }
-            Content = new StreamContent(File.OpenRead(_tempFilePath));
+            Content = new StreamContent(File.OpenRead(tempFilePath));
         }
 
         protected override void Dispose(bool disposing)
@@ -30,10 +29,12 @@ namespace Papercut.Module.WebUI.Helpers
 
             try
             {
-                File.Delete(_tempFilePath);
+                File.Delete(tempFilePath);
             }
-            catch { }
-
+            catch
+            {
+                // ignored
+            }
         }
     }
 }

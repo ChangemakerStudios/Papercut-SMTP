@@ -31,7 +31,7 @@ namespace Papercut.Module.Seq
 
         protected override void Load(ContainerBuilder builder)
         {
-//            builder.RegisterType<AddSeqToConfiguration>().AsImplementedInterfaces();
+            builder.RegisterType<AddSeqToConfiguration>().AsImplementedInterfaces();
 
             base.Load(builder);
         }

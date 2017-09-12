@@ -215,7 +215,6 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         [Test, Order(6)]
         public void ShouldDownloadSectionByIndex()
         {
-            var contentId = Guid.NewGuid().ToString();
             var existedMail = new MimeMessage
             {
                 Body = new Multipart
