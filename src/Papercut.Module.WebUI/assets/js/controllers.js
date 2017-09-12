@@ -1,7 +1,7 @@
 var papercutApp = angular.module('papercutApp', []);
 
 
-papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
+papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $interval) {
   $scope.host = apiHost;
 
   $scope.cache = {};
@@ -136,6 +136,11 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     });
   }
   $scope.refresh();
+  $interval(function () {
+      if ($scope.startIndex == 0) {
+          $scope.refresh();
+      }
+  }, 8000);
 
   $scope.showNewer = function() {
     $scope.startIndex -= $scope.itemsPerPage;
@@ -160,33 +165,24 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     $scope.refresh();
   }
 
-  $scope.hasSelection = function() {
-    return $(".messages :checked").length > 0 ? true : false;
-  }
+  $scope.selectMessage = function (message) {
+      $timeout(function () {
+          $scope.resizePreview();
+      }, 0);
 
-  $scope.selectMessage = function(message) {
-    $timeout(function(){
-      $scope.resizePreview();
-    }, 0);
-  	if($scope.cache[message.Id]) {
-  		$scope.preview = $scope.cache[message.Id];
-      //reflow();
-  	} else {
-  	  $scope.preview = message;
-      var e = $scope.startEvent("Loading message", message.Id, "glyphicon-download-alt");
-	  	$http.get($scope.host + 'api/messages/' + message.Id).success(function(data) {
-	  	  $scope.cache[message.Id] = data;
+      if ($scope.cache[message.Id]) {
+          $scope.preview = $scope.cache[message.Id];
+      } else {
+          $scope.preview = message;
+          var e = $scope.startEvent("Loading message", message.Id, "glyphicon-download-alt");
+          $http.get($scope.host + 'api/messages/' + message.Id).success(function (data) {
+              $scope.cache[message.Id] = data;
 
-	  	  data.previewHTML = $sce.trustAsHtml(data.HtmlBody);
-  		  $scope.preview = data;
-          e.done();
-	    });
-	   }
-  }
-
-
-  $scope.fileSize = function(bytes) {
-    return filesize(bytes)
+              data.previewHTML = $sce.trustAsHtml(data.HtmlBody);
+              $scope.preview = data;
+              e.done();
+          });
+      }
   }
 
   $scope.tryDecodeContent = function(message) {
