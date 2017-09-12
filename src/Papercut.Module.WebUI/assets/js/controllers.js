@@ -359,13 +359,13 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
                 var tagEnds = /\<\s*\/\s*(script|style|iframe|frameset|link|applet|object)\s*\>/gi;
                 var links = /((src|href)\s*=["']?\s*)javascript:/gi;
 
-                return html.replace(tagStarts, '<span ')
-                           .replace(tagEnds, '</span>')
+                return html.replace(tagStarts, '<div style="display:none" ')
+                           .replace(tagEnds, '</div>')
                            .replace(links, '$1');
             }
 
             function replaceContentLinks(html, messageId) {
-                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, '/api/messages/' + messageId + '/attachments/$1');
+                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, '/api/messages/' + messageId + '/contents/$1');
             }
 
 

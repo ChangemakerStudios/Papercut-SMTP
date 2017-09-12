@@ -150,6 +150,23 @@
     font-weight:bold;
 }
 
+#preview-sections table {
+    margin-top: 15px;
+    min-width: 400px;
+}
+
+#preview-sections table tbody tr:hover {
+    background: #ebf1f5;
+}
+
+#preview-sections table td {
+    padding: 5px;
+}
+
+#preview-sections table td a:hover {
+    cursor: pointer;
+}
+
 .preview .tab-content {
   overflow-y: visible;
 }
@@ -176,9 +193,6 @@
 .mime-part {
   padding: 10px;
 }
-
-
-
 
 label.mail-address{
     display: inline-block;

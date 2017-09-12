@@ -111,10 +111,6 @@
             <th>From</th>
             <td><span ng-if="!!preview.From[0].Name">{{preview.From[0].Name}}(</span>   {{ preview.From[0].Address }}<span ng-if="!!preview.From[0].Name">)</span></td>
           </tr>
-          <tr>
-            <th>Subject</th>
-            <td><strong>{{ preview.Subject }}</strong></td>
-          </tr>
         <tr>
             <th>To</th>
             <td>
@@ -139,6 +135,10 @@
                 </label>
             </td>
         </tr>
+        <tr>
+            <th>Subject</th>
+            <td><strong>{{ preview.Subject }}</strong></td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -148,7 +148,8 @@
       <ul class="nav nav-tabs">
         <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
         <li ng-if="hasText(preview)" ng-class="{ active: !hasHTML(preview) }"><a href="#preview-plain" data-toggle="tab">Plain text</a></li>
-          <li><a href="#preview-headers" data-toggle="tab">Headers</a></li>
+        <li><a href="#preview-headers" data-toggle="tab">Headers</a></li>
+        <li><a href="#preview-sections" data-toggle="tab">Sections</a></li>
     </ul>
 
     <div class="tab-content">
@@ -160,6 +161,24 @@
                     <span class="header-name">{{header.Name}}</span>: {{header.Value}}
                 </li>
             </ul>
+        </div>
+        <div class="tab-pane" id="preview-sections">
+            <table>
+                <thead>
+                    <th>MEDIA TYPE</th>
+                    <th>FILENAME</th>
+                    <th></th>
+                </thead>
+                <tbody>
+                <tr ng-repeat="section in preview.Sections">
+                    <td>{{section.MediaType}}</td>
+                    <td>{{section.FileName}}</td>
+                    <td class="operations">
+                        <a ng-href="/api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank">Save</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
   </div>

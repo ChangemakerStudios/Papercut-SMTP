@@ -21,9 +21,13 @@ namespace Papercut.Module.WebUI
                 "api/messages/{id}",
                 new {controller = "Message", action = "Get"});
 
-            config.Routes.MapHttpRoute("download attachment",
-                "api/messages/{messageId}/attachments/{attachmentId}",
-                new {controller = "Message", action = "DownloadAttachment"});
+            config.Routes.MapHttpRoute("download section by content id",
+                "api/messages/{messageId}/contents/{contentId}",
+                new {controller = "Message", action = "DownloadSectionContent" });
+
+            config.Routes.MapHttpRoute("download section by index",
+                "api/messages/{messageId}/sections/{index}",
+                new {controller = "Message", action = "DownloadSection" });
 
             config.Routes.MapHttpRoute("Serve other requests as static content",
                 "{*anything}",

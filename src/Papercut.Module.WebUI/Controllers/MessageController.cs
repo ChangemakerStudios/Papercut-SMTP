@@ -30,6 +30,7 @@ namespace Papercut.Module.WebUI.Controllers
     using Models;
     using Papercut.Message.Helpers;
     using System;
+    using System.Collections.Generic;
 
     public class MessageController : ApiController
     {
@@ -75,7 +76,18 @@ namespace Papercut.Module.WebUI.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage DownloadAttachment(string messageId, string attachmentId)
+        public HttpResponseMessage DownloadSection(string messageId, int index)
+        {
+            return DownloadSection(messageId, sections => (index < sections.Count ? sections[index] : null));
+        }
+
+        [HttpGet]
+        public HttpResponseMessage DownloadSectionContent(string messageId, string contentId)
+        {
+            return DownloadSection(messageId, (sections) => sections.FirstOrDefault(s => s.ContentId == contentId));
+        }
+
+        HttpResponseMessage DownloadSection(string messageId, Func<List<MimePart>, MimePart> findSection)
         {
             var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
             if (messageEntry == null)
@@ -84,22 +96,22 @@ namespace Papercut.Module.WebUI.Controllers
             }
 
             var mimeMessage = new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry));
-            var mimePart = mimeMessage.MailMessage.BodyParts.FirstOrDefault(e => e.ContentId == attachmentId) as MimePart;
+            var sections = mimeMessage.MailMessage.BodyParts.OfType<MimePart>().ToList();
+
+            var mimePart = findSection(sections);
             if (mimePart == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound);
             }
-            
+
             var response = new MimePartResponseMessage(Request, mimePart.ContentObject);
+            var filename = mimePart.FileName ?? mimePart.ContentId ?? Guid.NewGuid().ToString();
             response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(DispositionTypeNames.Attachment)
             {
-                FileName = Uri.EscapeDataString(FileHelper.NormalizeFilename(mimePart.FileName ?? mimePart.ContentId))
+                FileName = Uri.EscapeDataString(FileHelper.NormalizeFilename(filename))
             };
             response.Content.Headers.ContentType = new MediaTypeHeaderValue($"{mimePart.ContentType.MediaType}/{mimePart.ContentType.MediaSubtype}");
             return response;
         }
-
-
-
     }
 }

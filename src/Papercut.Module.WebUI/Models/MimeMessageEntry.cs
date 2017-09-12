@@ -80,17 +80,17 @@ namespace Papercut.Module.WebUI.Models
                     HtmlBody = mail?.HtmlBody,
                     TextBody = mail?.TextBody,
                     Headers = (mail?.Headers ?? new HeaderList()).Select(h => new HeaderDto { Name = h.Field, Value = h.Value}).ToList(),
-                    Attachments = ToAttachments(mail?.BodyParts)
+                    Sections = ToSectionDtos(mail?.BodyParts)
                 };
             }
 
-            static List<EmailAttachmentDto> ToAttachments(IEnumerable<MimeEntity> bodyParts)
+            static List<EmailAttachmentDto> ToSectionDtos(IEnumerable<MimeEntity> bodyParts)
             {
 
                 if (bodyParts == null) return new List<EmailAttachmentDto>();
 
-                return bodyParts.Select(e => e as MimePart)
-                    .Where(e => e != null)
+                return bodyParts
+                    .OfType<MimePart>()
                     .Select(e => new EmailAttachmentDto
                     {
                         Id = e.ContentId,
@@ -122,7 +122,7 @@ namespace Papercut.Module.WebUI.Models
             public string HtmlBody { get; set; }
             public string TextBody { get; set; }
             public List<HeaderDto> Headers { get; set; }
-            public List<EmailAttachmentDto> Attachments { get; set; }
+            public List<EmailAttachmentDto> Sections { get; set; }
         }
 
         public class EmailAddressDto

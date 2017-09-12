@@ -183,9 +183,9 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.AreEqual("one@replyto.com",  headers.First(h => h.Name == "Reply-To").Value);
             Assert.AreEqual("extended value", headers.First(h => h.Name == "X-Extended").Value);
         }
-        
+
         [Test, Order(5)]
-        public void ShouldLoadDeatailWithAttachments()
+        public void ShouldLoadDeatailWithSections()
         {
             var existedMail = new MimeMessage
             {
@@ -205,17 +205,17 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             var detail = Get<MimeMessageEntry.DetailDto>($"/api/messages/{messageId}");
             Assert.AreEqual(messageId, detail.Id);
 
-            var attachments = detail.Attachments;
-            Assert.AreEqual(1, attachments.Count);
-            Assert.AreEqual(Guid.Empty.ToString(), attachments.First().Id);
-            Assert.AreEqual("image/jpeg", attachments.First().MediaType);
-            Assert.AreEqual("sample.pdf", attachments.First().FileName);
+            var sections = detail.Sections;
+            Assert.AreEqual(1, sections.Count);
+            Assert.AreEqual(Guid.Empty.ToString(), sections.First().Id);
+            Assert.AreEqual("image/jpeg", sections.First().MediaType);
+            Assert.AreEqual("sample.pdf", sections.First().FileName);
         }
 
         [Test, Order(6)]
-        public void ShouldDownloadAttachment()
+        public void ShouldDownloadSectionByIndex()
         {
-            var attachmentId = Guid.NewGuid().ToString();
+            var contentId = Guid.NewGuid().ToString();
             var existedMail = new MimeMessage
             {
                 Body = new Multipart
@@ -223,7 +223,6 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     new MimePart(new ContentType("image", "jpeg") {Charset = Encoding.UTF8.EncodingName})
                     {
                         FileName = "sample.pdf",
-                        ContentId = attachmentId,
                         ContentObject = new ContentObject(
                             new MemoryStream(Encoding.UTF8.GetBytes("Content")), ContentEncoding.Binary)
                     }
@@ -233,7 +232,37 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 
             var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
-            var response = Get($"/api/messages/{messageId}/attachments/{attachmentId}");
+            var response = Get($"/api/messages/{messageId}/sections/0");
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+            var disposition = response.Content.Headers.ContentDisposition;
+            Assert.AreEqual(DispositionTypeNames.Attachment, disposition.DispositionType);
+            Assert.AreEqual("sample.pdf", disposition.FileName);
+            Assert.AreEqual("image/jpeg", response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Test, Order(7)]
+        public void ShouldDownloadSectionByContentId()
+        {
+            var contentId = Guid.NewGuid().ToString();
+            var existedMail = new MimeMessage
+            {
+                Body = new Multipart
+                {
+                    new MimePart(new ContentType("image", "jpeg") {Charset = Encoding.UTF8.EncodingName})
+                    {
+                        FileName = "sample.pdf",
+                        ContentId = contentId,
+                        ContentObject = new ContentObject(
+                            new MemoryStream(Encoding.UTF8.GetBytes("Content")), ContentEncoding.Binary)
+                    }
+                }
+            };
+            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+
+            var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
+
+            var response = Get($"/api/messages/{messageId}/contents/{contentId}");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             var disposition = response.Content.Headers.ContentDisposition;
