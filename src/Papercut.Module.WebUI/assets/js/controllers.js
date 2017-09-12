@@ -342,7 +342,8 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
             element.on('load', function () {
                 var messageId = scope.$eval(attrs.contentLinkMessageId);
                 var htmlContent = $sce.getTrustedHtml(scope.$eval(attrs.bodyHtml));
-                htmlContent = htmlContent.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/g, '/api/messages/' + messageId + '/attachments/$1');
+                htmlContent = stripDangerousTags(htmlContent);
+                htmlContent = replaceContentLinks(htmlContent, messageId);
 
                 var body = $(element).contents().find('body');
                 body.empty().append( htmlContent );
@@ -351,6 +352,23 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
                     element.css('height', $(body[0].ownerDocument.documentElement).height() + 100);
                 }, 50);
             });
+
+
+            function stripDangerousTags(html) {
+                var tagStarts = /\<\s*(script|style|iframe|frameset|link|applet|object)(?=\s|\>)/gi;
+                var tagEnds = /\<\s*\/\s*(script|style|iframe|frameset|link|applet|object)\s*\>/gi;
+                var links = /((src|href)\s*=["']?\s*)javascript:/gi;
+
+                return html.replace(tagStarts, '<span ')
+                           .replace(tagEnds, '</span>')
+                           .replace(links, '$1');
+            }
+
+            function replaceContentLinks(html, messageId) {
+                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, '/api/messages/' + messageId + '/attachments/$1');
+            }
+
+
         }
     };
 }]);
