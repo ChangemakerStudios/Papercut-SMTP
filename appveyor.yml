@@ -20,6 +20,9 @@ after_build:
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Install-Papercut-Service.bat
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Uninstall-Papercut-Service.bat
   - appveyor PushArtifact PapercutService.%APPVEYOR_BUILD_VERSION%.zip
+  # Papercut Installer bundle
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Bootstrapper\bin\Release 
+  - appveyor PushArtifact Papercut.Setup.exe
   - cd %APPVEYOR_BUILD_FOLDER%
   # Chocolately
   - nuget pack chocolately\Papercut.nuspec -version %APPVEYOR_BUILD_VERSION%

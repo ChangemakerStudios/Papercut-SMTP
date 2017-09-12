@@ -95,7 +95,7 @@
     </ProjectReference>
     <ProjectReference Include="..\..\src\Papercut.Module.WebUI\Papercut.Module.WebUI.csproj">
       <Project>{a1c924f3-3cfb-4844-b79f-8bffec60eebf}</Project>
-      <Name>Papercut.Modeule.WebUI</Name>
+      <Name>Papercut.Module.WebUI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

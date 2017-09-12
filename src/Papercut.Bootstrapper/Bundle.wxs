@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:net="http://schemas.microsoft.com/wix/NetFxExtension"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+    <Bundle Name="Papercut"
+            Version="!(bind.packageVersion.PapercutMsi)"
+            Manufacturer="!(bind.packageManufacturer.PapercutMsi)"
+            UpgradeCode="72719c72-122e-4313-8a57-0a0fc666ba75"
+            AboutUrl="https://github.com/ChangemakerStudios/Papercut"
+            Copyright="Copyright (c) 2017 by Changemaker Studios"
+            HelpUrl="https://github.com/ChangemakerStudios/Papercut"
+            IconSourceFile="Resources\App.ico">
+        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkSidebarLicense">
+            <bal:WixStandardBootstrapperApplication LicenseUrl="" 
+                                                    ShowVersion="yes" 
+                                                    LogoFile="Resources\Papercut-Logo.png" 
+                                                    LogoSideFile="Resources\Papercut-Sidelogo.png" />
+        </BootstrapperApplicationRef>
+
+        <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]!(bind.packageManufacturer.PapercutMsi)\Papercut"/>
+
+        <Chain>
+            <PackageGroupRef Id="NetFx45Web" />
+
+            <RollbackBoundary />
+
+            <MsiPackage Id="PapercutMsi"
+                        SourceFile="$(var.Papercut.Installer.TargetPath)"
+                        Compressed="yes"
+                        DisplayInternalUI="yes"
+                        Vital="yes">
+                <MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
+            </MsiPackage>
+        </Chain>
+    </Bundle>
+</Wix>
