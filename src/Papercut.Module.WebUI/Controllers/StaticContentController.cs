@@ -10,11 +10,13 @@ namespace Papercut.Module.WebUI.Controllers
     using System.Net.Http.Headers;
     using System.Reflection;
     using System.Web.Http;
-
+    using System.Web.Http.Controllers;
+    using WebApi.OutputCache.V2;
 
     public class StaticContentController: ApiController
     {
 
+        [CacheOutput(ClientTimeSpan=300, ServerTimeSpan=86400, CacheKeyGenerator=typeof(PapercutResourceKeyGenerator))]
         public HttpResponseMessage Get()
         {
             var resourceName = GetRequetedResourceName(Request.RequestUri);
@@ -87,6 +89,23 @@ namespace Papercut.Module.WebUI.Controllers
             { "woff", "application/font-woff" },
             { "woff2", "application/font-woff2" },
         };
+
+        class PapercutResourceKeyGenerator : DefaultCacheKeyGenerator
+        {
+            static string AssemblyVersion;
+            static PapercutResourceKeyGenerator()
+            {
+                AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            }
+
+            public override string MakeCacheKey(HttpActionContext context, MediaTypeHeaderValue mediaType, bool excludeQueryString = false)
+            {
+                var requstUri = context.Request.RequestUri;
+                int hashCode = string.Concat("PapercutResource", AssemblyVersion, requstUri).GetHashCode();
+
+                return (hashCode ^ 0x10000).ToString("x2");
+            }
+        }
 
     }
 }
