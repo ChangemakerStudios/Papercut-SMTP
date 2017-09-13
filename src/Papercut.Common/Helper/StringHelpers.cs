@@ -21,7 +21,6 @@ namespace Papercut.Common.Helper
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Threading;
 
     using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
@@ -56,7 +55,17 @@ namespace Papercut.Common.Helper
                 return str;
             }
 
-            return (culture ?? Thread.CurrentThread.CurrentCulture).TextInfo.ToTitleCase(str);
+            // ToTitleCase is available in .net core 2. Here is a replacement: https://stackoverflow.com/a/38361008/1817042
+            var tokens = str.Split(new[] { " ", "-" }, StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < tokens.Length; i++)
+            {
+                var token = tokens[i];
+                tokens[i] = token == token.ToUpper()
+                    ? token
+                    : token.Substring(0, 1).ToUpper() + token.Substring(1).ToLower();
+            }
+
+            return string.Join(" ", tokens);
         }
 
         public static bool IsNullOrWhiteSpace([CanBeNull] this string str)

@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.12
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut", "src\Papercut.UI\Papercut.csproj", "{AC067042-66BD-4110-ADA1-E2CEA43E7947}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Core", "src\Papercut.Core\Papercut.Core.csproj", "{EEDD1016-6442-48CE-8F8E-1D350829FBDE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Service", "src\Papercut.Service\Papercut.Service.csproj", "{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}"
@@ -23,8 +21,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extras", "Extras", "{66E83B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Message", "src\Papercut.Message\Papercut.Message.csproj", "{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Rules", "src\Papercut.Rules\Papercut.Rules.csproj", "{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Network", "src\Papercut.Network\Papercut.Network.csproj", "{C87AB840-625A-4661-AA36-369ADDC6CF7F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Common", "src\Papercut.Common\Papercut.Common.csproj", "{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}"
@@ -35,12 +31,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2D6337D4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.WebUI.Tests", "test\Papercut.Module.WebUI.Tests\Papercut.Module.WebUI.Tests.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{8D2E180D-683F-4F03-A683-4DCFA3B8D564}"
-EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Papercut.Installer", "src\Papercut.Installer\Papercut.Installer.wixproj", "{BE653826-1E09-4905-B03D-2A68633BE2F8}"
-EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Papercut.Bootstrapper", "src\Papercut.Bootstrapper\Papercut.Bootstrapper.wixproj", "{72719C72-122E-4313-8A57-0A0FC666BA75}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,14 +39,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|x86.Build.0 = Debug|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|x86.ActiveCfg = Release|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|x86.Build.0 = Release|Any CPU
 		{EEDD1016-6442-48CE-8F8E-1D350829FBDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EEDD1016-6442-48CE-8F8E-1D350829FBDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEDD1016-6442-48CE-8F8E-1D350829FBDE}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -97,14 +79,6 @@ Global
 		{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}.Release|x86.ActiveCfg = Release|Any CPU
 		{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}.Release|x86.Build.0 = Release|Any CPU
-		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Debug|x86.Build.0 = Debug|Any CPU
-		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Release|x86.ActiveCfg = Release|Any CPU
-		{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}.Release|x86.Build.0 = Release|Any CPU
 		{C87AB840-625A-4661-AA36-369ADDC6CF7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C87AB840-625A-4661-AA36-369ADDC6CF7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C87AB840-625A-4661-AA36-369ADDC6CF7F}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -137,22 +111,6 @@ Global
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x86.ActiveCfg = Release|Any CPU
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x86.Build.0 = Release|Any CPU
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|Any CPU.Build.0 = Debug|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|x86.ActiveCfg = Debug|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|x86.Build.0 = Debug|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|Any CPU.ActiveCfg = Release|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|Any CPU.Build.0 = Release|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|x86.ActiveCfg = Release|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|x86.Build.0 = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|Any CPU.Build.0 = Debug|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|x86.ActiveCfg = Debug|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|x86.Build.0 = Debug|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|Any CPU.ActiveCfg = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|Any CPU.Build.0 = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|x86.ActiveCfg = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -162,8 +120,6 @@ Global
 		{F60D44E1-100E-464A-A280-CA6BAF652177} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
 		{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA} = {2D6337D4-FD59-49E0-9209-4B06219DB29D}
-		{BE653826-1E09-4905-B03D-2A68633BE2F8} = {8D2E180D-683F-4F03-A683-4DCFA3B8D564}
-		{72719C72-122E-4313-8A57-0A0FC666BA75} = {8D2E180D-683F-4F03-A683-4DCFA3B8D564}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {437095E2-5973-4D07-849D-267DF2341A59}

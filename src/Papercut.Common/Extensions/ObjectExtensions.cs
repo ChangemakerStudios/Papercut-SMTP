@@ -22,7 +22,6 @@ namespace Papercut.Common.Extensions
     using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
-    using System.Runtime.InteropServices.ComTypes;
 
     using Papercut.Core.Annotations;
 
@@ -39,24 +38,23 @@ namespace Papercut.Common.Extensions
             if (instance == null) return default(T);
 
             if (Equals(instance, default(T))) return default(T);
-            if (Equals(instance, DBNull.Value)) return default(T);
 
             var str = instance as string;
             if (str != null)
             {
                 if (String.IsNullOrEmpty(str)) return default(T);
             }
-            else if (!(instance is IConvertible) && !instance.GetType().IsValueType)
+            else if (!(instance is IConvertible) && !instance.GetType().GetTypeInfo().IsValueType)
             {
                 // just cast since it's a class....
                 return (T) instance;
             }
 
-            var conversionType = typeof (T);
+            var conversionType = typeof(T);
 
-            if (conversionType.IsGenericType
-                && conversionType.GetGenericTypeDefinition() == typeof (Nullable<>))
-                conversionType = new NullableConverter(conversionType).UnderlyingType;
+            if (conversionType.GetTypeInfo().IsGenericType
+                && conversionType.GetTypeInfo().GetGenericTypeDefinition() == typeof (Nullable<>))
+                conversionType = Nullable.GetUnderlyingType(conversionType);
 
             return (T) Convert.ChangeType(instance, conversionType);
         }
@@ -67,11 +65,11 @@ namespace Papercut.Common.Extensions
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
 
-            var otherProps = other.GetType().GetProperties(
+            var otherProps = other.GetType().GetTypeInfo().GetProperties(
                 BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance |
                 BindingFlags.SetProperty);
 
-            foreach (var props in obj.GetType().GetProperties(
+            foreach (var props in obj.GetType().GetTypeInfo().GetProperties(
                 BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance |
                 BindingFlags.GetProperty))
             {
@@ -127,7 +125,7 @@ namespace Papercut.Common.Extensions
             var type = typeof (T);
 
             var properties =
-                type.GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance |
+                type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance |
                                    BindingFlags.GetProperty);
 
             foreach (var prop in properties)

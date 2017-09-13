@@ -150,10 +150,6 @@
       <Project>{C87AB840-625A-4661-AA36-369ADDC6CF7F}</Project>
       <Name>Papercut.Network</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj">
-      <Project>{5EC90C45-979D-43A5-BA1C-A286DBF4BECA}</Project>
-      <Name>Papercut.Rules</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">

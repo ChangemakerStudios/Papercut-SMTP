@@ -19,10 +19,10 @@ namespace Papercut.Common.Helper
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
     using System.Linq;
 
     using Papercut.Core.Annotations;
+    using System.Collections.Specialized;
 
     public static class NameValueCollectionExtensions
     {

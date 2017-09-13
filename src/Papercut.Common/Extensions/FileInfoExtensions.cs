@@ -28,10 +28,7 @@ namespace Papercut.Common.Extensions
 
             try
             {
-                using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    fileStream.Close();
-                }
+                using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) { }
             }
             catch (IOException)
             {
@@ -54,7 +51,6 @@ namespace Papercut.Common.Extensions
                 {
                     fileStream.CopyTo(ms);
                     fileBytes = ms.ToArray();
-                    fileStream.Close();
                 }
             }
             catch (IOException)

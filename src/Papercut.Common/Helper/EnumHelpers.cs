@@ -3,6 +3,7 @@ namespace Papercut.Common.Helper
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
 
     public static class EnumHelpers
     {
@@ -17,7 +18,7 @@ namespace Papercut.Common.Helper
             Type enumType = typeof(TEnum);
 
             // Can't use type constraints on value types, so have to do check like this
-            if (enumType.BaseType != typeof(Enum))
+            if (enumType.GetTypeInfo().BaseType != typeof(Enum))
                 throw new ArgumentException("EnumAsList does not support non-enum types");
 
             Array enumValArray = Enum.GetValues(enumType);
@@ -41,7 +42,7 @@ namespace Papercut.Common.Helper
             Type enumType = typeof(TEnum);
 
             // Can't use type constraints on value types, so have to do check like this
-            if (enumType.BaseType != typeof(Enum)) throw new ArgumentException("EnumToNames does not support non-enum types");
+            if (enumType.GetTypeInfo().BaseType != typeof(Enum)) throw new ArgumentException("EnumToNames does not support non-enum types");
 
             return Enum.GetNames(enumType).ToList();
         }
