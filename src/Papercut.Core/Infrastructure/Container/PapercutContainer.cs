@@ -1,14 +1,14 @@
 ﻿// Papercut
-// 
+//
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2016 Jaben Cargman
-//  
+// Copyright © 2013 - 2017 Jaben Cargman
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,17 +43,19 @@ namespace Papercut.Core.Infrastructure.Container
 
         public static readonly object UIScopeTag = new object();
 
+        public static Assembly SpecifiedEntryAssembly { get; set; }
+
         static readonly Lazy<Assembly[]> _extensionAssemblies = new Lazy<Assembly[]>(
             () =>
             {
                 try
                 {
-                    return new AssemblyScanner(_rootLogger)
-                        .GetAll()
-                        .Except(Assembly.GetExecutingAssembly().ToEnumerable())
-                        .Where(s => s.FullName.StartsWith("Papercut"))
-                        .Distinct()
-                        .ToArray();
+                    return new AssemblyScanner(_rootLogger, () => SpecifiedEntryAssembly)
+                            .GetAll()
+                            .Except(Assembly.GetExecutingAssembly().ToEnumerable())
+                            .Where(s => s.FullName.StartsWith("Papercut"))
+                            .Distinct()
+                            .ToArray();
                 }
                 catch (Exception ex)
                 {
@@ -75,7 +77,7 @@ namespace Papercut.Core.Infrastructure.Container
                 return
                     new LoggerConfiguration().MinimumLevel.Information()
                         .Enrich.With<EnvironmentEnricher>()
-                        .WriteTo.ColoredConsole()
+                        .WriteTo.LiterateConsole()
                         .WriteTo.Sink(jsonSink, LogEventLevel.Information).CreateLogger();
             });
             _containerProvider = new Lazy<IContainer>(Build, LazyThreadSafetyMode.ExecutionAndPublication);

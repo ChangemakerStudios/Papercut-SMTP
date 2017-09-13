@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>papercut</id>
-        <version>4.8.0.0</version>
+        <version>5.0.0.0</version>
         <title>Papercut</title>
         <authors>Jaben</authors>
         <owners>Jaben</owners>

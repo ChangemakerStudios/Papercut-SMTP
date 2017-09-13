@@ -1,5 +1,7 @@
 os: Visual Studio 2017
 
+version: 5.0.{build}.0
+
 configuration: Release
 
 before_build:
@@ -7,23 +9,22 @@ before_build:
 
 after_build:
   # Papercut
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release
-  - md plugins
-  - move Papercut.Module.*.dll plugins
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release # md plugins
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip plugins
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe.*
   - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Readme.eml
   - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.zip
   # Papercut Service
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release
-  - md plugins
-  - move Papercut.Module.*.dll plugins
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release # md plugins
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip plugins  
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip Papercut.Service.*
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Install-Papercut-Service.bat
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Uninstall-Papercut-Service.bat
   - appveyor PushArtifact PapercutService.%APPVEYOR_BUILD_VERSION%.zip
+  # Papercut Installer bundle
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Bootstrapper\bin\Release 
+  - appveyor PushArtifact Papercut.Setup.exe
   - cd %APPVEYOR_BUILD_FOLDER%
   # Chocolately
   - nuget pack chocolately\Papercut.nuspec -version %APPVEYOR_BUILD_VERSION%

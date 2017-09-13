@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2016 Jaben Cargman
+// Copyright © 2013 - 2017 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ namespace Papercut.Core.Infrastructure.Container
     using Autofac;
     using Autofac.Core;
 
+    using AutofacSerilogIntegration;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Paths;
@@ -41,6 +43,7 @@ namespace Papercut.Core.Infrastructure.Container
     {
         protected override void Load(ContainerBuilder builder)
         {
+            new RegisterLogger().Register(builder);
             new RegisterPlugins(Log.Logger).Register(builder, PapercutContainer.ExtensionAssemblies);
 
             //builder.RegisterAssemblyModules(PapercutContainer.ExtensionAssemblies);
@@ -90,29 +93,6 @@ namespace Papercut.Core.Infrastructure.Container
                     })
                 .AsSelf()
                 .SingleInstance();
-
-            new RegisterLogger().Register(builder);
-        }
-
-        protected override void AttachToComponentRegistration(
-            IComponentRegistry componentRegistry,
-            IComponentRegistration registration)
-        {
-            // Handle constructor parameters.
-            registration.Preparing += this.OnComponentPreparing;
-        }
-
-        void OnComponentPreparing(object sender, PreparingEventArgs e)
-        {
-            Type t = e.Component.Activator.LimitType;
-            e.Parameters =
-                e.Parameters.Union(
-                    new[]
-                    {
-                        new ResolvedParameter(
-                            (p, i) => p.ParameterType == typeof(ILogger),
-                            (p, i) => i.Resolve<ILogger>().ForContext(t))
-                    });
         }
     }
 }
