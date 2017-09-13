@@ -16,7 +16,13 @@ namespace Papercut.Module.WebUI.Controllers
     public class StaticContentController: ApiController
     {
 
-        [CacheOutput(ClientTimeSpan=300, ServerTimeSpan=86400, CacheKeyGenerator=typeof(PapercutResourceKeyGenerator))]
+        [CacheOutput(
+#if DEBUG
+        ClientTimeSpan = 30,
+#else
+        ClientTimeSpan = 600,
+#endif
+        ServerTimeSpan = 86400, CacheKeyGenerator= typeof(PapercutResourceKeyGenerator))]
         public HttpResponseMessage Get()
         {
             var resourceName = GetRequetedResourceName(Request.RequestUri);

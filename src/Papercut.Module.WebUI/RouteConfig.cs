@@ -31,7 +31,7 @@ namespace Papercut.Module.WebUI
 
             config.Routes.MapHttpRoute("Serve other requests as static content",
                 "{*anything}",
-                new {controller = "StaticContent", uri = RouteParameter.Optional});
+                new {controller = "StaticContent", anything = RouteParameter.Optional});
         }
     }
 }

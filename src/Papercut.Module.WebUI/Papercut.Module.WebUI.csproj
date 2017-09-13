@@ -125,13 +125,9 @@
     <EmbeddedResource Include="assets\js\angular-1.3.8.js" />
     <EmbeddedResource Include="assets\js\bootstrap-3.3.2.min.js" />
     <EmbeddedResource Include="assets\js\controllers.js" />
-    <EmbeddedResource Include="assets\js\iso88591_map.js" />
     <EmbeddedResource Include="assets\js\jquery-1.11.0.min.js" />
     <EmbeddedResource Include="assets\js\jquery-ui-1.10.4.min.js" />
     <EmbeddedResource Include="assets\js\moment-2.8.4.js" />
-    <EmbeddedResource Include="assets\js\punycode.js" />
-    <EmbeddedResource Include="assets\js\sjis_map.js" />
-    <EmbeddedResource Include="assets\js\strutil.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\images\papercut-logo.png" />
