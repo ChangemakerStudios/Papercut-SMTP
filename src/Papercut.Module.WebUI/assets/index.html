@@ -109,7 +109,7 @@
         <tbody>
           <tr>
             <th>From</th>
-            <td><span ng-if="!!preview.From[0].Name">{{preview.From[0].Name}}(</span>   {{ preview.From[0].Address }}<span ng-if="!!preview.From[0].Name">)</span></td>
+            <td><span ng-if="!!preview.From[0].Name">{{preview.From[0].Name}}(</span>{{ preview.From[0].Address }}<span ng-if="!!preview.From[0].Name">)</span></td>
           </tr>
         <tr>
             <th>To</th>
@@ -145,6 +145,9 @@
   </div>
 
   <div class="mail-content">
+  <span class="download-raw pull-right">
+    <a ng-href="/api/messages/{{preview.Id}}/raw" target="_blank"><span class="glyphicon glyphicon-cloud-download"></span> Download raw message</a>
+  </span>
       <ul class="nav nav-tabs">
         <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
         <li ng-if="hasText(preview)" ng-class="{ active: !hasHTML(preview) }"><a href="#preview-plain" data-toggle="tab">Plain text</a></li>
@@ -167,13 +170,13 @@
                 <thead>
                     <th>MEDIA TYPE</th>
                     <th>FILENAME</th>
-                    <th></th>
+                    <th>SAVE</th>
                 </thead>
                 <tbody>
                 <tr ng-repeat="section in preview.Sections">
                     <td>{{section.MediaType}}</td>
                     <td>{{section.FileName}}</td>
-                    <td><a ng-href="/api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank">Save</a>
+                    <td><a title="Click to download and save section content" ng-href="/api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank" class="glyphicon glyphicon-download-alt"></a></td>
                 </tr>
                 </tbody>
             </table>

@@ -270,6 +270,50 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.AreEqual("image/jpeg", response.Content.Headers.ContentType.MediaType);
         }
 
+        [Test, Order(8)]
+        public void ShouldDownloadRawMessage()
+        {
+            var existedMail = new MimeMessage(
+                new [] { new MailboxAddress("from@from.com") },
+                new[] { new MailboxAddress("to@to.com") },
+                 "Sample email",
+                 new Multipart
+                {
+                    new MimePart(new ContentType("text", "html") {Charset = Encoding.UTF8.EncodingName})
+                    {
+                        ContentObject = new ContentObject(new MemoryStream(Encoding.UTF8.GetBytes("Content example")), ContentEncoding.Binary)
+                    }
+                });
+            var savePath = this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            var messageId = Path.GetFileName(savePath);
+
+            var response = Get($"/api/messages/{messageId}/raw");
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+            var disposition = response.Content.Headers.ContentDisposition;
+            Assert.AreEqual(DispositionTypeNames.Attachment, disposition.DispositionType);
+            Assert.AreEqual(messageId, disposition.FileName);
+
+
+            MimeMessage downloadMessage;
+            using (var raw = response.Content.ReadAsStreamAsync().Result)
+            {
+                downloadMessage = MimeMessage.Load(ParserOptions.Default, raw);
+            }
+            Assert.AreEqual("from@from.com", ((MailboxAddress) downloadMessage.From.First()).Address);
+            Assert.AreEqual("to@to.com", ((MailboxAddress)downloadMessage.To.First()).Address);
+            Assert.AreEqual("Sample email", downloadMessage.Subject);
+
+            using (var ms = new MemoryStream())
+            {
+                var bodyContent = (downloadMessage.BodyParts.Single() as MimePart).ContentObject;
+                bodyContent.DecodeTo(ms);
+                ms.Seek(0, SeekOrigin.Begin);
+
+                Assert.AreEqual("Content example", new StreamReader(ms).ReadToEnd());
+            }
+        }
+
         class MessageListResponse
         {
             public MessageListResponse()

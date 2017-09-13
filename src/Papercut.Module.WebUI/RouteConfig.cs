@@ -29,6 +29,10 @@ namespace Papercut.Module.WebUI
                 "api/messages/{messageId}/sections/{index}",
                 new {controller = "Message", action = "DownloadSection" });
 
+            config.Routes.MapHttpRoute("download raw message palyload",
+                "api/messages/{messageId}/raw",
+                new { controller = "Message", action = "DownloadRaw" });
+
             config.Routes.MapHttpRoute("Serve other requests as static content",
                 "{*anything}",
                 new {controller = "StaticContent", anything = RouteParameter.Optional});

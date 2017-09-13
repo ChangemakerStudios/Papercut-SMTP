@@ -1,3 +1,6 @@
+a:focus, a:hover{
+    text-decoration:none;
+}
 /*********/
 /* Modal */
 .modal-dialog {
@@ -127,6 +130,11 @@
   font-weight: bold;
 }
 
+.mail-content .download-raw{
+    display:inline-block;
+    margin-top:5px;
+}
+
 /***********/
 /* Preview */
 #preview-plain, #preview-source {
@@ -152,7 +160,7 @@
 
 #preview-sections table {
     margin-top: 15px;
-    min-width: 400px;
+    min-width: 450px;
 }
 
 #preview-sections table tbody tr:hover {
@@ -161,10 +169,6 @@
 
 #preview-sections table td {
     padding: 5px;
-}
-
-#preview-sections table td a:hover {
-    cursor: pointer;
 }
 
 .preview .tab-content {

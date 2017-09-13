@@ -28,9 +28,10 @@ namespace Papercut.Module.WebUI.Controllers
     using Message;
     using MimeKit;
     using Models;
-    using Papercut.Message.Helpers;
+    using Message.Helpers;
     using System;
     using System.Collections.Generic;
+    using System.IO;
 
     public class MessageController : ApiController
     {
@@ -76,9 +77,28 @@ namespace Papercut.Module.WebUI.Controllers
         }
 
         [HttpGet]
+        public HttpResponseMessage DownloadRaw(string messageId)
+        {
+            var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+            if (messageEntry == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+            }
+
+            var response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StreamContent(File.OpenRead(messageEntry.File));
+            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(DispositionTypeNames.Attachment)
+            {
+                FileName = Uri.EscapeDataString(messageId)
+            };
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("message/rfc822");
+            return response;
+        }
+
+        [HttpGet]
         public HttpResponseMessage DownloadSection(string messageId, int index)
         {
-            return DownloadSection(messageId, sections => (index < sections.Count ? sections[index] : null));
+            return DownloadSection(messageId, sections => (index >=0 && index < sections.Count ? sections[index] : null));
         }
 
         [HttpGet]
