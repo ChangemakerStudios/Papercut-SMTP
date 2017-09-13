@@ -86,6 +86,11 @@ namespace Papercut.Module.WebUI.Test.Base
             return Client.GetAsync(uri).Result;
         }
 
+        protected HttpResponseMessage Delete(string uri)
+        {
+            return Client.DeleteAsync(uri).Result;
+        }
+
         protected T Get<T>(string uri)
         {
             return Get(uri).Content.ReadAsAsync<T>().Result;

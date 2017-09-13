@@ -54,10 +54,10 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
           url += "?limit=" + $scope.itemsPerPage;
       }
 
-      $http.get(url).success(function (data) {
-          $scope.messages = data.Messages;
-          $scope.totalMessages = data.TotalMessageCount;
-          $scope.countMessages = data.Messages.length;
+      $http.get(url).then(function (resp) {
+          $scope.messages = resp.data.Messages;
+          $scope.totalMessages = resp.data.TotalMessageCount;
+          $scope.countMessages = resp.data.Messages.length;
           $scope.startMessages = $scope.startIndex;
           e.done();
       });
@@ -94,17 +94,30 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
       $scope.refresh();
   };
 
+  $scope.deleteAll = function () {
+      if(!window.confirm('Are you sure to delete all messages?')){
+        return;
+      }
+
+     $http.delete('/api/messages').finally(function () {
+       $scope.refresh();
+     });
+  };
+
   $scope.selectMessage = function (message) {
       if ($scope.cache[message.Id]) {
           $scope.preview = $scope.cache[message.Id];
       } else {
           $scope.preview = message;
           var e = startEvent("Loading message", message.Id, "glyphicon-download-alt");
-          $http.get('/api/messages/' + message.Id).success(function (data) {
-              $scope.cache[message.Id] = data;
+          $http.get('/api/messages/' + message.Id).then(function (resp) {
+              $scope.cache[message.Id] = resp.data;
 
-              data.previewHTML = $sce.trustAsHtml(data.HtmlBody);
-              $scope.preview = data;
+              resp.data.previewHTML = $sce.trustAsHtml(resp.data.HtmlBody);
+              $scope.preview = resp.data;
+
+              var dateHeader = resp.data.Headers.find(function(h){return h.Name === 'Date'});
+              $scope.preview.Date = dateHeader === null ? null : dateHeader.Value;
               e.done();
           });
       }

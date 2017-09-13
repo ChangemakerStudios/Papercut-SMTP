@@ -21,16 +21,7 @@ a:focus, a:hover{
   padding-left: 0;
 }
 
-/**************/
-/* Search bar */
-#search {
-  width: 500px;
-}
-@media (max-width: 991px) {
-  #search {
-    width: 420px;
-  }
-}
+
 
 /* http://stackoverflow.com/questions/18838964/add-bootstrap-glyphicon-to-input-box */
 .left-inner-addon {
@@ -62,24 +53,15 @@ a:focus, a:hover{
   color: red;
 }
 
-/*******/
-/* Jim */
-.jim-well {
-  margin-top: 20px;
+.nav > li > a.btn-delete-all{
+    position: absolute;
+    right: 0;
+    top: 5px;
+    display: none;
 }
 
-.jim-well h3 {
-  margin-top: 0;
-}
-
-.jim-config {
-  margin-top: 3px;
-  padding: 5px;
-  font-size: 0.9em;
-}
-
-.jim-config .jim-config-item {
-  margin-bottom: 2px;
+.nav > li:hover > a.btn-delete-all{
+  display: block;
 }
 
 /***********/
@@ -179,15 +161,13 @@ a:focus, a:hover{
   margin-top: 10px;
 }
 
-.headers tbody td {
-  width: 100%;
-}
-
-.headers tbody th {
+.headers tbody td.header-name {
   white-space: nowrap;
   text-align: right;
   color: #666;
   font-weight: normal;
+  width: 80px;
+  padding-right: 10px;
 }
 
 .haeders table td, .headers table th {
@@ -201,5 +181,6 @@ a:focus, a:hover{
 label.mail-address{
     display: inline-block;
     margin-right: 5px;
+    margin-bottom: 0;
     font-weight: normal;
 }

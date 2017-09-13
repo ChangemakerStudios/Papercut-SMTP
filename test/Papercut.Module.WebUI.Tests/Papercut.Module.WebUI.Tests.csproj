@@ -72,6 +72,8 @@
   <ItemGroup>
     <Compile Include="Base\ApiTestBase.cs" />
     <Compile Include="Base\ServerPathTemplateProviderService.cs" />
+    <Compile Include="MessageFacts\MessageMetaFacts.cs" />
+    <Compile Include="MessageFacts\MessageSectionsFacts.cs" />
     <Compile Include="MessageFacts\LoadMessageFacts.cs" />
     <Compile Include="WebServerFacts\WebUiWebServerApiFact.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -82,7 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="Controllers\StaticContentController.cs" />
     <Compile Include="Helpers\FileHelper.cs" />

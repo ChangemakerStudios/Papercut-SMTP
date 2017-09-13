@@ -33,12 +33,14 @@ namespace Papercut.Module.WebUI.Controllers
     using System.Collections.Generic;
     using System.IO;
 
-    public class MessageController : ApiController
+    using Common.Extensions;
+
+    public class MessagesController : ApiController
     {
         readonly MessageRepository messageRepository;
         readonly MimeMessageLoader messageLoader;
 
-        public MessageController(MessageRepository messageRepository, MimeMessageLoader messageLoader)
+        public MessagesController(MessageRepository messageRepository, MimeMessageLoader messageLoader)
         {
             this.messageRepository = messageRepository;
             this.messageLoader = messageLoader;
@@ -61,6 +63,21 @@ namespace Papercut.Module.WebUI.Controllers
                 TotalMessageCount = messageEntries.Count,
                 Messages = messages
             });
+        }
+
+        [HttpDelete]
+        public HttpResponseMessage DeleteAll()
+        {
+            messageRepository.LoadMessages()
+                .ForEach(msg =>
+                {
+                    try
+                    {
+                        messageRepository.DeleteMessage(msg);
+                    }catch {}
+                });
+
+            return Request.CreateResponse(HttpStatusCode.OK);
         }
 
         [HttpGet]

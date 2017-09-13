@@ -40,10 +40,11 @@
       <div class="row">
         <div class="col-md-2 col-sm-3">
           <ul class="nav nav-pills nav-stacked">
-            <li>
+            <li class="inbox">
               <a href="#" ng-click="backToInboxFirst()">
                 Inbox ({{totalMessages}})
               </a>
+              <a title="Delete all messages" href="#" class="btn-delete-all glyphicon glyphicon-trash" ng-click="deleteAll()"></a>
             </li>
           </ul>
         </div>
@@ -108,19 +109,19 @@
       <table>
         <tbody>
           <tr>
-            <th>From</th>
+            <td class="header-name">From</td>
             <td><span ng-if="!!preview.From[0].Name">{{preview.From[0].Name}}(</span>{{ preview.From[0].Address }}<span ng-if="!!preview.From[0].Name">)</span></td>
           </tr>
         <tr>
-            <th>To</th>
+            <td class="header-name">To</td>
             <td>
                 <label class="mail-address" ng-repeat="to in preview.To">
-                    <span ng-if="!!to.Name">{{to.Name}}(</span>   {{ to.Address }}<span ng-if="!!to.Name">)</span>
+                    <span ng-if="!!to.Name">{{to.Name}}(</span>{{ to.Address }}<span ng-if="!!to.Name">)</span>
                 </label>
             </td>
         </tr>
         <tr ng-if="!!(preview.Cc && preview.Cc.length)">
-            <th>CC</th>
+            <td class="header-name">CC</td>
             <td>
                 <label class="mail-address" ng-repeat="c in preview.Cc">
                     <span ng-if="!!c.Name">{{c.Name}}(</span>   {{ c.Address }}<span ng-if="!!c.Name">)</span>
@@ -128,15 +129,21 @@
             </td>
         </tr>
         <tr ng-if="!!(preview.BCc && preview.BCc.length)">
-            <th>BCC</th>
+            <td class="header-name">BCC</td>
             <td>
                 <label class="mail-address" ng-repeat="b in preview.BCc">
                     <span ng-if="!!b.Name">{{b.Name}}(</span>   {{ b.Address }}<span ng-if="!!b.Name">)</span>
                 </label>
             </td>
         </tr>
+        <tr ng-if="!!preview.Date">
+            <td class="header-name">Date</td>
+            <td>
+                {{preview.Date}}
+            </td>
+        </tr>
         <tr>
-            <th>Subject</th>
+            <td class="header-name">Subject</td>
             <td><strong>{{ preview.Subject }}</strong></td>
         </tr>
         </tbody>
@@ -176,7 +183,7 @@
                 <tr ng-repeat="section in preview.Sections">
                     <td>{{section.MediaType}}</td>
                     <td>{{section.FileName}}</td>
-                    <td><a title="Click to download and save section content" ng-href="/api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank" class="glyphicon glyphicon-download-alt"></a></td>
+                    <td><a title="Download and save section content" ng-href="/api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank" class="glyphicon glyphicon-download-alt"></a></td>
                 </tr>
                 </tbody>
             </table>
