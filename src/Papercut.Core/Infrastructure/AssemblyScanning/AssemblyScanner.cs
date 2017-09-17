@@ -86,18 +86,22 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
 
         IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
         {
+            AssemblyLoadContext.Default.Resolving += ResolveDependencies;
+
             foreach (string assemblyFile in filenames.Where(File.Exists))
             {
                 Assembly assembly;
 
                 try
                 {
-                    assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyFile);
-                    var assemblyLoader = assembly.GetType("Costura.AssemblyLoader");
-                    if (assemblyLoader != null)
+                    var assemblyName = AssemblyLoadContext.GetAssemblyName(assemblyFile);
+                    if (IsInRuntimeLibraries(assemblyName))
                     {
-                        var attach = assemblyLoader.GetMethod("Attach");
-                        attach.Invoke(null, null);
+                        assembly = Assembly.Load(assemblyName);
+                    }
+                    else
+                    {
+                        assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyFile);
                     }
                 }
                 catch (BadImageFormatException)
@@ -113,6 +117,38 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
 
                 yield return assembly;
             }
+        }
+
+        private Assembly ResolveDependencies(AssemblyLoadContext context, AssemblyName dependency)
+        {
+            // avoid loading *.resources dlls, because of: https://github.com/dotnet/coreclr/issues/8416
+            if (dependency.Name.EndsWith("resources"))
+            {
+                return null;
+            }
+
+            var dependencies = DependencyContext.Default.RuntimeLibraries;
+            foreach (var library in dependencies)
+            {
+                if (IsCandidateLibrary(library, dependency))
+                {
+                    return context.LoadFromAssemblyName(new AssemblyName(library.Name));
+                }
+            }
+            
+            return null;
+        }
+
+        static bool IsInRuntimeLibraries(AssemblyName assemblyName)
+        {
+            return DependencyContext.Default.CompileLibraries.Any(library => string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase))
+                 || DependencyContext.Default.RuntimeLibraries.Any(library => string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        static bool IsCandidateLibrary(RuntimeLibrary library, AssemblyName assemblyName)
+        {
+            return string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase)
+                || (library.Dependencies.Any(d => d.Name.StartsWith(assemblyName.Name)));
         }
 
         [NotNull]

@@ -1,8 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
-	<OutputType>exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
+    <ApplicationIcon>Papercut-Service-icon.ico</ApplicationIcon>
+ 	 <OutputType>exe</OutputType>
+    <OutputTypeEx>exe</OutputTypeEx>
+	<DebugType>portable</DebugType>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.6.1" />
