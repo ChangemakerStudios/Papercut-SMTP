@@ -22,7 +22,6 @@ namespace Papercut.Module.WebUI
 
     using Autofac;
     using Autofac.Core;
-    using Autofac.Integration.WebApi;
 
     using Core.Infrastructure.Lifecycle;
     using Core.Infrastructure.Plugins;
@@ -44,9 +43,7 @@ namespace Papercut.Module.WebUI
                 .As<IEventHandler<PapercutServiceReadyEvent>>()
                 .As<IEventHandler<PapercutClientReadyEvent>>()
                 .SingleInstance();
-
-            builder.RegisterApiControllers(ThisAssembly);
-
+            
             base.Load(builder);
         }
     }

@@ -19,8 +19,9 @@
 namespace Papercut.Module.WebUI
 {
     using System;
-    using System.ServiceModel;
-    using System.Web.Http.SelfHost;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+
 
     using Autofac;
 
@@ -28,19 +29,26 @@ namespace Papercut.Module.WebUI
 
     using Core.Domain.Settings;
     using Core.Infrastructure.Lifecycle;
+    using System.Threading;
+    using Microsoft.Extensions.PlatformAbstractions;
+    using Autofac.Extensions.DependencyInjection;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+    using Serilog.Events;
 
-    using Serilog;
-
-    class WebServer : IEventHandler<PapercutServiceReadyEvent>, IEventHandler<PapercutClientReadyEvent>
+    class WebServer : IEventHandler<PapercutServiceReadyEvent>, IDisposable
     {
         readonly ILifetimeScope scope;
-        readonly ILogger logger;
+        readonly Serilog.ILogger logger;
 
         readonly int httpPort;
         const string BaseAddress = "http://localhost:{0}";
         const int DefaultHttpPort = 37408;
 
-        public WebServer(ILifetimeScope scope, ISettingStore settingStore, ILogger logger)
+        CancellationTokenSource serverCancellation;
+
+        public WebServer(ILifetimeScope scope, ISettingStore settingStore, Serilog.ILogger logger)
         {
             this.scope = scope;
             this.logger = logger;
@@ -51,29 +59,107 @@ namespace Papercut.Module.WebUI
         {
             StartHttpServer();
         }
-
-        public void Handle(PapercutClientReadyEvent @event)
-        {
-            StartHttpServer();
-        }
+        
 
         void StartHttpServer()
         {
-            try
-            {
-                var config = new HttpSelfHostConfiguration(string.Format(BaseAddress, httpPort))
-                {
-                    HostNameComparisonMode = HostNameComparisonMode.WeakWildcard
-                };
-                RouteConfig.Init(config, scope);
-                new HttpSelfHostServer(config).OpenAsync().Wait();
+            serverCancellation = new CancellationTokenSource();
+            WebStartup.Scope = scope;
+            WebStartup.Start(serverCancellation.Token);
+        }
 
-                logger.Information($"WebUI server started at port {httpPort}.");
-            }
-            catch (Exception ex)
+        void IDisposable.Dispose()
+        {
+            if (serverCancellation != null) {
+                serverCancellation.Cancel();
+                WebStartup.Scope = null;
+
+                serverCancellation.Dispose();
+                serverCancellation = null;
+            }            
+        }
+
+        class WebStartup {
+            public static ILifetimeScope Scope { get; set; }
+            public static void Start(CancellationToken cancellation)
             {
-                logger.Error(ex, $"Can not start HTTP server at port {httpPort}.");
+                var hostBuilder = new WebHostBuilder();
+                hostBuilder
+                    .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
+                    .UseKestrel()
+                    .UseStartup<WebStartup>();
+
+                var host = hostBuilder.Build();
+                host.Run(cancellation);
+            }
+
+            public IServiceProvider ConfigureServices(IServiceCollection services)
+            {
+                services.AddLogging();
+                services.AddMvcCore();
+                services.AddMemoryCache();
+                
+
+                var builder = new ContainerBuilder();
+                builder.Populate(services);
+
+                #pragma warning disable CS0618 // Type or member is obsolete
+                builder.Update(Scope.ComponentRegistry);
+                return new AutofacServiceProvider(Scope);
+            }
+
+            public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+            {
+                loggerFactory.AddProvider(new SerilogLoggerProvider());
+            }
+
+
+            class SerilogLoggerProvider : ILoggerProvider
+            {
+                public ILogger CreateLogger(string categoryName)
+                {
+                    return new SerilogLoggerAdapter(Scope.Resolve<Serilog.ILogger>());
+                }
+
+                public void Dispose()
+                {
+                    
+                }
+            }
+
+            class SerilogLoggerAdapter : ILogger, IDisposable
+            {
+                private Serilog.ILogger logger;
+
+                public SerilogLoggerAdapter(Serilog.ILogger logger)
+                {
+                    this.logger = logger;
+                }
+
+                public IDisposable BeginScope<TState>(TState state)
+                {
+                    return this;
+                }
+
+                public bool IsEnabled(LogLevel logLevel)
+                {
+                    return true;
+                }
+
+                public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+                {
+                    // var serilogLevel = levelMapping[logLevel];
+                    logger.Write(LogEventLevel.Debug, exception, "");
+                }
+
+                // static Dictionary<LogLevel, LogEventLevel> levelMapping;
+
+                void IDisposable.Dispose()
+                {
+
+                }
             }
         }
+        
     }
 }

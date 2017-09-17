@@ -2,47 +2,39 @@
 
 namespace Papercut.Module.WebUI.Controllers
 {
-    using System;
+    using Microsoft.AspNetCore.Mvc;
     using System.Collections.Generic;
     using System.IO;
-    using System.Net;
-    using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Reflection;
-    using System.Web.Http;
-    using System.Web.Http.Controllers;
-    using WebApi.OutputCache.V2;
+    // using WebApi.OutputCache.V2;
 
-    public class StaticContentController: ApiController
+    public class StaticContentController: ControllerBase
     {
 
-        [CacheOutput(
-#if DEBUG
-        ClientTimeSpan = 30,
-#else
-        ClientTimeSpan = 600,
-#endif
-        ServerTimeSpan = 86400, CacheKeyGenerator= typeof(PapercutResourceKeyGenerator))]
-        public HttpResponseMessage Get()
+        [HttpGet("{*anything}", Order = short.MaxValue)]
+//        [CacheOutput(
+//#if DEBUG
+//        ClientTimeSpan = 30,
+//#else
+//        ClientTimeSpan = 600,
+//#endif
+//        ServerTimeSpan = 86400, CacheKeyGenerator= typeof(PapercutResourceKeyGenerator))]
+        public IActionResult Get()
         {
-            var resourceName = GetRequetedResourceName(Request.RequestUri);
+            var resourceName = GetRequetedResourceName(Request.Path);
             var resourceContent = GetResourceStream(resourceName);
             if (resourceContent == null)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "The requested file does not exist.");
+                return NotFound();
             }
 
-            var response = new HttpResponseMessage
-            {
-                Content = new StreamContent(resourceContent)
-            };
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue(GetMimeType(resourceName));
-            return response;
+            return new FileStreamResult(resourceContent, GetMimeType(resourceName));
         }
 
-        static string GetRequetedResourceName(Uri requestUri)
+        static string GetRequetedResourceName(string requestUri)
         {
-            var filename = requestUri.PathAndQuery
+            var filename = requestUri
                         .TrimStart('/')
                         .TrimStart('.')
                         .Replace("%", "")
@@ -60,7 +52,7 @@ namespace Papercut.Module.WebUI.Controllers
 
         static Stream GetResourceStream(string relativePath)
         {
-            var currentAssembly = Assembly.GetExecutingAssembly();
+            var currentAssembly = typeof(StaticContentController).GetTypeInfo().Assembly;
             var resource = string.Format(ResourcePath, currentAssembly.GetName().Name, relativePath);
 
             return currentAssembly.GetManifestResourceStream(resource);
@@ -96,22 +88,22 @@ namespace Papercut.Module.WebUI.Controllers
             { "woff2", "application/font-woff2" },
         };
 
-        class PapercutResourceKeyGenerator : DefaultCacheKeyGenerator
-        {
-            static string AssemblyVersion;
-            static PapercutResourceKeyGenerator()
-            {
-                AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            }
+        //class PapercutResourceKeyGenerator : DefaultCacheKeyGenerator
+        //{
+        //    static string AssemblyVersion;
+        //    static PapercutResourceKeyGenerator()
+        //    {
+        //        AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        //    }
 
-            public override string MakeCacheKey(HttpActionContext context, MediaTypeHeaderValue mediaType, bool excludeQueryString = false)
-            {
-                var requstUri = context.Request.RequestUri;
-                int hashCode = string.Concat("PapercutResource", AssemblyVersion, requstUri).GetHashCode();
+        //    public override string MakeCacheKey(HttpActionContext context, MediaTypeHeaderValue mediaType, bool excludeQueryString = false)
+        //    {
+        //        var requstUri = context.Request.RequestUri;
+        //        int hashCode = string.Concat("PapercutResource", AssemblyVersion, requstUri).GetHashCode();
 
-                return (hashCode ^ 0x10000).ToString("x2");
-            }
-        }
+        //        return (hashCode ^ 0x10000).ToString("x2");
+        //    }
+        //}
 
     }
 }

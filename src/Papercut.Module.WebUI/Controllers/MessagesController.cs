@@ -19,11 +19,6 @@
 namespace Papercut.Module.WebUI.Controllers
 {
     using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Net.Mime;
-    using System.Web.Http;
     using Helpers;
     using Message;
     using MimeKit;
@@ -34,8 +29,10 @@ namespace Papercut.Module.WebUI.Controllers
     using System.IO;
 
     using Common.Extensions;
+    using Microsoft.AspNetCore.Mvc;
 
-    public class MessagesController : ApiController
+    [Route("api/[controller]")]
+    public class MessagesController : ControllerBase
     {
         readonly MessageRepository messageRepository;
         readonly MimeMessageLoader messageLoader;
@@ -47,7 +44,7 @@ namespace Papercut.Module.WebUI.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage GetAll(int limit = 10, int start = 0)
+        public object GetAll(int limit = 10, int start = 0)
         {
             var messageEntries = messageRepository.LoadMessages();
 
@@ -58,15 +55,15 @@ namespace Papercut.Module.WebUI.Controllers
                 .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, messageLoader.LoadMailMessage(e))))
                 .ToList();
 
-            return Request.CreateResponse(HttpStatusCode.OK, new
+            return new
             {
                 TotalMessageCount = messageEntries.Count,
                 Messages = messages
-            });
+            };
         }
 
         [HttpDelete]
-        public HttpResponseMessage DeleteAll()
+        public void DeleteAll()
         {
             messageRepository.LoadMessages()
                 .ForEach(msg =>
@@ -76,60 +73,53 @@ namespace Papercut.Module.WebUI.Controllers
                         messageRepository.DeleteMessage(msg);
                     }catch {}
                 });
-
-            return Request.CreateResponse(HttpStatusCode.OK);
         }
 
-        [HttpGet]
-        public HttpResponseMessage Get(string id)
+        [HttpGet("{id}")]
+        public object Get(string id)
         {
             var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
             if (messageEntry == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return NotFound();
             }
 
             var dto = MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry)));
-            return Request.CreateResponse(HttpStatusCode.OK, dto);
+            return dto;
         }
 
-        [HttpGet]
-        public HttpResponseMessage DownloadRaw(string messageId)
+        [HttpGet("{messageId}/raw")]
+        public IActionResult DownloadRaw(string messageId)
         {
             var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
             if (messageEntry == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return NotFound();
             }
 
-            var response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StreamContent(File.OpenRead(messageEntry.File));
-            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(DispositionTypeNames.Attachment)
-            {
-                FileName = Uri.EscapeDataString(messageId)
-            };
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue("message/rfc822");
+            var response = new FileStreamResult(System.IO.File.OpenRead(messageEntry.File), "message/rfc822");
+            response.FileDownloadName = Uri.EscapeDataString(messageId);
             return response;
         }
 
-        [HttpGet]
-        public HttpResponseMessage DownloadSection(string messageId, int index)
+        [HttpGet("{messageId}/sections/{index}")]
+        public IActionResult DownloadSection(string messageId, int index)
         {
             return DownloadSection(messageId, sections => (index >=0 && index < sections.Count ? sections[index] : null));
         }
 
-        [HttpGet]
-        public HttpResponseMessage DownloadSectionContent(string messageId, string contentId)
+        [HttpGet("{messageId}/contents/{contentId}")]
+        public IActionResult DownloadSectionContent(string messageId, string contentId)
         {
             return DownloadSection(messageId, (sections) => sections.FirstOrDefault(s => s.ContentId == contentId));
         }
 
-        HttpResponseMessage DownloadSection(string messageId, Func<List<MimePart>, MimePart> findSection)
+        IActionResult DownloadSection(string messageId, Func<List<MimePart>, MimePart> findSection)
         {
             var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
             if (messageEntry == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return NotFound();
             }
 
             var mimeMessage = new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry));
@@ -138,17 +128,14 @@ namespace Papercut.Module.WebUI.Controllers
             var mimePart = findSection(sections);
             if (mimePart == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return NotFound();
             }
 
-            var response = new MimePartResponseMessage(Request, mimePart.ContentObject);
+            var response = new MimePartFileStreamResult(mimePart.ContentObject, $"{mimePart.ContentType.MediaType}/{mimePart.ContentType.MediaSubtype}");
             var filename = mimePart.FileName ?? mimePart.ContentId ?? Guid.NewGuid().ToString();
-            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(DispositionTypeNames.Attachment)
-            {
-                FileName = Uri.EscapeDataString(FileHelper.NormalizeFilename(filename))
-            };
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue($"{mimePart.ContentType.MediaType}/{mimePart.ContentType.MediaSubtype}");
+            response.FileDownloadName = Uri.EscapeDataString(FileHelper.NormalizeFilename(filename));
             return response;
         }
+               
     }
 }

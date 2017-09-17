@@ -18,19 +18,17 @@
 
 namespace Papercut.Module.WebUI.Controllers
 {
-    using System.Net;
-    using System.Net.Http;
-    using System.Text;
-    using System.Web.Http;
+    using Microsoft.AspNetCore.Mvc;
 
-    public class HealthController : ApiController
+    public class HealthController : ControllerBase
     {
-        [HttpGet]
-        public HttpResponseMessage Check()
+        [HttpGet("health")]
+        public IActionResult Check()
         {
-            var response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StringContent("Papercut WebUI server started successfully.", Encoding.UTF8);
-            return response;
+            return new ContentResult {
+                Content = "Papercut WebUI server started successfully.",
+                ContentType = "text/plain"
+            };
         }
     }
 }
