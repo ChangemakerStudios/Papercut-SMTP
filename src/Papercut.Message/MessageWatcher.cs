@@ -21,7 +21,6 @@ namespace Papercut.Message
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Common.Extensions;
@@ -29,6 +28,7 @@ namespace Papercut.Message
     using Papercut.Core.Domain.Paths;
 
     using Serilog;
+    using System.Threading;
 
     public class MessageWatcher : IDisposable
     {

@@ -22,9 +22,6 @@ namespace Papercut.Message.Helpers
     using System.IO;
     using System.Linq;
     using System.Text;
-
-    using Microsoft.Win32;
-
     using MimeKit;
 
     using Papercut.Common.Extensions;
@@ -69,18 +66,7 @@ namespace Papercut.Message.Helpers
 
         public static string GetExtension([NotNull] this ContentType contentType)
         {
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            return
-                Registry.ClassesRoot.OpenSubKey(
-                    $@"MIME\Database\Content Type\{contentType.MediaType}/{contentType.MediaSubtype}",
-                    false)
-                    .ToEnumerable()
-                    .Select(k => k.GetValue("Extension", null))
-                    .Where(v => v != null)
-                    .Select(v => v.ToString())
-                    .FirstOrDefault();
+            throw new NotImplementedException();
         }
 
         public static IEnumerable<MimePart> GetImages([NotNull] this IEnumerable<MimePart> prefilteredMimeParts)

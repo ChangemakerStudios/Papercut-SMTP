@@ -23,16 +23,12 @@ namespace Papercut.Message
     using System.Reactive.Concurrency;
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
-    using System.Runtime.Caching;
-    using System.Threading;
-    using System.Threading.Tasks;
 
     using MimeKit;
-
-    using Papercut.Common.Extensions;
     using Papercut.Core.Domain.Message;
 
     using Serilog;
+    using Microsoft.Extensions.Caching.Memory;
 
     public class MimeMessageLoader
     {
@@ -44,7 +40,7 @@ namespace Papercut.Message
 
         static MimeMessageLoader()
         {
-            MimeMessageCache = new MemoryCache("MimeMessage");
+            MimeMessageCache = new MemoryCache(new MemoryCacheOptions());
         }
 
         public MimeMessageLoader(MessageRepository messageRepository, ILogger logger)
@@ -92,10 +88,11 @@ namespace Papercut.Message
 
         private MimeMessage GetMimeMessageFromCache(MessageEntry messageEntry)
         {
-            return MimeMessageCache.GetOrSet(
+            return MimeMessageCache.GetOrCreate(
                 messageEntry.File,
-                () =>
+                (cacheEntry) =>
                 {
+                    cacheEntry.SlidingExpiration = TimeSpan.FromMinutes(3);
                     this._logger.Verbose(
                         "Getting Message Data from Message Repository",
                         messageEntry);
@@ -114,15 +111,6 @@ namespace Papercut.Message
                     }
 
                     return mimeMessage;
-                },
-                m =>
-                {
-                    var policy = new CacheItemPolicy
-                                 {
-                                     SlidingExpiration = TimeSpan.FromSeconds(10)
-                                 };
-
-                    MimeMessageCache.Add(messageEntry.File, m, policy);
                 });
         }
     }
