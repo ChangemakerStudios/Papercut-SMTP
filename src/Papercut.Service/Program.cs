@@ -18,29 +18,81 @@
 namespace Papercut.Service
 {
     using System;
+    using Autofac;
+    
+    using Papercut.Core.Infrastructure.Container;
+    using Papercut.Service.Services;
+    using System.Threading;
 
     using Serilog;
+    using Papercut.Core.Domain.Application;
+    using System.Threading.Tasks;
 
     class Program
     {
-        static RunServiceApp app;
+        static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            AppDomain.CurrentDomain.UnhandledException += (sender, a) =>
-            {
-                if (Log.Logger == null) return;
-                if (a.IsTerminating) Log.Logger.Fatal(a.ExceptionObject as Exception, "Unhandled Exception");
-                else
-                {
-                    Log.Logger.Information(
-                        a.ExceptionObject as Exception,
-                        "Non-Fatal Unhandled Exception");
-                }
-            };
-
-            app = new RunServiceApp();
-            app.Run();
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            var appTask = Task.Factory.StartNew(() =>
+                               StartPapercutService((container) =>
+                               {
+                                   Console.CancelKeyPress += Console_CancelKeyPress;
+                                   Console.Title = container.Resolve<IAppMeta>().AppName;
+                               }));
+            appTask.Wait();
+            return appTask.Result;
         }
+
+        static int StartPapercutService(Action<ILifetimeScope> initialization)
+        {
+            try
+            {
+                using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
+                {
+                    initialization(appContainer);
+
+                    var papercutService = appContainer.Resolve<PapercutServerService>();
+                    papercutService.Start();
+                    
+                    appWaitHandle.WaitOne();
+                    papercutService.Stop();
+
+                    appWaitHandle.Dispose();
+                    appWaitHandle = null;
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                WriteFatal(ex);
+                return 1;
+            }
+        }
+
+        static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            WriteFatal(e.Exception);
+        }
+
+        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            if (appWaitHandle != null)
+            {
+                appWaitHandle.Set();
+            }
+        }
+        
+        static void WriteFatal(Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            if (Log.Logger != null)
+            {
+                Log.Logger.Fatal(ex, "Unhandled Exception");
+            }
+        }
+        
     }
 }

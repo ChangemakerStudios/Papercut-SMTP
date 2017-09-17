@@ -17,7 +17,6 @@
 
 namespace Papercut.Service
 {
-    using System.Collections.Generic;
     using System.Reflection;
     using Autofac;
     using Autofac.Core;
@@ -34,7 +33,7 @@ namespace Papercut.Service
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+            builder.RegisterAssemblyTypes(this.GetType().GetTypeInfo().Assembly)
                 .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
                 .AsImplementedInterfaces()
                 .AsSelf()
