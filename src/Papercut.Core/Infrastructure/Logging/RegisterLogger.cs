@@ -31,6 +31,7 @@ namespace Papercut.Core.Infrastructure.Logging
 
     using Serilog;
     using Serilog.Debugging;
+    using Microsoft.Extensions.PlatformAbstractions;
 
     public class RegisterLogger
     {
@@ -42,7 +43,7 @@ namespace Papercut.Core.Infrastructure.Logging
                         var appMeta = c.Resolve<IAppMeta>();
 
                         string logFilePath = Path.Combine(
-                            AppDomain.CurrentDomain.BaseDirectory,
+                            PlatformServices.Default.Application.ApplicationBasePath,
                             "Logs",
                             $"{appMeta.AppName}.log");
 

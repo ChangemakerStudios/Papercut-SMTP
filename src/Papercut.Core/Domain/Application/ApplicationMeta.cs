@@ -24,7 +24,7 @@
         public ApplicationMeta(string appName, string appVersion = null)
         {
             this.AppName = appName;
-            this.AppVersion = appVersion ?? Assembly.GetCallingAssembly().GetName().Version.ToString(3);
+            this.AppVersion = appVersion;
         }
 
         public string AppName { get; private set; }

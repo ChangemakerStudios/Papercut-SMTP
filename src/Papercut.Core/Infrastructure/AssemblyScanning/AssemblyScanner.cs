@@ -22,11 +22,13 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
-    using Papercut.Common.Extensions;
+    
     using Papercut.Core.Annotations;
 
     using Serilog;
+    using Microsoft.Extensions.DependencyModel;
+    using System.Runtime.Loader;
+    using Microsoft.Extensions.PlatformAbstractions;
 
     public class AssemblyScanner
     {
@@ -39,87 +41,11 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
             this._getEntryAssembly = getEntryAssembly;
         }
 
-        IEnumerable<Assembly> GetAssembliesList(IEnumerable<string> pluginDirectories)
-        {
-            var filterAssemblies =
-                new Func<Assembly, bool>(a => !a.IsDynamic && !a.GlobalAssemblyCache);
-
-            // get all currently loaded assemblies sans GAC and Dynamic assemblies.
-            List<Assembly> loadedAssemblies =
-                AppDomain.CurrentDomain.GetAssemblies().Where(filterAssemblies).ToList();
-
-            List<string> loadedFiles =
-                loadedAssemblies.Select(a => Path.GetFileName(a.CodeBase)).ToList();
-
-            // get all files...
-            List<string> allFiles = pluginDirectories.SelectMany(this.GetAllFilesIn).Distinct().ToList();
-
-            // exclude currently loaded assemblies
-            List<string> needsToBeLoaded = allFiles
-                .Where(f => !loadedFiles.Contains(Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
-                .ToList();
-
-            // attempt to load files as an assembly and include already loaded
-            List<Assembly> aggregatedAssemblies = this.TryLoadAssemblies(needsToBeLoaded)
-                .Where(filterAssemblies)
-                .Concat(loadedAssemblies)
-                .ToList();
-
-            // get referenced assemblies...
-            var allReferenced = (_getEntryAssembly() ?? Assembly.GetEntryAssembly())?.GetReferencedAssemblies().IfNullEmpty().Distinct().ToList();
-
-            // load resource assemblies
-            //string[] loadedAssemblyNames = loadedAssemblies.Select(a => a.GetName().Name).ToArray();
-            //string[] assemblyResourcesToLoad =
-            //    GetAllAssemblyResourcesIn(loadedAssemblies)
-            //        .Where(s => !loadedAssemblyNames.Contains(s, StringComparer.OrdinalIgnoreCase))
-            //        .ToArray();
-
-            return this.TryLoadReferenced(allReferenced).Where(filterAssemblies).Concat(aggregatedAssemblies).ToArray();
-        }
-
-        private IEnumerable<Assembly> TryLoadReferenced(List<AssemblyName> allReferenced)
-        {
-            var currentlyLoaded = AppDomain.CurrentDomain.GetAssemblies().Select(s => s.GetName().FullName).ToList();
-
-            var excludedStartsWith = new[] { "mscorlib", "System." };
-
-            var assemblyNames = allReferenced
-                .Where(s => !currentlyLoaded.Contains(s.FullName) &&
-                            !excludedStartsWith.Any(_ => s.FullName.StartsWith(_)))
-                .ToList();
-
-            foreach (var assemblyName in assemblyNames)
-            {
-                Assembly assembly;
-
-                try
-                {
-                    assembly = Assembly.Load(assemblyName);
-                }
-                catch (BadImageFormatException)
-                {
-                    // fail on native images...
-                    continue;
-                }
-                catch (FileLoadException ex)
-                {
-                    this._logger.Value.Warning(ex, "Failure Loading Assembly Named {@AssemblyName}", assemblyName);
-                    continue;
-                }
-
-                yield return assembly;
-
-                // attempt to load additional dependencies
-                foreach (var a in this.TryLoadReferenced(assembly.GetReferencedAssemblies().IfNullEmpty().ToList()))
-                    yield return a;
-            }
-        }
 
         [NotNull]
-        public IEnumerable<Assembly> GetAll()
+        public IEnumerable<Assembly> GetPluginAssemblies()
         {
-            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var baseDirectory = PlatformServices.Default.Application.ApplicationBasePath;
 
             var directories = new string[]
             {
@@ -131,6 +57,33 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
             return this.GetAssembliesList(directories.Where(Directory.Exists));
         }
 
+        IEnumerable<Assembly> GetAssembliesList(IEnumerable<string> pluginDirectories)
+        {
+            var filterAssemblies = new Func<Assembly, bool>(a => !a.IsDynamic);
+            var loaded = DependencyContext.Default
+                                    .RuntimeLibraries
+                                    .SelectMany(library => library.Assemblies)
+                                    .Select(assembly => assembly.Name.Name)
+                                    .Distinct()
+                                    .ToList();
+            var loadedAssemblies = new HashSet<string>(loaded);
+
+            var thisAssembly = typeof(AssemblyScanner).GetTypeInfo().Assembly.GetName().Name;
+            var allFiles = pluginDirectories
+                                        .SelectMany(this.GetAllFilesIn)
+                                        .Distinct()
+                                        .Select(file => new { Path = file, Name = Path.GetFileName(file) })
+                                        .Where(assemblyInfo => assemblyInfo.Name.StartsWith("Papercut"))
+                                        .ToList();
+
+            var needsToBeLoaded = allFiles
+                .Where(f => !loadedAssemblies.Contains(f.Name, StringComparer.OrdinalIgnoreCase))
+                .Select(f => f.Path)
+                .ToList();
+
+            return this.TryLoadAssemblies(needsToBeLoaded);
+        }
+
         IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
         {
             foreach (string assemblyFile in filenames.Where(File.Exists))
@@ -139,7 +92,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
 
                 try
                 {
-                    assembly = Assembly.LoadFrom(assemblyFile);
+                    assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyFile);
                     var assemblyLoader = assembly.GetType("Costura.AssemblyLoader");
                     if (assemblyLoader != null)
                     {
@@ -162,49 +115,12 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
             }
         }
 
-        IEnumerable<Assembly> TryLoadResourceAssemblies(
-            [NotNull] IEnumerable<string> assemblyNames)
-        {
-            foreach (string assemblyName in assemblyNames)
-            {
-                Assembly assembly;
-
-                try
-                {
-                    assembly = Assembly.Load(assemblyName);
-                }
-                catch (BadImageFormatException)
-                {
-                    // fail on native images...
-                    continue;
-                }
-                catch (FileLoadException ex)
-                {
-                    this._logger.Value.Warning(ex, "Failure Loading Assembly Resource {AssemblyName}", assemblyName);
-                    continue;
-                }
-
-                yield return assembly;
-            }
-        }
-
         [NotNull]
         IEnumerable<string> GetAllFilesIn(string directory)
         {
             var lookFor = new[] { "*.dll" };
 
             return lookFor.SelectMany(s => Directory.GetFiles(directory, s)).ToArray();
-        }
-
-        IEnumerable<string> GetAllAssemblyResourcesIn(IEnumerable<Assembly> assemblies)
-        {
-            var lookFor = new[] { ".dll", ".exe" };
-
-            return
-                assemblies.SelectMany(a => a.GetManifestResourceNames())
-                    .Where(r => lookFor.Any(r.EndsWith))
-                    .Select(Path.GetFileNameWithoutExtension)
-                    .ToArray();
         }
     }
 }

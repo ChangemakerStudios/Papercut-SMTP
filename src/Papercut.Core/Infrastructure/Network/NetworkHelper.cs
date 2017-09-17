@@ -20,18 +20,15 @@ namespace Papercut.Core.Infrastructure.Network
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Management;
     using System.Net;
     using System.Net.Sockets;
     using System.Text.RegularExpressions;
 
     using Serilog;
+    using System.Net.NetworkInformation;
 
     public static class NetworkHelper
     {
-        const string NetworkAdapterQuery =
-            "SELECT IPAddress from Win32_NetworkAdapterConfiguration WHERE IPEnabled=true";
-
         static readonly Regex _ipv4 = new Regex(
             @"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
             RegexOptions.Compiled);
@@ -53,35 +50,19 @@ namespace Papercut.Core.Infrastructure.Network
 
         public static IEnumerable<string> GetIPAddresses()
         {
+
             try
             {
-                var ips = new List<string>();
-
-                using (var managementObjectSearcher = new ManagementObjectSearcher(NetworkAdapterQuery))
-                using (var mgtObjects = managementObjectSearcher.Get())
-                {
-                    IEnumerable<PropertyData> addresses =
-                        mgtObjects.OfType<ManagementObject>()
-                            .Select(mo => mo.Properties["IPAddress"])
-                            .Where(ip => ip.IsLocal)
-                            .ToList();
-
-                    foreach (PropertyData ipAddress in addresses)
-                    {
-                        if (ipAddress.IsArray) ips.AddRange((string[])ipAddress.Value);
-                        else ips.Add(ipAddress.Value.ToString());
-                    }
-                }
-
-                return ips.Where(address => address.IsValidIP()).ToList();
+                return NetworkInterface.GetAllNetworkInterfaces()
+                    .SelectMany(netInterface => netInterface.GetIPProperties().UnicastAddresses)
+                    .Where(addr => addr.IsDnsEligible)
+                    .Select(addr => addr.Address.ToString());
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                Log.Logger.Warning(ex,
-                    "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
+                Log.Logger.Warning(ex, "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
+                return new[] { "127.0.0.1" };
             }
-
-            return new[] { "127.0.0.1" };
         }
 
         public static bool IsValidIP(this string ip)

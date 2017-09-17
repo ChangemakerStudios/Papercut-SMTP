@@ -24,10 +24,9 @@ namespace Papercut.Core.Domain.Paths
     using System.Linq;
     using System.Text.RegularExpressions;
 
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
-
     using Serilog;
+    using Microsoft.Extensions.PlatformAbstractions;
+    using System.Runtime.InteropServices;
 
     public class MessagePathConfigurator : IMessagePathConfigurator
     {
@@ -47,16 +46,15 @@ namespace Papercut.Core.Domain.Paths
         {
             _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                { "BaseDirectory", AppDomain.CurrentDomain.BaseDirectory }
+                { "BaseDirectory", PlatformServices.Default.Application.ApplicationBasePath }
             };
 
-            foreach (
-                Environment.SpecialFolder specialPath in
-                    EnumHelpers.GetEnumList<Environment.SpecialFolder>())
+            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            foreach (var specialFolder in SpecialFolder.BuiltinSpecialFolders)
             {
-                string specialPathName = specialPath.ToString();
-
-                if (!_templateDictionary.ContainsKey(specialPathName)) _templateDictionary.Add(specialPathName, Environment.GetFolderPath(specialPath));
+                string specialPathName = specialFolder.Name.ToString();
+                if (!_templateDictionary.ContainsKey(specialPathName))
+                    _templateDictionary.Add(specialPathName, isWindows ? specialFolder.WindowsPath : specialFolder.NonWindowsPath);
             }
         }
 
@@ -69,7 +67,7 @@ namespace Papercut.Core.Domain.Paths
             this._pathTemplateProvider = pathTemplateProvider;
             this._pathTemplateProvider.PathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
 
-            this.DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
+            this.DefaultSavePath = PlatformServices.Default.Application.ApplicationBasePath;
             this.RenderLoadPaths();
 
             if (this.LoadPaths.Any()) this.DefaultSavePath = this.LoadPaths.First();
@@ -136,9 +134,7 @@ namespace Papercut.Core.Domain.Paths
                 string path;
                 if (_templateDictionary.TryGetValue(pathKeyName, out path))
                 {
-                    renderedPath =
-                        renderedPath.Replace($"%{pathKeyName}%", path)
-                            .Replace(@"\\", @"\");
+                    renderedPath = renderedPath.Replace($"%{pathKeyName}%", path).Replace(@"\\", @"\");
                 }
             }
 
@@ -147,6 +143,9 @@ namespace Papercut.Core.Domain.Paths
 
         bool ValidatePathExists(string path)
         {
+            
+
+
             if (path == null) throw new ArgumentNullException(nameof(path));
 
             try
@@ -161,6 +160,48 @@ namespace Papercut.Core.Domain.Paths
             }
 
             return false;
+        }
+
+
+        class SpecialFolder
+        {
+            public static SpecialFolder[] BuiltinSpecialFolders = new[]
+            {
+                new SpecialFolder{
+                    Name = FolderName.UserProfile,
+                    WindowsPath =  Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%"),
+                    NonWindowsPath = Environment.GetEnvironmentVariable("HOME")
+                },
+                new SpecialFolder{
+                    Name = FolderName.ApplicationData,
+                    WindowsPath =  Environment.GetEnvironmentVariable("APPDATA"),
+                    NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/.config")
+                },
+                new SpecialFolder{
+                    Name = FolderName.CommonApplicationData,
+                    WindowsPath =  Environment.GetEnvironmentVariable("PROGRAMDATA"),
+                    NonWindowsPath = "/usr/share"
+                },
+                new SpecialFolder{
+                    Name = FolderName.Desktop,
+                    WindowsPath =  Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%\\Desktop"),
+                    NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/Desktop")
+                },
+            };
+
+
+            public string WindowsPath { get; set; }
+            public string NonWindowsPath { get; set; }
+            public FolderName Name { get; set; }
+
+
+            public enum FolderName
+            {
+                UserProfile,
+                ApplicationData,
+                CommonApplicationData,
+                Desktop
+            }
         }
     }
 }

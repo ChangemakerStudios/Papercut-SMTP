@@ -1,158 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EEDD1016-6442-48CE-8F8E-1D350829FBDE}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Papercut.Core</RootNamespace>
-    <AssemblyName>Papercut.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+    <TargetFramework>netstandard1.6</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=4.6.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Autofac.4.6.1\lib\net45\Autofac.dll</HintPath>
-    </Reference>
-    <Reference Include="AutofacSerilogIntegration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d672c67444a98ac9, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\AutofacSerilogIntegration.2.0.0\lib\net45\AutofacSerilogIntegration.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.2.5.0\lib\net45\Serilog.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.Console, Version=3.0.1.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.Console.3.0.1\lib\net45\Serilog.Sinks.Console.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.File.3.2.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.Literate, Version=3.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.Literate.3.0.0\lib\net45\Serilog.Sinks.Literate.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.RollingFile, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.RollingFile.3.3.0\lib\net45\Serilog.Sinks.RollingFile.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Runtime" />
-    <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="Autofac" Version="4.6.1" />
+    <PackageReference Include="AutofacSerilogIntegration" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.1.2" />
+    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Serilog" Version="2.5.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="3.2.0" />
+    <PackageReference Include="Serilog.Sinks.Literate" Version="3.0.0" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
+    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
+    <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Domain\Application\ApplicationMeta.cs" />
-    <Compile Include="Domain\Application\IAppMeta.cs" />
-    <Compile Include="Domain\Paths\IMessagePathConfigurator.cs" />
-    <Compile Include="Domain\Paths\IPathTemplatesProvider.cs" />
-    <Compile Include="Domain\Paths\MessagePathConfigurator.cs" />
-    <Compile Include="Infrastructure\Lifecycle\AppForceShutdownEvent.cs" />
-    <Compile Include="Infrastructure\Logging\RegisterLogger.cs" />
-    <Compile Include="Infrastructure\Network\AppProcessExchangeEvent.cs" />
-    <Compile Include="Infrastructure\MessageBus\AutofacMessageBus.cs" />
-    <Compile Include="Infrastructure\Network\BaseBindEvent.cs" />
-    <Compile Include="Infrastructure\Logging\ConfigureLoggerEvent.cs" />
-    <Compile Include="Domain\Message\NewMessageEvent.cs" />
-    <Compile Include="Infrastructure\Lifecycle\PapercutClientExitEvent.cs" />
-    <Compile Include="Infrastructure\Lifecycle\PapercutClientPreStartEvent.cs" />
-    <Compile Include="Infrastructure\Lifecycle\PapercutClientReadyEvent.cs" />
-    <Compile Include="Infrastructure\Lifecycle\PapercutServiceExitEvent.cs" />
-    <Compile Include="Infrastructure\Lifecycle\PapercutServicePreStartEvent.cs" />
-    <Compile Include="Infrastructure\Lifecycle\PapercutServiceReadyEvent.cs" />
-    <Compile Include="Infrastructure\MessageBus\PublishEventExtensions.cs" />
-    <Compile Include="Domain\Rules\RulesUpdatedEvent.cs" />
-    <Compile Include="Domain\Network\Smtp\SmtpServerBindEvent.cs" />
-    <Compile Include="Domain\Network\Smtp\SmtpServerBindFailedEvent.cs" />
-    <Compile Include="Domain\Network\Smtp\SmtpServerForceRebindEvent.cs" />
-    <Compile Include="Infrastructure\AssemblyScanning\AssemblyScanner.cs" />
-    <Compile Include="Infrastructure\Container\AutofacRegistrationExtensions.cs" />
-    <Compile Include="Infrastructure\Container\AutofacServiceProvider.cs" />
-    <Compile Include="Infrastructure\Logging\EnvironmentEnricher.cs" />
-    <Compile Include="Infrastructure\Json\JsonHelpers.cs" />
-    <Compile Include="Infrastructure\Network\NetworkHelper.cs" />
-    <Compile Include="Domain\Network\IConnection.cs" />
-    <Compile Include="Domain\Network\IProtocol.cs" />
-    <Compile Include="Domain\Network\IServer.cs" />
-    <Compile Include="Domain\Network\Smtp\ISmtpCommand.cs" />
-    <Compile Include="Domain\Network\Smtp\ISmtpContext.cs" />
-    <Compile Include="Domain\Network\Smtp\SmtpSession.cs" />
-    <Compile Include="Infrastructure\Plugins\IDiscoverableModule.cs" />
-    <Compile Include="Infrastructure\Plugins\IPluginModule.cs" />
-    <Compile Include="Infrastructure\Plugins\IPluginStore.cs" />
-    <Compile Include="Domain\Message\IFile.cs" />
-    <Compile Include="Domain\Message\IReceivedDataHandler.cs" />
-    <Compile Include="Infrastructure\Plugins\PluginModuleEqualityComparer.cs" />
-    <Compile Include="Infrastructure\Plugins\PluginReport.cs" />
-    <Compile Include="Infrastructure\Plugins\PluginStore.cs" />
-    <Compile Include="Domain\Message\MessageEntry.cs" />
-    <Compile Include="Domain\Message\NewMessageEventArgs.cs" />
-    <Compile Include="Infrastructure\Container\PapercutContainer.cs" />
-    <Compile Include="Infrastructure\Container\PapercutCoreModule.cs" />
-    <Compile Include="Infrastructure\Plugins\RegisterPlugins.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Domain\Rules\IRule.cs" />
-    <Compile Include="Domain\Rules\IRuleDispatcher.cs" />
-    <Compile Include="Domain\Rules\IRulesRunner.cs" />
-    <Compile Include="Domain\Settings\BaseSettingsStore.cs" />
-    <Compile Include="Domain\Settings\IReadValue.cs" />
-    <Compile Include="Domain\Settings\ISettingStore.cs" />
-    <Compile Include="Domain\Settings\ISettingsTyped.cs" />
-    <Compile Include="Domain\Settings\JsonSettingStore.cs" />
-    <Compile Include="Domain\Settings\ReadWriteValueExtensions.cs" />
-    <Compile Include="Domain\Settings\IWriteValue.cs" />
-    <Compile Include="Domain\Settings\SettingsTypedExtensions.cs" />
+    <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <Folder Include="Properties\" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
-      <Project>{5fa0e4aa-27af-4801-b6ca-8c97dadd6da6}</Project>
-      <Name>Papercut.Common</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

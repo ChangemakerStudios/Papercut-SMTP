@@ -25,8 +25,6 @@ namespace Papercut.Core.Infrastructure.Container
     using System.Threading;
 
     using Autofac;
-
-    using Papercut.Common.Extensions;
     using Papercut.Core.Infrastructure.AssemblyScanning;
     using Papercut.Core.Infrastructure.Logging;
 
@@ -34,6 +32,8 @@ namespace Papercut.Core.Infrastructure.Container
     using Serilog.Events;
     using Serilog.Formatting.Json;
     using Serilog.Sinks.RollingFile;
+    using Microsoft.Extensions.PlatformAbstractions;
+    using System.Runtime.Loader;
 
     public static class PapercutContainer
     {
@@ -51,9 +51,7 @@ namespace Papercut.Core.Infrastructure.Container
                 try
                 {
                     return new AssemblyScanner(_rootLogger, () => SpecifiedEntryAssembly)
-                            .GetAll()
-                            .Except(Assembly.GetExecutingAssembly().ToEnumerable())
-                            .Where(s => s.FullName.StartsWith("Papercut"))
+                            .GetPluginAssemblies()
                             .Distinct()
                             .ToArray();
                 }
@@ -68,7 +66,7 @@ namespace Papercut.Core.Infrastructure.Container
         {
             _rootLogger = new Lazy<ILogger>(() =>
             {
-                string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                string logFilePath = Path.Combine(PlatformServices.Default.Application.ApplicationBasePath,
                     "Logs",
                     "PapercutCoreFailure.json");
 
@@ -82,23 +80,16 @@ namespace Papercut.Core.Infrastructure.Container
             });
             _containerProvider = new Lazy<IContainer>(Build, LazyThreadSafetyMode.ExecutionAndPublication);
 
-            AppDomain.CurrentDomain.ProcessExit += DisposeContainer;
-            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
-            {
-                if (args.IsTerminating)
-                    _rootLogger.Value.Fatal(args.ExceptionObject as Exception, "Unhandled Exception");
-                else
-                    _rootLogger.Value.Information(args.ExceptionObject as Exception, "Non-Fatal Unhandled Exception");
-            };
+            AssemblyLoadContext.Default.Unloading += DisposeContainer;
         }
-
+        
         public static Assembly[] ExtensionAssemblies => _extensionAssemblies.Value;
 
         public static IContainer Instance => _containerProvider.Value;
 
-        static void DisposeContainer(object sender, EventArgs e)
+        static void DisposeContainer(AssemblyLoadContext ctx)
         {
-            Trace.WriteLine("ProcessExit Called: Disposing Container");
+            Debug.WriteLine("ProcessExit Called: Disposing Container");
 
             try
             {

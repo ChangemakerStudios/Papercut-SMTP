@@ -23,6 +23,8 @@ namespace Papercut.Core.Infrastructure.Logging
 
     using Serilog.Core;
     using Serilog.Events;
+    using System.Runtime.InteropServices;
+    using Microsoft.Extensions.PlatformAbstractions;
 
     public class EnvironmentEnricher : ILogEventEnricher
     {
@@ -41,11 +43,12 @@ namespace Papercut.Core.Infrastructure.Logging
                 this._cachedProperties.GetOrAdd("MachineName",
                     k => propertyFactory.CreateProperty(k, Environment.MachineName)),
                 this._cachedProperties.GetOrAdd("Is64BitOperatingSystem",
-                    k => propertyFactory.CreateProperty(k, Environment.Is64BitOperatingSystem)),
-                this._cachedProperties.GetOrAdd("OSVersion", k => propertyFactory.CreateProperty(k, Environment.OSVersion)),
+                    k => propertyFactory.CreateProperty(k, RuntimeInformation.OSArchitecture == Architecture.X64 || RuntimeInformation.OSArchitecture == Architecture.Arm64)),
+                this._cachedProperties.GetOrAdd("OSDescription", k => propertyFactory.CreateProperty(k,  RuntimeInformation.OSDescription)),
                 this._cachedProperties.GetOrAdd("ProcessorCount",
                     k => propertyFactory.CreateProperty(k, Environment.ProcessorCount)),
-                this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, Environment.Version))
+                this._cachedProperties.GetOrAdd(".NETRuntime", k => propertyFactory.CreateProperty(k, PlatformServices.Default.Application.RuntimeFramework.FullName)),
+                this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, PlatformServices.Default.Application.RuntimeFramework.Version))
             };
 
             foreach (var p in properties)

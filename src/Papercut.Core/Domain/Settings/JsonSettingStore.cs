@@ -23,13 +23,14 @@ namespace Papercut.Core.Domain.Settings
 
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Infrastructure.Json;
+    using Microsoft.Extensions.PlatformAbstractions;
 
     public class JsonSettingStore : BaseSettingsStore
     {
         public JsonSettingStore(IAppMeta appMeta)
         {
             this.SettingsFilePath = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
+                PlatformServices.Default.Application.ApplicationBasePath,
                 appMeta.AppName + ".json");
         }
 
