@@ -63,7 +63,7 @@ namespace Papercut.Network
             {
                 if (Client != null)
                 {
-                    Client.Close();
+                    Client.Dispose();
                     Client = null;
                 }
             }
@@ -73,7 +73,7 @@ namespace Papercut.Network
         {
             try
             {
-                Client.Connect(Host, Port);
+                ClientConnect();
             }
             catch (SocketException)
             {
@@ -110,15 +110,27 @@ namespace Papercut.Network
             }
             finally
             {
-                Client.Close();
+                ClientClose();
             }
+        }
+
+        void ClientConnect()
+        {
+            var task = Client.ConnectAsync(Host, Port);
+            task.ConfigureAwait(continueOnCapturedContext: false);
+            task.Wait();
+        }
+        
+        void ClientClose()
+        {
+            Client.Client.Shutdown(SocketShutdown.Both);
         }
 
         public bool PublishEventServer<TEvent>(TEvent @event) where TEvent : IEvent
         {
             try
             {
-                Client.Connect(Host, Port);
+                ClientConnect();
             }
             catch (SocketException)
             {
@@ -144,7 +156,7 @@ namespace Papercut.Network
             }
             finally
             {
-                Client.Close();
+                ClientClose();
             }
         }
 

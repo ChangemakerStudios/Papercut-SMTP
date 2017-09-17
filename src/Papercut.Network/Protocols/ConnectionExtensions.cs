@@ -55,20 +55,12 @@ namespace Papercut.Network.Protocols
             Func<StreamReader, TOut> read)
         {
             TOut output;
-            NetworkStream networkStream = null;
-
-            try
+            using (var networkStream = new NetworkStream(socket, false))
             {
-                networkStream = new NetworkStream(socket, false);
                 using (var reader = new StreamReader(networkStream))
                 {
                     output = read(reader);
-                    networkStream.Close();
                 }
-            }
-            finally
-            {
-                networkStream?.Dispose();
             }
 
             return output;

@@ -77,7 +77,7 @@ namespace Papercut.Network
             if (Client != null && Client.Connected)
             {
                 Client.Shutdown(SocketShutdown.Both);
-                Client.Close();
+                Client.Dispose();
             }
 
             if (triggerEvent) OnConnectionClosed(new EventArgs());
@@ -112,14 +112,14 @@ namespace Papercut.Network
             ConnectionClosed?.Invoke(this, e);
         }
 
-        protected bool ContinueProcessReceive([NotNull] IAsyncResult result)
+        protected bool ContinueProcessReceive([NotNull] SocketAsyncEventArgs result)
         {
             if (result == null) throw new ArgumentNullException(nameof(result));
 
             try
             {
                 // Receive the rest of the data
-                int sizeReceived = Client.EndReceive(result);
+                int sizeReceived = result.BytesTransferred;
                 LastActivity = DateTime.Now;
 
                 // Ensure we received bytes
@@ -173,24 +173,23 @@ namespace Papercut.Network
         {
             try
             {
-                // Begin to listen for data
-                Client.BeginReceive(
-                    _receiveBuffer,
-                    0,
-                    BufferSize,
-                    SocketFlags.None,
-                    result =>
+                var asyncSocketArgs = new SocketAsyncEventArgs {
+                    SocketFlags = SocketFlags.None,
+                    AcceptSocket = Client
+                };
+                asyncSocketArgs.SetBuffer(_receiveBuffer, 0, BufferSize);
+
+                asyncSocketArgs.Completed += (object sender, SocketAsyncEventArgs e) => {
+                    if (IsValidConnection() && ContinueProcessReceive(e))
                     {
-                        if (IsValidConnection() && ContinueProcessReceive(result))
+                        if (Connected && Client.Connected)
                         {
-                            if (Connected && Client.Connected)
-                            {
-                                // continue processing
-                                BeginReceive();
-                            }
+                            // continue processing
+                            BeginReceive();
                         }
-                    },
-                    this);
+                    }
+                };
+                Client.ReceiveAsync(asyncSocketArgs);
             }
             catch (Exception ex)
             {
@@ -205,11 +204,21 @@ namespace Papercut.Network
             // Use overload that takes an IAsyncResult directly
             try
             {
-                AsyncCallback nullOp = i => { };
-                IAsyncResult result = this.Client.BeginSend(data, 0, data.Length, SocketFlags.None, nullOp, null);
-                if (result != null)
+                var taskCompletionSource = new TaskCompletionSource<SocketAsyncEventArgs>();
+
+                var sendArgs = new SocketAsyncEventArgs { AcceptSocket = Client, SocketFlags = SocketFlags.None };
+                sendArgs.SetBuffer(data, 0, data.Length);
+                sendArgs.Completed += (object sender, SocketAsyncEventArgs e)=> {
+                    taskCompletionSource.SetResult(e);
+                };
+
+                try
                 {
-                    return Task.Factory.FromAsync(result, r => this.Client.Connected ? this.Client.EndSend(r) : 0);
+                    return Client.SendAsync(sendArgs) ? taskCompletionSource.Task : Task.FromResult(sendArgs);
+                }
+                catch (Exception ex)
+                {
+                    return Task.FromException(ex);
                 }
             }
             catch (ObjectDisposedException)

@@ -49,7 +49,7 @@ namespace Papercut.Network
             //builder.RegisterType<SmtpClient>().AsSelf().InstancePerDependency();
 
             // register smtp commands
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+            builder.RegisterAssemblyTypes(this.GetType().GetTypeInfo().Assembly)
                 .AssignableTo<ISmtpCommand>()
                 .As<ISmtpCommand>()
                 .InstancePerDependency();
