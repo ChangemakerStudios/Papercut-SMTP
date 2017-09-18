@@ -64,6 +64,7 @@
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -73,11 +74,19 @@
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.SelfHost.5.2.3\lib\net45\System.Web.Http.SelfHost.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="WebApi.OutputCache.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Strathweb.CacheOutput.WebApi2.0.10.0\lib\net45\WebApi.OutputCache.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="WebApi.OutputCache.V2, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Strathweb.CacheOutput.WebApi2.0.10.0\lib\net45\WebApi.OutputCache.V2.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="Controllers\StaticContentController.cs" />
+    <Compile Include="Helpers\FileHelper.cs" />
+    <Compile Include="Helpers\MimePartResponseMessage.cs" />
     <Compile Include="Models\MessageDetail.cs" />
     <Compile Include="Models\MimeMessageEntry.cs" />
     <Compile Include="RouteConfig.cs" />
@@ -116,14 +125,9 @@
     <EmbeddedResource Include="assets\js\angular-1.3.8.js" />
     <EmbeddedResource Include="assets\js\bootstrap-3.3.2.min.js" />
     <EmbeddedResource Include="assets\js\controllers.js" />
-    <EmbeddedResource Include="assets\js\filesize-3.1.2.min.js" />
-    <EmbeddedResource Include="assets\js\iso88591_map.js" />
     <EmbeddedResource Include="assets\js\jquery-1.11.0.min.js" />
     <EmbeddedResource Include="assets\js\jquery-ui-1.10.4.min.js" />
     <EmbeddedResource Include="assets\js\moment-2.8.4.js" />
-    <EmbeddedResource Include="assets\js\punycode.js" />
-    <EmbeddedResource Include="assets\js\sjis_map.js" />
-    <EmbeddedResource Include="assets\js\strutil.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\images\papercut-logo.png" />
