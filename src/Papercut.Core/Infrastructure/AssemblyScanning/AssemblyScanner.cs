@@ -29,6 +29,8 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
     using Microsoft.Extensions.DependencyModel;
     using System.Runtime.Loader;
     using Microsoft.Extensions.PlatformAbstractions;
+    using Microsoft.Extensions.DependencyModel.Resolution;
+    using System.Text;
 
     public class AssemblyScanner
     {
@@ -135,10 +137,11 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
                     return context.LoadFromAssemblyName(new AssemblyName(library.Name));
                 }
             }
-            
-            return null;
-        }
 
+            
+            return TryLoadFromNuGetPackage(dependency);
+        }
+        
         static bool IsInRuntimeLibraries(AssemblyName assemblyName)
         {
             return DependencyContext.Default.CompileLibraries.Any(library => string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase))
@@ -157,6 +160,112 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
             var lookFor = new[] { "*.dll" };
 
             return lookFor.SelectMany(s => Directory.GetFiles(directory, s)).ToArray();
+        }
+
+        static string PackageFolder;
+        static Dictionary<string, NuGetPackageLibraryAssembly> DeclaredAssemblies;
+        // name, packagename, libpath
+
+        static Assembly TryLoadFromNuGetPackage(AssemblyName dependency)
+        {
+            if (PackageFolder == null) {
+                var packageLib = DependencyContext.Default.CompileLibraries
+                    .Where(lib => lib.Type == "package")
+                    .Take(2)
+                    .Select(lib => Assembly.Load(new AssemblyName(lib.Name)).Location)
+                    .ToList();
+
+                var firstPath = packageLib[0].ToLowerInvariant().Split(Path.DirectorySeparatorChar);
+                var secondPath = packageLib[1].ToLowerInvariant().Split(Path.DirectorySeparatorChar);
+                var min = Math.Min(firstPath.Length, secondPath.Length);
+                var diffIndex = -1;
+                for (var i = 0; i < min; i++) {
+                    if (firstPath[i] != secondPath[i]) {
+                        diffIndex = i;
+                        break;
+                    }
+                }
+
+                if (diffIndex > -1)
+                {
+                    PackageFolder = string.Join(Path.DirectorySeparatorChar.ToString(), firstPath.Take(diffIndex));
+                }
+            }
+            if(DeclaredAssemblies == null)
+            {
+                try
+                {
+                    var items = Directory.GetFiles(PlatformServices.Default.Application.ApplicationBasePath, "*.deps.json")
+                        .SelectMany(deps =>
+                        {
+                            var reader = new DependencyContextJsonReader();
+                            using (var json = File.OpenRead(deps))
+                            {
+                                return reader.Read(json).RuntimeLibraries;
+                            }
+                        })
+                        .Distinct(new RuntimeLibraryComparer())
+                        .ToList();
+
+                    DeclaredAssemblies = items
+                        .Select(lib => new NuGetPackageLibraryAssembly
+                        {
+                            Name = lib.Name,
+                            Version = lib.Version,
+                            Path = lib.RuntimeAssemblyGroups.FirstOrDefault()?.AssetPaths.FirstOrDefault(),  // BUG: what if they have multiple files???
+                        })
+                        .Where(lib => lib.Path != null)
+                        .ToDictionary(lib => lib.Name);
+                }
+                catch (Exception ex){
+
+                }
+            }
+
+
+            NuGetPackageLibraryAssembly packageAssembly;
+            if (!DeclaredAssemblies.TryGetValue(dependency.Name.ToLowerInvariant(), out packageAssembly)) {
+                return null;
+            }
+
+            var hash = string.Join("", dependency.GetPublicKeyToken().Select(b => b.ToString("x2")));
+            var depLib = new CompilationLibrary("package", packageAssembly.Name, packageAssembly.Version, hash, new[] { packageAssembly.Name }, Enumerable.Empty<Dependency>(), true);
+            
+            var assemblyPathList = new List<string>();
+            if (new PackageCompilationAssemblyResolver(PackageFolder).TryResolveAssemblyPaths(depLib, assemblyPathList)) {
+                var path = assemblyPathList.FirstOrDefault();
+                return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+            }
+
+            return null;
+        }
+
+        class NuGetPackageLibraryAssembly
+        {
+            public string Name { get; set; }
+            public string Version { get; set; }
+            // public string PackageName { get; set; }
+            public string Path { get; set; }
+
+            public string GetKey() => string.Concat(Name, '/', Version);
+        }
+
+        class RuntimeLibraryComparer : IEqualityComparer<RuntimeLibrary>
+        {
+            public bool Equals(RuntimeLibrary x, RuntimeLibrary y)
+            {
+                if (x == null && y == null) {
+                    return true;
+                }
+
+                return x?.Name == y?.Name; //  && x?.Version == y?.Version;
+            }
+
+            public int GetHashCode(RuntimeLibrary obj)
+            {
+                return obj.Name.GetHashCode() + 10000;
+                // return string.Concat(obj.Name, '/', obj.Version).GetHashCode();
+            }
         }
     }
 }
