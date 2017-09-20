@@ -88,7 +88,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
 
         IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
         {
-            AssemblyLoadContext.Default.Resolving += ResolveDependencies;
+            AssemblyLoadContext.Default.Resolving += AssemblyResolver.OnResolving;
 
             foreach (string assemblyFile in filenames.Where(File.Exists))
             {
@@ -121,37 +121,11 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
             }
         }
 
-        private Assembly ResolveDependencies(AssemblyLoadContext context, AssemblyName dependency)
-        {
-            // avoid loading *.resources dlls, because of: https://github.com/dotnet/coreclr/issues/8416
-            if (dependency.Name.EndsWith("resources"))
-            {
-                return null;
-            }
 
-            var dependencies = DependencyContext.Default.RuntimeLibraries;
-            foreach (var library in dependencies)
-            {
-                if (IsCandidateLibrary(library, dependency))
-                {
-                    return context.LoadFromAssemblyName(new AssemblyName(library.Name));
-                }
-            }
-
-            
-            return TryLoadFromNuGetPackage(dependency);
-        }
-        
         static bool IsInRuntimeLibraries(AssemblyName assemblyName)
         {
             return DependencyContext.Default.CompileLibraries.Any(library => string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase))
                  || DependencyContext.Default.RuntimeLibraries.Any(library => string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
-        }
-
-        static bool IsCandidateLibrary(RuntimeLibrary library, AssemblyName assemblyName)
-        {
-            return string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase)
-                || (library.Dependencies.Any(d => d.Name.StartsWith(assemblyName.Name)));
         }
 
         [NotNull]
@@ -162,40 +136,14 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
             return lookFor.SelectMany(s => Directory.GetFiles(directory, s)).ToArray();
         }
 
-        static string PackageFolder;
-        static Dictionary<string, NuGetPackageLibraryAssembly> DeclaredAssemblies;
-        // name, packagename, libpath
 
-        static Assembly TryLoadFromNuGetPackage(AssemblyName dependency)
+        static class AssemblyResolver
         {
-            if (PackageFolder == null) {
-                var packageLib = DependencyContext.Default.CompileLibraries
-                    .Where(lib => lib.Type == "package")
-                    .Take(2)
-                    .Select(lib => Assembly.Load(new AssemblyName(lib.Name)).Location)
-                    .ToList();
+            static ICompilationAssemblyResolver assemblyResolver;
+            static List<RuntimeLibrary> allLibraries;
 
-                var firstPath = packageLib[0].ToLowerInvariant().Split(Path.DirectorySeparatorChar);
-                var secondPath = packageLib[1].ToLowerInvariant().Split(Path.DirectorySeparatorChar);
-                var min = Math.Min(firstPath.Length, secondPath.Length);
-                var diffIndex = -1;
-                for (var i = 0; i < min; i++) {
-                    if (firstPath[i] != secondPath[i]) {
-                        diffIndex = i;
-                        break;
-                    }
-                }
-
-                if (diffIndex > -1)
-                {
-                    PackageFolder = string.Join(Path.DirectorySeparatorChar.ToString(), firstPath.Take(diffIndex));
-                }
-            }
-            if(DeclaredAssemblies == null)
-            {
-                try
-                {
-                    var items = Directory.GetFiles(PlatformServices.Default.Application.ApplicationBasePath, "*.deps.json")
+            static AssemblyResolver() {
+                allLibraries = Directory.GetFiles(PlatformServices.Default.Application.ApplicationBasePath, "*.deps.json")
                         .SelectMany(deps =>
                         {
                             var reader = new DependencyContextJsonReader();
@@ -207,62 +155,107 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
                         .Distinct(new RuntimeLibraryComparer())
                         .ToList();
 
-                    DeclaredAssemblies = items
-                        .Select(lib => new NuGetPackageLibraryAssembly
-                        {
-                            Name = lib.Name,
-                            Version = lib.Version,
-                            Path = lib.RuntimeAssemblyGroups
-                                        .SelectMany(x => x.AssetPaths)
-                                        .FirstOrDefault(p => lib.Name.Equals(Path.GetFileNameWithoutExtension(p), StringComparison.OrdinalIgnoreCase)),
-                        })
-                        .Where(lib => lib.Path != null)
-                        .ToDictionary(lib => lib.Name);
-                }
-                catch (Exception ex){
-
-                }
+                assemblyResolver = new CompositeCompilationAssemblyResolver
+                                        (new ICompilationAssemblyResolver[]
+                {
+                    new AppBaseCompilationAssemblyResolver(Path.GetDirectoryName(PlatformServices.Default.Application.ApplicationBasePath)),
+                    new ReferenceAssemblyPathResolver(),
+                    new PackageCompilationAssemblyResolver(FindPackageRoot())
+                });
             }
 
+           
+            public static Assembly OnResolving(AssemblyLoadContext context, AssemblyName dependency)
+            {
+                bool NamesMatch(RuntimeLibrary runtime)
+                {
+                    return string.Equals(runtime.Name, dependency.Name, StringComparison.OrdinalIgnoreCase);
+                }
 
-            NuGetPackageLibraryAssembly packageAssembly;
-            if (!DeclaredAssemblies.TryGetValue(dependency.Name.ToLowerInvariant(), out packageAssembly)) {
+                // avoid loading *.resources dlls, because of: https://github.com/dotnet/coreclr/issues/8416
+                if (dependency.Name.EndsWith("resources"))
+                {
+                    return null;
+                }
+
+                RuntimeLibrary library = allLibraries.FirstOrDefault(NamesMatch);
+                if (library != null)
+                {
+                    var wrapper = new CompilationLibrary(
+                        library.Type,
+                        library.Name,
+                        library.Version,
+                        library.Hash,
+                        library.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
+                        library.Dependencies,
+                        library.Serviceable);
+
+                    var assemblies = new List<string>();
+                    assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblies);
+                    if (assemblies.Count > 0)
+                    {
+                        return AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblies[0]);
+                    }
+                }
+
                 return null;
             }
 
-            var assemblyPath = Path.Combine(PackageFolder, packageAssembly.Name, packageAssembly.Version, packageAssembly.Path)
-                                    .Replace('/', Path.DirectorySeparatorChar)
-                                    .Replace('\\', Path.DirectorySeparatorChar);
-            if (File.Exists(assemblyPath)) {
-                return AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
+            static bool IsCandidateLibrary(RuntimeLibrary library, AssemblyName assemblyName)
+            {
+                return string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase)
+                    || (library.Dependencies.Any(d => d.Name.StartsWith(assemblyName.Name)));
             }
 
-            return null;
-        }
-
-        class NuGetPackageLibraryAssembly
-        {
-            public string Name { get; set; }
-            public string Version { get; set; }
-            public string Path { get; set; }
-        }
-
-        class RuntimeLibraryComparer : IEqualityComparer<RuntimeLibrary>
-        {
-            public bool Equals(RuntimeLibrary x, RuntimeLibrary y)
+            static string FindPackageRoot()
             {
-                if (x == null && y == null) {
-                    return true;
+                var packageLib = DependencyContext.Default.CompileLibraries
+                        .Where(lib => lib.Type == "package")
+                        .Take(2)
+                        .Select(lib => Assembly.Load(new AssemblyName(lib.Name)).Location)
+                        .ToList();
+
+                var firstPath = packageLib[0].ToLowerInvariant().Split(Path.DirectorySeparatorChar);
+                var secondPath = packageLib[1].ToLowerInvariant().Split(Path.DirectorySeparatorChar);
+                var min = Math.Min(firstPath.Length, secondPath.Length);
+                var diffIndex = -1;
+                for (var i = 0; i < min; i++)
+                {
+                    if (firstPath[i] != secondPath[i])
+                    {
+                        diffIndex = i;
+                        break;
+                    }
                 }
 
-                return x?.Name == y?.Name; //  && x?.Version == y?.Version;
+                if (diffIndex > -1)
+                {
+                    return string.Join(Path.DirectorySeparatorChar.ToString(), firstPath.Take(diffIndex));
+                }
+
+                return null;
             }
 
-            public int GetHashCode(RuntimeLibrary obj)
+
+            class RuntimeLibraryComparer : IEqualityComparer<RuntimeLibrary>
             {
-                return obj.Name.GetHashCode() + 10000;
-                // return string.Concat(obj.Name, '/', obj.Version).GetHashCode();
+                public bool Equals(RuntimeLibrary x, RuntimeLibrary y)
+                {
+                    if (x == null && y == null)
+                    {
+                        return true;
+                    }
+
+                    return x?.Name == y?.Name; //  && x?.Version == y?.Version;
+                }
+
+                public int GetHashCode(RuntimeLibrary obj)
+                {
+                    return obj.Name.GetHashCode() + 10000;
+                    // return string.Concat(obj.Name, '/', obj.Version).GetHashCode();
+                }
             }
+
         }
     }
 }

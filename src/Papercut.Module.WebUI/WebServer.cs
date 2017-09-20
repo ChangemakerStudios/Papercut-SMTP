@@ -97,9 +97,11 @@ namespace Papercut.Module.WebUI
             public IServiceProvider ConfigureServices(IServiceCollection services)
             {
                 services.AddLogging();
-                services.AddMvcCore();
                 services.AddMemoryCache();
-                
+
+                var mvcCore = services.AddMvcCore();
+                mvcCore.AddJsonFormatters();
+
 
                 var builder = new ContainerBuilder();
                 builder.Populate(services);
@@ -112,6 +114,7 @@ namespace Papercut.Module.WebUI
             public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
             {
                 loggerFactory.AddProvider(new SerilogLoggerProvider());
+                app.UseMvc();
             }
 
 
@@ -150,10 +153,10 @@ namespace Papercut.Module.WebUI
                 public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
                 {
                     // var serilogLevel = levelMapping[logLevel];
-                    logger.Write(LogEventLevel.Debug, exception, "");
+                    var logString = formatter(state, exception);
+                    logger.Write(LogEventLevel.Debug, exception, logString);
                 }
-
-                // static Dictionary<LogLevel, LogEventLevel> levelMapping;
+                
 
                 void IDisposable.Dispose()
                 {
