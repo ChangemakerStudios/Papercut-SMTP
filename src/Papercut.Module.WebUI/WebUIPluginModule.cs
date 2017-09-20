@@ -41,7 +41,6 @@ namespace Papercut.Module.WebUI
         {
             builder.RegisterType<WebServer>()
                 .As<IEventHandler<PapercutServiceReadyEvent>>()
-                .As<IEventHandler<PapercutClientReadyEvent>>()
                 .SingleInstance();
             
             base.Load(builder);

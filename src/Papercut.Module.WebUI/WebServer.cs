@@ -42,9 +42,9 @@ namespace Papercut.Module.WebUI
         readonly ILifetimeScope scope;
         readonly Serilog.ILogger logger;
 
-        readonly int httpPort;
+        readonly ushort httpPort;
         const string BaseAddress = "http://localhost:{0}";
-        const int DefaultHttpPort = 37408;
+        const ushort DefaultHttpPort = 37408;
 
         CancellationTokenSource serverCancellation;
 
@@ -65,7 +65,7 @@ namespace Papercut.Module.WebUI
         {
             serverCancellation = new CancellationTokenSource();
             WebStartup.Scope = scope;
-            WebStartup.Start(serverCancellation.Token);
+            WebStartup.Start(httpPort, serverCancellation.Token);
         }
 
         void IDisposable.Dispose()
@@ -81,13 +81,14 @@ namespace Papercut.Module.WebUI
 
         class WebStartup {
             public static ILifetimeScope Scope { get; set; }
-            public static void Start(CancellationToken cancellation)
+            public static void Start(ushort httpPort, CancellationToken cancellation)
             {
                 var hostBuilder = new WebHostBuilder();
                 hostBuilder
                     .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
                     .UseKestrel()
-                    .UseStartup<WebStartup>();
+                    .UseStartup<WebStartup>()
+                    .UseUrls($"http://*:{httpPort}");
 
                 var host = hostBuilder.Build();
                 host.Run(cancellation);

@@ -212,7 +212,9 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
                         {
                             Name = lib.Name,
                             Version = lib.Version,
-                            Path = lib.RuntimeAssemblyGroups.FirstOrDefault()?.AssetPaths.FirstOrDefault(),  // BUG: what if they have multiple files???
+                            Path = lib.RuntimeAssemblyGroups
+                                        .SelectMany(x => x.AssetPaths)
+                                        .FirstOrDefault(p => lib.Name.Equals(Path.GetFileNameWithoutExtension(p), StringComparison.OrdinalIgnoreCase)),
                         })
                         .Where(lib => lib.Path != null)
                         .ToDictionary(lib => lib.Name);
@@ -228,13 +230,11 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
                 return null;
             }
 
-            var hash = string.Join("", dependency.GetPublicKeyToken().Select(b => b.ToString("x2")));
-            var depLib = new CompilationLibrary("package", packageAssembly.Name, packageAssembly.Version, hash, new[] { packageAssembly.Name }, Enumerable.Empty<Dependency>(), true);
-            
-            var assemblyPathList = new List<string>();
-            if (new PackageCompilationAssemblyResolver(PackageFolder).TryResolveAssemblyPaths(depLib, assemblyPathList)) {
-                var path = assemblyPathList.FirstOrDefault();
-                return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+            var assemblyPath = Path.Combine(PackageFolder, packageAssembly.Name, packageAssembly.Version, packageAssembly.Path)
+                                    .Replace('/', Path.DirectorySeparatorChar)
+                                    .Replace('\\', Path.DirectorySeparatorChar);
+            if (File.Exists(assemblyPath)) {
+                return AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
             }
 
             return null;
@@ -244,10 +244,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
         {
             public string Name { get; set; }
             public string Version { get; set; }
-            // public string PackageName { get; set; }
             public string Path { get; set; }
-
-            public string GetKey() => string.Concat(Name, '/', Version);
         }
 
         class RuntimeLibraryComparer : IEqualityComparer<RuntimeLibrary>
