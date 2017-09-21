@@ -258,7 +258,7 @@ namespace Papercut.ViewModels
 
         public void GoToSite()
         {
-            Process.Start("http://papercut.codeplex.com/");
+            Process.Start("https://github.com/ChangemakerStudios/Papercut");
         }
 
         public void ShowRulesConfiguration()
