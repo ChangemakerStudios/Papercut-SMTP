@@ -36,6 +36,7 @@ namespace Papercut.Module.WebUI
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Serilog.Events;
+    using System.Collections.Generic;
 
     class WebServer : IEventHandler<PapercutServiceReadyEvent>, IDisposable
     {
@@ -115,6 +116,7 @@ namespace Papercut.Module.WebUI
             {
                 loggerFactory.AddProvider(new SerilogLoggerProvider());
                 app.UseMvc();
+                app.UseResponseBuffering();
             }
 
 
@@ -147,16 +149,35 @@ namespace Papercut.Module.WebUI
 
                 public bool IsEnabled(LogLevel logLevel)
                 {
-                    return true;
+                    if(logLevel == LogLevel.None)
+                    {
+                        return false;
+                    }
+
+                    var serilogLevel = levelMapping[logLevel];
+                    return logger.IsEnabled(serilogLevel);
                 }
 
                 public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
                 {
-                    // var serilogLevel = levelMapping[logLevel];
+                    if (logLevel == LogLevel.None || !IsEnabled(logLevel)) {
+                        return;
+                    }
+
+                    var serilogLevel = levelMapping[logLevel];
                     var logString = formatter(state, exception);
                     logger.Write(LogEventLevel.Debug, exception, logString);
                 }
-                
+
+                static Dictionary<LogLevel, LogEventLevel> levelMapping = new Dictionary<LogLevel, LogEventLevel>
+                {
+                    { LogLevel.Critical, LogEventLevel.Fatal },
+                    { LogLevel.Error, LogEventLevel.Error},
+                    { LogLevel.Warning, LogEventLevel.Warning},
+                    { LogLevel.Information, LogEventLevel.Information},
+                    { LogLevel.Debug, LogEventLevel.Debug},
+                    { LogLevel.Trace, LogEventLevel.Verbose },
+                };
 
                 void IDisposable.Dispose()
                 {

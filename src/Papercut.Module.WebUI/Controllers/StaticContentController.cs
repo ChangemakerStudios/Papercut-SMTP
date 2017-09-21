@@ -13,13 +13,13 @@ namespace Papercut.Module.WebUI.Controllers
     {
 
         [HttpGet("{*anything}", Order = short.MaxValue)]
-//        [CacheOutput(
-//#if DEBUG
-//        ClientTimeSpan = 30,
-//#else
-//        ClientTimeSpan = 600,
-//#endif
-//        ServerTimeSpan = 86400, CacheKeyGenerator= typeof(PapercutResourceKeyGenerator))]
+        [ResponseCache(
+        #if DEBUG
+                Duration = 30
+#else
+                Duration = 600
+#endif
+            )]
         public IActionResult Get()
         {
             var resourceName = GetRequetedResourceName(Request.Path);

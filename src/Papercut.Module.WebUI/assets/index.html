@@ -82,15 +82,15 @@
 <div class="messages container-fluid" ng-if="!preview">
   <div class="msglist-message row" ng-repeat="message in messages" ng-click="selectMessage(message)">
     <div class="col-md-5 col-sm-5">
-      <span class="subject unread">{{ message.Subject }}</span>
+      <span class="subject unread">{{ message.subject }}</span>
     </div>
     <div class="col-md-4 col-sm-3">
       <div class="row">
         <div class="col-md-9 col-sm-12 text-right">
-            {{ getMoment(message.CreatedAt).fromNow() }}
+            {{ getMoment(message.createdAt).fromNow() }}
         </div>
         <div class="col-md-3 col-sm-12 text-right">
-          {{ message.Size }}
+          {{ message.size }}
         </div>
       </div>
     </div>
@@ -110,41 +110,41 @@
         <tbody>
           <tr>
             <td class="header-name">From</td>
-            <td><span ng-if="!!preview.From[0].Name">{{preview.From[0].Name}}(</span>{{ preview.From[0].Address }}<span ng-if="!!preview.From[0].Name">)</span></td>
+            <td><span ng-if="!!preview.from[0].name">{{preview.from[0].name}}(</span>{{ preview.from[0].address }}<span ng-if="!!preview.from[0].name">)</span></td>
           </tr>
         <tr>
             <td class="header-name">To</td>
             <td>
-                <label class="mail-address" ng-repeat="to in preview.To">
-                    <span ng-if="!!to.Name">{{to.Name}}(</span>{{ to.Address }}<span ng-if="!!to.Name">)</span>
+                <label class="mail-address" ng-repeat="to in preview.to">
+                    <span ng-if="!!to.name">{{to.name}}(</span>{{ to.address }}<span ng-if="!!to.name">)</span>
                 </label>
             </td>
         </tr>
-        <tr ng-if="!!(preview.Cc && preview.Cc.length)">
+        <tr ng-if="!!(preview.cc && preview.cc.length)">
             <td class="header-name">CC</td>
             <td>
-                <label class="mail-address" ng-repeat="c in preview.Cc">
-                    <span ng-if="!!c.Name">{{c.Name}}(</span>   {{ c.Address }}<span ng-if="!!c.Name">)</span>
+                <label class="mail-address" ng-repeat="c in preview.cc">
+                    <span ng-if="!!c.name">{{c.name}}(</span>   {{ c.address }}<span ng-if="!!c.name">)</span>
                 </label>
             </td>
         </tr>
-        <tr ng-if="!!(preview.BCc && preview.BCc.length)">
+        <tr ng-if="!!(preview.bCc && preview.bCc.length)">
             <td class="header-name">BCC</td>
             <td>
-                <label class="mail-address" ng-repeat="b in preview.BCc">
-                    <span ng-if="!!b.Name">{{b.Name}}(</span>   {{ b.Address }}<span ng-if="!!b.Name">)</span>
+                <label class="mail-address" ng-repeat="b in preview.bCc">
+                    <span ng-if="!!b.name">{{b.name}}(</span>   {{ b.address }}<span ng-if="!!b.name">)</span>
                 </label>
             </td>
         </tr>
-        <tr ng-if="!!preview.Date">
+        <tr ng-if="!!preview.date">
             <td class="header-name">Date</td>
             <td>
-                {{preview.Date}}
+                {{preview.date}}
             </td>
         </tr>
         <tr>
             <td class="header-name">Subject</td>
-            <td><strong>{{ preview.Subject }}</strong></td>
+            <td><strong>{{ preview.subject }}</strong></td>
         </tr>
         </tbody>
       </table>
@@ -153,7 +153,7 @@
 
   <div class="mail-content">
   <span class="download-raw pull-right">
-    <a ng-href="/api/messages/{{preview.Id}}/raw" target="_blank"><span class="glyphicon glyphicon-cloud-download"></span> Download raw message</a>
+    <a ng-href="/api/messages/{{preview.id}}/raw" target="_blank"><span class="glyphicon glyphicon-cloud-download"></span> Download raw message</a>
   </span>
       <ul class="nav nav-tabs">
         <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
@@ -163,12 +163,12 @@
     </ul>
 
     <div class="tab-content">
-      <iframe target-blank="" ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }" class="tab-pane" id="preview-html" body-html="preview.previewHTML" content-link-message-id="preview.Id" seamless frameborder="0" style="width: 100%"></iframe>
+      <iframe target-blank="" ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }" class="tab-pane" id="preview-html" body-html="preview.previewHTML" content-link-message-id="preview.id" seamless frameborder="0" style="width: 100%"></iframe>
       <div class="tab-pane" ng-class="{ active: !hasHTML(preview) }" id="preview-plain" ng-bind-html="formatMessagePlain(preview)"></div>
         <div class="tab-pane" id="preview-headers">
             <ul>
-                <li ng-repeat="header in preview.Headers">
-                    <span class="header-name">{{header.Name}}</span>: {{header.Value}}
+                <li ng-repeat="header in preview.headers">
+                    <span class="header-name">{{header.name}}</span>: {{header.value}}
                 </li>
             </ul>
         </div>
@@ -180,10 +180,10 @@
                     <th>SAVE</th>
                 </thead>
                 <tbody>
-                <tr ng-repeat="section in preview.Sections">
-                    <td>{{section.MediaType}}</td>
-                    <td>{{section.FileName}}</td>
-                    <td><a title="Download and save section content" ng-href="/api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank" class="glyphicon glyphicon-download-alt"></a></td>
+                <tr ng-repeat="section in preview.sections">
+                    <td>{{section.mediaType}}</td>
+                    <td>{{section.fileName}}</td>
+                    <td><a title="Download and save section content" ng-href="/api/messages/{{preview.id}}/sections/{{$index}}" target="_blank" class="glyphicon glyphicon-download-alt"></a></td>
                 </tr>
                 </tbody>
             </table>

@@ -55,9 +55,9 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
       }
 
       $http.get(url).then(function (resp) {
-          $scope.messages = resp.data.Messages;
-          $scope.totalMessages = resp.data.TotalMessageCount;
-          $scope.countMessages = resp.data.Messages.length;
+          $scope.messages = resp.data.messages;
+          $scope.totalMessages = resp.data.totalMessageCount;
+          $scope.countMessages = resp.data.messages.length;
           $scope.startMessages = $scope.startIndex;
           e.done();
       });
@@ -105,26 +105,26 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
   };
 
   $scope.selectMessage = function (message) {
-      if ($scope.cache[message.Id]) {
-          $scope.preview = $scope.cache[message.Id];
+      if ($scope.cache[message.id]) {
+          $scope.preview = $scope.cache[message.id];
       } else {
           $scope.preview = message;
-          var e = startEvent("Loading message", message.Id, "glyphicon-download-alt");
-          $http.get('/api/messages/' + message.Id).then(function (resp) {
-              $scope.cache[message.Id] = resp.data;
+          var e = startEvent("Loading message", message.id, "glyphicon-download-alt");
+          $http.get('/api/messages/' + message.id).then(function (resp) {
+              $scope.cache[message.id] = resp.data;
 
-              resp.data.previewHTML = $sce.trustAsHtml(resp.data.HtmlBody);
+              resp.data.previewHTML = $sce.trustAsHtml(resp.data.htmlBody);
               $scope.preview = resp.data;
 
-              var dateHeader = resp.data.Headers.find(function(h){return h.Name === 'Date'});
-              $scope.preview.Date = dateHeader === null ? null : dateHeader.Value;
+              var dateHeader = resp.data.headers.find(function(h){return h.name === 'Date'});
+              $scope.preview.date = dateHeader === null ? null : dateHeader.value;
               e.done();
           });
       }
   };
 
   $scope.formatMessagePlain = function (message) {
-      var body = message.TextBody || '';
+      var body = message.textBody || '';
       var escaped = $scope.escapeHtml(body);
       var formatted = escaped.replace(/(https?:\/\/)([-[\]A-Za-z0-9._~:/?#@!$()*+,;=%]|&amp;|&#39;)+/g, '<a href="$&" target="_blank">$&</a>');
       return $sce.trustAsHtml(formatted);
@@ -145,11 +145,11 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
   }
 
   $scope.hasHTML = function(message) {
-      return !!message.HtmlBody;
+      return !!message.htmlBody;
   }
 
   $scope.hasText = function (message) {
-      return !!message.TextBody;
+      return !!message.textBody;
   }
 
   $scope.date = function(timestamp) {

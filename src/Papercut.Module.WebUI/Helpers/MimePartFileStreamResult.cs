@@ -11,7 +11,7 @@ namespace Papercut.Module.WebUI.Helpers
         readonly string tempFilePath;
         private MediaTypeHeaderValue mediaTypeHeaderValue;
 
-        public MimePartFileStreamResult(IContentObject contentObject, string contentType) : base(null, contentType)
+        public MimePartFileStreamResult(IContentObject contentObject, string contentType) : base(new MemoryStream(), contentType)
         {
             tempFilePath = Path.GetTempFileName();
 
@@ -20,6 +20,7 @@ namespace Papercut.Module.WebUI.Helpers
                 contentObject.DecodeTo(tempFile);
             }
 
+            this.FileStream.Dispose();
             this.FileStream = File.OpenRead(tempFilePath);
         }
 
