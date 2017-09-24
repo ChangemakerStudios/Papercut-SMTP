@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
     <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj" />
+    <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

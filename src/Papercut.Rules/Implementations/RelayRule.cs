@@ -40,7 +40,7 @@ namespace Papercut.Rules.Implementations
 
         [Category("Settings")]
         [DisplayName("SMTP Password")]
-        [PasswordPropertyText]
+        // [PasswordPropertyText] .NET Core does not provide this attribute
         public string SmtpPassword
         {
             get { return _smtpPassword; }

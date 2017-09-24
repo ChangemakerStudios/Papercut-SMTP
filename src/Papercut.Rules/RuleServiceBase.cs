@@ -25,6 +25,7 @@ namespace Papercut.Rules
     using Papercut.Core.Domain.Rules;
 
     using Serilog;
+    using Microsoft.Extensions.PlatformAbstractions;
 
     public class RuleServiceBase
     {
@@ -38,7 +39,7 @@ namespace Papercut.Rules
         {
             _ruleRespository = ruleRespository;
             _logger = logger;
-            RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
+            RuleFileName = Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "rules.json");
             _rules = new Lazy<ObservableCollection<IRule>>(GetRulesCollection);
         }
 

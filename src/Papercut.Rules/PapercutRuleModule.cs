@@ -35,12 +35,12 @@ namespace Papercut.Rules
         protected override void Load(ContainerBuilder builder)
         {
             // rules and rule dispatchers
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+            builder.RegisterAssemblyTypes(typeof(PapercutRuleModule).GetTypeInfo().Assembly)
                 .AssignableTo<IRule>()
                 .As<IRule>()
                 .InstancePerDependency();
 
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+            builder.RegisterAssemblyTypes(typeof(PapercutRuleModule).GetTypeInfo().Assembly)
                 .AsClosedTypesOf(typeof(IRuleDispatcher<>))
                 .AsImplementedInterfaces()
                 .AsSelf()
