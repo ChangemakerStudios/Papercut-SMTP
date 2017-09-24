@@ -4,7 +4,7 @@ using System.IO;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-namespace Papercut.Module.WebUI.Helpers
+namespace Papercut.WebUI.Helpers
 {
     public class MimePartFileStreamResult : FileStreamResult
     {

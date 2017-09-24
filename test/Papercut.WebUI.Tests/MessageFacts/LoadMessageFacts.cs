@@ -16,15 +16,12 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.MessageFacts
+namespace Papercut.WebUI.Test.MessageFacts
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Net.Mime;
-    using System.Text;
     using System.Threading;
 
     using Autofac;
@@ -34,8 +31,6 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
     using Models;
 
     using NUnit.Framework;
-
-    using ContentType = MimeKit.ContentType;
 
     public class LoadMessageFacts : ApiTestBase
     {

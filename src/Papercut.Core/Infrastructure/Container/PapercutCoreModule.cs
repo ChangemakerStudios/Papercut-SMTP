@@ -38,7 +38,7 @@ namespace Papercut.Core.Infrastructure.Container
     using Serilog;
 
     using Module = Autofac.Module;
-
+    
     internal class PapercutCoreModule : Module
     {
         protected override void Load(ContainerBuilder builder)

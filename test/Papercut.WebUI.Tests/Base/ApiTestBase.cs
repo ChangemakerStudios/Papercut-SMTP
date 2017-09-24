@@ -16,12 +16,10 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.Base
+namespace Papercut.WebUI.Test.Base
 {
     using System;
     using System.Net.Http;
-    using System.Threading.Tasks;
-    using System.Web.Http;
 
     using Autofac;
 
@@ -29,9 +27,12 @@ namespace Papercut.Module.WebUI.Test.Base
     using Core.Domain.Paths;
     using Core.Infrastructure.Container;
 
-    using Newtonsoft.Json;
-
     using WebServerFacts;
+    using System.Reflection;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.TestHost;
+    using Microsoft.Extensions.PlatformAbstractions;
+    using Newtonsoft.Json;
 
     public class ApiTestBase : IDisposable
     {
@@ -48,14 +49,15 @@ namespace Papercut.Module.WebUI.Test.Base
 
         HttpClient BuildClient()
         {
-            var config = new HttpConfiguration();
+            WebServer.WebStartup.Scope = this.Scope;
 
-            RouteConfig.Init(config, Scope);
+            var hostBuilder = new WebHostBuilder()
+                .UseContentRoot(PlatformServices.Default.Application.ApplicationBasePath)
+                .UseEnvironment("Development")
+                .UseStartup<WebServer.WebStartup>();
 
-            return new HttpClient(new HttpServer(config))
-            {
-                BaseAddress = new Uri(BaseAddress)
-            };
+            var testServer = new TestServer(hostBuilder);
+            return testServer.CreateClient();            
         }
 
         void IDisposable.Dispose()
@@ -66,7 +68,7 @@ namespace Papercut.Module.WebUI.Test.Base
 
         static IContainer BuildContainer(Action<ContainerBuilder> configurer = null)
         {
-            PapercutContainer.SpecifiedEntryAssembly = typeof(WebUiWebServerApiFact).Assembly;
+            PapercutContainer.SpecifiedEntryAssembly = typeof(WebUiWebServerApiFact).GetTypeInfo().Assembly;
 
             var builder = new ContainerBuilder();
             builder.RegisterModule<PapercutCoreModule>();
@@ -93,7 +95,8 @@ namespace Papercut.Module.WebUI.Test.Base
 
         protected T Get<T>(string uri)
         {
-            return Get(uri).Content.ReadAsAsync<T>().Result;
+            var response = Get(uri).Content.ReadAsStringAsync().Result;
+            return JsonConvert.DeserializeObject<T>(response);
         }
     }
 }

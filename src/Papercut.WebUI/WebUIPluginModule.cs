@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI
+namespace Papercut.WebUI
 {
     using System.Reflection;
 

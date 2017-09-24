@@ -16,24 +16,22 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Helpers
+namespace Papercut.WebUI.Test.WebServerFacts
 {
-    using System.IO;
-    using System.Linq;
+    using Base;
 
-    class FileHelper
+    using NUnit.Framework;
+
+
+    [TestFixture]
+    public class WebUiWebServerApiFact : ApiTestBase
     {
-        public static string NormalizeFilename(string filename)
+        [Test]
+        public void ShouldBootstrapHttpServerAndServeHealthCheck()
         {
-            var validFilename = RemoveInvalidFileNameChars(filename);
-            return validFilename.Replace(" ", "_");
-        }
+            var content = Get("/health").Content.ReadAsStringAsync().Result;
 
-        static string RemoveInvalidFileNameChars(string filename)
-        {
-            return Path.GetInvalidFileNameChars().Aggregate(filename,
-                (current, invalidChar) => current.Replace(invalidChar.ToString(), string.Empty));
+            Assert.AreEqual("Papercut WebUI server started successfully.", content);
         }
-
     }
 }

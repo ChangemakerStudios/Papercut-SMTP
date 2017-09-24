@@ -16,22 +16,19 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.WebServerFacts
+namespace Papercut.WebUI.Controllers
 {
-    using Base;
+    using Microsoft.AspNetCore.Mvc;
 
-    using NUnit.Framework;
-
-
-    [TestFixture]
-    public class WebUiWebServerApiFact : ApiTestBase
+    public class HealthController : ControllerBase
     {
-        [Test]
-        public void ShouldBootstrapHttpServerAndServeHealthCheck()
+        [HttpGet("health")]
+        public IActionResult Check()
         {
-            var content = Get("/health").Content.ReadAsStringAsync().Result;
-
-            Assert.AreEqual("Papercut WebUI server started successfully.", content);
+            return new ContentResult {
+                Content = "Papercut WebUI server started successfully.",
+                ContentType = "text/plain"
+            };
         }
     }
 }

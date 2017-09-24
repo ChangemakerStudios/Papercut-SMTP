@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.Base
+namespace Papercut.WebUI.Test.Base
 {
     using System.Collections.ObjectModel;
     using System.IO;
@@ -24,12 +24,13 @@ namespace Papercut.Module.WebUI.Test.Base
     using Common.Helper;
 
     using Core.Domain.Paths;
+    using System.Reflection;
 
     public class ServerPathTemplateProviderService : IPathTemplatesProvider
     {
         public ServerPathTemplateProviderService()
         {
-            var basePath = Path.GetDirectoryName(typeof(ServerPathTemplateProviderService).Assembly.Location);
+            var basePath = Path.GetDirectoryName(typeof(ServerPathTemplateProviderService).GetTypeInfo().Assembly.Location);
             var messageStoragePath = Path.Combine(basePath, $"Incoming-{StringHelpers.SmallRandomString()}");
 
             if (!Directory.Exists(messageStoragePath))

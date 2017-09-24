@@ -23,7 +23,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
 </Project>

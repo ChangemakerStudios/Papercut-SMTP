@@ -16,16 +16,14 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.MessageFacts
+namespace Papercut.WebUI.Test.MessageFacts
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Net.Mime;
     using System.Text;
-    using System.Threading;
 
     using Autofac;
     using Base;
@@ -70,7 +68,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             var disposition = response.Content.Headers.ContentDisposition;
-            Assert.AreEqual(DispositionTypeNames.Attachment, disposition.DispositionType);
+            Assert.AreEqual("attachment", disposition.DispositionType);
             Assert.AreEqual(messageId, disposition.FileName);
 
 

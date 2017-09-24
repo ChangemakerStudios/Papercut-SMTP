@@ -1,6 +1,6 @@
 ﻿
 
-namespace Papercut.Module.WebUI.Controllers
+namespace Papercut.WebUI.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
     using System.Collections.Generic;

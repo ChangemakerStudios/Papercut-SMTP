@@ -16,19 +16,24 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Controllers
+namespace Papercut.WebUI.Helpers
 {
-    using Microsoft.AspNetCore.Mvc;
+    using System.IO;
+    using System.Linq;
 
-    public class HealthController : ControllerBase
+    class FileHelper
     {
-        [HttpGet("health")]
-        public IActionResult Check()
+        public static string NormalizeFilename(string filename)
         {
-            return new ContentResult {
-                Content = "Papercut WebUI server started successfully.",
-                ContentType = "text/plain"
-            };
+            var validFilename = RemoveInvalidFileNameChars(filename);
+            return validFilename.Replace(" ", "_");
         }
+
+        static string RemoveInvalidFileNameChars(string filename)
+        {
+            return Path.GetInvalidFileNameChars().Aggregate(filename,
+                (current, invalidChar) => current.Replace(invalidChar.ToString(), string.Empty));
+        }
+
     }
 }

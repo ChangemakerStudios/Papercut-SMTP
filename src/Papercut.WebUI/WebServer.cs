@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI
+namespace Papercut.WebUI
 {
     using System;
     using Microsoft.AspNetCore.Hosting;
@@ -80,7 +80,7 @@ namespace Papercut.Module.WebUI
             }            
         }
 
-        class WebStartup {
+        internal class WebStartup {
             public static ILifetimeScope Scope { get; set; }
             public static void Start(ushort httpPort, CancellationToken cancellation)
             {
