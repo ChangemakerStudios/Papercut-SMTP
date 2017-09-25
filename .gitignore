@@ -15,3 +15,6 @@ deploy/
 changelog.bat
 graphics/
 .vs/
+
+node_modules/
+npm-debug.log

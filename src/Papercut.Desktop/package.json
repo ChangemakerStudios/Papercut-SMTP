@@ -1,0 +1,12 @@
+{
+  "name": "papercut-desktop",
+  "version": "1.0.0",
+  "description": "Cross platform desktop version of Papercut",
+  "main": "main.js",
+  "scripts":{
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^1.7.8"
+  }
+}
