@@ -27,6 +27,7 @@ namespace Papercut.Module.VerboseJsonLog
     using Serilog.Events;
     using Serilog.Formatting.Json;
     using Serilog.Sinks.RollingFile;
+    using Microsoft.Extensions.PlatformAbstractions;
 
     public class SetupVerboseJsonLoggingHandler : IEventHandler<ConfigureLoggerEvent>
     {
@@ -39,7 +40,7 @@ namespace Papercut.Module.VerboseJsonLog
 
         public void Handle(ConfigureLoggerEvent @event)
         {
-            string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+            string logFilePath = Path.Combine(PlatformServices.Default.Application.ApplicationBasePath,
                 "Logs",
                 $"{this._appMeta.AppName}.json");
 
