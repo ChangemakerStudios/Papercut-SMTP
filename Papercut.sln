@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut", "src\Papercut.UI\Papercut.csproj", "{AC067042-66BD-4110-ADA1-E2CEA43E7947}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Core", "src\Papercut.Core\Papercut.Core.csproj", "{EEDD1016-6442-48CE-8F8E-1D350829FBDE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Service", "src\Papercut.Service\Papercut.Service.csproj", "{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}"
@@ -33,13 +31,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.WebUI", "src\Paper
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2D6337D4-FD59-49E0-9209-4B06219DB29D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.WebUI.Tests", "test\Papercut.WebUI.Tests\Papercut.WebUI.Tests.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.WebUI.Tests", "test\Papercut.WebUI.Tests\Papercut.WebUI.Tests.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{8D2E180D-683F-4F03-A683-4DCFA3B8D564}"
-EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Papercut.Installer", "src\Papercut.Installer\Papercut.Installer.wixproj", "{BE653826-1E09-4905-B03D-2A68633BE2F8}"
-EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Papercut.Bootstrapper", "src\Papercut.Bootstrapper\Papercut.Bootstrapper.wixproj", "{72719C72-122E-4313-8A57-0A0FC666BA75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,14 +43,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|x86.Build.0 = Debug|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|x86.ActiveCfg = Release|Any CPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|x86.Build.0 = Release|Any CPU
 		{EEDD1016-6442-48CE-8F8E-1D350829FBDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EEDD1016-6442-48CE-8F8E-1D350829FBDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEDD1016-6442-48CE-8F8E-1D350829FBDE}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -137,22 +123,6 @@ Global
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x86.ActiveCfg = Release|Any CPU
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x86.Build.0 = Release|Any CPU
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|Any CPU.Build.0 = Debug|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|x86.ActiveCfg = Debug|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|x86.Build.0 = Debug|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|Any CPU.ActiveCfg = Release|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|Any CPU.Build.0 = Release|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|x86.ActiveCfg = Release|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|x86.Build.0 = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|Any CPU.Build.0 = Debug|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|x86.ActiveCfg = Debug|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|x86.Build.0 = Debug|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|Any CPU.ActiveCfg = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|Any CPU.Build.0 = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|x86.ActiveCfg = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -161,8 +131,6 @@ Global
 		{5E6526B3-4DA9-41F4-8171-C34146AC2E55} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
 		{F60D44E1-100E-464A-A280-CA6BAF652177} = {8B3498DF-6DDE-44F5-8428-1B82749933BE}
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA} = {2D6337D4-FD59-49E0-9209-4B06219DB29D}
-		{BE653826-1E09-4905-B03D-2A68633BE2F8} = {8D2E180D-683F-4F03-A683-4DCFA3B8D564}
-		{72719C72-122E-4313-8A57-0A0FC666BA75} = {8D2E180D-683F-4F03-A683-4DCFA3B8D564}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {437095E2-5973-4D07-849D-267DF2341A59}
