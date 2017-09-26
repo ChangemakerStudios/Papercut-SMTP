@@ -1,4 +1,5 @@
 const electron = require('electron');
+const edge = require('electron-edge');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
@@ -6,6 +7,16 @@ const path = require('path');
 const url = require('url');
 
 let mainWindow;
+let smtpStopFn;
+
+function launchPapercutServices(onComplete){
+  const start = edge.func(require('path').join(__dirname, 'Papercut.Service', 'Papercut.Service.dll'));
+  const stopRet = start(null, function(err, task){
+    if(err === null){
+      smtpStopFn = edge.func(task.Result);
+    }
+  });
+}
 
 function createWindow () {
   mainWindow = new BrowserWindow({width: 800, height: 600});
@@ -22,7 +33,10 @@ function createWindow () {
   });
 }
 
-app.on('ready', createWindow);
+app.on('ready', function(){
+  launchPapercutServices();
+  createWindow();
+});
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {

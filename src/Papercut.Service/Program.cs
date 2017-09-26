@@ -32,7 +32,7 @@ namespace Papercut.Service
     {
         static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
 
-        static int Main(string[] args)
+        internal static int Main(string[] args)
         {
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
             var appTask = Task.Factory.StartNew(() =>
@@ -45,6 +45,13 @@ namespace Papercut.Service
             return appTask.Result;
         }
 
+        internal static void Exit(){
+            if (appWaitHandle != null)
+            {
+                appWaitHandle.Set();
+            }
+        }
+        
         static int StartPapercutService(Action<ILifetimeScope> initialization)
         {
             try
@@ -79,10 +86,7 @@ namespace Papercut.Service
 
         static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
-            if (appWaitHandle != null)
-            {
-                appWaitHandle.Set();
-            }
+            Exit();
         }
         
         static void WriteFatal(Exception ex)
@@ -93,6 +97,5 @@ namespace Papercut.Service
                 Log.Logger.Fatal(ex, "Unhandled Exception");
             }
         }
-        
     }
 }
