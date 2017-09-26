@@ -9,7 +9,6 @@ namespace Papercut.WebUI.Helpers
     public class MimePartFileStreamResult : FileStreamResult
     {
         readonly string tempFilePath;
-        private MediaTypeHeaderValue mediaTypeHeaderValue;
 
         public MimePartFileStreamResult(IContentObject contentObject, string contentType) : base(new MemoryStream(), contentType)
         {

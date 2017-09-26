@@ -1,7 +1,7 @@
 var papercutApp = angular.module('papercutApp', []);
 
 
-papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $interval) {
+papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, messageRepository) {
 
   $scope.events = {
     eventDone: 0,
@@ -47,20 +47,15 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
 
   $scope.refresh = function () {
       var e = startEvent("Loading messages", null, "glyphicon-download");
-      var url = '/api/messages'
-      if ($scope.startIndex > 0) {
-          url += "?start=" + $scope.startIndex + "&limit=" + $scope.itemsPerPage;
-      } else {
-          url += "?limit=" + $scope.itemsPerPage;
-      }
 
-      $http.get(url).then(function (resp) {
-          $scope.messages = resp.data.messages;
-          $scope.totalMessages = resp.data.totalMessageCount;
-          $scope.countMessages = resp.data.messages.length;
-          $scope.startMessages = $scope.startIndex;
-          e.done();
-      });
+      messageRepository.list($scope.itemsPerPage, $scope.startIndex)
+                       .then(function (resp) {
+                            $scope.messages = resp.data.messages;
+                            $scope.totalMessages = resp.data.totalMessageCount;
+                            $scope.countMessages = resp.data.messages.length;
+                            $scope.startMessages = $scope.startIndex;
+                            e.done();
+                        });
   };
 
   $scope.refresh();
@@ -99,8 +94,8 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
         return;
       }
 
-     $http.delete('/api/messages').finally(function () {
-       $scope.refresh();
+     messageRepository.deleteAll(function(){
+        $scope.refresh();
      });
   };
 
@@ -110,16 +105,17 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
       } else {
           $scope.preview = message;
           var e = startEvent("Loading message", message.id, "glyphicon-download-alt");
-          $http.get('/api/messages/' + message.id).then(function (resp) {
-              $scope.cache[message.id] = resp.data;
+          messageRepository.get(message.id)
+                            .then(function (resp) {
+                                $scope.cache[message.id] = resp.data;
 
-              resp.data.previewHTML = $sce.trustAsHtml(resp.data.htmlBody);
-              $scope.preview = resp.data;
+                                resp.data.previewHTML = $sce.trustAsHtml(resp.data.htmlBody);
+                                $scope.preview = resp.data;
 
-              var dateHeader = resp.data.headers.find(function(h){return h.name === 'Date'});
-              $scope.preview.date = dateHeader === null ? null : dateHeader.value;
-              e.done();
-          });
+                                var dateHeader = resp.data.headers.find(function(h){return h.name === 'Date'});
+                                $scope.preview.date = dateHeader === null ? null : dateHeader.value;
+                                e.done();
+                            });
       }
   };
 
@@ -223,55 +219,3 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
           s4() + '-' + s4() + s4() + s4();
   }
 });
-
-
-
-papercutApp.directive('targetBlank', function () {
-    return {
-        link: function (scope, element, attributes) {
-            element.on('load', function () {
-                var a = element.contents().find('a');
-                a.attr('target', '_blank');
-            });
-        }
-    };
-});
-
-
-
-
-papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout) {
-    return {
-        link: function (scope, element, attrs) {
-            element.attr('src', "about:blank");
-            element.on('load', function () {
-                var messageId = scope.$eval(attrs.contentLinkMessageId);
-                var htmlContent = $sce.getTrustedHtml(scope.$eval(attrs.bodyHtml));
-                htmlContent = stripDangerousTags(htmlContent);
-                htmlContent = replaceContentLinks(htmlContent, messageId);
-
-                var body = $(element).contents().find('body');
-                body.empty().append( htmlContent );
-
-                $timeout(function () {
-                    element.css('height', $(body[0].ownerDocument.documentElement).height() + 100);
-                }, 50);
-            });
-
-
-            function stripDangerousTags(html) {
-                var tagStarts = /\<\s*(script|style|iframe|frameset|link|applet|object)(?=\s|\>)/gi;
-                var tagEnds = /\<\s*\/\s*(script|style|iframe|frameset|link|applet|object)\s*\>/gi;
-                var links = /((src|href)\s*=["']?\s*)javascript:/gi;
-
-                return html.replace(tagStarts, '<div style="display:none" ')
-                           .replace(tagEnds, '</div>')
-                           .replace(links, '$1');
-            }
-
-            function replaceContentLinks(html, messageId) {
-                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, '/api/messages/' + messageId + '/contents/$1');
-            }
-        }
-    };
-}]);
