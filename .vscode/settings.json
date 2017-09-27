@@ -1,0 +1,23 @@
+// Place your settings in this file to overwrite default and user settings.
+
+{
+    "files.exclude": {
+        ".git": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true,
+        "**/bin": true,
+        "**/obj": true,
+        "**/package-lock.json": true,
+        "**/yarn.lock": true,
+        "release": true,
+        "packages": true,
+        ".vs": true,
+        "src/Papercut.Desktop/*.dll": true,
+        "src/Papercut.Desktop/*.pdb": true,
+        "src/Papercut.Desktop/*.exe": true,
+        "src/Papercut.Desktop/runtimes/": true,
+        "src/Papercut.Desktop/*.dll.config": true,
+        "src/Papercut.Desktop/*.deps.json": true,
+        "src/Papercut.Desktop/*.runtimeconfig.json": true
+    }
+}

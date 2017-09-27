@@ -7,7 +7,7 @@ Papercut.suo
 Papercut.*.suo
 Papercut.ncrunchsolution
 Papercut.ncrunchsolution.*	  
-src/Papercut.Desktop/Papercut.Service
+
 /.hg
 /packages
 *.hgignore
@@ -28,3 +28,21 @@ yarn.lock
 
 .DS_Store
 sh.exe.stackdump
+
+
+
+
+
+
+
+
+
+
+src/Papercut.Desktop/*.dll
+src/Papercut.Desktop/*.pdb
+src/Papercut.Desktop/*.exe
+src/Papercut.Desktop/runtimes/
+src/Papercut.Desktop/*.dll.config
+src/Papercut.Desktop/*.deps.json
+src/Papercut.Desktop/*.runtimeconfig.json
+src/Papercut.Desktop/Logs/

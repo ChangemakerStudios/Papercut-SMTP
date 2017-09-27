@@ -1,3 +1,5 @@
+process.env.EDGE_USE_CORECLR = 1;
+
 const electron = require('electron');
 const edge = require('electron-edge');
 const app = electron.app;
@@ -10,10 +12,10 @@ let mainWindow;
 let smtpStopFn;
 
 function launchPapercutServices(onComplete){
-  const start = edge.func(require('path').join(__dirname, 'Papercut.Service', 'Papercut.Service.dll'));
+  const start = edge.func(require('path').join(__dirname, 'Papercut.Service.dll'));
   const stopRet = start(null, function(err, task){
     if(err === null){
-      smtpStopFn = edge.func(task.Result);
+      smtpStopFn = task;
     }
   });
 }
