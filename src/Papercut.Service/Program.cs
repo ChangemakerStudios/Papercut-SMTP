@@ -27,6 +27,7 @@ namespace Papercut.Service
     using Serilog;
     using Papercut.Core.Domain.Application;
     using System.Threading.Tasks;
+    using System.Reflection;
 
     class Program
     {
@@ -56,6 +57,7 @@ namespace Papercut.Service
         {
             try
             {
+                PapercutContainer.SpecifiedEntryAssembly = (typeof(Program).GetTypeInfo()).Assembly;
                 using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
                 {
                     initialization(appContainer);

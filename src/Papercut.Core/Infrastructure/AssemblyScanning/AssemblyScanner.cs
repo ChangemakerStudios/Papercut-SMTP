@@ -36,11 +36,17 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
     {
         readonly Lazy<ILogger> _logger;
         readonly Func<Assembly> _getEntryAssembly;
+        readonly Lazy<DependencyContext> _defaultDependencyContext;
 
         public AssemblyScanner(Lazy<ILogger> logger, Func<Assembly> getEntryAssembly = null)
         {
             this._logger = logger;
             this._getEntryAssembly = getEntryAssembly;
+
+            _defaultDependencyContext = new Lazy<DependencyContext>(() => {
+                var assembly = getEntryAssembly == null ? (this.GetType().GetTypeInfo().Assembly) : getEntryAssembly();
+                return DependencyContextLoader.Default.Load(assembly);
+            });
         }
 
 
@@ -62,12 +68,12 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
         IEnumerable<Assembly> GetAssembliesList(IEnumerable<string> pluginDirectories)
         {
             var filterAssemblies = new Func<Assembly, bool>(a => !a.IsDynamic);
-            var loaded = DependencyContext.Default
-                                    .RuntimeLibraries
-                                    .SelectMany(library => library.Assemblies)
-                                    .Select(assembly => assembly.Name.Name)
-                                    .Distinct()
-                                    .ToList();
+            var loaded = _defaultDependencyContext.Value
+                            .RuntimeLibraries
+                            .SelectMany(library => library.Assemblies)
+                            .Select(assembly => assembly.Name.Name)
+                            .Distinct()
+                            .ToList();
             var loadedAssemblies = new HashSet<string>(loaded);
 
             var thisAssembly = typeof(AssemblyScanner).GetTypeInfo().Assembly.GetName().Name;
@@ -88,6 +94,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
 
         IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
         {
+            AssemblyResolver.DefaultDependencyContext = _defaultDependencyContext.Value;
             AssemblyLoadContext.Default.Resolving += AssemblyResolver.OnResolving;
 
             foreach (string assemblyFile in filenames.Where(File.Exists))
@@ -122,10 +129,10 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
         }
 
 
-        static bool IsInRuntimeLibraries(AssemblyName assemblyName)
+        bool IsInRuntimeLibraries(AssemblyName assemblyName)
         {
-            return DependencyContext.Default.CompileLibraries.Any(library => string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase))
-                 || DependencyContext.Default.RuntimeLibraries.Any(library => string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+            return _defaultDependencyContext.Value.CompileLibraries.Any(library => string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase))
+                 || _defaultDependencyContext.Value.RuntimeLibraries.Any(library => string.Equals(library.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
         }
 
         [NotNull]
@@ -141,6 +148,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
         {
             static ICompilationAssemblyResolver assemblyResolver;
             static List<RuntimeLibrary> allLibraries;
+            public static DependencyContext DefaultDependencyContext {get;set;}
 
             static AssemblyResolver() {
                 allLibraries = Directory.GetFiles(PlatformServices.Default.Application.ApplicationBasePath, "*.deps.json")
@@ -154,22 +162,23 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
                         })
                         .Distinct(new RuntimeLibraryComparer())
                         .ToList();
-
-                assemblyResolver = new CompositeCompilationAssemblyResolver
-                                        (new ICompilationAssemblyResolver[]
-                {
-                    new AppBaseCompilationAssemblyResolver(Path.GetDirectoryName(PlatformServices.Default.Application.ApplicationBasePath)),
-                    new ReferenceAssemblyPathResolver(),
-                    new PackageCompilationAssemblyResolver(FindPackageRoot())
-                });
             }
-
            
             public static Assembly OnResolving(AssemblyLoadContext context, AssemblyName dependency)
             {
                 bool NamesMatch(RuntimeLibrary runtime)
                 {
                     return string.Equals(runtime.Name, dependency.Name, StringComparison.OrdinalIgnoreCase);
+                }
+
+                if(assemblyResolver == null){
+                    assemblyResolver = new CompositeCompilationAssemblyResolver
+                                        (new ICompilationAssemblyResolver[]
+                                            {
+                                                new AppBaseCompilationAssemblyResolver(Path.GetDirectoryName(PlatformServices.Default.Application.ApplicationBasePath)),
+                                                new ReferenceAssemblyPathResolver(),
+                                                new PackageCompilationAssemblyResolver(FindPackageRoot())
+                                            });
                 }
 
                 // avoid loading *.resources dlls, because of: https://github.com/dotnet/coreclr/issues/8416
@@ -209,7 +218,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
 
             static string FindPackageRoot()
             {
-                var packageLib = DependencyContext.Default.CompileLibraries
+                var packageLib = DefaultDependencyContext.CompileLibraries
                         .Where(lib => lib.Type == "package")
                         .Take(2)
                         .Select(lib => Assembly.Load(new AssemblyName(lib.Name)).Location)
