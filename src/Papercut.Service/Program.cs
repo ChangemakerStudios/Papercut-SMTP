@@ -47,6 +47,7 @@ namespace Papercut.Service
         }
 
         internal static void Exit(){
+            WriteInfo("Exiting...");
             if (appWaitHandle != null)
             {
                 appWaitHandle.Set();
@@ -97,6 +98,15 @@ namespace Papercut.Service
             if (Log.Logger != null)
             {
                 Log.Logger.Fatal(ex, "Unhandled Exception");
+            }
+        }
+
+        static void WriteInfo(string info)
+        {
+            Console.WriteLine(info);
+            if (Log.Logger != null)
+            {
+                Log.Logger.Information(info);
             }
         }
     }

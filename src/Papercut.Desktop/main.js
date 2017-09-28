@@ -13,11 +13,7 @@ let smtpStopFn;
 
 function launchPapercutServices(onComplete){
   const start = edge.func(require('path').join(__dirname, 'Papercut.Service.dll'));
-  const stopRet = start(null, function(err, task){
-    if(err === null){
-      smtpStopFn = task;
-    }
-  });
+  smtpStopFn = start(null, true);
 }
 
 function createWindow () {
@@ -42,6 +38,13 @@ app.on('ready', function(){
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
+    try{
+      smtpStopFn(null, true);
+    }catch(e){
+      console.error('Error stoping the smtp service:');
+      console.log(e);
+    }
+    
     app.quit();
   }
 });

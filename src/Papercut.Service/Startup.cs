@@ -8,17 +8,15 @@ namespace Papercut.Service
     {
         public async Task<object> Invoke(object input)
         {
-            Task.Factory.StartNew(() => {
+            var _ = Task.Factory.StartNew(() => {
                 Program.Main(new string[0]);
             });
-            return await Task.FromResult((object)CreateStopTask());
+            return (object)((Func<object, Task<object>>)Stop);
         }
 
-        static Func<object, Task<object>> CreateStopTask(){
-            return (async (object o) => {
-                Program.Exit();
-                return await Task.FromResult((object)0);
-            });
+        static async Task<object> Stop(object input){
+            Program.Exit();
+            return 0;
         }
     }
 }
