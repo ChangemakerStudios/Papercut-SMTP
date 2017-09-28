@@ -33,6 +33,7 @@ namespace Papercut.WebUI.Test.Base
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Extensions.PlatformAbstractions;
     using Newtonsoft.Json;
+    using System.Threading;
 
     public class ApiTestBase : IDisposable
     {
@@ -50,14 +51,8 @@ namespace Papercut.WebUI.Test.Base
         HttpClient BuildClient()
         {
             WebServer.WebStartup.Scope = this.Scope;
-
-            var hostBuilder = new WebHostBuilder()
-                .UseContentRoot(PlatformServices.Default.Application.ApplicationBasePath)
-                .UseEnvironment("Development")
-                .UseStartup<WebServer.WebStartup>();
-
-            var testServer = new TestServer(hostBuilder);
-            return testServer.CreateClient();            
+            var testServer = WebServer.WebStartup.StartTestServer(new CancellationToken(), "Development");
+            return testServer.CreateClient();
         }
 
         void IDisposable.Dispose()

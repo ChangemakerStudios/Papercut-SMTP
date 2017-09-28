@@ -28,12 +28,13 @@ namespace Papercut.Service
     using Papercut.Core.Domain.Application;
     using System.Threading.Tasks;
     using System.Reflection;
+    using Papercut.Core.Domain.Settings;
 
-    class Program
+    public class Program
     {
         static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
 
-        internal static int Main(string[] args)
+        public static int Main(string[] args)
         {
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
             var appTask = Task.Factory.StartNew(() =>
@@ -46,7 +47,7 @@ namespace Papercut.Service
             return appTask.Result;
         }
 
-        internal static void Exit(){
+        public static void Exit(){
             WriteInfo("Exiting...");
             if (appWaitHandle != null)
             {

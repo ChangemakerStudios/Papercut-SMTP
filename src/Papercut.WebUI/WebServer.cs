@@ -20,6 +20,7 @@ namespace Papercut.WebUI
 {
     using System;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.TestHost;
     using Microsoft.AspNetCore.Http;
 
 
@@ -38,10 +39,11 @@ namespace Papercut.WebUI
     using Serilog.Events;
     using System.Collections.Generic;
 
-    class WebServer : IEventHandler<PapercutServiceReadyEvent>, IDisposable
+    public class WebServer : IEventHandler<PapercutServiceReadyEvent>, IDisposable
     {
         readonly ILifetimeScope scope;
         readonly Serilog.ILogger logger;
+        readonly IMessageBus messageBus;
 
         readonly ushort httpPort;
         const string BaseAddress = "http://localhost:{0}";
@@ -49,24 +51,42 @@ namespace Papercut.WebUI
 
         CancellationTokenSource serverCancellation;
 
-        public WebServer(ILifetimeScope scope, ISettingStore settingStore, Serilog.ILogger logger)
+        public WebServer(ILifetimeScope scope, 
+        ISettingStore settingStore, 
+        IMessageBus messageBus,
+        Serilog.ILogger logger)
         {
             this.scope = scope;
+            this.messageBus = messageBus;
             this.logger = logger;
+
             httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
         }
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
-            StartHttpServer();
+            TestServer ts;
+            StartHttpServer(out ts);           
+            
+            var webServerReadyEvent = new WebUIServerReadyEvent{
+                Server = this,
+                TestServer = ts
+            };
+            messageBus.Publish(webServerReadyEvent);
         }
         
 
-        void StartHttpServer()
+        void StartHttpServer(out TestServer ts)
         {
             serverCancellation = new CancellationTokenSource();
             WebStartup.Scope = scope;
-            WebStartup.Start(httpPort, serverCancellation.Token);
+            
+            ts = null;
+            if(httpPort == 0){
+                ts = WebStartup.StartTestServer(serverCancellation.Token);
+            }else{
+                WebStartup.Start(httpPort, serverCancellation.Token);
+            }
         }
 
         void IDisposable.Dispose()
@@ -93,6 +113,17 @@ namespace Papercut.WebUI
 
                 var host = hostBuilder.Build();
                 host.Run(cancellation);
+            }
+
+            public static TestServer StartTestServer(CancellationToken cancellation, string env = "Production")
+            {
+                var hostBuilder = new WebHostBuilder();
+                hostBuilder
+                    .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
+                    .UseEnvironment(env)
+                    .UseStartup<WebStartup>();
+
+                return new TestServer(hostBuilder);
             }
 
             public IServiceProvider ConfigureServices(IServiceCollection services)
