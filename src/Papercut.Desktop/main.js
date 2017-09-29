@@ -32,7 +32,7 @@ function createWindow () {
 }
 
 app.on('ready', function(){
-  launchPapercutServices();
+  // launchPapercutServices();
   createWindow();
 });
 

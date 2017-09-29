@@ -33,6 +33,7 @@ namespace Papercut.Service
     public class Program
     {
         static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
+        public static ILifetimeScope AppContainer {get;private set;}
 
         public static int Main(string[] args)
         {
@@ -62,6 +63,7 @@ namespace Papercut.Service
                 PapercutContainer.SpecifiedEntryAssembly = (typeof(Program).GetTypeInfo()).Assembly;
                 using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
                 {
+                    AppContainer = appContainer;
                     initialization(appContainer);
 
                     var papercutService = appContainer.Resolve<PapercutServerService>();

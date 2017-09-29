@@ -28,6 +28,7 @@ namespace Papercut.DesktopService
     using Module = Autofac.Module;
     using Papercut.Common.Domain;
     using Papercut.WebUI;
+    using Papercut.Core.Domain.Message;
 
     public class PapercutDesktopServiceModule : Module, IDiscoverableModule
     {
@@ -37,10 +38,7 @@ namespace Papercut.DesktopService
         {
             builder.RegisterType<PapercutNativeMessageRepository>()
                 .As<IEventHandler<WebUIServerReadyEvent>>()
-                .SingleInstance();
-
-            builder.Register((c) => new ApplicationMeta("Papercut.DesktopService"))
-                .As<IAppMeta>()
+                .As<IEventHandler<NewMessageEvent>>()
                 .SingleInstance();
 
             base.Load(builder);

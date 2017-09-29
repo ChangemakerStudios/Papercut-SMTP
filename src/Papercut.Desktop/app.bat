@@ -3,6 +3,7 @@
 if "%1" == "build" (
     echo building
     dotnet publish ..\Papercut.DesktopService -o ..\Papercut.Desktop\ -r win10-x64
+    rem dotnet publish ../Papercut.DesktopService -o ../Papercut.Desktop/ -r osx.10.12-x64
 )
 
 

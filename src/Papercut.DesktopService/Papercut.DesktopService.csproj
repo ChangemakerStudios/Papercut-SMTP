@@ -17,4 +17,7 @@
     <ProjectReference Include="..\Papercut.WebUI\Papercut.WebUI.csproj" />
     <ProjectReference Include="..\Papercut.Service\Papercut.Service.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Papercut.Service.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
 </Project>
