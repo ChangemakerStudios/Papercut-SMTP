@@ -2,70 +2,82 @@
 
 namespace Papercut.DesktopService
 {
-    using Papercut.Common.Domain;
-    using Papercut.Core.Domain.Message;
-    using Papercut.WebUI;
     using System.Net.Http;
     using Newtonsoft.Json;
     using System.Threading.Tasks;
+    using Papercut.Service;
+    using System;
 
-    public class PapercutNativeMessageRepository: IEventHandler<WebUIServerReadyEvent>, IEventHandler<NewMessageEvent>
+    class PapercutNativeMessageRepository
     {
-        internal static PapercutNativeMessageRepository HandlerInstance {get;set;}
-        HttpClient theClient;
+        public PublicServiceFacade PapercutFacade { get; set; }        
 
-        public void Handle(WebUIServerReadyEvent readyEvent)
+        public async Task<TransformedHttpResponse> ListAll(string parameters)
         {
-            theClient = readyEvent.TestServer.CreateClient();
-        }
-        
-        public void Handle(NewMessageEvent @event)
-        {
-            
-        }
-
-
-        public async Task<object> ListAllMessages(object input)
-        {
-            if(this != HandlerInstance){
-                return HandlerInstance?.ListAllMessages(input);
+            if(PapercutWebClient == null)
+            {
+                return TransformedHttpResponse.NotReady;
             }
 
-            var req = JsonConvert.DeserializeObject<ListMessageRequest>((string)input);
-            var response = await theClient.GetAsync($"/api/messages?start={req.start}&limit={req.limit}");
+            var req = JsonConvert.DeserializeObject<ListMessageRequest>(parameters);
+            var uri = $"/api/messages?start={req.start}";
+            if(req.limit > 0)
+            {
+                uri += $"&limit={req.limit}";
+            }
+
+            var response = await PapercutWebClient.GetAsync(uri);
             return await TransformResponse(response);
         }
 
-        public async Task<object> GetMessageDetail(object input)
+        public async Task<TransformedHttpResponse> GetDetail(string msgId)
         {
-            if(this != HandlerInstance){
-                return HandlerInstance?.GetMessageDetail(input);
+            if (PapercutWebClient == null)
+            {
+                return TransformedHttpResponse.NotReady;
             }
 
-            var response = await theClient.GetAsync($"/api/messages/{input}");
+            var response = await PapercutWebClient.GetAsync($"/api/messages/{msgId}");
             return await TransformResponse(response);
         }
 
-        public async Task<object> DeleteAll(object input)
+        public async Task<TransformedHttpResponse> DeleteAll()
         {
-            if(this != HandlerInstance){
-                return HandlerInstance?.DeleteAll(input);
+            if (PapercutWebClient == null)
+            {
+                return TransformedHttpResponse.NotReady;
             }
 
-            var response = await theClient.DeleteAsync("/api/messages");
+            var response = await PapercutWebClient.DeleteAsync("/api/messages");
             return await TransformResponse(response);
         }
 
-        public Task<object> OnNewMessageArrives(object input)
+        public Task<object> OnNewMessageArrives(Action<MailMessageNotification> input)
         {
-            if(this != HandlerInstance){
-                return HandlerInstance?.OnNewMessageArrives(input);
+            if (PapercutFacade != null)
+            {
+                PapercutFacade.NewMessageReceived += (s, e) => {
+                    var msg = new MailMessageNotification
+                    {
+                        Subject = e.NewMessage.DisplayText,
+                        Id = e.NewMessage.Name
+                    };
+                    input(msg);
+                };
             }
 
             return Task.FromResult((object)0);
         }
+        
 
-        async Task<object> TransformResponse(HttpResponseMessage response){
+        HttpClient PapercutWebClient {
+            get
+            {
+                return PapercutFacade?.PapercutWebClient;
+            }
+        }
+
+        async Task<TransformedHttpResponse> TransformResponse(HttpResponseMessage response){
             return new TransformedHttpResponse {
                 Status = (int)response.StatusCode,
                 Content = await response.Content?.ReadAsStringAsync()
@@ -73,7 +85,19 @@ namespace Papercut.DesktopService
         }
     }
 
+    class MailMessageNotification
+    {
+        public string Subject { get; set; }
+        public string From { get; set; }
+        public string Id { get; set; }
+    }
+
     class TransformedHttpResponse{
+        public static TransformedHttpResponse NotReady = new TransformedHttpResponse
+        {
+            Status = 503
+        };
+
         public int Status {get;set;}
         public string Content {get;set;}
     }

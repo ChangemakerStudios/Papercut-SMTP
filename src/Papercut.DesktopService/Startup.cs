@@ -21,21 +21,49 @@ namespace Papercut.DesktopService
     using System.Threading.Tasks;
     using Papercut.Service;
     using Autofac;
+    using System.Threading;
+    using Papercut.Core.Infrastructure.Container;
+    using System.Reflection;
 
     // entry point for Desktop Electron Edge
     public class Startup
     {
         public Task<object> Invoke(object input)
         {
+            //Console.WriteLine("Waiting 30s for debugger...");
+            //Thread.Sleep(30 * 1000);
+
+            var task = new TaskCompletionSource<object>();
+
             var _ = Task.Factory.StartNew(() => {
-                Program.Main(new string[0]);
-                PapercutNativeMessageRepository.HandlerInstance = Program.AppContainer.Resolve<PapercutNativeMessageRepository>();
+                try
+                {
+                    PapercutCoreModule.SpecifiedEntryAssembly = (typeof(Startup).GetTypeInfo()).Assembly;
+                    Program.StartPapercutService((container) =>
+                    {
+                        PapercutNativeService.MailMessageRepo = new PapercutNativeMessageRepository
+                        {
+                            PapercutFacade = container.Resolve<PublicServiceFacade>()
+                        };
+
+                        task.SetResult(new
+                        {
+                            MessageRepository = PapercutNativeService.ExportAll(),
+                            StopService = (Func<object, Task<object>>)Stop
+                        });
+                    });
+                }
+                catch(Exception ex)
+                {
+                    task.SetException(ex);
+                }
             });
-            return Task.FromResult((object)((Func<object, Task<object>>)Stop));
+
+            return task.Task;
         }
 
         static Task<object> Stop(object input){
-            Program.Exit();
+            Program.StopPapercutService();
             return Task.FromResult((object)0);
         }
     }

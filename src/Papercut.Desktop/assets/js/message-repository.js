@@ -1,6 +1,6 @@
 
 
-papercutApp.factory('messageRepository', function($http){
+papercutApp.factory('messageRepository', function($http, $q){
 
     function createHttpBasedRepo(){
         function listMessages(limit, skip){
@@ -35,11 +35,42 @@ papercutApp.factory('messageRepository', function($http){
     }
 
     function createNativeRepo(){
+        var win = require('electron').remote.getCurrentWindow();
+        const nativeRepo = win.nativeMessageRepo;
+
+        function wrapPromise(nativeCall, stringifyArgument){
+            return function(){
+                const task = $q.defer();
+                let args = stringifyArgument ? [JSON.stringify(arguments[0])] : [arguments[0]];
+                args.push(function(err, result){
+                    if(err !== null){
+                        task.reject(err);
+                        return;
+                    }
+
+                    if(result.Status >= 400){
+                        task.reject(new Error('Invocation returned ' + result.Status + ' status code.\n' + result.Content));
+                        return;
+                    }
+
+                    task.resolve( {data:  result.Content ? JSON.parse( result.Content ) : null, status: result.Status } );
+                });
+                
+                nativeCall.apply(null, args);
+
+                return task.promise;
+            }
+        }
+
+
         return {
-            list: null,
-            get: null,
-            deleteAll: null,
-            onNewMessage: null
+            list: function(limit, start){
+                var list = wrapPromise(nativeRepo.ListAll, true);
+                return list({start, limit});
+            },
+            get: wrapPromise(nativeRepo.GetDetail, false),
+            deleteAll: wrapPromise(nativeRepo.DeleteAll, true),
+            onNewMessage: wrapPromise(nativeRepo.OnNewMessageArrives, false)
         }
     }
 

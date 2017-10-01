@@ -46,3 +46,4 @@ src/Papercut.Desktop/*.dll.config
 src/Papercut.Desktop/*.deps.json
 src/Papercut.Desktop/*.runtimeconfig.json
 src/Papercut.Desktop/Logs/
+src/Papercut.Desktop/Incoming/

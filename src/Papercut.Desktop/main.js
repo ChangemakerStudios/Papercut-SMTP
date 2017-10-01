@@ -1,5 +1,10 @@
 process.env.EDGE_USE_CORECLR = 1;
 
+// electron-edge is trying to find a CoreCLR runtime, it tends to find a latest version
+process.env.CORECLR_DIR = 'C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.2';  // this seems does not work
+process.env.EDGE_CORECLR_DIR = 'C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.2';   // this seems does not work
+process.env.CORECLR_VERSION = '1.1.2';   // this works
+
 const electron = require('electron');
 const edge = require('electron-edge');
 const app = electron.app;
@@ -9,37 +14,52 @@ const path = require('path');
 const url = require('url');
 
 let mainWindow;
-let smtpStopFn;
+let nativeService;
 
 function launchPapercutServices(onComplete){
-  const start = edge.func(require('path').join(__dirname, 'Papercut.DesktopService.dll'));
-  smtpStopFn = start(null, true);
+  console.log('launching the Papercut service...');
+
+  var assembly = require('path').join(__dirname, 'Papercut.DesktopService.dll');
+  const start = edge.func(assembly);
+   start(null, function(err, result){
+    if(err !== null){
+      console.error(err);
+      return;
+    }
+    onComplete(result);
+   });
 }
 
 function createWindow () {
-  mainWindow = new BrowserWindow({width: 800, height: 600});
+  console.log('creating the window...');
 
+  mainWindow = new BrowserWindow({width: 800, height: 600});
+  mainWindow.setMenu(null); 
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'assets/index.html'),
     protocol: 'file:',
     slashes: true
   }));
+  mainWindow.nativeMessageRepo = nativeService.MessageRepository;
 
-
+  mainWindow.openDevTools();
   mainWindow.on('closed', function () {
     mainWindow = null;
   });
 }
 
 app.on('ready', function(){
-  // launchPapercutServices();
-  createWindow();
+  launchPapercutServices(function(result){
+    nativeService = result;
+    createWindow();
+  });  
 });
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     try{
-      smtpStopFn(null, true);
+      nativeService.StopService(null, true);
+      nativeService = null;
     }catch(e){
       console.error('Error stoping the smtp service:');
       console.log(e);

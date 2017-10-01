@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Service", "src\Pap
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{8B3498DF-6DDE-44F5-8428-1B82749933BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.Seq", "src\Papercut.Module.Seq\Papercut.Module.Seq.csproj", "{5E6526B3-4DA9-41F4-8171-C34146AC2E55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Module.Seq", "src\Papercut.Module.Seq\Papercut.Module.Seq.csproj", "{5E6526B3-4DA9-41F4-8171-C34146AC2E55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.VerboseJsonLog", "src\Papercut.Module.VerboseJsonLog\Papercut.Module.VerboseJsonLog.csproj", "{F60D44E1-100E-464A-A280-CA6BAF652177}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Module.VerboseJsonLog", "src\Papercut.Module.VerboseJsonLog\Papercut.Module.VerboseJsonLog.csproj", "{F60D44E1-100E-464A-A280-CA6BAF652177}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extras", "Extras", "{66E83B2B-F2C9-4CAA-A519-E4C48566D6BE}"
 	ProjectSection(SolutionItems) = preProject
@@ -34,6 +34,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.WebUI.Tests", "test\Papercut.WebUI.Tests\Papercut.WebUI.Tests.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{8D2E180D-683F-4F03-A683-4DCFA3B8D564}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.DesktopService", "src\Papercut.DesktopService\Papercut.DesktopService.csproj", "{511C451C-5FAE-4599-BD73-2B3B72C26501}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,6 +125,14 @@ Global
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x86.ActiveCfg = Release|Any CPU
 		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x86.Build.0 = Release|Any CPU
+		{511C451C-5FAE-4599-BD73-2B3B72C26501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{511C451C-5FAE-4599-BD73-2B3B72C26501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{511C451C-5FAE-4599-BD73-2B3B72C26501}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{511C451C-5FAE-4599-BD73-2B3B72C26501}.Debug|x86.Build.0 = Debug|Any CPU
+		{511C451C-5FAE-4599-BD73-2B3B72C26501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{511C451C-5FAE-4599-BD73-2B3B72C26501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{511C451C-5FAE-4599-BD73-2B3B72C26501}.Release|x86.ActiveCfg = Release|Any CPU
+		{511C451C-5FAE-4599-BD73-2B3B72C26501}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
