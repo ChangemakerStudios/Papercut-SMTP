@@ -28,14 +28,10 @@ namespace Papercut.Service
     using Papercut.Core.Domain.Application;
     using System.Threading.Tasks;
     using System.Reflection;
-    using Papercut.Core.Domain.Settings;
 
     public class Program
     {
-        static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
-        public static ILifetimeScope AppContainer {get;private set;}
-
-        public static int Main(string[] args)
+        static int Main(string[] args)
         {
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
             var appTask = Task.Factory.StartNew(() =>
@@ -48,41 +44,9 @@ namespace Papercut.Service
             return appTask.Result;
         }
 
-        public static void Exit(){
-            WriteInfo("Exiting...");
-            if (appWaitHandle != null)
-            {
-                appWaitHandle.Set();
-            }
-        }
-        
-        static int StartPapercutService(Action<ILifetimeScope> initialization)
+        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
-            try
-            {
-                PapercutContainer.SpecifiedEntryAssembly = (typeof(Program).GetTypeInfo()).Assembly;
-                using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
-                {
-                    AppContainer = appContainer;
-                    initialization(appContainer);
-
-                    var papercutService = appContainer.Resolve<PapercutServerService>();
-                    papercutService.Start();
-                    
-                    appWaitHandle.WaitOne();
-                    papercutService.Stop();
-
-                    appWaitHandle.Dispose();
-                    appWaitHandle = null;
-                }
-
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                WriteFatal(ex);
-                return 1;
-            }
+            StopPapercutService();
         }
 
         static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
@@ -90,11 +54,6 @@ namespace Papercut.Service
             WriteFatal(e.Exception);
         }
 
-        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            Exit();
-        }
-        
         static void WriteFatal(Exception ex)
         {
             Console.Error.WriteLine(ex);
@@ -112,5 +71,53 @@ namespace Papercut.Service
                 Log.Logger.Information(info);
             }
         }
+
+        #region Service Control
+
+        static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
+
+        public static int StartPapercutService(Action<ILifetimeScope> initialization)
+        {
+            try
+            {
+                if (PapercutCoreModule.SpecifiedEntryAssembly == null)
+                {
+                    PapercutCoreModule.SpecifiedEntryAssembly = (typeof(Program).GetTypeInfo()).Assembly;
+                }
+
+                using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
+                {
+                    initialization(appContainer);
+
+                    var papercutService = appContainer.Resolve<PapercutServerService>();
+                    papercutService.Start();
+
+                    appWaitHandle.WaitOne();
+                    papercutService.Stop();
+
+                    appWaitHandle.Dispose();
+                    appWaitHandle = null;
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                WriteFatal(ex);
+                return 1;
+            }
+        }
+
+        public static void StopPapercutService()
+        {
+            WriteInfo("Exiting...");
+            if (appWaitHandle != null)
+            {
+                appWaitHandle.Set();
+            }
+        }
+
+        #endregion
+
     }
 }

@@ -38,9 +38,12 @@ namespace Papercut.Core.Infrastructure.Container
     using Serilog;
 
     using Module = Autofac.Module;
-    
-    internal class PapercutCoreModule : Module
+    using System.Reflection;
+
+    public class PapercutCoreModule : Module
     {
+        public static Assembly SpecifiedEntryAssembly { get; set; }
+
         protected override void Load(ContainerBuilder builder)
         {
             new RegisterLogger().Register(builder);

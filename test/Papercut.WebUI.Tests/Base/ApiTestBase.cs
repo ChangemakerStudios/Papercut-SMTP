@@ -61,7 +61,7 @@ namespace Papercut.WebUI.Test.Base
 
         static IContainer BuildContainer(Action<ContainerBuilder> configurer = null)
         {
-            PapercutContainer.SpecifiedEntryAssembly = typeof(WebUiWebServerApiFact).GetTypeInfo().Assembly;
+            PapercutCoreModule.SpecifiedEntryAssembly = typeof(WebUiWebServerApiFact).GetTypeInfo().Assembly;
 
             var builder = new ContainerBuilder();
             builder.RegisterModule<PapercutCoreModule>();

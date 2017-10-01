@@ -29,7 +29,7 @@ namespace Papercut.WebUI
     using Module = Autofac.Module;
     using Papercut.WebUI.Hosting;
 
-    public class WebUIPluginModule : Module, IPluginModule
+    public class PapercutWebUIModule : Module, IDiscoverableModule
     {
         public IModule Module => this;
         public string Name => "WebUI";
