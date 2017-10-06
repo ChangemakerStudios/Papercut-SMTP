@@ -21,7 +21,6 @@ namespace Papercut.WebUI.Hosting
     using System;
     using Microsoft.AspNetCore.Hosting;
 
-
     using Autofac;
     
     using System.Threading;
@@ -30,7 +29,6 @@ namespace Papercut.WebUI.Hosting
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
-    using Papercut.WebUI.Hosting.InProcess;
 
     internal class WebStartup
     {
@@ -46,17 +44,6 @@ namespace Papercut.WebUI.Hosting
 
             var host = hostBuilder.Build();
             host.Run(cancellation);
-        }
-
-        public static HttpServer StartInProcessServer(CancellationToken cancellation, string env = "Production")
-        {
-            var hostBuilder = new WebHostBuilder();
-            hostBuilder
-                .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
-                .UseEnvironment(env)
-                .UseStartup<WebStartup>();
-
-            return new HttpServer(hostBuilder);
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)

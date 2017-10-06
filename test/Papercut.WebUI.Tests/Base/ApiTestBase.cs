@@ -20,36 +20,33 @@ namespace Papercut.WebUI.Test.Base
 {
     using System;
     using System.Net.Http;
-
-    using Autofac;
-
-    using Core.Domain.Application;
-    using Core.Domain.Paths;
-    using Core.Infrastructure.Container;
-
-    using WebServerFacts;
-    using System.Reflection;
     using Newtonsoft.Json;
-    using System.Threading;
     using Papercut.WebUI.Hosting;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.TestHost;
+    using Microsoft.Extensions.PlatformAbstractions;
 
-    public class ApiTestBase : IDisposable
+    public class ApiTestBase : TestBase, IDisposable
     {
-        protected ILifetimeScope Scope;
         protected string BaseAddress;
         protected readonly HttpClient Client;
 
         public ApiTestBase()
         {
             BaseAddress = "http://webui.papercut.com";
-            Scope = BuildContainer(MockDependencies).BeginLifetimeScope();
             Client = BuildClient();
         }
 
         HttpClient BuildClient()
         {
             WebStartup.Scope = this.Scope;
-            var testServer = WebStartup.StartInProcessServer(new CancellationToken(), "Development");
+
+            var hostBuilder = new WebHostBuilder()
+                .UseContentRoot(PlatformServices.Default.Application.ApplicationBasePath)
+                .UseEnvironment("Development")
+                .UseStartup<WebStartup>();
+            
+            var testServer = new TestServer(hostBuilder);
             return testServer.CreateClient();
         }
 
@@ -59,22 +56,6 @@ namespace Papercut.WebUI.Test.Base
             Scope.Dispose();
         }
 
-        static IContainer BuildContainer(Action<ContainerBuilder> configurer = null)
-        {
-            PapercutCoreModule.SpecifiedEntryAssembly = typeof(WebUiWebServerApiFact).GetTypeInfo().Assembly;
-
-            var builder = new ContainerBuilder();
-            builder.RegisterModule<PapercutCoreModule>();
-
-            configurer?.Invoke(builder);
-            return builder.Build();
-        }
-
-        protected virtual void MockDependencies(ContainerBuilder builder)
-        {
-            builder.Register(c => new ApplicationMeta("Papercut.WebUI.Tests")).As<IAppMeta>().SingleInstance();
-            builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().SingleInstance();
-        }
 
         protected HttpResponseMessage Get(string uri)
         {

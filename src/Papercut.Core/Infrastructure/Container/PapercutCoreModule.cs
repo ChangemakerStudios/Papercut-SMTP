@@ -18,17 +18,10 @@
 namespace Papercut.Core.Infrastructure.Container
 {
     using System;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
 
     using Autofac;
-    using Autofac.Core;
-
-    using AutofacSerilogIntegration;
-
     using Papercut.Common.Domain;
-    using Papercut.Core.Domain.Application;
+    using Papercut.Core.Domain.Message;
     using Papercut.Core.Domain.Paths;
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Logging;
@@ -68,6 +61,11 @@ namespace Papercut.Core.Infrastructure.Container
             builder.RegisterType<MessagePathConfigurator>()
                 .As<IMessagePathConfigurator>()
                 .AsSelf()
+                .SingleInstance();
+
+            builder.RegisterType<NewMessageEventHolder>()
+                .AsSelf()
+                .As<IEventHandler<NewMessageEvent>>()
                 .SingleInstance();
 
             builder.RegisterType<JsonSettingStore>()

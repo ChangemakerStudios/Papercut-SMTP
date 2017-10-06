@@ -22,7 +22,6 @@
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
     <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj" />
     <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj" />
-    <ProjectReference Include="..\Papercut.WebUI\Papercut.WebUI.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

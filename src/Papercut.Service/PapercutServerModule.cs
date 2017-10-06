@@ -26,9 +26,6 @@ namespace Papercut.Service
     using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Service.Helpers;
     using Module = Autofac.Module;
-    using Papercut.Common.Domain;
-    using Papercut.Core.Domain.Message;
-    using Papercut.WebUI;
 
     public class PapercutServiceModule : Module, IDiscoverableModule
     {
@@ -49,12 +46,6 @@ namespace Papercut.Service
 
             builder.Register((c) => new ApplicationMeta("Papercut.Service"))
                 .As<IAppMeta>()
-                .SingleInstance();
-
-            builder.RegisterType<PublicServiceFacade>()
-                .AsSelf()
-                .As<IEventHandler<WebUIServerReadyEvent>>()
-                .As<IEventHandler<NewMessageEvent>>()
                 .SingleInstance();
 
             base.Load(builder);

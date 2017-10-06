@@ -29,7 +29,6 @@ namespace Papercut.WebUI.Hosting
     using Core.Domain.Settings;
     using Core.Infrastructure.Lifecycle;
     using System.Threading;
-    using Papercut.WebUI.Hosting.InProcess;
 
     public class PapercutWebServerManager : IEventHandler<PapercutServiceReadyEvent>, IDisposable
     {
@@ -57,28 +56,14 @@ namespace Papercut.WebUI.Hosting
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
-            HttpServer inprocessServer;
-            StartHttpServer(out inprocessServer);           
-            
-            var webServerReadyEvent = new WebUIServerReadyEvent{
-                ServerManager = this,
-                InProcessServer = inprocessServer
-            };
-            messageBus.Publish(webServerReadyEvent);
-        }
-        
+            if(httpPort <= 0)
+            {
+                return;
+            }
 
-        void StartHttpServer(out HttpServer ts)
-        {
             serverCancellation = new CancellationTokenSource();
             WebStartup.Scope = scope;
-            
-            ts = null;
-            if(httpPort == 0){
-                ts = WebStartup.StartInProcessServer(serverCancellation.Token);
-            }else{
-                WebStartup.Start(httpPort, serverCancellation.Token);
-            }
+            WebStartup.Start(httpPort, serverCancellation.Token);
         }
 
         void IDisposable.Dispose()

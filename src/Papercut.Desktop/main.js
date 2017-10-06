@@ -42,7 +42,7 @@ function createWindow () {
   }));
   mainWindow.nativeMessageRepo = nativeService.MessageRepository;
 
-  mainWindow.openDevTools();
+  // mainWindow.openDevTools();
   mainWindow.on('closed', function () {
     mainWindow = null;
   });

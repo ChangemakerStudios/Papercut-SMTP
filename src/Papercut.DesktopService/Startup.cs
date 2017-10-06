@@ -21,9 +21,10 @@ namespace Papercut.DesktopService
     using System.Threading.Tasks;
     using Papercut.Service;
     using Autofac;
-    using System.Threading;
     using Papercut.Core.Infrastructure.Container;
     using System.Reflection;
+    using Papercut.Core.Domain.Message;
+    using Papercut.Message;
 
     // entry point for Desktop Electron Edge
     public class Startup
@@ -41,9 +42,13 @@ namespace Papercut.DesktopService
                     PapercutCoreModule.SpecifiedEntryAssembly = (typeof(Startup).GetTypeInfo()).Assembly;
                     Program.StartPapercutService((container) =>
                     {
+                        var repo = container.Resolve<MessageRepository>();
+                        var loader = container.Resolve<MimeMessageLoader>();
+
                         PapercutNativeService.MailMessageRepo = new PapercutNativeMessageRepository
                         {
-                            PapercutFacade = container.Resolve<PublicServiceFacade>()
+                            NewMessageEventHolder = container.Resolve<NewMessageEventHolder>(),
+                            WebMsgCtrl = new WebUI.Controllers.MessagesController(repo, loader)
                         };
 
                         task.SetResult(new

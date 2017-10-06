@@ -2,61 +2,62 @@
 
 namespace Papercut.DesktopService
 {
-    using System.Net.Http;
     using Newtonsoft.Json;
     using System.Threading.Tasks;
-    using Papercut.Service;
     using System;
+    using Papercut.Core.Domain.Message;
+    using Papercut.WebUI.Controllers;
+    using Newtonsoft.Json.Serialization;
 
     class PapercutNativeMessageRepository
     {
-        public PublicServiceFacade PapercutFacade { get; set; }        
+        public NewMessageEventHolder NewMessageEventHolder { get; set; }
+        public MessagesController WebMsgCtrl { get; set; }
 
         public async Task<TransformedHttpResponse> ListAll(string parameters)
         {
-            if(PapercutWebClient == null)
+            if (WebMsgCtrl == null)
             {
                 return TransformedHttpResponse.NotReady;
             }
 
             var req = JsonConvert.DeserializeObject<ListMessageRequest>(parameters);
-            var uri = $"/api/messages?start={req.start}";
-            if(req.limit > 0)
+            if(req.limit <= 0)
             {
-                uri += $"&limit={req.limit}";
+                req.limit = 10;
             }
 
-            var response = await PapercutWebClient.GetAsync(uri);
-            return await TransformResponse(response);
+            var response = WebMsgCtrl.GetAll(req.limit, req.start);
+            return await RespondOK(response);
         }
 
         public async Task<TransformedHttpResponse> GetDetail(string msgId)
         {
-            if (PapercutWebClient == null)
+            if (WebMsgCtrl == null)
             {
                 return TransformedHttpResponse.NotReady;
             }
-
-            var response = await PapercutWebClient.GetAsync($"/api/messages/{msgId}");
-            return await TransformResponse(response);
+            
+            var response = WebMsgCtrl.Get(msgId);
+            return await RespondOK(response);
         }
 
         public async Task<TransformedHttpResponse> DeleteAll()
         {
-            if (PapercutWebClient == null)
+            if (WebMsgCtrl == null)
             {
                 return TransformedHttpResponse.NotReady;
             }
 
-            var response = await PapercutWebClient.DeleteAsync("/api/messages");
-            return await TransformResponse(response);
+            WebMsgCtrl.DeleteAll();
+            return await RespondOK();
         }
 
         public Task<object> OnNewMessageArrives(Action<MailMessageNotification> input)
         {
-            if (PapercutFacade != null)
+            if (NewMessageEventHolder != null)
             {
-                PapercutFacade.NewMessageReceived += (s, e) => {
+                NewMessageEventHolder.NewMessageReceived += (s, e) => {
                     var msg = new MailMessageNotification
                     {
                         Subject = e.NewMessage.DisplayText,
@@ -68,20 +69,15 @@ namespace Papercut.DesktopService
 
             return Task.FromResult((object)0);
         }
-        
 
-        HttpClient PapercutWebClient {
-            get
+
+        static JsonSerializerSettings camelCaseJsonSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+        Task<TransformedHttpResponse> RespondOK(object val = null){
+            return Task.FromResult(new TransformedHttpResponse
             {
-                return PapercutFacade?.PapercutWebClient;
-            }
-        }
-
-        async Task<TransformedHttpResponse> TransformResponse(HttpResponseMessage response){
-            return new TransformedHttpResponse {
-                Status = (int)response.StatusCode,
-                Content = await response.Content?.ReadAsStringAsync()
-            };
+                Status = 200,
+                Content = JsonConvert.SerializeObject(val, camelCaseJsonSettings)
+            });
         }
     }
 

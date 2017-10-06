@@ -94,7 +94,7 @@ namespace Papercut.Service
 
                     appWaitHandle.WaitOne();
                     papercutService.Stop();
-
+                    
                     appWaitHandle.Dispose();
                     appWaitHandle = null;
                 }
