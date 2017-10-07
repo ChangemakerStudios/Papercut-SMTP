@@ -11,6 +11,7 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   };
 
 
+  $scope.requetedMessageList = false;
   $scope.cache = {};
   $scope.itemsPerPage = 50;
   $scope.startIndex = 0;
@@ -47,6 +48,7 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
 
   $scope.refresh = function () {
       var e = startEvent("Loading messages", null, "glyphicon-download");
+      $scope.requetedMessageList = true;
 
       messageRepository.list($scope.itemsPerPage, $scope.startIndex)
                        .then(function (resp) {

@@ -31,7 +31,7 @@ function launchPapercutServices(onComplete){
 function createWindow () {
   console.log('creating the window...');
 
-  mainWindow = new BrowserWindow({ width: 1000, height: 600, minWidth: 1000, minHeight: 450 });
+  mainWindow = new BrowserWindow({ width: 1020, height: 600, minWidth: 1020, minHeight: 450 });
   mainWindow.setTitle('Papercut');
   mainWindow.setMenu(null);
   mainWindow.loadURL(url.format({
