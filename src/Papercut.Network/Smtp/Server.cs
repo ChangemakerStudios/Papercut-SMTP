@@ -97,7 +97,10 @@ namespace Papercut.Network.Smtp
                 // Turn off the running bool
                 IsActive = false;
 
-                _listener.Shutdown(SocketShutdown.Both);
+                if (_listener != null)
+                {
+                    _listener.Shutdown(SocketShutdown.Both);
+                }
 
                 ConnectionManager.CloseAll();
 

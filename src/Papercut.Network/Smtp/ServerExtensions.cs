@@ -52,7 +52,7 @@ namespace Papercut.Network.Smtp
                     }
 
                     return Disposable.Empty;
-                }).ObserveOn(scheduler ?? Scheduler.Default);
+                }).ObserveOn(TaskPoolScheduler.Default);
 
             return bindObservable;
         }

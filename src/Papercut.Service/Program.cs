@@ -39,7 +39,8 @@ namespace Papercut.Service
                                {
                                    Console.CancelKeyPress += Console_CancelKeyPress;
                                    Console.Title = container.Resolve<IAppMeta>().AppName;
-                               }));
+                               },
+                               throwErrors: false));
             appTask.Wait();
             return appTask.Result;
         }
@@ -76,7 +77,7 @@ namespace Papercut.Service
 
         static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
 
-        public static int StartPapercutService(Action<ILifetimeScope> initialization)
+        public static int StartPapercutService(Action<ILifetimeScope> initialization, bool throwErrors = true)
         {
             try
             {
@@ -93,10 +94,14 @@ namespace Papercut.Service
                     papercutService.Start();
 
                     appWaitHandle.WaitOne();
-                    papercutService.Stop();
-                    
-                    appWaitHandle.Dispose();
-                    appWaitHandle = null;
+                    try
+                    {
+                        papercutService.Stop();
+
+                        appWaitHandle.Dispose();
+                        appWaitHandle = null;
+                    }
+                    catch { }
                 }
 
                 return 0;
@@ -104,6 +109,12 @@ namespace Papercut.Service
             catch (Exception ex)
             {
                 WriteFatal(ex);
+                appWaitHandle.Set();
+
+                if (throwErrors)
+                {
+                    throw;
+                }
                 return 1;
             }
         }

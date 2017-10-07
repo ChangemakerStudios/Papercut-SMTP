@@ -27,7 +27,6 @@ namespace Papercut.Service.Web
     using Common.Domain;
 
     using Core.Domain.Settings;
-    using Core.Infrastructure.Lifecycle;
     using System.Threading;
 
     public class WebServer : IDisposable
@@ -42,7 +41,7 @@ namespace Papercut.Service.Web
 
         CancellationTokenSource serverCancellation;
 
-        public WebServer(ILifetimeScope scope,  ISettingStore settingStore,  IMessageBus messageBus, Serilog.ILogger logger)
+        public WebServer(ILifetimeScope scope, ISettingStore settingStore, IMessageBus messageBus, Serilog.ILogger logger)
         {
             this.scope = scope;
             this.messageBus = messageBus;
@@ -53,7 +52,7 @@ namespace Papercut.Service.Web
 
         public void Start()
         {
-            if(httpPort <= 0)
+            if (httpPort <= 0)
             {
                 return;
             }
@@ -62,7 +61,7 @@ namespace Papercut.Service.Web
             WebStartup.Scope = scope;
             WebStartup.Start(httpPort, serverCancellation.Token);
         }
-        
+
         public void Stop()
         {
             if (httpPort <= 0 || serverCancellation == null)
@@ -79,6 +78,6 @@ namespace Papercut.Service.Web
         public void Dispose()
         {
             Stop();
-        }       
+        }
     }
 }

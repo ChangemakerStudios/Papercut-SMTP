@@ -18,7 +18,6 @@
 namespace Papercut.Service.Services
 {
     using System;
-    using System.Reactive.Concurrency;
     using System.Reactive.Linq;
 
     using Papercut.Common.Domain;
@@ -33,6 +32,7 @@ namespace Papercut.Service.Services
 
     using Serilog;
     using Papercut.Service.Web;
+    using System.Threading.Tasks;
 
     public class PapercutServerService : IEventHandler<SmtpServerBindEvent>, IDisposable
     {
@@ -88,8 +88,9 @@ namespace Papercut.Service.Services
         {
             this._messageBus.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
-
-            _smtpServer.BindObservable(_serviceSettings.IP,_serviceSettings.Port, TaskPoolScheduler.Default)
+            
+            _smtpServer
+                .BindObservable(_serviceSettings.IP, _serviceSettings.Port)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(
                     (u) =>
@@ -97,20 +98,20 @@ namespace Papercut.Service.Services
                         /* next is not used */
                     },
                     (e) =>
-                    _logger.Warning(
+                    _logger.Error(
                         e, "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
                         _serviceSettings.IP,
                         _serviceSettings.Port),
                     // on complete
                     () => {
-                        this._messageBus.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData });
-                        this._webServer.Start();
-                    });
+                            var _ = Task.Factory.StartNew(() => this._webServer.Start());
+                            this._messageBus.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData });
+                        });
         }
 
         public void Stop()
         {
-            _webServer.Dispose();
+            _webServer.Stop();
             _smtpServer.Stop();
             _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
         }

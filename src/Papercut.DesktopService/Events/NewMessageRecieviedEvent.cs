@@ -15,30 +15,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Domain.Message
+namespace Papercut.DesktopService.Events
 {
-    using Serilog;
     using Papercut.Common.Domain;
     using System;
+    using Papercut.Core.Domain.Message;
 
-    public class NewMessageEventHolder : IEventHandler<NewMessageEvent>
+    class NewMessageRecieviedEvent : IEventHandler<NewMessageEvent>
     {
         public event EventHandler<NewMessageEvent> NewMessageReceived;
-        private readonly ILogger _logger;
 
-        public NewMessageEventHolder(ILogger logger) {
-            _logger = logger;
-        }
 
         public void Handle(NewMessageEvent @event)
         {
-            try
-            {
-                NewMessageReceived?.Invoke(this, @event);
-            }
-            catch (Exception ex) {
-                _logger.Error(ex, "Error when executing NewMessageReceived event");
-            }
+            NewMessageReceived?.Invoke(this, @event);
         }
     }
 }

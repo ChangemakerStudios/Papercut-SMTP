@@ -63,11 +63,6 @@ namespace Papercut.Core.Infrastructure.Container
                 .AsSelf()
                 .SingleInstance();
 
-            builder.RegisterType<NewMessageEventHolder>()
-                .AsSelf()
-                .As<IEventHandler<NewMessageEvent>>()
-                .SingleInstance();
-
             builder.RegisterType<JsonSettingStore>()
                 .As<ISettingStore>()
                 .OnActivated(

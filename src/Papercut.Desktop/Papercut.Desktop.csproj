@@ -1,15 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputType>Library</OutputType>
-  </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
 	<DebugType>portable</DebugType>
     <StartupObject />
-    <ApplicationIcon />
-    <OutputTypeEx>library</OutputTypeEx>
   </PropertyGroup>
+  <PropertyGroup>
+  <DefaultItemExcludes>*.dll;*.pdb;Papercut.Service.json;*.config;*.xml;*.lock;*.dll.config;.npmrc;*.deps.json;package-lock.json;*.runtimeconfig.dev.json;*.runtimeconfig.json;node_modules\**\*.*;Incoming\**\*.*;Logs\**\*.*;runtimes\**\*.*;</DefaultItemExcludes>
+</PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Edge.js" Version="8.2.1" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
     <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
@@ -17,8 +18,6 @@
     <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj" />
     <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj" />
     <ProjectReference Include="..\Papercut.Service\Papercut.Service.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Papercut.Service.json" CopyToOutputDirectory="Always" />
+	<ProjectReference Include="..\Papercut.DesktopService\Papercut.DesktopService.csproj" />
   </ItemGroup>
 </Project>

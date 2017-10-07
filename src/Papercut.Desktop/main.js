@@ -17,9 +17,7 @@ let mainWindow;
 let nativeService;
 
 function launchPapercutServices(onComplete){
-  console.log('launching the Papercut service...');
-
-  var assembly = require('path').join(__dirname, 'Papercut.DesktopService.dll');
+  var assembly = require('path').join(__dirname, 'Papercut.Desktop.dll');
   const start = edge.func(assembly);
    start(null, function(err, result){
     if(err !== null){
@@ -33,16 +31,24 @@ function launchPapercutServices(onComplete){
 function createWindow () {
   console.log('creating the window...');
 
-  mainWindow = new BrowserWindow({width: 800, height: 600});
-  mainWindow.setMenu(null); 
+  mainWindow = new BrowserWindow({ width: 1000, height: 600, minWidth: 1000, minHeight: 450 });
+  mainWindow.setTitle('Papercut');
+  mainWindow.setMenu(null);
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'assets/index.html'),
     protocol: 'file:',
     slashes: true
   }));
-  mainWindow.nativeMessageRepo = nativeService.MessageRepository;
+  mainWindow.nativeMessageRepo = {
+      listAll: nativeService.ListAllMessages,
+      deleteAll: nativeService.DeleteAllMessages,
+      get: nativeService.GetMessageDetail,
+      onNewMessage: nativeService.OnNewMessageArrives
+  };
 
-  // mainWindow.openDevTools();
+  if (process.env.DEBUG_PAPERCUT) {
+      mainWindow.openDevTools();
+  }
   mainWindow.on('closed', function () {
     mainWindow = null;
   });

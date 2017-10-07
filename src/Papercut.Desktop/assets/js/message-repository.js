@@ -65,12 +65,12 @@ papercutApp.factory('messageRepository', function($http, $q){
 
         return {
             list: function(limit, start){
-                var list = wrapPromise(nativeRepo.ListAll, true);
+                var list = wrapPromise(nativeRepo.listAll, true);
                 return list({start, limit});
             },
-            get: wrapPromise(nativeRepo.GetDetail, false),
-            deleteAll: wrapPromise(nativeRepo.DeleteAll, true),
-            onNewMessage: wrapPromise(nativeRepo.OnNewMessageArrives, false)
+            get: wrapPromise(nativeRepo.get, false),
+            deleteAll: wrapPromise(nativeRepo.deleteAll, true),
+            onNewMessage: wrapPromise(nativeRepo.onNewMessage, false)
         }
     }
 
