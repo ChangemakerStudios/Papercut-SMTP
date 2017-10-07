@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Hosting
+namespace Papercut.Service.Web
 {
     using System;
     using Microsoft.Extensions.Logging;
@@ -77,7 +77,7 @@ namespace Papercut.WebUI.Hosting
 
             var serilogLevel = levelMapping[logLevel];
             var logString = formatter(state, exception);
-            logger.Write(LogEventLevel.Debug, exception, logString);
+            logger.Write(serilogLevel, exception, logString);
         }
 
         static Dictionary<LogLevel, LogEventLevel> levelMapping = new Dictionary<LogLevel, LogEventLevel>

@@ -32,6 +32,7 @@ namespace Papercut.Service.Services
     using Papercut.Service.Helpers;
 
     using Serilog;
+    using Papercut.Service.Web;
 
     public class PapercutServerService : IEventHandler<SmtpServerBindEvent>, IDisposable
     {
@@ -44,9 +45,11 @@ namespace Papercut.Service.Services
         readonly PapercutServiceSettings _serviceSettings;
 
         readonly IServer _smtpServer;
+        readonly WebServer _webServer;
 
         public PapercutServerService(
             Func<ServerProtocolType, IServer> serverFactory,
+            WebServer webServer,
             PapercutServiceSettings serviceSettings,
             IAppMeta applicationMetaData,
             ILogger logger,
@@ -57,6 +60,7 @@ namespace Papercut.Service.Services
             _logger = logger;
             _messageBus = messageBus;
             _smtpServer = serverFactory(ServerProtocolType.Smtp);
+            _webServer = webServer;
         }
 
         public void Handle(SmtpServerBindEvent @event)
@@ -98,19 +102,22 @@ namespace Papercut.Service.Services
                         _serviceSettings.IP,
                         _serviceSettings.Port),
                     // on complete
-                    () =>
-                    this._messageBus.Publish(
-                        new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
+                    () => {
+                        this._messageBus.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData });
+                        this._webServer.Start();
+                    });
         }
 
         public void Stop()
         {
+            _webServer.Dispose();
             _smtpServer.Stop();
             _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
         }
 
         public void Dispose()
         {
+            this._webServer.Dispose();
             this._smtpServer?.Dispose();
         }
     }

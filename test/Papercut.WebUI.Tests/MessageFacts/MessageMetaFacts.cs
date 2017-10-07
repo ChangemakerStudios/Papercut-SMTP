@@ -29,7 +29,7 @@ namespace Papercut.WebUI.Test.MessageFacts
     using Base;
     using Message;
     using MimeKit;
-    using Models;
+    using Papercut.Service.Web.Models;
 
     using NUnit.Framework;
 

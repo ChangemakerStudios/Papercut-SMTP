@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Hosting
+namespace Papercut.Service.Web
 {
     using System;
     using Microsoft.AspNetCore.Http;
@@ -30,7 +30,7 @@ namespace Papercut.WebUI.Hosting
     using Core.Infrastructure.Lifecycle;
     using System.Threading;
 
-    public class PapercutWebServerManager : IEventHandler<PapercutServiceReadyEvent>, IDisposable
+    public class WebServer : IDisposable
     {
         readonly ILifetimeScope scope;
         readonly Serilog.ILogger logger;
@@ -42,10 +42,7 @@ namespace Papercut.WebUI.Hosting
 
         CancellationTokenSource serverCancellation;
 
-        public PapercutWebServerManager(ILifetimeScope scope, 
-        ISettingStore settingStore, 
-        IMessageBus messageBus,
-        Serilog.ILogger logger)
+        public WebServer(ILifetimeScope scope,  ISettingStore settingStore,  IMessageBus messageBus, Serilog.ILogger logger)
         {
             this.scope = scope;
             this.messageBus = messageBus;
@@ -54,7 +51,7 @@ namespace Papercut.WebUI.Hosting
             httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
         }
 
-        public void Handle(PapercutServiceReadyEvent @event)
+        public void Start()
         {
             if(httpPort <= 0)
             {
@@ -65,16 +62,23 @@ namespace Papercut.WebUI.Hosting
             WebStartup.Scope = scope;
             WebStartup.Start(httpPort, serverCancellation.Token);
         }
-
-        void IDisposable.Dispose()
+        
+        public void Stop()
         {
-            if (serverCancellation != null) {
-                serverCancellation.Cancel();
-                WebStartup.Scope = null;
+            if (httpPort <= 0 || serverCancellation == null)
+            {
+                return;
+            }
 
-                serverCancellation.Dispose();
-                serverCancellation = null;
-            }            
+            serverCancellation.Cancel();
+            serverCancellation.Dispose();
+            serverCancellation = null;
+            WebStartup.Scope = null;
+        }
+
+        public void Dispose()
+        {
+            Stop();
         }       
     }
 }

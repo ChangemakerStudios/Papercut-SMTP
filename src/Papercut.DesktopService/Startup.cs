@@ -48,7 +48,7 @@ namespace Papercut.DesktopService
                         PapercutNativeService.MailMessageRepo = new PapercutNativeMessageRepository
                         {
                             NewMessageEventHolder = container.Resolve<NewMessageEventHolder>(),
-                            WebMsgCtrl = new WebUI.Controllers.MessagesController(repo, loader)
+                            WebMsgCtrl = new Service.Web.Controllers.MessagesController(repo, loader)
                         };
 
                         task.SetResult(new

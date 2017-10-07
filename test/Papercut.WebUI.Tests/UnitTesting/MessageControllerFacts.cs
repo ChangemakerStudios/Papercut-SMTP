@@ -2,8 +2,8 @@
 using MimeKit;
 using NUnit.Framework;
 using Papercut.Message;
-using Papercut.WebUI.Controllers;
-using Papercut.WebUI.Models;
+using Papercut.Service.Web.Controllers;
+using Papercut.Service.Web.Models;
 using Papercut.WebUI.Test.Base;
 using System.Collections.Generic;
 

@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Hosting
+namespace Papercut.Service.Web
 {
     using System;
     using Microsoft.AspNetCore.Hosting;

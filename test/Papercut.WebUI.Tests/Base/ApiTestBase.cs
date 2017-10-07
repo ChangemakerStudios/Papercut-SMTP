@@ -21,7 +21,7 @@ namespace Papercut.WebUI.Test.Base
     using System;
     using System.Net.Http;
     using Newtonsoft.Json;
-    using Papercut.WebUI.Hosting;
+    using Papercut.Service.Web;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Extensions.PlatformAbstractions;

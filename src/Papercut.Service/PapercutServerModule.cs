@@ -26,6 +26,7 @@ namespace Papercut.Service
     using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Service.Helpers;
     using Module = Autofac.Module;
+    using Papercut.Service.Web;
 
     public class PapercutServiceModule : Module, IDiscoverableModule
     {
@@ -36,6 +37,10 @@ namespace Papercut.Service
             builder.RegisterAssemblyTypes(this.GetType().GetTypeInfo().Assembly)
                 .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
                 .AsImplementedInterfaces()
+                .AsSelf()
+                .SingleInstance();
+
+            builder.RegisterType<WebServer>()
                 .AsSelf()
                 .SingleInstance();
 

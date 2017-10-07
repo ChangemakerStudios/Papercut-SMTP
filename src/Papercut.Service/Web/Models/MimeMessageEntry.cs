@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Models
+namespace Papercut.Service.Web.Models
 {
     using System;
     using System.Collections.Generic;

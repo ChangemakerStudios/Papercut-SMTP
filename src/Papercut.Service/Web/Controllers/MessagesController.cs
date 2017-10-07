@@ -16,17 +16,15 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Controllers
+namespace Papercut.Service.Web.Controllers
 {
     using System.Linq;
-    using Helpers;
     using Message;
     using MimeKit;
     using Models;
     using Message.Helpers;
     using System;
     using System.Collections.Generic;
-    using System.IO;
 
     using Common.Extensions;
     using Microsoft.AspNetCore.Mvc;

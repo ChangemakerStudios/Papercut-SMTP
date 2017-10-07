@@ -15,20 +15,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-namespace Papercut.WebUI.Controllers
+namespace Papercut.Service.Web.Models
 {
-    using Microsoft.AspNetCore.Mvc;
-
-    public class HealthController : ControllerBase
+    public class MessageDetail
     {
-        [HttpGet("health")]
-        public IActionResult Check()
-        {
-            return new ContentResult {
-                Content = "Papercut WebUI server started successfully.",
-                ContentType = "text/plain"
-            };
-        }
+
+        public string Subject { get; set; }
+        public string From { get; set; }
+        public string To { get; set; }
+        public string Cc { get; set; }
+        public string Bcc { get; set; }
+
+        public string BodyContent { get; set; }
+        public bool IsBodyHtml { get; set; }
+
     }
 }

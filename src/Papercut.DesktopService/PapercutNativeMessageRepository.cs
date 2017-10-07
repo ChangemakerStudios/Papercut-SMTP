@@ -6,7 +6,7 @@ namespace Papercut.DesktopService
     using System.Threading.Tasks;
     using System;
     using Papercut.Core.Domain.Message;
-    using Papercut.WebUI.Controllers;
+    using Papercut.Service.Web.Controllers;
     using Newtonsoft.Json.Serialization;
 
     class PapercutNativeMessageRepository
