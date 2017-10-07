@@ -27,7 +27,6 @@ namespace Papercut.Service.Services
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Network;
     using Papercut.Network.Protocols;
     using Papercut.Network.Smtp;
     using Papercut.Service.Helpers;
@@ -39,8 +38,6 @@ namespace Papercut.Service.Services
         readonly IAppMeta _applicationMetaData;
 
         readonly ILogger _logger;
-
-        readonly IServer _papercutServer;
 
         readonly IMessageBus _messageBus;
 
@@ -60,7 +57,6 @@ namespace Papercut.Service.Services
             _logger = logger;
             _messageBus = messageBus;
             _smtpServer = serverFactory(ServerProtocolType.Smtp);
-            _papercutServer = serverFactory(ServerProtocolType.Papercut);
         }
 
         public void Handle(SmtpServerBindEvent @event)
@@ -89,25 +85,6 @@ namespace Papercut.Service.Services
             this._messageBus.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
 
-            _papercutServer.BindObservable(
-                PapercutClient.Localhost,
-                PapercutClient.ServerPort,
-                TaskPoolScheduler.Default)
-                .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
-                .Subscribe(
-                    (u) =>
-                    {
-                        /* next is not used */
-                    },
-                    (e) =>
-                    _logger.Warning(
-                        e,
-                        "Unable to Create Papercut Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                        PapercutClient.Localhost,
-                        PapercutClient.ServerPort),
-                    // on complete
-                    () => { });
-
             _smtpServer.BindObservable(_serviceSettings.IP,_serviceSettings.Port, TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(
@@ -128,14 +105,12 @@ namespace Papercut.Service.Services
 
         public void Stop()
         {
-            _papercutServer.Stop();
             _smtpServer.Stop();
             _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
         }
 
         public void Dispose()
         {
-            this._papercutServer?.Dispose();
             this._smtpServer?.Dispose();
         }
     }

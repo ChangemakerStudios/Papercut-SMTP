@@ -41,11 +41,6 @@ namespace Papercut.Network
                 .Keyed<IProtocol>(ServerProtocolType.Smtp)
                 .InstancePerDependency();
 
-            builder.RegisterType<PapercutProtocol>()
-                .Keyed<IProtocol>(ServerProtocolType.Papercut)
-                .InstancePerDependency();
-
-            builder.RegisterType<PapercutClient>().AsSelf().InstancePerDependency();
             //builder.RegisterType<SmtpClient>().AsSelf().InstancePerDependency();
 
             // register smtp commands
