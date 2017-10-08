@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2017 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ namespace Papercut.DesktopService
     using Papercut.Service.Web.Controllers;
     using Newtonsoft.Json.Serialization;
     using Papercut.DesktopService.Events;
+    using Microsoft.AspNetCore.Mvc;
+    using System.IO;
+    using System.Collections.Generic;
 
     class MessageRepositoryProxy
     {
@@ -64,6 +67,44 @@ namespace Papercut.DesktopService
             return await RespondOK(response);
         }
 
+        public async Task<byte[]> DownloadRawMessage(string msgId)
+        {
+            if (WebMsgCtrl == null)
+            {
+                return new byte[0];
+            }
+            
+            var result = WebMsgCtrl.DownloadRaw(msgId);
+            var fileResult = result as FileStreamResult;
+            return await ToByteArray(fileResult.FileStream);
+        }
+
+        public async Task<byte[]> DownloadSection(string inputStr)
+        {
+            if (WebMsgCtrl == null)
+            {
+                return new byte[0];
+            }
+
+            var parameters = JsonConvert.DeserializeObject<List<string>>(inputStr);            
+            var result = WebMsgCtrl.DownloadSection(parameters[0], int.Parse(parameters[1]));
+            var fileResult = result as FileStreamResult;
+            return await ToByteArray(fileResult.FileStream);
+        }
+
+        public async Task<byte[]> DownloadSectionContent(string inputStr)
+        {
+            if (WebMsgCtrl == null)
+            {
+                return new byte[0];
+            }
+
+            var parameters = JsonConvert.DeserializeObject<List<string>>(inputStr);            
+            var result = WebMsgCtrl.DownloadSectionContent(parameters[0], parameters[1]);
+            var fileResult = result as FileStreamResult;
+            return await ToByteArray(fileResult.FileStream);
+        }
+
         public async Task<TransformedHttpResponse> DeleteAll()
         {
             if (WebMsgCtrl == null)
@@ -100,6 +141,17 @@ namespace Papercut.DesktopService
                 Status = 200,
                 Content = JsonConvert.SerializeObject(val, camelCaseJsonSettings)
             });
+        }
+
+        async Task<byte[]> ToByteArray(Stream stream){
+            if(!stream.CanRead){
+                return new byte[0];
+            }
+
+            using(var ms = new MemoryStream()){
+                await stream.CopyToAsync(ms);
+                return ms.ToArray();
+            }
         }
     }
 
