@@ -11,7 +11,7 @@ papercutApp.directive('targetBlank', function () {
 });
 
 
-papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout) {
+papercutApp.directive('bodyHtml', ['$sce', '$timeout', 'nativeEmbededContent', function ($sce, $timeout, nativeEmbededContent) {
     return {
         link: function (scope, element, attrs) {
             element.attr('src', "about:blank");
@@ -28,7 +28,8 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
 
                 var body = $(element).contents().find('body');
                 body.empty().append( htmlContent );
-
+                nativeEmbededContent.replaceAllImages(body);
+                
                 $timeout(function () {
                     element.css('height', $(body[0].ownerDocument.documentElement).height() + 100);
                 }, 50);

@@ -60,10 +60,10 @@ namespace Papercut.DesktopService
             return await MailMessageRepo.DownloadSection(inputStr);
         }
 
-        static async Task<object> DownloadSectionContent(object input)
+        static async Task<object> GetContentAsBase64(object input)
         {
             var inputStr = input?.ToString();
-            return await MailMessageRepo.DownloadSectionContent(inputStr);
+            return await MailMessageRepo.GetContentAsBase64(inputStr);
         }
 
         static async Task<object> OnNewMessageArrives(object input)
@@ -130,7 +130,7 @@ namespace Papercut.DesktopService
                 GetMessageDetail = (Func<object, Task<object>>) GetDetail,
                 DownloadRawMessage = (Func<object, Task<object>>) DownloadRaw,
                 DownloadMessageSection = (Func<object, Task<object>>) DownloadSection,
-                DownloadMessageSectionContent = (Func<object, Task<object>>) DownloadSectionContent,
+                GetContentAsBase64 = (Func<object, Task<object>>) GetContentAsBase64,
                 OnNewMessageArrives = (Func<object, Task<object>>) OnNewMessageArrives,
                 StopService = (Func<object, Task<object>>) StopPapercut
             };

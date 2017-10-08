@@ -19,7 +19,8 @@ module.exports = function createWindow (nativeService, onClosed) {
         listAll: nativeService.ListAllMessages,
         deleteAll: nativeService.DeleteAllMessages,
         get: nativeService.GetMessageDetail,
-        onNewMessage: nativeService.OnNewMessageArrives
+        onNewMessage: nativeService.OnNewMessageArrives,
+        getBase64Content: nativeService.GetContentAsBase64
     };
   
     if (process.env.DEBUG_PAPERCUT || process.env.DEBUG_PAPERCUT_APP) {

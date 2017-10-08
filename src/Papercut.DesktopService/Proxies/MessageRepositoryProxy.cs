@@ -92,17 +92,20 @@ namespace Papercut.DesktopService
             return await ToByteArray(fileResult.FileStream);
         }
 
-        public async Task<byte[]> DownloadSectionContent(string inputStr)
+        public async Task<string> GetContentAsBase64(string inputStr)
         {
             if (WebMsgCtrl == null)
             {
-                return new byte[0];
+                return string.Empty;
             }
 
             var parameters = JsonConvert.DeserializeObject<List<string>>(inputStr);            
             var result = WebMsgCtrl.DownloadSectionContent(parameters[0], parameters[1]);
-            var fileResult = result as FileStreamResult;
-            return await ToByteArray(fileResult.FileStream);
+
+            var fileStreamResult = (result as FileStreamResult);
+            var bytes = await ToByteArray(fileStreamResult.FileStream);
+            var base64 = Convert.ToBase64String(bytes);
+            return string.Concat("data:", fileStreamResult.ContentType, ";base64,", base64);
         }
 
         public async Task<TransformedHttpResponse> DeleteAll()
