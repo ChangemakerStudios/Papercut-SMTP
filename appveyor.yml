@@ -4,28 +4,34 @@ version: 5.0.{build}
 
 configuration: Release
 
+install:
+  - docker version
+  - ps: Install-Product node 6
+
 before_build:
-  - nuget restore
+  - appveyor-retry dotnet restore
+
+build_script:
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service
+  - dotnet publish -c %CONFIGURATION% -r win10-x64 --self-contained
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop
+  - yarn install
+  - dotnet build -c %CONFIGURATION%
+  - cd %APPVEYOR_BUILD_FOLDER%\test\Papercut.WebUI.Tests
+  - dotnet test
 
 after_build:
-  # Papercut
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release # md plugins
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip plugins
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe.*
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Readme.eml
-  - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.zip
   # Papercut Service
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release # md plugins
-  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip plugins  
-  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip Papercut.Service.*
-  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Install-Papercut-Service.bat
-  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Uninstall-Papercut-Service.bat
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\netcoreapp1.1\win10-x64\publish\
+  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip *.*
   - appveyor PushArtifact PapercutService.%APPVEYOR_BUILD_VERSION%.zip
-  # Papercut Installer bundle
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Bootstrapper\bin\Release 
-  - appveyor PushArtifact Papercut.Setup.exe
+
+  # Papercut Service Docker Image
   - cd %APPVEYOR_BUILD_FOLDER%
-  # Chocolately
-  - nuget pack chocolately\Papercut.nuspec -version %APPVEYOR_BUILD_VERSION%
-  - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.nupkg
+  - ps: .\Docker\build.ps1
+
+  # todo: Papercut Electron Desktop packing
+  # todo: Build & pack plugins
+
+cache:
+ - "%LOCALAPPDATA%/Yarn"
