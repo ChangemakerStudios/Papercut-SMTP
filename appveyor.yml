@@ -17,8 +17,6 @@ build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop
   - yarn install
   - dotnet build -c %CONFIGURATION%
-  - cd %APPVEYOR_BUILD_FOLDER%\test\Papercut.WebUI.Tests
-  - dotnet test
 
 after_build:
   # Papercut Service
@@ -32,6 +30,10 @@ after_build:
 
   # todo: Papercut Electron Desktop packing
   # todo: Build & pack plugins
+
+test_script:
+  - cd %APPVEYOR_BUILD_FOLDER%\test\Papercut.WebUI.Tests
+  - dotnet test
 
 cache:
  - "%LOCALAPPDATA%/Yarn"
