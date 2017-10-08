@@ -21,6 +21,11 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
                 htmlContent = stripDangerousTags(htmlContent);
                 htmlContent = replaceContentLinks(htmlContent, messageId);
 
+                var head = $(element).contents().find('head');
+                var hrefBase = document.createElement('base');
+                hrefBase.target = '_blank';
+                head.append(hrefBase);
+
                 var body = $(element).contents().find('body');
                 body.empty().append( htmlContent );
 
