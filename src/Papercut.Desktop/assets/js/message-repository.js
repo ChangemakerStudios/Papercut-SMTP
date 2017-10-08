@@ -35,13 +35,12 @@ papercutApp.factory('messageRepository', function($http, $q){
     }
 
     function createNativeRepo(){
-        var win = require('electron').remote.getCurrentWindow();
-        const nativeRepo = win.nativeMessageRepo;
+        var nativeRepo = window.nativeWindow.nativeMessageRepo;
 
         function wrapPromise(nativeCall, stringifyArgument){
             return function(){
-                const task = $q.defer();
-                let args = stringifyArgument ? [JSON.stringify(arguments[0])] : [arguments[0]];
+                var task = $q.defer();
+                var args = stringifyArgument ? [JSON.stringify(arguments[0])] : [arguments[0]];
                 args.push(function(err, result){
                     if(err !== null){
                         task.reject(err);
@@ -73,21 +72,6 @@ papercutApp.factory('messageRepository', function($http, $q){
             onNewMessage: wrapPromise(nativeRepo.onNewMessage, false)
         }
     }
-
-    function isElectron(){
-        // check if in electron: https://github.com/cheton/is-electron/blob/master/index.js
-
-        if (typeof window !== 'undefined' && typeof window.process === 'object' && window.process.type === 'renderer') {
-            return true;
-        }
     
-        // Main process
-        if (typeof process !== 'undefined' && typeof process.versions === 'object' && !!process.versions.electron) {
-            return true;
-        }
-
-        return false;
-    }
-    
-    return isElectron() ? createNativeRepo() : createHttpBasedRepo();
+    return window.nativeFeatures.isNative() ? createNativeRepo() : createHttpBasedRepo();
 });

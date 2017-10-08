@@ -24,6 +24,11 @@ if "%1" == "debug" (
     SET DEBUG_PAPERCUT=TRUE
 )
 
+SET DEBUG_PAPERCUT_APP=
+if "%1" == "debugapp" (
+    SET DEBUG_PAPERCUT_APP=TRUE
+)
+
 rem pushd .\Papercut.Service     rem %CD%
 rem SET CORECLR_DIR=C:\Program Files\dotnet\shared\Microsoft.NETCore.App\1.1.2
 rem popd
