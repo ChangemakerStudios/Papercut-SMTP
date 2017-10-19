@@ -13,8 +13,7 @@ var mailOptions = {
   text: 'That was easy!'
 };
 
-console.log('process.env.DEBUG_PAPERCUT', process.env.DEBUG_PAPERCUT);
-return;
+
 transporter.sendMail(mailOptions, function(error, info){
   if (error) {
     console.log(error);
