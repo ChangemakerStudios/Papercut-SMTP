@@ -6,7 +6,7 @@
     <StartupObject />
   </PropertyGroup>
   <PropertyGroup>
-  <DefaultItemExcludes>*.dll;*.pdb;Papercut.Service.json;*.config;*.xml;*.lock;*.dll.config;.npmrc;*.deps.json;package-lock.json;*.runtimeconfig.dev.json;*.runtimeconfig.json;node_modules\**\*.*;Incoming\**\*.*;Logs\**\*.*;runtimes\**\*.*;</DefaultItemExcludes>
+  <DefaultItemExcludes>*.dll;*.pdb;Papercut.Service.json;*.config;*.xml;*.lock;*.dll.config;.npmrc;*.bat;*.sh;*.js;*.deps.json;package-lock.json;*.runtimeconfig.dev.json;*.runtimeconfig.json;node_modules\**\*.*;Incoming\**\*.*;Logs\**\*.*;runtimes\**\*.*;</DefaultItemExcludes>
 </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Edge.js" Version="8.2.1" />

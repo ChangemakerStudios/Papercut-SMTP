@@ -47,3 +47,4 @@ src/Papercut.Desktop/*.deps.json
 src/Papercut.Desktop/*.runtimeconfig.json
 src/Papercut.Desktop/Logs/
 src/Papercut.Desktop/Incoming/
+src/Papercut.Desktop/\\Incoming/
