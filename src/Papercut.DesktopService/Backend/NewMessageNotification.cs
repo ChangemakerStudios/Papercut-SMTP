@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright � 2008 - 2012 Ken Robertson
+// Copyright � 2013 - 2017 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,22 +13,15 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
-namespace Papercut.DesktopService.Events
+
+namespace Papercut.DesktopService.Backend
 {
-    using Papercut.Common.Domain;
-    using System;
-    using Papercut.Core.Domain.Message;
-
-    class NewMessageRecieviedEvent : IEventHandler<NewMessageEvent>
+    class NewMailMessageNotification
     {
-        public event EventHandler<NewMessageEvent> NewMessageReceived;
-
-
-        public void Handle(NewMessageEvent @event)
-        {
-            NewMessageReceived?.Invoke(this, @event);
-        }
+        public string Subject { get; set; }
+        public string From { get; set; }
+        public string Id { get; set; }
     }
 }

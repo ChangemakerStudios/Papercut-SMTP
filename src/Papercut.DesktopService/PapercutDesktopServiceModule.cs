@@ -27,6 +27,7 @@ namespace Papercut.Network
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Message;
     using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Service.Web.Hosting;
 
     public class PapercutDesktopServiceModule : Module, IDiscoverableModule
     {
@@ -34,7 +35,6 @@ namespace Papercut.Network
 
         protected override void Load(ContainerBuilder builder)
         {
-
             builder.RegisterType<NewMessageRecieviedEvent>()
                 .AsSelf()
                 .As<IEventHandler<NewMessageEvent>>()
@@ -45,6 +45,10 @@ namespace Papercut.Network
                 .As<IEventHandler<PapercutServiceReadyEvent>>()
                 .SingleInstance();
 
+            builder.RegisterType<WebServerReadyEvent>()
+                .AsSelf()
+                .As<IEventHandler<PapercutWebServerReadyEvent>>()
+                .SingleInstance();
         }
     }
 }

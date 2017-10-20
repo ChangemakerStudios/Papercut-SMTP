@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Web
+namespace Papercut.Service.Web.Hosting
 {
     using System;
     using Microsoft.AspNetCore.Hosting;
@@ -24,16 +24,18 @@ namespace Papercut.Service.Web
     using Autofac;
     
     using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.PlatformAbstractions;
     using Autofac.Extensions.DependencyInjection;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+    using Papercut.Service.Web.Hosting.InProcess;
 
     internal class WebStartup
     {
         public static ILifetimeScope Scope { get; set; }
-        public static void Start(ushort httpPort, CancellationToken cancellation)
+        public static IWebHost Start(ushort httpPort, CancellationToken cancellation)
         {
             var hostBuilder = new WebHostBuilder();
             hostBuilder
@@ -43,8 +45,23 @@ namespace Papercut.Service.Web
                 .UseUrls($"http://*:{httpPort}");
 
             var host = hostBuilder.Build();
-            host.Run(cancellation);
+            Task.Factory.StartNew(() => {
+                host.Run(cancellation);
+            });
+            return host;
         }
+
+         public static HttpServer StartInProcessServer(CancellationToken cancellation, string env = "Production")
+         {
+             var hostBuilder = new WebHostBuilder();
+             hostBuilder
+                 .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
+                 .UseEnvironment(env)
+                 .UseStartup<WebStartup>();
+ 
+             return new HttpServer(hostBuilder);
+         }
+ 
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {

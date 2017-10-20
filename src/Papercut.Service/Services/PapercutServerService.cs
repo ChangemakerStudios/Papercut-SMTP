@@ -31,8 +31,8 @@ namespace Papercut.Service.Services
     using Papercut.Service.Helpers;
 
     using Serilog;
-    using Papercut.Service.Web;
     using System.Threading.Tasks;
+    using Papercut.Service.Web.Hosting;
 
     public class PapercutServerService : IEventHandler<SmtpServerBindEvent>, IDisposable
     {
@@ -104,7 +104,7 @@ namespace Papercut.Service.Services
                         _serviceSettings.Port),
                     // on complete
                     () => {
-                            var _ = Task.Factory.StartNew(() => this._webServer.Start());
+                            this._webServer.Start();
                             this._messageBus.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData });
                         });
         }

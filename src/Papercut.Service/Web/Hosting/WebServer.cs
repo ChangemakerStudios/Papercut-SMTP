@@ -16,18 +16,17 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Web
+namespace Papercut.Service.Web.Hosting
 {
     using System;
     using Microsoft.AspNetCore.Http;
 
 
     using Autofac;
-
     using Common.Domain;
-
     using Core.Domain.Settings;
     using System.Threading;
+    using System.Net.Http;
 
     public class WebServer : IDisposable
     {
@@ -36,7 +35,6 @@ namespace Papercut.Service.Web
         readonly IMessageBus messageBus;
 
         readonly ushort httpPort;
-        const string BaseAddress = "http://localhost:{0}";
         const ushort DefaultHttpPort = 37408;
 
         CancellationTokenSource serverCancellation;
@@ -52,19 +50,25 @@ namespace Papercut.Service.Web
 
         public void Start()
         {
-            if (httpPort <= 0)
-            {
-                return;
-            }
-
             serverCancellation = new CancellationTokenSource();
             WebStartup.Scope = scope;
-            WebStartup.Start(httpPort, serverCancellation.Token);
+            
+            HttpClient client;
+            if (httpPort <= 0)
+            {
+                var server = WebStartup.StartInProcessServer(serverCancellation.Token);
+                client = server.CreateClient();
+            }else{
+                WebStartup.Start(httpPort, serverCancellation.Token);
+                client = new HttpClient(){ BaseAddress = new Uri($"http://localhost:{httpPort}") };
+            }
+
+            messageBus.Publish(new PapercutWebServerReadyEvent{ HttpClient = client });
         }
 
         public void Stop()
         {
-            if (httpPort <= 0 || serverCancellation == null)
+            if (serverCancellation == null)
             {
                 return;
             }

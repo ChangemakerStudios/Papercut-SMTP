@@ -26,7 +26,7 @@ namespace Papercut.Service
     using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Service.Helpers;
     using Module = Autofac.Module;
-    using Papercut.Service.Web;
+    using Papercut.Service.Web.Hosting;
 
     public class PapercutServiceModule : Module, IDiscoverableModule
     {

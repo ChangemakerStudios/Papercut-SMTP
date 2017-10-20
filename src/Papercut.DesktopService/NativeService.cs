@@ -21,60 +21,65 @@ namespace Papercut.DesktopService
     using Autofac;
     using Papercut.Core.Infrastructure.Container;
     using Papercut.DesktopService.Events;
+    using Papercut.DesktopService.Backend;
     using Papercut.Message;
     using System;
     using System.Reflection;
     using System.Threading.Tasks;
-
+    using System.Net.Http;
+    using Newtonsoft.Json;
+    using System.IO;
 
     public class NativeService
     {
-        static MessageRepositoryProxy MailMessageRepo { get; set; }
+        static HttpClient _httpService;
+        static NewMessageRecieviedEvent _newMessageEventHolder;
 
-        static async Task<object> ListAll(object input)
+        static async Task<object> RequestResource(dynamic input)
         {
-            var paramters = input?.ToString();
-            return await MailMessageRepo.ListAll(paramters);
-        }
+            if(_httpService == null){
+                return UIHttpResponse.NotReady;
+            }
 
-        static async Task<object> DeleteAll(object input)
-        {
-            return await MailMessageRepo.DeleteAll();
-        }
+            var request = new UIHttpRequest{
+                Method = (HttpMethod)Enum.Parse(typeof(HttpMethod), (string)input.method, true),
+                Path = (string)input.path,
+                ContentType = (string)input.contentType,
+                Content = (byte[])input.content
+            };
+            var httpRequestMessage = new HttpRequestMessage(request.Method, request.Path);
+            if(request.Content != null && request.Content.Length > 0){
+                httpRequestMessage.Content = new ByteArrayContent(request.Content);
+            }
 
-        static async Task<object> GetDetail(object input)
-        {
-            var id = input?.ToString();
-            return await MailMessageRepo.GetDetail(id);
-        }
+            var response = await _httpService.SendAsync(httpRequestMessage);
+            var uiResponse = new UIHttpResponse{
+                Status = (int)response.StatusCode,
+                ContentType = response.Content?.Headers.ContentType.MediaType
+            };
 
-        static async Task<object> DownloadRaw(object input)
-        {
-            var id = input?.ToString();
-            return await MailMessageRepo.DownloadRawMessage(id);
-        }
-
-        static async Task<object> DownloadSection(object input)
-        {
-            var inputStr = input?.ToString();
-            return await MailMessageRepo.DownloadSection(inputStr);
-        }
-
-        static async Task<object> GetContentAsBase64(object input)
-        {
-            var inputStr = input?.ToString();
-            return await MailMessageRepo.GetContentAsBase64(inputStr);
+            if(response.Content != null && response.Content.Headers.ContentLength > 0){
+                uiResponse.Content = await response.Content.ReadAsByteArrayAsync();
+            }
+            return uiResponse;
         }
 
         static async Task<object> OnNewMessageArrives(object input)
         {
             var callback = input as Func<object, Task<object>>;
-            if (callback != null)
+            if (callback != null && _newMessageEventHolder != null)
             {
-                return await MailMessageRepo.OnNewMessageArrives(async (ev) =>
-                {
-                    await callback(ev);
-                });
+                _newMessageEventHolder.NewMessageReceived += (s, e) => {
+                    var msg = new NewMailMessageNotification
+                    {
+                        Subject = e.NewMessage.DisplayText,
+                        Id = e.NewMessage.Name
+                    };
+
+                    callback(msg);
+                };
+
+                return await Task.FromResult((object)0);
             }
 
             return await Task.FromResult((object)0);
@@ -103,10 +108,12 @@ namespace Papercut.DesktopService
                     PapercutCoreModule.SpecifiedEntryAssembly = entryPointAssembly;
                     Papercut.Service.Program.StartPapercutService((container) =>
                     {
-                        var repo = container.Resolve<MessageRepository>();
-                        var loader = container.Resolve<MimeMessageLoader>();
-
-                        NativeService.MailMessageRepo = new MessageRepositoryProxy(new Service.Web.Controllers.MessagesController(repo, loader), container.Resolve<NewMessageRecieviedEvent>());
+                        NativeService._newMessageEventHolder = container.Resolve<NewMessageRecieviedEvent>();
+                        container.Resolve<WebServerReadyEvent>().ServiceReady += (sender, e) =>
+                        {
+                            NativeService._httpService = e.HttpClient;
+                        };
+                        
                         container.Resolve<ServiceReadyEvent>().ServiceReady += (sender, e) =>
                         {
                             _startupProcess.SetResult(NativeService.ExportAll());
@@ -125,12 +132,7 @@ namespace Papercut.DesktopService
         static object ExportAll() {
             return new
             {
-                ListAllMessages = (Func<object, Task<object>>) ListAll,
-                DeleteAllMessages = (Func<object, Task<object>>) DeleteAll,
-                GetMessageDetail = (Func<object, Task<object>>) GetDetail,
-                DownloadRawMessage = (Func<object, Task<object>>) DownloadRaw,
-                DownloadMessageSection = (Func<object, Task<object>>) DownloadSection,
-                GetContentAsBase64 = (Func<object, Task<object>>) GetContentAsBase64,
+                RequestResource = (Func<object, Task<object>>) RequestResource,
                 OnNewMessageArrives = (Func<object, Task<object>>) OnNewMessageArrives,
                 StopService = (Func<object, Task<object>>) StopPapercut
             };

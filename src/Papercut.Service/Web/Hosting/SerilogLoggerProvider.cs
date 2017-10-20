@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Web
+namespace Papercut.Service.Web.Hosting
 {
     using System;
     using Microsoft.Extensions.Logging;

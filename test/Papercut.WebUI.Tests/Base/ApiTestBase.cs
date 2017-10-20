@@ -20,16 +20,26 @@ namespace Papercut.WebUI.Test.Base
 {
     using System;
     using System.Net.Http;
+    using Autofac;
+
+    using Core.Domain.Application;
+    using Core.Domain.Paths;
+    using Core.Infrastructure.Container;
+
+    using WebServerFacts;
+    using System.Reflection;
     using Newtonsoft.Json;
+    using System.Threading;
     using Papercut.Service.Web;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.TestHost;
-    using Microsoft.Extensions.PlatformAbstractions;
+    using Papercut.Service.Web.Hosting;
+    using Papercut.Core.Domain.Paths;
+    using System.IO;
 
     public class ApiTestBase : TestBase, IDisposable
     {
         protected string BaseAddress;
         protected readonly HttpClient Client;
+        CancellationTokenSource cancellation;
 
         public ApiTestBase()
         {
@@ -41,19 +51,23 @@ namespace Papercut.WebUI.Test.Base
         {
             WebStartup.Scope = this.Scope;
 
-            var hostBuilder = new WebHostBuilder()
-                .UseContentRoot(PlatformServices.Default.Application.ApplicationBasePath)
-                .UseEnvironment("Development")
-                .UseStartup<WebStartup>();
-            
-            var testServer = new TestServer(hostBuilder);
+            cancellation = new CancellationTokenSource();
+            var testServer = WebStartup.StartInProcessServer(cancellation.Token, "Development");
             return testServer.CreateClient();
         }
 
         void IDisposable.Dispose()
         {
             Client.Dispose();
+            
+            foreach(var path in Scope.Resolve<IMessagePathConfigurator>().LoadPaths){
+                if(Directory.Exists(path)){
+                    Directory.Delete(path, true);
+                }
+            }
+
             Scope.Dispose();
+            cancellation.Cancel();
         }
 
 

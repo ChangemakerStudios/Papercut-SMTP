@@ -15,20 +15,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using Papercut.Common.Domain;
+using Papercut.Core.Infrastructure.Lifecycle;
+using System;
+using Papercut.Service.Web.Hosting;
+
 namespace Papercut.DesktopService.Events
 {
-    using Papercut.Common.Domain;
-    using System;
-    using Papercut.Core.Domain.Message;
-
-    class NewMessageRecieviedEvent : IEventHandler<NewMessageEvent>
+    class WebServerReadyEvent : IEventHandler<PapercutWebServerReadyEvent>
     {
-        public event EventHandler<NewMessageEvent> NewMessageReceived;
-
-
-        public void Handle(NewMessageEvent @event)
+        public event EventHandler<PapercutWebServerReadyEvent> ServiceReady;
+        
+        public void Handle(PapercutWebServerReadyEvent readyEvent)
         {
-            NewMessageReceived?.Invoke(this, @event);
+            ServiceReady?.Invoke(this, readyEvent);
         }
     }
 }
