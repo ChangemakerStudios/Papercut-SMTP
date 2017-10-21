@@ -5,8 +5,9 @@ const url = require('url');
 const fs = require('fs');
 
 module.exports = function createWindow (nativeService, onClosed) {
+    registerPapercutProtocol(electron.protocol, nativeService);
     console.log('Creating the window...');
-  
+
     const mainWindow = new electron.BrowserWindow({ width: 1020, height: 600, minWidth: 1020, minHeight: 450 });
     mainWindow.setTitle('Papercut');
     mainWindow.setMenu(null);
@@ -15,12 +16,8 @@ module.exports = function createWindow (nativeService, onClosed) {
       protocol: 'file:',
       slashes: true
     }));
-    mainWindow.nativeMessageRepo = {
-        listAll: nativeService.ListAllMessages,
-        deleteAll: nativeService.DeleteAllMessages,
-        get: nativeService.GetMessageDetail,
-        onNewMessage: nativeService.OnNewMessageArrives,
-        getBase64Content: nativeService.GetContentAsBase64
+    mainWindow.nativeAPI = {
+        onNewMessage: nativeService.OnNewMessageArrives
     };
   
     if (process.env.DEBUG_PAPERCUT || process.env.DEBUG_PAPERCUT_APP) {
@@ -31,11 +28,36 @@ module.exports = function createWindow (nativeService, onClosed) {
     });
 
     var navigateHandler = createNavigateHandler(mainWindow, nativeService);
-    mainWindow.webContents.on('will-navigate', navigateHandler)
-    mainWindow.webContents.on('new-window', navigateHandler)
+    mainWindow.webContents.on('will-navigate', navigateHandler);
+    mainWindow.webContents.on('new-window', navigateHandler);
     return mainWindow;
   }
 
+  function registerPapercutProtocol(protocol, nativeService){
+    protocol.registerBufferProtocol('papercut', (req, cb) => {
+        const absolutePath = req.url.replace('://', ':///');
+        const uri = url.parse(absolutePath);
+        const hasContent = !!(req.uploadData && req.uploadData.length);
+
+        var request = {
+            method : req.method,
+            path : uri.path,
+            content :  hasContent ? req.uploadData[0].bytes : new Buffer(0),
+            contentType : hasContent ? "application/json" : null
+        };
+        
+        console.log('requsting resource ' + absolutePath, request);
+        nativeService.RequestResource(request, function(err, result){
+            if(err || result.error){
+                console.warn(err || result.error);
+                cb(null);
+                return;
+            }
+            
+            cb(result.value.status < 400 ? {mimeType: result.value.contentType, data: result.value.content} : null);
+        });
+    });
+  }
 
   function createNavigateHandler(browserWindow, nativeService) {
     return function(e, href){
@@ -61,11 +83,12 @@ module.exports = function createWindow (nativeService, onClosed) {
     const rawMessageCall = matchRawMessage(u);
     const sectionCall = matchMessageSection(u);
 
+    console.log('handling ' + u);
     if(rawMessageCall !== null){
         const msgId = rawMessageCall[1];
-        nativeService.DownloadRawMessage(msgId, function(err, result){
-            if(!err){
-                saveBuffer(browserWindow, result, 'Save mail message', msgId);
+        nativeService.RequestResource({ method: 'GET', path: url.parse(u).path, content: null, contentType: null }, function(err, result){
+            if(!err && !result.error && result.value.status < 400){
+                saveBuffer(browserWindow, result.value.content, 'Save mail message', msgId);
             }
         });
         return;
@@ -74,9 +97,10 @@ module.exports = function createWindow (nativeService, onClosed) {
     if(sectionCall !== null){
         const msgId = sectionCall[1];
         const sectionIndex = sectionCall[2];
-        nativeService.DownloadMessageSection(JSON.stringify([ msgId, sectionIndex ]), function(err, result){
-            if(!err){
-                saveBuffer(browserWindow, result, 'Save section', msgId + '-' + sectionIndex);
+
+        nativeService.RequestResource({ method: 'GET', path: url.parse(u).path, content: null, contentType: null }, function(err, result){
+            if(!err && !result.error && result.value.status < 400){
+                saveBuffer(browserWindow, result.value.content, 'Save section', msgId + '-' + sectionIndex);
             }
         });
         return;

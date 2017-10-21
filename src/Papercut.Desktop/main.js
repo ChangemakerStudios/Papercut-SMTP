@@ -10,6 +10,7 @@ let mainWindow;
 let nativeService;
 
 app.setName('Papercut');
+electron.protocol.registerStandardSchemes(['papercut']);
 app.on('ready', () =>{
   launchSmtpService((result) => {
     nativeService = result;

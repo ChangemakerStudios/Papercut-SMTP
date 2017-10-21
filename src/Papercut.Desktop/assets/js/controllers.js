@@ -1,4 +1,5 @@
-var papercutApp = angular.module('papercutApp', []);
+var papercutApp = angular.module('papercutApp', [])
+    .config( ['$compileProvider', function( $compileProvider ) { $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|papercut):/);}]);
 
 
 papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, messageRepository) {
@@ -153,6 +154,10 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   $scope.date = function(timestamp) {
   	return (new Date(timestamp)).toString();
   };
+
+  $scope.linkPath =  function(api){
+      return window.nativeFeatures.linkPath(api);
+  }
 
 
   function startEvent(name, args, glyphicon) {

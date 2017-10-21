@@ -1,6 +1,8 @@
 process.env.EDGE_USE_CORECLR = 1;
 if(process.platform === 'darwin'){
   process.env.EDGE_NATIVE = '/Users/jjchen/Projects/Papercut/src/Papercut.Desktop/node_modules/electron-edge/lib/native/edge_coreclr.node';
+  process.env.CORECLR_DIR = '/usr/local/share/dotnet/shared/Microsoft.NETCore.App/1.1.2/';
+  process.env.CORECLR_VERSION = '1.1.2';   // this works
   process.env.EDGE_APP_ROOT = require('path').join(__dirname, '../');
 }else if(process.platform === 'win32'){
   // electron-edge is trying to find a CoreCLR runtime, it tends to find a latest version

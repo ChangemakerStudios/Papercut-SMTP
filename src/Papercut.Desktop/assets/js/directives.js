@@ -11,7 +11,7 @@ papercutApp.directive('targetBlank', function () {
 });
 
 
-papercutApp.directive('bodyHtml', ['$sce', '$timeout', 'nativeEmbededContent', function ($sce, $timeout, nativeEmbededContent) {
+papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout) {
     return {
         link: function (scope, element, attrs) {
             element.attr('src', "about:blank");
@@ -28,7 +28,6 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', 'nativeEmbededContent', f
 
                 var body = $(element).contents().find('body');
                 body.empty().append( htmlContent );
-                nativeEmbededContent.replaceAllImages(body);
                 
                 $timeout(function () {
                     element.css('height', $(body[0].ownerDocument.documentElement).height() + 100);
@@ -47,7 +46,7 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', 'nativeEmbededContent', f
             }
 
             function replaceContentLinks(html, messageId) {
-                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, '/api/messages/' + messageId + '/contents/$1');
+                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, window.nativeFeatures.apiPath('/api/messages/' + messageId + '/contents/$1'));
             }
         }
     };

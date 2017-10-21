@@ -68,7 +68,6 @@ namespace Papercut.Core.Infrastructure.Json
             if (!File.Exists(path)) return defaultValueFunc?.Invoke();
 
             string json = File.ReadAllText(path, textEncoding ?? Encoding.UTF8);
-
             return JsonConvert.DeserializeObject<T>(json, setting ?? _serializationSettings);
         }
 

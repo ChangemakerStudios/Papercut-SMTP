@@ -21,11 +21,11 @@ namespace Papercut.DesktopService.Backend
     class UIHttpResponse {
         public static UIHttpResponse NotReady = new UIHttpResponse
         {
-            Status = 503
+            status = 503
         };
 
-        public int Status {get;set;}
-        public byte[] Content {get;set;}
-        public string ContentType {get;set;}
+        public int status {get;set;}
+        public byte[] content {get;set;}
+        public string contentType {get;set;}
     }
 }

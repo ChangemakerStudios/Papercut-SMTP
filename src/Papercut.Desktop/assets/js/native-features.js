@@ -12,6 +12,20 @@ window.nativeFeatures = {
         }
 
         return false;
+    },
+    apiPath: function(api){
+        if(!this.isNative()){
+            return api;
+        }
+
+        return 'papercut://' + api;
+    },
+    linkPath: function(api){
+        if(!this.isNative()){
+            return api;
+        }
+
+        return 'file://' + api;
     }
 };
 

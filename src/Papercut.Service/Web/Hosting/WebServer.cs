@@ -33,8 +33,9 @@ namespace Papercut.Service.Web.Hosting
         readonly ILifetimeScope scope;
         readonly Serilog.ILogger logger;
         readonly IMessageBus messageBus;
+        readonly ISettingStore settingStore;
 
-        readonly ushort httpPort;
+        ushort httpPort;
         const ushort DefaultHttpPort = 37408;
 
         CancellationTokenSource serverCancellation;
@@ -42,14 +43,15 @@ namespace Papercut.Service.Web.Hosting
         public WebServer(ILifetimeScope scope, ISettingStore settingStore, IMessageBus messageBus, Serilog.ILogger logger)
         {
             this.scope = scope;
+            this.settingStore = settingStore;
             this.messageBus = messageBus;
             this.logger = logger;
-
-            httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
         }
 
         public void Start()
         {
+            httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
+
             serverCancellation = new CancellationTokenSource();
             WebStartup.Scope = scope;
             

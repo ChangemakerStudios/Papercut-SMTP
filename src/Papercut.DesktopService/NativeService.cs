@@ -27,8 +27,10 @@ namespace Papercut.DesktopService
     using System.Reflection;
     using System.Threading.Tasks;
     using System.Net.Http;
+    using System.Net.Http.Headers;
     using Newtonsoft.Json;
     using System.IO;
+    using System.Collections.Generic;
 
     public class NativeService
     {
@@ -41,25 +43,28 @@ namespace Papercut.DesktopService
                 return UIHttpResponse.NotReady;
             }
 
+            var parameters = input as IDictionary<string, object>;
+
             var request = new UIHttpRequest{
-                Method = (HttpMethod)Enum.Parse(typeof(HttpMethod), (string)input.method, true),
-                Path = (string)input.path,
-                ContentType = (string)input.contentType,
-                Content = (byte[])input.content
+                Method = new HttpMethod(((string)parameters["method"]).ToUpper()),
+                Path = (string)parameters["path"],
+                ContentType = (string)parameters["contentType"],
+                Content = (byte[])parameters["content"]
             };
             var httpRequestMessage = new HttpRequestMessage(request.Method, request.Path);
             if(request.Content != null && request.Content.Length > 0){
                 httpRequestMessage.Content = new ByteArrayContent(request.Content);
+                httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue(request.ContentType);
             }
 
             var response = await _httpService.SendAsync(httpRequestMessage);
             var uiResponse = new UIHttpResponse{
-                Status = (int)response.StatusCode,
-                ContentType = response.Content?.Headers.ContentType.MediaType
+                status = (int)response.StatusCode,
+                contentType = response.Content?.Headers.ContentType.MediaType
             };
 
             if(response.Content != null && response.Content.Headers.ContentLength > 0){
-                uiResponse.Content = await response.Content.ReadAsByteArrayAsync();
+                uiResponse.content = await response.Content.ReadAsByteArrayAsync();
             }
             return uiResponse;
         }
@@ -132,10 +137,30 @@ namespace Papercut.DesktopService
         static object ExportAll() {
             return new
             {
-                RequestResource = (Func<object, Task<object>>) RequestResource,
-                OnNewMessageArrives = (Func<object, Task<object>>) OnNewMessageArrives,
-                StopService = (Func<object, Task<object>>) StopPapercut
+                RequestResource = ExecuteSafely(RequestResource),
+                OnNewMessageArrives = ExecuteSafely(OnNewMessageArrives),
+                StopService = ExecuteSafely(StopPapercut)
             };
+        }
+
+        static Func<object, Task<object>> ExecuteSafely(Func<object, Task<object>> perform){
+            return (async (object input) => {
+                var result = new ExecutedResult();
+                try{
+                    result.value = await perform(input);
+                }catch(Exception ex){
+                    result.error = new {
+                        message = ex.Message,
+                        stack = ex.StackTrace
+                    };
+                }
+                return result;
+            });
+        }
+
+        class ExecutedResult{
+            public object value {get;set;}
+            public object error {get;set;}
         }
     }
 }

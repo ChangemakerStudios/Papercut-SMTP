@@ -37,7 +37,7 @@ namespace Papercut.Service.Helpers
 
         public string MessagePath
         {
-            get { return Settings.Get<string>("MessagePath", @"%BaseDirectory%\Incoming"); }
+            get { return Settings.Get<string>("MessagePath", @"%BaseDirectory%" + System.IO.Path.DirectorySeparatorChar + "Incoming"); }
             set { if (MessagePath != value) Settings.Set("MessagePath", value); }
         }
     }
