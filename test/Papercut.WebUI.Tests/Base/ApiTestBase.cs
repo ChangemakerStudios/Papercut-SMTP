@@ -59,13 +59,6 @@ namespace Papercut.WebUI.Test.Base
         void IDisposable.Dispose()
         {
             Client.Dispose();
-            
-            foreach(var path in Scope.Resolve<IMessagePathConfigurator>().LoadPaths){
-                if(Directory.Exists(path)){
-                    Directory.Delete(path, true);
-                }
-            }
-
             Scope.Dispose();
             cancellation.Cancel();
         }

@@ -92,7 +92,7 @@ namespace Papercut.WebUI.Test.MessageFacts
             {
                 existedMail.Subject = $"Test {i+1}";
                 this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
-                Thread.Sleep(10);
+                Thread.Sleep(1000);
             }
 
             var messageResponse = Get<MessageListResponse>("/api/messages?limit=2&start=3");

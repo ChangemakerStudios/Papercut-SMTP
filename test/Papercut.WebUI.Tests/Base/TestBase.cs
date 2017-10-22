@@ -27,6 +27,9 @@ namespace Papercut.WebUI.Test.Base
 
     using WebServerFacts;
     using System.Reflection;
+    using NUnit.Framework;
+    using System.IO;
+    using System.Linq;
 
     public class TestBase : IDisposable
     {
@@ -40,6 +43,15 @@ namespace Papercut.WebUI.Test.Base
         void IDisposable.Dispose()
         {
             Scope.Dispose();
+        }
+
+        [TearDown]
+        public void Cleanup(){
+            Scope.Resolve<IMessagePathConfigurator>()
+                .LoadPaths
+                .SelectMany(path => Directory.GetFiles(path))
+                .ToList()
+                .ForEach(File.Delete);
         }
 
         static IContainer BuildContainer(Action<ContainerBuilder> configurer = null)

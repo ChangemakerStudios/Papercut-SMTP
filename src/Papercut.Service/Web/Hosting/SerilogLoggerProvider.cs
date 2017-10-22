@@ -76,7 +76,9 @@ namespace Papercut.Service.Web.Hosting
             }
 
             var serilogLevel = levelMapping[logLevel];
-            var logString = formatter(state, exception);
+            var logString = formatter(state, exception)
+                                .Replace("{", "{{")
+                                .Replace("}", "}}");
             logger.Write(serilogLevel, exception, logString);
         }
 
