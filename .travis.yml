@@ -1,0 +1,29 @@
+language: csharp
+mono: none
+dist: trusty
+sudo: required
+dotnet: 1.0.4    # this is SDK version
+solution: Papercut.sln
+env:
+  - CONFIGURATION=Release
+install:
+  - nvm install 6.11.4
+  - nvm use 6.11.4
+script:
+ - cd $TRAVIS_BUILD_DIR
+ - dotnet restore
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Service
+ - dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64 --self-contained
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop
+ - yarn install
+ - dotnet build -c $CONFIGURATION 
+
+after_success:
+  # Papercut Service Docker Image
+  - cd $TRAVIS_BUILD_DIR
+  - ./Docker/build.sh
+
+  # todo: Papercut Electron Desktop packing
+  # todo: Build & pack plugins
+
+cache: yarn
