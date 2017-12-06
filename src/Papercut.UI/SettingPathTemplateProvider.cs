@@ -46,7 +46,7 @@ namespace Papercut
             {
 
                 return GetMessagePath()
-                    .Split(new[] { ';', ',' })
+                    .Split(';', ',')
                     .Select(s => s.Trim())
                     .Where(s => !string.IsNullOrWhiteSpace(s))
                     .Distinct();
@@ -74,7 +74,7 @@ namespace Papercut
             UpdatePathTemplates();
         }
 
-        public ObservableCollection<string> PathTemplates { get; private set; }
+        public ObservableCollection<string> PathTemplates { get; }
 
         void UpdatePathTemplates()
         {
