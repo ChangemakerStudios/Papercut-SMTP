@@ -43,7 +43,7 @@ namespace Papercut.Rules.Implementations
         [PasswordPropertyText]
         public string SmtpPassword
         {
-            get { return _smtpPassword; }
+            get => _smtpPassword;
             set
             {
                 if (value == _smtpPassword) return;
@@ -56,7 +56,7 @@ namespace Papercut.Rules.Implementations
         [DisplayName("SMTP Username")]
         public string SmtpUsername
         {
-            get { return _smtpUsername; }
+            get => _smtpUsername;
             set
             {
                 if (value == _smtpUsername) return;
@@ -69,7 +69,7 @@ namespace Papercut.Rules.Implementations
         [DisplayName("SMTP Port")]
         public int SmtpPort
         {
-            get { return _smtpPort; }
+            get => _smtpPort;
             set
             {
                 if (value == _smtpPort) return;
@@ -82,7 +82,7 @@ namespace Papercut.Rules.Implementations
         [DisplayName("SMTP Use SSL")]
         public bool SmtpUseSSL
         {
-            get { return _smtpUseSsl; }
+            get => _smtpUseSsl;
             set
             {
                 if (value.Equals(_smtpUseSsl)) return;
@@ -98,7 +98,7 @@ namespace Papercut.Rules.Implementations
         [DisplayName("SMTP Server")]
         public string SmtpServer
         {
-            get { return _smtpServer; }
+            get => _smtpServer;
             set
             {
                 if (value == _smtpServer) return;

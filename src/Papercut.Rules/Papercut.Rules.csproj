@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\ObservableExtensions.cs" />
+    <Compile Include="Helpers\RelayRuleExtensions.cs" />
     <Compile Include="PapercutRuleModule.cs" />
     <Compile Include="Implementations\BaseRelayRuleDispatch.cs" />
     <Compile Include="Implementations\ConditionalForwardRule.cs" />

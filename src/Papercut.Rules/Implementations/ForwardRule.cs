@@ -40,7 +40,7 @@ namespace Papercut.Rules.Implementations
         [Description("Forward From Email")]
         public string FromEmail
         {
-            get { return _fromEmail; }
+            get => _fromEmail;
             set
             {
                 if (value == _fromEmail) return;
@@ -54,7 +54,7 @@ namespace Papercut.Rules.Implementations
         [Description("Foward To Email")]
         public string ToEmail
         {
-            get { return _toEmail; }
+            get => _toEmail;
             set
             {
                 if (value == _toEmail) return;

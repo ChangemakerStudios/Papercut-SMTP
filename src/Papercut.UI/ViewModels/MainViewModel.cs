@@ -39,6 +39,7 @@ namespace Papercut.ViewModels
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
+    using Papercut.Rules.Helpers;
     using Papercut.Rules.Implementations;
     using Papercut.Services;
     using Papercut.Views;
@@ -321,10 +322,11 @@ namespace Papercut.ViewModels
 
                         var forwardRule = new ForwardRule
                                           {
-                                              SmtpServer = forwardViewModel.Server,
                                               FromEmail = forwardViewModel.From,
                                               ToEmail = forwardViewModel.To
                                           };
+
+                        forwardRule.PopulateServerFromUri(forwardViewModel.Server);
 
                         // send message using relay dispatcher...
                         _forwardRuleDispatch.Dispatch(
