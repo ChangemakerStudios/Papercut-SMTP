@@ -15,6 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
+
 namespace Papercut.ViewModels
 {
     using System;
@@ -105,7 +106,10 @@ namespace Papercut.ViewModels
 
         public string LogText
         {
-            get { return _logText; }
+            get
+            {
+                return _logText;
+            }
             set
             {
                 _logText = value;
@@ -115,7 +119,10 @@ namespace Papercut.ViewModels
 
         public bool IsDeactivated
         {
-            get { return _isDeactivated; }
+            get
+            {
+                return _isDeactivated;
+            }
             set
             {
                 _isDeactivated = value;
@@ -125,7 +132,10 @@ namespace Papercut.ViewModels
 
         public string WindowTitle
         {
-            get { return _windowTitle; }
+            get
+            {
+                return _windowTitle;
+            }
             set
             {
                 _windowTitle = value;
@@ -137,7 +147,10 @@ namespace Papercut.ViewModels
 
         public bool IsLogOpen
         {
-            get { return _isLogOpen; }
+            get
+            {
+                return _isLogOpen;
+            }
             set
             {
                 _isLogOpen = value;
@@ -222,13 +235,13 @@ namespace Papercut.ViewModels
                 .ObserveOnDispatcher()
                 .Subscribe(
                     m =>
-                    MessageDetailViewModel.LoadMessageEntry(MessageListViewModel.SelectedMessage));
+                        MessageDetailViewModel.LoadMessageEntry(MessageListViewModel.SelectedMessage));
 
             Observable.FromEventPattern<EventHandler, EventArgs>(
-                h => new EventHandler(h),
-                h => _logClientSinkQueue.LogEvent += h,
-                h => _logClientSinkQueue.LogEvent -= h,
-                TaskPoolScheduler.Default)
+                    h => new EventHandler(h),
+                    h => _logClientSinkQueue.LogEvent += h,
+                    h => _logClientSinkQueue.LogEvent -= h,
+                    TaskPoolScheduler.Default)
                 .Buffer(TimeSpan.FromSeconds(1))
                 .Select(
                     s =>
@@ -249,11 +262,12 @@ namespace Papercut.ViewModels
 
             this.GetPropertyValues(m => m.IsLogOpen)
                 .ObserveOnDispatcher()
-                .Subscribe(m =>
-                {
-                    MessageListViewModel.IsLoading = m;
-                    MessageDetailViewModel.IsLoading = m;
-                });
+                .Subscribe(
+                    m =>
+                    {
+                        MessageListViewModel.IsLoading = m;
+                        MessageDetailViewModel.IsLoading = m;
+                    });
         }
 
         public void GoToSite()
@@ -276,7 +290,7 @@ namespace Papercut.ViewModels
         public void ShowOptions()
         {
             if (IsLogOpen) IsLogOpen = false;
-            
+
             _viewModelWindowManager.ShowDialogWithViewModel<OptionsViewModel>();
         }
 
@@ -298,30 +312,30 @@ namespace Papercut.ViewModels
                 _window.ShowProgressAsync("Forwarding Email...", "Please wait");
 
             Observable.Start(
-                () =>
-                {
-                    ProgressDialogController progressDialog = progressController.Result;
-
-                    progressDialog.SetCancelable(false);
-                    progressDialog.SetIndeterminate();
-
-                    var forwardRule = new ForwardRule
+                    () =>
                     {
-                        SmtpServer = forwardViewModel.Server,
-                        FromEmail = forwardViewModel.From,
-                        ToEmail = forwardViewModel.To
-                    };
+                        ProgressDialogController progressDialog = progressController.Result;
 
-                    // send message using relay dispatcher...
-                    _forwardRuleDispatch.Dispatch(
-                        forwardRule,
-                        MessageListViewModel.SelectedMessage);
+                        progressDialog.SetCancelable(false);
+                        progressDialog.SetIndeterminate();
 
-                    progressDialog.CloseAsync().Wait();
+                        var forwardRule = new ForwardRule
+                                          {
+                                              SmtpServer = forwardViewModel.Server,
+                                              FromEmail = forwardViewModel.From,
+                                              ToEmail = forwardViewModel.To
+                                          };
 
-                    return true;
-                },
-                TaskPoolScheduler.Default)
+                        // send message using relay dispatcher...
+                        _forwardRuleDispatch.Dispatch(
+                            forwardRule,
+                            MessageListViewModel.SelectedMessage);
+
+                        progressDialog.CloseAsync().Wait();
+
+                        return true;
+                    },
+                    TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
                 .Subscribe(b => { MessageDetailViewModel.IsLoading = false; });
         }
