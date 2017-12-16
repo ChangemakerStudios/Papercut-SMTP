@@ -35,7 +35,7 @@ namespace Papercut.DesktopService
     public class NativeService
     {
         static HttpClient _httpService;
-        static NewMessageRecieviedEvent _newMessageEventHolder;
+        static NewMessageReceivedEvent _newMessageEventHolder;
 
         static async Task<object> RequestResource(dynamic input)
         {
@@ -113,7 +113,7 @@ namespace Papercut.DesktopService
                     PapercutCoreModule.SpecifiedEntryAssembly = entryPointAssembly;
                     Papercut.Service.Program.StartPapercutService((container) =>
                     {
-                        NativeService._newMessageEventHolder = container.Resolve<NewMessageRecieviedEvent>();
+                        NativeService._newMessageEventHolder = container.Resolve<NewMessageReceivedEvent>();
                         container.Resolve<WebServerReadyEvent>().ServiceReady += (sender, e) =>
                         {
                             NativeService._httpService = e.HttpClient;
