@@ -21,7 +21,7 @@ namespace Papercut.DesktopService.Events
     using System;
     using Papercut.Core.Domain.Message;
 
-    class NewMessageRecieviedEvent : IEventHandler<NewMessageEvent>
+    class NewMessageReceivedEvent : IEventHandler<NewMessageEvent>
     {
         public event EventHandler<NewMessageEvent> NewMessageReceived;
 

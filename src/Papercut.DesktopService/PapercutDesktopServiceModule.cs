@@ -35,7 +35,7 @@ namespace Papercut.Network
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<NewMessageRecieviedEvent>()
+            builder.RegisterType<NewMessageReceivedEvent>()
                 .AsSelf()
                 .As<IEventHandler<NewMessageEvent>>()
                 .SingleInstance();
