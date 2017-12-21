@@ -2,7 +2,7 @@ var nodemailer = require('nodemailer');
 
 var transporter = nodemailer.createTransport({
     host: 'localhost',
-    port: 25,
+    port: 2525,
     secure: false
 });
 

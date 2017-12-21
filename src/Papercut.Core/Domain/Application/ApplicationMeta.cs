@@ -17,8 +17,6 @@
 ﻿
 ﻿namespace Papercut.Core.Domain.Application
 {
-    using System.Reflection;
-
     public class ApplicationMeta : IAppMeta
     {
         public ApplicationMeta(string appName, string appVersion = null)

@@ -21,15 +21,12 @@ namespace Papercut.DesktopService
     using Autofac;
     using Papercut.Core.Infrastructure.Container;
     using Papercut.DesktopService.Events;
-    using Papercut.DesktopService.Backend;
-    using Papercut.Message;
+    using Papercut.DesktopService.Backend
     using System;
     using System.Reflection;
     using System.Threading.Tasks;
     using System.Net.Http;
     using System.Net.Http.Headers;
-    using Newtonsoft.Json;
-    using System.IO;
     using System.Collections.Generic;
 
     public class NativeService

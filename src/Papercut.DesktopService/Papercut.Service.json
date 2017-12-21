@@ -1,3 +1,4 @@
 ﻿{
-    "HttpPort": 0
+    "HttpPort": 0,
+    "Port": 2525
 }
