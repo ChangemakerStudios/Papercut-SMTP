@@ -15,15 +15,12 @@ install:
 script:
  - cd $TRAVIS_BUILD_DIR ; dotnet restore -r ubuntu.14.04-x64
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Service ; dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64
- - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop ; yarn install
- - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop ; dotnet build -c $CONFIGURATION -r ubuntu.14.04-x64
  - cd $TRAVIS_BUILD_DIR/test/Papercut.WebUI.Tests ; dotnet test
 
 after_success:
   # Papercut Service Docker Image
   - cd $TRAVIS_BUILD_DIR ; ./Docker/build.sh
 
-  # todo: Papercut Electron Desktop packing
   # todo: Build & pack plugins
 
 cache: yarn

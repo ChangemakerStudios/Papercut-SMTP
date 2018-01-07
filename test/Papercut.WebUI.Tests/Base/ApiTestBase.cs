@@ -20,20 +20,9 @@ namespace Papercut.WebUI.Test.Base
 {
     using System;
     using System.Net.Http;
-    using Autofac;
-
-    using Core.Domain.Application;
-    using Core.Domain.Paths;
-    using Core.Infrastructure.Container;
-
-    using WebServerFacts;
-    using System.Reflection;
     using Newtonsoft.Json;
     using System.Threading;
-    using Papercut.Service.Web;
     using Papercut.Service.Web.Hosting;
-    using Papercut.Core.Domain.Paths;
-    using System.IO;
 
     public class ApiTestBase : TestBase, IDisposable
     {

@@ -14,7 +14,6 @@ before_build:
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service
   - dotnet publish -c %CONFIGURATION% -r win10-x64 --self-contained
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop
   - yarn install
   - dotnet build -c %CONFIGURATION%
 
@@ -28,7 +27,6 @@ after_build:
   - cd %APPVEYOR_BUILD_FOLDER%
   - ps: .\Docker\build.ps1
 
-  # todo: Papercut Electron Desktop packing
   # todo: Build & pack plugins
 
 test_script:
