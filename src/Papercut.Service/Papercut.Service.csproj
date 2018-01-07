@@ -4,15 +4,13 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
     <ApplicationIcon>Papercut-Service-icon.ico</ApplicationIcon>
- 	 <OutputType>exe</OutputType>
+    <OutputType>exe</OutputType>
     <OutputTypeEx>exe</OutputTypeEx>
-	<DebugType>portable</DebugType>
+    <DebugType>portable</DebugType>
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\Papercut.Desktop\assets\**">
-      <Link>Web\Assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Web\Assets\**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.6.1" />
