@@ -15,6 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
+using System;
+using Papercut.Common.Domain;
+
 namespace Papercut.Service
 {
     using System.Reflection;
@@ -40,6 +43,8 @@ namespace Papercut.Service
                 .AsSelf()
                 .SingleInstance();
 
+            builder.RegisterType<WebServerReadyEvent>().As<IEventHandler<PapercutWebServerReadyEvent>>();
+
             builder.RegisterType<WebServer>()
                 .AsSelf()
                 .SingleInstance();
@@ -54,6 +59,22 @@ namespace Papercut.Service
                 .SingleInstance();
 
             base.Load(builder);
+        }
+    }
+
+    public class WebServerReadyEvent: IEventHandler<PapercutWebServerReadyEvent>
+    {
+        private static Action<PapercutWebServerReadyEvent> _webServerReady;
+
+        public static void Register(Action<PapercutWebServerReadyEvent> webServerReady)
+        {
+            _webServerReady = webServerReady;
+        }
+        
+        public void Handle(PapercutWebServerReadyEvent @event)
+        {
+            _webServerReady?.Invoke(@event);
+            _webServerReady = null;
         }
     }
 }

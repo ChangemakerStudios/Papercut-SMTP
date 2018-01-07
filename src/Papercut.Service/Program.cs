@@ -33,21 +33,29 @@ namespace Papercut.Service
     {
         static int Main(string[] args)
         {
-            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-            var appTask = Task.Factory.StartNew(() =>
-                               StartPapercutService((container) =>
-                               {
-                                   Console.CancelKeyPress += Console_CancelKeyPress;
-                                   Console.Title = container.Resolve<IAppMeta>().AppName;
-                               },
-                               throwErrors: false));
+            var appTask = Startup(args);
             appTask.Wait();
             return appTask.Result;
         }
 
+        public static Task<int> Startup(string[] args, Action<ILifetimeScope> bootstrap = null, Action shutdown = null)
+        {
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            return Task.Factory.StartNew(() =>
+                StartPapercutService((container) =>
+                    {
+                        Console.CancelKeyPress += Console_CancelKeyPress;
+                        Console.Title = container.Resolve<IAppMeta>().AppName;
+                        
+                        bootstrap?.Invoke(container);
+                    },
+                    shutdown,
+                    throwErrors: false));
+        }
+
         static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
-            StopPapercutService();
+            Shutdown();
         }
 
         static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
@@ -77,13 +85,13 @@ namespace Papercut.Service
 
         static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
 
-        public static int StartPapercutService(Action<ILifetimeScope> initialization, bool throwErrors = true)
+        static int StartPapercutService(Action<ILifetimeScope> initialization, Action shutdown, bool throwErrors = true)
         {
             try
             {
                 if (PapercutCoreModule.SpecifiedEntryAssembly == null)
                 {
-                    PapercutCoreModule.SpecifiedEntryAssembly = (typeof(Program).GetTypeInfo()).Assembly;
+                    PapercutCoreModule.SpecifiedEntryAssembly = Assembly.GetEntryAssembly();
                 }
 
                 using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
@@ -100,6 +108,8 @@ namespace Papercut.Service
 
                         appWaitHandle.Dispose();
                         appWaitHandle = null;
+
+                        shutdown?.Invoke();
                     }
                     catch { }
                 }
@@ -119,7 +129,7 @@ namespace Papercut.Service
             }
         }
 
-        public static void StopPapercutService()
+        public static void Shutdown()
         {
             WriteInfo("Exiting...");
             if (appWaitHandle != null)

@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>exe</OutputType>
+    <OutputTypeEx>exe</OutputTypeEx>
+    <DebugType>portable</DebugType>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <None Update="electron.manifest.json" CopyToOutputDirectory="Always">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.6.1" />
+    <PackageReference Include="ElectronNET.API" Version="0.0.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Papercut.Service\Papercut.Service.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="ElectronNET.CLI" Version="*" />
+  </ItemGroup>
+</Project>

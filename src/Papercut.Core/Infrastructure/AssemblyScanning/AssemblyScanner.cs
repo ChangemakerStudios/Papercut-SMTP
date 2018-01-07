@@ -35,13 +35,11 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
     public class AssemblyScanner
     {
         readonly Lazy<ILogger> _logger;
-        readonly Func<Assembly> _getEntryAssembly;
         readonly Lazy<DependencyContext> _defaultDependencyContext;
 
         public AssemblyScanner(Lazy<ILogger> logger, Func<Assembly> getEntryAssembly = null)
         {
             this._logger = logger;
-            this._getEntryAssembly = getEntryAssembly;
 
             _defaultDependencyContext = new Lazy<DependencyContext>(() => {
                 var assembly = getEntryAssembly == null ? (this.GetType().GetTypeInfo().Assembly) : getEntryAssembly();
@@ -67,16 +65,6 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
 
         IEnumerable<Assembly> GetAssembliesList(IEnumerable<string> pluginDirectories)
         {
-            var filterAssemblies = new Func<Assembly, bool>(a => !a.IsDynamic);
-            var loaded = _defaultDependencyContext.Value
-                            .RuntimeLibraries
-                            .SelectMany(library => library.Assemblies)
-                            .Select(assembly => assembly.Name.Name)
-                            .Distinct()
-                            .ToList();
-            var loadedAssemblies = new HashSet<string>(loaded);
-
-            var thisAssembly = typeof(AssemblyScanner).GetTypeInfo().Assembly.GetName().Name;
             var allFiles = pluginDirectories
                                         .SelectMany(this.GetAllFilesIn)
                                         .Distinct()
@@ -84,11 +72,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
                                         .Where(assemblyInfo => assemblyInfo.Name.StartsWith("Papercut"))
                                         .ToList();
 
-            var needsToBeLoaded = allFiles
-                .Where(f => !loadedAssemblies.Contains(f.Name, StringComparer.OrdinalIgnoreCase))
-                .Select(f => f.Path)
-                .ToList();
-
+            var needsToBeLoaded = allFiles.Select(f => f.Path).ToList();
             return this.TryLoadAssemblies(needsToBeLoaded);
         }
 

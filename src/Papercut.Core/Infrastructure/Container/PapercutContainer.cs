@@ -103,17 +103,17 @@ namespace Papercut.Core.Infrastructure.Container
 
         static IContainer Build()
         {
-            try
-            {
+//            try
+//            {
                 var builder = new ContainerBuilder();
                 builder.RegisterModule<PapercutCoreModule>();
                 return builder.Build();
-            }
-            catch (Exception ex)
-            {
-                _rootLogger.Value.Fatal(ex, "Fatal Failure Building Container");
-                throw;
-            }
+//            }
+//            catch (Exception ex)
+//            {
+//                _rootLogger.Value.Fatal(ex, "Fatal Failure Building Container");
+//                throw;
+//            }
         }
     }
 }

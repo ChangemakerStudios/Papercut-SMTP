@@ -4,6 +4,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -15,10 +16,8 @@ namespace Papercut.Service.Web.Hosting.InProcess
 {
     public class HttpServer : IServer
     {
-        private const string DefaultEnvironmentName = "Development";
-        private const string ServerName = nameof(HttpServer);
-        private IWebHost _hostInstance;
-        private bool _disposed = false;
+        private readonly IWebHost _hostInstance;
+        private bool _disposed;
         private IHttpApplication<Context> _application;
 
         public HttpServer(IWebHostBuilder builder)
@@ -37,6 +36,7 @@ namespace Papercut.Service.Web.Hosting.InProcess
                 return _hostInstance;
             }
         }
+
 
         IFeatureCollection IServer.Features { get; }
 
@@ -60,7 +60,7 @@ namespace Papercut.Service.Web.Hosting.InProcess
             }
         }
 
-        void IServer.Start<TContext>(IHttpApplication<TContext> application)
+        Task IServer.StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
             _application = new ApplicationWrapper<Context>((IHttpApplication<Context>)application, () =>
             {
@@ -69,8 +69,15 @@ namespace Papercut.Service.Web.Hosting.InProcess
                     throw new ObjectDisposedException(GetType().FullName);
                 }
             });
+            return Task.FromResult(0);
         }
 
+        
+        Task IServer.StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult(0);
+        }
+        
         private class ApplicationWrapper<TContext> : IHttpApplication<TContext>
         {
             private readonly IHttpApplication<TContext> _application;

@@ -45,8 +45,9 @@ namespace Papercut.Service.Web.Hosting
                 .UseUrls($"http://*:{httpPort}");
 
             var host = hostBuilder.Build();
-            Task.Factory.StartNew(() => {
-                host.Run(cancellation);
+            Task.Factory.StartNew(() =>
+            {
+                var _ = host.RunAsync(cancellation);
             });
             return host;
         }
