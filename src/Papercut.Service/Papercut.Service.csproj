@@ -33,7 +33,10 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' != 'Release'">
     <None Include="Papercut.Service.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <None Link="Papercut.Service.json" Include="Papercut.Service.Release.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>
