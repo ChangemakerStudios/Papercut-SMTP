@@ -11,7 +11,7 @@ services:
 
 install:
   - nvm install 6.11.4
-  - nvm use 6.11.4
+  - nvm use 8.6.0
 script:
  - cd $TRAVIS_BUILD_DIR ; dotnet restore -r ubuntu.14.04-x64
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Service ; dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64

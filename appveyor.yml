@@ -6,7 +6,7 @@ configuration: Release
 
 install:
   - docker version
-  - ps: Install-Product node 6
+  - ps: Install-Product node 8
 
 before_build:
   - appveyor-retry dotnet restore
@@ -14,12 +14,10 @@ before_build:
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service
   - dotnet publish -c %CONFIGURATION% -r win10-x64 --self-contained
-  - yarn install
-  - dotnet build -c %CONFIGURATION%
-
+  
 after_build:
   # Papercut Service
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\netcoreapp1.1\win10-x64\publish\
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\netcoreapp2.0\win10-x64\publish\
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip *.*
   - appveyor PushArtifact PapercutService.%APPVEYOR_BUILD_VERSION%.zip
 

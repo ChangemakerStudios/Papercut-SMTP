@@ -41,6 +41,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backend", "Backend", "{38AD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Desktop", "src\Papercut.Desktop\Papercut.Desktop.csproj", "{792AC833-C1F4-4516-BE3E-BBF47F61E4D0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{A4802A2D-7D46-4FF1-BAA1-15BA137364B7}"
+ProjectSection(SolutionItems) = preProject
+	Docker\build.sh = Docker\build.sh
+	Docker\build.ps1 = Docker\build.ps1
+	Docker\Linux.Dockerfile = Docker\Linux.Dockerfile
+	Docker\Windows.Dockerfile = Docker\Windows.Dockerfile
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
