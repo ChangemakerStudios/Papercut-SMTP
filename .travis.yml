@@ -14,8 +14,17 @@ install:
   - nvm use 8.6.0
 script:
  - cd $TRAVIS_BUILD_DIR ; dotnet restore -r ubuntu.14.04-x64
- - cd $TRAVIS_BUILD_DIR/src/Papercut.Service ; dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64
  - cd $TRAVIS_BUILD_DIR/test/Papercut.WebUI.Tests ; dotnet test
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Service ; dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64
+ 
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop
+ - sudo npm install electron-packager --global ; dotnet electronize build linux
+ - dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64 --output $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin
+ - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/main.js $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/main.js
+ - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/package.json $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/package.json
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/
+ - npm install
+ - electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/ Papercut --platform=linux --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite 
 
 after_success:
   # Papercut Service Docker Image

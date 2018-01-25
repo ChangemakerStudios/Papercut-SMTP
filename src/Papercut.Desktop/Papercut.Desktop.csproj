@@ -21,4 +21,8 @@
   <ItemGroup>
     <DotNetCliToolReference Include="ElectronNET.CLI" Version="*" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="main.js" CopyToOutputDirectory="Always" />
+    <None Include="package.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
 </Project>
