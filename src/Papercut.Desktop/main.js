@@ -25,6 +25,9 @@ if (useRoot){
             function(error, stdout, stderr) {
                 if (error) throw error;
                 console.log('stdout: ' + stdout);
+                
+                // BUG: Papercut.Desktop is a long running application whose output cannot be captured by 'sudo-prompt' (see https://github.com/jorangreef/sudo-prompt/issues/50) 
+                // TODO: To redirect output into a file in debug mode; To wait a period of time in Papercut.Desktop application for the debugger to attach.
             }
         );
     };

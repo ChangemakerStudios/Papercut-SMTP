@@ -2,7 +2,7 @@ language: csharp
 mono: none
 dist: trusty
 sudo: required
-dotnet: 1.0.4    # this is SDK version
+dotnet: 2.1.4    # this is SDK version. See https://github.com/dotnet/core/blob/master/release-notes/download-archive.md
 solution: Papercut.sln
 env:
   - CONFIGURATION=Release
@@ -10,7 +10,7 @@ services:
   - docker
 
 install:
-  - nvm install 6.11.4
+  - nvm install 8.6.0
   - nvm use 8.6.0
 script:
  - cd $TRAVIS_BUILD_DIR ; dotnet restore -r ubuntu.14.04-x64
