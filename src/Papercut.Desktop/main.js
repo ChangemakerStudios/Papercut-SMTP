@@ -1,17 +1,49 @@
+
 const { app } = require('electron');
-const fs = require('fs');
 const path = require('path');
-const process = require('child_process').spawn;
 const portfinder = require('detect-port');
-let io, browserWindows, ipc, apiProcess, loadURL;
+const isWin32 = require("os").platform() === "win32";
+    
+}
+let io, browserWindows, ipc, loadURL;
 let appApi, menu, dialog, notification, tray, webContents;
 let globalShortcut, shell, screen, clipboard;
+
+let serviceConfig = require("./bin/Papercut.Service.json");
+let useRoot = !isWin32 && parseInt(serviceConfig.Port) < 1024;
+let startProcess;
+
+if (useRoot){
+    startProcess = function (binFilePath, parameters) {
+        const sudo = require('sudo-prompt');
+        const sudoOptions = {
+            name: 'Papercut'
+        };
+        
+        const bin = binFilePath + ' ' + (parameters || []).join(' ');
+        sudo.exec(bin, sudoOptions,
+            function(error, stdout, stderr) {
+                if (error) throw error;
+                console.log('stdout: ' + stdout);
+            }
+        );
+    };
+}else{
+    startProcess = function (binFilePath, parameters) {
+        var process = require('child_process').spawn(binFilePath, parameters);
+        process.stdout.on('data', (data) => {
+            console.log(`stdout: ${data.toString()}`);
+        });
+    };
+}
+
 
 app.on('ready', () => {
     portfinder(8000, (error, port) => {
         startSocketApiBridge(port);
     });
 });
+
 
 function startSocketApiBridge(port) {
     io = require('socket.io')(port);
@@ -43,28 +75,18 @@ function startAspCoreBackend(electronPort) {
         const manifestFile = require("./bin/electron.manifest.json");
         let binaryFile = manifestFile.executable;
 
-        const os = require("os");
-        if(os.platform() === "win32") {
+        if (isWin32) {
             binaryFile = binaryFile + '.exe';
         }
 
         const binFilePath = path.join(__dirname, 'bin', binaryFile);
-        apiProcess = process(binFilePath, parameters);
-
-        apiProcess.stdout.on('data', (data) => {
-            var text = data.toString();
-            console.log(`stdout: ${data.toString()}`);
-        });
+        startProcess(binFilePath, parameters);
     });
 }
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
-    // On macOS it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
+    app.quit();
 });
 
 //app.on('activate', () => {

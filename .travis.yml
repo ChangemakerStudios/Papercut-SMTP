@@ -19,6 +19,10 @@ script:
  
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop
  - sudo npm install electron-packager --global ; dotnet electronize build linux
+ 
+ # Replease artifact to Release, 
+ # Replace main.js to trigger administrative privileges if needed
+ # Use Papercut as application name
  - dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64 --output $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/main.js $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/main.js
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/package.json $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/package.json
