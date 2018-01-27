@@ -3,8 +3,7 @@ const { app } = require('electron');
 const path = require('path');
 const portfinder = require('detect-port');
 const isWin32 = require("os").platform() === "win32";
-    
-}
+
 let io, browserWindows, ipc, loadURL;
 let appApi, menu, dialog, notification, tray, webContents;
 let globalShortcut, shell, screen, clipboard;

@@ -15,7 +15,7 @@ install:
 script:
  - cd $TRAVIS_BUILD_DIR ; dotnet restore -r ubuntu.14.04-x64
  - cd $TRAVIS_BUILD_DIR/test/Papercut.WebUI.Tests ; dotnet test
- - cd $TRAVIS_BUILD_DIR/src/Papercut.Service ; dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Service ; dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64 --self-contained
  
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop
  - npm install electron-packager --global ; dotnet electronize build linux
@@ -28,7 +28,7 @@ script:
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/package.json $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/package.json
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/
  - npm install
- - electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/ Papercut --platform=linux --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite 
+ - electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/ Papercut --platform=linux --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite --no-prune 
 
 after_success:
   # Papercut Service Docker Image
