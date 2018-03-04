@@ -43,7 +43,7 @@ namespace Papercut.ViewModels
 
         public bool FromSetting
         {
-            get { return _fromSetting; }
+            get => _fromSetting;
             set
             {
                 _fromSetting = value;
@@ -53,7 +53,7 @@ namespace Papercut.ViewModels
 
         public string WindowTitle
         {
-            get { return _windowTitle; }
+            get => _windowTitle;
             set
             {
                 _windowTitle = value;
@@ -63,7 +63,7 @@ namespace Papercut.ViewModels
 
         public string Server
         {
-            get { return _server; }
+            get => _server;
             set
             {
                 _server = value;
@@ -73,7 +73,7 @@ namespace Papercut.ViewModels
 
         public string To
         {
-            get { return _to; }
+            get => _to;
             set
             {
                 _to = value;
@@ -83,7 +83,7 @@ namespace Papercut.ViewModels
 
         public string From
         {
-            get { return _from; }
+            get => _from;
             set
             {
                 _from = value;

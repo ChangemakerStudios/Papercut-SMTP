@@ -20,6 +20,7 @@ namespace Papercut.Rules.Implementations
     using System;
 
     using MailKit.Net.Smtp;
+    using MailKit.Security;
 
     using Papercut.Core.Annotations;
 
@@ -31,7 +32,7 @@ namespace Papercut.Rules.Implementations
 
             var client = new SmtpClient();
 
-            client.Connect(forwardRule.SmtpServer, forwardRule.SmtpPort, forwardRule.SmtpUseSSL);
+            client.Connect(forwardRule.SmtpServer, forwardRule.SmtpPort, forwardRule.SmtpUseSSL ? SecureSocketOptions.Auto : SecureSocketOptions.None);
 
             // Note: since we don't have an OAuth2 token, disable
             // the XOAUTH2 authentication mechanism.

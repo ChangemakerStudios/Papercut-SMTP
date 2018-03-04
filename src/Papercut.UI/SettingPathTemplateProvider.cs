@@ -40,15 +40,32 @@ namespace Papercut
             PathTemplates = new ObservableCollection<string>(MessagePaths);
         }
 
-        IEnumerable<string> MessagePaths
+        private IEnumerable<string> MessagePaths
         {
             get
             {
-                return
-                    Settings.Default.MessagePaths.Split(new[] { ';', ',' })
-                        .Select(s => s.Trim())
-                        .Where(s => !string.IsNullOrWhiteSpace(s))
-                        .Distinct();
+
+                return GetMessagePath()
+                    .Split(';', ',')
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .Distinct();
+            }
+        }
+
+        private string GetMessagePath()
+        {
+            try
+            {
+                return Settings.Default.MessagePaths;
+            }
+            catch (System.Exception ex)
+            {
+                // message path loading is failing
+                this._logger.Error(ex, "Failed to load message paths");
+
+                // use default
+                return "%ApplicationData%\\Papercut;%BaseDirectory%;%BaseDirectory%\\Incoming";
             }
         }
 
@@ -57,7 +74,7 @@ namespace Papercut
             UpdatePathTemplates();
         }
 
-        public ObservableCollection<string> PathTemplates { get; private set; }
+        public ObservableCollection<string> PathTemplates { get; }
 
         void UpdatePathTemplates()
         {

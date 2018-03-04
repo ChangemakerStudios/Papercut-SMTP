@@ -20,8 +20,11 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Net.Mime;
+    using System.Text;
     using System.Threading;
 
     using Autofac;
@@ -32,6 +35,8 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 
     using NUnit.Framework;
 
+    using ContentType = MimeKit.ContentType;
+
     public class LoadMessageFacts : ApiTestBase
     {
         readonly MessageRepository _messageRepository;
@@ -39,6 +44,13 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         public LoadMessageFacts()
         {
             this._messageRepository = Scope.Resolve<MessageRepository>();
+        }
+
+        [Test, Order(0)]
+        public void ShouldReturn404IfNotFoundByID()
+        {
+            var response = Client.GetAsync("/api/messages/some-strange-id").Result;
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Test, Order(1)]
@@ -50,7 +62,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 From = {new MailboxAddress("mffeng@gmail.com")}
             };
 
-            var fileName = this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
 
             var messages = Get<MessageListResponse>("/api/messages").Messages;
             Assert.AreEqual(1, messages.Count);
@@ -71,9 +83,9 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         public void ShouldLoadMessagesByPagination()
         {
             var existedMail = new MimeMessage
-                              {
-                                  From = { new MailboxAddress("mffeng@gmail.com") }
-                              };
+            {
+                From = {new MailboxAddress("mffeng@gmail.com")}
+            };
 
             // clear out existing messages
             foreach (var message in this._messageRepository.LoadMessages())
@@ -122,8 +134,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             var messages = Get<MessageListResponse>("/api/messages").Messages;
             var id = messages.First().Id;
 
-
-            var detail = Get<MimeMessageEntry.Dto>($"/api/messages/{id}");
+            var detail = Get<MimeMessageEntry.DetailDto>($"/api/messages/{id}");
             Assert.AreEqual(id, detail.Id);
             Assert.NotNull(detail.CreatedAt);
 
@@ -149,12 +160,29 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         }
 
         [Test, Order(4)]
-        public void ShouldReturn404IfNotFoundByID()
+        public void ShouldContainHeadersInMessageDetail()
         {
-            var response = Client.GetAsync("/api/messages/some-strange-id").Result;
-            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-        }
+            var existedMail = new MimeMessage
+            {
+                Subject = "Test",
+                From = {new MailboxAddress("mffeng@gmail.com")},
+                To = {new MailboxAddress("xwliu@gmail.com")},
+                Body = new TextPart("plain") {Text = "Hello Buddy"}
+            };
+            existedMail.Headers.Add(HeaderId.ReplyTo, "one@replyto.com");
+            existedMail.Headers.Add("X-Extended", "extended value");
+            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            var messages = Get<MessageListResponse>("/api/messages").Messages;
+            var id = messages.First().Id;
 
+
+            var detail = Get<MimeMessageEntry.DetailDto>($"/api/messages/{id}");
+            Assert.AreEqual(id, detail.Id);
+
+            var headers = detail.Headers;
+            Assert.AreEqual("one@replyto.com",  headers.First(h => h.Name == "Reply-To").Value);
+            Assert.AreEqual("extended value", headers.First(h => h.Name == "X-Extended").Value);
+        }
 
         class MessageListResponse
         {

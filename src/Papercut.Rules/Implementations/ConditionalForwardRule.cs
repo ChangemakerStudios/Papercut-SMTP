@@ -35,7 +35,7 @@ namespace Papercut.Rules.Implementations
         [DisplayName("Regex Header Match")]
         public string RegexHeaderMatch
         {
-            get { return _regexHeaderMatch; }
+            get => _regexHeaderMatch;
             set
             {
                 if (value == _regexHeaderMatch)
@@ -48,7 +48,7 @@ namespace Papercut.Rules.Implementations
         [DisplayName("Regex Body Match")]
         public string RegexBodyMatch
         {
-            get { return _regexBodyMatch; }
+            get => _regexBodyMatch;
             set
             {
                 if (value == _regexBodyMatch)

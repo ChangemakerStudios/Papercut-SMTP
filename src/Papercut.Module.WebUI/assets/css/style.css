@@ -1,3 +1,6 @@
+a:focus, a:hover{
+    text-decoration:none;
+}
 /*********/
 /* Modal */
 .modal-dialog {
@@ -18,16 +21,7 @@
   padding-left: 0;
 }
 
-/**************/
-/* Search bar */
-#search {
-  width: 500px;
-}
-@media (max-width: 991px) {
-  #search {
-    width: 420px;
-  }
-}
+
 
 /* http://stackoverflow.com/questions/18838964/add-bootstrap-glyphicon-to-input-box */
 .left-inner-addon {
@@ -59,24 +53,15 @@
   color: red;
 }
 
-/*******/
-/* Jim */
-.jim-well {
-  margin-top: 20px;
+.nav > li > a.btn-delete-all{
+    position: absolute;
+    right: 0;
+    top: 5px;
+    display: none;
 }
 
-.jim-well h3 {
-  margin-top: 0;
-}
-
-.jim-config {
-  margin-top: 3px;
-  padding: 5px;
-  font-size: 0.9em;
-}
-
-.jim-config .jim-config-item {
-  margin-bottom: 2px;
+.nav > li:hover > a.btn-delete-all{
+  display: block;
 }
 
 /***********/
@@ -117,6 +102,7 @@
 
 .msglist-message {
   border-bottom: 1px solid #ccc;
+  margin: 5px 0;
   padding: 5px 0;
   cursor: pointer;
 }
@@ -124,6 +110,11 @@
 .msglist-message .subject.unread {
   color: #666;
   font-weight: bold;
+}
+
+.mail-content .download-raw{
+    display:inline-block;
+    margin-top:5px;
 }
 
 /***********/
@@ -134,6 +125,34 @@
   padding: 10px;
 }
 
+#preview-headers ul{
+    margin: 0;
+    padding: 0;
+    margin-top: 15px;
+}
+
+#preview-headers ul li{
+    list-style: none;
+    margin: 5px 0;
+}
+
+#preview-headers ul li .header-name{
+    font-weight:bold;
+}
+
+#preview-sections table {
+    margin-top: 15px;
+    min-width: 450px;
+}
+
+#preview-sections table tbody tr:hover {
+    background: #ebf1f5;
+}
+
+#preview-sections table td {
+    padding: 5px;
+}
+
 .preview .tab-content {
   overflow-y: visible;
 }
@@ -142,15 +161,13 @@
   margin-top: 10px;
 }
 
-.headers tbody td {
-  width: 100%;
-}
-
-.headers tbody th {
+.headers tbody td.header-name {
   white-space: nowrap;
   text-align: right;
   color: #666;
   font-weight: normal;
+  width: 80px;
+  padding-right: 10px;
 }
 
 .haeders table td, .headers table th {
@@ -161,11 +178,9 @@
   padding: 10px;
 }
 
-
-
-
 label.mail-address{
     display: inline-block;
     margin-right: 5px;
+    margin-bottom: 0;
     font-weight: normal;
 }

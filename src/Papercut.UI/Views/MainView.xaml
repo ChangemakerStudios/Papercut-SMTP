@@ -149,7 +149,7 @@
 
             <Label Margin="53,0,0,2" VerticalAlignment="Bottom" FontSize="9" Foreground="#2e74a6" Cursor="Hand"
                    ToolTip="Click to visit the site" Grid.Column="2" Grid.Row="1"
-                   Content="https://papercut.codeplex.com"
+                   Content="https://github.com/ChangemakerStudios/Papercut"
                    HorizontalAlignment="Left" cal:Message.Attach="[Event MouseUp] = [Action GoToSite]" />
         </Grid>
     </Grid>
