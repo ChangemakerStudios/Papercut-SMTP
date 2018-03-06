@@ -16,12 +16,6 @@
 // limitations under the License.
 
 
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using Papercut.Core.Annotations;
-
 namespace Papercut.Service.Web.Hosting
 {
     using System;
@@ -90,34 +84,6 @@ namespace Papercut.Service.Web.Hosting
         public void Dispose()
         {
             Stop();
-        }
-    }
-    
-    public static class WebServerExtensions
-    {
-        public static IObservable<bool> StartObservable(
-            [NotNull] this WebServer server)
-        {
-            if (server == null) throw new ArgumentNullException(nameof(server));
-
-            IObservable<bool> startObservable = Observable.Create(
-                (IObserver<bool> o) =>
-                {
-                    Observer.Synchronize(o);
-                    try
-                    {
-                        server.Start();
-                        o.OnCompleted();
-                    }
-                    catch (Exception ex)
-                    {
-                        o.OnError(ex);
-                    }
-
-                    return Disposable.Empty;
-                }).ObserveOn(TaskPoolScheduler.Default);
-
-            return startObservable;
         }
     }
 }

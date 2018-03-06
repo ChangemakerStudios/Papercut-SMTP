@@ -15,9 +15,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Papercut.Service.Services
 {
     using System;
@@ -92,7 +89,6 @@ namespace Papercut.Service.Services
             this._messageBus.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
             
-            WaitAll(
             _smtpServer
                 .BindObservable(_serviceSettings.IP, _serviceSettings.Port)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
@@ -108,60 +104,16 @@ namespace Papercut.Service.Services
                         _serviceSettings.Port),
                     // on complete
                     () => {
-                           
+                            this._webServer.Start();
+                            this._messageBus.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData });
                         });
-            ,
-            
-            _webServer.StartObservable()
-                .Subscribe((u) => { },
-                    (e) =>
-                        _logger.Error(
-                            e, "Unable to Create Papercut Web Server. Failing",
-                            _serviceSettings.IP,
-                            _serviceSettings.Port),
-                    // on complete
-                    () => {
-                        
-                    });
-            
-            );
-            this._messageBus.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData });
-            
-            
-            
         }
 
         public void Stop()
         {
-            var errors = new List<Exception>();
-            try
-            {
-                _webServer.Stop();
-            }
-            catch (Exception ex)
-            {
-                errors.Add(ex);
-            }
-
-            try
-            {
-                _smtpServer.Stop();
-            }
-            catch (Exception ex)
-            {
-                errors.Add(ex);
-            }
-            
+            _webServer.Stop();
+            _smtpServer.Stop();
             _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
-            if (errors.Any())
-            {
-                errors.ForEach(err =>
-                {
-                    _logger.Error(err, "Error during stopping the service. ");
-                    Console.Error.WriteLine(err);
-                });
-                
-            }
         }
 
         public void Dispose()

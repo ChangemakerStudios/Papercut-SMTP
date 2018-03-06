@@ -35,7 +35,7 @@ namespace Papercut.Service.Web.Hosting
     internal class WebStartup
     {
         public static ILifetimeScope Scope { get; set; }
-        public static void Start(ushort httpPort, CancellationToken cancellation)
+        public static IWebHost Start(ushort httpPort, CancellationToken cancellation)
         {
             var hostBuilder = new WebHostBuilder();
             hostBuilder
@@ -44,28 +44,12 @@ namespace Papercut.Service.Web.Hosting
                 .UseStartup<WebStartup>()
                 .UseUrls($"http://*:{httpPort}");
 
-            
-            var tracker = new TaskCompletionSource<bool>();
             var host = hostBuilder.Build();
-            
-            
-            var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
-            applicationLifetime.ApplicationStarted.Register(() =>
+            Task.Factory.StartNew(() =>
             {
-                tracker.SetResult(true);
+                var _ = host.RunAsync(cancellation);
             });
-            
-            var bootTask = hostBuilder.Build().RunAsync(cancellation);
-            bootTask.ContinueWith(t =>
-            {
-                tracker.SetResult(false);
-            });
-            
-            tracker.Task.Wait(10 * 10000);
-            if (!tracker.Task.IsCompletedSuccessfully || !tracker.Task.Result)
-            {
-                throw new Exception("Can not start the web server.");
-            }
+            return host;
         }
 
          public static HttpServer StartInProcessServer(CancellationToken cancellation, string env = "Production")
