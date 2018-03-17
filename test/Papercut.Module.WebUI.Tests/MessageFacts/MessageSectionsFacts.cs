@@ -84,7 +84,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     new MimePart(new ContentType("image", "jpeg") {Charset = Encoding.UTF8.EncodingName})
                     {
                         FileName = "sample.pdf",
-                        ContentObject = new ContentObject(
+                        Content = new MimeContent(
                             new MemoryStream(Encoding.UTF8.GetBytes("Content")), ContentEncoding.Binary)
                     }
                 }
@@ -114,7 +114,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     {
                         FileName = "sample.pdf",
                         ContentId = contentId,
-                        ContentObject = new ContentObject(
+                        Content = new MimeContent(
                             new MemoryStream(Encoding.UTF8.GetBytes("Content")), ContentEncoding.Binary)
                     }
                 }

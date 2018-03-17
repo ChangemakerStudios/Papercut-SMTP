@@ -123,7 +123,7 @@ namespace Papercut.Helpers
             if (!File.Exists(path))
             {
                 using (var output = File.Create(path))
-                    image.ContentObject.DecodeTo(output);
+                    image.Content.DecodeTo(output);
             }
 
             return "file://" + path.Replace('\\', '/');
@@ -140,9 +140,8 @@ namespace Papercut.Helpers
                 {
                     if (attribute.Id == HtmlAttributeId.Src)
                     {
-                        MimePart image;
 
-                        if (!TryGetImage(attribute.Value, out image))
+                        if (!TryGetImage(attribute.Value, out MimePart image))
                         {
                             htmlWriter.WriteAttribute(attribute);
                             continue;
@@ -191,8 +190,6 @@ namespace Papercut.Helpers
         protected override void VisitTextPart(TextPart entity)
         {
             TextConverter converter;
-            string header, footer;
-
             if (_body != null)
             {
                 // since we've already found the body, treat this as an attachment
@@ -200,7 +197,7 @@ namespace Papercut.Helpers
                 return;
             }
 
-            GetHeaderFooter(out header, out footer);
+            GetHeaderFooter(out string header, out string footer);
 
             if (entity.IsHtml)
             {
@@ -220,9 +217,8 @@ namespace Papercut.Helpers
                     Footer = footer,
                     FooterFormat = HeaderFooterFormat.Html
                 };
-                string delsp;
 
-                if (entity.ContentType.Parameters.TryGetValue("delsp", out delsp))
+                if (entity.ContentType.Parameters.TryGetValue("delsp", out string delsp))
                     flowed.DeleteSpace = delsp.ToLowerInvariant() == "yes";
 
                 converter = flowed;

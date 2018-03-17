@@ -85,7 +85,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 
             using (var ms = new MemoryStream())
             {
-                var bodyContent = (downloadMessage.BodyParts.Single() as MimePart).ContentObject;
+                var bodyContent = (downloadMessage.BodyParts.Single() as MimePart).Content;
                 bodyContent.DecodeTo(ms);
                 ms.Seek(0, SeekOrigin.Begin);
 
@@ -103,7 +103,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 {
                     new MimePart(new ContentType("text", "html") {Charset = Encoding.UTF8.EncodingName})
                     {
-                        ContentObject = new ContentObject(new MemoryStream(Encoding.UTF8.GetBytes("Content example")), ContentEncoding.Binary)
+                        Content = new MimeContent(new MemoryStream(Encoding.UTF8.GetBytes("Content example")), ContentEncoding.Binary)
                     }
                 });
 

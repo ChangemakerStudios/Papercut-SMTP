@@ -21,6 +21,8 @@ namespace Papercut.Core.Domain.Settings
     using System.Collections.Generic;
     using System.IO;
 
+    using Newtonsoft.Json;
+
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Infrastructure.Json;
 
@@ -34,7 +36,7 @@ namespace Papercut.Core.Domain.Settings
         }
 
         protected string SettingsFilePath { get; set; }
-
+        
         public override void Load()
         {
             if (this.SettingsFilePath == null) return;
