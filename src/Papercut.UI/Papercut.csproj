@@ -224,6 +224,7 @@
     <Compile Include="Events\ShowMessageEvent.cs" />
     <Compile Include="Events\ShowOptionWindowEvent.cs" />
     <Compile Include="Helpers\CalburnSerilogBridge.cs" />
+    <Compile Include="Helpers\VirtualizingStackPanelHelpers.cs" />
     <Compile Include="Helpers\HtmlPreviewVisitor.cs" />
     <Compile Include="Helpers\IViewModelWindowManager.cs" />
     <Compile Include="Helpers\LogClientSinkQueue.cs" />

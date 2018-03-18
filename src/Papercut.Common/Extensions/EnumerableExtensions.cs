@@ -33,6 +33,11 @@ namespace Papercut.Common.Extensions
             return enumerable;
         }
 
+        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> enumerable)
+        {
+            return enumerable.IfNullEmpty().Where(s => s != null);
+        }
+
         public static IEnumerable<string> ToFormattedPairs(this IEnumerable<KeyValuePair<string, Lazy<object>>> keyValuePairs)
         {
             return keyValuePairs.IfNullEmpty().Select(s => KeyValuePair.Create(s.Key, $"{s.Value.Value}"))
