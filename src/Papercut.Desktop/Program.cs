@@ -69,6 +69,8 @@ namespace Papercut.Desktop
             
             browserWindow.SetTitle("Papercut");
             browserWindow.OnReadyToShow += () => browserWindow.Show();
+            
+            // todo: Shutdown on lost connection to Election app
         }
     }
 }

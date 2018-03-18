@@ -26,6 +26,8 @@ script:
  - dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64 --output $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/main.js $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/main.js
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/package.json $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/package.json
+ - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/launch.sh $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/launch.sh
+ - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/launch.bat $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/launch.bat
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/
  - npm install
  - electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/ Papercut --platform=linux --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite --no-prune 

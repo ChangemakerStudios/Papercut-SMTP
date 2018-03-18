@@ -1,4 +1,6 @@
 
+
+process.debugPapercut = !!process.env["DEBUG_PAPAERCUT"];
 const { app } = require('electron');
 const path = require('path');
 const portfinder = require('detect-port');
@@ -12,39 +14,48 @@ let serviceConfig = require("./bin/Papercut.Service.json");
 let useRoot = !isWin32 && parseInt(serviceConfig.Port) < 1024;
 let startProcess;
 
+
 if (useRoot){
     startProcess = function (binFilePath, parameters) {
+        const outoutFile = setupOutputRedirection();
         const sudo = require('sudo-prompt');
         const sudoOptions = {
             name: 'Papercut'
         };
-        
+
         const bin = binFilePath + ' ' + (parameters || []).join(' ');
-        sudo.exec(bin, sudoOptions,
-            function(error, stdout, stderr) {
+        let proxy = path.join(__dirname, './launch.' + (isWin32 ? 'bat' : 'sh'));
+        proxy += ' "' + bin.replace('"', '\\"') + '" ' + outoutFile;
+        sudo.exec(proxy, sudoOptions,
+            function(error) {
                 if (error) throw error;
-                console.log('stdout: ' + stdout);
-                
-                // BUG: Papercut.Desktop is a long running application whose output cannot be captured by 'sudo-prompt' (see https://github.com/jorangreef/sudo-prompt/issues/50) 
-                // TODO: To redirect output into a file in debug mode; To wait a period of time in Papercut.Desktop application for the debugger to attach.
             }
         );
     };
 }else{
     startProcess = function (binFilePath, parameters) {
-        var process = require('child_process').spawn(binFilePath, parameters);
-        process.stdout.on('data', (data) => {
-            console.log(`stdout: ${data.toString()}`);
-        });
+        const outoutFile = setupOutputRedirection();
+        const output = require('fs').openSync(outoutFile, 'a');
+        require('child_process').spawn(binFilePath, parameters, {detached: false, stdio: [ 'ignore', output, output ]});
     };
 }
-
 
 app.on('ready', () => {
     portfinder(8000, (error, port) => {
         startSocketApiBridge(port);
     });
 });
+
+app.on('will-quit', () => {
+    console.log('All windows are closed, application quiting...');
+    app.exit(0);
+});
+
+app.on('window-all-closed', () => {
+    console.log('All windows are closed, application quiting...');
+    app.exit(0);
+});
+
 
 
 function startSocketApiBridge(port) {
@@ -86,15 +97,31 @@ function startAspCoreBackend(electronPort) {
     });
 }
 
-// Quit when all windows are closed.
-app.on('window-all-closed', () => {
-    app.quit();
-});
+function setupOutputRedirection() {
+    const fs = require('fs');
+    const tmp = require('tmp');
+    const papercutTmpDir = path.join(tmp.tmpdir, 'Papercut');
 
-//app.on('activate', () => {
-// On macOS it's common to re-create a window in the app when the
-// dock icon is clicked and there are no other windows open.
-//    if (win === null) {
-//        createWindow();
-//    }
-//});
+    let debugPapercut = process.debugPapercut;
+    if (!debugPapercut) {
+        tmp.setGracefulCleanup();
+    }
+
+    if (!fs.existsSync(papercutTmpDir)){
+        fs.mkdirSync(papercutTmpDir)
+    }
+
+    let tempFile = tmp.fileSync(
+        {
+            prefix: 'Output-',
+            postfix: '.log',
+            discardDescriptor: true,
+            dir: papercutTmpDir,
+            keep: debugPapercut
+        });
+
+    console.log('Output from Papercut backend service will be written at "' + 
+                tempFile.name + '".\n' + 
+                (debugPapercut ? 'This file will be kept after Papercut exits since we are in debug mode.' : 'This file will be removed after Papercut exits.'));
+    return tempFile.name;
+}

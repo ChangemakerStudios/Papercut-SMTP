@@ -1,3 +1,4 @@
+#!/bin/bash
 
 if [ -d ./release/Papercut.Service ]; then
    rm -rf ./release/Papercut.Service
