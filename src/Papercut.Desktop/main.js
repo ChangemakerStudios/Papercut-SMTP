@@ -24,7 +24,7 @@ if (useRoot){
         };
 
         const bin = binFilePath + ' ' + (parameters || []).join(' ');
-        let proxy = path.join(__dirname, './launch.' + (isWin32 ? 'bat' : 'sh'));
+        let proxy = path.join(__dirname, 'launch.sh');
         proxy += ' "' + bin.replace('"', '\\"') + '" ' + outoutFile;
         sudo.exec(proxy, sudoOptions,
             function(error) {

@@ -25,6 +25,5 @@
     <None Include="main.js" CopyToOutputDirectory="Always" />
     <None Include="package.json" CopyToOutputDirectory="Always" />
     <None Include="launch.sh" CopyToOutputDirectory="Always" />
-    <None Include="launch.bat" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>
