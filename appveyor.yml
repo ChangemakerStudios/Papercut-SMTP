@@ -21,6 +21,25 @@ after_build:
   - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip *.*
   - appveyor PushArtifact PapercutService.%APPVEYOR_BUILD_VERSION%.zip
 
+ 
+ # Replease artifact to Release, 
+ # Replace main.js to trigger administrative privileges if needed
+ # Use Papercut as application name
+ - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\
+ - npm install electron-packager --global
+ - dotnet electronize build win
+ - dotnet publish -c %CONFIGURATION% -r win-x64 --output %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\bin
+ - copy /Y %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\bin\main.js %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\main.js
+ - copy /Y %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\bin\package.json %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\package.json
+ - copy /Y %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\bin\launch.sh %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\launch.sh
+ - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\
+ - npm install
+ - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\
+ - electron-packager %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\ Papercut --platform=win32 --arch=x64 --out=%APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\bin\desktop\ --overwrite --no-prune 
+ - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\bin\desktop\
+ - 7z a PapercutDesktop.win.%APPVEYOR_BUILD_VERSION%.zip *.*
+ - appveyor PushArtifact PapercutDesktop.win.%APPVEYOR_BUILD_VERSION%.zip
+
   # Papercut Service Docker Image
   - cd %APPVEYOR_BUILD_FOLDER%
   - ps: .\Docker\build.ps1
