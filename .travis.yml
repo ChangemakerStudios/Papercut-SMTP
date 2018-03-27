@@ -12,10 +12,11 @@ services:
 install:
   - nvm install 8.6.0
   - nvm use 8.6.0
+
 script:
- - cd $TRAVIS_BUILD_DIR ; dotnet restore -r ubuntu.14.04-x64
+ - cd $TRAVIS_BUILD_DIR ; dotnet restore -r linux-x64
  - cd $TRAVIS_BUILD_DIR/test/Papercut.WebUI.Tests ; dotnet test
- - cd $TRAVIS_BUILD_DIR/src/Papercut.Service ; dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64 --self-contained
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Service ; dotnet publish -c $CONFIGURATION -r linux-x64 --self-contained
  
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop
  - npm install electron-packager --global ; dotnet electronize build linux
@@ -23,18 +24,28 @@ script:
  # Replease artifact to Release, 
  # Replace main.js to trigger administrative privileges if needed
  # Use Papercut as application name
- - dotnet publish -c $CONFIGURATION -r ubuntu.14.04-x64 --output $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin
+ - dotnet publish -c $CONFIGURATION -r linux-x64 --output $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/main.js $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/main.js
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/package.json $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/package.json
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/bin/launch.sh $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/launch.sh
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/
  - npm install
  - electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/linux/ Papercut --platform=linux --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite --no-prune 
-
+ 
 after_success:
-  # Papercut Service Docker Image
-  - cd $TRAVIS_BUILD_DIR ; ./Docker/build.sh
+ # Upload PapercutService
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.0/linux-x64/publish/
+ - zip -r ../PapercutService.zip ./*
+ - dotnet $TRAVIS_BUILD_DIR/azcopy/azcopy.dll --source $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.0/linux-x64/PapercutService.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/linux/5.1.$TRAVIS_BUILD_NUMBER-netcore/PapercutService.linux.5.1.$TRAVIS_BUILD_NUMBER-netcore.zip  --dest-key $azblobcontainerkey
+  
+ # Upload PapercutDesktop
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/Papercut-linux-x64/
+ - zip -r ../PapercutDesktop.zip ./*
+ - dotnet $TRAVIS_BUILD_DIR/azcopy/azcopy.dll --source $TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/PapercutDesktop.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/linux/5.1.$TRAVIS_BUILD_NUMBER-netcore/PapercutDesktop.linux.5.1.$TRAVIS_BUILD_NUMBER-netcore.zip  --dest-key $azblobcontainerkey
 
-  # todo: Build & pack plugins
+ # Papercut Service Docker Image
+ - cd $TRAVIS_BUILD_DIR ; ./Docker/build.sh
+
+ # todo: Build & pack plugins
 
 cache: yarn
