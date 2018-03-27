@@ -19,7 +19,7 @@
     <ProjectReference Include="..\Papercut.Service\Papercut.Service.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <DotNetCliToolReference Include="ElectronNET.CLI" Version="*" />
+    <DotNetCliToolReference Include="ElectronNET.CLI" Version="0.0.7" />
   </ItemGroup>
   <ItemGroup>
     <None Include="main.js" CopyToOutputDirectory="Always" />
