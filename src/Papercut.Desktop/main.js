@@ -40,11 +40,6 @@ if (useRoot){
     };
 }
 
-app.on('ready', () => {
-    portfinder(8000, (error, port) => {
-        startSocketApiBridge(port);
-    });
-});
 
 app.on('will-quit', () => {
     console.log('All windows are closed, application quiting...');
@@ -56,7 +51,36 @@ app.on('window-all-closed', () => {
     app.exit(0);
 });
 
+app.on('web-contents-created', (e, webContents)=>{
+    const windowUrl = webContents.getURL();
+    function handleRedirect(e, url) {        
+        if(normalizeUrl(url) !== normalizeUrl(windowUrl)) {
+            e.preventDefault();
+            require('electron').shell.openExternal(url);
+        }
 
+
+        function normalizeUrl(url) {
+            url = url.toLowerCase();
+
+            var hash = url.lastIndexOf('#');
+            if (hash > -1){
+                url = url.substr(0, hash);
+            }
+
+            return url;
+        }
+    }
+
+    webContents.on('will-navigate', handleRedirect);
+    webContents.on('new-window', handleRedirect);
+});
+
+app.on('ready', () => {
+    portfinder(8000, (error, port) => {
+        startSocketApiBridge(port);
+    });
+});
 
 function startSocketApiBridge(port) {
     io = require('socket.io')(port);

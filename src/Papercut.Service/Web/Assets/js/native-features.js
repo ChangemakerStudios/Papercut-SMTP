@@ -13,16 +13,37 @@ window.nativeFeatures = {
 
         return false;
     },
-    apiPath: function(api){
-        return api;
-    },
-    linkPath: function(api){
-        return api;
+    download: function (url, dialogTitle, defaultFileName){
+        const remote = require('electron').remote;
+        const dialog = remote.require('electron').dialog,
+            fs = remote.require('fs'),
+            http = remote.require('http'),
+            path = remote.require('path');
+
+        let defaultSavePath = process.env.HOME || process.env.USERPROFILE;
+        defaultSavePath = path.join(defaultSavePath, defaultFileName);
+        const savePath = dialog.showSaveDialog(window.nativeWindow, {title: dialogTitle, defaultPath: defaultSavePath});
+        if(!savePath){
+            return;
+        }
+
+        if (!/^https?\:/i.test(url)){
+            url = location.protocol + '//' + location.host + url;
+        }
+        
+        try {
+            var file = fs.createWriteStream(savePath);
+            http.get(url, function (response) {
+                response.pipe(file);
+            });
+        }catch (err){
+            const warnning = 'Error saving file to ' + savePath + '\n' + err.message;
+            console.log(warnning + '\n' + err.stack);
+            dialog.showErrorBox('Error on saving', warnning);
+        }
     }
 };
 
-
-// Native setup
 (function(){
     if(!window.nativeFeatures.isNative()){
         return;

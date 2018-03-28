@@ -46,7 +46,7 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
             }
 
             function replaceContentLinks(html, messageId) {
-                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, window.nativeFeatures.apiPath('/api/messages/' + messageId + '/contents/$1'));
+                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, '/api/messages/' + messageId + '/contents/$1');
             }
         }
     };

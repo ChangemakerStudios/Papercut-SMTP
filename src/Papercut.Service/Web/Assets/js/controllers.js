@@ -61,13 +61,6 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
                         });
   };
 
-  $scope.refresh();
-  $interval(function () {
-      if ($scope.startIndex == 0) {
-          $scope.refresh();
-      }
-  }, 8000);
-
 
   $scope.showUpdated = function (i) {
       $scope.itemsPerPage = parseInt(i, 10);
@@ -121,6 +114,26 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
                             });
       }
   };
+  
+  $scope.downloadSection = function (msgId, sectionIndex, name) {
+      var url = '/api/messages/' + msgId + '/sections/' + sectionIndex;
+      if (!nativeFeatures.isNative()){
+          window.open(url,  '_blank');
+          return;
+      }
+      
+      nativeFeatures.download(url,  'Save section as...', name || (msgId + '-' + sectionIndex));
+  };
+  
+  $scope.downloadRawMessage = function (msgId) {
+      var url = '/api/messages/' + msgId + '/raw';
+      if (!nativeFeatures.isNative()){
+          window.open(url,  '_blank');
+          return;
+      }
+
+      nativeFeatures.download(url,  'Save mail message...', msgId);
+  };
 
   $scope.formatMessagePlain = function (message) {
       var body = message.textBody || '';
@@ -154,11 +167,6 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   $scope.date = function(timestamp) {
   	return (new Date(timestamp)).toString();
   };
-
-  $scope.linkPath =  function(api){
-      return window.nativeFeatures.linkPath(api);
-  }
-
 
   function startEvent(name, args, glyphicon) {
       var eID = guid();
@@ -225,4 +233,12 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
       return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
           s4() + '-' + s4() + s4() + s4();
   }
+
+
+    $scope.refresh();
+    $interval(function () {
+        if ($scope.startIndex == 0) {
+            $scope.refresh();
+        }
+    }, 8000);
 });

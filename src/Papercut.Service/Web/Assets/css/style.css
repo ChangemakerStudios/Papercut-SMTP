@@ -200,3 +200,8 @@ label.mail-address{
     margin-bottom: 0;
     font-weight: normal;
 }
+
+
+a.click-to-download{
+    cursor: pointer;
+}
