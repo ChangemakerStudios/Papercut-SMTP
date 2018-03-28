@@ -34,13 +34,13 @@ build_script:
 after_build:
   # Papercut Service
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\netcoreapp2.0\win10-x64\publish\
-  - 7z a PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip *.*
+  - 7z a PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip -r *.*
   - appveyor PushArtifact PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip
   # - dotnet %APPVEYOR_BUILD_FOLDER%\azcopy\azcopy.dll --source %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\netcoreapp2.0\win10-x64\publish\PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/windows/%APPVEYOR_BUILD_VERSION%/PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip --dest-key %azblobcontainerkey%
  
   # Papercut Desktop
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\bin\desktop\Papercut-win32-x64
-  - 7z a PapercutDesktop.win.%APPVEYOR_BUILD_VERSION%.zip *.*
+  - 7z a PapercutDesktop.win.%APPVEYOR_BUILD_VERSION%.zip -r *.*
   - appveyor PushArtifact PapercutDesktop.win.%APPVEYOR_BUILD_VERSION%.zip
  # - dotnet %APPVEYOR_BUILD_FOLDER%\azcopy\azcopy.dll --source %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\bin\desktop\Papercut-win32-x64\PapercutDesktop.win.%APPVEYOR_BUILD_VERSION%.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/windows/%APPVEYOR_BUILD_VERSION%/PapercutDesktop.win.%APPVEYOR_BUILD_VERSION%.zip  --dest-key %azblobcontainerkey%
 

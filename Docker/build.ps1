@@ -10,4 +10,4 @@ dotnet publish src\Papercut.Service -c Release -o ..\..\release\Papercut.Service
 Copy-Item .\Docker\Windows.Dockerfile -Destination .\release\Papercut.Service\Dockerfile
 
 $time = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
-docker build .\release\Papercut.Service --tag papercut-nanoserver:$time
+docker build .\release\Papercut.Service --tag papercut:nanoserver-$time

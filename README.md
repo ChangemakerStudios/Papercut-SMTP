@@ -10,12 +10,17 @@ The Simple SMTP Desktop Email Receiver
 ## What it does
 Ever need to test emails from an application or web site but don't want them accidently being sent or having to deal with the hassle of setting up a test email server? Papercut is a quick email viewer with a built-in SMTP server designed to only receive messages. It doesn't enforce any restrictions how you send your email. It allows you to view the whole email-chilada: body, html, headers, attachment down to the naughty raw bits. It can be set to run on startup and sits quietly minimized in the tray giving you a balloon popup when a new message arrives.
 
-The dotnet core based version of Papercut is a cross platform version of Papercut.
+The dotnet core based version of Papercut is a cross platform, Docker images are also available.
 
 
 ## Download Now
 The .netcore based applications are not released yet. 
 You can download the [released versions](https://github.com/ChangemakerStudios/Papercut/releases) or try the [nightly builds](https://jijiechen.github.io/Papercut/) at this time.
+
+You can also use Papercut directly with Docker: 
+```
+    docker run --name=papercut -p 25:25 -p 37408:37408 jijiechen/papercut:latest
+```
 
 
 ## License
