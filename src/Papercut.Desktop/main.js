@@ -12,7 +12,7 @@ let globalShortcut, shell, screen, clipboard;
 
 let serviceConfig = require("./bin/Papercut.Service.json");
 let useRoot = !isWin32 && parseInt(serviceConfig.Port) < 1024;
-let startProcess;
+let startProcess, backendProcess;
 
 
 if (useRoot){
@@ -36,19 +36,19 @@ if (useRoot){
     startProcess = function (binFilePath, parameters) {
         const outoutFile = setupOutputRedirection();
         const output = require('fs').openSync(outoutFile, 'a');
-        require('child_process').spawn(binFilePath, parameters, {detached: false, stdio: [ 'ignore', output, output ]});
+        backendProcess = require('child_process').spawn(binFilePath, parameters, {detached: false, stdio: [ 'ignore', output, output ]});
     };
 }
 
 
 app.on('will-quit', () => {
     console.log('All windows are closed, application quiting...');
-    app.exit(0);
+    exit();
 });
 
 app.on('window-all-closed', () => {
     console.log('All windows are closed, application quiting...');
-    app.exit(0);
+    exit();
 });
 
 app.on('web-contents-created', (e, webContents)=>{
@@ -148,4 +148,14 @@ function setupOutputRedirection() {
                 tempFile.name + '".\n' + 
                 (debugPapercut ? 'This file will be kept after Papercut exits since we are in debug mode.' : 'This file will be removed after Papercut exits.'));
     return tempFile.name;
+}
+
+function exit() {
+    try {
+        if (backendProcess != null) {
+            backendProcess.kill('SIGQUIT');
+        }
+    }catch (err){}
+    
+    app.exit(0);
 }

@@ -17,12 +17,15 @@
 // limitations under the License. 
 
 using System;
+using System.Reflection;
+using System.Threading;
 using Autofac;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Papercut.Core.Domain.Settings;
 using Papercut.Service;
+using Quobject.SocketIoClientDotNet.Client;
 
 namespace Papercut.Desktop
 {
@@ -30,6 +33,12 @@ namespace Papercut.Desktop
     {
         static int Main(string[] args)
         {
+            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DEBUG_PAPAERCUT")))
+            {
+                Console.WriteLine("Waiting 30s for the debugger to attach...");
+                Thread.Sleep(30 * 1000);
+            }
+            
             WebServerReadyEvent.Register(ev =>
             {
                 if (HybridSupport.IsElectronActive)
@@ -58,19 +67,35 @@ namespace Papercut.Desktop
         
         static async void BootstrapElectron()
         {
-            Electron.App.WillQuit += Papercut.Service.Program.Shutdown;
+            var socketProp =  Electron.WindowManager
+                                .GetType().Assembly
+                                .GetType("ElectronNET.API.BridgeConnector")
+                                .GetProperty("Socket", BindingFlags.Static | BindingFlags.Public);
+            var socket = socketProp.GetValue(null) as Socket;
             
-            var browserWindow = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
+            Electron.App.WillQuit += Papercut.Service.Program.Shutdown;
+            await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
             {
                 Width = 1152,
                 Height = 864,
-                Show = false
+                Show = true,
+                BackgroundColor = "#f5f6f8",
+                Title = "Papercut"
             });
             
-            browserWindow.SetTitle("Papercut");
-            browserWindow.OnReadyToShow += () => browserWindow.Show();
+            QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
+            QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
+        }
+
+        static void QuitOnConnectionProblems(Socket socket, string eventType)
+        {
+            Action handler = () =>
+            {
+                Console.Error.WriteLine("Papercut backend process is exiting because of connection with frontend Electron process is error. Event type: " + eventType);
+                Papercut.Service.Program.Shutdown();
+            };
             
-            // todo: Shutdown on lost connection to Election app
+            socket.On(eventType, handler);
         }
     }
 }
