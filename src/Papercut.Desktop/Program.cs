@@ -17,12 +17,15 @@
 // limitations under the License. 
 
 using System;
+using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Autofac;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.PlatformAbstractions;
 using Papercut.Core.Domain.Settings;
 using Papercut.Service;
 using Quobject.SocketIoClientDotNet.Client;
@@ -43,7 +46,7 @@ namespace Papercut.Desktop
             {
                 if (HybridSupport.IsElectronActive)
                 {
-                    BootstrapElectron();
+                    PapercutHybridSupport.Bootstrap();
                 }
             });
             
@@ -65,37 +68,5 @@ namespace Papercut.Desktop
             return appTask.Result;
         }
         
-        static async void BootstrapElectron()
-        {
-            var socketProp =  Electron.WindowManager
-                                .GetType().Assembly
-                                .GetType("ElectronNET.API.BridgeConnector")
-                                .GetProperty("Socket", BindingFlags.Static | BindingFlags.Public);
-            var socket = socketProp.GetValue(null) as Socket;
-            
-            Electron.App.WillQuit += Papercut.Service.Program.Shutdown;
-            await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
-            {
-                Width = 1152,
-                Height = 864,
-                Show = true,
-                BackgroundColor = "#f5f6f8",
-                Title = "Papercut"
-            });
-            
-            QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
-            QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
-        }
-
-        static void QuitOnConnectionProblems(Socket socket, string eventType)
-        {
-            Action handler = () =>
-            {
-                Console.Error.WriteLine("Papercut backend process is exiting because of connection with frontend Electron process is error. Event type: " + eventType);
-                Papercut.Service.Program.Shutdown();
-            };
-            
-            socket.On(eventType, handler);
-        }
     }
 }
