@@ -5,10 +5,14 @@ matrix:
     - os: linux
       dist: trusty
       sudo: required
-      env: ELECTRONIZE_OS_NAME=linux
+      env:
+        - ELECTRONIZE_OS_NAME=linux
+        - CONFIGURATION=Release
     - os: osx
       osx_image: xcode8.2
-      env: ELECTRONIZE_OS_NAME=darwin
+      env:
+        - ELECTRONIZE_OS_NAME=darwin
+        - CONFIGURATION=Release
             
 addons:
   apt:
@@ -22,8 +26,6 @@ services:
 
 dotnet: 2.1.4    # this is SDK version. See https://github.com/dotnet/core/blob/master/release-notes/download-archive.md
 solution: Papercut.sln
-env:
- - CONFIGURATION=Release
   
   
 install:
