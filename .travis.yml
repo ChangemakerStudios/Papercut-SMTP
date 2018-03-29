@@ -1,10 +1,5 @@
 language: csharp
 mono: none
-os:
- - linux
- - osx
-
-
 matrix:
   include:
     - os: linux
@@ -54,7 +49,7 @@ script:
  - npm install
  - electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/ Papercut --platform=$ELECTRONIZE_OS_NAME --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite --no-prune --icon=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/icons/Papercut-icon.icns --app-copyright="ChangemakerStudios" --app-version="5.5.$TRAVIS_BUILD_NUMBER-netcore"
  
-deploy:
+after_success:
  # Upload PapercutService
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.0/$TRAVIS_OS_NAME-x64/publish/
  - zip -r ../PapercutService.zip ./*
