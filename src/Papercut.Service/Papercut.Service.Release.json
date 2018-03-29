@@ -1,3 +1,4 @@
 ﻿{
-  "Port":25
+  "Port":25,
+  "MessagePath": "%ApplicationData%\\Papercut"
 }

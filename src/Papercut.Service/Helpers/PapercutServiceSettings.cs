@@ -15,6 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.IO;
+
 namespace Papercut.Service.Helpers
 {
     using Papercut.Core.Domain.Settings;
@@ -37,7 +39,7 @@ namespace Papercut.Service.Helpers
 
         public string MessagePath
         {
-            get { return Settings.Get<string>("MessagePath", @"%BaseDirectory%" + System.IO.Path.DirectorySeparatorChar + "Incoming"); }
+            get { return Settings.Get("MessagePath", "%BaseDirectory%\\Incoming"); }
             set { if (MessagePath != value) Settings.Set("MessagePath", value); }
         }
     }
