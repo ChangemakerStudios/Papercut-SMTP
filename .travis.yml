@@ -63,8 +63,9 @@ after_success:
  - dotnet $TRAVIS_BUILD_DIR/azcopy/azcopy.dll --source $TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/PapercutDesktop.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/$TRAVIS_OS_NAME/5.5.$TRAVIS_BUILD_NUMBER-netcore/PapercutDesktop.$TRAVIS_OS_NAME.5.5.$TRAVIS_BUILD_NUMBER-netcore.zip  --dest-key $azblobcontainerkey
 
  # Papercut Service Docker Image
- - cd $TRAVIS_BUILD_DIR ; ./Docker/build.sh
-
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd $TRAVIS_BUILD_DIR ; fi
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./Docker/build.sh ; fi
+ 
  # todo: Build & pack plugins
 
 cache: yarn
