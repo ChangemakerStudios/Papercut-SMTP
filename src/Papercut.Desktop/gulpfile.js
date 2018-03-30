@@ -29,10 +29,15 @@ function packageApp(fromHost) {
         }
         
         let packageJson = gulp.src(['package.json'], { base: '.' }).pipe(json({ version }));
-        let sources = gulp.src([`${dir}/**/*.*`, `!${dir}/node_modules/electron/**/*.*`]); 
+        let sources = gulp.src([`${dir}/**/*.*`, `!${dir}/node_modules/electron/**/*.*`]);
+
+        let extraOptions = {};
+        if (!!process.env.GITHUB_AUTH_TOKEN){
+            extraOptions.token = process.env.GITHUB_AUTH_TOKEN;
+        }
         
         return es.merge(packageJson, sources)
-            .pipe(electron(electronOpts))
+            .pipe(electron(Object.assign({}, extraOptions, electronOpts)))
             .pipe(symdest(destDir));
     };
 }
