@@ -4,7 +4,8 @@ process.debugPapercut = !!process.env["DEBUG_PAPAERCUT"];
 const { app } = require('electron');
 const path = require('path');
 const portfinder = require('detect-port');
-const isWin32 = require("os").platform() === "win32";
+const osPlatform = require("os").platform();
+const isWin32 = osPlatform === "win32";
 
 let io, browserWindows, ipc, loadURL;
 let appApi, menu, dialog, notification, tray, webContents;
@@ -53,7 +54,7 @@ app.on('window-all-closed', () => {
 
 app.on('web-contents-created', (e, webContents)=>{
     const windowUrl = webContents.getURL();
-    function handleRedirect(e, url) {        
+    function handleRedirect(e, url) {
         if(normalizeUrl(url) !== normalizeUrl(windowUrl)) {
             e.preventDefault();
             require('electron').shell.openExternal(url);
@@ -78,8 +79,15 @@ app.on('web-contents-created', (e, webContents)=>{
 
 app.on('ready', () => {
     portfinder(8000, (error, port) => {
-        startSocketApiBridge(port);
+       startSocketApiBridge(port);
     });
+    
+    if (osPlatform === 'darwin') {
+        const localShortcut = require('electron-localshortcut');
+        localShortcut.register('Command+H', function () {
+            app.hide();
+        });
+    }
 });
 
 function startSocketApiBridge(port) {
@@ -105,7 +113,7 @@ function startSocketApiBridge(port) {
 }
 
 function startAspCoreBackend(electronPort) {
-    portfinder(8000, (error, electronWebPort) => {
+    portfinder(37408, (error, electronWebPort) => {
         loadURL = `http://localhost:${electronWebPort}`
         const parameters = [`/electronPort=${electronPort}`, `/electronWebPort=${electronWebPort}`];
 
