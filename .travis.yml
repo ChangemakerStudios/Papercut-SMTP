@@ -8,11 +8,13 @@ matrix:
       env:
         - ELECTRONIZE_OS_NAME=linux
         - CONFIGURATION=Release
+        - PAPERCUT_VERSION=5.5.$TRAVIS_BUILD_NUMBER-netcore
     - os: osx
       osx_image: xcode8.2
       env:
         - ELECTRONIZE_OS_NAME=darwin
         - CONFIGURATION=Release
+        - PAPERCUT_VERSION=5.5.$TRAVIS_BUILD_NUMBER-netcore 
             
 addons:
   apt:
@@ -48,19 +50,22 @@ script:
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/bin/package.json $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/package.json
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/bin/launch.sh $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/launch.sh
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/
- - npm install
- - electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/ Papercut --platform=$ELECTRONIZE_OS_NAME --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite --no-prune --icon=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/icons/Papercut-icon.icns --app-copyright="ChangemakerStudios" --app-version="5.5.$TRAVIS_BUILD_NUMBER-netcore"
- 
+ - npm install --production
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/ Papercut --platform=$ELECTRONIZE_OS_NAME --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite --no-prune --icon=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/icons/Papercut-icon.icns --app-copyright="ChangemakerStudios" --app-version="$PAPERCUT_VERSION"   ; fi
+
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/ ; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then gulp release ; fi
+
 after_success:
  # Upload PapercutService
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.0/$TRAVIS_OS_NAME-x64/publish/
  - zip -r ../PapercutService.zip ./*
- - dotnet $TRAVIS_BUILD_DIR/azcopy/azcopy.dll --source $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.0/$TRAVIS_OS_NAME-x64/PapercutService.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/$TRAVIS_OS_NAME/5.5.$TRAVIS_BUILD_NUMBER-netcore/PapercutService.$TRAVIS_OS_NAME.5.5.$TRAVIS_BUILD_NUMBER-netcore.zip  --dest-key $azblobcontainerkey
+ - dotnet $TRAVIS_BUILD_DIR/azcopy/azcopy.dll --source $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.0/$TRAVIS_OS_NAME-x64/PapercutService.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/$TRAVIS_OS_NAME/$PAPERCUT_VERSION/PapercutService.$TRAVIS_OS_NAME.$PAPERCUT_VERSION.zip  --dest-key $azblobcontainerkey
   
  # Upload PapercutDesktop
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/Papercut-$ELECTRONIZE_OS_NAME-x64/
  - zip -r ../PapercutDesktop.zip ./*
- - dotnet $TRAVIS_BUILD_DIR/azcopy/azcopy.dll --source $TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/PapercutDesktop.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/$TRAVIS_OS_NAME/5.5.$TRAVIS_BUILD_NUMBER-netcore/PapercutDesktop.$TRAVIS_OS_NAME.5.5.$TRAVIS_BUILD_NUMBER-netcore.zip  --dest-key $azblobcontainerkey
+ - dotnet $TRAVIS_BUILD_DIR/azcopy/azcopy.dll --source $TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/PapercutDesktop.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/$TRAVIS_OS_NAME/$PAPERCUT_VERSION/PapercutDesktop.$TRAVIS_OS_NAME.$PAPERCUT_VERSION.zip  --dest-key $azblobcontainerkey
 
  # Papercut Service Docker Image
  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd $TRAVIS_BUILD_DIR ; fi

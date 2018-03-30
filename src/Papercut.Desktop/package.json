@@ -17,7 +17,11 @@
         "tmp": "^0.0.33"
     },
     "devDependencies": {
-        "@types/electron": "^1.6.10",
-        "@types/socket.io": "^1.4.31"
+        "gulp": "^3.9.1",
+        "gulp-atom-electron": "^1.16.1",
+        "gulp-json-editor": "^2.3.0",
+        "gulp-symdest": "^1.1.0",
+        "rimraf": "^2.6.2",
+        "event-stream" : "^3.3.4"
     }
 }

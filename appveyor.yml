@@ -27,7 +27,7 @@ build_script:
   - copy /Y %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\bin\package.json %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\package.json
   - copy /Y %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\bin\launch.sh %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\launch.sh
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\
-  - npm install
+  - npm install --production
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\
   - electron-packager %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\ Papercut --platform=win32 --arch=x64 --out=%APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\bin\desktop\ --overwrite --no-prune --app-copyright="ChangemakerStudios" --app-version="%APPVEYOR_BUILD_VERSION%" --icon=%APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\icons\Papercut-icon.ico  --win32metadata.ProductName="Papercut" --win32metadata.FileDescription="Papercut Simple Desktop SMTP Server" --win32metadata.CompanyName="ChangemakerStudios"
   
