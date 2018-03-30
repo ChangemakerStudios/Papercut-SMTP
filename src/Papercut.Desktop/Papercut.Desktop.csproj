@@ -25,11 +25,9 @@
     <None Include="main.js" CopyToOutputDirectory="Always" />
     <None Include="package.json" CopyToOutputDirectory="Always" />
     <None Include="launch.sh" CopyToOutputDirectory="Always" />
+    
     <None Include="icons/Papercut-icon.png" CopyToOutputDirectory="Always" />
     <None Include="icons/Papercut-icon.ico" CopyToOutputDirectory="Always" />
     <None Include="icons/Papercut-icon.icns" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="build" />
   </ItemGroup>
 </Project>
