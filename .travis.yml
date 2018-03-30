@@ -54,6 +54,8 @@ script:
  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/ Papercut --platform=$ELECTRONIZE_OS_NAME --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite --no-prune --icon=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/icons/Papercut-icon.icns --app-copyright="ChangemakerStudios" --app-version="$PAPERCUT_VERSION"   ; fi
 
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/ ; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install gulp -g ; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install ; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then gulp release ; fi
 
 after_success:

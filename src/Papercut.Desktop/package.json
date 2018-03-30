@@ -22,6 +22,6 @@
         "gulp-json-editor": "^2.3.0",
         "gulp-symdest": "^1.1.0",
         "rimraf": "^2.6.2",
-        "event-stream" : "^3.3.4"
+        "event-stream": "^3.3.4"
     }
 }
