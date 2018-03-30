@@ -7,7 +7,9 @@ const electronOpts = {
     darwinIcon: 'icons/Papercut-icon.icns',
     darwinBundleIdentifier: 'com.papercut.netcore',
     platform: 'darwin',
-    arch: 'x64'
+    arch: 'x64',
+    ffmpegChromium: true,
+    keepDefaultApp: true
 };
 
 const gulp = require('gulp');
