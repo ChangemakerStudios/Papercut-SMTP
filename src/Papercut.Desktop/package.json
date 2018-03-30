@@ -10,7 +10,6 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@aspnet/signalr": "^1.0.0-preview1-update1",
         "detect-port": "^1.2.1",
         "electron": "^1.7.8",
         "electron-localshortcut": "^3.1.0",

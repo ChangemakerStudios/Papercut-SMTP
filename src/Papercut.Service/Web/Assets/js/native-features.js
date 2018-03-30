@@ -65,7 +65,6 @@ window.nativeFeatures = {
             setTimeout(onclick, 0);
             notification.close();
         };
-        notification.show();
     }
 };
 

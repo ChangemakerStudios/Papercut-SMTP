@@ -236,8 +236,36 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
       }
 
       function connect() {
+          var retryInternval, isConnected;
           var connection = new signalR.HubConnection('/new-messages');
-          connection.start().then(function () { connection.on('new-message-received', onNewMessage); });     
+          tryConnect();
+          connection.on('new-message-received', onNewMessage);
+          connection.onclose(function() {
+              isConnected = false;
+              console.log('Connection closed. Will retry 5 seconds later...');
+              retryInternval = setInterval(tryConnect, 5000);
+          });
+          
+          
+          function tryConnect() {
+              if (isConnected){
+                  cancelRetry();
+                  return;
+              }
+              
+              connection.start().then(function () {
+                  isConnected = true;
+                  cancelRetry();
+                  console.log('New message socket connection is established. connectionId: ' + connection.id);  
+              });
+          }
+          
+          function cancelRetry() {
+              if (retryInternval){
+                  clearInterval(retryInternval);
+                  retryInternval = null;
+              }
+          }
       }
       
       function onNewMessage(msg) {
