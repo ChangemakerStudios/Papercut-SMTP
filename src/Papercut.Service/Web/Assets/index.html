@@ -155,7 +155,7 @@
 
   <div class="mail-content">
   <span class="download-raw pull-right">
-    <a ng-click="downloadRawMessage(preview.id)" class="click-to-download"><span class="glyphicon glyphicon-cloud-download"></span> Download raw message</a>
+    <a ng-click="downloadRawMessage(preview.id)" class="click-to-download"><span class="glyphicon glyphicon-cloud-download"></span> Save raw message</a>
   </span>
       <ul class="nav nav-tabs">
         <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
@@ -185,7 +185,7 @@
                 <tr ng-repeat="section in preview.sections">
                     <td>{{section.mediaType}}</td>
                     <td>{{section.fileName}}</td>
-                    <td><a title="Download and save section content" ng-click="downloadSection(preview.id, $index, section.fileName)" class="glyphicon glyphicon-download-alt click-to-download"></a></td>
+                    <td><a title="Save section content as file" ng-click="downloadSection(preview.id, $index, section.fileName)" class="glyphicon glyphicon-download-alt click-to-download"></a></td>
                 </tr>
                 </tbody>
             </table>
@@ -207,6 +207,7 @@
     <script src="js/vendor/bootstrap-3.3.2.min.js"></script>
     <script src="js/vendor/angular-1.3.8.js"></script>
     <script src="js/vendor/moment-2.8.4.js"></script>
+    <script src="js/vendor/signalr.min.js"></script>
 
     <script src="js/controllers.js"></script>
     <script src="js/message-repository.js"></script>

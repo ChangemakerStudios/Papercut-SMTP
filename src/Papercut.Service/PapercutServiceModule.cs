@@ -17,6 +17,8 @@
 
 using System;
 using Papercut.Common.Domain;
+using Papercut.Core.Domain.Message;
+using Papercut.Service.Web.Notification;
 
 namespace Papercut.Service
 {
@@ -44,6 +46,7 @@ namespace Papercut.Service
                 .SingleInstance();
 
             builder.RegisterType<WebServerReadyEvent>().As<IEventHandler<PapercutWebServerReadyEvent>>();
+            builder.RegisterType<NewMessageEventHandler>().As<IEventHandler<NewMessageEvent>>();
 
             builder.RegisterType<WebServer>()
                 .AsSelf()

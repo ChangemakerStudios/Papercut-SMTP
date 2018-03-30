@@ -51,12 +51,13 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
       var e = startEvent("Loading messages", null, "glyphicon-download");
       $scope.requetedMessageList = true;
 
-      messageRepository.list($scope.itemsPerPage, $scope.startIndex)
+      var index = $scope.startIndex;
+      messageRepository.list($scope.itemsPerPage, index)
                        .then(function (resp) {
                             $scope.messages = resp.data.messages;
                             $scope.totalMessages = resp.data.totalMessageCount;
                             $scope.countMessages = resp.data.messages.length;
-                            $scope.startMessages = $scope.startIndex;
+                            $scope.startMessages = index;
                             e.done();
                         });
   };
@@ -223,6 +224,32 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
       return e;
   }
 
+  function setupNotification(scope) {
+      if (nativeFeatures.isNative()) {
+          connect();
+      }else{
+          window.Notification && Notification.requestPermission(function (result) {
+              if (result === 'granted'){
+                  connect();
+              }
+          });
+      }
+
+      function connect() {
+          var connection = new signalR.HubConnection('/new-messages');
+          connection.start().then(function () { connection.on('new-message-received', onNewMessage); });     
+      }
+      
+      function onNewMessage(msg) {
+          if (document.hasFocus() && scope.startIndex === 0) {
+              scope.refresh();
+          } else {
+              nativeFeatures.notify(msg.subject, function () {
+                  scope.backToInboxFirst();
+              });
+          }
+      }
+  }
 
   function guid() {
       function s4() {
@@ -237,8 +264,9 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
 
     $scope.refresh();
     $interval(function () {
-        if ($scope.startIndex == 0) {
+        if ($scope.startIndex === 0) {
             $scope.refresh();
         }
     }, 8000);
+    setupNotification($scope);
 });

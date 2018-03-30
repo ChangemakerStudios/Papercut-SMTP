@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using Papercut.Service.Web.Notification;
+
 namespace Papercut.Service.Web.Hosting
 {
     using System;
@@ -71,7 +73,7 @@ namespace Papercut.Service.Web.Hosting
 
             var mvcCore = services.AddMvcCore();
             mvcCore.AddJsonFormatters();
-
+            services.AddSignalR();
 
             var builder = new ContainerBuilder();
             builder.Populate(services);
@@ -84,6 +86,10 @@ namespace Papercut.Service.Web.Hosting
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddProvider(new SerilogLoggerProvider(Scope));
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<NewMessagesHub>("/new-messages");
+            });
             app.UseMvc();
             app.UseResponseBuffering();
         }

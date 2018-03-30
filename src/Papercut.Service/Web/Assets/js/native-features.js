@@ -41,6 +41,31 @@ window.nativeFeatures = {
             console.log(warnning + '\n' + err.stack);
             dialog.showErrorBox('Error on saving', warnning);
         }
+    },
+    notify: function (message, onclick) {
+        if (!this.isNative() && !Notification.permission){
+            return;
+        }
+
+        var msgPrompt = {
+           body: message,
+           icon: '/images/Papercut-icon.png'
+        };
+        
+        if (this.isNative()){
+            // As a native app, the notification will defaultly contain the application's logo.
+            delete msgPrompt.icon;
+        }
+        
+        var notification = new Notification('New Message Receivied', msgPrompt);
+        notification.onclick = function () {
+            parent.focus();
+            window.focus();
+            
+            setTimeout(onclick, 0);
+            notification.close();
+        };
+        notification.show();
     }
 };
 

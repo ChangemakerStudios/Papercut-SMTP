@@ -31,7 +31,6 @@ namespace Papercut.Service.Web.Hosting
     public class WebServer : IDisposable
     {
         readonly ILifetimeScope scope;
-        readonly Serilog.ILogger logger;
         readonly IMessageBus messageBus;
         readonly ISettingStore settingStore;
 
@@ -40,12 +39,11 @@ namespace Papercut.Service.Web.Hosting
 
         CancellationTokenSource serverCancellation;
 
-        public WebServer(ILifetimeScope scope, ISettingStore settingStore, IMessageBus messageBus, Serilog.ILogger logger)
+        public WebServer(ILifetimeScope scope, ISettingStore settingStore, IMessageBus messageBus)
         {
             this.scope = scope;
             this.settingStore = settingStore;
             this.messageBus = messageBus;
-            this.logger = logger;
         }
 
         public void Start()
