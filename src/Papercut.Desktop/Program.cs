@@ -21,6 +21,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Autofac;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
@@ -42,31 +43,40 @@ namespace Papercut.Desktop
                 Thread.Sleep(30 * 1000);
             }
             
-            WebServerReadyEvent.Register(ev =>
+            
+            
+            
+            Task<int> appTask;
+            new WebHostBuilder().UseElectron(args);
+            if (HybridSupport.IsElectronActive)
             {
-                if (HybridSupport.IsElectronActive)
+                // Quit if the process is not launched by the customized main.js
+                var bootstraper = Environment.GetEnvironmentVariable("PAPERCUT_BOOTSTRAPER");
+                if (string.IsNullOrWhiteSpace(bootstraper))
+                {
+                    Console.WriteLine("Papercut.Desktop: skiping this running attempt.");
+                    PapercutHybridSupport.Quit();
+                }
+                
+                            
+                WebServerReadyEvent.Register(ev =>
                 {
                     PapercutHybridSupport.Bootstrap();
-                }
-            });
-            
-            
-            var appTask = Papercut.Service.Program.Startup(args, appContainer =>
-            {
-                new WebHostBuilder().UseElectron(args);
-                if (HybridSupport.IsElectronActive)
+                });
+                
+                appTask = Papercut.Service.Program.Startup(args, appContainer =>
                 {
                     appContainer.Resolve<ISettingStore>().Set("HttpPort", BridgeSettings.WebPort);
-                }
-                else
-                {
-                    Console.Error.WriteLine("Electron context is not detected. The application will run in console mode.");
-                }
-            });
+                });
+            }
+            else
+            {
+                Console.Error.WriteLine("Electron context is not detected. The application will run in console mode.");
+                appTask = Papercut.Service.Program.Startup(args);
+            }
 
             appTask.Wait();
             return appTask.Result;
         }
-        
     }
 }

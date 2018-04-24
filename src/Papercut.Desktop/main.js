@@ -1,5 +1,5 @@
 
-
+process.env["PAPERCUT_BOOTSTRAPER"] = "Customized";
 process.debugPapercut = !!process.env["DEBUG_PAPAERCUT"];
 const { app, Menu, Tray } = require('electron');
 const path = require('path');

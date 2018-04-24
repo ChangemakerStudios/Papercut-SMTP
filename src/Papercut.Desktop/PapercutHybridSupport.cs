@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -25,16 +26,39 @@ namespace Papercut.Desktop
                 Icon = WindowIcon()
             });
             
-            var socketProp =  Electron.WindowManager
-                .GetType().Assembly
-                .GetType("ElectronNET.API.BridgeConnector")
-                .GetProperty("Socket", BindingFlags.Static | BindingFlags.Public);
-            var socket = socketProp.GetValue(null) as Socket;
+            var socket = GetElectronSocket();
 
             QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
             QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
         }
 
+
+        public static void Quit()
+        {
+            var socket = GetElectronSocket();
+            socket.On(Socket.EVENT_CONNECT, () =>
+            {
+                Electron.App.Quit();
+                
+                Thread.Sleep(100);
+                Environment.Exit(-1);
+            });
+            
+            // Wait at most 2 seconds
+            Thread.Sleep(2000);
+            Environment.Exit(-1);
+        }
+
+        static Socket GetElectronSocket()
+        {
+            var socketProp = Electron.WindowManager
+                .GetType().Assembly
+                .GetType("ElectronNET.API.BridgeConnector")
+                .GetProperty("Socket", BindingFlags.Static | BindingFlags.Public);
+            
+            return  socketProp.GetValue(null) as Socket;
+        }
+        
         static void QuitOnConnectionProblems(Socket socket, string eventType)
         {
             void Handler()

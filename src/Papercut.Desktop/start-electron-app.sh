@@ -2,7 +2,7 @@
 
 set -e
 
-if [ "$1" = "rebuild" ]; then
+if [ "$1" != "nobuild" ]; then
     # we need to use this command to 'build' an Electron.NET app. (But actually, we don't need to run it at this time; however, Electron.NET does not provide a switch for prevent running)
     dotnet electronize start
 fi
@@ -17,5 +17,5 @@ cd obj/Host/
 npm install
 cd ./node_modules/.bin/
 
-# Run the app after the main.js is replacedg
+# Run the app after the main.js is replaced
 ./electron ../../main.js
