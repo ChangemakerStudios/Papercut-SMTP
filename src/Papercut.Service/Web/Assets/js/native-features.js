@@ -57,14 +57,20 @@ window.nativeFeatures = {
             delete msgPrompt.icon;
         }
         
-        var notification = new Notification('New Message Receivied', msgPrompt);
-        notification.onclick = function () {
-            parent.focus();
-            window.focus();
-            
-            setTimeout(onclick, 0);
-            notification.close();
-        };
+        
+        var notificationTitle = 'New Message Receivied';
+        if (this.isNative() && window.os.platform === 'win32' && 10 > parseInt(window.os.release)){
+            webContents.emit('tray-notify', {title: notificationTitle, content: msgPrompt.body})
+        } else {
+            var notification = new Notification(notificationTitle, msgPrompt);
+            notification.onclick = function () {
+                parent.focus();
+                window.focus();
+
+                setTimeout(onclick, 0);
+                notification.close();
+            };
+        }
     }
 };
 
@@ -75,6 +81,12 @@ window.nativeFeatures = {
 
     window.nativeWindow = require('electron').remote.getCurrentWindow();
     window.webContents = window.nativeWindow.webContents;
+    
+    const remote = require('electron').remote;
+    window.os = {
+        platform: remote.require('os').platform(),
+        release: remote.require('os').release(),
+    };
 })();
 
 

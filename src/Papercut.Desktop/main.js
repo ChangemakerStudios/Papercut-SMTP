@@ -1,7 +1,7 @@
 
 
 process.debugPapercut = !!process.env["DEBUG_PAPAERCUT"];
-const { app } = require('electron');
+const { app, Menu, Tray } = require('electron');
 const path = require('path');
 const portfinder = require('detect-port');
 const osPlatform = require("os").platform();
@@ -14,6 +14,7 @@ let globalShortcut, shell, screen, clipboard;
 let serviceConfig = require("./bin/Papercut.Service.json");
 let useRoot = !isWin32 && parseInt(serviceConfig.Port) < 1024;
 let startProcess, backendProcess;
+let activeWindow, trayIcon, trayNotify;
 
 
 if (useRoot){
@@ -75,6 +76,13 @@ app.on('web-contents-created', (e, webContents)=>{
 
     webContents.on('will-navigate', handleRedirect);
     webContents.on('new-window', handleRedirect);
+    webContents.on('tray-notify', function (notification) {
+        trayNotify && trayNotify(notification);
+    })
+});
+
+app.on('browser-window-created', (e, window) => {
+    activeWindow = window;
 });
 
 app.on('ready', () => {
@@ -88,7 +96,12 @@ app.on('ready', () => {
             app.hide();
         });
     }
+    
+    if (isWin32 && 10 > parseInt(require("os").release())){
+        setupTrayIcon();
+    }
 });
+
 
 function startSocketApiBridge(port) {
     io = require('socket.io')(port);
@@ -159,11 +172,53 @@ function setupOutputRedirection() {
 }
 
 function exit() {
+    if (trayIcon){
+        trayIcon.destroy();
+        trayIcon = null;
+    }
+    
     try {
         if (backendProcess != null) {
             backendProcess.kill('SIGQUIT');
         }
     }catch (err){}
     
+    setTimeout(function () {
+        process.exit(0);
+    }, 100);
     app.exit(0);
+}
+
+function setupTrayIcon() {
+    const iconPath = __dirname + '/bin/icons/Papercut-icon.png';
+    
+    trayIcon = new Tray(iconPath);
+    const contextMenu = Menu.buildFromTemplate([
+        {label: 'Quit Papercut', type: 'normal'}
+    ]);
+
+    contextMenu.items[0].click = function () {
+        app.quit();
+    };
+
+    trayIcon.setToolTip('Papercut');
+    trayIcon.setContextMenu(contextMenu);
+
+
+    trayIcon.on('click', activePapercut);
+    trayIcon.on('balloon-click', activePapercut);
+    
+    trayNotify = function (notification) {
+        if (!trayIcon){ return; }
+        
+        var options = Object.assign({ icon: iconPath }, notification);
+        trayIcon.displayBalloon(options);
+    }
+}
+
+function activePapercut() {
+    if (activeWindow){
+        activeWindow.show();
+        activeWindow.focus();
+    }
 }
