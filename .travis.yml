@@ -49,7 +49,7 @@ script:
  - cp -f $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/bin/launch.sh $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/launch.sh
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/
  - npm install
- - electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/ Papercut --platform=$ELECTRONIZE_OS_NAME --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite --no-prune --icon=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/icons/Papercut-icon.icns --app-copyright="ChangemakerStudios" --app-version="5.5.$TRAVIS_BUILD_NUMBER-netcore"
+ - electron-packager $TRAVIS_BUILD_DIR/src/Papercut.Desktop/obj/desktop/$ELECTRONIZE_OS_NAME/ Papercut --platform=$ELECTRONIZE_OS_NAME --arch=x64 --out=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/ --overwrite --icon=$TRAVIS_BUILD_DIR/src/Papercut.Desktop/icons/Papercut-icon.icns --app-copyright="ChangemakerStudios" --app-version="5.5.$TRAVIS_BUILD_NUMBER-netcore"
  
 after_success:
  # Upload PapercutService
