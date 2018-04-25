@@ -179,21 +179,30 @@ namespace Papercut.Network
                 };
                 asyncSocketArgs.SetBuffer(_receiveBuffer, 0, BufferSize);
 
-                asyncSocketArgs.Completed += (object sender, SocketAsyncEventArgs e) => {
-                    if (IsValidConnection() && ContinueProcessReceive(e))
-                    {
-                        if (Connected && Client.Connected)
-                        {
-                            // continue processing
-                            BeginReceive();
-                        }
-                    }
-                };
-                Client.ReceiveAsync(asyncSocketArgs);
+                asyncSocketArgs.Completed += EndReceive;
+                var isAsync = Client.ReceiveAsync(asyncSocketArgs);
+                if (!isAsync)
+                {
+                    // When the IO completed synchronously, should invoke callback immediately otherwise, the callback will never be called 
+                    // https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.socket.receiveasync?view=netcore-2.0#System_Net_Sockets_Socket_ReceiveAsync_System_Net_Sockets_SocketAsyncEventArgs_
+                    EndReceive(Client, asyncSocketArgs);
+                }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex, "Error in Connection.BeginReceive");
+            }
+        }
+
+        void EndReceive(object sender, SocketAsyncEventArgs e)
+        {
+            if (IsValidConnection() && ContinueProcessReceive(e))
+            {
+                if (Connected && Client.Connected)
+                {
+                    // continue processing
+                    BeginReceive();
+                }
             }
         }
 

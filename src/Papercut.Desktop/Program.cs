@@ -17,19 +17,13 @@
 // limitations under the License. 
 
 using System;
-using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using ElectronNET.API;
-using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.PlatformAbstractions;
 using Papercut.Core.Domain.Settings;
 using Papercut.Service;
-using Quobject.SocketIoClientDotNet.Client;
 
 namespace Papercut.Desktop
 {
