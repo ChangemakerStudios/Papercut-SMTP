@@ -44,7 +44,14 @@ namespace Papercut.Network.SmtpCommands
 
             if (GetMatchCommands().IfNullEmpty().Any(c => c.Equals(command, StringComparison.OrdinalIgnoreCase)))
             {
-                Run(command, parts.Skip(1).ToArray());
+                if ((Session?.RequiresAuthentication ?? false) && 
+                    string.IsNullOrEmpty(Session?.Username) &&
+                    this.RequiresAuthentication)
+                {
+                    Connection.SendLine("530 Authentication is required").Wait();
+                }
+                else Run(command, parts.Skip(1).ToArray());
+                
                 return SmtpCommandResult.Done;
             }
 
