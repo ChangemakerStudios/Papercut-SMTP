@@ -74,7 +74,7 @@ namespace Papercut.Core.Domain.Network.Smtp
         ///     Gets or sets a value indicating whether this session requires authentication
         ///     (to be determined by server setting)
         /// </summary>
-        public bool RequireAuthentication { get; set; }
+        public bool RequiresAuthentication { get; set; }
                 
         /// <summary>
         ///     Gets or sets a value determining the authenticated username
