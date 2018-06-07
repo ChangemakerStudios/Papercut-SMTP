@@ -32,6 +32,8 @@ namespace Papercut.Network.SmtpCommands
         protected IConnection Connection => this.Context.Connection;
 
         public ISmtpContext Context { protected get; set; }
+        
+        protected virtual bool RequiresAuthentication { get { return true; } }
 
         public virtual SmtpCommandResult Execute(ISmtpContext context, string request)
         {
