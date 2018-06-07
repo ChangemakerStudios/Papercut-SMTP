@@ -25,6 +25,8 @@ namespace Papercut.Network.SmtpCommands
 
     public class HeloSmtpCommand : BaseSmtpCommand
     {
+        protected override bool RequiresAuthentication { get { return false; } }
+    
         protected override IEnumerable<string> GetMatchCommands()
         {
             return new[] { "HELO" };
