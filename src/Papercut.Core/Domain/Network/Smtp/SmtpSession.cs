@@ -70,6 +70,18 @@ namespace Papercut.Core.Domain.Network.Smtp
         /// </summary>
         public bool UseUtf8 { get; set; }
 
+        /// <summary>
+        ///     Gets or sets a value indicating whether this session requires authentication
+        ///     (to be determined by server setting)
+        /// </summary>
+        public bool RequireAuthentication { get; set; }
+                
+        /// <summary>
+        ///     Gets or sets a value determining the authenticated username
+        ///     (where null/empty means not authenticated)
+        /// </summary>
+        public string Username { get; set; }
+        
         #endregion
     }
 }
