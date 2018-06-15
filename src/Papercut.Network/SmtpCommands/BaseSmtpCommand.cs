@@ -24,6 +24,7 @@ namespace Papercut.Network.SmtpCommands
     using Papercut.Common.Extensions;
     using Papercut.Core.Domain.Network;
     using Papercut.Core.Domain.Network.Smtp;
+    using Papercut.Network.Protocols;
 
     public abstract class BaseSmtpCommand : ISmtpCommand
     {
