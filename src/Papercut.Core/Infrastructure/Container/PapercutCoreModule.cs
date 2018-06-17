@@ -44,7 +44,7 @@ namespace Papercut.Core.Infrastructure.Container
 
             //builder.RegisterAssemblyModules(PapercutContainer.ExtensionAssemblies);
 
-            builder.Register(c => PluginStore.Instance).As<IPluginStore>().SingleInstance();
+            builder.RegisterInstance(PluginStore.Instance).As<IPluginStore>().SingleInstance();
             builder.RegisterType<PluginReport>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<AutofacServiceProvider>()

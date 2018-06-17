@@ -18,124 +18,109 @@
 namespace Papercut.Service
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     using Autofac;
     
     using Papercut.Core.Infrastructure.Container;
-    using Papercut.Service.Services;
+
     using System.Threading;
 
     using Serilog;
     using Papercut.Core.Domain.Application;
     using System.Threading.Tasks;
     using System.Reflection;
+    using System.Runtime.Loader;
+
+    using Papercut.Core.Infrastructure.Lifecycle;
 
     public class Program
     {
-        static int Main(string[] args)
+        public static int Main(string[] args)
         {
-            var appTask = Startup(args);
-            appTask.Wait();
-            return appTask.Result;
+            Log.Logger = PapercutContainer.RootLogger;
+
+            return RunAsync().GetAwaiter().GetResult();
         }
 
-        public static Task<int> Startup(string[] args, Action<ILifetimeScope> bootstrap = null, Action shutdown = null)
+        private static void HookHandlers()
         {
-            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-            return Task.Factory.StartNew(() =>
-                StartPapercutService((container) =>
-                    {
-                        Console.CancelKeyPress += Console_CancelKeyPress;
-                        Console.Title = container.Resolve<IAppMeta>().AppName;
-                        
-                        bootstrap?.Invoke(container);
-                    },
-                    shutdown,
-                    throwErrors: false));
+            TaskScheduler.UnobservedTaskException += (sender, e) => Log.Logger.Error(e.Exception, "Unobserved Task Exception");
+            Console.CancelKeyPress += (s, e) => Shutdown(true);
+            AssemblyLoadContext.Default.Unloading += context => Shutdown();
         }
 
-        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        public static async Task<int> RunAsync()
         {
-            Shutdown();
-        }
+            HookHandlers();
 
-        static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
-        {
-            WriteFatal(e.Exception);
-        }
-
-        static void WriteFatal(Exception ex)
-        {
-            Console.Error.WriteLine(ex);
-            if (Log.Logger != null)
-            {
-                Log.Logger.Fatal(ex, "Unhandled Exception");
-            }
-        }
-
-        static void WriteInfo(string info)
-        {
-            Console.WriteLine(info);
-            if (Log.Logger != null)
-            {
-                Log.Logger.Information(info);
-            }
+            return await RunContainer(
+                       (scope, token) =>
+                       {
+                           Console.Title = scope.Resolve<IAppMeta>().AppName;
+                           return Task.CompletedTask;
+                       });
         }
 
         #region Service Control
 
-        static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
+        private static CancellationTokenSource _cancellationTokenSource;
 
-        static int StartPapercutService(Action<ILifetimeScope> initialization, Action shutdown, bool throwErrors = true)
+        public static bool HandleExceptions { get; set; } = true;
+
+        public static async Task<int> RunContainer(Func<ILifetimeScope, CancellationToken, Task> runAction, Func<ILifetimeScope, Task> shutdownAction = null)
         {
-            try
+            using (_cancellationTokenSource = new CancellationTokenSource())
             {
-                if (PapercutCoreModule.SpecifiedEntryAssembly == null)
+
+                try
                 {
-                    PapercutCoreModule.SpecifiedEntryAssembly = Assembly.GetEntryAssembly();
-                }
-
-                using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
-                {
-                    initialization(appContainer);
-
-                    var papercutService = appContainer.Resolve<PapercutServerService>();
-                    papercutService.Start();
-
-                    appWaitHandle.WaitOne();
-                    try
+                    if (PapercutCoreModule.SpecifiedEntryAssembly == null)
                     {
-                        papercutService.Stop();
-
-                        appWaitHandle.Dispose();
-                        appWaitHandle = null;
-
-                        shutdown?.Invoke();
+                        PapercutCoreModule.SpecifiedEntryAssembly = Assembly.GetEntryAssembly();
                     }
-                    catch { }
+
+                    using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
+                    {
+                        await runAction(appContainer, _cancellationTokenSource.Token);
+
+                        // run all
+                        await Task.WhenAll(appContainer.Resolve<IEnumerable<IStartupService>>().Select(s => s.Start(_cancellationTokenSource.Token)));
+
+                        _cancellationTokenSource.Token.WaitHandle.WaitOne();
+
+                        if (shutdownAction != null)
+                        {
+                            await shutdownAction.Invoke(appContainer);
+                        }
+                    }
+
+                    return 0;
                 }
-
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                WriteFatal(ex);
-                appWaitHandle.Set();
-
-                if (throwErrors)
+                catch (OperationCanceledException)
                 {
-                    throw;
+                    // all good
                 }
+                catch (Exception ex)
+                {
+                    Log.Logger.Fatal(ex, "Unhandled Exception");
+
+                    if (!HandleExceptions)
+                    {
+                        throw;
+                    }
+                }
+
                 return 1;
             }
         }
 
-        public static void Shutdown()
+        public static void Shutdown(bool cancelled = false)
         {
-            WriteInfo("Exiting...");
-            if (appWaitHandle != null)
-            {
-                appWaitHandle.Set();
-            }
+            Log.Logger.Information("Shutting Down (Cancelled: {Cancelled})...", cancelled);
+
+            _cancellationTokenSource.Cancel();
         }
 
         #endregion

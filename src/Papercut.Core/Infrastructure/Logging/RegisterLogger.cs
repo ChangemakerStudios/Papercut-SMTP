@@ -33,6 +33,8 @@ namespace Papercut.Core.Infrastructure.Logging
     using Serilog.Debugging;
     using Microsoft.Extensions.PlatformAbstractions;
 
+    using Serilog.Events;
+
     public class RegisterLogger
     {
         public void Register(ContainerBuilder builder)
@@ -56,6 +58,7 @@ namespace Papercut.Core.Infrastructure.Logging
 #endif
                                 .Enrich.With<EnvironmentEnricher>()
                                 .Enrich.FromLogContext()
+                                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                                 .Enrich.WithProperty("AppName", appMeta.AppName)
                                 .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
                                 .WriteTo.LiterateConsole()

@@ -76,10 +76,13 @@ namespace Papercut.Core.Infrastructure.Container
                         .WriteTo.LiterateConsole()
                         .WriteTo.Sink(jsonSink, LogEventLevel.Information).CreateLogger();
             });
+
             _containerProvider = new Lazy<IContainer>(Build, LazyThreadSafetyMode.ExecutionAndPublication);
 
             AssemblyLoadContext.Default.Unloading += DisposeContainer;
         }
+
+        public static ILogger RootLogger => _rootLogger.Value;
         
         public static Assembly[] ExtensionAssemblies => _extensionAssemblies.Value;
 

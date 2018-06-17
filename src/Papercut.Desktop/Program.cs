@@ -1,8 +1,7 @@
-﻿
-// Papercut
+﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2018 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +15,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Autofac;
-using ElectronNET.API;
-using Microsoft.AspNetCore.Hosting;
-using Papercut.Core.Domain.Settings;
-using Papercut.Service;
 
 namespace Papercut.Desktop
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using ElectronNET.API;
+
+    using Microsoft.AspNetCore.Hosting;
+
     public class Program
     {
         static int Main(string[] args)
@@ -36,12 +35,11 @@ namespace Papercut.Desktop
                 Console.WriteLine("Waiting 30s for the debugger to attach...");
                 Thread.Sleep(30 * 1000);
             }
-            
-            
-            
-            
+
             Task<int> appTask;
+
             new WebHostBuilder().UseElectron(args);
+
             if (HybridSupport.IsElectronActive)
             {
                 // Quit if the process is not launched by the customized main.js
@@ -51,26 +49,16 @@ namespace Papercut.Desktop
                     Console.WriteLine("Papercut.Desktop: skiping this running attempt.");
                     PapercutHybridSupport.Quit();
                 }
-                
-                            
-                WebServerReadyEvent.Register(ev =>
-                {
-                    PapercutHybridSupport.Bootstrap();
-                });
-                
-                appTask = Papercut.Service.Program.Startup(args, appContainer =>
-                {
-                    appContainer.Resolve<ISettingStore>().Set("HttpPort", BridgeSettings.WebPort);
-                });
+
+                appTask = Service.Program.RunAsync();
             }
             else
             {
                 Console.Error.WriteLine("Electron context is not detected. The application will run in console mode.");
-                appTask = Papercut.Service.Program.Startup(args);
+                appTask = Service.Program.RunAsync();
             }
 
-            appTask.Wait();
-            return appTask.Result;
+            return appTask.GetAwaiter().GetResult();
         }
     }
 }

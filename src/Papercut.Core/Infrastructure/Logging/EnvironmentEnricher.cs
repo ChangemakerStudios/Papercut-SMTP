@@ -28,7 +28,7 @@ namespace Papercut.Core.Infrastructure.Logging
 
     public class EnvironmentEnricher : ILogEventEnricher
     {
-        readonly ConcurrentDictionary<string, LogEventProperty> _cachedProperties =
+        private readonly ConcurrentDictionary<string, LogEventProperty> _cachedProperties =
             new ConcurrentDictionary<string, LogEventProperty>();
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Papercut.Core.Infrastructure.Logging
                 this._cachedProperties.GetOrAdd("OSDescription", k => propertyFactory.CreateProperty(k,  RuntimeInformation.OSDescription)),
                 this._cachedProperties.GetOrAdd("ProcessorCount",
                     k => propertyFactory.CreateProperty(k, Environment.ProcessorCount)),
-                // this._cachedProperties.GetOrAdd(".NETRuntime", k => propertyFactory.CreateProperty(k, PlatformServices.Default.Application.RuntimeFramework.FullName)),
+                //this._cachedProperties.GetOrAdd(".NETRuntime", k => propertyFactory.CreateProperty(k, PlatformServices.Default.Application.RuntimeFramework.FullName)),
                 // this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, PlatformServices.Default.Application.RuntimeFramework.Version))
             };
 

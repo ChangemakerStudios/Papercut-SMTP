@@ -16,13 +16,15 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Test.Base
+namespace Papercut.WebUI.Tests.Base
 {
     using System;
     using System.Net.Http;
-    using Newtonsoft.Json;
     using System.Threading;
-    using Papercut.Service.Web.Hosting;
+
+    using Newtonsoft.Json;
+
+    using Papercut.Service.Infrastructure.WebServer;
 
     public class ApiTestBase : TestBase, IDisposable
     {
@@ -32,40 +34,40 @@ namespace Papercut.WebUI.Test.Base
 
         public ApiTestBase()
         {
-            BaseAddress = "http://webui.papercut.com";
-            Client = BuildClient();
+            this.BaseAddress = "http://webui.papercut.com";
+            this.Client = this.BuildClient();
         }
 
         HttpClient BuildClient()
         {
             WebStartup.Scope = this.Scope;
 
-            cancellation = new CancellationTokenSource();
-            var testServer = WebStartup.StartInProcessServer(cancellation.Token, "Development");
+            this.cancellation = new CancellationTokenSource();
+            var testServer = WebStartup.StartInProcessServer(this.cancellation.Token, "Development");
             return testServer.CreateClient();
         }
 
         void IDisposable.Dispose()
         {
-            Client.Dispose();
-            Scope.Dispose();
-            cancellation.Cancel();
+            this.Client.Dispose();
+            this.Scope.Dispose();
+            this.cancellation.Cancel();
         }
 
 
         protected HttpResponseMessage Get(string uri)
         {
-            return Client.GetAsync(uri).Result;
+            return this.Client.GetAsync(uri).Result;
         }
 
         protected HttpResponseMessage Delete(string uri)
         {
-            return Client.DeleteAsync(uri).Result;
+            return this.Client.DeleteAsync(uri).Result;
         }
 
         protected T Get<T>(string uri)
         {
-            var response = Get(uri).Content.ReadAsStringAsync().Result;
+            var response = this.Get(uri).Content.ReadAsStringAsync().Result;
             return JsonConvert.DeserializeObject<T>(response);
         }
     }

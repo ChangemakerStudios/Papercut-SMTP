@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>exe</OutputType>
     <OutputTypeEx>exe</OutputTypeEx>
     <DebugType>portable</DebugType>
@@ -15,6 +15,8 @@
     <PackageReference Include="AutofacSerilogIntegration" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview1-final" />
     <PackageReference Include="Serilog" Version="2.5.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
+    <PackageReference Include="SmtpServer" Version="5.1.1" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Buffering" Version="0.2.2" />
@@ -28,7 +30,6 @@
     <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
     <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
-    <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj" />
     <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj" />
   </ItemGroup>
   <ItemGroup>

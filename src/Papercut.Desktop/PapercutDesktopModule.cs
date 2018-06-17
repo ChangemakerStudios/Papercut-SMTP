@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2018 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,22 +15,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Network.SmtpCommands
+
+namespace Papercut.Desktop
 {
-    using System.Collections.Generic;
+    using Autofac;
+    using Autofac.Core;
 
-    using Papercut.Network.Protocols;
+    using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Core.Infrastructure.Plugins;
 
-    public class NoopSmtpCommand : BaseSmtpCommand
+    public class PapercutDesktopModule : Module, IDiscoverableModule
     {
-        protected override IEnumerable<string> GetMatchCommands()
-        {
-            return new[] { "NOOP" };
-        }
+        public IModule Module => this;
 
-        protected override void Run(string command, string[] args)
+        protected override void Load(ContainerBuilder builder)
         {
-            Connection.SendLine("250 OK");
+            builder.RegisterType<PapercutHybridSupport>().As<IStartupService>().AsSelf().SingleInstance();
         }
     }
 }

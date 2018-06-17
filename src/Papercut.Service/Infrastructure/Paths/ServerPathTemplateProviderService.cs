@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Service.Services
+namespace Papercut.Service.Infrastructure.Paths
 {
     using System.Collections.ObjectModel;
     using System.Linq;
@@ -31,7 +31,7 @@ namespace Papercut.Service.Services
                 .Select(s => s.Trim())
                 .Where(s => !string.IsNullOrWhiteSpace(s));
 
-            PathTemplates = new ObservableCollection<string>(paths);
+            this.PathTemplates = new ObservableCollection<string>(paths);
         }
 
         public ObservableCollection<string> PathTemplates { get; private set; }
