@@ -19,6 +19,7 @@
 namespace Papercut.Service.Infrastructure.SmtpServer
 {
     using System;
+    using System.Collections.Generic;
     using System.Net;
     using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
@@ -26,9 +27,11 @@ namespace Papercut.Service.Infrastructure.SmtpServer
     using System.Threading.Tasks;
 
     using global::SmtpServer;
+    using global::SmtpServer.Mail;
     using global::SmtpServer.Storage;
 
     using Papercut.Common.Domain;
+    using Papercut.Common.Helper;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Service.Helpers;
@@ -57,6 +60,29 @@ namespace Papercut.Service.Infrastructure.SmtpServer
             this._messageStore = messageStore;
         }
 
+        IEnumerable<IEndpointDefinition> GetEndpoints()
+        {
+            yield return new EndpointDefinitionBuilder()
+                .Endpoint(
+                    new IPEndPoint(
+                        IPAddress.Parse(ListenIpAddress),
+                        this._serviceSettings.Port))
+                .IsSecure(false).Build();
+        }
+
+        private string ListenIpAddress
+        {
+            get
+            {
+                if (this._serviceSettings.IP.IsNullOrWhiteSpace() || this._serviceSettings.IP.CaseInsensitiveEquals("Any"))
+                {
+                    return "0.0.0.0";
+                }
+
+                return this._serviceSettings.IP;
+            }
+        }
+
         public async Task Start(CancellationToken token)
         {
             ServicePointManager.ServerCertificateValidationCallback = this.IgnoreCertificateValidationFailureForTestingOnly;
@@ -64,18 +90,28 @@ namespace Papercut.Service.Infrastructure.SmtpServer
             var options = new SmtpServerOptionsBuilder()
                 .ServerName(this._applicationMetaData.AppName)
                 .AllowUnsecureAuthentication(false)
-                .MessageStore(_messageStore)
-                //.UserAuthenticator(new SampleUserAuthenticator())
-                .Port(this._serviceSettings.Port, false)
-                .Build();
+                .MailboxFilter(new DelegatingMailboxFilter(CanAcceptMailbox))
+                .UserAuthenticator(new SimpleAuthentication())
+                .MessageStore(_messageStore);
 
-            var server = new SmtpServer(options);
+            foreach (var endpoint in GetEndpoints())
+            {
+                options = options.Endpoint(endpoint);
+            }
+
+            var server = new SmtpServer(options.Build());
+
             server.SessionCreated += this.OnSessionCreated;
             server.SessionCompleted += this.OnSessionCompleted;
 
-            this._logger.Information("Starting Smtp Server on port {Port}...", this._serviceSettings.Port);
+            this._logger.Information("Starting Smtp Server on {IP}:{Port}...", ListenIpAddress, this._serviceSettings.Port);
 
             await server.StartAsync(token);
+        }
+
+        private MailboxFilterResult CanAcceptMailbox(ISessionContext sessionContext, IMailbox mailbox)
+        {
+            return MailboxFilterResult.Yes;
         }
 
         private void OnSessionCompleted(object sender, SessionEventArgs e)

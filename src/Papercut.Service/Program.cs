@@ -65,65 +65,70 @@ namespace Papercut.Service
 
         #region Service Control
 
-        private static CancellationTokenSource _cancellationTokenSource;
+        private static readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         public static bool HandleExceptions { get; set; } = true;
 
         public static async Task<int> RunContainer(Func<ILifetimeScope, CancellationToken, Task> runAction, Func<ILifetimeScope, Task> shutdownAction = null)
         {
-            using (_cancellationTokenSource = new CancellationTokenSource())
+            try
             {
-
-                try
+                if (PapercutCoreModule.SpecifiedEntryAssembly == null)
                 {
-                    if (PapercutCoreModule.SpecifiedEntryAssembly == null)
+                    PapercutCoreModule.SpecifiedEntryAssembly = Assembly.GetEntryAssembly();
+                }
+
+                using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
+                {
+                    await runAction(appContainer, _cancellationTokenSource.Token);
+
+                    // run all
+                    foreach (var service in appContainer.Resolve<IEnumerable<IStartupService>>().ToList())
                     {
-                        PapercutCoreModule.SpecifiedEntryAssembly = Assembly.GetEntryAssembly();
+                        await service.Start(_cancellationTokenSource.Token);
                     }
 
-                    using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
+                    _cancellationTokenSource.Token.WaitHandle.WaitOne();
+
+                    if (shutdownAction != null)
                     {
-                        await runAction(appContainer, _cancellationTokenSource.Token);
-
-                        // run all
-                        await Task.WhenAll(appContainer.Resolve<IEnumerable<IStartupService>>().Select(s => s.Start(_cancellationTokenSource.Token)));
-
-                        _cancellationTokenSource.Token.WaitHandle.WaitOne();
-
-                        if (shutdownAction != null)
-                        {
-                            await shutdownAction.Invoke(appContainer);
-                        }
-                    }
-
-                    return 0;
-                }
-                catch (OperationCanceledException)
-                {
-                    // all good
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Fatal(ex, "Unhandled Exception");
-
-                    if (!HandleExceptions)
-                    {
-                        throw;
+                        await shutdownAction.Invoke(appContainer);
                     }
                 }
 
-                return 1;
+                return 0;
             }
+            catch (OperationCanceledException)
+            {
+                // all good
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Fatal(ex, "Unhandled Exception");
+
+                if (!HandleExceptions)
+                {
+                    throw;
+                }
+            }
+
+            return 1;
         }
 
         public static void Shutdown(bool cancelled = false)
         {
-            Log.Logger.Information("Shutting Down (Cancelled: {Cancelled})...", cancelled);
+            try
+            {
+                PapercutContainer.RootLogger.Information("Shutting Down (Cancelled: {Cancelled})...", cancelled);
 
-            _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // not logged
+            }
         }
 
         #endregion
-
     }
 }
