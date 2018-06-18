@@ -3,7 +3,8 @@ namespace Papercut.Network.SmtpCommands
     using System;
     using System.Collections.Generic;
 
-    using Papercut.Network.Protocols;
+    using Papercut.Common.Extensions;
+    using Papercut.Network.Protocols;    
 
     public class AuthSmtpCommand : BaseSmtpCommand
     {
@@ -105,19 +106,15 @@ namespace Papercut.Network.SmtpCommands
         {
             // AUTH LOGIN prompts for two base64-encoded strings -- the username
             // and password -- by sending two consecutive 334 messages.  As a foible,
-            // the two prompts are also base64-encoded.  We pre-encode these for some
-            // tiny micro-optimisation
-
-            const string usernamePrompt = "334 VXNlcm5hbWU6",   // Username:
-                         passwordPrompt = "334 UGFzc3dvcmQ6";   // Password:
+            // the two prompts are also base64-encoded.
 
             var authToken = Connection.Client.ReadTextStream(reader => {
                 var lines = new string[2];
 
-                Connection.SendLine(usernamePrompt).Wait();
+                Connection.SendLine($"334 {"Username:".ToBase64String()}").Wait();
                 lines[0] = reader.ReadLine();
 
-                Connection.SendLine(passwordPrompt).Wait();
+                Connection.SendLine($"334 {"Password:".ToBase64String()}").Wait();
                 lines[1] = reader.ReadLine();
 
                 return lines;
