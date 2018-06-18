@@ -24,6 +24,7 @@ namespace Papercut.Network.SmtpCommands
     using Papercut.Common.Extensions;
     using Papercut.Core.Domain.Network;
     using Papercut.Core.Domain.Network.Smtp;
+    using Papercut.Network.Protocols;
 
     public abstract class BaseSmtpCommand : ISmtpCommand
     {
@@ -32,6 +33,8 @@ namespace Papercut.Network.SmtpCommands
         protected IConnection Connection => this.Context.Connection;
 
         public ISmtpContext Context { protected get; set; }
+        
+        protected virtual bool RequiresAuthentication { get { return true; } }
 
         public virtual SmtpCommandResult Execute(ISmtpContext context, string request)
         {
@@ -42,7 +45,14 @@ namespace Papercut.Network.SmtpCommands
 
             if (GetMatchCommands().IfNullEmpty().Any(c => c.Equals(command, StringComparison.OrdinalIgnoreCase)))
             {
-                Run(command, parts.Skip(1).ToArray());
+                if ((Session?.RequiresAuthentication ?? false) && 
+                    string.IsNullOrEmpty(Session?.Username) &&
+                    this.RequiresAuthentication)
+                {
+                    Connection.SendLine("530 Authentication is required").Wait();
+                }
+                else Run(command, parts.Skip(1).ToArray());
+                
                 return SmtpCommandResult.Done;
             }
 
