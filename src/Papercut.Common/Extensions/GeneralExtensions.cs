@@ -40,6 +40,14 @@ namespace Papercut.Common.Extensions
             return byteEncoding.GetString(bytes);
         }
 
+        public static string ToBase64String(this string value, Encoding encoding = null)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+            
+            encoding = encoding ?? Encoding.UTF8;
+            return Convert.ToBase64String(encoding.GetBytes(value));
+        }
+
         /// <summary>
         ///     To FileSizeFormat... Thank you to "deepee1" on StackOverflow for this elegant solution:
         ///     http://stackoverflow.com/a/4975942
