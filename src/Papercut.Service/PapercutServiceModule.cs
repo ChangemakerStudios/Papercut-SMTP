@@ -64,6 +64,8 @@ namespace Papercut.Service
                 .SingleInstance();
 
             builder.RegisterType<SmtpMessageStore>().As<MessageStore>().AsSelf();
+
+            builder.RegisterType<SerilogSmtpServerLoggingBridge>().As<global::SmtpServer.ILogger>();
         }
 
         private static void RegisterStartupServices(ContainerBuilder builder)

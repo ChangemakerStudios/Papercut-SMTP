@@ -18,7 +18,6 @@
 
 namespace Papercut.Service.Infrastructure.SmtpServer
 {
-    using System;
     using System.Collections.Generic;
     using System.Net;
     using System.Net.Security;
@@ -36,6 +35,8 @@ namespace Papercut.Service.Infrastructure.SmtpServer
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Service.Helpers;
 
+    using Serilog.Context;
+
     using ILogger = Serilog.ILogger;
 
     public class SmtpServerStartup : IStartupService
@@ -46,18 +47,22 @@ namespace Papercut.Service.Infrastructure.SmtpServer
 
         private readonly MessageStore _messageStore;
 
+        private readonly global::SmtpServer.ILogger _bridgeLogger;
+
         readonly PapercutServiceSettings _serviceSettings;
 
         public SmtpServerStartup(
             PapercutServiceSettings serviceSettings,
             IAppMeta applicationMetaData,
             ILogger logger,
-            MessageStore messageStore)
+            MessageStore messageStore,
+            global::SmtpServer.ILogger bridgeLogger)
         {
             this._serviceSettings = serviceSettings;
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;
             this._messageStore = messageStore;
+            this._bridgeLogger = bridgeLogger;
         }
 
         IEnumerable<IEndpointDefinition> GetEndpoints()
@@ -92,6 +97,7 @@ namespace Papercut.Service.Infrastructure.SmtpServer
                 .AllowUnsecureAuthentication(false)
                 .MailboxFilter(new DelegatingMailboxFilter(CanAcceptMailbox))
                 .UserAuthenticator(new SimpleAuthentication())
+                .Logger(_bridgeLogger)
                 .MessageStore(_messageStore);
 
             foreach (var endpoint in GetEndpoints())
@@ -121,6 +127,11 @@ namespace Papercut.Service.Infrastructure.SmtpServer
 
         private void OnSessionCreated(object sender, SessionEventArgs e)
         {
+            e.Context.CommandExecuting += (o, args) =>
+            {
+                this._logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
+            };
+
             this._logger.Information("New SMTP connection from {RemoteEndPoint}", e.Context.RemoteEndPoint);
         }
 

@@ -53,12 +53,13 @@ namespace Papercut.Core.Infrastructure.Logging
                             new LoggerConfiguration()
 #if DEBUG
                                 .MinimumLevel.Verbose()
+                                .MinimumLevel.Override("Microsoft", LogEventLevel.Debug)
 #else
-                         .MinimumLevel.Information()
+                                .MinimumLevel.Information()
+                                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
 #endif
                                 .Enrich.With<EnvironmentEnricher>()
                                 .Enrich.FromLogContext()
-                                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                                 .Enrich.WithProperty("AppName", appMeta.AppName)
                                 .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
                                 .WriteTo.LiterateConsole()
@@ -71,7 +72,7 @@ namespace Papercut.Core.Infrastructure.Logging
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
+                            Debug.WriteLine($"Failure Publishing ConfigurationLoggerEvent: {ex}");
                         }
 
                         // support self-logging

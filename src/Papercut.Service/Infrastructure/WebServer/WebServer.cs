@@ -1,19 +1,19 @@
 ﻿// Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//
+// Copyright © 2013 - 2018 Jaben Cargman
+//  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+//  
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 
 namespace Papercut.Service.Infrastructure.WebServer
@@ -34,54 +34,55 @@ namespace Papercut.Service.Infrastructure.WebServer
 
     public class WebServer : IStartupService, IDisposable
     {
-        readonly ILifetimeScope scope;
-        readonly IMessageBus messageBus;
+        const ushort DefaultHttpPort = 37408;
+
+        readonly ushort _httpPort;
 
         private readonly ILogger _logger;
 
-        readonly ISettingStore settingStore;
+        readonly IMessageBus _messageBus;
 
-        ushort httpPort;
+        readonly ILifetimeScope _scope;
 
-        const ushort DefaultHttpPort = 37408;
+        readonly ISettingStore _settingStore;
 
         public WebServer(ILifetimeScope scope, ISettingStore settingStore, IMessageBus messageBus, ILogger logger)
         {
-            this.scope = scope;
-            this.settingStore = settingStore;
-            this.messageBus = messageBus;
+            this._scope = scope;
+            this._settingStore = settingStore;
+            this._messageBus = messageBus;
             this._logger = logger;
 
             WebStartup.Scope = scope;
 
-            this.httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
+            this._httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
+        }
+
+        public void Dispose()
+        {
+            WebStartup.Scope = null;
         }
 
         public Task Start(CancellationToken token)
         {
-            this._logger.Information("Starting Web Server on Port {httpPort}...", this.httpPort);
-            
+            this._logger.Information("Starting Web Server on Port {httpPort}...", this._httpPort);
+
             HttpClient client;
 
-            if (this.httpPort <= 0)
+            if (this._httpPort <= 0)
             {
                 var server = WebStartup.StartInProcessServer(token);
                 client = server.CreateClient();
             }
             else
             {
-                WebStartup.Start(this.httpPort, token);
-                client = new HttpClient() { BaseAddress = new Uri($"http://localhost:{this.httpPort}") };
+                WebStartup.Start(this._httpPort, token);
+                client = new HttpClient { BaseAddress = new Uri($"http://localhost:{this._httpPort}") };
             }
 
-            this.messageBus.Publish(new PapercutWebServerReadyEvent { HttpClient = client });
+            this._messageBus.Publish(new PapercutWebServerReadyEvent { HttpClient = client });
 
             return Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
-            WebStartup.Scope = null;
         }
     }
 }

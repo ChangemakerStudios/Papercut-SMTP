@@ -31,6 +31,7 @@ namespace Papercut.Service.Infrastructure.WebServer
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.PlatformAbstractions;
 
+    using Papercut.Core.Annotations;
     using Papercut.Service.Web.Hosting.InProcess;
     using Papercut.Service.Web.Notification;
 
@@ -71,6 +72,7 @@ namespace Papercut.Service.Infrastructure.WebServer
              return new HttpServer(hostBuilder);
          }
 
+        [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
@@ -89,6 +91,7 @@ namespace Papercut.Service.Infrastructure.WebServer
             return new AutofacServiceProvider(Scope);
         }
 
+        [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             //loggerFactory.AddProvider(new SerilogLoggerProvider(Scope));
