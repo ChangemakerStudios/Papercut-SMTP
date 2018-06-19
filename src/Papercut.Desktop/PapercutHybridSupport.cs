@@ -70,7 +70,12 @@ namespace Papercut.Desktop
         {
             token.Register(Quit);
 
-            Electron.App.WillQuit += () => Papercut.Service.Program.Shutdown();
+            Electron.App.WillQuit += (q) =>
+            {
+                Papercut.Service.Program.Shutdown();
+                return Task.CompletedTask;
+            };
+
             await Electron.WindowManager.CreateWindowAsync(
                 new BrowserWindowOptions
                 {
