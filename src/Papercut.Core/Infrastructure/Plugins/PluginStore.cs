@@ -25,6 +25,7 @@ namespace Papercut.Core.Infrastructure.Plugins
     public sealed class PluginStore : IPluginStore
     {
         private readonly ConcurrentBag<IPluginModule> _loadedPlugins = new ConcurrentBag<IPluginModule>();
+
         private PluginStore() { }
 
         public static PluginStore Instance { get; } = new PluginStore();

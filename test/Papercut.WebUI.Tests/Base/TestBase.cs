@@ -16,20 +16,21 @@
 // limitations under the License.
 
 
-namespace Papercut.WebUI.Test.Base
+namespace Papercut.WebUI.Tests.Base
 {
     using System;
-    using Autofac;
-
-    using Core.Domain.Application;
-    using Core.Domain.Paths;
-    using Core.Infrastructure.Container;
-
-    using WebServerFacts;
-    using System.Reflection;
-    using NUnit.Framework;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
+
+    using Autofac;
+
+    using NUnit.Framework;
+
+    using Papercut.Core.Domain.Application;
+    using Papercut.Core.Domain.Paths;
+    using Papercut.Core.Infrastructure.Container;
+    using Papercut.WebUI.Test.WebServerFacts;
 
     public class TestBase : IDisposable
     {
@@ -37,17 +38,17 @@ namespace Papercut.WebUI.Test.Base
 
         public TestBase()
         {
-            Scope = BuildContainer(MockDependencies).BeginLifetimeScope();
+            this.Scope = BuildContainer(this.MockDependencies).BeginLifetimeScope();
         }
 
         void IDisposable.Dispose()
         {
-            Scope.Dispose();
+            this.Scope.Dispose();
         }
 
         [TearDown]
         public void Cleanup(){
-            Scope.Resolve<IMessagePathConfigurator>()
+            this.Scope.Resolve<IMessagePathConfigurator>()
                 .LoadPaths
                 .SelectMany(path => Directory.GetFiles(path))
                 .ToList()

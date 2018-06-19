@@ -16,23 +16,28 @@
 // limitations under the License.
 
 
-using Papercut.Service.Web.Notification;
-
-namespace Papercut.Service.Web.Hosting
+namespace Papercut.Service.Infrastructure.WebServer
 {
     using System;
-    using Microsoft.AspNetCore.Hosting;
-
-    using Autofac;
-    
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Extensions.PlatformAbstractions;
+
+    using Autofac;
     using Autofac.Extensions.DependencyInjection;
+
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.PlatformAbstractions;
+
+    using Papercut.Core.Annotations;
     using Papercut.Service.Web.Hosting.InProcess;
+    using Papercut.Service.Web.Notification;
+
+    using Serilog;
+
+    using ILogger = Serilog.ILogger;
 
     internal class WebStartup
     {
@@ -43,6 +48,7 @@ namespace Papercut.Service.Web.Hosting
             hostBuilder
                 .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
                 .UseKestrel()
+                .UseSerilog(Scope.Resolve<ILogger>())
                 .UseStartup<WebStartup>()
                 .UseUrls($"http://*:{httpPort}");
 
@@ -60,12 +66,13 @@ namespace Papercut.Service.Web.Hosting
              hostBuilder
                  .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
                  .UseEnvironment(env)
+                 .UseSerilog(Scope.Resolve<ILogger>())
                  .UseStartup<WebStartup>();
  
              return new HttpServer(hostBuilder);
          }
- 
 
+        [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
@@ -80,12 +87,14 @@ namespace Papercut.Service.Web.Hosting
 
 #pragma warning disable CS0618 // Type or member is obsolete
             builder.Update(Scope.ComponentRegistry);
+
             return new AutofacServiceProvider(Scope);
         }
 
+        [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddProvider(new SerilogLoggerProvider(Scope));
+            //loggerFactory.AddProvider(new SerilogLoggerProvider(Scope));
             app.UseSignalR(routes =>
             {
                 routes.MapHub<NewMessagesHub>("/new-messages");

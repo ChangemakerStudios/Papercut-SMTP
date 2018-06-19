@@ -21,6 +21,8 @@ namespace Papercut.Common.Extensions
     using System.IO;
     using System.Text;
 
+    using Papercut.Core.Annotations;
+
     public static class StreamExtensions
     {
         public static string ReadString(
@@ -37,6 +39,17 @@ namespace Papercut.Common.Extensions
             int count = stream.Read(serverbuff, 0, bufferSize);
 
             return count == 0 ? string.Empty : encoding.GetString(serverbuff, 0, count);
+        }
+
+        public static byte[] ToArray([NotNull] this Stream input)
+        {
+            if (input == null) throw new ArgumentNullException(nameof(input));
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                input.CopyTo(ms);
+                return ms.ToArray();
+            }
         }
 
         public static void WriteFormat(this Stream stream, string format, params object[] args)

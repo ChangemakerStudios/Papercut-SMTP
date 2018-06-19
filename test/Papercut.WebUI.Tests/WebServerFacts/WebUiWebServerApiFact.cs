@@ -18,10 +18,9 @@
 
 namespace Papercut.WebUI.Test.WebServerFacts
 {
-    using Base;
-
     using NUnit.Framework;
 
+    using Papercut.WebUI.Tests.Base;
 
     [TestFixture]
     public class WebUiWebServerApiFact : ApiTestBase

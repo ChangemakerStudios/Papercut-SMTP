@@ -20,8 +20,9 @@ namespace Papercut.Service.Web.Hosting
 {
     using System.Net.Http;
     using Papercut.Common.Domain;
-    
-    public class PapercutWebServerReadyEvent: IEvent{
-        public HttpClient HttpClient{get;set;}
+
+    public class PapercutWebServerReadyEvent : IEvent
+    {
+        public HttpClient HttpClient { get; set; }
     }
 }
