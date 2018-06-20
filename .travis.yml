@@ -53,9 +53,9 @@ script:
  
 after_success:
  # Upload PapercutService
- - cd $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.0/$TRAVIS_OS_NAME-x64/publish/
+ - cd $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.1/$TRAVIS_OS_NAME-x64/publish/
  - zip -r -y ../PapercutService.zip ./*
- - dotnet $TRAVIS_BUILD_DIR/azcopy/azcopy.dll --source $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.0/$TRAVIS_OS_NAME-x64/PapercutService.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/$TRAVIS_OS_NAME/5.5.$TRAVIS_BUILD_NUMBER-netcore/PapercutService.$TRAVIS_OS_NAME.5.5.$TRAVIS_BUILD_NUMBER-netcore.zip  --dest-key $azblobcontainerkey
+ - dotnet $TRAVIS_BUILD_DIR/azcopy/azcopy.dll --source $TRAVIS_BUILD_DIR/src/Papercut.Service/bin/Release/netcoreapp2.1/$TRAVIS_OS_NAME-x64/PapercutService.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/$TRAVIS_OS_NAME/5.5.$TRAVIS_BUILD_NUMBER-netcore/PapercutService.$TRAVIS_OS_NAME.5.5.$TRAVIS_BUILD_NUMBER-netcore.zip  --dest-key $azblobcontainerkey
   
  # Upload PapercutDesktop
  - cd $TRAVIS_BUILD_DIR/src/Papercut.Desktop/bin/desktop/Papercut-$ELECTRONIZE_OS_NAME-x64/
