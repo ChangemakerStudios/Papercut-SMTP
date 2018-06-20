@@ -153,7 +153,7 @@
 
   <div class="mail-content">
   <span class="download-raw pull-right">
-    <a ng-href="/api/messages/{{preview.Id}}/raw" target="_blank"><span class="glyphicon glyphicon-cloud-download"></span> Download raw message</a>
+    <a ng-href="api/messages/{{preview.Id}}/raw" target="_blank"><span class="glyphicon glyphicon-cloud-download"></span> Download raw message</a>
   </span>
       <ul class="nav nav-tabs">
         <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
@@ -183,7 +183,7 @@
                 <tr ng-repeat="section in preview.Sections">
                     <td>{{section.MediaType}}</td>
                     <td>{{section.FileName}}</td>
-                    <td><a title="Download and save section content" ng-href="/api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank" class="glyphicon glyphicon-download-alt"></a></td>
+                    <td><a title="Download and save section content" ng-href="api/messages/{{preview.Id}}/sections/{{$index}}" target="_blank" class="glyphicon glyphicon-download-alt"></a></td>
                 </tr>
                 </tbody>
             </table>
