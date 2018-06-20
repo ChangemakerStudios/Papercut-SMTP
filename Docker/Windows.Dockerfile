@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.0-runtime-nanoserver
+FROM microsoft/dotnet:2.1-aspnetcore-runtime-nanoserver-1803
 
 
 COPY . C:\\Papercut
