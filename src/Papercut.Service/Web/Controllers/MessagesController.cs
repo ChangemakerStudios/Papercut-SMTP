@@ -49,7 +49,7 @@ namespace Papercut.Service.Web.Controllers
         }
 
         [HttpGet]
-        public object GetAll(int limit = 10, int start = 0)
+        public GetMessagesResponse GetAll(int limit = 10, int start = 0)
         {
             var messageEntries = this._messageRepository.LoadMessages();
 
@@ -60,11 +60,7 @@ namespace Papercut.Service.Web.Controllers
                 .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, this._messageLoader.LoadMailMessage(e))))
                 .ToList();
 
-            return new
-                   {
-                       TotalMessageCount = messageEntries.Count,
-                       Messages = messages
-                   };
+            return new GetMessagesResponse(messageEntries.Count, messages);
         }
 
         [HttpDelete]

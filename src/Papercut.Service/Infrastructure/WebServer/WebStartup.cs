@@ -53,10 +53,14 @@ namespace Papercut.Service.Infrastructure.WebServer
                 .UseUrls($"http://*:{httpPort}");
 
             var host = hostBuilder.Build();
-            Task.Factory.StartNew(() =>
-            {
-                var _ = host.RunAsync(cancellation);
-            });
+
+            Task.Factory.StartNew(
+                () =>
+                {
+                    var _ = host.RunAsync(cancellation);
+                },
+                cancellation);
+
             return host;
         }
 
@@ -81,6 +85,17 @@ namespace Papercut.Service.Infrastructure.WebServer
             var mvcCore = services.AddMvcCore();
             mvcCore.AddJsonFormatters();
             services.AddSignalR();
+
+            services.AddCors(
+                s =>
+                {
+                    s.AddDefaultPolicy(
+                        c =>
+                        {
+                            c.AllowAnyHeader();
+                            c.AllowAnyOrigin();
+                        });
+                });
 
             var builder = new ContainerBuilder();
             builder.Populate(services);
