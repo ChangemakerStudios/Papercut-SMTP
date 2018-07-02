@@ -82,13 +82,18 @@ namespace Papercut.Service
                 {
                     await runAction(appContainer, _cancellationTokenSource.Token);
 
+                    var tasks = new List<Task>();
+
                     // run all
                     foreach (var service in appContainer.Resolve<IEnumerable<IStartupService>>().ToList())
                     {
-                        await service.Start(_cancellationTokenSource.Token);
+                        tasks.Add(service.Start(_cancellationTokenSource.Token));
                     }
 
                     _cancellationTokenSource.Token.WaitHandle.WaitOne();
+
+                    // wait for the processes to finish
+                    await Task.WhenAll(tasks);
 
                     if (shutdownAction != null)
                     {
