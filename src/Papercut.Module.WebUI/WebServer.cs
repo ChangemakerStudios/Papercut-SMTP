@@ -44,7 +44,7 @@ namespace Papercut.Module.WebUI
         {
             this.scope = scope;
             this.logger = logger;
-            httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
+            httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}).");
         }
 
         public void Handle(PapercutServiceReadyEvent @event)

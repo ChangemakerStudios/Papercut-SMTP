@@ -20,8 +20,7 @@ namespace Papercut.Core.Domain.Settings
     using System;
     using System.Collections.Generic;
     using System.IO;
-
-    using Newtonsoft.Json;
+    using System.Linq;
 
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Infrastructure.Json;
@@ -32,7 +31,7 @@ namespace Papercut.Core.Domain.Settings
         {
             this.SettingsFilePath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
-                appMeta.AppName + ".json");
+                $"{appMeta.AppName}.json");
         }
 
         protected string SettingsFilePath { get; set; }
@@ -48,7 +47,7 @@ namespace Papercut.Core.Domain.Settings
         {
             if (this.SettingsFilePath == null) return;
 
-            JsonHelpers.SaveJson(this.GetSettingSnapshot(), this.SettingsFilePath);
+            JsonHelpers.SaveJson(new SortedDictionary<string, string>(this.GetSettingSnapshot()), this.SettingsFilePath);
         }
     }
 }

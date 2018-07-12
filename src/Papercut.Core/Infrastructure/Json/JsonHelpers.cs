@@ -23,6 +23,7 @@ namespace Papercut.Core.Infrastructure.Json
     using System.Text;
 
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     public static class JsonHelpers
     {
@@ -30,6 +31,8 @@ namespace Papercut.Core.Infrastructure.Json
             new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Auto,
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Include,
                 TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
             };
 
