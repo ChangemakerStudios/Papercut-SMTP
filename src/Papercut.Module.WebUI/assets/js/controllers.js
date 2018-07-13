@@ -47,7 +47,7 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
 
   $scope.refresh = function () {
       var e = startEvent("Loading messages", null, "glyphicon-download");
-      var url = '/api/messages'
+      var url = 'api/messages';
       if ($scope.startIndex > 0) {
           url += "?start=" + $scope.startIndex + "&limit=" + $scope.itemsPerPage;
       } else {
@@ -99,7 +99,7 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
         return;
       }
 
-     $http.delete('/api/messages').finally(function () {
+     $http.delete('api/messages').finally(function () {
        $scope.refresh();
      });
   };
@@ -110,7 +110,7 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
       } else {
           $scope.preview = message;
           var e = startEvent("Loading message", message.Id, "glyphicon-download-alt");
-          $http.get('/api/messages/' + message.Id).then(function (resp) {
+          $http.get('api/messages/' + message.Id).then(function (resp) {
               $scope.cache[message.Id] = resp.data;
 
               resp.data.previewHTML = $sce.trustAsHtml(resp.data.HtmlBody);
@@ -270,7 +270,7 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
             }
 
             function replaceContentLinks(html, messageId) {
-                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, '/api/messages/' + messageId + '/contents/$1');
+                return html.replace(/cid:([^"^'^\s^;^,^//^/<^/>]+)/gi, 'api/messages/' + messageId + '/contents/$1');
             }
         }
     };
