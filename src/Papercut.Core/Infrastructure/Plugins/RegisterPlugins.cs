@@ -45,7 +45,10 @@ namespace Papercut.Core.Infrastructure.Plugins
                     .Where(
                         s =>
                         {
+                            if (s.IsInterface || s.IsAbstract) return false;
+
                             var interfaces = s.GetInterfaces();
+
                             return interfaces.Contains(typeof(IDiscoverableModule)) || interfaces.Contains(typeof(IPluginModule));
                         })
                     .ToList();

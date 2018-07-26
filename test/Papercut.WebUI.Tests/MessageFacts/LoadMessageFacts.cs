@@ -25,12 +25,14 @@ namespace Papercut.WebUI.Test.MessageFacts
     using System.Threading;
 
     using Autofac;
-    using Base;
+
     using Message;
     using MimeKit;
     using Papercut.Service.Web.Models;
 
     using NUnit.Framework;
+
+    using Papercut.WebUI.Tests.Base;
 
     public class LoadMessageFacts : ApiTestBase
     {

@@ -49,11 +49,11 @@ namespace Papercut.Message
             _logger = logger;
         }
 
-        public void HandleReceived(string messageData, [CanBeNull] string[] recipients, Encoding connectionEncoding)
+        public void HandleReceived(byte[] messageData, [CanBeNull] string[] recipients)
         {
             string file;
 
-            using (var ms = new MemoryStream(connectionEncoding.GetBytes(messageData)))
+            using (var ms = new MemoryStream(messageData))
             {
                 var message = MimeMessage.Load(ParserOptions.Default, ms, true);
 

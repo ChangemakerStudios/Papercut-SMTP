@@ -68,18 +68,19 @@ namespace Papercut.Core.Infrastructure.Container
                     "Logs",
                     "PapercutCoreFailure.json");
 
-                var jsonSink = new RollingFileSink(logFilePath, new JsonFormatter(), null, null);
-
                 return
                     new LoggerConfiguration().MinimumLevel.Information()
                         .Enrich.With<EnvironmentEnricher>()
                         .WriteTo.LiterateConsole()
-                        .WriteTo.Sink(jsonSink, LogEventLevel.Information).CreateLogger();
+                        .WriteTo.RollingFile(logFilePath).CreateLogger();
             });
+
             _containerProvider = new Lazy<IContainer>(Build, LazyThreadSafetyMode.ExecutionAndPublication);
 
             AssemblyLoadContext.Default.Unloading += DisposeContainer;
         }
+
+        public static ILogger RootLogger => _rootLogger.Value;
         
         public static Assembly[] ExtensionAssemblies => _extensionAssemblies.Value;
 

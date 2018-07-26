@@ -10,28 +10,17 @@ using Quobject.SocketIoClientDotNet.Client;
 
 namespace Papercut.Desktop
 {
-    internal class PapercutHybridSupport
+    using System.Threading.Tasks;
+
+    using Papercut.Core.Domain.Settings;
+    using Papercut.Core.Infrastructure.Lifecycle;
+
+    public class PapercutHybridSupport : IStartupService
     {
-        
-        public static async void Bootstrap()
-        {            
-            Electron.App.WillQuit += Papercut.Service.Program.Shutdown;
-            await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
-            {
-                Width = 1152,
-                Height = 864,
-                Show = true,
-                BackgroundColor = "#f5f6f8",
-                Title = "Papercut",
-                Icon = WindowIcon()
-            });
-            
-            var socket = GetElectronSocket();
-
-            QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
-            QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
+        public PapercutHybridSupport(ISettingStore settingsStore)
+        {
+            settingsStore.Set("HttpPort", BridgeSettings.WebPort);
         }
-
 
         public static void Quit()
         {
@@ -75,6 +64,33 @@ namespace Papercut.Desktop
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             return Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "icons",
                 isWindows ? "Papercut-icon.ico" : "Papercut-icon.png");
+        }
+
+        public async Task Start(CancellationToken token)
+        {
+            token.Register(Quit);
+
+            Electron.App.WillQuit += (q) =>
+            {
+                Papercut.Service.Program.Shutdown();
+                return Task.CompletedTask;
+            };
+
+            await Electron.WindowManager.CreateWindowAsync(
+                new BrowserWindowOptions
+                {
+                    Width = 1152,
+                    Height = 864,
+                    Show = true,
+                    BackgroundColor = "#f5f6f8",
+                    Title = "Papercut",
+                    Icon = WindowIcon()
+                });
+
+            var socket = GetElectronSocket();
+
+            QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
+            QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
         }
     }
 }

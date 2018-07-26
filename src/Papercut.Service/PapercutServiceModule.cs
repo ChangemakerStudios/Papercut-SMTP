@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2018 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,23 +15,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-using System;
-using Papercut.Common.Domain;
-using Papercut.Core.Domain.Message;
-using Papercut.Service.Web.Notification;
 
 namespace Papercut.Service
 {
     using System.Reflection;
+
     using Autofac;
     using Autofac.Core;
 
+    using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
+    using Papercut.Core.Domain.Message;
+    using Papercut.Core.Domain.Paths;
     using Papercut.Core.Domain.Settings;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Service.Helpers;
-    using Module = Autofac.Module;
+    using Papercut.Service.Infrastructure.Console;
+    using Papercut.Service.Infrastructure.Paths;
+    using Papercut.Service.Infrastructure.SmtpServer;
+    using Papercut.Service.Infrastructure.WebServer;
     using Papercut.Service.Web.Hosting;
+    using Papercut.Service.Web.Notification;
+
+    using SmtpServer.Storage;
+
+    using Module = Autofac.Module;
 
     public class PapercutServiceModule : Module, IDiscoverableModule
     {
@@ -39,45 +48,31 @@ namespace Papercut.Service
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterAssemblyTypes(this.GetType().GetTypeInfo().Assembly)
-                .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .SingleInstance();
+            RegisterStartupServices(builder);
 
-            builder.RegisterType<WebServerReadyEvent>().As<IEventHandler<PapercutWebServerReadyEvent>>();
             builder.RegisterType<NewMessageEventHandler>().As<IEventHandler<NewMessageEvent>>();
 
-            builder.RegisterType<WebServer>()
-                .AsSelf()
-                .SingleInstance();
+            builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().InstancePerLifetimeScope();
 
             builder.Register(
-                ctx => ctx.Resolve<ISettingStore>().UseTyped<PapercutServiceSettings>())
+                    ctx => ctx.Resolve<ISettingStore>().UseTyped<PapercutServiceSettings>())
                 .AsSelf()
                 .SingleInstance();
 
-            builder.Register((c) => new ApplicationMeta("Papercut.Service"))
+            builder.Register(c => new ApplicationMeta("Papercut.Service"))
                 .As<IAppMeta>()
                 .SingleInstance();
 
-            base.Load(builder);
-        }
-    }
+            builder.RegisterType<SmtpMessageStore>().As<MessageStore>().AsSelf();
 
-    public class WebServerReadyEvent: IEventHandler<PapercutWebServerReadyEvent>
-    {
-        private static Action<PapercutWebServerReadyEvent> _webServerReady;
-
-        public static void Register(Action<PapercutWebServerReadyEvent> webServerReady)
-        {
-            _webServerReady = webServerReady;
+            builder.RegisterType<SerilogSmtpServerLoggingBridge>().As<global::SmtpServer.ILogger>();
         }
-        
-        public void Handle(PapercutWebServerReadyEvent @event)
+
+        private static void RegisterStartupServices(ContainerBuilder builder)
         {
-            _webServerReady?.Invoke(@event);
-            _webServerReady = null;
+            builder.RegisterType<ConsoleTitleSetterStartupService>().As<IStartupService>().SingleInstance();
+            builder.RegisterType<SmtpServerStartup>().As<IStartupService>().SingleInstance();
+            builder.RegisterType<WebServer>().As<IStartupService>().SingleInstance();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2018 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,22 +15,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Network.Smtp
+namespace Papercut.Service.Infrastructure.Console
 {
-    using Papercut.Core.Domain.Network;
-    using Papercut.Core.Domain.Network.Smtp;
-    using Papercut.Network.Protocols;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
-    public class SmtpContext : ISmtpContext
+    using Papercut.Core.Domain.Application;
+    using Papercut.Core.Infrastructure.Lifecycle;
+
+    public class ConsoleTitleSetterStartupService : IStartupService
     {
-        public SmtpContext(IConnection connection, SmtpSession session)
+        private readonly IAppMeta _appMeta;
+
+        public ConsoleTitleSetterStartupService(IAppMeta appMeta)
         {
-            Connection = connection;
-            Session = session;
+            this._appMeta = appMeta;
         }
 
-        public IConnection Connection { get; protected set; }
+        public Task Start(CancellationToken token)
+        {
+            Console.Title = this._appMeta.AppName;
 
-        public SmtpSession Session { get; protected set; }
+            return Task.CompletedTask;
+        }
     }
 }

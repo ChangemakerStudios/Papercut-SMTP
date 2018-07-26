@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.0-runtime-jessie
+FROM microsoft/dotnet:2.1-runtime-alpine
 
 
 COPY . /Papercut

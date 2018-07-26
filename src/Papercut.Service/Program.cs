@@ -18,74 +18,58 @@
 namespace Papercut.Service
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     using Autofac;
     
     using Papercut.Core.Infrastructure.Container;
-    using Papercut.Service.Services;
+
     using System.Threading;
 
     using Serilog;
     using Papercut.Core.Domain.Application;
     using System.Threading.Tasks;
     using System.Reflection;
+    using System.Runtime.Loader;
+
+    using Papercut.Core.Infrastructure.Lifecycle;
 
     public class Program
     {
-        static int Main(string[] args)
+        public static int Main(string[] args)
         {
-            var appTask = Startup(args);
-            appTask.Wait();
-            return appTask.Result;
+            Log.Logger = PapercutContainer.RootLogger;
+
+            return RunAsync().GetAwaiter().GetResult();
         }
 
-        public static Task<int> Startup(string[] args, Action<ILifetimeScope> bootstrap = null, Action shutdown = null)
+        private static void HookHandlers()
         {
-            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-            return Task.Factory.StartNew(() =>
-                StartPapercutService((container) =>
-                    {
-                        Console.CancelKeyPress += Console_CancelKeyPress;
-                        Console.Title = container.Resolve<IAppMeta>().AppName;
-                        
-                        bootstrap?.Invoke(container);
-                    },
-                    shutdown,
-                    throwErrors: false));
+            TaskScheduler.UnobservedTaskException += (sender, e) => Log.Logger.Error(e.Exception, "Unobserved Task Exception");
+            Console.CancelKeyPress += (s, e) => Shutdown(true);
+            AssemblyLoadContext.Default.Unloading += context => Shutdown();
         }
 
-        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        public static async Task<int> RunAsync()
         {
-            Shutdown();
-        }
+            HookHandlers();
 
-        static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
-        {
-            WriteFatal(e.Exception);
-        }
-
-        static void WriteFatal(Exception ex)
-        {
-            Console.Error.WriteLine(ex);
-            if (Log.Logger != null)
-            {
-                Log.Logger.Fatal(ex, "Unhandled Exception");
-            }
-        }
-
-        static void WriteInfo(string info)
-        {
-            Console.WriteLine(info);
-            if (Log.Logger != null)
-            {
-                Log.Logger.Information(info);
-            }
+            return await RunContainer(
+                       (scope, token) =>
+                       {
+                           Console.Title = scope.Resolve<IAppMeta>().AppName;
+                           return Task.CompletedTask;
+                       });
         }
 
         #region Service Control
 
-        static ManualResetEvent appWaitHandle = new ManualResetEvent(false);
+        private static readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        static int StartPapercutService(Action<ILifetimeScope> initialization, Action shutdown, bool throwErrors = true)
+        public static bool HandleExceptions { get; set; } = true;
+
+        public static async Task<int> RunContainer(Func<ILifetimeScope, CancellationToken, Task> runAction, Func<ILifetimeScope, Task> shutdownAction = null)
         {
             try
             {
@@ -96,49 +80,60 @@ namespace Papercut.Service
 
                 using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
                 {
-                    initialization(appContainer);
+                    await runAction(appContainer, _cancellationTokenSource.Token);
 
-                    var papercutService = appContainer.Resolve<PapercutServerService>();
-                    papercutService.Start();
+                    var tasks = new List<Task>();
 
-                    appWaitHandle.WaitOne();
-                    try
+                    // run all
+                    foreach (var service in appContainer.Resolve<IEnumerable<IStartupService>>().ToList())
                     {
-                        papercutService.Stop();
-
-                        appWaitHandle.Dispose();
-                        appWaitHandle = null;
-
-                        shutdown?.Invoke();
+                        tasks.Add(service.Start(_cancellationTokenSource.Token));
                     }
-                    catch { }
+
+                    _cancellationTokenSource.Token.WaitHandle.WaitOne();
+
+                    // wait for the processes to finish
+                    await Task.WhenAll(tasks);
+
+                    if (shutdownAction != null)
+                    {
+                        await shutdownAction.Invoke(appContainer);
+                    }
                 }
 
                 return 0;
             }
+            catch (OperationCanceledException)
+            {
+                // all good
+            }
             catch (Exception ex)
             {
-                WriteFatal(ex);
-                appWaitHandle.Set();
+                Log.Logger.Fatal(ex, "Unhandled Exception");
 
-                if (throwErrors)
+                if (!HandleExceptions)
                 {
                     throw;
                 }
-                return 1;
             }
+
+            return 1;
         }
 
-        public static void Shutdown()
+        public static void Shutdown(bool cancelled = false)
         {
-            WriteInfo("Exiting...");
-            if (appWaitHandle != null)
+            try
             {
-                appWaitHandle.Set();
+                PapercutContainer.RootLogger.Information("Shutting Down (Cancelled: {Cancelled})...", cancelled);
+
+                _cancellationTokenSource.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // not logged
             }
         }
 
         #endregion
-
     }
 }

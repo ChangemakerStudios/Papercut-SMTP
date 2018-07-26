@@ -29,14 +29,14 @@ build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\
   - npm install
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\
-  - electron-packager %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\ Papercut --platform=win32 --arch=x64 --out=%APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\bin\desktop\ --overwrite --no-prune --app-copyright="ChangemakerStudios" --app-version="%APPVEYOR_BUILD_VERSION%" --icon=%APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\icons\Papercut-icon.ico  --win32metadata.ProductName="Papercut" --win32metadata.FileDescription="Papercut Simple Desktop SMTP Server" --win32metadata.CompanyName="ChangemakerStudios"
+  - electron-packager %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\obj\desktop\win\ Papercut --platform=win32 --arch=x64 --out=%APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\bin\desktop\ --overwrite --app-copyright="ChangemakerStudios" --app-version="%APPVEYOR_BUILD_VERSION%" --icon=%APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\icons\Papercut-icon.ico  --win32metadata.ProductName="Papercut" --win32metadata.FileDescription="Papercut Simple Desktop SMTP Server" --win32metadata.CompanyName="ChangemakerStudios"
   
 after_build:
   # Papercut Service
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\netcoreapp2.0\win10-x64\publish\
+  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\netcoreapp2.1\win10-x64\publish\
   - 7z a PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip -r *.*
   - appveyor PushArtifact PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip
-  # - dotnet %APPVEYOR_BUILD_FOLDER%\azcopy\azcopy.dll --source %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\netcoreapp2.0\win10-x64\publish\PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/windows/%APPVEYOR_BUILD_VERSION%/PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip --dest-key %azblobcontainerkey%
+  # - dotnet %APPVEYOR_BUILD_FOLDER%\azcopy\azcopy.dll --source %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release\netcoreapp2.1\win10-x64\publish\PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip --destination https://papercutartifacts.blob.core.windows.net/prereleases/windows/%APPVEYOR_BUILD_VERSION%/PapercutService.win.%APPVEYOR_BUILD_VERSION%.zip --dest-key %azblobcontainerkey%
  
   # Papercut Desktop
   - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Desktop\bin\desktop\Papercut-win32-x64
