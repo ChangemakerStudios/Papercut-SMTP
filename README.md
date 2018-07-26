@@ -22,6 +22,23 @@ You can also use Papercut directly with Docker:
     docker run --name=papercut -p 25:25 -p 37408:37408 jijiechen/papercut:latest
 ```
 
+## Development
+
+In development mode, the Papercut.Service will defaultly listen SMTP service on port `2525`. You can use the `send-test-mail.js` in the root directory to test Papercut.Service.
+```
+    npm install nodemailer
+    node ./send-test-mail.js
+```
+
+For the desktop app, you run it by executing the `start-electron-app` script in the `src/Papercut.Desktop` directory:
+```
+    cd src/Papercut.Desktop
+    ./start-electron.sh   # on Windows, use .\start-electron.bat 
+```
+
+To attach and debug the Electron app, just launch the development tool and debug the web page in electron.
+If you'd like to debug the backend Papercut when running in electron desktop mode, add a `DEBUG_PAPAERCUT` environment variable and give it a value before launching the desktop app, the program will wait 30s for the debugger to attach. 
+
 
 ## License
 Papercut is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
