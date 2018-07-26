@@ -7,7 +7,7 @@ if [ "$1" != "nobuild" ]; then
     dotnet electronize start
 fi
 
-# If run using 'rebuild', then need to quit Papercut app once manually. (The app is launched automatically by Electron.NET start command...)
+# On lanching, we need to quit Papercut app once manually. (The app is launched automatically by Electron.NET start command...)
 # Because the our main.js is not applied before we execute following scripts:
 
 cp -f obj/Host/bin/main.js obj/Host/main.js
