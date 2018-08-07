@@ -49,7 +49,7 @@ namespace Papercut.Network.Protocols
 
             Context = new SmtpContext(connection, new SmtpSession());
 
-            Connection.SendLine("220 {0}", NetworkHelper.GetLocalDnsHostName());
+            Connection.SendLine("220 {0} Papercut", NetworkHelper.GetLocalDnsHostName());
         }
 
         protected override void ProcessRequest(string request)
