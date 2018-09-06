@@ -74,7 +74,7 @@ namespace Papercut.Message
                     }
                 }
 
-                file = _messageRepository.SaveMessage(fs => message.WriteTo(fs));
+                file = _messageRepository.SaveMessage(message.Subject, fs => message.WriteTo(fs));
             }
 
             try

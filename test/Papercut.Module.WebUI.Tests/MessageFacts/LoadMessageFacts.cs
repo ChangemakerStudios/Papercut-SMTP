@@ -62,7 +62,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 From = {new MailboxAddress("mffeng@gmail.com")}
             };
 
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
             var messages = Get<MessageListResponse>("/api/messages").Messages;
             Assert.AreEqual(1, messages.Count);
@@ -96,7 +96,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             for (int i = 0; i < 10; i++)
             {
                 existedMail.Subject = $"Test {i+1}";
-                this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+                this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
                 Thread.Sleep(10);
             }
 
@@ -130,7 +130,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 Bcc = {new MailboxAddress("rzhe@gmail.com"), new MailboxAddress("xueting@gmail.com")},
                 Body = new TextPart("plain") {Text = "Hello Buddy"}
             };
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
             var messages = Get<MessageListResponse>("/api/messages").Messages;
             var id = messages.First().Id;
 
@@ -171,7 +171,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             };
             existedMail.Headers.Add(HeaderId.ReplyTo, "one@replyto.com");
             existedMail.Headers.Add("X-Extended", "extended value");
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
             var messages = Get<MessageListResponse>("/api/messages").Messages;
             var id = messages.First().Id;
 

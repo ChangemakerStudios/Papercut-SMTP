@@ -31,9 +31,12 @@ namespace Papercut.Core.Domain.Message
     /// </summary>
     public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IFile
     {
-        static readonly Regex _nameFormat = new Regex(
-            @"^(?<date>\d{17})(\-[A-Z0-9]{6})?\.eml$",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        public const string DateTimeFormat = "yy.MMdd-HH.mm.ssfff";
+
+
+        //static readonly Regex _nameFormat = new Regex(
+        //    @"^(?<date>\d{17})(\-[A-Z0-9]{6})?\.eml$",
+        //    RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         protected readonly FileInfo _info;
 
@@ -45,14 +48,20 @@ namespace Papercut.Core.Domain.Message
         {
             this._info = fileInfo;
 
-            Match match = _nameFormat.Match(this._info.Name);
-            if (match.Success)
-            {
-                this._created = DateTime.ParseExact(
-                    match.Groups["date"].Value,
-                    "yyyyMMddHHmmssFFF",
-                    CultureInfo.InvariantCulture);
-            }
+            //Match match = _nameFormat.Match(this._info.Name);
+            //if (match.Success)
+            //{
+            //    this._created = DateTime.ParseExact(
+            //        match.Groups["date"].Value,
+            //        "yyyyMMddHHmmssFFF",
+            //        CultureInfo.InvariantCulture);
+            //}
+
+            var dateTimePart = _info.Name.Substring(0, DateTimeFormat.Length);
+            _created = DateTime.ParseExact(
+                dateTimePart,
+                DateTimeFormat,
+                CultureInfo.InvariantCulture);
         }
 
         public MessageEntry(string file)
