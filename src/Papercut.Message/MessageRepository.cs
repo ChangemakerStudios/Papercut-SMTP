@@ -98,7 +98,9 @@ namespace Papercut.Message
             return data;
         }
 
-        // it3xl.com: Loads all messages
+        /// <summary>
+        /// Loads all messages
+        /// </summary>
         public IList<MessageEntry> LoadMessages()
         {
             IEnumerable<string> files =

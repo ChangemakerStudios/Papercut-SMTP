@@ -31,7 +31,9 @@ namespace Papercut.Core.Domain.Message
     /// </summary>
     public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IFile
     {
-        public const string DateTimeFormat = "yy.MMdd-HH.mm.ssfff";
+        // You can start by using another timestamp format. An example below.
+        //public const string DateTimeFormat = "yy.MMdd-HH.mm.ssfff";
+        public const string DateTimeFormat = "yyyyMMddHHmmssFFF";
 
 
         //static readonly Regex _nameFormat = new Regex(
