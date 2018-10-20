@@ -26,6 +26,7 @@ Teardown(ctx => Information("Finished running tasks."));
 ///////////////////////////////////////////////////////////////////////////////
 const string MajorVersion = "5";
 const string MinorVersion = "1";
+string BuildVersion = "5.1.0.0";
 
 var appBuildDir = Directory("../src/Papercut.UI/bin") + Directory(configuration);
 var svcBuildDir = Directory("../src/Papercut.Service/bin") + Directory(configuration);
@@ -58,6 +59,8 @@ Task("PatchAssemblyInfo")
     var commitId = AppVeyor.IsRunningOnAppVeyor ? AppVeyor.Environment.Repository.Commit.Id : "LocalBuild";
     var version = string.Format("{0}.{1}.{2}.{3}", MajorVersion, MinorVersion, buildNo, 0);
     var semVersion = string.Format("{0} (Commit: {1}", version, commitId);
+
+    BuildVersion = version;
 
     CreateAssemblyInfo("../src/GlobalAssemblyInfo.cs", new AssemblyInfoSettings {
         Version = version,
@@ -126,7 +129,24 @@ Task("Test")
 Task("Package")
     .Does(() =>
 {
-    
+    var appFileName = string.Format("Papercut.{0}.zip", BuildVersion);
+    var directory = "../src/Papercut.UI/bin/" + configuration;
+    Zip(directory, appFileName, GetFiles(directory + "/**/*"));
+
+    var svcFileName = string.Format("PapercutService.{0}.zip", BuildVersion);
+    directory = "../src/Papercut.Service/bin/" + configuration;
+    Zip(directory, svcFileName, GetFiles(directory + "/**/*"));
+
+    if(AppVeyor.IsRunningOnAppVeyor)
+    {
+        AppVeyor.UploadArtifact(appFileName);    
+        AppVeyor.UploadArtifact(svcFileName);    
+        AppVeyor.UploadArtifact("../src/Papercut.Bootstrapper/bin/" + configuration + "/Papercut.Setup.exe");    
+    }
+
+//   # Chocolately
+//   - nuget pack chocolately\Papercut.nuspec -version %APPVEYOR_BUILD_VERSION%
+//   - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.nupkg
 })
 .OnError(exception => Error(exception));
 
