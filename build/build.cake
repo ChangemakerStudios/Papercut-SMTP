@@ -99,6 +99,7 @@ src=""data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOgAAAAyCAMAAABh0mcDAAAAGXRF
 
 ///////////////////////////////////////////////////////////////////////////////
 Task("Build")
+    .IsDependentOn("Restore")
     .Does(() =>
 {
     MSBuild("../Papercut.sln", settings => settings
@@ -134,6 +135,7 @@ Task("All")
     .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("Clean")
     .IsDependentOn("CreateReleaseNotes")
+    .IsDependentOn("Restore")
     .IsDependentOn("Build")
     .IsDependentOn("Test")
     .IsDependentOn("Package")
