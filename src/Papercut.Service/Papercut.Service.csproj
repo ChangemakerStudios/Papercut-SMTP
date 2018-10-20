@@ -116,6 +116,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Helpers\PapercutServiceSettings.cs" />
     <Compile Include="Services\RuleService.cs" />
     <Compile Include="Services\PublishAppEventsHandlerToClientService.cs" />
