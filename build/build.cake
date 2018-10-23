@@ -68,6 +68,11 @@ Task("PatchAssemblyInfo")
         FileVersion = information.FileVersion,
         InformationalVersion = information.SemanticVersion
     });   
+
+    if(AppVeyor.IsRunningOnAppVeyor)
+    {
+        AppVeyor.UpdateBuildVersion(information.FileVersion);
+    }
 })
 .OnError(exception => Error(exception));
 
