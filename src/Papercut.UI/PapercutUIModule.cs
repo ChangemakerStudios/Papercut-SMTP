@@ -32,10 +32,8 @@ namespace Papercut
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Message;
-
-    using Module = Autofac.Module;
-
-    public class PapercutUIModule : Module, IDiscoverableModule
+    
+    public class PapercutUIModule : Autofac.Module, IDiscoverableModule
     {
         protected override void Load(ContainerBuilder builder)
         {

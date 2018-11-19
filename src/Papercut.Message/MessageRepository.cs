@@ -120,12 +120,11 @@ namespace Papercut.Message
 
             try
             {
-                var cuttedPart = new string(mailSubject.Take(40).ToArray());
-                var validPart = MakeValidFileName(cuttedPart, "subject unknown");
+                var validPart = MakeValidFileName(mailSubject.Truncate(40, string.Empty), "subject unknown");
 
                 var dateTimeFormatted = DateTime.Now.ToString(MessageEntry.DateTimeFormat);
 
-                // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
+                // the file must not exist:  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
                 fileName = Path.Combine(_messagePathConfigurator.DefaultSavePath,
                     $"{dateTimeFormatted} {validPart} {StringHelpers.SmallRandomString()}.eml");
 

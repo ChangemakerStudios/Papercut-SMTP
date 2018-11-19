@@ -91,7 +91,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
@@ -102,6 +101,26 @@
       <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
       <Name>Papercut.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Autofac">
+      <Version>4.6.2</Version>
+    </PackageReference>
+    <PackageReference Include="MailKit">
+      <Version>2.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="MimeKit">
+      <Version>2.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Rx-Linq">
+      <Version>2.2.5</Version>
+    </PackageReference>
+    <PackageReference Include="Rx-PlatformServices">
+      <Version>2.2.5</Version>
+    </PackageReference>
+    <PackageReference Include="Serilog">
+      <Version>2.5.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -72,10 +72,6 @@
     <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
       <HintPath>..\..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
-    <Reference Include="Costura, Version=1.6.2.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Costura.Fody.1.6.2\lib\dotnet\Costura.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="MimeKit, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MimeKit.2.0.2\lib\net45\MimeKit.dll</HintPath>
     </Reference>
@@ -132,13 +128,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
     <None Include="Papercut.Service.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FodyWeavers.xml" />
     <Content Include="Papercut-Service-icon.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -153,6 +147,18 @@
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
       <Project>{cb1f4128-be3e-42bd-ae04-fcbbe5692e14}</Project>
       <Name>Papercut.Message</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Papercut.Module.Seq\Papercut.Module.Seq.csproj">
+      <Project>{5e6526b3-4da9-41f4-8171-c34146ac2e55}</Project>
+      <Name>Papercut.Module.Seq</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Papercut.Module.VerboseJsonLog\Papercut.Module.VerboseJsonLog.csproj">
+      <Project>{f60d44e1-100e-464a-a280-ca6baf652177}</Project>
+      <Name>Papercut.Module.VerboseJsonLog</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Papercut.Module.WebUI\Papercut.Module.WebUI.csproj">
+      <Project>{a1c924f3-3cfb-4844-b79f-8bffec60eebf}</Project>
+      <Name>Papercut.Module.WebUI</Name>
     </ProjectReference>
     <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj">
       <Project>{C87AB840-625A-4661-AA36-369ADDC6CF7F}</Project>
@@ -185,17 +191,28 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Autofac">
+      <Version>4.6.2</Version>
+    </PackageReference>
+    <PackageReference Include="MimeKit">
+      <Version>2.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Rx-Linq">
+      <Version>2.2.5</Version>
+    </PackageReference>
+    <PackageReference Include="Rx-PlatformServices">
+      <Version>2.2.5</Version>
+    </PackageReference>
+    <PackageReference Include="Serilog">
+      <Version>2.5.0</Version>
+    </PackageReference>
+    <PackageReference Include="Topshelf">
+      <Version>3.3.1</Version>
+    </PackageReference>
+    <PackageReference Include="Topshelf.Serilog">
+      <Version>3.3.1</Version>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target AfterTargets="AfterBuild;NonWinFodyTarget" Name="CleanReferenceCopyLocalPaths">
-    <Delete Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" />
-  </Target>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Fody.2.4.6\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Fody.2.4.6\build\Fody.targets'))" />
-  </Target>
-  <Import Project="..\..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets" Condition="Exists('..\..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets')" />
-  <Import Project="..\..\packages\Fody.2.4.6\build\Fody.targets" Condition="Exists('..\..\packages\Fody.2.4.6\build\Fody.targets')" />
 </Project>

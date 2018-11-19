@@ -139,12 +139,12 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
 
                 try
                 {
-                    assembly = Assembly.LoadFrom(assemblyFile);
+                    assembly = Assembly.UnsafeLoadFrom(assemblyFile);
                     var assemblyLoader = assembly.GetType("Costura.AssemblyLoader");
                     if (assemblyLoader != null)
                     {
                         var attach = assemblyLoader.GetMethod("Attach");
-                        attach.Invoke(null, null);
+                        attach?.Invoke(null, null);
                     }
                 }
                 catch (BadImageFormatException)

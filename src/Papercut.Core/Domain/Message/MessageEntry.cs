@@ -21,6 +21,7 @@ namespace Papercut.Core.Domain.Message
     using System.ComponentModel;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Text.RegularExpressions;
 
     using Papercut.Common.Extensions;
@@ -38,11 +39,6 @@ namespace Papercut.Core.Domain.Message
         //public const string DateTimeFormat = "yyyyMMddHHmmssFFF";
         public const string DateTimeFormat = "yyyyMMddHHmmssfff";
 
-
-        //static readonly Regex _nameFormat = new Regex(
-        //    @"^(?<date>\d{17})(\-[A-Z0-9]{6})?\.eml$",
-        //    RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
         protected readonly FileInfo _info;
 
         protected DateTime? _created;
@@ -53,20 +49,19 @@ namespace Papercut.Core.Domain.Message
         {
             this._info = fileInfo;
 
-            //Match match = _nameFormat.Match(this._info.Name);
-            //if (match.Success)
-            //{
-            //    this._created = DateTime.ParseExact(
-            //        match.Groups["date"].Value,
-            //        "yyyyMMddHHmmssFFF",
-            //        CultureInfo.InvariantCulture);
-            //}
+            var firstBit = this._info.Name.Split(' ').FirstOrDefault();
 
-            var dateTimePart = _info.Name.Substring(0, DateTimeFormat.Length);
-            _created = DateTime.ParseExact(
-                dateTimePart,
-                DateTimeFormat,
-                CultureInfo.InvariantCulture);
+            if (firstBit?.Length == DateTimeFormat.Length)
+            {
+                _created = DateTime.ParseExact(
+                    firstBit,
+                    DateTimeFormat,
+                    CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                _created = this._info.CreationTime;
+            }
         }
 
         public MessageEntry(string file)
@@ -84,7 +79,7 @@ namespace Papercut.Core.Domain.Message
 
         public bool IsSelected
         {
-            get { return this._isSelected; }
+            get => this._isSelected;
             set
             {
                 this._isSelected = value;
