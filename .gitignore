@@ -15,3 +15,5 @@ deploy/
 changelog.bat
 graphics/
 .vs/
+/build/tools
+/tools
