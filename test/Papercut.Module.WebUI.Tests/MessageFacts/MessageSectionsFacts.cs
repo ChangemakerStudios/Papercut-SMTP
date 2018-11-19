@@ -60,7 +60,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     }
                 }
             };
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
             var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
@@ -89,7 +89,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     }
                 }
             };
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
             var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
@@ -119,7 +119,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     }
                 }
             };
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
             var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
 

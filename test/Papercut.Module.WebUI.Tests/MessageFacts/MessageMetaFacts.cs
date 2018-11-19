@@ -71,7 +71,9 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 
             var disposition = response.Content.Headers.ContentDisposition;
             Assert.AreEqual(DispositionTypeNames.Attachment, disposition.DispositionType);
-            Assert.AreEqual(messageId, disposition.FileName);
+
+            var uriMessageId = Uri.EscapeDataString(messageId ?? string.Empty);
+            Assert.AreEqual(uriMessageId, disposition.FileName);
 
 
             MimeMessage downloadMessage;
@@ -107,7 +109,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     }
                 });
 
-            return this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            return this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
         }
 
         class MessageListResponse
