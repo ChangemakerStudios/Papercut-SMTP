@@ -19,7 +19,7 @@ namespace Papercut.Network
 {
     using System;
     using System.Net.Sockets;
-
+    using Newtonsoft.Json;
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
     using Papercut.Core.Infrastructure.Json;
@@ -36,6 +36,14 @@ namespace Papercut.Network
         public const int ServerPort = 37403;
 
         readonly ILogger _logger;
+
+        readonly JsonSerializerSettings _singleLineJsonSettings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Auto,
+            Formatting = Formatting.None,
+            NullValueHandling = NullValueHandling.Include,
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
+        };
 
         public PapercutClient(ILogger logger)
         {
@@ -167,7 +175,7 @@ namespace Papercut.Network
                     CommandType = protocolCommandType,
                     Type = @event.GetType(),
                     ByteSize = eventJson.Length
-                }.ToJson());
+                }.ToJson(_singleLineJsonSettings));
 
             response = stream.ReadString().Trim();
             if (response == "ACK") stream.WriteStr(eventJson);
