@@ -20,7 +20,7 @@ var configuration = Argument("configuration", "Release");
 var information = BuildInformation.GetBuildInformation(Context, BuildSystem);
 
 const int MajorVersion = 5;
-const int MinorVersion = 1;
+const int MinorVersion = 2;
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN

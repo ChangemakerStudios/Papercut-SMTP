@@ -1,6 +1,6 @@
 os: Visual Studio 2017
 
-version: 5.1.{build}
+version: 5.2.{build}
 
 configuration: Release
 
