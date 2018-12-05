@@ -38,7 +38,9 @@ namespace Papercut.Core.Infrastructure.MessageBus
 
         public void Publish<T>(T eventObject) where T : IEvent
         {
-            foreach (var @event in this.MaybeByOrderable(this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>()))
+            var eventHandlers = this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().ToList();
+
+            foreach (var @event in this.MaybeByOrderable(eventHandlers))
             {
                 try
                 {

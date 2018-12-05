@@ -32,11 +32,5 @@ namespace Papercut.Rules.Implementations
             : base(mimeMessageLoader, logger)
         {
         }
-
-        protected override void PopulateMessageFromRule(ForwardRule rule, MimeMessage mimeMessage)
-        {
-            base.PopulateMessageFromRule(rule, mimeMessage);
-            mimeMessage.PopulateFromRule(rule);
-        }
     }
 }

@@ -22,6 +22,8 @@ namespace Papercut.Rules
     using System.ComponentModel;
     using System.Linq;
 
+    using MimeKit;
+
     using Newtonsoft.Json;
 
     using Papercut.Common.Extensions;
@@ -48,7 +50,7 @@ namespace Papercut.Rules
         [Description("Is the Rule Enabled for Processing?")]
         public virtual bool IsEnabled
         {
-            get { return _isEnabled; }
+            get => _isEnabled;
             set
             {
                 if (value.Equals(_isEnabled)) return;
@@ -71,6 +73,8 @@ namespace Papercut.Rules
                     .OrderBy(s => s.Key)
                     .ToFormattedPairs()
                     .Join("\r\n");
+
+        public abstract void PopulateFromRule(MimeMessage message);
 
         protected virtual IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
         {

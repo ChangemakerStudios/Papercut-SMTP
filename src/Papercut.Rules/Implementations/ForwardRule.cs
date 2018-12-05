@@ -23,6 +23,8 @@ namespace Papercut.Rules.Implementations
     using System.ComponentModel;
     using System.Linq;
 
+    using MimeKit;
+
     using Papercut.Common.Extensions;
 
     [Serializable]
@@ -61,6 +63,28 @@ namespace Papercut.Rules.Implementations
                 _toEmail = value;
                 OnPropertyChanged(nameof(ToEmail));
             }
+        }
+
+        public override void PopulateFromRule(MimeMessage mimeMessage)
+        {
+            if (mimeMessage == null) throw new ArgumentNullException(nameof(mimeMessage));
+
+            if (!string.IsNullOrWhiteSpace(this.FromEmail))
+            {
+                mimeMessage.From.Clear();
+                mimeMessage.From.Add(
+                    new MailboxAddress(this.FromEmail, this.FromEmail));
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.ToEmail))
+            {
+                mimeMessage.To.Clear();
+                mimeMessage.Bcc.Clear();
+                mimeMessage.Cc.Clear();
+                mimeMessage.To.Add(new MailboxAddress(this.ToEmail, this.ToEmail));
+            }
+
+            base.PopulateFromRule(mimeMessage);
         }
 
         protected override IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()

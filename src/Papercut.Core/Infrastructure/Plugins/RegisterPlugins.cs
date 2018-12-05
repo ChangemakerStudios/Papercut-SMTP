@@ -37,7 +37,7 @@ namespace Papercut.Core.Infrastructure.Plugins
             this._logger = logger.ForContext<RegisterPlugins>();
         }
 
-        public void Register(ContainerBuilder builder, IEnumerable<Assembly> scannableAssemblies)
+        public void RegisterPluginModules(ContainerBuilder builder, IEnumerable<Assembly> scannableAssemblies)
         {
             var pluginModules =
                 scannableAssemblies.IfNullEmpty()
@@ -63,19 +63,20 @@ namespace Papercut.Core.Infrastructure.Plugins
                     }
 
                     return null;
-                }).Where(s => s != null).ToList();
+                }).Where(s => s != null).Distinct(DiscoverableModuleEqualityComparer.Instance).ToList();
 
-            var plugins = modules.OfType<IPluginModule>().Distinct(PluginModuleEqualityComparer.Instance).ToList();
-
-            foreach (var plugin in plugins)
+            foreach (var plugin in modules)
             {
-                builder.RegisterModule(plugin.Module);
-                PluginStore.Instance.Add(plugin);
-            }
+                if (plugin is IPluginModule module)
+                {
+                    PluginStore.Instance.Add(module);
 
-            foreach (var plugin in modules.Except(plugins))
-            {
-                builder.RegisterModule(plugin.Module);
+                    builder.RegisterModule(module.Module);
+                }
+                else
+                {
+                    builder.RegisterModule(plugin.Module);
+                }
             }
         }
     }

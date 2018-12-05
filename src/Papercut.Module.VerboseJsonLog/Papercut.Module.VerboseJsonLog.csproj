@@ -37,31 +37,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=4.6.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Autofac.4.6.2\lib\net45\Autofac.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.2.5.0\lib\net45\Serilog.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.File.3.2.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.RollingFile, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.RollingFile.3.3.0\lib\net45\Serilog.Sinks.RollingFile.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
@@ -95,15 +70,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>mkdir $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins
-copy $(ProjectDir)$(OutDir)$(AssemblyName).dll $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins\$(AssemblyName).dll
-copy $(ProjectDir)$(OutDir)$(AssemblyName).dll.config $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins\$(AssemblyName).dll.config
-copy $(ProjectDir)$(OutDir)$(AssemblyName).pdb $(ProjectDir)..\Papercut.Service\bin\$(Configuration)\plugins\$(AssemblyName).pdb
-
-mkdir $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins
-copy $(ProjectDir)$(OutDir)$(AssemblyName).dll $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins\$(AssemblyName).dll
-copy $(ProjectDir)$(OutDir)$(AssemblyName).dll.config $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins\$(AssemblyName).dll.config
-copy $(ProjectDir)$(OutDir)$(AssemblyName).pdb $(ProjectDir)..\Papercut.UI\bin\$(Configuration)\plugins\$(AssemblyName).pdb</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

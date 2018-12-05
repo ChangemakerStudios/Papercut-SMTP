@@ -633,18 +633,6 @@
       <Project>{cb1f4128-be3e-42bd-ae04-fcbbe5692e14}</Project>
       <Name>Papercut.Message</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Papercut.Module.Seq\Papercut.Module.Seq.csproj">
-      <Project>{5e6526b3-4da9-41f4-8171-c34146ac2e55}</Project>
-      <Name>Papercut.Module.Seq</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Papercut.Module.VerboseJsonLog\Papercut.Module.VerboseJsonLog.csproj">
-      <Project>{f60d44e1-100e-464a-a280-ca6baf652177}</Project>
-      <Name>Papercut.Module.VerboseJsonLog</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Papercut.Module.WebUI\Papercut.Module.WebUI.csproj">
-      <Project>{a1c924f3-3cfb-4844-b79f-8bffec60eebf}</Project>
-      <Name>Papercut.Module.WebUI</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj">
       <Project>{c87ab840-625a-4661-aa36-369addc6cf7f}</Project>
       <Name>Papercut.Network</Name>

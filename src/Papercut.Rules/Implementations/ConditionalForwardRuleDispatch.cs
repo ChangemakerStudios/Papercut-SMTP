@@ -32,12 +32,6 @@ namespace Papercut.Rules.Implementations
         {
         }
 
-        protected override void PopulateMessageFromRule(ConditionalForwardRule rule, MimeMessage mimeMessage)
-        {
-            mimeMessage.PopulateFromRule(rule);
-            base.PopulateMessageFromRule(rule, mimeMessage);
-        }
-
         protected override bool RuleMatches(ConditionalForwardRule rule, MimeMessage mimeMessage)
         {
             return rule.IsConditionalForwardRuleMatch(mimeMessage);

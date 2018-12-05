@@ -59,7 +59,7 @@ namespace Papercut.Rules.Implementations
                         {
                             using (var client = rule.CreateConnectedSmtpClient())
                             {
-                                PopulateMessageFromRule(rule, m);
+                                rule.PopulateFromRule(m);
                                 client.Send(m);
                                 client.Disconnect(true);
                             }
@@ -80,11 +80,6 @@ namespace Papercut.Rules.Implementations
         {
             // log failure
             Logger.Error(exception, "Failure sending {@MessageEntry} for rule {@Rule}", messageEntry, rule);
-        }
-
-        protected virtual void PopulateMessageFromRule(T rule, MimeMessage mimeMessage)
-        {
-            // default is relay message as-is.
         }
     }
 }

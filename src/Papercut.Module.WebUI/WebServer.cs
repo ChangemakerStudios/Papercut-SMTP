@@ -19,7 +19,7 @@
 namespace Papercut.Module.WebUI
 {
     using System;
-    using System.ServiceModel;
+    using System.Threading.Tasks;
     using System.Web.Http.SelfHost;
 
     using Autofac;
@@ -33,46 +33,54 @@ namespace Papercut.Module.WebUI
 
     class WebServer : IEventHandler<PapercutServiceReadyEvent>, IEventHandler<PapercutClientReadyEvent>
     {
-        readonly ILifetimeScope scope;
-        readonly ILogger logger;
-
-        readonly int httpPort;
+        readonly ILifetimeScope _scope;
+        readonly ILogger _logger;
+        readonly int _httpPort;
         const string BaseAddress = "http://localhost:{0}";
         const int DefaultHttpPort = 37408;
 
+        private volatile bool _initialized = false;
+        
         public WebServer(ILifetimeScope scope, ISettingStore settingStore, ILogger logger)
         {
-            this.scope = scope;
-            this.logger = logger;
-            httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}).");
+            this._scope = scope;
+            this._logger = logger;
+            this._httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}).");
         }
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
-            StartHttpServer();
+            this._logger.Debug("{@PapercutServiceReadyEvent}", @event);
+
+            StartHttpServer().Wait();
         }
 
         public void Handle(PapercutClientReadyEvent @event)
         {
-            StartHttpServer();
+            this._logger.Debug("{@PapercutClientReadyEvent}", @event);
+
+            StartHttpServer().Wait();
         }
 
-        void StartHttpServer()
+        async Task StartHttpServer()
         {
+            if (this._initialized) return;
+
             try
             {
-                var config = new HttpSelfHostConfiguration(string.Format(BaseAddress, httpPort))
-                {
-                    HostNameComparisonMode = HostNameComparisonMode.WeakWildcard
-                };
-                RouteConfig.Init(config, scope);
-                new HttpSelfHostServer(config).OpenAsync().Wait();
+                var config = new HttpSelfHostConfiguration(string.Format(BaseAddress, this._httpPort));
 
-                logger.Information($"WebUI server started at port {httpPort}.");
+                RouteConfig.Init(config, this._scope);
+
+                await new HttpSelfHostServer(config).OpenAsync();
+
+                this._logger.Information($"[WebUI] Web server started at port {this._httpPort}.");
+
+                _initialized = true;
             }
             catch (Exception ex)
             {
-                logger.Error(ex, $"Can not start HTTP server at port {httpPort}.");
+                this._logger.Error(ex, $"[WebUI] Can not start HTTP server at port {this._httpPort}.");
             }
         }
     }

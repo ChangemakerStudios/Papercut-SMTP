@@ -17,6 +17,7 @@
 
 namespace Papercut.Network
 {
+    using System;
     using System.Reflection;
 
     using Autofac;
@@ -33,6 +34,8 @@ namespace Papercut.Network
     public class PapercutNetworkModule : Module, IDiscoverableModule
     {
         public IModule Module => this;
+
+        public Guid Id => new Guid("C6EDAACA-C2D7-4A0E-B1E8-EC0073845489");
 
         protected override void Load(ContainerBuilder builder)
         {

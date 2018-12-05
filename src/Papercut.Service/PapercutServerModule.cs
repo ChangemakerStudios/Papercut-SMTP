@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2018 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
-
 namespace Papercut.Service
 {
-    using System.Collections.Generic;
+    using System;
     using System.Reflection;
+
     using Autofac;
     using Autofac.Core;
 
@@ -26,11 +26,14 @@ namespace Papercut.Service
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Service.Helpers;
+
     using Module = Autofac.Module;
 
     public class PapercutServiceModule : Module, IDiscoverableModule
     {
         public IModule Module => this;
+
+        public Guid Id => new Guid("E98901F7-8E3F-4940-A363-C8F9362D71F5");
 
         protected override void Load(ContainerBuilder builder)
         {
@@ -45,7 +48,7 @@ namespace Papercut.Service
                 .AsSelf()
                 .SingleInstance();
 
-            builder.Register((c) => new ApplicationMeta("Papercut.Service"))
+            builder.Register(c => new ApplicationMeta("Papercut.Service"))
                 .As<IAppMeta>()
                 .SingleInstance();
 
