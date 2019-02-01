@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Papercut.Service</RootNamespace>
     <AssemblyName>Papercut.Service</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -87,6 +87,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
     <Content Include="Papercut-Service-icon.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -148,6 +149,9 @@
   <ItemGroup>
     <PackageReference Include="Autofac">
       <Version>4.6.2</Version>
+    </PackageReference>
+    <PackageReference Include="Costura.Fody">
+      <Version>3.3.2</Version>
     </PackageReference>
     <PackageReference Include="MimeKit">
       <Version>2.0.2</Version>
