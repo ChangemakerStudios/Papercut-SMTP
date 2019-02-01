@@ -17,7 +17,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Module.VerboseJson
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extras", "Extras", "{66E83B2B-F2C9-4CAA-A519-E4C48566D6BE}"
 	ProjectSection(SolutionItems) = preProject
-		appveyor.yml = appveyor.yml
 		src\GlobalAssemblyInfo.cs = src\GlobalAssemblyInfo.cs
 		README.md = README.md
 		ReleaseNotes.md = ReleaseNotes.md
@@ -45,6 +44,7 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Papercut.Bootstrapper", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Build", ".Build", "{8661B39E-1555-4A2F-B6C2-6442E83DE73D}"
 	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
 		build\build.cake = build\build.cake
 		build\build.ps1 = build\build.ps1
 	EndProjectSection
