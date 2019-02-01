@@ -8,4 +8,4 @@ before_build:
 - nuget restore
 
 build_script:
-  - cmd: PowerShell -Version 2.0 .\build\build.ps1
+  - cmd: PowerShell -Version 2.0 cd .\build && .\build.ps1
