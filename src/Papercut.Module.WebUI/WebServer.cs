@@ -19,6 +19,7 @@
 namespace Papercut.Module.WebUI
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Web.Http.SelfHost;
 
@@ -52,14 +53,14 @@ namespace Papercut.Module.WebUI
         {
             this._logger.Debug("{@PapercutServiceReadyEvent}", @event);
 
-            StartHttpServer().Wait();
+            Task.Run(async () => await StartHttpServer());
         }
 
         public void Handle(PapercutClientReadyEvent @event)
         {
             this._logger.Debug("{@PapercutClientReadyEvent}", @event);
 
-            StartHttpServer().Wait();
+            Task.Run(async () => await StartHttpServer());
         }
 
         async Task StartHttpServer()
@@ -74,13 +75,13 @@ namespace Papercut.Module.WebUI
 
                 await new HttpSelfHostServer(config).OpenAsync();
 
-                this._logger.Information($"[WebUI] Web server started at port {this._httpPort}.");
+                this._logger.Information("[WebUI] Papercut Web UI is running at {WebUiUrl}...", string.Format(BaseAddress, this._httpPort));
 
-                _initialized = true;
+                this._initialized = true;
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, $"[WebUI] Can not start HTTP server at port {this._httpPort}.");
+                this._logger.Error(ex, "[WebUI] Can not start Web UI Http server at {HttpPort}", this._httpPort);
             }
         }
     }
