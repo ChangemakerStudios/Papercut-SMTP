@@ -4,8 +4,8 @@ version: 5.2.{build}
 
 configuration: Release
 
-before_build:
-- nuget restore
+#before_build:
+#- nuget restore
 
 build_script:
-  - cmd: PowerShell -Version 2.0 cd .\build && .\build.ps1
+  - cmd: PowerShell -Version 2.0 .\build.ps1
