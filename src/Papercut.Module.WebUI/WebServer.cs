@@ -74,7 +74,7 @@ namespace Papercut.Module.WebUI
                 this._initialized = true;
 
                 var config = new HttpSelfHostConfiguration(uri);
-
+                
                 RouteConfig.Init(config, this._scope);
 
                 await new HttpSelfHostServer(config).OpenAsync();

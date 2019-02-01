@@ -18,36 +18,36 @@
 
 namespace Papercut.Helpers
 {
+    using System;
     using System.Text.RegularExpressions;
 
     public static class HtmlHelpers
     {
-        private static readonly Regex uriRegEx = new Regex(
-            @"\b(((\S+)?)(@|mailto\:|(news|(ht|f)tp(s?))\://)\S+\/?)\b",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _uriRegex = new Regex(
+            @"(((?<scheme>http(s)?):\/\/)([\w-]+?\.\w+)+([a-zA-Z0-9\~\!\@\#\$\%\^\&amp\;\*\(\)_\-\=\+\\\/\?\.\:\;\,]*)?)",
+            RegexOptions.Compiled | RegexOptions.Multiline);
 
-        /// <summary>
-        /// this will find links like: http://www.mysite.com
-        /// as well as any links with other characters directly in front of it like: href="http://www.mysite.com"
-        ///
-        /// Credit goes to:
-        /// https://stackoverflow.com/questions/758135/c-sharp-code-to-linkify-urls-in-a-string
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static string Linkify(this string str)
+        public static string Linkify(this string text, string target = "_self")
         {
-            if (string.IsNullOrWhiteSpace(str)) return str;
-
-            foreach (Match match in uriRegEx.Matches(str))
-            {
-                if (match.Value.StartsWith("http"))
+            return _uriRegex.Replace(
+                text,
+                match =>
                 {
-                    str = str.Replace(match.Value, $"<a href='{match.Value}'>{match.Value}</a>");
-                }
-            }
+                    try
+                    {
+                        var link = match.ToString();
+                        var scheme = match.Groups["scheme"].Value == "https" ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
 
-            return str;
+                        var url = new UriBuilder(link) { Scheme = scheme }.Uri.ToString();
+
+                        return $@"<a href=""{url}"" target=""{target}"">{link}</a>";
+                    }
+                    catch (Exception)
+                    {
+                        return match.ToString();
+                    }
+                }
+            );
         }
     }
 }

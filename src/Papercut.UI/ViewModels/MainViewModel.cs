@@ -224,7 +224,7 @@ namespace Papercut.ViewModels
             yield return e.RenderMessage().Linkify();
             if (e.Exception != null)
             {
-                yield return $@"<span class=""fatal"">Exception: {e.Exception.Message}</span>";
+                yield return $@"<br/><span class=""fatal""><b>Exception:</b> {e.Exception.Message.Linkify()}</span>";
             }
             yield return @"</div>";
         }
