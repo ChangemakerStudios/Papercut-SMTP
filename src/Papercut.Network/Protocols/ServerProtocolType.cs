@@ -21,6 +21,9 @@ namespace Papercut.Network.Protocols
     {
         Smtp,
 
-        Papercut
+        /// <summary>
+        /// Papercut Intra-Process RPC Communication Protocol
+        /// </summary>
+        PCComm
     }
 }

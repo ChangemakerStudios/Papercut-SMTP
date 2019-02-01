@@ -37,7 +37,7 @@ namespace Papercut.Module.WebUI
         readonly ILifetimeScope _scope;
         readonly ILogger _logger;
         readonly int _httpPort;
-        const string BaseAddress = "http://localhost:{0}";
+        const string BaseAddress = "http://127.0.0.1";
         const int DefaultHttpPort = 37408;
 
         private volatile bool _initialized = false;
@@ -45,7 +45,7 @@ namespace Papercut.Module.WebUI
         public WebServer(ILifetimeScope scope, ISettingStore settingStore, ILogger logger)
         {
             this._scope = scope;
-            this._logger = logger;
+            this._logger = logger.ForContext<WebServer>();
             this._httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}).");
         }
 
@@ -67,21 +67,24 @@ namespace Papercut.Module.WebUI
         {
             if (this._initialized) return;
 
+            var uri = new UriBuilder(BaseAddress) { Port = this._httpPort }.Uri;
+
             try
             {
-                var config = new HttpSelfHostConfiguration(string.Format(BaseAddress, this._httpPort));
+                this._initialized = true;
+
+                var config = new HttpSelfHostConfiguration(uri);
 
                 RouteConfig.Init(config, this._scope);
 
                 await new HttpSelfHostServer(config).OpenAsync();
 
-                this._logger.Information("[WebUI] Papercut Web UI is running at {WebUiUrl}...", string.Format(BaseAddress, this._httpPort));
-
-                this._initialized = true;
+                this._logger.Information("[WebUI] Papercut Web UI is browsable at {@WebUiUri}", uri);
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, "[WebUI] Can not start Web UI Http server at {HttpPort}", this._httpPort);
+                this._logger.Error(ex, "[WebUI] Can not start Web UI Http server at {@WebUiUri}", uri);
+                this._initialized = false;
             }
         }
     }

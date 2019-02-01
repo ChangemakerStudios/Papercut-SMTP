@@ -42,7 +42,7 @@ namespace Papercut.Services
             ILogger logger)
         {
             _logger = logger;
-            _papercutServer = serverFactory(ServerProtocolType.Papercut);
+            _papercutServer = serverFactory(ServerProtocolType.PCComm);
         }
 
         public void Handle(PapercutClientExitEvent @event)

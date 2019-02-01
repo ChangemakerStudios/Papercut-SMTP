@@ -178,6 +178,7 @@
     <Compile Include="Helpers\MailMessageHelper.cs" />
     <Compile Include="Helpers\MimeMessageEntry.cs" />
     <Compile Include="Helpers\NotifyPropertyChangeReactiveExtensions.cs" />
+    <Compile Include="Helpers\HtmlHelpers.cs" />
     <Compile Include="Helpers\Themes.cs" />
     <Compile Include="Helpers\VeilHelpers.cs" />
     <Compile Include="Helpers\ViewModelWindowManager.cs" />

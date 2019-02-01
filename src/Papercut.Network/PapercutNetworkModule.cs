@@ -45,7 +45,7 @@ namespace Papercut.Network
                 .InstancePerDependency();
 
             builder.RegisterType<PapercutProtocol>()
-                .Keyed<IProtocol>(ServerProtocolType.Papercut)
+                .Keyed<IProtocol>(ServerProtocolType.PCComm)
                 .InstancePerDependency();
 
             builder.RegisterType<PapercutClient>().AsSelf().InstancePerDependency();

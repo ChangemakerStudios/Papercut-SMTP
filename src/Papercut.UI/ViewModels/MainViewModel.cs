@@ -221,7 +221,7 @@ namespace Papercut.ViewModels
             yield return $@"<div class=""logEntry {e.Level}"">";
             yield return $@"<span class=""date"">{e.Timestamp:G}</span>";
             yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
-            yield return e.RenderMessage();
+            yield return e.RenderMessage().Linkify();
             if (e.Exception != null)
             {
                 yield return $@"<span class=""fatal"">Exception: {e.Exception.Message}</span>";
