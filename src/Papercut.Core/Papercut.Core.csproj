@@ -75,6 +75,7 @@
     <Compile Include="Domain\Network\Smtp\ISmtpCommand.cs" />
     <Compile Include="Domain\Network\Smtp\ISmtpContext.cs" />
     <Compile Include="Domain\Network\Smtp\SmtpSession.cs" />
+    <Compile Include="Infrastructure\Plugins\AssemblyHelper.cs" />
     <Compile Include="Infrastructure\Plugins\IDiscoverableModule.cs" />
     <Compile Include="Infrastructure\Plugins\IPluginModule.cs" />
     <Compile Include="Infrastructure\Plugins\IPluginStore.cs" />
