@@ -10,6 +10,7 @@
     <RootNamespace>Papercut.Module.WebUI.Test</RootNamespace>
     <AssemblyName>Papercut.Module.WebUI.Test</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
