@@ -20,6 +20,7 @@ namespace Papercut.Core.Domain.Settings
     using System;
 
     using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
 
     public static class ReadWriteValueExtensions
@@ -34,6 +35,39 @@ namespace Papercut.Core.Domain.Settings
             writeValue.Set(key, value.ToType<string>());
         }
 
+        public static T GetOrSet<T>(this ISettingStore settings, string key, T defaultValue, string description)
+        {
+            return settings.GetOrSet(key, () => defaultValue, description);
+        }
+
+        public static T GetOrSet<T>(this ISettingStore settings, string key, Func<T> getDefaultValue, string description)
+        {
+            T returnValue;
+
+            string keyValue = settings.Get(key);
+
+            if (keyValue.IsNullOrWhiteSpace())
+            {
+                returnValue = getDefaultValue();
+
+                // set default
+                settings.Set(key, returnValue);
+            }
+            else
+            {
+                returnValue = keyValue.ToType<T>();
+            }
+
+            var descriptionKey = $"{key}_Description";
+
+            if (!description.IsNullOrWhiteSpace() && settings.Get(descriptionKey).IsNullOrWhiteSpace())
+            {
+                settings.Set(descriptionKey, $@"## {description}");
+            }
+
+            return returnValue;
+        }
+
         public static T Get<T>(
             [NotNull] this IReadValue<string> readValue,
             [NotNull] string key,
@@ -44,7 +78,7 @@ namespace Papercut.Core.Domain.Settings
             if (getDefaultValue == null) throw new ArgumentNullException(nameof(getDefaultValue));
 
             string value = readValue.Get(key);
-            return value.IsDefault() ? getDefaultValue() : value.ToType<T>();
+            return value.IsNullOrWhiteSpace() ? getDefaultValue() : value.ToType<T>();
         }
 
         public static T Get<T>(
@@ -55,8 +89,7 @@ namespace Papercut.Core.Domain.Settings
             if (readValue == null) throw new ArgumentNullException(nameof(readValue));
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string value = readValue.Get(key);
-            return value.IsDefault() ? defaultValue : value.ToType<T>();
+            return readValue.Get(key, () => defaultValue);
         }
     }
 }

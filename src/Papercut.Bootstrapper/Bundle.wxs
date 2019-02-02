@@ -8,7 +8,7 @@
             Manufacturer="!(bind.packageManufacturer.PapercutMsi)"
             UpgradeCode="72719c72-122e-4313-8a57-0a0fc666ba75"
             AboutUrl="https://github.com/ChangemakerStudios/Papercut"
-            Copyright="Copyright (c) 2017 by Changemaker Studios"
+            Copyright="Copyright (c) 2019 by Changemaker Studios"
             HelpUrl="https://github.com/ChangemakerStudios/Papercut"
             IconSourceFile="Resources\App.ico">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkSidebarLicense">

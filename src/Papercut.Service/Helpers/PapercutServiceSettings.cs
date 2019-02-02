@@ -25,19 +25,19 @@ namespace Papercut.Service.Helpers
 
         public string IP
         {
-            get { return Settings.Get("IP", "Any"); }
+            get => Settings.GetOrSet("IP", "Any", "SMTP Server listening IP. 'Any' is the default and it means '0.0.0.0'.");
             set { if (IP != value) Settings.Set("IP", value); }
         }
 
         public int Port
         {
-            get { return Settings.Get("Port", 25); }
+            get => Settings.GetOrSet("Port", 25, "SMTP Server listening Port. Default is 25.");
             set { if (Port != value) Settings.Set("Port", value); }
         }
 
         public string MessagePath
         {
-            get { return Settings.Get<string>("MessagePath", @"%BaseDirectory%\Incoming"); }
+            get => Settings.GetOrSet<string>("MessagePath", @"%BaseDirectory%\Incoming", "Base path where incoming emails are written.");
             set { if (MessagePath != value) Settings.Set("MessagePath", value); }
         }
     }

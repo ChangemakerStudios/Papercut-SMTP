@@ -44,7 +44,7 @@ namespace Papercut.Helpers
             where TViewModel : PropertyChangedBase
         {
             var viewModel = _lifetimeScope.Resolve<TViewModel>();
-            if (setViewModel != null) setViewModel(viewModel);
+            setViewModel?.Invoke(viewModel);
             return ShowDialog(viewModel, context);
         }
 
@@ -54,7 +54,7 @@ namespace Papercut.Helpers
             where TViewModel : PropertyChangedBase
         {
             var viewModel = _lifetimeScope.Resolve<TViewModel>();
-            if (setViewModel != null) setViewModel(viewModel);
+            setViewModel?.Invoke(viewModel);
             ShowWindow(viewModel, context);
         }
 
@@ -64,7 +64,7 @@ namespace Papercut.Helpers
             where TViewModel : PropertyChangedBase
         {
             var viewModel = _lifetimeScope.Resolve<TViewModel>();
-            if (setViewModel != null) setViewModel(viewModel);
+            setViewModel?.Invoke(viewModel);
             ShowPopup(viewModel, context);
         }
     }

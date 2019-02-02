@@ -40,7 +40,6 @@
         <WixVariable Id="WixUIDialogBmp"  Value="Resources\Papercut-dialog.bmp" />
 
         <UIRef Id="UI_FeatureTree" />
-
     </Product>
 
     <Fragment>

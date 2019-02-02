@@ -19,7 +19,8 @@
 namespace Papercut.Module.WebUI
 {
     using System;
-    using System.ServiceModel;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Web.Http.SelfHost;
 
     using Autofac;
@@ -33,46 +34,57 @@ namespace Papercut.Module.WebUI
 
     class WebServer : IEventHandler<PapercutServiceReadyEvent>, IEventHandler<PapercutClientReadyEvent>
     {
-        readonly ILifetimeScope scope;
-        readonly ILogger logger;
-
-        readonly int httpPort;
-        const string BaseAddress = "http://localhost:{0}";
+        readonly ILifetimeScope _scope;
+        readonly ILogger _logger;
+        readonly int _httpPort;
+        const string BaseAddress = "http://127.0.0.1";
         const int DefaultHttpPort = 37408;
 
+        private volatile bool _initialized = false;
+        
         public WebServer(ILifetimeScope scope, ISettingStore settingStore, ILogger logger)
         {
-            this.scope = scope;
-            this.logger = logger;
-            httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
+            this._scope = scope;
+            this._logger = logger.ForContext<WebServer>();
+            this._httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}).");
         }
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
-            StartHttpServer();
+            this._logger.Debug("{@PapercutServiceReadyEvent}", @event);
+
+            Task.Run(async () => await StartHttpServer());
         }
 
         public void Handle(PapercutClientReadyEvent @event)
         {
-            StartHttpServer();
+            this._logger.Debug("{@PapercutClientReadyEvent}", @event);
+
+            Task.Run(async () => await StartHttpServer());
         }
 
-        void StartHttpServer()
+        async Task StartHttpServer()
         {
+            if (this._initialized) return;
+
+            var uri = new UriBuilder(BaseAddress) { Port = this._httpPort }.Uri;
+
             try
             {
-                var config = new HttpSelfHostConfiguration(string.Format(BaseAddress, httpPort))
-                {
-                    HostNameComparisonMode = HostNameComparisonMode.WeakWildcard
-                };
-                RouteConfig.Init(config, scope);
-                new HttpSelfHostServer(config).OpenAsync().Wait();
+                this._initialized = true;
 
-                logger.Information($"WebUI server started at port {httpPort}.");
+                var config = new HttpSelfHostConfiguration(uri);
+                
+                RouteConfig.Init(config, this._scope);
+
+                await new HttpSelfHostServer(config).OpenAsync();
+
+                this._logger.Information("[WebUI] Papercut Web UI is browsable at {@WebUiUri}", uri);
             }
             catch (Exception ex)
             {
-                logger.Error(ex, $"Can not start HTTP server at port {httpPort}.");
+                this._logger.Error(ex, "[WebUI] Can not start Web UI Http server at {@WebUiUri}", uri);
+                this._initialized = false;
             }
         }
     }

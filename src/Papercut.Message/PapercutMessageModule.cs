@@ -17,6 +17,8 @@
 
 namespace Papercut.Message
 {
+    using System;
+
     using Autofac;
     using Autofac.Core;
 
@@ -26,6 +28,8 @@ namespace Papercut.Message
     public class PapercutMessageModule : Autofac.Module, IDiscoverableModule
     {
         public IModule Module => this;
+
+        public Guid Id => new Guid("C23AB1CA-B343-4459-A0BB-F194FFD557F4");
 
         protected override void Load(ContainerBuilder builder)
         {

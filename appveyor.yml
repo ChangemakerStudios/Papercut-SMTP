@@ -1,47 +1,11 @@
 os: Visual Studio 2017
 
-version: 5.1.{build}
+version: 5.3.{build}
 
 configuration: Release
 
-assembly_info:
-  patch: true
-  file: '**\AssemblyInfo.*'
-  assembly_version: '{version}'
-  assembly_file_version: '{version}'
-  assembly_informational_version: '{version}'
+#before_build:
+#- nuget restore
 
-dotnet_csproj:
-  patch: true
-  file: '**\*.csproj'
-  version: '{version}'
-  package_version: '{version}'
-  assembly_version: '{version}'
-  file_version: '{version}'
-  informational_version: '{version}'
-
-before_build:
-  - nuget restore
-
-after_build:
-  # Papercut
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.UI\bin\Release # md plugins
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip plugins
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Papercut.exe.*
-  - 7z a Papercut.%APPVEYOR_BUILD_VERSION%.zip Readme.eml
-  - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.zip
-  # Papercut Service
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Service\bin\Release # md plugins
-  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip plugins  
-  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip Papercut.Service.*
-  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Install-Papercut-Service.bat
-  - 7z a PapercutService.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\extras\Uninstall-Papercut-Service.bat
-  - appveyor PushArtifact PapercutService.%APPVEYOR_BUILD_VERSION%.zip
-  # Papercut Installer bundle
-  - cd %APPVEYOR_BUILD_FOLDER%\src\Papercut.Bootstrapper\bin\Release 
-  - appveyor PushArtifact Papercut.Setup.exe
-  - cd %APPVEYOR_BUILD_FOLDER%
-  # Chocolately
-  - nuget pack chocolately\Papercut.nuspec -version %APPVEYOR_BUILD_VERSION%
-  - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.nupkg
+build_script:
+  - cmd: PowerShell -Version 3.0 .\build.ps1

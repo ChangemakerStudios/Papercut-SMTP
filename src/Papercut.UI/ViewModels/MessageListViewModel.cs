@@ -42,11 +42,13 @@ namespace Papercut.ViewModels
     using Papercut.Helpers;
     using Papercut.Message;
     using Papercut.Properties;
+    using Papercut.Views;
 
     using Serilog;
 
     using Action = System.Action;
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+    using ListBox = System.Windows.Controls.ListBox;
     using Screen = Caliburn.Micro.Screen;
 
     public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
@@ -64,6 +66,8 @@ namespace Papercut.ViewModels
         readonly IMessageBus _messageBus;
 
         bool _isLoading;
+
+        private int? _previousIndex;
 
         public MessageListViewModel(
             MessageRepository messageRepository,
@@ -118,24 +122,46 @@ namespace Papercut.ViewModels
             return MessagesSorted.OfType<MimeMessageEntry>().Skip(index).FirstOrDefault();
         }
 
-        int? GetIndexOfMessage(MessageEntry entry)
+        int? GetIndexOfMessage([CanBeNull] MessageEntry entry)
         {
             if (entry == null)
-                throw new ArgumentNullException(nameof(entry));
+                return null;
 
             int index = MessagesSorted.OfType<MessageEntry>().FindIndex(m => Equals(entry, m));
 
             return index == -1 ? null : (int?)index;
         }
 
+        void PushSelectedIndex()
+        {
+            if (this._previousIndex.HasValue)
+            {
+                return;
+            }
+
+            var selectedMessage = this.SelectedMessage;
+
+            if (selectedMessage != null)
+            {
+                this._previousIndex = GetIndexOfMessage(selectedMessage);
+            }
+        }
+
+        void PopSelectedIndex()
+        {
+            this._previousIndex = null;
+        }
+
+        private ListSortDirection SortOrder => Enum.TryParse<ListSortDirection>(Settings.Default.MessageListSortOrder, out var sortOrder)
+                                                     ? sortOrder
+                                                     : ListSortDirection.Ascending;
+
         void SetupMessages()
         {
             Messages = new ObservableCollection<MimeMessageEntry>();
             MessagesSorted = CollectionViewSource.GetDefaultView(Messages);
-
-            ListSortDirection sortOrder;
-            Enum.TryParse<ListSortDirection>(Settings.Default.MessageListSortOrder, out sortOrder);
-            MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", sortOrder));
+            
+            MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", SortOrder));
 
             // Begin listening for new messages
             _messageWatcher.NewMessage += NewMessage;
@@ -196,6 +222,8 @@ namespace Papercut.ViewModels
 
                     // Add it to the list box
                     ClearSelected();
+                    PopSelectedIndex();
+
                     entry.IsSelected = true;
                     Messages.Add(new MimeMessageEntry(entry, _mimeMessageLoader));
                 },
@@ -205,21 +233,54 @@ namespace Papercut.ViewModels
                 });
         }
 
-        public void SetSelectedIndex(int? index = null)
+        public int? TryGetValidSelectedIndex(int? previousIndex = null)
         {
             int messageCount = Messages.Count;
 
-            if (index.HasValue && index >= messageCount)
-                index = null;
-
-            if (!index.HasValue && messageCount > 0)
-                index = messageCount - 1;
-
-            if (index.HasValue)
+            if (messageCount == 0)
             {
-                MimeMessageEntry m = GetMessageByIndex(index.Value);
-                if (m != null)
-                    m.IsSelected = true;
+                return null;
+            }
+
+            int? index = null;
+
+            if (previousIndex.HasValue)
+            {
+                index = previousIndex;
+
+                if (index >= messageCount)
+                {
+                    index = messageCount - 1;
+                }
+            }
+
+            if (index <= 0 || index >= messageCount)
+            {
+                index = null;
+            }
+
+            // select the bottom
+            if (!index.HasValue)
+            {
+                if (this.SortOrder == ListSortDirection.Ascending)
+                {
+                    index = messageCount - 1;
+                }
+                else
+                {
+                    index = 0;
+                }
+            }
+
+            return index;
+        }
+
+        private void SetMessageByIndex(int index)
+        {
+            MimeMessageEntry m = this.GetMessageByIndex(index);
+            if (m != null)
+            {
+                m.IsSelected = true;
             }
         }
 
@@ -232,9 +293,13 @@ namespace Papercut.ViewModels
 
         public void ValidateSelected()
         {
-            List<MimeMessageEntry> selected = GetSelected().ToList();
-            if (!selected.Any() && Messages.Count > 0)
-                SetSelectedIndex();
+            if (this.SelectedMessageCount != 0 || this.Messages.Count == 0) return;
+
+            var index = this.TryGetValidSelectedIndex(this._previousIndex);
+            if (index.HasValue)
+            {
+                this.SetMessageByIndex(index.Value);
+            }
         }
 
         void NewMessage(object sender, NewMessageEventArgs e)
@@ -260,8 +325,12 @@ namespace Papercut.ViewModels
             // Lock to prevent rapid clicking issues
             lock (_deleteLockObject)
             {
+                this.PushSelectedIndex();
+
+                var selectedMessageEntries = this.GetSelected().ToList();
+
                 List<string> failedEntries =
-                    GetSelected().ToList().Select(
+                    selectedMessageEntries.Select(
                         entry =>
                         {
                             try
@@ -286,7 +355,7 @@ namespace Papercut.ViewModels
                     this._messageBus.Publish(
                         new ShowMessageEvent(
                             string.Join("\r\n", failedEntries),
-                            $"Failed to Delete Message{(failedEntries.Count() > 1 ? "s" : string.Empty)}"));
+                            $"Failed to Delete Message{(failedEntries.Count > 1 ? "s" : string.Empty)}"));
                 }
             }
         }
@@ -300,6 +369,8 @@ namespace Papercut.ViewModels
 
         public void RefreshMessageList()
         {
+            PushSelectedIndex();
+
             List<MessageEntry> messageEntries =
                 _messageRepository.LoadMessages()
                     .ToList();
@@ -318,14 +389,14 @@ namespace Papercut.ViewModels
             MessagesSorted.Refresh();
 
             ValidateSelected();
+
+            PopSelectedIndex();
         }
 
         public void Handle(SettingsUpdatedEvent message)
         {
-            ListSortDirection sortOrder;
-            Enum.TryParse<ListSortDirection>(Settings.Default.MessageListSortOrder, out sortOrder);
             MessagesSorted.SortDescriptions.Clear();
-            MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", sortOrder));
+            MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", this.SortOrder));
         }
     }
 }

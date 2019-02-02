@@ -172,7 +172,7 @@ namespace Papercut.ViewModels
 
             _window.Focus();
 
-            if (message.SelectMostRecentMessage) MessageListViewModel.SetSelectedIndex();
+            if (message.SelectMostRecentMessage) MessageListViewModel.TryGetValidSelectedIndex();
         }
 
         void IHandle<ShowMessageEvent>.Handle(ShowMessageEvent message)
@@ -221,10 +221,10 @@ namespace Papercut.ViewModels
             yield return $@"<div class=""logEntry {e.Level}"">";
             yield return $@"<span class=""date"">{e.Timestamp:G}</span>";
             yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
-            yield return e.RenderMessage();
+            yield return e.RenderMessage().Linkify();
             if (e.Exception != null)
             {
-                yield return $@"<span class=""fatal"">Exception: {e.Exception.Message}</span>";
+                yield return $@"<br/><span class=""fatal""><b>Exception:</b> {e.Exception.Message.Linkify()}</span>";
             }
             yield return @"</div>";
         }

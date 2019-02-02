@@ -22,6 +22,7 @@ namespace Papercut.Rules.Implementations
 
     using MimeKit;
 
+    using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Message;
     using Papercut.Core.Domain.Rules;
     using Papercut.Message;
@@ -30,6 +31,7 @@ namespace Papercut.Rules.Implementations
 
     using Serilog;
 
+    [UsedImplicitly]
     public class ConditionalForwardWithRetryRuleDispatch : IRuleDispatcher<ConditionalForwardWithRetryRule>
     {
         private readonly Lazy<MimeMessageLoader> _mimeMessageLoader;
@@ -52,7 +54,7 @@ namespace Papercut.Rules.Implementations
                 .Select(
                     m =>
                     {
-                        PopulateMessageFromRule(rule, m);
+                        rule.PopulateFromRule(m);
                         return m;
                     });
 
@@ -90,11 +92,6 @@ namespace Papercut.Rules.Implementations
                     {
                         this._logger.Error(e, "Failed to send {@MessageEntry} after {RetryAttempts}", messageEntry, rule.RetryAttempts);
                     });
-        }
-
-        protected virtual void PopulateMessageFromRule(ConditionalForwardWithRetryRule rule, MimeMessage mimeMessage)
-        {
-            mimeMessage.PopulateFromRule(rule);
         }
 
         protected virtual bool RuleMatches(ConditionalForwardWithRetryRule rule, MimeMessage mimeMessage)

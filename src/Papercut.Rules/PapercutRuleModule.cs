@@ -18,6 +18,7 @@
 
 namespace Papercut.Rules
 {
+    using System;
     using System.Reflection;
 
     using Autofac;
@@ -31,6 +32,8 @@ namespace Papercut.Rules
     public class PapercutRuleModule : Module, IDiscoverableModule
     {
         public IModule Module => this;
+
+        public Guid Id => new Guid("206A6C11-690A-4035-A907-8F67B59E3F97");
 
         protected override void Load(ContainerBuilder builder)
         {

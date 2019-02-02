@@ -49,8 +49,7 @@ namespace Papercut.Core.Domain.Settings
             {
                 if (key == null) throw new ArgumentNullException(nameof(key));
 
-                string value;
-                return this.CurrentSettings.TryGetValue(key, out value) ? value : null;
+                return this.CurrentSettings.TryGetValue(key, out var value) ? value : null;
             }
             set
             {

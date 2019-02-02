@@ -60,7 +60,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     }
                 }
             };
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
             var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
@@ -84,12 +84,12 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     new MimePart(new ContentType("image", "jpeg") {Charset = Encoding.UTF8.EncodingName})
                     {
                         FileName = "sample.pdf",
-                        ContentObject = new ContentObject(
+                        Content = new MimeContent(
                             new MemoryStream(Encoding.UTF8.GetBytes("Content")), ContentEncoding.Binary)
                     }
                 }
             };
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
             var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
@@ -114,12 +114,12 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                     {
                         FileName = "sample.pdf",
                         ContentId = contentId,
-                        ContentObject = new ContentObject(
+                        Content = new MimeContent(
                             new MemoryStream(Encoding.UTF8.GetBytes("Content")), ContentEncoding.Binary)
                     }
                 }
             };
-            this._messageRepository.SaveMessage(fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
             var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
 

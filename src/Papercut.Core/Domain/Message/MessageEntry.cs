@@ -21,6 +21,7 @@ namespace Papercut.Core.Domain.Message
     using System.ComponentModel;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Text.RegularExpressions;
 
     using Papercut.Common.Extensions;
@@ -31,9 +32,12 @@ namespace Papercut.Core.Domain.Message
     /// </summary>
     public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IFile
     {
-        static readonly Regex _nameFormat = new Regex(
-            @"^(?<date>\d{17})(\-[A-Z0-9]{6})?\.eml$",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        // You can start by using another timestamp format. An example below.
+        //public const string DateTimeFormat = "yy.MMdd-HH.mm.ssfff";
+        // Bug. It is sucks to use FFF instead of fff.
+        // I.e. for 170ms we will get the string 17 and we will be forced to use RegEx dirty coding.
+        //public const string DateTimeFormat = "yyyyMMddHHmmssFFF";
+        public const string DateTimeFormat = "yyyyMMddHHmmssfff";
 
         protected readonly FileInfo _info;
 
@@ -45,13 +49,18 @@ namespace Papercut.Core.Domain.Message
         {
             this._info = fileInfo;
 
-            Match match = _nameFormat.Match(this._info.Name);
-            if (match.Success)
+            var firstBit = this._info.Name.Split(' ').FirstOrDefault();
+
+            if (firstBit?.Length == DateTimeFormat.Length)
             {
-                this._created = DateTime.ParseExact(
-                    match.Groups["date"].Value,
-                    "yyyyMMddHHmmssFFF",
+                _created = DateTime.ParseExact(
+                    firstBit,
+                    DateTimeFormat,
                     CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                _created = this._info.CreationTime;
             }
         }
 
@@ -70,7 +79,7 @@ namespace Papercut.Core.Domain.Message
 
         public bool IsSelected
         {
-            get { return this._isSelected; }
+            get => this._isSelected;
             set
             {
                 this._isSelected = value;

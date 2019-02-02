@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2019 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
+
 
 namespace Papercut.Core.Infrastructure.Plugins
 {
@@ -37,11 +38,11 @@ namespace Papercut.Core.Infrastructure.Plugins
             this._logger = logger.ForContext<RegisterPlugins>();
         }
 
-        public void Register(ContainerBuilder builder, IEnumerable<Assembly> scannableAssemblies)
+        public void RegisterPluginModules(ContainerBuilder builder, IEnumerable<Assembly> scannableAssemblies)
         {
             var pluginModules =
                 scannableAssemblies.IfNullEmpty()
-                    .SelectMany(a => a.GetExportedTypes())
+                    .SelectMany(a => a.GetExportedTypesSafe())
                     .Where(
                         s =>
                         {
@@ -63,19 +64,20 @@ namespace Papercut.Core.Infrastructure.Plugins
                     }
 
                     return null;
-                }).Where(s => s != null).ToList();
+                }).Where(s => s != null).Distinct(DiscoverableModuleEqualityComparer.Instance).ToList();
 
-            var plugins = modules.OfType<IPluginModule>().Distinct(PluginModuleEqualityComparer.Instance).ToList();
-
-            foreach (var plugin in plugins)
+            foreach (var plugin in modules)
             {
-                builder.RegisterModule(plugin.Module);
-                PluginStore.Instance.Add(plugin);
-            }
+                if (plugin is IPluginModule module)
+                {
+                    PluginStore.Instance.Add(module);
 
-            foreach (var plugin in modules.Except(plugins))
-            {
-                builder.RegisterModule(plugin.Module);
+                    builder.RegisterModule(module.Module);
+                }
+                else
+                {
+                    builder.RegisterModule(plugin.Module);
+                }
             }
         }
     }

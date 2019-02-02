@@ -23,7 +23,10 @@ namespace Papercut.Rules.Implementations
     using System.ComponentModel;
     using System.Linq;
 
+    using MimeKit;
+
     using Papercut.Common.Extensions;
+    using Papercut.Core.Annotations;
 
     [Serializable]
     public class RelayRule : RuleBase
@@ -37,6 +40,8 @@ namespace Papercut.Rules.Implementations
         bool _smtpUseSsl;
 
         string _smtpUsername;
+
+        private string _toBcc;
 
         [Category("Settings")]
         [DisplayName("SMTP Password")]
@@ -104,6 +109,35 @@ namespace Papercut.Rules.Implementations
                 if (value == _smtpServer) return;
                 _smtpServer = value;
                 OnPropertyChanged(nameof(SmtpServer));
+            }
+        }
+
+        [Category("Settings")]
+        [DisplayName("To Bcc Email(s)")]
+        [Description("To Bcc Email(s) (comma delimited)")]
+        public string ToBcc
+        {
+            get => this._toBcc;
+            set
+            {
+                if (value == this._toBcc) return;
+                this._toBcc = value;
+                OnPropertyChanged(nameof(this.ToBcc));
+            }
+        }
+
+        public override void PopulateFromRule([NotNull] MimeMessage message)
+        {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+
+            if (string.IsNullOrWhiteSpace(ToBcc))
+            {
+                return;
+            }
+
+            foreach (var bcc in ToBcc.Split(new[] { ',', '|', ';' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()))
+            {
+                message.Bcc.Add(new MailboxAddress(bcc, bcc));
             }
         }
 

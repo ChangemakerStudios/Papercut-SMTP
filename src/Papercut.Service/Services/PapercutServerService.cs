@@ -60,7 +60,7 @@ namespace Papercut.Service.Services
             _logger = logger;
             _messageBus = messageBus;
             _smtpServer = serverFactory(ServerProtocolType.Smtp);
-            _papercutServer = serverFactory(ServerProtocolType.Papercut);
+            _papercutServer = serverFactory(ServerProtocolType.PCComm);
         }
 
         public void Handle(SmtpServerBindEvent @event)

@@ -21,7 +21,10 @@ namespace Papercut.Message
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Threading;
+
+    using MimeKit;
 
     using Papercut.Common.Extensions;
     using Papercut.Common.Helper;
@@ -95,6 +98,9 @@ namespace Papercut.Message
             return data;
         }
 
+        /// <summary>
+        /// Loads all messages
+        /// </summary>
         public IList<MessageEntry> LoadMessages()
         {
             IEnumerable<string> files =
@@ -108,15 +114,19 @@ namespace Papercut.Message
                     .ToList();
         }
 
-        public string SaveMessage(Action<FileStream> writeTo)
+        public string SaveMessage(string mailSubject, Action<FileStream> writeTo)
         {
             string fileName = null;
 
             try
             {
-                // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
+                var validPart = MakeValidFileName(mailSubject.Truncate(40, string.Empty), "subject unknown");
+
+                var dateTimeFormatted = DateTime.Now.ToString(MessageEntry.DateTimeFormat);
+
+                // the file must not exist:  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
                 fileName = Path.Combine(_messagePathConfigurator.DefaultSavePath,
-                    $"{DateTime.Now:yyyyMMddHHmmssfff}-{StringHelpers.SmallRandomString()}.eml");
+                    $"{dateTimeFormatted} {validPart} {StringHelpers.SmallRandomString()}.eml");
 
                 using (var fileStream = File.Create(fileName))
                 {
@@ -131,6 +141,77 @@ namespace Papercut.Message
             }
 
             return fileName;
+        }
+
+        static char[] _invalidFileNameChars;
+        private const string EmptyStringReplacement = "_";
+
+        /// <summary>Replaces characters in <c>text</c> that are not allowed in 
+        /// file names with the specified replacement character.<para/>
+        /// https://stackoverflow.com/questions/620605/how-to-make-a-valid-windows-filename-from-an-arbitrary-string/25223884#25223884
+        /// </summary>
+        /// <param name="inputText">Text to make into a valid filename. The same string is returned if it is valid already.</param>
+        /// <param name="replacement">Replacement character, or null to simply remove bad characters.</param>
+        /// <param name="emptyText">A replacement for the empty result.</param>
+        /// <param name="fancy">Whether to replace quotes and slashes with the non-ASCII characters ” and ⁄.</param>
+        /// <returns>A string that can be used as a filename. If the output string would otherwise be empty,
+        /// returns <see cref="EmptyStringReplacement"/>.</returns>
+        public static string MakeValidFileName(string inputText, string emptyText = EmptyStringReplacement, char? replacement = '_', bool fancy = true)
+        {
+            var text = inputText ?? string.Empty;
+
+            var invalids = _invalidFileNameChars ?? (_invalidFileNameChars = Path.GetInvalidFileNameChars());
+
+            emptyText = emptyText ?? string.Empty;
+            if (!string.IsNullOrEmpty(emptyText) && emptyText != EmptyStringReplacement)
+            {
+                emptyText = MakeValidFileName(emptyText);
+            }
+
+            var sb = new StringBuilder(text.Length);
+            var changed = false;
+            foreach (var ch in text)
+            {
+                if (!invalids.Contains(ch))
+                {
+                    sb.Append(ch);
+
+                    continue;
+                }
+
+                changed = true;
+                var repl = replacement ?? '\0';
+                if (fancy)
+                {
+                    switch (ch)
+                    {
+                        case '"':
+                            // U+201D right double quotation mark
+                            repl = '”';
+                            break;
+                        case '\'':
+                            // U+2019 right single quotation mark
+                            repl = '’';
+                            break;
+                        case '/':
+                            // U+2044 fraction slash
+                            repl = '⁄';
+                            break;
+                    }
+                }
+
+                if (repl != '\0')
+                {
+                    sb.Append(repl);
+                }
+            }
+
+            if (sb.Length == 0)
+            {
+                return emptyText;
+            }
+
+            return changed ? sb.ToString() : text;
         }
     }
 }

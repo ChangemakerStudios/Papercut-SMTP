@@ -37,25 +37,25 @@ namespace Papercut.Module.WebUI.Controllers
 
     public class MessagesController : ApiController
     {
-        readonly MessageRepository messageRepository;
-        readonly MimeMessageLoader messageLoader;
+        readonly MessageRepository _messageRepository;
+        readonly MimeMessageLoader _messageLoader;
 
         public MessagesController(MessageRepository messageRepository, MimeMessageLoader messageLoader)
         {
-            this.messageRepository = messageRepository;
-            this.messageLoader = messageLoader;
+            this._messageRepository = messageRepository;
+            this._messageLoader = messageLoader;
         }
 
         [HttpGet]
         public HttpResponseMessage GetAll(int limit = 10, int start = 0)
         {
-            var messageEntries = messageRepository.LoadMessages();
+            var messageEntries = this._messageRepository.LoadMessages();
 
             var messages = messageEntries
                 .OrderByDescending(msg => msg.ModifiedDate)
                 .Skip(start)
                 .Take(limit)
-                .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, messageLoader.LoadMailMessage(e))))
+                .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, this._messageLoader.LoadMailMessage(e))))
                 .ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, new
@@ -68,13 +68,17 @@ namespace Papercut.Module.WebUI.Controllers
         [HttpDelete]
         public HttpResponseMessage DeleteAll()
         {
-            messageRepository.LoadMessages()
+            this._messageRepository.LoadMessages()
                 .ForEach(msg =>
                 {
                     try
                     {
-                        messageRepository.DeleteMessage(msg);
-                    }catch {}
+                        this._messageRepository.DeleteMessage(msg);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
                 });
 
             return Request.CreateResponse(HttpStatusCode.OK);
@@ -83,20 +87,20 @@ namespace Papercut.Module.WebUI.Controllers
         [HttpGet]
         public HttpResponseMessage Get(string id)
         {
-            var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
+            var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
             if (messageEntry == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
-            var dto = MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry)));
+            var dto = MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, this._messageLoader.LoadMailMessage(messageEntry)));
             return Request.CreateResponse(HttpStatusCode.OK, dto);
         }
 
         [HttpGet]
         public HttpResponseMessage DownloadRaw(string messageId)
         {
-            var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+            var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
             if (messageEntry == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound);
@@ -121,18 +125,18 @@ namespace Papercut.Module.WebUI.Controllers
         [HttpGet]
         public HttpResponseMessage DownloadSectionContent(string messageId, string contentId)
         {
-            return DownloadSection(messageId, (sections) => sections.FirstOrDefault(s => s.ContentId == contentId));
+            return DownloadSection(messageId, sections => sections.FirstOrDefault(s => s.ContentId == contentId));
         }
 
         HttpResponseMessage DownloadSection(string messageId, Func<List<MimePart>, MimePart> findSection)
         {
-            var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+            var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
             if (messageEntry == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
-            var mimeMessage = new MimeMessageEntry(messageEntry, messageLoader.LoadMailMessage(messageEntry));
+            var mimeMessage = new MimeMessageEntry(messageEntry, this._messageLoader.LoadMailMessage(messageEntry));
             var sections = mimeMessage.MailMessage.BodyParts.OfType<MimePart>().ToList();
 
             var mimePart = findSection(sections);
@@ -141,7 +145,7 @@ namespace Papercut.Module.WebUI.Controllers
                 return Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
-            var response = new MimePartResponseMessage(Request, mimePart.ContentObject);
+            var response = new MimePartResponseMessage(Request, mimePart.Content);
             var filename = mimePart.FileName ?? mimePart.ContentId ?? Guid.NewGuid().ToString();
             response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(DispositionTypeNames.Attachment)
             {

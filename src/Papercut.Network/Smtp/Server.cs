@@ -160,7 +160,8 @@ namespace Papercut.Network.Smtp
             _listener.BeginAccept(OnClientAccept, null);
 
             Logger.Information(
-                "Server Ready - Listening for New Connections {Address}:{ClientPort}",
+                "{ProtocolType} Server Ready: Listening for New Connections at {Address}:{ClientPort}",
+                _serverProtocolType,
                 _address,
                 _port);
         }
@@ -215,8 +216,6 @@ namespace Papercut.Network.Smtp
 
         void Start()
         {
-            Logger.Information("Starting Server {ProtocolType}", _serverProtocolType);
-
             try
             {
                 // Set it as starting
