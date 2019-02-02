@@ -150,6 +150,10 @@ Task("CopyPlugins")
 Task("Package")
     .Does(() =>
 {
+    // remove the apppublish directory
+    var publishDir = appBuildDir + Directory("./app.publish");
+    DeleteDirectory(publishDir, new DeleteDirectorySettings { Recursive = true, Force = true });
+
     var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.{0}.zip", information.FileVersion));
     Zip(appBuildDir, appFileName, GetFiles(appBuildDir.ToString() + "/**/*"));
 
@@ -162,7 +166,6 @@ Task("Package")
         AppVeyor.UploadArtifact(svcFileName);    
         AppVeyor.UploadArtifact("../src/Papercut.Bootstrapper/bin/" + configuration + "/Papercut.Setup.exe");    
     }
-
 //   # Chocolately
 //   - nuget pack chocolately\Papercut.nuspec -version %APPVEYOR_BUILD_VERSION%
 //   - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.nupkg
