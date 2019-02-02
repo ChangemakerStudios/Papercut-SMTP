@@ -2,11 +2,13 @@
 #tool "nuget:?package=MimekitLite&version=2.0.6"
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.9.0"
 #tool "nuget:?package=OpenCover&version=4.6.519"
+#tool "nuget:?package=GitVersion.CommandLine"
 
 #reference "tools/MarkdownSharp.1.13.0.0/lib/35/MarkdownSharp.dll"
 #reference "tools/MimeKitLite.2.0.6/lib/net45/MimeKitLite.dll"
 
 #addin "Cake.FileHelpers"
+#addin "Cake.Incubator"
 
 #load "./BuildInformation.cake" 
 #load "./ReleaseNotes.cake" 
@@ -17,18 +19,21 @@
 
 var target = Argument("target", "All");
 var configuration = Argument("configuration", "Release");
-var information = BuildInformation.GetBuildInformation(Context, BuildSystem);
-
-const int MajorVersion = 5;
-const int MinorVersion = 3;
+//var buildInformation = BuildInformation.GetBuildInformation(Context, BuildSystem);
+GitVersion versionInfo = GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
 ///////////////////////////////////////////////////////////////////////////////
-
 Setup(ctx => {
-    Information("Running tasks...");
-    information.SetBuildVersion(ctx, MajorVersion, MinorVersion); 
+    Information("Running tasks...");   
+
+    if(AppVeyor.IsRunningOnAppVeyor)
+    {
+        AppVeyor.UpdateBuildVersion(versionInfo.FullSemVer);
+    }    
+
+    Information(versionInfo.Dump());
 });
 
 Teardown(ctx => Information("Finished running tasks."));
@@ -84,16 +89,11 @@ Task("Restore")
 Task("PatchAssemblyInfo")
     .Does(() =>
 {
-    CreateAssemblyInfo("../src/GlobalAssemblyInfo.cs", new AssemblyInfoSettings {
-        Version = information.AssemblyVersion,
-        FileVersion = information.FileVersion,
-        InformationalVersion = information.SemanticVersion
-    });   
-
-    if(AppVeyor.IsRunningOnAppVeyor)
-    {
-        AppVeyor.UpdateBuildVersion(information.FileVersion);
-    }
+    GitVersion(new GitVersionSettings{
+        UpdateAssemblyInfo = true,
+        OutputType = GitVersionOutput.BuildServer,
+        UpdateAssemblyInfoFilePath = "../src/GlobalAssemblyInfo.cs"
+    }); 
 })
 .OnError(exception => Error(exception));
 
@@ -154,10 +154,10 @@ Task("Package")
     var publishDir = appBuildDir + Directory("./app.publish");
     DeleteDirectory(publishDir, new DeleteDirectorySettings { Recursive = true, Force = true });
 
-    var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.{0}.zip", information.FileVersion));
+    var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.{0}.zip", versionInfo.FullSemVer));
     Zip(appBuildDir, appFileName, GetFiles(appBuildDir.ToString() + "/**/*"));
 
-    var svcFileName = outputDirectory.CombineWithFilePath(string.Format("PapercutService.{0}.zip", information.FileVersion));
+    var svcFileName = outputDirectory.CombineWithFilePath(string.Format("PapercutService.{0}.zip", versionInfo.FullSemVer));
     Zip(svcBuildDir, svcFileName, GetFiles(svcBuildDir.ToString() + "/**/*"));
 
     if(AppVeyor.IsRunningOnAppVeyor)
@@ -174,7 +174,7 @@ Task("Package")
 
 ///////////////////////////////////////////////////////////////////////////////
 Task("All")
-    //.IsDependentOn("PatchAssemblyInfo")
+    .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("Clean")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
