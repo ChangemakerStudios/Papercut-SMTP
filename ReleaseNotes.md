@@ -1,5 +1,13 @@
 # Release Notes
 
+## Papercut v5.2.16 [2019-02-01]
+- Added http:// link in log for Web UI improving discoverablity for the UI. Hopefully fixed the issues with the web ui binding.
+- StartHttpServer for the Web UI needs to be called in another thread -- it was causing hangs on loading.
+
+## Papercut v5.1.88 [2018-12-02]
+- Converted build to use Cake -- PR thanks to [tdue21](https://github.com/tdue21).
+- Fix: Papercut Protocol failing during serialization due to incorrect JSON.NET settings PR thanks to [jennings](https://github.com/jennings).
+
 ## Papercut v5.1.76 [2018-08-16]
 - [#122](https://github.com/ChangemakerStudios/Papercut/issues/122): Add "Papercut" to SMTP banner.
 

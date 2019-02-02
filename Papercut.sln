@@ -47,6 +47,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Build", ".Build", "{8661B3
 		appveyor.yml = appveyor.yml
 		build\build.cake = build\build.cake
 		build\build.ps1 = build\build.ps1
+		build\BuildInformation.cake = build\BuildInformation.cake
+		build\ReleaseNotes.cake = build\ReleaseNotes.cake
 	EndProjectSection
 EndProject
 Global
