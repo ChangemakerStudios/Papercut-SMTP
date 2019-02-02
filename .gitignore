@@ -17,3 +17,4 @@ graphics/
 .vs/
 /build/tools
 /tools
+out/

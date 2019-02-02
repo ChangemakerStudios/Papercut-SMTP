@@ -36,9 +36,24 @@ Teardown(ctx => Information("Finished running tasks."));
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration
 ///////////////////////////////////////////////////////////////////////////////
-var appBuildDir = Directory("../src/Papercut.UI/bin") + Directory(configuration);
-var svcBuildDir = Directory("../src/Papercut.Service/bin") + Directory(configuration);
-var testBuildDir = Directory("../test/Papercut.Module.WebUI.Tests/bin") + Directory(configuration);
+var papercutBinDir = "../src/Papercut.UI/bin";
+var papercutServiceBinDir = "../src/Papercut.Service/bin";
+var webUiTestsBinDir = "../test/Papercut.Module.WebUI.Tests/bin";
+
+var outputDirectory = DirectoryPath.FromString("../out");
+
+if (!DirectoryExists(outputDirectory))
+{
+    Information("Creating output directory {0}", outputDirectory);
+    CreateDirectory(outputDirectory);
+}
+else {
+    CleanDirectory(outputDirectory);
+}
+
+var appBuildDir = Directory(papercutBinDir) + Directory(configuration);
+var svcBuildDir = Directory(papercutServiceBinDir) + Directory(configuration);
+var testBuildDir = Directory(webUiTestsBinDir) + Directory(configuration);
 
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
@@ -49,6 +64,12 @@ Task("Clean")
     CleanDirectory(appBuildDir);
     CleanDirectory(svcBuildDir);
     CleanDirectory(testBuildDir);
+
+    foreach (var directory in GetDirectories("../src/Papercut.Module.*")) {
+        var pluginOutputDir = directory.Combine(Directory("./bin/" + configuration));
+
+        CleanDirectory(pluginOutputDir);
+    }    
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,8 +122,8 @@ Task("Test")
     .IsDependentOn("Build")
     .Does(() =>
 {
-    NUnit3("../test/**/bin/" + configuration + "/*.Test.dll", 
-                    new NUnit3Settings()); // { NoResults = true });
+    NUnit3("../test/**/bin/" + configuration + "/*.Test.dll", new NUnit3Settings()); // { NoResults = true });
+
     if(AppVeyor.IsRunningOnAppVeyor)
     {
         AppVeyor.UploadTestResults("TestResult.xml", AppVeyorTestResultsType.NUnit3);
@@ -111,16 +132,29 @@ Task("Test")
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
+Task("CopyPlugins")
+	.Does(() => 
+{
+    foreach (var directory in GetDirectories("../src/Papercut.Module.*")) {
+        var pluginOutputDir = directory.Combine(Directory("./bin/" + configuration));
+
+        Information("Copying Plugin in Directory {0} to App and Service...", pluginOutputDir);
+
+        CopyDirectory(pluginOutputDir, appBuildDir);
+        CopyDirectory(pluginOutputDir, svcBuildDir);
+    }
+})
+.OnError(exception => Error(exception));
+
+///////////////////////////////////////////////////////////////////////////////
 Task("Package")
     .Does(() =>
 {
-    var appFileName = string.Format("Papercut.{0}.zip", information.FileVersion);
-    var directory = "../src/Papercut.UI/bin/" + configuration;
-    Zip(directory, appFileName, GetFiles(directory + "/**/*"));
+    var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.{0}.zip", information.FileVersion));
+    Zip(appBuildDir, appFileName, GetFiles(appBuildDir.ToString() + "/**/*"));
 
-    var svcFileName = string.Format("PapercutService.{0}.zip", information.FileVersion);
-    directory = "../src/Papercut.Service/bin/" + configuration;
-    Zip(directory, svcFileName, GetFiles(directory + "/**/*"));
+    var svcFileName = outputDirectory.CombineWithFilePath(string.Format("PapercutService.{0}.zip", information.FileVersion));
+    Zip(svcBuildDir, svcFileName, GetFiles(svcBuildDir.ToString() + "/**/*"));
 
     if(AppVeyor.IsRunningOnAppVeyor)
     {
@@ -137,12 +171,13 @@ Task("Package")
 
 ///////////////////////////////////////////////////////////////////////////////
 Task("All")
-    .IsDependentOn("PatchAssemblyInfo")
+    //.IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("Clean")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("Build")
     .IsDependentOn("Test")
+	.IsDependentOn("CopyPlugins")
     .IsDependentOn("Package")
     .OnError(exception => Error(exception));
 
