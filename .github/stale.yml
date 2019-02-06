@@ -12,7 +12,8 @@ staleLabel: wontfix
 markComment: >
   Aloha!
   I'm ScissorBot :scissors: -- the bot in charge of keeping the issues tidy.
-  It looks like this issue is stale due to lack of activity and I'll be closing it if there is no further activity. 😞  
-  Thank you for your contributions.
+  It looks like this issue is stale due to lack of activity. Unfortunately, I'll be closing it if there is no further activity. 😞  
+  Please contribute to the issue to keep it open.
+  Thanks!
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: false
