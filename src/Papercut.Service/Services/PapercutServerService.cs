@@ -84,13 +84,13 @@ namespace Papercut.Service.Services
             _serviceSettings.Save();
 
             // rebind the server...
-            BindSMTPServer();
+            await this.BindSMTPServer();
         }
 
-        void BindSMTPServer()
+        async Task BindSMTPServer()
         {
-            _smtpServer.Stop().Wait();
-            _smtpServer.Start().Wait();
+            await _smtpServer.Stop();
+            await _smtpServer.Start();
         }
 
         public void Start()

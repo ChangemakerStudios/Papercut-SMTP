@@ -4,6 +4,7 @@
     <TargetFramework>net462</TargetFramework>
     <OutputType>Exe</OutputType>
     <StartupObject />
+    <DependsOnNETStandard>false</DependsOnNETStandard>
   </PropertyGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -40,6 +41,7 @@
     <PackageReference Include="MimeKit">
       <Version>2.1.2</Version>
     </PackageReference>
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="Rx-Linq">
       <Version>2.2.5</Version>
     </PackageReference>
