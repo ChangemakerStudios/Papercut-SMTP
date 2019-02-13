@@ -17,6 +17,7 @@
 
 namespace Papercut.Services
 {
+    using System.Threading.Tasks;
     using System.Windows;
 
     using Papercut.Common.Domain;
@@ -24,8 +25,10 @@ namespace Papercut.Services
 
     public class ShutdownService : IEventHandler<AppForceShutdownEvent>
     {
-        public void Handle(AppForceShutdownEvent @event)
+        public async Task Handle(AppForceShutdownEvent @event)
         {
+            await Task.CompletedTask;
+
             Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             Application.Current.Shutdown(@event.ExitCode);
         }

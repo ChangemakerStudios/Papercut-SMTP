@@ -20,6 +20,7 @@ namespace Papercut
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
@@ -69,8 +70,10 @@ namespace Papercut
             }
         }
 
-        public void Handle(SettingsUpdatedEvent @event)
+        public async Task Handle(SettingsUpdatedEvent @event)
         {
+            await Task.CompletedTask;
+
             UpdatePathTemplates();
         }
 

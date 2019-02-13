@@ -19,6 +19,7 @@ namespace Papercut.Services
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
@@ -40,7 +41,7 @@ namespace Papercut.Services
             this._messageBus = messageBus;
         }
 
-        public void Handle([NotNull] AppProcessExchangeEvent @event)
+        public async Task Handle([NotNull] AppProcessExchangeEvent @event)
         {
             if (@event == null) throw new ArgumentNullException(nameof(@event));
 
@@ -55,6 +56,7 @@ namespace Papercut.Services
             }
 
             var previousSettings = new Settings();
+
             Settings.Default.CopyTo(previousSettings);
 
             // save ip:port bindings as our own to keep in sync...
@@ -62,7 +64,7 @@ namespace Papercut.Services
             Settings.Default.Port = @event.Port;
             Settings.Default.Save();
 
-            this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
+            await this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
         }
     }
 }

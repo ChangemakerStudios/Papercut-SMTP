@@ -25,6 +25,7 @@ namespace Papercut.Service
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Plugins;
+    using Papercut.Infrastructure.Smtp;
     using Papercut.Service.Helpers;
 
     using Module = Autofac.Module;
@@ -51,6 +52,8 @@ namespace Papercut.Service
             builder.Register(c => new ApplicationMeta("Papercut.Service"))
                 .As<IAppMeta>()
                 .SingleInstance();
+
+            var id = new PapercutSmtpModule().Id;
 
             base.Load(builder);
         }

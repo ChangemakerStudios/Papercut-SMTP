@@ -19,6 +19,7 @@
 namespace Papercut.Services
 {
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Windows;
 
     using MahApps.Metro;
@@ -30,13 +31,17 @@ namespace Papercut.Services
 
     public class ThemeManagerService : IEventHandler<PapercutClientPreStartEvent>, IEventHandler<SettingsUpdatedEvent>
     {
-        public void Handle(PapercutClientPreStartEvent @event)
+        public async Task Handle(PapercutClientPreStartEvent @event)
         {
+            await Task.CompletedTask;
+
             SetTheme();
         }
 
-        public void Handle(SettingsUpdatedEvent @event)
+        public async Task Handle(SettingsUpdatedEvent @event)
         {
+            await Task.CompletedTask;
+
             if (@event.PreviousSettings.Theme == @event.NewSettings.Theme) return;
 
             SetTheme();

@@ -39,10 +39,10 @@ namespace Papercut.Service.Services
         readonly IRulesRunner _rulesRunner;
 
         public RuleService(
-            RuleRespository ruleRespository,
+            RuleRepository ruleRepository,
             ILogger logger,
             IRulesRunner rulesRunner)
-            : base(ruleRespository, logger)
+            : base(ruleRepository, logger)
         {
             _rulesRunner = rulesRunner;
         }

@@ -20,6 +20,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     using Autofac;
 
@@ -36,7 +37,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             this._lifetimeScope = lifetimeScope;
         }
 
-        public void Publish<T>(T eventObject) where T : IEvent
+        public async Task Publish<T>(T eventObject) where T : IEvent
         {
             var eventHandlers = this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().ToList();
 
@@ -44,7 +45,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             {
                 try
                 {
-                    @event.Handle(eventObject);
+                    await @event.Handle(eventObject);
                 }
                 catch (Exception ex)
                 {

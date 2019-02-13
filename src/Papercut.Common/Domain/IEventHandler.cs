@@ -17,9 +17,11 @@
 
 namespace Papercut.Common.Domain
 {
+    using System.Threading.Tasks;
+
     public interface IEventHandler<in TEvent>
         where TEvent : IEvent
     {
-        void Handle(TEvent @event);
+        Task Handle(TEvent @event);
     }
 }

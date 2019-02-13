@@ -18,6 +18,7 @@
 namespace Papercut.Events
 {
     using System;
+    using System.Threading.Tasks;
 
     using Caliburn.Micro;
 
@@ -38,10 +39,10 @@ namespace Papercut.Events
             _uiEventAggregator = uiEventAggregator;
         }
 
-        public void Publish<T>(T eventObject)
+        public async Task Publish<T>(T eventObject)
             where T : IEvent
         {
-            this._autofacMessageBus.Publish(eventObject);
+            await this._autofacMessageBus.Publish(eventObject);
             _uiEventAggregator.PublishOnUIThread(eventObject);
         }
     }

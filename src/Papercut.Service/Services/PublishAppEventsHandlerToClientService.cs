@@ -18,6 +18,7 @@
 namespace Papercut.Service.Services
 {
     using System;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
@@ -41,19 +42,19 @@ namespace Papercut.Service.Services
             _logger = logger;
         }
 
-        public void Handle(PapercutServiceExitEvent @event)
+        public async Task Handle(PapercutServiceExitEvent @event)
         {
-            Publish(@event);
+            await Publish(@event);
         }
 
-        public void Handle(PapercutServicePreStartEvent @event)
+        public async Task Handle(PapercutServicePreStartEvent @event)
         {
-            Publish(@event);
+            await Publish(@event);
         }
 
-        public void Handle(PapercutServiceReadyEvent @event)
+        public async Task Handle(PapercutServiceReadyEvent @event)
         {
-            Publish(@event);
+            await Publish(@event);
         }
 
         PapercutClient GetClient()
@@ -63,9 +64,11 @@ namespace Papercut.Service.Services
             return client;
         }
 
-        public void Publish<T>(T @event)
+        public async Task Publish<T>(T @event)
             where T : IEvent
         {
+            await Task.CompletedTask;
+
             try
             {
                 _logger.Information(

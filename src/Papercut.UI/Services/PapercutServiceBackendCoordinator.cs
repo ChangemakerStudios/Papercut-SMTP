@@ -22,6 +22,7 @@ namespace Papercut.Services
     using System.Reactive.Concurrency;
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Network.Smtp;
@@ -81,37 +82,47 @@ namespace Papercut.Services
 
         public bool IsBackendServiceOnline { get; private set; }
 
-        public void Handle(PapercutClientPreStartEvent @event)
+        public async Task Handle(PapercutClientPreStartEvent @event)
         {
+            await Task.CompletedTask;
+
             DoProcessExchange();
         }
 
-        public void Handle(PapercutServiceExitEvent @event)
+        public async Task Handle(PapercutServiceExitEvent @event)
         {
+            await Task.CompletedTask;
+
             IsBackendServiceOnline = false;
             _smtpServerCoordinator.SmtpServerEnabled = true;
         }
 
-        public void Handle(PapercutServicePreStartEvent @event)
+        public async Task Handle(PapercutServicePreStartEvent @event)
         {
+            await Task.CompletedTask;
+
             IsBackendServiceOnline = true;
             _smtpServerCoordinator.SmtpServerEnabled = false;
         }
 
-        public void Handle(PapercutServiceReadyEvent @event)
+        public async Task Handle(PapercutServiceReadyEvent @event)
         {
-            DoProcessExchange();
+            await this.DoProcessExchange();
         }
 
-        public void Handle(RulesUpdatedEvent @event)
+        public async Task Handle(RulesUpdatedEvent @event)
         {
+            await Task.CompletedTask;
+
             if (!IsBackendServiceOnline) return;
 
             _nextUpdateEvent(@event);
         }
 
-        public void Handle(SettingsUpdatedEvent @event)
+        public async Task Handle(SettingsUpdatedEvent @event)
         {
+            await Task.CompletedTask;
+
             if (!IsBackendServiceOnline) return;
 
             // check if the setting changed
@@ -141,7 +152,7 @@ namespace Papercut.Services
             }
         }
 
-        void DoProcessExchange()
+        async Task DoProcessExchange()
         {
             try
             {
@@ -164,7 +175,7 @@ namespace Papercut.Services
                             "Background Process Returned {@Event} -- Publishing",
                             exchangeEvent);
 
-                        this._messageBus.Publish(exchangeEvent);
+                        await this._messageBus.Publish(exchangeEvent);
                     }
                 }
             }

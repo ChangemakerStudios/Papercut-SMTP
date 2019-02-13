@@ -22,6 +22,7 @@ namespace Papercut.Services
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
@@ -29,6 +30,7 @@ namespace Papercut.Services
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
+    using Papercut.Infrastructure.Smtp;
     using Papercut.Network.Protocols;
     using Papercut.Network.Smtp;
     using Papercut.Properties;
@@ -44,19 +46,17 @@ namespace Papercut.Services
 
         readonly IMessageBus _messageBus;
 
-        readonly Func<ServerProtocolType, IServer> _serverFactory;
-
-        readonly Lazy<IServer> _smtpServer;
+        private readonly PapercutSmtpServer _smtpServer;
 
         bool _smtpServerEnabled = true;
 
         public SmtpServerCoordinator(
             Func<ServerProtocolType, IServer> serverFactory,
+            PapercutSmtpServer smtpServer,
             ILogger logger,
             IMessageBus messageBus)
         {
-            _serverFactory = serverFactory;
-            _smtpServer = new Lazy<IServer>(() => _serverFactory(ServerProtocolType.Smtp));
+            this._smtpServer = smtpServer;
             _logger = logger;
             this._messageBus = messageBus;
         }
@@ -72,66 +72,68 @@ namespace Papercut.Services
             }
         }
 
-        public void Handle(PapercutClientExitEvent @event)
+        public async Task Handle(PapercutClientExitEvent @event)
         {
-            _smtpServer.Value.Stop();
+            await _smtpServer.Stop();
         }
 
-        public void Handle(PapercutClientReadyEvent @event)
+        public async Task Handle(PapercutClientReadyEvent @event)
         {
             if (SmtpServerEnabled) ListenSmtpServer();
 
             PropertyChanged += (sender, args) =>
             {
-                if (args.PropertyName == "StmpServerEnabled")
-                {
-                    if (SmtpServerEnabled && !_smtpServer.Value.IsActive)
-                        ListenSmtpServer();
-                    else if (!SmtpServerEnabled && _smtpServer.Value.IsActive)
-                        _smtpServer.Value.Stop();
-                }
+                //if (args.PropertyName == "StmpServerEnabled")
+                //{
+                //    if (SmtpServerEnabled && !_smtpServer.Value.IsActive)
+                //        ListenSmtpServer();
+                //    else if (!SmtpServerEnabled && _smtpServer.Value.IsActive)
+                //        _smtpServer.Value.Stop();
+                //}
             };
         }
 
-        public void Handle(SettingsUpdatedEvent @event)
+        public async Task Handle(SettingsUpdatedEvent @event)
         {
             if (!SmtpServerEnabled) return;
             if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
 
-            ListenSmtpServer();
+            await ListenSmtpServer();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        void ListenSmtpServer()
+        async Task ListenSmtpServer()
         {
-            _smtpServer.Value.BindObservable(
-                Settings.Default.IP,
-                Settings.Default.Port,
-                TaskPoolScheduler.Default)
-                .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
-                .Subscribe(
-                    b => { },
-                    ex =>
-                    {
-                        _logger.Warning(
-                            ex,
-                            "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
-                            Settings.Default.IP,
-                            Settings.Default.Port);
+            await this._smtpServer.Start();
 
-                        this._messageBus.Publish(new SmtpServerBindFailedEvent());
-                    },
-                    () =>
-                    this._messageBus.Publish(
-                        new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
+            //_smtpServer.Value.BindObservable(
+            //    Settings.Default.IP,
+            //    Settings.Default.Port,
+            //    TaskPoolScheduler.Default)
+            //    .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
+            //    .Subscribe(
+            //        b => { },
+            //        ex =>
+            //        {
+            //            _logger.Warning(
+            //                ex,
+            //                "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
+            //                Settings.Default.IP,
+            //                Settings.Default.Port);
+
+            //            this._messageBus.Publish(new SmtpServerBindFailedEvent());
+            //        },
+            //        () =>
+            //        this._messageBus.Publish(
+            //            new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
         }
 
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

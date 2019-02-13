@@ -2,6 +2,8 @@ namespace Papercut.Network.SmtpCommands
 {
     using System;
     using System.Collections.Generic;
+    using System.Text;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Extensions;
     using Papercut.Network.Protocols;    

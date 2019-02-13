@@ -49,18 +49,18 @@ namespace Papercut.Module.WebUI
             this._httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}).");
         }
 
-        public void Handle(PapercutServiceReadyEvent @event)
+        public async Task Handle(PapercutServiceReadyEvent @event)
         {
             this._logger.Debug("{@PapercutServiceReadyEvent}", @event);
 
-            Task.Run(async () => await StartHttpServer());
+            await StartHttpServer();
         }
 
-        public void Handle(PapercutClientReadyEvent @event)
+        public async Task Handle(PapercutClientReadyEvent @event)
         {
             this._logger.Debug("{@PapercutClientReadyEvent}", @event);
 
-            Task.Run(async () => await StartHttpServer());
+            await StartHttpServer();
         }
 
         async Task StartHttpServer()

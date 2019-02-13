@@ -37,11 +37,15 @@ namespace Papercut.Core.Infrastructure.Container
         protected override void Load(ContainerBuilder builder)
         {
             new RegisterLogger().Register(builder);
-
             new RegisterPlugins(Log.Logger).RegisterPluginModules(builder, PapercutContainer.ExtensionAssemblies);
 
             builder.Register(c => PluginStore.Instance).As<IPluginStore>().SingleInstance();
             builder.RegisterType<PluginReport>().AsImplementedInterfaces().SingleInstance();
+
+            builder.Register(
+                    ctx => ctx.Resolve<ISettingStore>().UseTyped<SmtpServerSettings>())
+                .AsSelf()
+                .SingleInstance();
 
             builder.RegisterType<AutofacServiceProvider>()
                 .As<IServiceProvider>()

@@ -30,13 +30,13 @@ namespace Papercut.Rules
     {
         protected readonly ILogger _logger;
 
-        protected readonly RuleRespository _ruleRespository;
+        protected readonly RuleRepository _ruleRepository;
 
         readonly Lazy<ObservableCollection<IRule>> _rules;
 
-        protected RuleServiceBase(RuleRespository ruleRespository, ILogger logger)
+        protected RuleServiceBase(RuleRepository ruleRepository, ILogger logger)
         {
-            _ruleRespository = ruleRespository;
+            this._ruleRepository = ruleRepository;
             _logger = logger;
             RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
             _rules = new Lazy<ObservableCollection<IRule>>(GetRulesCollection);
@@ -52,7 +52,7 @@ namespace Papercut.Rules
 
             try
             {
-                loadRules = _ruleRespository.LoadRules(RuleFileName);
+                loadRules = this._ruleRepository.LoadRules(RuleFileName);
             }
             catch (Exception ex)
             {
@@ -66,7 +66,7 @@ namespace Papercut.Rules
         {
             try
             {
-                _ruleRespository.SaveRules(Rules, RuleFileName);
+                this._ruleRepository.SaveRules(Rules, RuleFileName);
                 _logger.Information(
                     "Saved {RuleCount} to {RuleFileName}",
                     Rules.Count,
