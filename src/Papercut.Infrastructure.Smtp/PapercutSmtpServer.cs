@@ -45,20 +45,18 @@ namespace Papercut.Infrastructure.Smtp
 
         private readonly MessageStore _messageStore;
 
-        readonly SmtpServerSettings _smtpServerSettings;
+        private string _listenIpAddress;
 
         private Task _smtpServerTask;
 
         private CancellationTokenSource _tokenSource;
 
         public PapercutSmtpServer(
-            SmtpServerSettings smtpServerSettings,
             IAppMeta applicationMetaData,
             ILogger logger,
             MessageStore messageStore,
             global::SmtpServer.ILogger bridgeLogger)
         {
-            this._smtpServerSettings = smtpServerSettings;
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;
             this._messageStore = messageStore;
@@ -67,18 +65,24 @@ namespace Papercut.Infrastructure.Smtp
 
         public bool IsActive => this._smtpServerTask != null;
 
-        private string ListenIpAddress
+        public string ListenIpAddress
         {
-            get
-            {
-                if (this._smtpServerSettings.IP.IsNullOrWhiteSpace() || this._smtpServerSettings.IP.CaseInsensitiveEquals("Any"))
-                {
-                    return "0.0.0.0";
-                }
+            get => this._listenIpAddress;
 
-                return this._smtpServerSettings.IP;
+            set
+            {
+                if (value.IsNullOrWhiteSpace() || value.CaseInsensitiveEquals("Any"))
+                {
+                    this._listenIpAddress = IPAddress.Any.ToString();
+                }
+                else
+                {
+                    this._listenIpAddress = IPAddress.Parse(value).ToString();
+                }
             }
         }
+
+        public int ListenPort { get; set; }
 
         public void Dispose()
         {
@@ -111,7 +115,7 @@ namespace Papercut.Infrastructure.Smtp
                 .Endpoint(
                     new IPEndPoint(
                         IPAddress.Parse(this.ListenIpAddress),
-                        this._smtpServerSettings.Port))
+                        this.ListenPort))
                 .IsSecure(false)
                 .AllowUnsecureAuthentication(false)
                 .Build();
@@ -138,7 +142,7 @@ namespace Papercut.Infrastructure.Smtp
             server.SessionCreated += this.OnSessionCreated;
             server.SessionCompleted += this.OnSessionCompleted;
 
-            this._logger.Information("Starting Smtp Server on {IP}:{Port}...", this.ListenIpAddress, this._smtpServerSettings.Port);
+            this._logger.Information("Starting Smtp Server on {IP}:{Port}...", this.ListenIpAddress, this.ListenPort);
 
             this._tokenSource = new CancellationTokenSource();
             this._smtpServerTask = server.StartAsync(this._tokenSource.Token);

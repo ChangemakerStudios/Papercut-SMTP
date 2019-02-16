@@ -24,6 +24,7 @@ namespace Papercut.Network
 
     using Autofac.Features.Indexed;
 
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Network;
     using Papercut.Network.Protocols;
@@ -41,6 +42,8 @@ namespace Papercut.Network
         Socket _listener;
 
         int _port;
+
+        private string _listenIpAddress;
 
         public Server(
             ServerProtocolType serverProtocolType,
@@ -79,12 +82,25 @@ namespace Papercut.Network
             }
         }
 
-        public void Listen(string ip, int port)
+
+        public string ListenIpAddress
         {
-            this.Stop();
-            this.SetEndpoint(ip, port);
-            this.Start();
+            get => this._listenIpAddress;
+
+            set
+            {
+                if (value.IsNullOrWhiteSpace() || value.Equals("Any", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._listenIpAddress = IPAddress.Any.ToString();
+                }
+                else
+                {
+                    this._listenIpAddress = IPAddress.Parse(value).ToString();
+                }
+            }
         }
+
+        public int ListenPort { get; set; }
 
         public async Task Stop()
         {
@@ -222,6 +238,8 @@ namespace Papercut.Network
         public async Task Start()
         {
             await Task.CompletedTask;
+
+            this.SetEndpoint(this.ListenIpAddress, this.ListenPort);
 
             try
             {

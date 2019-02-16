@@ -19,7 +19,9 @@ namespace Papercut.Common.Extensions
 {
     using System;
     using System.IO;
+    using System.Net.Sockets;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Core.Annotations;
@@ -42,7 +44,7 @@ namespace Papercut.Common.Extensions
             return count == 0 ? string.Empty : encoding.GetString(serverbuff, 0, count);
         }
 
-        public static async Task<byte[]> ToArray([NotNull] this Stream input)
+        public static async Task<byte[]> ToArrayAsync([NotNull] this Stream input)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
 
@@ -102,22 +104,24 @@ namespace Papercut.Common.Extensions
             return source;
         }
 
-        public static async Task<Stream> CopyBufferedLimited(
+        public static Stream CopyBufferedLimited(
             this Stream source,
             Stream destination,
             int size,
             int bufferLength = 0xFFF)
         {
             var buffer = new byte[bufferLength];
+
             int bytesRead;
 
             for (int readCount = 0; readCount < size; readCount += bytesRead)
             {
-                bytesRead = await source.ReadAsync(buffer, 0, buffer.Length);
+                bytesRead = source.Read(buffer, 0, buffer.Length);
 
                 if (bytesRead == 0) break;
 
-                await destination.WriteAsync(buffer, 0, bytesRead);
+                destination.Write(buffer, 0, bytesRead);
+
             }
 
             return source;

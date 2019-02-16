@@ -137,8 +137,7 @@ namespace Papercut.Services
                         Settings.Default.IP,
                         Settings.Default.Port);
 
-                    bool successfulPublish =
-                        client.PublishEventServer(smtpServerBindEvent);
+                    bool successfulPublish = await client.PublishEventServer(smtpServerBindEvent);
 
                     _logger.Information(
                         successfulPublish
@@ -156,12 +155,14 @@ namespace Papercut.Services
         {
             try
             {
-                var exchangeEvent = new AppProcessExchangeEvent();
+                var sendEvent = new AppProcessExchangeEvent();
 
                 // attempt to connect to the backend server...
                 using (PapercutClient client = GetClient())
                 {
-                    if (!client.ExchangeEventServer(ref exchangeEvent)) return;
+                    var receivedEvent = await client.ExchangeEventServer(sendEvent);
+                    
+                    if (receivedEvent == null) return;
 
                     IsBackendServiceOnline = true;
 
@@ -169,13 +170,13 @@ namespace Papercut.Services
                     _logger.Information("Papercut Backend Service Running. Disabling SMTP in App.");
                     _smtpServerCoordinator.SmtpServerEnabled = false;
 
-                    if (!string.IsNullOrWhiteSpace(exchangeEvent.MessageWritePath))
+                    if (!string.IsNullOrWhiteSpace(receivedEvent.MessageWritePath))
                     {
                         _logger.Debug(
                             "Background Process Returned {@Event} -- Publishing",
-                            exchangeEvent);
+                            receivedEvent);
 
-                        await this._messageBus.Publish(exchangeEvent);
+                        await this._messageBus.Publish(receivedEvent);
                     }
                 }
             }
@@ -185,14 +186,13 @@ namespace Papercut.Services
             }
         }
 
-        void PublishUpdateEvent(RulesUpdatedEvent @event)
+        async Task PublishUpdateEvent(RulesUpdatedEvent @event)
         {
             try
             {
                 using (PapercutClient client = GetClient())
                 {
-                    bool successfulPublish =
-                        client.PublishEventServer(@event);
+                    bool successfulPublish = await client.PublishEventServer(@event);
 
                     _logger.Information(
                         successfulPublish

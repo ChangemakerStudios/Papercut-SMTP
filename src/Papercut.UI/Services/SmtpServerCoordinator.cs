@@ -31,6 +31,7 @@ namespace Papercut.Services
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Infrastructure.Smtp;
+    using Papercut.Network;
     using Papercut.Network.Protocols;
     using Papercut.Properties;
 
@@ -108,28 +109,26 @@ namespace Papercut.Services
 
         async Task ListenSmtpServer()
         {
-            await this._smtpServer.Start();
+            this._smtpServer.BindObservable(
+                Settings.Default.IP,
+                Settings.Default.Port,
+                TaskPoolScheduler.Default)
+                .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
+                .Subscribe(
+                    b => { },
+                    ex =>
+                    {
+                        _logger.Warning(
+                            ex,
+                            "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
+                            Settings.Default.IP,
+                            Settings.Default.Port);
 
-            //_smtpServer.Value.BindObservable(
-            //    Settings.Default.IP,
-            //    Settings.Default.Port,
-            //    TaskPoolScheduler.Default)
-            //    .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
-            //    .Subscribe(
-            //        b => { },
-            //        ex =>
-            //        {
-            //            _logger.Warning(
-            //                ex,
-            //                "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
-            //                Settings.Default.IP,
-            //                Settings.Default.Port);
-
-            //            this._messageBus.Publish(new SmtpServerBindFailedEvent());
-            //        },
-            //        () =>
-            //        this._messageBus.Publish(
-            //            new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
+                        this._messageBus.Publish(new SmtpServerBindFailedEvent());
+                    },
+                    () =>
+                    this._messageBus.Publish(
+                        new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
         }
 
         [NotifyPropertyChangedInvocator]

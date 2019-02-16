@@ -39,7 +39,7 @@ namespace Papercut.Network
 
         readonly ILogger _logger;
 
-        readonly JsonSerializerSettings _singleLineJsonSettings = new JsonSerializerSettings
+        static readonly JsonSerializerSettings _clientJsonSettings = new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.Auto,
             Formatting = Formatting.None,
@@ -165,21 +165,28 @@ namespace Papercut.Network
 
             _logger.Debug("Publishing {@Event} to Remote", @event);
 
-            var eventJson = @event.ToJson();
+            var eventJson = this.ToJson(@event);
 
             await stream.WriteLine(
-                new PapercutProtocolRequest
-                {
-                    CommandType = protocolCommandType,
-                    Type = @event.GetType(),
-                    ByteSize = eventJson.Length
-                }.ToJson(_singleLineJsonSettings));
+                ToJson(
+                    new PapercutProtocolRequest
+                    {
+                        CommandType = protocolCommandType,
+                        Type = @event.GetType(),
+                        ByteSize = eventJson.Length
+                    }));
 
             response = (await stream.ReadString()).Trim();
 
             if (response == "ACK") await stream.WriteStr(eventJson);
 
             return true;
+        }
+
+        private string ToJson<TObject>(TObject @object)
+        {
+            return
+                $"{JsonConvert.SerializeObject(@object, Formatting.None, _clientJsonSettings).Replace(Environment.NewLine, " ")}{Environment.NewLine}";
         }
     }
 }

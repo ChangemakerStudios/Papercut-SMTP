@@ -33,12 +33,14 @@ namespace Papercut.Network.Helpers
             if (socket == null) throw new ArgumentNullException(nameof(socket));
             if (type == null) throw new ArgumentNullException(nameof(type));
 
+            await Task.CompletedTask;
+
             using (var networkStream = new NetworkStream(socket, false))
             using (var memoryStream = new MemoryStream())
             {
-                await networkStream.CopyBufferedLimited(memoryStream, payloadSize);
+                networkStream.CopyBufferedLimited(memoryStream, payloadSize);
 
-                string incoming = new ASCIIEncoding().GetString(memoryStream.ToArray());
+                string incoming = new UTF8Encoding().GetString(await memoryStream.ToArrayAsync());
 
                 return incoming.FromJson(type);
             }

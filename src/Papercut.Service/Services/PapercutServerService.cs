@@ -89,13 +89,17 @@ namespace Papercut.Service.Services
         async Task BindSMTPServer()
         {
             await _smtpServer.Stop();
+
+            this._smtpServer.ListenIpAddress = this._serviceSettings.IP;
+            this._smtpServer.ListenPort = this._serviceSettings.Port;
+
             await _smtpServer.Start();
         }
 
         public void Start()
         {
             this._messageBus.Publish(
-                new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
+                new PapercutServicePreStartEvent { AppMeta = _applicationMetaData }).Wait();
 
             _papercutServer.BindObservable(
                 PapercutClient.Localhost,
@@ -116,15 +120,30 @@ namespace Papercut.Service.Services
                     // on complete
                     () => { });
 
-            this._smtpServer.Start().Wait();
+            _smtpServer.BindObservable(_serviceSettings.IP, _serviceSettings.Port, TaskPoolScheduler.Default)
+                .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
+                .Subscribe(
+                    (u) =>
+                    {
+                        /* next is not used */
+                    },
+                    (e) =>
+                        _logger.Warning(
+                            e, "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
+                            _serviceSettings.IP,
+                            _serviceSettings.Port),
+                    // on complete
+                    async () =>
+                        await this._messageBus.Publish(
+                            new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
 
-            this._messageBus.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData });
+            this._messageBus.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }).Wait();
         }
 
         public void Stop()
         {
-            _papercutServer.Stop();
-            _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
+            _papercutServer.Stop().Wait();
+            _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData }).Wait();
         }
 
         public void Dispose()

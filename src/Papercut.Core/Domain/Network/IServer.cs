@@ -27,6 +27,10 @@ namespace Papercut.Core.Domain.Network
     {
         bool IsActive { get; }
 
+        string ListenIpAddress { get; set; }
+
+        int ListenPort { get; set; }
+
         Task Start();
 
         Task Stop();

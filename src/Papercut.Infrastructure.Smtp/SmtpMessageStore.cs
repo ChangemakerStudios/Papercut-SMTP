@@ -39,7 +39,7 @@ namespace Papercut.Infrastructure.Smtp
             this._receivedDataHandler = receivedDataHandler;
         }
 
-        public override Task<SmtpResponse> SaveAsync(
+        public override async Task<SmtpResponse> SaveAsync(
             ISessionContext context,
             IMessageTransaction transaction,
             CancellationToken cancellationToken)
@@ -47,10 +47,10 @@ namespace Papercut.Infrastructure.Smtp
             var textMessage = (ITextMessage)transaction.Message;
 
             this._receivedDataHandler.HandleReceived(
-                textMessage.Content.ToArray(),
+                await textMessage.Content.ToArrayAsync(),
                 transaction.To.Select(s => s.AsAddress()).ToArray());
 
-            return Task.FromResult(SmtpResponse.Ok);
+            return SmtpResponse.Ok;
         }
     }
 }
