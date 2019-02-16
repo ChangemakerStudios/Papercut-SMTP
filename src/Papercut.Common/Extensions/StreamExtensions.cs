@@ -44,18 +44,6 @@ namespace Papercut.Common.Extensions
             return count == 0 ? string.Empty : encoding.GetString(serverbuff, 0, count);
         }
 
-        public static async Task<byte[]> ToArrayAsync([NotNull] this Stream input)
-        {
-            if (input == null) throw new ArgumentNullException(nameof(input));
-
-            using (MemoryStream ms = new MemoryStream())
-            {
-                await input.CopyToAsync(ms);
-
-                return ms.ToArray();
-            }
-        }
-
         public static async Task WriteFormat(this Stream stream, string format, params object[] args)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));

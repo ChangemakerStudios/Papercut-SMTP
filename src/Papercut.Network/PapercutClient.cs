@@ -19,6 +19,7 @@ namespace Papercut.Network
 {
     using System;
     using System.Net.Sockets;
+    using System.Text;
     using System.Threading.Tasks;
 
     using Newtonsoft.Json;
@@ -165,7 +166,7 @@ namespace Papercut.Network
 
             _logger.Debug("Publishing {@Event} to Remote", @event);
 
-            var eventJson = this.ToJson(@event);
+            var eventJsonBytes = Encoding.UTF8.GetBytes(this.ToJson(@event));
 
             await stream.WriteLine(
                 ToJson(
@@ -173,12 +174,12 @@ namespace Papercut.Network
                     {
                         CommandType = protocolCommandType,
                         Type = @event.GetType(),
-                        ByteSize = eventJson.Length
+                        ByteSize = eventJsonBytes.Length
                     }));
 
             response = (await stream.ReadString()).Trim();
 
-            if (response == "ACK") await stream.WriteStr(eventJson);
+            if (response == "ACK") await stream.WriteBytes(eventJsonBytes);
 
             return true;
         }
@@ -186,7 +187,7 @@ namespace Papercut.Network
         private string ToJson<TObject>(TObject @object)
         {
             return
-                $"{JsonConvert.SerializeObject(@object, Formatting.None, _clientJsonSettings).Replace(Environment.NewLine, " ")}{Environment.NewLine}";
+                JsonConvert.SerializeObject(@object, Formatting.None, _clientJsonSettings);
         }
     }
 }

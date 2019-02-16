@@ -18,6 +18,8 @@
 
 namespace Papercut.Infrastructure.Smtp
 {
+    using System;
+    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -29,6 +31,8 @@ namespace Papercut.Infrastructure.Smtp
     using global::SmtpServer.Mail;
     using global::SmtpServer.Protocol;
     using global::SmtpServer.Storage;
+
+    using Papercut.Core.Annotations;
 
     public class SmtpMessageStore : MessageStore
     {
@@ -47,10 +51,22 @@ namespace Papercut.Infrastructure.Smtp
             var textMessage = (ITextMessage)transaction.Message;
 
             this._receivedDataHandler.HandleReceived(
-                await textMessage.Content.ToArrayAsync(),
+                await ToArrayAsync(textMessage.Content),
                 transaction.To.Select(s => s.AsAddress()).ToArray());
 
             return SmtpResponse.Ok;
+        }
+
+        public static async Task<byte[]> ToArrayAsync([NotNull] Stream input)
+        {
+            if (input == null) throw new ArgumentNullException(nameof(input));
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await input.CopyToAsync(ms);
+
+                return ms.ToArray();
+            }
         }
     }
 }

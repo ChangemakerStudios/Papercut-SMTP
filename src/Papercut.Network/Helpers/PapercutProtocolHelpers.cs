@@ -40,7 +40,7 @@ namespace Papercut.Network.Helpers
             {
                 networkStream.CopyBufferedLimited(memoryStream, payloadSize);
 
-                string incoming = new UTF8Encoding().GetString(await memoryStream.ToArrayAsync());
+                string incoming = Encoding.UTF8.GetString(memoryStream.ToArray());
 
                 return incoming.FromJson(type);
             }
