@@ -69,15 +69,17 @@ namespace Papercut.Module.WebUI.Test.Base
             PapercutContainer.SpecifiedEntryAssembly = typeof(WebUiWebServerApiFact).Assembly;
 
             var builder = new ContainerBuilder();
+
             builder.RegisterModule<PapercutCoreModule>();
 
             configurer?.Invoke(builder);
+
             return builder.Build();
         }
 
         protected virtual void MockDependencies(ContainerBuilder builder)
         {
-            builder.Register(c => new ApplicationMeta("Papercut.WebUI.Tests")).As<IAppMeta>().SingleInstance();
+            builder.Register(c => new ApplicationMeta("Papercut.App.WebApi.Tests")).As<IAppMeta>().SingleInstance();
             builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().SingleInstance();
         }
 

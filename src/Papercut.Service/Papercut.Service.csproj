@@ -24,8 +24,7 @@
     <ProjectReference Include="..\Papercut.Infrastructure.Smtp\Papercut.Infrastructure.Smtp.csproj" />
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\Papercut.Module.WebUI\Papercut.Module.WebUI.csproj">
-    </ProjectReference>
+    <ProjectReference Include="..\Papercut.App.WebApi\Papercut.App.WebApi.csproj" />
     <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj">
     </ProjectReference>
     <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj">

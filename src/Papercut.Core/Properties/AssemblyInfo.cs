@@ -39,4 +39,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly:InternalsVisibleTo("Papercut.Module.WebUI.Test")]
+[assembly:InternalsVisibleTo("Papercut.App.WebApi.Test")]
