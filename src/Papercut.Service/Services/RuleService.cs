@@ -47,9 +47,12 @@ namespace Papercut.Service.Services
             _rulesRunner = rulesRunner;
         }
 
-        public void Handle(PapercutClientReadyEvent @event)
+        public async Task Handle(PapercutClientReadyEvent @event)
         {
+            await Task.CompletedTask;
+
             _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+
             try
             {
                 // accessing "Rules" forces the collection to be loaded
@@ -67,22 +70,25 @@ namespace Papercut.Service.Services
             }
         }
 
-        public void Handle(NewMessageEvent @event)
+        public async Task Handle(NewMessageEvent @event)
         {
             _logger.Information(
                 "New Message {MessageFile} Arrived -- Running Rules",
                 @event.NewMessage);
 
-            Task.Factory.StartNew(
-                () =>
+            await Task.Factory.StartNew(
+                async () =>
                 {
-                    Thread.Sleep(2000);
-                    _rulesRunner.Run(Rules.ToArray(), @event.NewMessage);
+                    await Task.Delay(2000);
+
+                    this._rulesRunner.Run(this.Rules.ToArray(), @event.NewMessage);
                 });
         }
 
-        public void Handle(RulesUpdatedEvent @event)
+        public async Task Handle(RulesUpdatedEvent @event)
         {
+            await Task.CompletedTask;
+
             Rules.Clear();
             Rules.AddRange(@event.Rules);
             Save();
