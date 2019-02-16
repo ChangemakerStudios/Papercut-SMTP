@@ -19,6 +19,7 @@ namespace Papercut.Services
 {
     using System;
     using System.Threading;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
@@ -61,8 +62,10 @@ namespace Papercut.Services
             }
         }
 
-        public void Handle(PapercutClientPreStartEvent @event)
+        public async Task Handle(PapercutClientPreStartEvent @event)
         {
+            await Task.CompletedTask;
+
             // papercut is not already running...
             if (_appMutex.WaitOne(0, false)) return;
 

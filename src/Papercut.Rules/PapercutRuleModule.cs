@@ -51,7 +51,7 @@ namespace Papercut.Rules
 
             builder.RegisterType<RulesRunner>().As<IRulesRunner>().SingleInstance();
 
-            builder.RegisterType<RuleRespository>().AsSelf().SingleInstance();
+            builder.RegisterType<RuleRepository>().AsSelf().SingleInstance();
         }
     }
 }

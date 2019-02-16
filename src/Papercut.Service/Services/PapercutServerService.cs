@@ -18,8 +18,13 @@
 namespace Papercut.Service.Services
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
@@ -27,15 +32,17 @@ namespace Papercut.Service.Services
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Infrastructure.Smtp;
     using Papercut.Network;
     using Papercut.Network.Protocols;
-    using Papercut.Network.Smtp;
     using Papercut.Service.Helpers;
 
     using Serilog;
 
     public class PapercutServerService : IEventHandler<SmtpServerBindEvent>, IDisposable
     {
+        private readonly PapercutSmtpServer _smtpServer;
+
         readonly IAppMeta _applicationMetaData;
 
         readonly ILogger _logger;
@@ -46,25 +53,26 @@ namespace Papercut.Service.Services
 
         readonly PapercutServiceSettings _serviceSettings;
 
-        readonly IServer _smtpServer;
-
         public PapercutServerService(
             Func<ServerProtocolType, IServer> serverFactory,
+            PapercutSmtpServer smtpServer,
             PapercutServiceSettings serviceSettings,
             IAppMeta applicationMetaData,
             ILogger logger,
             IMessageBus messageBus)
         {
+            _smtpServer = smtpServer;
             _serviceSettings = serviceSettings;
             _applicationMetaData = applicationMetaData;
             _logger = logger;
             _messageBus = messageBus;
-            _smtpServer = serverFactory(ServerProtocolType.Smtp);
             _papercutServer = serverFactory(ServerProtocolType.PCComm);
         }
 
-        public void Handle(SmtpServerBindEvent @event)
+        public async Task Handle(SmtpServerBindEvent @event)
         {
+            await Task.CompletedTask;
+
             _logger.Information(
                 "Received New Smtp Server Binding Settings from UI {@Event}",
                 @event);
@@ -75,19 +83,23 @@ namespace Papercut.Service.Services
             _serviceSettings.Save();
 
             // rebind the server...
-            BindSMTPServer();
+            await this.BindSMTPServer();
         }
 
-        void BindSMTPServer()
+        async Task BindSMTPServer()
         {
-            _smtpServer.Stop();
-            _smtpServer.Listen(_serviceSettings.IP, _serviceSettings.Port);
+            await _smtpServer.Stop();
+
+            this._smtpServer.ListenIpAddress = this._serviceSettings.IP;
+            this._smtpServer.ListenPort = this._serviceSettings.Port;
+
+            await _smtpServer.Start();
         }
 
         public void Start()
         {
             this._messageBus.Publish(
-                new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
+                new PapercutServicePreStartEvent { AppMeta = _applicationMetaData }).Wait();
 
             _papercutServer.BindObservable(
                 PapercutClient.Localhost,
@@ -108,7 +120,7 @@ namespace Papercut.Service.Services
                     // on complete
                     () => { });
 
-            _smtpServer.BindObservable(_serviceSettings.IP,_serviceSettings.Port, TaskPoolScheduler.Default)
+            _smtpServer.BindObservable(_serviceSettings.IP, _serviceSettings.Port, TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(
                     (u) =>
@@ -116,27 +128,25 @@ namespace Papercut.Service.Services
                         /* next is not used */
                     },
                     (e) =>
-                    _logger.Warning(
-                        e, "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                        _serviceSettings.IP,
-                        _serviceSettings.Port),
+                        _logger.Warning(
+                            e, "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
+                            _serviceSettings.IP,
+                            _serviceSettings.Port),
                     // on complete
-                    () =>
-                    this._messageBus.Publish(
-                        new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
+                    async () =>
+                        await this._messageBus.Publish(
+                            new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
         }
 
         public void Stop()
         {
-            _papercutServer.Stop();
-            _smtpServer.Stop();
-            _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
+            _papercutServer.Stop().Wait();
+            _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData }).Wait();
         }
 
         public void Dispose()
         {
             this._papercutServer?.Dispose();
-            this._smtpServer?.Dispose();
         }
     }
 }

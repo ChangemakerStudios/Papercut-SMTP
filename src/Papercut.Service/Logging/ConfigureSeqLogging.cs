@@ -15,28 +15,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Infrastructure.MessageBus
+
+namespace Papercut.Service.Logging
 {
-    using System;
-    using System.Reflection;
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
+    using Papercut.Common.Helper;
+    using Papercut.Core.Infrastructure.Logging;
+    using Papercut.Service.Helpers;
 
-    public static class PublishEventExtensions
+    using Serilog;
+
+    public class ConfigureSeqLogging : IEventHandler<ConfigureLoggerEvent>
     {
-        static readonly MethodInfo _publishMethodInfo = typeof(IMessageBus).GetMethod("Publish");
+        private readonly PapercutServiceSettings _settings;
 
-        public static async Task PublishObject(
-            this IMessageBus messageBus,
-            object @event,
-            Type eventType)
+        public ConfigureSeqLogging(PapercutServiceSettings settings)
         {
-            if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
+            this._settings = settings;
+        }
 
-            MethodInfo publishMethod = _publishMethodInfo.MakeGenericMethod(eventType);
+        public Task Handle(ConfigureLoggerEvent @event)
+        {
+            if (this._settings.SeqEndpoint.IsSet())
+            {
+                @event.LogConfiguration.WriteTo.Seq(_settings.SeqEndpoint);
+            }
 
-            await (Task)publishMethod.Invoke(messageBus, new[] { @event });
+            return Task.CompletedTask;
         }
     }
 }

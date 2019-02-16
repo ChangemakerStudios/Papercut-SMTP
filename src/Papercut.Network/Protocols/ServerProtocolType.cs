@@ -19,8 +19,6 @@ namespace Papercut.Network.Protocols
 {
     public enum ServerProtocolType
     {
-        Smtp,
-
         /// <summary>
         /// Papercut Intra-Process RPC Communication Protocol
         /// </summary>

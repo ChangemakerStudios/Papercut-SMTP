@@ -21,22 +21,26 @@ namespace Papercut.Network.Helpers
     using System.IO;
     using System.Net.Sockets;
     using System.Text;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Extensions;
     using Papercut.Core.Infrastructure.Json;
 
     public static class PapercutProtocolHelpers
     {
-        public static object ReadObj(this Socket socket, Type type, int payloadSize)
+        public static async Task<object> ReadObj(this Socket socket, Type type, int payloadSize)
         {
             if (socket == null) throw new ArgumentNullException(nameof(socket));
             if (type == null) throw new ArgumentNullException(nameof(type));
+
+            await Task.CompletedTask;
 
             using (var networkStream = new NetworkStream(socket, false))
             using (var memoryStream = new MemoryStream())
             {
                 networkStream.CopyBufferedLimited(memoryStream, payloadSize);
-                string incoming = new ASCIIEncoding().GetString(memoryStream.ToArray());
+
+                string incoming = Encoding.UTF8.GetString(memoryStream.ToArray());
 
                 return incoming.FromJson(type);
             }

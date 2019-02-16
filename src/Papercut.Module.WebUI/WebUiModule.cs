@@ -1,7 +1,7 @@
-// Papercut
+ï»¿// Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2018 Jaben Cargman
+// Copyright Â© 2008 - 2012 Ken Robertson
+// Copyright Â© 2013 - 2018 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,31 +14,31 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
-namespace Papercut.Module.VerboseJsonLog
+namespace Papercut.Module.WebUI
 {
     using System;
 
     using Autofac;
     using Autofac.Core;
+    using Autofac.Integration.WebApi;
 
-    using Papercut.Common.Helper;
     using Papercut.Core.Infrastructure.Plugins;
 
-    public class VerboseJsonLogModule : Module, IPluginModule
+    public class WebUIModule : Module, IDiscoverableModule
     {
-        public string Name => "Verbose Json Logging";
-
-        public string Version => this.ThisAssembly.GetVersion();
-
-        public string Description => "Verbose (JSON) Serilog Logging Support for Papercut";
-
         public IModule Module => this;
 
-        public Guid Id => new Guid("97565ED4-A676-4B08-A56B-7E58B24A4FA6");
+        public Guid Id => new Guid("F909D3B8-8D35-49C2-BB85-0B3A1DDF4C9B");
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<SetupVerboseJsonLoggingHandler>().AsImplementedInterfaces();
+            builder.RegisterType<WebServer>()
+                .AsImplementedInterfaces()
+                .SingleInstance();
+
+            builder.RegisterApiControllers(this.ThisAssembly);
+
+            base.Load(builder);
         }
     }
 }

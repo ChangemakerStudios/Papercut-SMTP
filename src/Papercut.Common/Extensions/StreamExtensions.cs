@@ -19,11 +19,16 @@ namespace Papercut.Common.Extensions
 {
     using System;
     using System.IO;
+    using System.Net.Sockets;
     using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using Papercut.Core.Annotations;
 
     public static class StreamExtensions
     {
-        public static string ReadString(
+        public static async Task<string> ReadString(
             this Stream stream,
             int bufferSize = 0xFF0,
             Encoding encoding = null)
@@ -34,54 +39,54 @@ namespace Papercut.Common.Extensions
 
             encoding = encoding ?? Encoding.UTF8;
 
-            int count = stream.Read(serverbuff, 0, bufferSize);
+            int count = await stream.ReadAsync(serverbuff, 0, bufferSize);
 
             return count == 0 ? string.Empty : encoding.GetString(serverbuff, 0, count);
         }
 
-        public static void WriteFormat(this Stream stream, string format, params object[] args)
+        public static async Task WriteFormat(this Stream stream, string format, params object[] args)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            stream.WriteStr(string.Format(format, args));
+            await stream.WriteStr(string.Format(format, args));
         }
 
-        public static void WriteLine(this Stream stream, string str, Encoding encoding = null)
-        {
-            if (stream == null) throw new ArgumentNullException(nameof(stream));
-
-            encoding = encoding ?? Encoding.UTF8;
-
-            stream.WriteBytes(encoding.GetBytes(str + "\r\n"));
-        }
-
-        public static void WriteStr(this Stream stream, string str, Encoding encoding = null)
+        public static async Task WriteLine(this Stream stream, string str, Encoding encoding = null)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             encoding = encoding ?? Encoding.UTF8;
 
-            stream.WriteBytes(encoding.GetBytes(str));
+            await stream.WriteBytes(encoding.GetBytes($"{str}\r\n"));
         }
 
-        public static void WriteBytes(this Stream stream, byte[] data)
+        public static async Task WriteStr(this Stream stream, string str, Encoding encoding = null)
         {
-            stream.Write(data, 0, data.Length);
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
+
+            encoding = encoding ?? Encoding.UTF8;
+
+            await stream.WriteBytes(encoding.GetBytes(str));
         }
 
-        public static Stream CopyBufferedTo(
+        public static async Task WriteBytes(this Stream stream, byte[] data)
+        {
+            await stream.WriteAsync(data, 0, data.Length);
+        }
+
+        public static async Task<Stream> CopyBufferedTo(
             this Stream source,
             Stream destination,
             int bufferLength = 0xFFF)
         {
             var buffer = new byte[bufferLength];
-            int bytesRead = source.Read(buffer, 0, bufferLength);
+            int bytesRead = await source.ReadAsync(buffer, 0, bufferLength);
 
             // write the required bytes
             while (bytesRead > 0)
             {
-                destination.Write(buffer, 0, bytesRead);
-                bytesRead = source.Read(buffer, 0, bufferLength);
+                await destination.WriteAsync(buffer, 0, bytesRead);
+                bytesRead = await source.ReadAsync(buffer, 0, bufferLength);
             }
 
             return source;
@@ -94,14 +99,17 @@ namespace Papercut.Common.Extensions
             int bufferLength = 0xFFF)
         {
             var buffer = new byte[bufferLength];
+
             int bytesRead;
 
             for (int readCount = 0; readCount < size; readCount += bytesRead)
             {
                 bytesRead = source.Read(buffer, 0, buffer.Length);
+
                 if (bytesRead == 0) break;
 
                 destination.Write(buffer, 0, bytesRead);
+
             }
 
             return source;

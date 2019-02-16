@@ -15,22 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-
-[assembly: AssemblyTitle("Papercut.Core")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("Papercut.Core")]
-[assembly: AssemblyCompany("Papercut")]
-[assembly: AssemblyCopyright("Copyright © 2008 - 2017 Ken Robertson & Jaben Cargman")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 

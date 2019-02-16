@@ -19,11 +19,14 @@ namespace Papercut.Service
 {
     using System;
 
+    using Papercut.Infrastructure.Smtp;
+    using Papercut.Module.WebUI;
+
     using Serilog;
 
     class Program
     {
-        static RunServiceApp app;
+        static RunServiceApp _app;
 
         static void Main(string[] args)
         {
@@ -39,8 +42,16 @@ namespace Papercut.Service
                 }
             };
 
-            app = new RunServiceApp();
-            app.Run();
+            ForceModuleLoading();
+
+            _app = new RunServiceApp();
+            _app.Run();
+        }
+
+        private static void ForceModuleLoading()
+        {
+            var smtpServerId = new PapercutSmtpModule().Id;
+            var webId = new WebUIModule().Id;
         }
     }
 }

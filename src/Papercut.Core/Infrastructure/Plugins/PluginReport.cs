@@ -52,14 +52,18 @@ namespace Papercut.Core.Infrastructure.Plugins
             }
         }
 
-        public void Handle(PapercutClientReadyEvent @event)
+        public Task Handle(PapercutClientReadyEvent @event)
         {
             this.PluginInfoDump();
+
+            return Task.CompletedTask;
         }
 
-        public void Handle(PapercutServiceReadyEvent @event)
+        public Task Handle(PapercutServiceReadyEvent @event)
         {
             this.PluginInfoDump();
+
+            return Task.CompletedTask;
         }
     }
 }

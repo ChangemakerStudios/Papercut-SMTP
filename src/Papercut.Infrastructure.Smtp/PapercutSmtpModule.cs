@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2018 Jaben Cargman
+// Copyright © 2013 - 2019 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,32 +14,33 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
-namespace Papercut.Module.Seq
+
+namespace Papercut.Infrastructure.Smtp
 {
     using System;
 
     using Autofac;
     using Autofac.Core;
 
+    using Papercut.Core.Annotations;
+    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Plugins;
 
-    public class SeqLoggingModule : Module, IPluginModule
+    using global::SmtpServer;
+    using global::SmtpServer.Storage;
+
+    [PublicAPI]
+    public class PapercutSmtpModule : Module, IDiscoverableModule
     {
-        public string Name => "Seq Logging";
-
-        public string Version => "1.0.0.0";
-
-        public string Description => "Papercut Serilog to Seq (http://getseq.net) local instance";
-
         public IModule Module => this;
 
-        public Guid Id => new Guid("DC7B884C-5F71-4C3D-9B2D-5C8D41DC1FC3");
+        public Guid Id => new Guid("EB5FD401-FADE-4ADC-8FBB-78069BD85C38");
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<AddSeqToConfiguration>().AsImplementedInterfaces();
-
-            base.Load(builder);
+            builder.RegisterType<SmtpMessageStore>().As<MessageStore>().AsSelf();
+            builder.RegisterType<SerilogSmtpServerLoggingBridge>().As<ILogger>();
+            builder.RegisterType<PapercutSmtpServer>().AsSelf();
         }
     }
 }

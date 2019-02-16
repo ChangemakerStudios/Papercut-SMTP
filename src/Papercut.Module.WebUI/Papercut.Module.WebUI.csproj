@@ -1,74 +1,20 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A1C924F3-3CFB-4844-B79F-8BFFEC60EEBF}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Papercut.Module.WebUI</RootNamespace>
-    <AssemblyName>Papercut.Module.WebUI</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>    
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="Controllers\MessagesController.cs" />
-    <Compile Include="Controllers\HealthController.cs" />
-    <Compile Include="Controllers\StaticContentController.cs" />
-    <Compile Include="Helpers\FileHelper.cs" />
-    <Compile Include="Helpers\MimePartResponseMessage.cs" />
-    <Compile Include="Models\MessageDetail.cs" />
-    <Compile Include="Models\MimeMessageEntry.cs" />
-    <Compile Include="RouteConfig.cs" />
-    <Compile Include="WebServer.cs" />
-    <Compile Include="WebUIPluginModule.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
-      <Project>{5fa0e4aa-27af-4801-b6ca-8c97dadd6da6}</Project>
-      <Name>Papercut.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj">
-      <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
-      <Name>Papercut.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
-      <Project>{CB1F4128-BE3E-42BD-AE04-FCBBE5692E14}</Project>
-      <Name>Papercut.Message</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
     <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.ttf" />
     <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.woff" />
     <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.woff2" />
@@ -95,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac">
-      <Version>4.8.1</Version>
+      <Version>4.9.0</Version>
     </PackageReference>
     <PackageReference Include="Autofac.WebApi2">
       <Version>4.2.0</Version>
@@ -119,12 +65,4 @@
       <Version>0.11.0</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
 </Project>

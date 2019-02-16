@@ -24,7 +24,7 @@ namespace Papercut.Rules
     using Papercut.Core.Domain.Rules;
     using Papercut.Core.Infrastructure.Json;
 
-    public class RuleRespository
+    public class RuleRepository
     {
         public void SaveRules([NotNull] IList<IRule> rules, string path)
         {

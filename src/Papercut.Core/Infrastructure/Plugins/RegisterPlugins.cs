@@ -46,7 +46,10 @@ namespace Papercut.Core.Infrastructure.Plugins
                     .Where(
                         s =>
                         {
+                            if (s.IsInterface || s.IsAbstract) return false;
+
                             var interfaces = s.GetInterfaces();
+
                             return interfaces.Contains(typeof(IDiscoverableModule)) || interfaces.Contains(typeof(IPluginModule));
                         })
                     .ToList();
@@ -56,7 +59,11 @@ namespace Papercut.Core.Infrastructure.Plugins
                 {
                     try
                     {
-                        return Activator.CreateInstance(type) as IDiscoverableModule;
+                        var instance = Activator.CreateInstance(type) as IDiscoverableModule;
+
+                        this._logger.Verbose("Loading Discoverable Module {DiscoverableModuleType} {DiscoverableModuleId}", type.FullName, instance?.Id);
+
+                        return instance;
                     }
                     catch (Exception ex)
                     {

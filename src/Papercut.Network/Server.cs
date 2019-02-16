@@ -15,14 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Network.Smtp
+namespace Papercut.Network
 {
     using System;
     using System.Net;
     using System.Net.Sockets;
+    using System.Threading.Tasks;
 
     using Autofac.Features.Indexed;
 
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Network;
     using Papercut.Network.Protocols;
@@ -41,17 +43,19 @@ namespace Papercut.Network.Smtp
 
         int _port;
 
+        private string _listenIpAddress;
+
         public Server(
             ServerProtocolType serverProtocolType,
             IIndex<ServerProtocolType, Func<IProtocol>> protocolFactory,
             ConnectionManager connectionManager,
             ILogger logger)
         {
-            ConnectionManager = connectionManager;
+            this.ConnectionManager = connectionManager;
 
-            _serverProtocolType = serverProtocolType;
-            Logger = logger.ForContext("ServerProtocolType", _serverProtocolType);
-            ProtocolFactory = protocolFactory[_serverProtocolType];
+            this._serverProtocolType = serverProtocolType;
+            this.Logger = logger.ForContext("ServerProtocolType", this._serverProtocolType);
+            this.ProtocolFactory = protocolFactory[this._serverProtocolType];
         }
 
         public ConnectionManager ConnectionManager { get; set; }
@@ -66,51 +70,66 @@ namespace Papercut.Network.Smtp
             {
                 lock (this)
                 {
-                    return _isActive;
+                    return this._isActive;
                 }
             }
             private set
             {
                 lock (this)
                 {
-                    _isActive = value;
+                    this._isActive = value;
                 }
             }
         }
 
-        public void Listen(string ip, int port)
+
+        public string ListenIpAddress
         {
-            Stop();
-            SetEndpoint(ip, port);
-            Start();
+            get => this._listenIpAddress;
+
+            set
+            {
+                if (value.IsNullOrWhiteSpace() || value.Equals("Any", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._listenIpAddress = IPAddress.Any.ToString();
+                }
+                else
+                {
+                    this._listenIpAddress = IPAddress.Parse(value).ToString();
+                }
+            }
         }
 
-        public void Stop()
-        {
-            if (!IsActive) return;
+        public int ListenPort { get; set; }
 
-            Logger.Information("Stopping Server {ProtocolType}", _serverProtocolType);
+        public async Task Stop()
+        {
+            await Task.CompletedTask;
+
+            if (!this.IsActive) return;
+
+            this.Logger.Information("Stopping Server {ProtocolType}", this._serverProtocolType);
 
             try
             {
                 // Turn off the running bool
-                IsActive = false;
+                this.IsActive = false;
 
-                _listener.Close(2);
+                this._listener.Close(2);
 
-                ConnectionManager.CloseAll();
+                this.ConnectionManager.CloseAll();
 
-                CleanupListener();
+                this.CleanupListener();
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Exception Stopping Server");
+                this.Logger.Error(ex, "Exception Stopping Server");
             }
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -120,17 +139,19 @@ namespace Papercut.Network.Smtp
             {
                 try
                 {
-                    Stop();
-                    CleanupListener();
-                    if (ConnectionManager != null)
+                    this.Stop().Wait();
+
+                    this.CleanupListener();
+
+                    if (this.ConnectionManager != null)
                     {
-                        ConnectionManager.Dispose();
-                        ConnectionManager = null;
+                        this.ConnectionManager.Dispose();
+                        this.ConnectionManager = null;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warning(ex, "Exception Disposing Server Instance");
+                    this.Logger.Warning(ex, "Exception Disposing Server Instance");
                 }
             }
         }
@@ -138,52 +159,52 @@ namespace Papercut.Network.Smtp
 
         protected void CleanupListener()
         {
-            if (_listener == null) return;
+            if (this._listener == null) return;
 
-            _listener.Dispose();
-            _listener = null;
+            this._listener.Dispose();
+            this._listener = null;
         }
 
         protected void CreateListener()
         {
             // If the listener isn't null, close before rebinding
-            CleanupListener();
+            this.CleanupListener();
 
             // Bind to the listening port
-            _listener = new Socket(
+            this._listener = new Socket(
                 AddressFamily.InterNetwork,
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            _listener.Bind(new IPEndPoint(_address, _port));
-            _listener.Listen(20);
-            _listener.BeginAccept(OnClientAccept, null);
+            this._listener.Bind(new IPEndPoint(this._address, this._port));
+            this._listener.Listen(20);
+            this._listener.BeginAccept(this.OnClientAccept, null);
 
-            Logger.Information(
+            this.Logger.Information(
                 "{ProtocolType} Server Ready: Listening for New Connections at {Address}:{ClientPort}",
-                _serverProtocolType,
-                _address,
-                _port);
+                this._serverProtocolType,
+                this._address,
+                this._port);
         }
 
         protected void SetEndpoint(string ip, int port)
         {
             // Load IP/ClientPort settings
             if (string.IsNullOrWhiteSpace(ip) ||
-                string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase)) _address = IPAddress.Any;
-            else _address = IPAddress.Parse(ip);
+                string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase)) this._address = IPAddress.Any;
+            else this._address = IPAddress.Parse(ip);
 
-            _port = port;
+            this._port = port;
         }
 
         void OnClientAccept([NotNull] IAsyncResult asyncResult)
         {
-            if (!IsActive || _listener == null) return;
+            if (!this.IsActive || this._listener == null) return;
 
             try
             {
-                Socket clientSocket = _listener.EndAccept(asyncResult);
-                ConnectionManager.CreateConnection(clientSocket, ProtocolFactory());
+                Socket clientSocket = this._listener.EndAccept(asyncResult);
+                this.ConnectionManager.CreateConnection(clientSocket, this.ProtocolFactory());
             }
             catch (ObjectDisposedException)
             {
@@ -196,15 +217,15 @@ namespace Papercut.Network.Smtp
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Exception in Server.OnClientAccept");
+                this.Logger.Error(ex, "Exception in Server.OnClientAccept");
             }
             finally
             {
-                if (IsActive)
+                if (this.IsActive)
                 {
                     try
                     {
-                        _listener.BeginAccept(OnClientAccept, null);
+                        this._listener.BeginAccept(this.OnClientAccept, null);
                     }
                     catch
                     {
@@ -214,19 +235,23 @@ namespace Papercut.Network.Smtp
             }
         }
 
-        void Start()
+        public async Task Start()
         {
+            await Task.CompletedTask;
+
+            this.SetEndpoint(this.ListenIpAddress, this.ListenPort);
+
             try
             {
                 // Set it as starting
-                IsActive = true;
+                this.IsActive = true;
 
                 // Create and start new listener socket
-                CreateListener();
+                this.CreateListener();
             }
             catch
             {
-                IsActive = false;
+                this.IsActive = false;
                 throw;
             }
         }

@@ -22,6 +22,7 @@ namespace Papercut.Services
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
 
     using Papercut.Common.Domain;
@@ -80,8 +81,10 @@ namespace Papercut.Services
             }
         }
 
-        public void Handle(PapercutClientReadyEvent message)
+        public async Task Handle(PapercutClientReadyEvent message)
         {
+            await Task.CompletedTask;
+
             if (_notification != null) return;
 
             SetupNotification();
@@ -128,8 +131,10 @@ namespace Papercut.Services
             _notification.ContextMenu = new ContextMenu(menuItems);
         }
 
-        public void Handle(ShowBallonTip @event)
+        public async Task Handle(ShowBallonTip @event)
         {
+            await Task.CompletedTask;
+
             _notificationSubject.OnNext(@event);
         }
     }

@@ -152,11 +152,9 @@ namespace Papercut.Network
         public void CloseAll()
         {
             // Close all open connections
-            foreach (Connection connection in
-                _connections.Values.Where(connection => connection != null))
+            foreach (Connection connection in _connections.Values.Where(connection => connection != null))
             {
-                Connection noneed;
-                _connections.TryRemove(connection.Id, out noneed);
+                _connections.TryRemove(connection.Id, out _);
                 connection.Close(false);
             }
         }
@@ -166,8 +164,7 @@ namespace Papercut.Network
             var connection = sender as Connection;
             if (connection == null) return;
 
-            Connection noneed;
-            _connections.TryRemove(connection.Id, out noneed);
+            _connections.TryRemove(connection.Id, out _);
         }
     }
 }

@@ -37,7 +37,6 @@ namespace Papercut.Core.Infrastructure.Container
         protected override void Load(ContainerBuilder builder)
         {
             new RegisterLogger().Register(builder);
-
             new RegisterPlugins(Log.Logger).RegisterPluginModules(builder, PapercutContainer.ExtensionAssemblies);
 
             builder.Register(c => PluginStore.Instance).As<IPluginStore>().SingleInstance();
