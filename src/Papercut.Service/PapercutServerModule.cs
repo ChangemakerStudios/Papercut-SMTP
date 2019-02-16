@@ -22,14 +22,17 @@ namespace Papercut.Service
     using Autofac;
     using Autofac.Core;
 
+    using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Service.Helpers;
+    using Papercut.Service.Logging;
 
     using Module = Autofac.Module;
 
+    [PublicAPI]
     public class PapercutServiceModule : Module, IDiscoverableModule
     {
         public IModule Module => this;
@@ -44,6 +47,8 @@ namespace Papercut.Service
                 .AsSelf()
                 .SingleInstance();
 
+            builder.RegisterType<ConfigureSeqLogging>().AsImplementedInterfaces();
+
             builder.Register(
                 ctx => ctx.Resolve<ISettingStore>().UseTyped<PapercutServiceSettings>())
                 .AsSelf()
@@ -52,8 +57,6 @@ namespace Papercut.Service
             builder.Register(c => new ApplicationMeta("Papercut.Service"))
                 .As<IAppMeta>()
                 .SingleInstance();
-
-            var id = new PapercutSmtpModule().Id;
 
             base.Load(builder);
         }

@@ -136,8 +136,6 @@ namespace Papercut.Service.Services
                     async () =>
                         await this._messageBus.Publish(
                             new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
-
-            this._messageBus.Publish(new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }).Wait();
         }
 
         public void Stop()

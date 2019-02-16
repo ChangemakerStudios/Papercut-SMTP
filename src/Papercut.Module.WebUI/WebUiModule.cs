@@ -24,17 +24,11 @@ namespace Papercut.Module.WebUI
 
     using Papercut.Core.Infrastructure.Plugins;
 
-    public class WebUIPluginModule : Module, IPluginModule
+    public class WebUIModule : Module, IDiscoverableModule
     {
         public IModule Module => this;
 
         public Guid Id => new Guid("F909D3B8-8D35-49C2-BB85-0B3A1DDF4C9B");
-
-        public string Name => "WebUI";
-
-        public string Version => "1.0.0";
-
-        public string Description => "Provides a web UI to manage the email messages for Papercut.";
 
         protected override void Load(ContainerBuilder builder)
         {
