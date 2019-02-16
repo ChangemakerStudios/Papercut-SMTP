@@ -18,15 +18,12 @@
 namespace Papercut.Core.Domain.Network
 {
     using System.Text;
+    using System.Threading.Tasks;
 
     public interface IProtocol
     {
-        #region Public Methods and Operators
+        Task Begin(IConnection connection);
 
-        void Begin(IConnection connection);
-
-        void ProcessIncomingBuffer(byte[] bufferedData, Encoding encoding);
-
-        #endregion
+        Task ProcessIncomingBuffer(byte[] bufferedData, Encoding encoding);
     }
 }

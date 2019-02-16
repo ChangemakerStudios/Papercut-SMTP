@@ -32,7 +32,6 @@ namespace Papercut.Services
     using Papercut.Events;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Network.Protocols;
-    using Papercut.Network.Smtp;
     using Papercut.Properties;
 
     using Serilog;
@@ -63,7 +62,7 @@ namespace Papercut.Services
 
         public bool SmtpServerEnabled
         {
-            get { return _smtpServerEnabled; }
+            get => _smtpServerEnabled;
             set
             {
                 if (value.Equals(_smtpServerEnabled)) return;
@@ -79,17 +78,21 @@ namespace Papercut.Services
 
         public async Task Handle(PapercutClientReadyEvent @event)
         {
-            if (SmtpServerEnabled) ListenSmtpServer();
+            if (SmtpServerEnabled) await ListenSmtpServer();
 
             PropertyChanged += (sender, args) =>
             {
-                //if (args.PropertyName == "StmpServerEnabled")
-                //{
-                //    if (SmtpServerEnabled && !_smtpServer.Value.IsActive)
-                //        ListenSmtpServer();
-                //    else if (!SmtpServerEnabled && _smtpServer.Value.IsActive)
-                //        _smtpServer.Value.Stop();
-                //}
+                if (args.PropertyName == "StmpServerEnabled")
+                {
+                    if (SmtpServerEnabled && !this._smtpServer.IsActive)
+                    {
+                        ListenSmtpServer().Wait();
+                    }
+                    else if (!SmtpServerEnabled && this._smtpServer.IsActive)
+                    {
+                        this._smtpServer.Stop().Wait();
+                    }
+                }
             };
         }
 

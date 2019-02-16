@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2019 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,12 +13,13 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
 namespace Papercut.Core.Infrastructure.MessageBus
 {
     using System;
     using System.Reflection;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
 
@@ -26,7 +27,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
     {
         static readonly MethodInfo _publishMethodInfo = typeof(IMessageBus).GetMethod("Publish");
 
-        public static void PublishObject(
+        public static async Task PublishObject(
             this IMessageBus messageBus,
             object @event,
             Type eventType)
@@ -34,7 +35,8 @@ namespace Papercut.Core.Infrastructure.MessageBus
             if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
 
             MethodInfo publishMethod = _publishMethodInfo.MakeGenericMethod(eventType);
-            publishMethod.Invoke(messageBus, new[] { @event });
+
+            await (Task)publishMethod.Invoke(messageBus, new[] { @event });
         }
     }
 }

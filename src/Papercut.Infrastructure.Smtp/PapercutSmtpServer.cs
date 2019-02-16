@@ -14,7 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
-
 namespace Papercut.Infrastructure.Smtp
 {
     using System;
@@ -27,15 +26,16 @@ namespace Papercut.Infrastructure.Smtp
 
     using Papercut.Common.Helper;
     using Papercut.Core.Domain.Application;
+    using Papercut.Core.Domain.Network;
     using Papercut.Core.Domain.Settings;
 
-    using global::SmtpServer;
-    using global::SmtpServer.Mail;
-    using global::SmtpServer.Storage;
+    using SmtpServer;
+    using SmtpServer.Mail;
+    using SmtpServer.Storage;
 
     using ILogger = Serilog.ILogger;
 
-    public class PapercutSmtpServer : IDisposable
+    public class PapercutSmtpServer : IServer
     {
         readonly IAppMeta _applicationMetaData;
 
@@ -65,6 +65,21 @@ namespace Papercut.Infrastructure.Smtp
             this._bridgeLogger = bridgeLogger;
         }
 
+        public bool IsActive => this._smtpServerTask != null;
+
+        private string ListenIpAddress
+        {
+            get
+            {
+                if (this._smtpServerSettings.IP.IsNullOrWhiteSpace() || this._smtpServerSettings.IP.CaseInsensitiveEquals("Any"))
+                {
+                    return "0.0.0.0";
+                }
+
+                return this._smtpServerSettings.IP;
+            }
+        }
+
         public void Dispose()
         {
             this.Stop().Wait();
@@ -87,19 +102,6 @@ namespace Papercut.Infrastructure.Smtp
             {
                 this._smtpServerTask = null;
                 this._tokenSource = null;
-            }
-        }
-
-        private string ListenIpAddress
-        {
-            get
-            {
-                if (this._smtpServerSettings.IP.IsNullOrWhiteSpace() || this._smtpServerSettings.IP.CaseInsensitiveEquals("Any"))
-                {
-                    return "0.0.0.0";
-                }
-
-                return this._smtpServerSettings.IP;
             }
         }
 
@@ -131,7 +133,7 @@ namespace Papercut.Infrastructure.Smtp
                 options = options.Endpoint(endpoint);
             }
 
-            var server = new global::SmtpServer.SmtpServer(options.Build());
+            var server = new SmtpServer(options.Build());
 
             server.SessionCreated += this.OnSessionCreated;
             server.SessionCompleted += this.OnSessionCompleted;

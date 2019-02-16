@@ -18,6 +18,7 @@
 namespace Papercut.Core.Domain.Network
 {
     using System;
+    using System.Threading.Tasks;
 
     /// <summary>
     ///     The Server interface.
@@ -26,8 +27,8 @@ namespace Papercut.Core.Domain.Network
     {
         bool IsActive { get; }
 
-        void Listen(string ip, int port);
+        Task Start();
 
-        void Stop();
+        Task Stop();
     }
 }

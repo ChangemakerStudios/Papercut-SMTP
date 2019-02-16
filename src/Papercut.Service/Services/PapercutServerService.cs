@@ -35,7 +35,6 @@ namespace Papercut.Service.Services
     using Papercut.Infrastructure.Smtp;
     using Papercut.Network;
     using Papercut.Network.Protocols;
-    using Papercut.Network.Smtp;
     using Papercut.Service.Helpers;
 
     using Serilog;

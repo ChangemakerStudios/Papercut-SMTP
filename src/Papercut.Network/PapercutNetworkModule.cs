@@ -24,10 +24,8 @@ namespace Papercut.Network
     using Autofac.Core;
 
     using Papercut.Core.Domain.Network;
-    using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Network.Protocols;
-    using Papercut.Network.Smtp;
 
     using Module = Autofac.Module;
 
@@ -39,27 +37,14 @@ namespace Papercut.Network
 
         protected override void Load(ContainerBuilder builder)
         {
-            // server/connections
-            builder.RegisterType<SmtpProtocol>()
-                .Keyed<IProtocol>(ServerProtocolType.Smtp)
-                .InstancePerDependency();
-
             builder.RegisterType<PapercutProtocol>()
                 .Keyed<IProtocol>(ServerProtocolType.PCComm)
                 .InstancePerDependency();
 
             builder.RegisterType<PapercutClient>().AsSelf().InstancePerDependency();
-            //builder.RegisterType<SmtpClient>().AsSelf().InstancePerDependency();
-
-            // register smtp commands
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                .AssignableTo<ISmtpCommand>()
-                .As<ISmtpCommand>()
-                .InstancePerDependency();
-
+            builder.RegisterType<Server>().As<IServer>().InstancePerDependency();
             builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
             builder.RegisterType<Connection>().AsSelf().InstancePerDependency();
-            builder.RegisterType<Server>().As<IServer>().InstancePerDependency();
         }
     }
 }

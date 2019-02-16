@@ -48,7 +48,7 @@ namespace Papercut.Network
             Protocol = protocol;
             Logger = logger;
 
-            Logger.ForContext("ConnectionId", id);
+            Logger = Logger.ForContext("ConnectionId", id);
 
             Connected = true;
             LastActivity = DateTime.Now;
@@ -132,7 +132,7 @@ namespace Papercut.Network
 
                 var incoming = new byte[sizeReceived];
                 Array.Copy(_receiveBuffer, incoming, sizeReceived);
-                Protocol.ProcessIncomingBuffer(incoming, Encoding);
+                Protocol.ProcessIncomingBuffer(incoming, this.Encoding);
 
                 // continue receiving...
                 return true;
