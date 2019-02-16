@@ -6,6 +6,18 @@
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>    
   </PropertyGroup>
 
+  <PropertyGroup>
+     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>    
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>  
+  </ItemGroup>  
+
   <ItemGroup>
     <PackageReference Include="System.Runtime.Caching" Version="4.5.0" />
   </ItemGroup>

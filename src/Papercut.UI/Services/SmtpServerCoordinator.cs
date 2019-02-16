@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2019 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
-
 namespace Papercut.Services
 {
     using System;
@@ -26,13 +25,11 @@ namespace Papercut.Services
 
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Network;
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Network;
-    using Papercut.Network.Protocols;
     using Papercut.Properties;
 
     using Serilog;
@@ -40,7 +37,8 @@ namespace Papercut.Services
     public class SmtpServerCoordinator : IEventHandler<PapercutClientReadyEvent>,
         IEventHandler<PapercutClientExitEvent>,
         IEventHandler<SettingsUpdatedEvent>,
-        INotifyPropertyChanged
+        INotifyPropertyChanged,
+        IDisposable
     {
         readonly ILogger _logger;
 
@@ -48,50 +46,63 @@ namespace Papercut.Services
 
         private readonly PapercutSmtpServer _smtpServer;
 
+        private IDisposable _observeStartServer;
+
         bool _smtpServerEnabled = true;
 
         public SmtpServerCoordinator(
-            Func<ServerProtocolType, IServer> serverFactory,
             PapercutSmtpServer smtpServer,
             ILogger logger,
             IMessageBus messageBus)
         {
             this._smtpServer = smtpServer;
-            _logger = logger;
+            this._logger = logger;
             this._messageBus = messageBus;
         }
 
         public bool SmtpServerEnabled
         {
-            get => _smtpServerEnabled;
+            get => this._smtpServerEnabled;
             set
             {
-                if (value.Equals(_smtpServerEnabled)) return;
-                _smtpServerEnabled = value;
-                OnPropertyChanged();
+                if (value.Equals(this._smtpServerEnabled)) return;
+                this._smtpServerEnabled = value;
+                this.OnPropertyChanged();
             }
+        }
+
+        public void Dispose()
+        {
+            this._observeStartServer?.Dispose();
+            this._smtpServer?.Dispose();
         }
 
         public async Task Handle(PapercutClientExitEvent @event)
         {
-            await _smtpServer.Stop();
+            await this.StopSmtpServer();
+        }
+
+        private async Task StopSmtpServer()
+        {
+            this._observeStartServer?.Dispose();
+            await this._smtpServer.Stop();
         }
 
         public async Task Handle(PapercutClientReadyEvent @event)
         {
-            if (SmtpServerEnabled) await ListenSmtpServer();
+            if (this.SmtpServerEnabled) await this.ListenSmtpServer();
 
-            PropertyChanged += (sender, args) =>
+            this.PropertyChanged += (sender, args) =>
             {
                 if (args.PropertyName == "StmpServerEnabled")
                 {
-                    if (SmtpServerEnabled && !this._smtpServer.IsActive)
+                    if (this.SmtpServerEnabled && !this._smtpServer.IsActive)
                     {
-                        ListenSmtpServer().Wait();
+                        this.ListenSmtpServer().Wait();
                     }
-                    else if (!SmtpServerEnabled && this._smtpServer.IsActive)
+                    else if (!this.SmtpServerEnabled && this._smtpServer.IsActive)
                     {
-                        this._smtpServer.Stop().Wait();
+                        this.StopSmtpServer().Wait();
                     }
                 }
             };
@@ -99,42 +110,44 @@ namespace Papercut.Services
 
         public async Task Handle(SettingsUpdatedEvent @event)
         {
-            if (!SmtpServerEnabled) return;
+            if (!this.SmtpServerEnabled) return;
             if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
 
-            await ListenSmtpServer();
+            await this.ListenSmtpServer();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        async Task ListenSmtpServer()
+        Task ListenSmtpServer()
         {
-            this._smtpServer.BindObservable(
+            this._observeStartServer = this._smtpServer.ObserveStartServer(
                 Settings.Default.IP,
                 Settings.Default.Port,
                 TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
                 .Subscribe(
                     b => { },
-                    ex =>
+                    async ex =>
                     {
-                        _logger.Warning(
+                        this._logger.Warning(
                             ex,
                             "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
                             Settings.Default.IP,
                             Settings.Default.Port);
 
-                        this._messageBus.Publish(new SmtpServerBindFailedEvent());
+                        await this._messageBus.Publish(new SmtpServerBindFailedEvent());
                     },
-                    () =>
-                    this._messageBus.Publish(
+                    async () =>
+                    await this._messageBus.Publish(
                         new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
+
+            return Task.CompletedTask;
         }
 
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            PropertyChangedEventHandler handler = this.PropertyChanged;
             handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }

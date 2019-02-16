@@ -67,8 +67,6 @@ namespace Papercut.Service.Services
         public async Task Publish<T>(T @event)
             where T : IEvent
         {
-            await Task.CompletedTask;
-
             try
             {
                 _logger.Information(
@@ -77,7 +75,7 @@ namespace Papercut.Service.Services
 
                 using (PapercutClient client = GetClient())
                 {
-                    client.PublishEventServer(@event);
+                    await client.PublishEventServer(@event);
                 }
             }
             catch (Exception ex)

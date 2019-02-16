@@ -70,10 +70,10 @@ namespace Papercut.Services
             if (_appMutex.WaitOne(0, false)) return;
 
             Logger.Debug(
-                "Second process run. Shutting this process and pushing show event to other process.");
+                "Second process run. Shutting this process down and pushing show event to other process");
 
             // papercut is already running, push event to other process
-            _papercutClient.PublishEventServer(new ShowMainWindowEvent());
+            await this._papercutClient.PublishEventServer(new ShowMainWindowEvent());
 
             // no need to go further
             @event.CancelStart = true;

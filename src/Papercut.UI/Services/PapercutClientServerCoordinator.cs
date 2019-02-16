@@ -46,16 +46,14 @@ namespace Papercut.Services
 
         public async Task Handle(PapercutClientExitEvent @event)
         {
-            await Task.CompletedTask;
-
-            this._papercutServer.Stop();
+            await this._papercutServer.Stop();
         }
 
         public async Task Handle(PapercutClientReadyEvent @event)
         {
             await Task.CompletedTask;
 
-            this._papercutServer.BindObservable(
+            this._papercutServer.ObserveStartServer(
                 PapercutClient.Localhost,
                 PapercutClient.ClientPort,
                 TaskPoolScheduler.Default)

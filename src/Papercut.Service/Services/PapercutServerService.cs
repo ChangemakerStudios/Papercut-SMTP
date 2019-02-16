@@ -18,12 +18,8 @@
 namespace Papercut.Service.Services
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
@@ -101,7 +97,7 @@ namespace Papercut.Service.Services
             this._messageBus.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData }).Wait();
 
-            _papercutServer.BindObservable(
+            _papercutServer.ObserveStartServer(
                 PapercutClient.Localhost,
                 PapercutClient.ServerPort,
                 TaskPoolScheduler.Default)
@@ -120,7 +116,7 @@ namespace Papercut.Service.Services
                     // on complete
                     () => { });
 
-            _smtpServer.BindObservable(_serviceSettings.IP, _serviceSettings.Port, TaskPoolScheduler.Default)
+            _smtpServer.ObserveStartServer(_serviceSettings.IP, _serviceSettings.Port, TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(
                     (u) =>

@@ -77,16 +77,14 @@ namespace Papercut.Services
             // flush rules every 10 seconds
             rulesUpdateObservable.Buffer(TimeSpan.FromSeconds(10))
                 .Where(e => e.Any())
-                .Subscribe(events => PublishUpdateEvent(events.Last()));
+                .Subscribe(async events => await PublishUpdateEvent(events.Last()));
         }
 
         public bool IsBackendServiceOnline { get; private set; }
 
         public async Task Handle(PapercutClientPreStartEvent @event)
         {
-            await Task.CompletedTask;
-
-            DoProcessExchange();
+            await this.DoProcessExchange();
         }
 
         public async Task Handle(PapercutServiceExitEvent @event)

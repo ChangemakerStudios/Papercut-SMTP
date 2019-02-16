@@ -5,6 +5,18 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>    
   </PropertyGroup>
+
+  <PropertyGroup>
+     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>    
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>  
+  </ItemGroup>  
   
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
@@ -14,12 +26,11 @@
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
     </ProjectReference>
   </ItemGroup>
+
   <ItemGroup>
     <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.ttf" />
     <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.woff" />
     <EmbedDedresource Include="assets\fonts\glyphicons-halflings-regular.woff2" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="assets\css\bootstrap-3.3.2.min.css" />
     <EmbeddedResource Include="assets\css\jquery-ui-1.10.4-smoothness.css" />
     <EmbeddedResource Include="assets\css\style.css" />
@@ -32,13 +43,10 @@
     <EmbeddedResource Include="assets\js\jquery-1.11.0.min.js" />
     <EmbeddedResource Include="assets\js\jquery-ui-1.10.4.min.js" />
     <EmbeddedResource Include="assets\js\moment-2.8.4.js" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="assets\images\papercut-logo.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="assets\images\papercut.ico" />
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Autofac">
       <Version>4.9.0</Version>

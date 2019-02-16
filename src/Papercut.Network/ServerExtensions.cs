@@ -27,7 +27,7 @@ namespace Papercut.Network
 
     public static class ServerExtensions
     {
-        public static IObservable<bool> BindObservable(
+        public static IObservable<bool> ObserveStartServer(
             [NotNull] this IServer server,
             string ip,
             int port,
