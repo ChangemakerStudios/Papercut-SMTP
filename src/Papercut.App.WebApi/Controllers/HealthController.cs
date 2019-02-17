@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Controllers
+namespace Papercut.App.WebApi.Controllers
 {
     using System.Net;
     using System.Net.Http;
@@ -28,7 +28,7 @@ namespace Papercut.Module.WebUI.Controllers
         [HttpGet]
         public HttpResponseMessage Check()
         {
-            var response = Request.CreateResponse(HttpStatusCode.OK);
+            var response = this.Request.CreateResponse(HttpStatusCode.OK);
             response.Content = new StringContent("Papercut WebUI server started successfully.", Encoding.UTF8);
             return response;
         }

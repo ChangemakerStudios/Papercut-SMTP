@@ -20,6 +20,7 @@ namespace Papercut.Network
     using System;
     using System.Net.Sockets;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Newtonsoft.Json;
@@ -85,7 +86,7 @@ namespace Papercut.Network
         {
             try
             {
-                await Client.ConnectAsync(Host, Port);
+                Client.Connect(Host, Port);
             }
             catch (SocketException)
             {
@@ -128,7 +129,7 @@ namespace Papercut.Network
         {
             try
             {
-                await Client.ConnectAsync(Host, Port);
+                Client.Connect(Host, Port);
             }
             catch (SocketException)
             {

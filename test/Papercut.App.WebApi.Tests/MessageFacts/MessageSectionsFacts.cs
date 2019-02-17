@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.MessageFacts
+namespace Papercut.App.WebApi.Tests.MessageFacts
 {
     using System;
     using System.Collections.Generic;
@@ -25,15 +25,16 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
     using System.Net;
     using System.Net.Mime;
     using System.Text;
-    using System.Threading;
 
     using Autofac;
-    using Base;
-    using Message;
+
     using MimeKit;
-    using Models;
 
     using NUnit.Framework;
+
+    using Papercut.App.WebApi.Models;
+    using Papercut.App.WebApi.Tests.Base;
+    using Papercut.Message;
 
     using ContentType = MimeKit.ContentType;
 
@@ -43,7 +44,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 
         public MessageSectionsFacts()
         {
-            this._messageRepository = Scope.Resolve<MessageRepository>();
+            this._messageRepository = this._container.Resolve<MessageRepository>();
         }
 
         [Test, Order(1)]
@@ -62,9 +63,9 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             };
             this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
-            var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
+            var messageId = this.Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
-            var detail = Get<MimeMessageEntry.DetailDto>($"/api/messages/{messageId}");
+            var detail = this.Get<MimeMessageEntry.DetailDto>($"/api/messages/{messageId}");
             Assert.AreEqual(messageId, detail.Id);
 
             var sections = detail.Sections;
@@ -91,9 +92,9 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             };
             this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
-            var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
+            var messageId = this.Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
-            var response = Get($"/api/messages/{messageId}/sections/0");
+            var response = this.Get($"/api/messages/{messageId}/sections/0");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             var disposition = response.Content.Headers.ContentDisposition;
@@ -121,9 +122,9 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             };
             this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
-            var messageId = Get<MessageListResponse>("/api/messages").Messages.First().Id;
+            var messageId = this.Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
-            var response = Get($"/api/messages/{messageId}/contents/{contentId}");
+            var response = this.Get($"/api/messages/{messageId}/contents/{contentId}");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             var disposition = response.Content.Headers.ContentDisposition;
@@ -136,7 +137,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         {
             public MessageListResponse()
             {
-                Messages = new List<MimeMessageEntry.RefDto>();
+                this.Messages = new List<MimeMessageEntry.RefDto>();
             }
 
             public int TotalMessageCount { get; set; }

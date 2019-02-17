@@ -23,6 +23,7 @@ namespace Papercut.Events
     using Caliburn.Micro;
 
     using Papercut.Common.Domain;
+    using Papercut.Core.Annotations;
     using Papercut.Core.Infrastructure.MessageBus;
 
     public class EventPublishAll : IMessageBus
@@ -39,11 +40,12 @@ namespace Papercut.Events
             _uiEventAggregator = uiEventAggregator;
         }
 
-        public async Task Publish<T>(T eventObject)
+        public async Task Publish<T>([NotNull] T eventObject)
             where T : IEvent
         {
-            await this._autofacMessageBus.Publish(eventObject);
-            _uiEventAggregator.PublishOnUIThread(eventObject);
+            if (eventObject == null) throw new ArgumentNullException(nameof(eventObject));
+
+            await Task.WhenAll(this._autofacMessageBus.Publish(eventObject), _uiEventAggregator.PublishOnUIThreadAsync(eventObject));
         }
     }
 }

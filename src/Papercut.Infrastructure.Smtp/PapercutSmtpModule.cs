@@ -23,19 +23,13 @@ namespace Papercut.Infrastructure.Smtp
     using Autofac.Core;
 
     using Papercut.Core.Annotations;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Core.Infrastructure.Plugins;
 
     using global::SmtpServer;
     using global::SmtpServer.Storage;
 
     [PublicAPI]
-    public class PapercutSmtpModule : Module, IDiscoverableModule
+    public class PapercutSmtpModule : Autofac.Module
     {
-        public IModule Module => this;
-
-        public Guid Id => new Guid("EB5FD401-FADE-4ADC-8FBB-78069BD85C38");
-
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<SmtpMessageStore>().As<MessageStore>().AsSelf();

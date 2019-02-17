@@ -75,7 +75,7 @@ namespace Papercut.Service.Services
 
                 using (PapercutClient client = GetClient())
                 {
-                    await client.PublishEventServer(@event);
+                    await client.PublishEventServer(@event, 150);
                 }
             }
             catch (Exception ex)

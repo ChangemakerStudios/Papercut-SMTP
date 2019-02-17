@@ -132,21 +132,6 @@ Task("Test")
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
-Task("CopyPlugins")
-	.Does(() => 
-{
-    foreach (var directory in GetDirectories("../src/Papercut.Module.*")) {
-        var pluginOutputDir = directory.Combine(Directory("./bin/" + configuration));
-
-        Information("Copying Plugin in Directory {0} to App and Service...", pluginOutputDir);
-
-        CopyDirectory(pluginOutputDir, appBuildDir);
-        CopyDirectory(pluginOutputDir, svcBuildDir);
-    }
-})
-.OnError(exception => Error(exception));
-
-///////////////////////////////////////////////////////////////////////////////
 Task("Package")
     .Does(() =>
 {
@@ -180,7 +165,6 @@ Task("All")
     .IsDependentOn("Restore")
     .IsDependentOn("Build")
     .IsDependentOn("Test")
-	.IsDependentOn("CopyPlugins")
     .IsDependentOn("Package")
     .OnError(exception => Error(exception));
 

@@ -1,7 +1,7 @@
-// Papercut
+ï»¿// Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright Â© 2008 - 2012 Ken Robertson
+// Copyright Â© 2013 - 2019 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,14 +15,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Infrastructure.Plugins
+
+namespace Papercut.Core.Infrastructure.Container
 {
-    public interface IPluginModule : IDiscoverableModule
+    public static class ContainerScope
     {
-        string Name { get; }
-
-        string Version { get; }
-
-        string Description { get; }
+        public static readonly object UIScopeTag = new object();
     }
 }

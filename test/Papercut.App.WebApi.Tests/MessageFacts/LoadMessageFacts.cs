@@ -16,26 +16,23 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.MessageFacts
+namespace Papercut.App.WebApi.Tests.MessageFacts
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Net.Mime;
-    using System.Text;
     using System.Threading;
 
     using Autofac;
-    using Base;
-    using Message;
+
     using MimeKit;
-    using Models;
 
     using NUnit.Framework;
 
-    using ContentType = MimeKit.ContentType;
+    using Papercut.App.WebApi.Models;
+    using Papercut.App.WebApi.Tests.Base;
+    using Papercut.Message;
 
     public class LoadMessageFacts : ApiTestBase
     {
@@ -43,13 +40,13 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 
         public LoadMessageFacts()
         {
-            this._messageRepository = Scope.Resolve<MessageRepository>();
+            this._messageRepository = this._container.Resolve<MessageRepository>();
         }
 
         [Test, Order(0)]
         public void ShouldReturn404IfNotFoundByID()
         {
-            var response = Client.GetAsync("/api/messages/some-strange-id").Result;
+            var response = this._client.GetAsync("/api/messages/some-strange-id").Result;
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -64,7 +61,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 
             this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
 
-            var messages = Get<MessageListResponse>("/api/messages").Messages;
+            var messages = this.Get<MessageListResponse>("/api/messages").Messages;
             Assert.AreEqual(1, messages.Count);
 
             var message = messages.First();
@@ -100,7 +97,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 Thread.Sleep(10);
             }
 
-            var messageResponse = Get<MessageListResponse>("/api/messages?limit=2&start=3");
+            var messageResponse = this.Get<MessageListResponse>("/api/messages?limit=2&start=3");
             var messages = messageResponse.Messages;
             Assert.AreEqual(10, messageResponse.TotalMessageCount);
             Assert.AreEqual(2, messages.Count);
@@ -131,10 +128,10 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
                 Body = new TextPart("plain") {Text = "Hello Buddy"}
             };
             this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
-            var messages = Get<MessageListResponse>("/api/messages").Messages;
+            var messages = this.Get<MessageListResponse>("/api/messages").Messages;
             var id = messages.First().Id;
 
-            var detail = Get<MimeMessageEntry.DetailDto>($"/api/messages/{id}");
+            var detail = this.Get<MimeMessageEntry.DetailDto>($"/api/messages/{id}");
             Assert.AreEqual(id, detail.Id);
             Assert.NotNull(detail.CreatedAt);
 
@@ -172,11 +169,11 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
             existedMail.Headers.Add(HeaderId.ReplyTo, "one@replyto.com");
             existedMail.Headers.Add("X-Extended", "extended value");
             this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
-            var messages = Get<MessageListResponse>("/api/messages").Messages;
+            var messages = this.Get<MessageListResponse>("/api/messages").Messages;
             var id = messages.First().Id;
 
 
-            var detail = Get<MimeMessageEntry.DetailDto>($"/api/messages/{id}");
+            var detail = this.Get<MimeMessageEntry.DetailDto>($"/api/messages/{id}");
             Assert.AreEqual(id, detail.Id);
 
             var headers = detail.Headers;
@@ -188,7 +185,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         {
             public MessageListResponse()
             {
-                Messages = new List<MimeMessageEntry.RefDto>();
+                this.Messages = new List<MimeMessageEntry.RefDto>();
             }
 
             public int TotalMessageCount { get; set; }

@@ -1,7 +1,7 @@
-// Papercut
+ï»¿// Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright Â© 2008 - 2012 Ken Robertson
+// Copyright Â© 2013 - 2018 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,12 +15,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Core.Infrastructure.Plugins
+namespace Papercut.App.WebApi
 {
-    using System.Collections.Generic;
+    using Autofac;
+    using Autofac.Integration.WebApi;
 
-    public interface IPluginStore
+    public class PapercutWebApiModule : Module
     {
-        IEnumerable<IPluginModule> Plugins { get; }
+        protected override void Load(ContainerBuilder builder)
+        {
+            builder.RegisterType<WebServer>()
+                .AsImplementedInterfaces()
+                .SingleInstance();
+
+            builder.RegisterApiControllers(this.ThisAssembly);
+        }
     }
 }

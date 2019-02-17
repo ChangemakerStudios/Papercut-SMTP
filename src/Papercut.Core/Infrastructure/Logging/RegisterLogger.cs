@@ -32,51 +32,54 @@ namespace Papercut.Core.Infrastructure.Logging
     using Serilog;
     using Serilog.Debugging;
 
-    public class RegisterLogger
+    /// <summary>
+    /// Logging module is pulled into Core
+    /// </summary>
+    internal sealed class RegisterLogging
     {
-        public void Register(ContainerBuilder builder)
+        internal static void Register(ContainerBuilder builder)
         {
             builder.Register(
-                    c =>
-                    {
-                        var appMeta = c.Resolve<IAppMeta>();
+                                c =>
+                                {
+                                    var appMeta = c.Resolve<IAppMeta>();
 
-                        string logFilePath = Path.Combine(
-                            AppDomain.CurrentDomain.BaseDirectory,
-                            "Logs",
-                            $"{appMeta.AppName}.log");
+                                    string logFilePath = Path.Combine(
+                                        AppDomain.CurrentDomain.BaseDirectory,
+                                        "Logs",
+                                        $"{appMeta.AppName}.log");
 
-                        LoggerConfiguration logConfiguration =
-                            new LoggerConfiguration()
+                                    LoggerConfiguration logConfiguration =
+                                        new LoggerConfiguration()
 #if DEBUG
                                 .MinimumLevel.Verbose()
 #else
-                         .MinimumLevel.Information()
+                                .MinimumLevel.Information()
 #endif
                                 .Enrich.With<EnvironmentEnricher>()
-                                .Enrich.FromLogContext()
-                                .Enrich.WithProperty("AppName", appMeta.AppName)
-                                .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-                                .WriteTo.LiterateConsole()
-                                .WriteTo.RollingFile(logFilePath);
+                                            .Enrich.FromLogContext()
+                                            .Enrich.WithProperty("AppName", appMeta.AppName)
+                                            .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
+                                            .WriteTo.LiterateConsole()
+                                            .WriteTo.RollingFile(logFilePath);
 
                         // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
                         try
-                        {
-                            c.Resolve<IMessageBus>().Publish(new ConfigureLoggerEvent(logConfiguration));
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
-                        }
+                                    {
+                                        c.Resolve<IMessageBus>().Publish(new ConfigureLoggerEvent(logConfiguration));
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
+                                    }
 
                         // support self-logging
                         SelfLog.Enable(s => Console.Error.WriteLine(s));
 
-                        return logConfiguration;
-                    })
-                .AsSelf()
-                .SingleInstance();
+                                    return logConfiguration;
+                                })
+                            .AsSelf()
+                            .SingleInstance();
 
             builder.Register(
                     c =>

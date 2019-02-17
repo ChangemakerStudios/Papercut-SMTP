@@ -1,9 +1,10 @@
-﻿using MimeKit;
-using System.IO;
-using System.Net.Http;
-
-namespace Papercut.Module.WebUI.Helpers
+﻿namespace Papercut.App.WebApi.Helpers
 {
+    using System.IO;
+    using System.Net.Http;
+
+    using MimeKit;
+
     public class MimePartResponseMessage : HttpResponseMessage
     {
         readonly string _tempFilePath;
@@ -12,20 +13,20 @@ namespace Papercut.Module.WebUI.Helpers
         {
             this._tempFilePath = Path.GetTempFileName();
 
-            RequestMessage = requestMessage;
+            this.RequestMessage = requestMessage;
 
             using (var tempFile = File.OpenWrite(this._tempFilePath))
             {
                 contentObject.DecodeTo(tempFile);
             }
-            Content = new StreamContent(File.OpenRead(this._tempFilePath));
+            this.Content = new StreamContent(File.OpenRead(this._tempFilePath));
         }
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
 
-            Content.Dispose();
+            this.Content.Dispose();
 
             try
             {

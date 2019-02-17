@@ -16,24 +16,25 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Controllers
+namespace Papercut.App.WebApi.Controllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Net.Mime;
     using System.Web.Http;
-    using Helpers;
-    using Message;
-    using MimeKit;
-    using Models;
-    using Message.Helpers;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
 
-    using Common.Extensions;
+    using MimeKit;
+
+    using Papercut.App.WebApi.Helpers;
+    using Papercut.App.WebApi.Models;
+    using Papercut.Common.Extensions;
+    using Papercut.Message;
+    using Papercut.Message.Helpers;
 
     public class MessagesController : ApiController
     {
@@ -58,7 +59,7 @@ namespace Papercut.Module.WebUI.Controllers
                 .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, this._messageLoader.LoadMailMessage(e))))
                 .ToList();
 
-            return Request.CreateResponse(HttpStatusCode.OK, new
+            return this.Request.CreateResponse(HttpStatusCode.OK, new
             {
                 TotalMessageCount = messageEntries.Count,
                 Messages = messages
@@ -81,7 +82,7 @@ namespace Papercut.Module.WebUI.Controllers
                     }
                 });
 
-            return Request.CreateResponse(HttpStatusCode.OK);
+            return this.Request.CreateResponse(HttpStatusCode.OK);
         }
 
         [HttpGet]
@@ -90,11 +91,11 @@ namespace Papercut.Module.WebUI.Controllers
             var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
             if (messageEntry == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return this.Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
             var dto = MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, this._messageLoader.LoadMailMessage(messageEntry)));
-            return Request.CreateResponse(HttpStatusCode.OK, dto);
+            return this.Request.CreateResponse(HttpStatusCode.OK, dto);
         }
 
         [HttpGet]
@@ -103,10 +104,10 @@ namespace Papercut.Module.WebUI.Controllers
             var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
             if (messageEntry == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return this.Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
-            var response = Request.CreateResponse(HttpStatusCode.OK);
+            var response = this.Request.CreateResponse(HttpStatusCode.OK);
             response.Content = new StreamContent(File.OpenRead(messageEntry.File));
             response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(DispositionTypeNames.Attachment)
             {
@@ -119,13 +120,13 @@ namespace Papercut.Module.WebUI.Controllers
         [HttpGet]
         public HttpResponseMessage DownloadSection(string messageId, int index)
         {
-            return DownloadSection(messageId, sections => (index >=0 && index < sections.Count ? sections[index] : null));
+            return this.DownloadSection(messageId, sections => (index >=0 && index < sections.Count ? sections[index] : null));
         }
 
         [HttpGet]
         public HttpResponseMessage DownloadSectionContent(string messageId, string contentId)
         {
-            return DownloadSection(messageId, sections => sections.FirstOrDefault(s => s.ContentId == contentId));
+            return this.DownloadSection(messageId, sections => sections.FirstOrDefault(s => s.ContentId == contentId));
         }
 
         HttpResponseMessage DownloadSection(string messageId, Func<List<MimePart>, MimePart> findSection)
@@ -133,7 +134,7 @@ namespace Papercut.Module.WebUI.Controllers
             var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
             if (messageEntry == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return this.Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
             var mimeMessage = new MimeMessageEntry(messageEntry, this._messageLoader.LoadMailMessage(messageEntry));
@@ -142,10 +143,10 @@ namespace Papercut.Module.WebUI.Controllers
             var mimePart = findSection(sections);
             if (mimePart == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return this.Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
-            var response = new MimePartResponseMessage(Request, mimePart.Content);
+            var response = new MimePartResponseMessage(this.Request, mimePart.Content);
             var filename = mimePart.FileName ?? mimePart.ContentId ?? Guid.NewGuid().ToString();
             response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(DispositionTypeNames.Attachment)
             {

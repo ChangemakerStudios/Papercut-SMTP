@@ -79,18 +79,18 @@ namespace Papercut.Services
 
         public async Task Handle(PapercutClientExitEvent @event)
         {
-            await this.StopSmtpServer();
+            await this.StopSmtpServer().ConfigureAwait(false);
         }
 
         private async Task StopSmtpServer()
         {
             this._observeStartServer?.Dispose();
-            await this._smtpServer.Stop();
+            await this._smtpServer.Stop().ConfigureAwait(false);
         }
 
         public async Task Handle(PapercutClientReadyEvent @event)
         {
-            if (this.SmtpServerEnabled) await this.ListenSmtpServer();
+            if (this.SmtpServerEnabled) await this.ListenSmtpServer().ConfigureAwait(false);
 
             this.PropertyChanged += (sender, args) =>
             {
@@ -113,7 +113,7 @@ namespace Papercut.Services
             if (!this.SmtpServerEnabled) return;
             if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
 
-            await this.ListenSmtpServer();
+            await this.ListenSmtpServer().ConfigureAwait(false);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -135,7 +135,7 @@ namespace Papercut.Services
                             Settings.Default.IP,
                             Settings.Default.Port);
 
-                        await this._messageBus.Publish(new SmtpServerBindFailedEvent());
+                        await this._messageBus.Publish(new SmtpServerBindFailedEvent()).ConfigureAwait(false); ;
                     },
                     async () =>
                     await this._messageBus.Publish(

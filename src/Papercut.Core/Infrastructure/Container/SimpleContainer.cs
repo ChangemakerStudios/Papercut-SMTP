@@ -16,31 +16,22 @@
 // limitations under the License. 
 
 
-namespace Papercut.Core.Infrastructure.Plugins
+namespace Papercut.Core.Infrastructure.Container
 {
-    using System;
-    using System.Reflection;
+    using Autofac;
+    using Autofac.Core;
 
-    using Papercut.Core.Annotations;
-
-    using Serilog;
-
-    public static class AssemblyHelper
+    public class SimpleContainer<TModule>
+        where TModule : IModule, new()
     {
-        public static Type[] GetExportedTypesSafe([NotNull] this Assembly assembly)
+        public IContainer Build()
         {
-            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            var builder = new ContainerBuilder();
 
-            try
-            {
-                return assembly.GetExportedTypes();
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "Failed to scan assembly {AssemblyName}", assembly?.FullName);
-            }
+            builder.RegisterModule<PapercutCoreModule>();
+            builder.RegisterModule<TModule>();
 
-            return new Type[0];
+            return builder.Build();
         }
     }
 }

@@ -16,19 +16,17 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI
+namespace Papercut.App.WebApi
 {
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
     using System.Web.Http.SelfHost;
 
     using Autofac;
 
-    using Common.Domain;
-
-    using Core.Domain.Settings;
-    using Core.Infrastructure.Lifecycle;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Domain.Settings;
+    using Papercut.Core.Infrastructure.Lifecycle;
 
     using Serilog;
 
@@ -53,14 +51,14 @@ namespace Papercut.Module.WebUI
         {
             this._logger.Debug("{@PapercutServiceReadyEvent}", @event);
 
-            await StartHttpServer();
+            await this.StartHttpServer();
         }
 
         public async Task Handle(PapercutClientReadyEvent @event)
         {
             this._logger.Debug("{@PapercutClientReadyEvent}", @event);
 
-            await StartHttpServer();
+            await this.StartHttpServer();
         }
 
         async Task StartHttpServer()

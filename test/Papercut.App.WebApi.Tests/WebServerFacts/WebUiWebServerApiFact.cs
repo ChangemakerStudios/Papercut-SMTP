@@ -16,12 +16,11 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.WebServerFacts
+namespace Papercut.App.WebApi.Tests.WebServerFacts
 {
-    using Base;
-
     using NUnit.Framework;
 
+    using Papercut.App.WebApi.Tests.Base;
 
     [TestFixture]
     public class WebUiWebServerApiFact : ApiTestBase
@@ -29,7 +28,7 @@ namespace Papercut.Module.WebUI.Test.WebServerFacts
         [Test]
         public void ShouldBootstrapHttpServerAndServeHealthCheck()
         {
-            var content = Get("/health").Content.ReadAsStringAsync().Result;
+            var content = this.Get("/health").Content.ReadAsStringAsync().Result;
 
             Assert.AreEqual("Papercut WebUI server started successfully.", content);
         }

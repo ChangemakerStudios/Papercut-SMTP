@@ -24,17 +24,12 @@ namespace Papercut.Network
     using Autofac.Core;
 
     using Papercut.Core.Domain.Network;
-    using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Network.Protocols;
 
     using Module = Autofac.Module;
 
-    public class PapercutNetworkModule : Module, IDiscoverableModule
+    public class PapercutNetworkModule : Module
     {
-        public IModule Module => this;
-
-        public Guid Id => new Guid("C6EDAACA-C2D7-4A0E-B1E8-EC0073845489");
-
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<PapercutProtocol>()

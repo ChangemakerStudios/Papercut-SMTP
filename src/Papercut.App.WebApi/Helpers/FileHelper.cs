@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Helpers
+namespace Papercut.App.WebApi.Helpers
 {
     using System.IO;
     using System.Linq;

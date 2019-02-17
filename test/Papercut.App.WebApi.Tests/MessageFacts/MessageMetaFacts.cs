@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.MessageFacts
+namespace Papercut.App.WebApi.Tests.MessageFacts
 {
     using System;
     using System.Collections.Generic;
@@ -25,15 +25,16 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
     using System.Net;
     using System.Net.Mime;
     using System.Text;
-    using System.Threading;
 
     using Autofac;
-    using Base;
-    using Message;
+
     using MimeKit;
-    using Models;
 
     using NUnit.Framework;
+
+    using Papercut.App.WebApi.Models;
+    using Papercut.App.WebApi.Tests.Base;
+    using Papercut.Message;
 
     using ContentType = MimeKit.ContentType;
 
@@ -43,30 +44,30 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
 
         public MessageMetaFacts()
         {
-            this._messageRepository = Scope.Resolve<MessageRepository>();
+            this._messageRepository = this._container.Resolve<MessageRepository>();
         }
 
         [Test, Order(1)]
         public void ShouldDeleteAllMessages()
         {
-            CreateMessage();
-            CreateMessage();
+            this.CreateMessage();
+            this.CreateMessage();
 
-            var response = Delete("/api/messages");
+            var response = this.Delete("/api/messages");
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
-            var allMessages = _messageRepository.LoadMessages();
+            var allMessages = this._messageRepository.LoadMessages();
             Assert.AreEqual(0, allMessages.Count);
         }
 
         [Test, Order(2)]
         public void ShouldDownloadRawMessage()
         {
-            var savePath = CreateMessage();
+            var savePath = this.CreateMessage();
             var messageId = Path.GetFileName(savePath);
 
-            var response = Get($"/api/messages/{messageId}/raw");
+            var response = this.Get($"/api/messages/{messageId}/raw");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             var disposition = response.Content.Headers.ContentDisposition;
@@ -116,7 +117,7 @@ namespace Papercut.Module.WebUI.Test.MessageFacts
         {
             public MessageListResponse()
             {
-                Messages = new List<MimeMessageEntry.RefDto>();
+                this.Messages = new List<MimeMessageEntry.RefDto>();
             }
 
             public int TotalMessageCount { get; set; }

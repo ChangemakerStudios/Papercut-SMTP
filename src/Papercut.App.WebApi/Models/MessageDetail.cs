@@ -1,4 +1,4 @@
-﻿namespace Papercut.Module.WebUI.Models
+﻿namespace Papercut.App.WebApi.Models
 {
     public class MessageDetail
     {

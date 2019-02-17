@@ -1,6 +1,6 @@
 ﻿
 
-namespace Papercut.Module.WebUI.Controllers
+namespace Papercut.App.WebApi.Controllers
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +11,8 @@ namespace Papercut.Module.WebUI.Controllers
     using System.Reflection;
     using System.Web.Http;
     using System.Web.Http.Controllers;
-    using WebApi.OutputCache.V2;
+
+    using global::WebApi.OutputCache.V2;
 
     public class StaticContentController: ApiController
     {
@@ -25,11 +26,11 @@ namespace Papercut.Module.WebUI.Controllers
         ServerTimeSpan = 86400, CacheKeyGenerator= typeof(PapercutResourceKeyGenerator))]
         public HttpResponseMessage Get()
         {
-            var resourceName = GetRequetedResourceName(Request.RequestUri);
+            var resourceName = GetRequetedResourceName(this.Request.RequestUri);
             var resourceContent = GetResourceStream(resourceName);
             if (resourceContent == null)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "The requested file does not exist.");
+                return this.Request.CreateErrorResponse(HttpStatusCode.NotFound, "The requested file does not exist.");
             }
 
             var response = new HttpResponseMessage

@@ -26,7 +26,7 @@ namespace Papercut.Core.Infrastructure.Container
             <TLimit, TActivatorData, TRegistrationStyle>(
             this IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> builder)
         {
-            return builder.InstancePerMatchingLifetimeScope(PapercutContainer.UIScopeTag);
+            return builder.InstancePerMatchingLifetimeScope(ContainerScope.UIScopeTag);
         }
     }
 }

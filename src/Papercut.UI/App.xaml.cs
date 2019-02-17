@@ -20,73 +20,100 @@ namespace Papercut
     using System;
     using System.Diagnostics;
     using System.Reflection;
+    using System.Threading.Tasks;
     using System.Windows;
 
     using Autofac;
 
     using Papercut.Common.Domain;
-    using Papercut.Core;
+    using Papercut.Core.Infrastructure.Async;
     using Papercut.Core.Infrastructure.Container;
     using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Core.Infrastructure.Logging;
 
     using Serilog;
+
+    using SmtpServer;
 
     public partial class App : Application
     {
         public const string GlobalName = "Papercut.App";
 
-        public static string ExecutablePath;
+        public static string ExecutablePath { get; }
 
         Lazy<ILifetimeScope> _lifetimeScope =
             new Lazy<ILifetimeScope>(
-                () => PapercutContainer.Instance.BeginLifetimeScope(PapercutContainer.UIScopeTag));
+                () => RootContainer.BeginLifetimeScope(ContainerScope.UIScopeTag));
 
         static App()
         {
+            BootstrapLogger.SetRootGlobal();
+
             ExecutablePath = Assembly.GetExecutingAssembly().Location;
+            RootContainer = new SimpleContainer<PapercutUIModule>().Build();
         }
+
+        public static IContainer RootContainer { get; }
 
         public ILifetimeScope Container => _lifetimeScope.Value;
 
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            var publishEvent = Container.Resolve<IMessageBus>();
+            var messageBus = this.Container.Resolve<IMessageBus>();
 
+            var successfulStartup = this.PapercutStartup(messageBus);
+
+            if (true)
+            {
+                base.OnStartup(e);
+
+                messageBus.Publish(new PapercutClientReadyEvent());
+            }
+        }
+
+        private async Task<bool> PapercutStartup(IMessageBus messageBus)
+        {
             try
             {
                 var appPreStartEvent = new PapercutClientPreStartEvent();
-                publishEvent.Publish(appPreStartEvent);
 
-                if (appPreStartEvent.CancelStart)
+                await messageBus.Publish(appPreStartEvent).ConfigureAwait(false);
+
+                if (!appPreStartEvent.CancelStart)
                 {
-                    // force shut down...
-                    publishEvent.Publish(new AppForceShutdownEvent());
-                    return;
+                    return true;
                 }
 
-                base.OnStartup(e);
-
-                // startup app
-                publishEvent.Publish(new PapercutClientReadyEvent());
+                // force shut down...
+                await messageBus.Publish(new AppForceShutdownEvent()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Container.Resolve<ILogger>().Fatal(ex, "Fatal Error Starting Papercut");
-                throw;
+                Log.Logger.Fatal(ex, "Fatal Error Starting Papercut");
             }
+
+            return false;
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             Debug.WriteLine("App.OnExit()");
 
-            using (Container)
+            try
             {
-                Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent());
+                Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent()).RunAsync();
+                Container.Dispose();
+
+                _lifetimeScope = null;
+
+                RootContainer.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // no bother
             }
 
-            _lifetimeScope = null;
             base.OnExit(e);
         }
     }

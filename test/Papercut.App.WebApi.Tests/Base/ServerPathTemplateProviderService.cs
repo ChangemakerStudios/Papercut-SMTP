@@ -16,14 +16,13 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Test.Base
+namespace Papercut.App.WebApi.Tests.Base
 {
     using System.Collections.ObjectModel;
     using System.IO;
 
-    using Common.Helper;
-
-    using Core.Domain.Paths;
+    using Papercut.Common.Helper;
+    using Papercut.Core.Domain.Paths;
 
     public class ServerPathTemplateProviderService : IPathTemplatesProvider
     {
@@ -37,7 +36,7 @@ namespace Papercut.Module.WebUI.Test.Base
                 Directory.CreateDirectory(messageStoragePath);
             }
 
-            PathTemplates = new ObservableCollection<string>(new[] {messageStoragePath});
+            this.PathTemplates = new ObservableCollection<string>(new[] {messageStoragePath});
         }
 
         public ObservableCollection<string> PathTemplates { get; }

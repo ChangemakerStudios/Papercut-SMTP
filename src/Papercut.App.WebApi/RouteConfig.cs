@@ -1,8 +1,7 @@
-using System.Web.Http;
-
-namespace Papercut.Module.WebUI
+namespace Papercut.App.WebApi
 {
     using System.Net.Http;
+    using System.Web.Http;
     using System.Web.Http.Routing;
 
     using Autofac;

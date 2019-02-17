@@ -45,7 +45,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             {
                 try
                 {
-                    await @event.Handle(eventObject);
+                    await @event.Handle(eventObject).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

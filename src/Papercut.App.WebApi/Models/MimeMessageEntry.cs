@@ -16,20 +16,21 @@
 // limitations under the License.
 
 
-namespace Papercut.Module.WebUI.Models
+namespace Papercut.App.WebApi.Models
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    using Core.Domain.Message;
     using MimeKit;
+
+    using Papercut.Core.Domain.Message;
 
     public class MimeMessageEntry : MessageEntry
     {
-        public string Subject => MailMessage?.Subject;
+        public string Subject => this.MailMessage?.Subject;
 
-        public DateTime? Created => _created;
+        public DateTime? Created => this._created;
 
         public string Id => this.Name;
 
@@ -37,7 +38,7 @@ namespace Papercut.Module.WebUI.Models
 
         public MimeMessageEntry(MessageEntry entry, MimeMessage message) : base(entry.File)
         {
-            MailMessage = message;
+            this.MailMessage = message;
         }
 
         public class RefDto

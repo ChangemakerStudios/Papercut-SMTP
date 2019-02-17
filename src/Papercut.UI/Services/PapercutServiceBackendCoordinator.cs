@@ -84,7 +84,9 @@ namespace Papercut.Services
 
         public async Task Handle(PapercutClientPreStartEvent @event)
         {
-            await this.DoProcessExchange();
+            await Task.CompletedTask;
+
+            await AttemptExchange();
         }
 
         public async Task Handle(PapercutServiceExitEvent @event)
@@ -105,7 +107,9 @@ namespace Papercut.Services
 
         public async Task Handle(PapercutServiceReadyEvent @event)
         {
-            await this.DoProcessExchange();
+            await Task.CompletedTask;
+
+            await AttemptExchange();
         }
 
         public async Task Handle(RulesUpdatedEvent @event)
@@ -149,28 +153,28 @@ namespace Papercut.Services
             }
         }
 
-        async Task DoProcessExchange()
+        private async Task AttemptExchange()
         {
             try
             {
                 var sendEvent = new AppProcessExchangeEvent();
 
                 // attempt to connect to the backend server...
-                using (PapercutClient client = GetClient())
+                using (PapercutClient client = this.GetClient())
                 {
                     var receivedEvent = await client.ExchangeEventServer(sendEvent);
-                    
+
                     if (receivedEvent == null) return;
 
-                    IsBackendServiceOnline = true;
+                    this.IsBackendServiceOnline = true;
 
                     // backend server is online...
-                    _logger.Information("Papercut Backend Service Running. Disabling SMTP in App.");
-                    _smtpServerCoordinator.SmtpServerEnabled = false;
+                    this._logger.Information("Papercut Backend Service Running. Disabling SMTP in App.");
+                    this._smtpServerCoordinator.SmtpServerEnabled = false;
 
                     if (!string.IsNullOrWhiteSpace(receivedEvent.MessageWritePath))
                     {
-                        _logger.Debug(
+                        this._logger.Debug(
                             "Background Process Returned {@Event} -- Publishing",
                             receivedEvent);
 
@@ -180,7 +184,7 @@ namespace Papercut.Services
             }
             catch (Exception ex)
             {
-                _logger.Warning(ex, BackendServiceFailureMessage);
+                this._logger.Warning(ex, BackendServiceFailureMessage);
             }
         }
 
