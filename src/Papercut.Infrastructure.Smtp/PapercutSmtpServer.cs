@@ -96,7 +96,7 @@ namespace Papercut.Infrastructure.Smtp
             try
             {
                 this._tokenSource?.Cancel();
-                await this._smtpServerTask;
+                await this._smtpServerTask.ConfigureAwait(false);
                 this._tokenSource?.Dispose();
             }
             catch (Exception ex) when (ex is AggregateException || ex is TaskCanceledException || ex is OperationCanceledException)

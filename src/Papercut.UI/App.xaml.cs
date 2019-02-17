@@ -20,6 +20,7 @@ namespace Papercut
     using System;
     using System.Diagnostics;
     using System.Reflection;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
 
@@ -62,59 +63,81 @@ namespace Papercut
         {
             var messageBus = this.Container.Resolve<IMessageBus>();
 
-            var successfulStartup = this.PapercutStartup(messageBus);
-
-            if (true)
-            {
-                base.OnStartup(e);
-
-                messageBus.Publish(new PapercutClientReadyEvent());
-            }
-        }
-
-        private async Task<bool> PapercutStartup(IMessageBus messageBus)
-        {
-            try
-            {
-                var appPreStartEvent = new PapercutClientPreStartEvent();
-
-                await messageBus.Publish(appPreStartEvent).ConfigureAwait(false);
-
-                if (!appPreStartEvent.CancelStart)
+            Task.Run(
+                async () =>
                 {
-                    return true;
-                }
 
-                // force shut down...
-                await messageBus.Publish(new AppForceShutdownEvent()).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Fatal(ex, "Fatal Error Starting Papercut");
-            }
+                    try
+                    {
+                        var appPreStartEvent = new PapercutClientPreStartEvent();
 
-            return false;
+                        await messageBus.Publish(appPreStartEvent);
+
+                        if (appPreStartEvent.CancelStart)
+                        {
+                            // force shut down...
+                            await messageBus.Publish(new AppForceShutdownEvent());
+
+                            return false;
+                        }
+
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Fatal(ex, "Fatal Error Starting Papercut");
+                    }
+
+                    return false;
+                }).ContinueWith(
+                s =>
+                {
+                    if (s.IsCompleted && s.Result)
+                    {
+                        base.OnStartup(e);
+
+                        messageBus.Publish(new PapercutClientReadyEvent());
+                    }
+                    else
+                    {
+                        Shutdown();
+                    }
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.NotOnFaulted,
+                TaskScheduler.FromCurrentSynchronizationContext());
+
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             Debug.WriteLine("App.OnExit()");
 
-            try
-            {
-                Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent()).RunAsync();
-                Container.Dispose();
+            Task.Run(
+                async () =>
+                {
+                    try
+                    {
+                        await this.Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent());
 
-                _lifetimeScope = null;
+                        Container.Dispose();
 
-                RootContainer.Dispose();
-            }
-            catch (ObjectDisposedException)
-            {
-                // no bother
-            }
+                        _lifetimeScope = null;
 
-            base.OnExit(e);
+                        RootContainer.Dispose();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // no bother
+                    }
+                }).ContinueWith(
+                s =>
+                {
+                    base.OnExit(e);
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.NotOnFaulted,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
     }
 }
