@@ -27,6 +27,7 @@ namespace Papercut.Services
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Core.Infrastructure.Server;
     using Papercut.Events;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Network;

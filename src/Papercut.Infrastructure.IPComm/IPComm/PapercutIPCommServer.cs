@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2019 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,27 +13,24 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License. 
 
-namespace Papercut.Network
+namespace Papercut.Network.Smtp
 {
     using System;
     using System.Net;
     using System.Net.Sockets;
     using System.Threading.Tasks;
 
-    using Autofac.Features.Indexed;
-
-    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Network;
     using Papercut.Network.Protocols;
 
     using Serilog;
 
-    public class Server : IServer
+    public class PapercutIPCommServer : IServer
     {
-        readonly ServerProtocolType _serverProtocolType;
+        private readonly Func<IProtocol> _protocolFactory;
 
         IPAddress _address;
 
@@ -41,28 +38,19 @@ namespace Papercut.Network
 
         Socket _listener;
 
-        int _port;
-
-        private string _listenIpAddress;
-
-        public Server(
-            ServerProtocolType serverProtocolType,
-            IIndex<ServerProtocolType, Func<IProtocol>> protocolFactory,
+        public PapercutIPCommServer(
+            Func<PapercutIPCommProtocol> protocolFactory,
             ConnectionManager connectionManager,
             ILogger logger)
         {
             this.ConnectionManager = connectionManager;
-
-            this._serverProtocolType = serverProtocolType;
-            this.Logger = logger.ForContext("ServerProtocolType", this._serverProtocolType);
-            this.ProtocolFactory = protocolFactory[this._serverProtocolType];
+            this.Logger = logger;
+            this._protocolFactory = protocolFactory;
         }
 
         public ConnectionManager ConnectionManager { get; set; }
 
         public ILogger Logger { get; set; }
-
-        public Func<IProtocol> ProtocolFactory { get; set; }
 
         public bool IsActive
         {
@@ -82,20 +70,18 @@ namespace Papercut.Network
             }
         }
 
-
         public string ListenIpAddress
         {
-            get => this._listenIpAddress;
-
+            get => this._address.ToString();
             set
             {
-                if (value.IsNullOrWhiteSpace() || value.Equals("Any", StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(value) || string.Equals(value, "any", StringComparison.OrdinalIgnoreCase))
                 {
-                    this._listenIpAddress = IPAddress.Any.ToString();
+                    this._address = IPAddress.Any;
                 }
                 else
                 {
-                    this._listenIpAddress = IPAddress.Parse(value).ToString();
+                    this._address = IPAddress.Parse(value);
                 }
             }
         }
@@ -108,7 +94,7 @@ namespace Papercut.Network
 
             if (!this.IsActive) return;
 
-            this.Logger.Information("Stopping Server {ProtocolType}", this._serverProtocolType);
+            this.Logger.Information("Stopping IPComm Server");
 
             try
             {
@@ -123,7 +109,7 @@ namespace Papercut.Network
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, "Exception Stopping Server");
+                this.Logger.Error(ex, "Exception Stopping IPComm Server");
             }
         }
 
@@ -133,6 +119,35 @@ namespace Papercut.Network
             GC.SuppressFinalize(this);
         }
 
+        public async Task Start()
+        {
+            await Task.CompletedTask;
+
+            if (this.IsActive)
+            {
+                return;
+            }
+
+            try
+            {
+                // Set it as starting
+                this.IsActive = true;
+
+                // Create and start new listener socket
+                this.CreateListener();
+            }
+            catch
+            {
+                this.IsActive = false;
+                throw;
+            }
+        }
+
+        IProtocol GetProtocolInstance()
+        {
+            return this._protocolFactory();
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -140,9 +155,7 @@ namespace Papercut.Network
                 try
                 {
                     this.Stop().Wait();
-
                     this.CleanupListener();
-
                     if (this.ConnectionManager != null)
                     {
                         this.ConnectionManager.Dispose();
@@ -151,11 +164,10 @@ namespace Papercut.Network
                 }
                 catch (Exception ex)
                 {
-                    this.Logger.Warning(ex, "Exception Disposing Server Instance");
+                    this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
                 }
             }
         }
-
 
         protected void CleanupListener()
         {
@@ -176,25 +188,14 @@ namespace Papercut.Network
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            this._listener.Bind(new IPEndPoint(this._address, this._port));
+            this._listener.Bind(new IPEndPoint(this._address, this.ListenPort));
             this._listener.Listen(20);
             this._listener.BeginAccept(this.OnClientAccept, null);
 
             this.Logger.Information(
-                "{ProtocolType} Server Ready: Listening for New Connections at {Address}:{ClientPort}",
-                this._serverProtocolType,
+                "IPComm Server Ready: Listening for New Connections at {Address}:{ClientPort}",
                 this._address,
-                this._port);
-        }
-
-        protected void SetEndpoint(string ip, int port)
-        {
-            // Load IP/ClientPort settings
-            if (string.IsNullOrWhiteSpace(ip) ||
-                string.Equals(ip, "any", StringComparison.OrdinalIgnoreCase)) this._address = IPAddress.Any;
-            else this._address = IPAddress.Parse(ip);
-
-            this._port = port;
+                this.ListenPort);
         }
 
         void OnClientAccept([NotNull] IAsyncResult asyncResult)
@@ -204,7 +205,7 @@ namespace Papercut.Network
             try
             {
                 Socket clientSocket = this._listener.EndAccept(asyncResult);
-                this.ConnectionManager.CreateConnection(clientSocket, this.ProtocolFactory());
+                this.ConnectionManager.CreateConnection(clientSocket, this.GetProtocolInstance());
             }
             catch (ObjectDisposedException)
             {
@@ -217,7 +218,7 @@ namespace Papercut.Network
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, "Exception in Server.OnClientAccept");
+                this.Logger.Error(ex, "Exception in IPComm Server Client Accept");
             }
             finally
             {
@@ -232,27 +233,6 @@ namespace Papercut.Network
                         // This normally happens when trying to rebind to a port that is taken
                     }
                 }
-            }
-        }
-
-        public async Task Start()
-        {
-            await Task.CompletedTask;
-
-            this.SetEndpoint(this.ListenIpAddress, this.ListenPort);
-
-            try
-            {
-                // Set it as starting
-                this.IsActive = true;
-
-                // Create and start new listener socket
-                this.CreateListener();
-            }
-            catch
-            {
-                this.IsActive = false;
-                throw;
             }
         }
     }

@@ -28,9 +28,11 @@ namespace Papercut.Service.Services
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Core.Infrastructure.Server;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Network;
-    using Papercut.Network.Protocols;
+    using Papercut.Network.IPComm;
+    using Papercut.Network.Smtp;
     using Papercut.Service.Helpers;
 
     using Serilog;
@@ -43,14 +45,14 @@ namespace Papercut.Service.Services
 
         readonly ILogger _logger;
 
-        readonly IServer _papercutServer;
+        readonly PapercutIPCommServer _ipCommServer;
 
         readonly IMessageBus _messageBus;
 
         readonly PapercutServiceSettings _serviceSettings;
 
         public PapercutServerService(
-            Func<ServerProtocolType, IServer> serverFactory,
+            PapercutIPCommServer ipCommServer,
             PapercutSmtpServer smtpServer,
             PapercutServiceSettings serviceSettings,
             IAppMeta applicationMetaData,
@@ -62,7 +64,7 @@ namespace Papercut.Service.Services
             _applicationMetaData = applicationMetaData;
             _logger = logger;
             _messageBus = messageBus;
-            _papercutServer = serverFactory(ServerProtocolType.PCComm);
+            this._ipCommServer = ipCommServer;
         }
 
         public async Task Handle(SmtpServerBindEvent @event)
@@ -97,9 +99,9 @@ namespace Papercut.Service.Services
             this._messageBus.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData }).Wait();
 
-            _papercutServer.ObserveStartServer(
-                PapercutClient.Localhost,
-                PapercutClient.ServerPort,
+            this._ipCommServer.ObserveStartServer(
+                    IPCommConstants.Localhost,
+                    IPCommConstants.ServiceListeningPort,
                 TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(
@@ -110,9 +112,9 @@ namespace Papercut.Service.Services
                     (e) =>
                     _logger.Warning(
                         e,
-                        "Unable to Create Papercut Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                        PapercutClient.Localhost,
-                        PapercutClient.ServerPort),
+                        "Unable to Create Papercut IPComm Server Listener on {IP}:{Port}. After 5 Retries. Failing",
+                        IPCommConstants.Localhost,
+                        IPCommConstants.ServiceListeningPort),
                     // on complete
                     () => { });
 
@@ -136,13 +138,13 @@ namespace Papercut.Service.Services
 
         public void Stop()
         {
-            _papercutServer.Stop().Wait();
+            this._ipCommServer.Stop().Wait();
             _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData }).Wait();
         }
 
         public void Dispose()
         {
-            this._papercutServer?.Dispose();
+            this._ipCommServer?.Dispose();
         }
     }
 }

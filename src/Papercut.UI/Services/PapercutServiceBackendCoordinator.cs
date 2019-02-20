@@ -31,6 +31,7 @@ namespace Papercut.Services
     using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
     using Papercut.Network;
+    using Papercut.Network.IPComm;
     using Papercut.Properties;
 
     using Serilog;
@@ -47,7 +48,7 @@ namespace Papercut.Services
 
         readonly ILogger _logger;
 
-        readonly Func<PapercutClient> _papercutClientFactory;
+        readonly Func<PapercutIPCommClient> _papercutClientFactory;
 
         readonly IMessageBus _messageBus;
 
@@ -58,7 +59,7 @@ namespace Papercut.Services
         public PapercutServiceBackendCoordinator(
             ILogger logger,
             IMessageBus messageBus,
-            Func<PapercutClient> papercutClientFactory,
+            Func<PapercutIPCommClient> papercutClientFactory,
             SmtpServerCoordinator smtpServerCoordinator)
         {
             _logger = logger;
@@ -125,6 +126,13 @@ namespace Papercut.Services
         {
             await Task.CompletedTask;
 
+            await PublishSmtpUpdated(@event);
+        }
+
+        public async Task PublishSmtpUpdated(SettingsUpdatedEvent @event)
+        {
+            await Task.CompletedTask;
+
             if (!IsBackendServiceOnline) return;
 
             // check if the setting changed
@@ -132,14 +140,14 @@ namespace Papercut.Services
 
             try
             {
-                using (PapercutClient client = GetClient())
+                using (var messenger = GetClient())
                 {
                     // update the backend service with the new ip/port settings...
                     var smtpServerBindEvent = new SmtpServerBindEvent(
                         Settings.Default.IP,
                         Settings.Default.Port);
 
-                    bool successfulPublish = await client.PublishEventServer(smtpServerBindEvent);
+                    bool successfulPublish = messenger.PublishEventServer(smtpServerBindEvent);
 
                     _logger.Information(
                         successfulPublish
@@ -155,14 +163,16 @@ namespace Papercut.Services
 
         private async Task AttemptExchange()
         {
+            await Task.CompletedTask;
+
             try
             {
                 var sendEvent = new AppProcessExchangeEvent();
 
                 // attempt to connect to the backend server...
-                using (PapercutClient client = this.GetClient())
+                using (var ipCommClient = this.GetClient())
                 {
-                    var receivedEvent = await client.ExchangeEventServer(sendEvent);
+                    var receivedEvent = ipCommClient.ExchangeEventServer(sendEvent);
 
                     if (receivedEvent == null) return;
 
@@ -192,9 +202,9 @@ namespace Papercut.Services
         {
             try
             {
-                using (PapercutClient client = GetClient())
+                using (var ipCommClient = GetClient())
                 {
-                    bool successfulPublish = await client.PublishEventServer(@event);
+                    bool successfulPublish = ipCommClient.PublishEventServer(@event);
 
                     _logger.Information(
                         successfulPublish
@@ -208,11 +218,11 @@ namespace Papercut.Services
             }
         }
 
-        PapercutClient GetClient()
+        PapercutIPCommClient GetClient()
         {
-            PapercutClient client = _papercutClientFactory();
-            client.Port = PapercutClient.ServerPort;
-            return client;
+            PapercutIPCommClient messenger = _papercutClientFactory();
+            messenger.Port = IPCommConstants.ServiceListeningPort;
+            return messenger;
         }
     }
 }

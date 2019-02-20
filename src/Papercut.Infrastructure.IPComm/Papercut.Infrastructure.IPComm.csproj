@@ -11,6 +11,12 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>    
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Smtp\**" />
+    <EmbeddedResource Remove="Smtp\**" />
+    <None Remove="Smtp\**" />
+  </ItemGroup>
   
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -26,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AsyncNet.Tcp" Version="1.1.1" />
     <PackageReference Include="Autofac">
       <Version>4.9.0</Version>
     </PackageReference>

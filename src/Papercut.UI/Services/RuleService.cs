@@ -109,9 +109,9 @@ namespace Papercut.Services
             }
         }
 
-        async Task PublishUpdateEventAsync()
+        Task PublishUpdateEventAsync()
         {
-            await this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
+            return this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
         }
 
         void RuleCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -121,7 +121,7 @@ namespace Papercut.Services
                 if (args.NewItems != null)
                     HookPropertyChangedForRules(args.NewItems.OfType<IRule>());
 
-                this.PublishUpdateEventAsync().Wait();
+                this.PublishUpdateEventAsync();
             }
             catch (Exception ex)
             {
@@ -133,7 +133,7 @@ namespace Papercut.Services
         {
             foreach (IRule m in rules)
             {
-                m.PropertyChanged += (o, eventArgs) => this.PublishUpdateEventAsync().Wait();
+                m.PropertyChanged += (o, eventArgs) => this.PublishUpdateEventAsync();
             }
         }
     }

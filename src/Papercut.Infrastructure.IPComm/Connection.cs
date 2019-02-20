@@ -25,14 +25,14 @@ namespace Papercut.Network
 
     using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Network;
+    using Papercut.Network.Protocols;
 
     using Serilog;
 
     /// <summary>
     ///     A connection.
     /// </summary>
-    public class Connection : IConnection
+    public class Connection
     {
         const int BufferSize = 64;
 
@@ -48,7 +48,7 @@ namespace Papercut.Network
             Protocol = protocol;
             Logger = logger;
 
-            Logger = Logger.ForContext("ConnectionId", id);
+            Logger.ForContext("ConnectionId", id);
 
             Connected = true;
             LastActivity = DateTime.Now;
@@ -132,7 +132,7 @@ namespace Papercut.Network
 
                 var incoming = new byte[sizeReceived];
                 Array.Copy(_receiveBuffer, incoming, sizeReceived);
-                Protocol.ProcessIncomingBuffer(incoming, this.Encoding);
+                Protocol.ProcessIncomingBuffer(incoming, Encoding);
 
                 // continue receiving...
                 return true;

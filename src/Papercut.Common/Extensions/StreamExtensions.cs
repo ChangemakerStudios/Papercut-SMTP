@@ -28,7 +28,7 @@ namespace Papercut.Common.Extensions
 
     public static class StreamExtensions
     {
-        public static async Task<string> ReadString(
+        public static string ReadString(
             this Stream stream,
             int bufferSize = 0xFF0,
             Encoding encoding = null)
@@ -39,54 +39,54 @@ namespace Papercut.Common.Extensions
 
             encoding = encoding ?? Encoding.UTF8;
 
-            int count = await stream.ReadAsync(serverbuff, 0, bufferSize);
+            int count = stream.Read(serverbuff, 0, bufferSize);
 
             return count == 0 ? string.Empty : encoding.GetString(serverbuff, 0, count);
         }
 
-        public static async Task WriteFormat(this Stream stream, string format, params object[] args)
+        public static void WriteFormat(this Stream stream, string format, params object[] args)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            await stream.WriteStr(string.Format(format, args));
+            stream.WriteStr(string.Format(format, args));
         }
 
-        public static async Task WriteLine(this Stream stream, string str, Encoding encoding = null)
-        {
-            if (stream == null) throw new ArgumentNullException(nameof(stream));
-
-            encoding = encoding ?? Encoding.UTF8;
-
-            await stream.WriteBytes(encoding.GetBytes($"{str}\r\n"));
-        }
-
-        public static async Task WriteStr(this Stream stream, string str, Encoding encoding = null)
+        public static void WriteLine(this Stream stream, string str, Encoding encoding = null)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             encoding = encoding ?? Encoding.UTF8;
 
-            await stream.WriteBytes(encoding.GetBytes(str));
+            stream.WriteBytes(encoding.GetBytes($"{str}\r\n"));
         }
 
-        public static async Task WriteBytes(this Stream stream, byte[] data)
+        public static void WriteStr(this Stream stream, string str, Encoding encoding = null)
         {
-            await stream.WriteAsync(data, 0, data.Length);
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
+
+            encoding = encoding ?? Encoding.UTF8;
+
+            stream.WriteBytes(encoding.GetBytes(str));
         }
 
-        public static async Task<Stream> CopyBufferedTo(
+        public static void WriteBytes(this Stream stream, byte[] data)
+        {
+            stream.Write(data, 0, data.Length);
+        }
+
+        public static Stream CopyBufferedTo(
             this Stream source,
             Stream destination,
             int bufferLength = 0xFFF)
         {
             var buffer = new byte[bufferLength];
-            int bytesRead = await source.ReadAsync(buffer, 0, bufferLength);
+            int bytesRead = source.Read(buffer, 0, bufferLength);
 
             // write the required bytes
             while (bytesRead > 0)
             {
-                await destination.WriteAsync(buffer, 0, bytesRead);
-                bytesRead = await source.ReadAsync(buffer, 0, bufferLength);
+                destination.Write(buffer, 0, bytesRead);
+                bytesRead = source.Read(buffer, 0, bufferLength);
             }
 
             return source;

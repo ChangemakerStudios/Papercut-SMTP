@@ -19,7 +19,6 @@ namespace Papercut.Network.Protocols
 {
     using System;
     using System.IO;
-    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
@@ -27,77 +26,54 @@ namespace Papercut.Network.Protocols
     using Papercut.Core.Infrastructure.Json;
     using Papercut.Core.Infrastructure.MessageBus;
     using Papercut.Network.Helpers;
+    using Papercut.Network.IPComm;
 
     using Serilog;
-    using Serilog.Context;
 
-    public enum ProtocolCommandType
-    {
-        NoOp = 0,
-
-        Publish = 1,
-
-        Exchange = 2
-    }
-
-    public class PapercutProtocolRequest
-    {
-        public ProtocolCommandType CommandType { get; set; }
-
-        public Type Type { get; set; }
-
-        public int ByteSize { get; set; }
-    }
-
-    public class PapercutProtocol : StringCommandProtocol
+    public class PapercutIPCommProtocol : StringCommandProtocol
     {
         readonly IMessageBus _messageBus;
 
-        public PapercutProtocol(ILogger logger, IMessageBus messageBus)
+        public PapercutIPCommProtocol(ILogger logger, IMessageBus messageBus)
             : base(logger)
         {
             this._messageBus = messageBus;
         }
 
-        public IConnection Connection { get; protected set; }
+        public Connection Connection { get; protected set; }
 
-        public override async Task Begin(IConnection connection)
+        public override void Begin(Connection connection)
         {
             Connection = connection;
-
-            using (LogContext.PushProperty("ConnectionId", Connection.Id))
-            {
-                await Connection.SendLine("PAPERCUT");
-            }
+            this.Logger.ForContext("ConnectionId", Connection.Id);
+            Connection.SendLine("PAPERCUT");
         }
 
-        protected override async Task ProcessRequest(string incomingRequest)
+        protected override void ProcessRequest(string incomingRequest)
         {
             try
             {
-                var request = incomingRequest.FromJson<PapercutProtocolRequest>();
+                var request = incomingRequest.FromJson<PapercutIPCommRequest>();
 
                 this.Logger.Verbose("Incoming Request Received {@Request}", request);
 
-                await Connection.Send("ACK");
+                Connection.Send("ACK").Wait();
 
-                if (request.CommandType.IsAny(ProtocolCommandType.Publish, ProtocolCommandType.Exchange))
+                if (request.CommandType.IsAny(PapercutIPCommCommandType.Publish, PapercutIPCommCommandType.Exchange))
                 {
                     // read the rest of the object...
-                    var @event = await Connection.Client.ReadObj(request.Type, request.ByteSize);
+                    var remoteEvent = Connection.Client.ReadObj(request.Type, request.ByteSize);
 
-                    this.Logger.Information("Publishing Event Received {@Event} from Remote", @event);
+                    this.Logger.Information("Publishing Event Received {@Event} from Remote", remoteEvent);
 
-                    await this._messageBus.PublishObject(@event, request.Type);
+                    this._messageBus.PublishObject(remoteEvent, request.Type).Wait();
 
-                    if (request.CommandType == ProtocolCommandType.Exchange)
+                    if (request.CommandType == PapercutIPCommCommandType.Exchange)
                     {
                         // send response back...
-                        this.Logger.Information("Exchanging Event {@Event} -- Pushing to Remote", @event);
-
-                        await Connection.Send("REPLY");
-
-                        await Connection.SendLine(@event.ToJson());
+                        this.Logger.Information("Exchanging Event {@Event} -- Pushing to Remote", remoteEvent);
+                        Connection.Send("REPLY").Wait();
+                        Connection.SendLine(remoteEvent.ToJson()).Wait();
                     }
                 }
             }

@@ -104,7 +104,7 @@ namespace Papercut
                     }
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.NotOnFaulted,
+                TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously,
                 TaskScheduler.FromCurrentSynchronizationContext());
 
         }
@@ -136,7 +136,7 @@ namespace Papercut
                     base.OnExit(e);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.NotOnFaulted,
+                TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously,
                 TaskScheduler.FromCurrentSynchronizationContext());
         }
     }

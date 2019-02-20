@@ -20,7 +20,6 @@ namespace Papercut.Network.Protocols
 {
     using System;
     using System.Text;
-    using System.Threading.Tasks;
 
     using Papercut.Core.Domain.Network;
 
@@ -37,9 +36,9 @@ namespace Papercut.Network.Protocols
 
         protected ILogger Logger { get; set; }
 
-        public abstract Task Begin(IConnection connection);
+        public abstract void Begin(Connection connection);
 
-        public virtual async Task ProcessIncomingBuffer(byte[] bufferedData, Encoding encoding)
+        public virtual void ProcessIncomingBuffer(byte[] bufferedData, Encoding encoding)
         {
             // Get the string data and append to buffer
             string data = encoding.GetString(bufferedData, 0, bufferedData.Length);
@@ -60,12 +59,12 @@ namespace Papercut.Network.Protocols
 
                 this.Logger.Debug("Received Line {Line}", line);
 
-                await ProcessRequest(line);
+                ProcessRequest(line);
 
                 line = _stringBuffer.ToString();
             }
         }
 
-        protected abstract Task ProcessRequest(string request);
+        protected abstract void ProcessRequest(string request);
     }
 }

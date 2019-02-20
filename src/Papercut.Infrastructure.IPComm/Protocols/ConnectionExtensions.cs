@@ -27,7 +27,7 @@ namespace Papercut.Network.Protocols
 
     public static class ConnectionExtensions
     {
-        public static Task SendLine(this IConnection connection, string message)
+        public static Task SendLine(this Connection connection, string message)
         {
             connection.Logger.Debug("Sending Line {Message}", message);
 
@@ -35,7 +35,7 @@ namespace Papercut.Network.Protocols
         }
 
         public static Task SendLine(
-            this IConnection connection,
+            this Connection connection,
             string message,
             params object[] args)
         {
@@ -43,7 +43,7 @@ namespace Papercut.Network.Protocols
         }
 
         public static Task Send(
-            this IConnection connection,
+            this Connection connection,
             string message,
             params object[] args)
         {

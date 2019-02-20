@@ -594,6 +594,10 @@
       <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
       <Name>Papercut.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj">
+      <Project>{da92047e-b764-41b4-b2d9-1c66c5449fa9}</Project>
+      <Name>Papercut.Infrastructure.IPComm</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Papercut.Infrastructure.Smtp\Papercut.Infrastructure.Smtp.csproj">
       <Project>{873ec485-8e94-4877-8ea7-a7dfe7612e0a}</Project>
       <Name>Papercut.Infrastructure.Smtp</Name>
@@ -601,10 +605,6 @@
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
       <Project>{cb1f4128-be3e-42bd-ae04-fcbbe5692e14}</Project>
       <Name>Papercut.Message</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj">
-      <Project>{c87ab840-625a-4661-aa36-369addc6cf7f}</Project>
-      <Name>Papercut.Network</Name>
     </ProjectReference>
     <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj">
       <Project>{5ec90c45-979d-43a5-ba1c-a286dbf4beca}</Project>

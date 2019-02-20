@@ -28,6 +28,7 @@ namespace Papercut.Network
     using System.Threading;
 
     using Papercut.Core.Domain.Network;
+    using Papercut.Network.Protocols;
 
     using Serilog;
 
@@ -152,9 +153,11 @@ namespace Papercut.Network
         public void CloseAll()
         {
             // Close all open connections
-            foreach (Connection connection in _connections.Values.Where(connection => connection != null))
+            foreach (Connection connection in
+                _connections.Values.Where(connection => connection != null))
             {
-                _connections.TryRemove(connection.Id, out _);
+                Connection noneed;
+                _connections.TryRemove(connection.Id, out noneed);
                 connection.Close(false);
             }
         }
@@ -164,7 +167,8 @@ namespace Papercut.Network
             var connection = sender as Connection;
             if (connection == null) return;
 
-            _connections.TryRemove(connection.Id, out _);
+            Connection noneed;
+            _connections.TryRemove(connection.Id, out noneed);
         }
     }
 }

@@ -24,8 +24,10 @@ namespace Papercut.Services
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Network;
     using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Core.Infrastructure.Server;
     using Papercut.Network;
-    using Papercut.Network.Protocols;
+    using Papercut.Network.IPComm;
+    using Papercut.Network.Smtp;
 
     using Serilog;
 
@@ -34,37 +36,37 @@ namespace Papercut.Services
     {
         readonly ILogger _logger;
 
-        readonly IServer _papercutServer;
+        readonly PapercutIPCommServer _papercutIPCommServer;
 
         public PapercutClientServerCoordinator(
-            Func<ServerProtocolType, IServer> serverFactory,
+            PapercutIPCommServer ipCommServer,
             ILogger logger)
         {
             this._logger = logger;
-            this._papercutServer = serverFactory(ServerProtocolType.PCComm);
+            this._papercutIPCommServer = ipCommServer;
         }
 
         public async Task Handle(PapercutClientExitEvent @event)
         {
-            await this._papercutServer.Stop();
+            await this._papercutIPCommServer.Stop();
         }
 
         public async Task Handle(PapercutClientReadyEvent @event)
         {
             await Task.CompletedTask;
 
-            this._papercutServer.ObserveStartServer(
-                PapercutClient.Localhost,
-                PapercutClient.ClientPort,
-                TaskPoolScheduler.Default)
+            this._papercutIPCommServer.ObserveStartServer(
+                    IPCommConstants.Localhost,
+                    IPCommConstants.UiListeningPort,
+                    TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
                 .Subscribe(
                     b => { },
                     ex => this._logger.Warning(
                         ex,
-                        "Papercut Protocol failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
-                        PapercutClient.Localhost,
-                        PapercutClient.ClientPort),
+                        "Papercut IPComm Server failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
+                        IPCommConstants.Localhost,
+                        IPCommConstants.UiListeningPort),
                     () => { });
         }
     }

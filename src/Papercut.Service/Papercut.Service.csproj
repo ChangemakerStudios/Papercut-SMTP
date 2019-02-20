@@ -42,12 +42,11 @@
     </ProjectReference>
     <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj">
     </ProjectReference>
+    <ProjectReference Include="..\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj" />
     <ProjectReference Include="..\Papercut.Infrastructure.Smtp\Papercut.Infrastructure.Smtp.csproj" />
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
     </ProjectReference>
     <ProjectReference Include="..\Papercut.App.WebApi\Papercut.App.WebApi.csproj" />
-    <ProjectReference Include="..\Papercut.Network\Papercut.Network.csproj">
-    </ProjectReference>
     <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj">
     </ProjectReference>
   </ItemGroup>

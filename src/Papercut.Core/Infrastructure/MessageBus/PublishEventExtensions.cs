@@ -22,7 +22,9 @@ namespace Papercut.Core.Infrastructure.MessageBus
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
+    using Papercut.Core.Annotations;
 
+    [PublicAPI]
     public static class PublishEventExtensions
     {
         static readonly MethodInfo _publishMethodInfo = typeof(IMessageBus).GetMethod("Publish");
