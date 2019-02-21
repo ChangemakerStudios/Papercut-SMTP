@@ -20,6 +20,7 @@ namespace Papercut.Infrastructure.IPComm.IPComm
     using System;
     using System.Net.Sockets;
     using System.Text;
+    using System.Text.RegularExpressions;
 
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
@@ -62,7 +63,9 @@ namespace Papercut.Infrastructure.IPComm.IPComm
 
         private T TryConnect<T>(Func<TcpClient, T> doOperation)
         {
-            IAsyncResult result = null;
+            IAsyncResult asyncResult = null;
+
+            var result = default(T);
 
             try
             {
@@ -70,24 +73,21 @@ namespace Papercut.Infrastructure.IPComm.IPComm
 
                 try
                 {
-                    result = client.BeginConnect(this.Host, this.Port, null, null);
+                    asyncResult = client.BeginConnect(this.Host, this.Port, null, null);
 
-                    var success = result.AsyncWaitHandle.WaitOne(100);
+                    var success = asyncResult.AsyncWaitHandle.WaitOne(100);
 
                     if (success)
                     {
-                        return doOperation(client);
+                        result = doOperation(client);
                     }
                 }
                 finally
                 {
-                    if (result != null)
+                    if (asyncResult != null)
                     {
-                        client.EndConnect(result);
+                        client.EndConnect(asyncResult);
                     }
-
-                    client.Close();
-                    client.Dispose();
                 }
 
             }
@@ -100,15 +100,15 @@ namespace Papercut.Infrastructure.IPComm.IPComm
                 // no listener
             }
 
-            return default(T);
+            return result;
         }
 
         public TEvent ExchangeEventServer<TEvent>(TEvent @event) where TEvent : IEvent
         {
-            TEvent returnEvent = default(TEvent);
-
             TEvent DoOperation(TcpClient client)
             {
+                TEvent returnEvent = default(TEvent);
+
                 using (var stream = client.GetStream())
                 {
                     this._logger.Debug("Exchanging {@Event} with Remote", @event);
@@ -120,12 +120,7 @@ namespace Papercut.Infrastructure.IPComm.IPComm
 
                     if (isSuccessful)
                     {
-                        var response = stream.ReadString().Trim();
-                        if (response == "REPLY")
-                        {
-                            // get exchanged event
-                            returnEvent = PapercutIPCommSerializer.FromJson<TEvent>(stream.ReadString());
-                        }
+                        returnEvent = (TEvent)stream.ReadJsonBuffered(typeof(TEvent));
                     }
 
                     stream.Flush();
@@ -164,7 +159,7 @@ namespace Papercut.Infrastructure.IPComm.IPComm
             TEvent @event,
             PapercutIPCommCommandType protocolCommandType) where TEvent : IEvent
         {
-            string response = stream.ReadString().Trim();
+            string response = stream.ReadStringBuffered().Trim();
 
             if (response != "PAPERCUT") return false;
 
@@ -180,8 +175,8 @@ namespace Papercut.Infrastructure.IPComm.IPComm
                     ByteSize = Encoding.UTF8.GetBytes(eventJson).Length
                 }));
 
-            response = stream.ReadString().Trim();
-            if (response == "ACK") stream.WriteStr(eventJson, Encoding.UTF8);
+            response = stream.ReadStringBuffered().Trim();
+            if (response == "ACK") stream.WriteStr(eventJson);
 
             return true;
         }

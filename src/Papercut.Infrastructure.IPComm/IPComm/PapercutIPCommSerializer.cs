@@ -34,6 +34,12 @@ namespace Papercut.Infrastructure.IPComm.IPComm
                 JsonConvert.DeserializeObject(json, type, _ipCommJsonSerializerSettings);
         }
 
+        public static string ToJson(Type type, object @object)
+        {
+            return
+                JsonConvert.SerializeObject(@object, type, Formatting.None, _ipCommJsonSerializerSettings);
+        }
+
         public static TObject FromJson<TObject>(string json)
         {
             return

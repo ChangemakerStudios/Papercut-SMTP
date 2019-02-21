@@ -18,6 +18,7 @@
 namespace Papercut.Infrastructure.IPComm.IPComm
 {
     using System.IO;
+    using System.Net.Sockets;
 
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
@@ -59,7 +60,12 @@ namespace Papercut.Infrastructure.IPComm.IPComm
                 if (request.CommandType.IsAny(PapercutIPCommCommandType.Publish, PapercutIPCommCommandType.Exchange))
                 {
                     // read the rest of the object...
-                    var remoteEvent = this.Connection.Client.ReadObj(request.Type, request.ByteSize);
+                    object remoteEvent = null;
+
+                    using (var stream = new NetworkStream(this.Connection.Client, false))
+                    {
+                        remoteEvent = stream.ReadJsonBuffered(request.Type, request.ByteSize);
+                    }
 
                     this.Logger.Information("Publishing Event Received {@Event} from Remote", remoteEvent);
 
@@ -69,8 +75,8 @@ namespace Papercut.Infrastructure.IPComm.IPComm
                     {
                         // send response back...
                         this.Logger.Information("Exchanging Event {@Event} -- Pushing to Remote", remoteEvent);
-                        this.Connection.Send("REPLY").Wait();
-                        this.Connection.SendLine(remoteEvent.ToJson()).Wait();
+
+                        this.Connection.SendJson(request.Type, remoteEvent).Wait();
                     }
                 }
             }

@@ -20,32 +20,51 @@ namespace Papercut.Events
     using System;
     using System.Threading.Tasks;
 
+    using Autofac;
+
     using Caliburn.Micro;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
     using Papercut.Core.Infrastructure.MessageBus;
 
-    public class EventPublishAll : IMessageBus
+    public class EventPublishAll : AutofacMessageBus
     {
         readonly AutofacMessageBus _autofacMessageBus;
 
         readonly IEventAggregator _uiEventAggregator;
 
         public EventPublishAll(
+            ILifetimeScope scope,
             AutofacMessageBus autofacMessageBus,
             IEventAggregator uiEventAggregator)
+            : base(scope)
         {
             this._autofacMessageBus = autofacMessageBus;
             _uiEventAggregator = uiEventAggregator;
         }
 
-        public async Task Publish<T>([NotNull] T eventObject)
-            where T : IEvent
+        public override async Task Publish<T>([NotNull] T eventObject)
         {
             if (eventObject == null) throw new ArgumentNullException(nameof(eventObject));
 
-            await Task.WhenAll(this._autofacMessageBus.Publish(eventObject), _uiEventAggregator.PublishOnUIThreadAsync(eventObject));
+            await Task.WhenAll(base.Publish(eventObject), _uiEventAggregator.PublishOnUIThreadAsync(eventObject));
+        }
+
+        protected override async Task ExecuteHandler<T>(T eventObject, IEventHandler<T> @event)
+        {
+            if (@event is IUIThreadEventHandler<T>)
+            {
+                await PlatformProvider.Current.OnUIThreadAsync(
+                    async () =>
+                {
+                    await base.ExecuteHandler(eventObject, @event);
+                });
+            }
+            else
+            {
+                await base.ExecuteHandler(eventObject, @event);
+            }
         }
     }
 }

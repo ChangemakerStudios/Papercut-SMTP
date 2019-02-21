@@ -18,15 +18,31 @@
 
 namespace Papercut.Infrastructure.IPComm
 {
+    using System;
+    using System.Net.Sockets;
     using System.Threading.Tasks;
+
+    using Papercut.Common.Extensions;
+    using Papercut.Core.Infrastructure.Json;
+    using Papercut.Infrastructure.IPComm.IPComm;
 
     public static class ConnectionExtensions
     {
+        public static Task SendString(this Connection connection, string message)
+        {
+            return connection.SendData(connection.Encoding.GetBytes(message));
+        }
+
         public static Task SendLine(this Connection connection, string message)
         {
-            connection.Logger.Debug("Sending Line {Message}", message);
+            return connection.SendString($"{message}{Environment.NewLine}");
+        }
 
-            return connection.SendData(connection.Encoding.GetBytes($"{message}\r\n"));
+        public static async Task SendJson(this Connection connection, Type type, object instance)
+        {
+            var json = PapercutIPCommSerializer.ToJson(type, instance);
+
+            await connection.SendData(connection.Encoding.GetBytes(json));
         }
 
         public static Task Send(

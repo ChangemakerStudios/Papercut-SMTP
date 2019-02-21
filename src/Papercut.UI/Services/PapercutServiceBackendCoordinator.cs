@@ -199,6 +199,8 @@ namespace Papercut.Services
 
         async Task PublishUpdateEvent(RulesUpdatedEvent @event)
         {
+            await Task.CompletedTask;
+
             try
             {
                 using (var ipCommClient = GetClient())

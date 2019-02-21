@@ -120,6 +120,7 @@ namespace Papercut.Infrastructure.IPComm
             {
                 // Receive the rest of the data
                 int sizeReceived = this.Client.EndReceive(result);
+
                 this.LastActivity = DateTime.Now;
 
                 // Ensure we received bytes

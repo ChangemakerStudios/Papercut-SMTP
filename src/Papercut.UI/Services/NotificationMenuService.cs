@@ -25,6 +25,8 @@ namespace Papercut.Services
     using System.Threading.Tasks;
     using System.Windows.Forms;
 
+    using Caliburn.Micro;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
@@ -32,7 +34,8 @@ namespace Papercut.Services
     using Disposable = Autofac.Util.Disposable;
 
     public class NotificationMenuService : Disposable,
-        IEventHandler<PapercutClientReadyEvent>,
+        IUIThreadEventHandler<PapercutClientReadyEvent>,
+        IUIThreadEventHandler<PapercutClientExitEvent>,
         IEventHandler<ShowBallonTip>
     {
         readonly IMessageBus _messageBus;
@@ -74,11 +77,25 @@ namespace Papercut.Services
         {
             if (disposing)
             {
-                _notificationSubject?.Dispose();
-                _notificationSubject = null;
-                _notification?.Dispose();
-                _notification = null;
+                this.Reset();
             }
+        }
+
+        private void Reset()
+        {
+            this._notificationSubject?.Dispose();
+            this._notificationSubject = null;
+            this._notification?.Dispose();
+            this._notification = null;
+        }
+
+        public async Task Handle(PapercutClientExitEvent message)
+        {
+            await Task.CompletedTask;
+
+            if (_notification == null) return;
+
+            this.Reset();
         }
 
         public async Task Handle(PapercutClientReadyEvent message)
@@ -87,11 +104,13 @@ namespace Papercut.Services
 
             if (_notification != null) return;
 
-            SetupNotification();
+            await SetupNotification();
         }
 
-        void SetupNotification()
+        async Task SetupNotification()
         {
+            await Task.CompletedTask;
+
             // Set up the notification icon
             _notification = new NotifyIcon
             {
