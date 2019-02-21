@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Network
+namespace Papercut.Infrastructure.IPComm
 {
     using System;
     using System.Collections.Concurrent;
@@ -27,8 +27,7 @@ namespace Papercut.Network
     using System.Reactive.Linq;
     using System.Threading;
 
-    using Papercut.Core.Domain.Network;
-    using Papercut.Network.Protocols;
+    using Papercut.Infrastructure.IPComm.Protocols;
 
     using Serilog;
 
@@ -49,15 +48,15 @@ namespace Papercut.Network
             Func<int, Socket, IProtocol, Connection> connectionFactory,
             ILogger logger)
         {
-            Logger = logger;
-            _connectionFactory = connectionFactory;
+            this.Logger = logger;
+            this._connectionFactory = connectionFactory;
         }
 
         public ILogger Logger { get; set; }
 
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -67,49 +66,49 @@ namespace Papercut.Network
             {
                 try
                 {
-                    CloseAll();
+                    this.CloseAll();
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warning(ex, "Exception Calling CloseAll");
+                    this.Logger.Warning(ex, "Exception Calling CloseAll");
                 }
 
                 try
                 {
-                    _disposables.Dispose();
+                    this._disposables.Dispose();
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warning(ex, "Exception Calling Disposable.Dispose");
+                    this.Logger.Warning(ex, "Exception Calling Disposable.Dispose");
                 }
             }
         }
 
         public Connection CreateConnection(Socket clientSocket, IProtocol protocol)
         {
-            Interlocked.Increment(ref _connectionID);
-            Connection connection = _connectionFactory(_connectionID, clientSocket, protocol);
-            connection.ConnectionClosed += ConnectionClosed;
-            _connections.TryAdd(connection.Id, connection);
+            Interlocked.Increment(ref this._connectionID);
+            Connection connection = this._connectionFactory(this._connectionID, clientSocket, protocol);
+            connection.ConnectionClosed += this.ConnectionClosed;
+            this._connections.TryAdd(connection.Id, connection);
 
-            Logger.Debug(
+            this.Logger.Debug(
                 "New Connection {ConnectionId} from {RemoteEndPoint}",
-                _connectionID,
+                this._connectionID,
                 clientSocket.RemoteEndPoint);
 
-            InitCleanupObservables();
+            this.InitCleanupObservables();
 
             return connection;
         }
 
         void InitCleanupObservables()
         {
-            if (_isInitialized) return;
-            _isInitialized = true;
+            if (this._isInitialized) return;
+            this._isInitialized = true;
 
-            Logger.Debug("Initializing Background Processes...");
+            this.Logger.Debug("Initializing Background Processes...");
 
-            _disposables.Add(
+            this._disposables.Add(
                 Observable.Timer(
                     TimeSpan.FromMinutes(1),
                     TimeSpan.FromMinutes(5),
@@ -117,58 +116,52 @@ namespace Papercut.Network
                         t =>
                         {
                             // Get the number of current connections
-                            int[] keys = _connections.Keys.ToArray();
+                            int[] keys = this._connections.Keys.ToArray();
 
                             // Loop through the connections
                             foreach (int key in keys)
                             {
                                 // If they have been idle for too long, disconnect them
-                                if (DateTime.Now > _connections[key].LastActivity.AddMinutes(20))
-                                {
-                                    Logger.Information(
-                                        "Session timeout, disconnecting {ConnectionId}",
-                                        _connections[key].Id);
-                                    _connections[key].Close();
-                                }
+                                if (DateTime.Now <= this._connections[key].LastActivity.AddMinutes(1)) continue;
+
+                                this.Logger.Information(
+                                    "Session timeout, disconnecting {ConnectionId}",
+                                    this._connections[key].Id);
+                                this._connections[key].Close();
                             }
                         }));
 
             // print out status every 20 minutes
-            _disposables.Add(
+            double memusage = (double)Process.GetCurrentProcess().WorkingSet64
+                              / 1024 / 1024;
+
+            this._disposables.Add(
                 Observable.Timer(
                     TimeSpan.FromMinutes(1),
                     TimeSpan.FromMinutes(20),
                     TaskPoolScheduler.Default).Subscribe(
-                        t =>
-                        {
-                            double memusage = (double)Process.GetCurrentProcess().WorkingSet64
-                                              / 1024 / 1024;
-                            Logger.Debug(
-                                "Status: {ConnectionCount} Connections {MemoryUsed} Memory Used",
-                                _connections.Count,
-                                memusage.ToString("0.#") + "MB");
-                        }));
+                    t =>
+                    {
+                        this.Logger.Debug(
+                            "Status: {ConnectionCount} Connections {MemoryUsed} Memory Used",
+                            this._connections.Count,
+                            memusage.ToString("0.#") + "MB");
+                    }));
         }
 
         public void CloseAll()
         {
             // Close all open connections
-            foreach (Connection connection in
-                _connections.Values.Where(connection => connection != null))
+            foreach (var connection in this._connections.Values.Where(connection => connection != null))
             {
-                Connection noneed;
-                _connections.TryRemove(connection.Id, out noneed);
+                this._connections.TryRemove(connection.Id, out _);
                 connection.Close(false);
             }
         }
 
         void ConnectionClosed(object sender, EventArgs e)
         {
-            var connection = sender as Connection;
-            if (connection == null) return;
-
-            Connection noneed;
-            _connections.TryRemove(connection.Id, out noneed);
+            if (sender is Connection connection) this._connections.TryRemove(connection.Id, out _);
         }
     }
 }

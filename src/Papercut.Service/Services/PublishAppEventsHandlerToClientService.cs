@@ -22,8 +22,7 @@ namespace Papercut.Service.Services
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Network;
-    using Papercut.Network.IPComm;
+    using Papercut.Infrastructure.IPComm.IPComm;
 
     using Serilog;
 

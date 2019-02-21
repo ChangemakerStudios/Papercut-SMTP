@@ -31,9 +31,9 @@ namespace Papercut
     using Papercut.Core.Infrastructure.Container;
     using Papercut.Events;
     using Papercut.Helpers;
+    using Papercut.Infrastructure.IPComm;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Message;
-    using Papercut.Network;
     using Papercut.Rules;
 
     [PublicAPI]
@@ -42,7 +42,7 @@ namespace Papercut
         private IEnumerable<Module> GetPapercutServiceModules()
         {
             yield return new PapercutMessageModule();
-            yield return new PapercutNetworkModule();
+            yield return new PapercutIPCommModule();
             yield return new PapercutRuleModule();
             yield return new PapercutSmtpModule();
         }

@@ -30,7 +30,6 @@ namespace Papercut.Services
     using Papercut.Core.Infrastructure.Server;
     using Papercut.Events;
     using Papercut.Infrastructure.Smtp;
-    using Papercut.Network;
     using Papercut.Properties;
 
     using Serilog;

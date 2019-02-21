@@ -15,21 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Network
+namespace Papercut.Infrastructure.IPComm
 {
-    using System;
-    using System.Reflection;
-
     using Autofac;
-    using Autofac.Core;
 
-    using Papercut.Core.Domain.Network;
-    using Papercut.Network.Protocols;
-    using Papercut.Network.Smtp;
+    using Papercut.Infrastructure.IPComm.IPComm;
 
     using Module = Autofac.Module;
 
-    public class PapercutNetworkModule : Module
+    public class PapercutIPCommModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

@@ -15,16 +15,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Network
+namespace Papercut.Infrastructure.IPComm.IPComm
 {
     using System;
     using System.Net.Sockets;
-    using Newtonsoft.Json;
+    using System.Text;
+
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
-    using Papercut.Core.Infrastructure.Json;
-    using Papercut.Network.IPComm;
-    using Papercut.Network.Protocols;
 
     using Serilog;
 
@@ -38,31 +36,20 @@ namespace Papercut.Network
 
         readonly ILogger _logger;
 
-        readonly JsonSerializerSettings _singleLineJsonSettings = new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.Auto,
-            Formatting = Formatting.None,
-            NullValueHandling = NullValueHandling.Include,
-            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
-        };
-
         public PapercutIPCommClient(ILogger logger)
         {
-            _logger = logger;
-            Client = new TcpClient();
-            Host = Localhost;
-            Port = ClientPort;
+            this._logger = logger;
+            this.Host = Localhost;
+            this.Port = ClientPort;
         }
 
         public string Host { get; set; }
 
         public int Port { get; set; }
 
-        public TcpClient Client { get; private set; }
-
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -70,35 +57,63 @@ namespace Papercut.Network
         {
             if (disposing)
             {
-                if (Client != null)
-                {
-                    Client.Close();
-                    Client = null;
-                }
             }
+        }
+
+        private T TryConnect<T>(Func<TcpClient, T> doOperation)
+        {
+            IAsyncResult result = null;
+
+            try
+            {
+                var client = new TcpClient();
+
+                try
+                {
+                    result = client.BeginConnect(this.Host, this.Port, null, null);
+
+                    var success = result.AsyncWaitHandle.WaitOne(100);
+
+                    if (success)
+                    {
+                        return doOperation(client);
+                    }
+                }
+                finally
+                {
+                    if (result != null)
+                    {
+                        client.EndConnect(result);
+                    }
+
+                    client.Close();
+                    client.Dispose();
+                }
+
+            }
+            catch (ObjectDisposedException)
+            {
+                // already disposed
+            }
+            catch (SocketException)
+            {
+                // no listener
+            }
+
+            return default(T);
         }
 
         public TEvent ExchangeEventServer<TEvent>(TEvent @event) where TEvent : IEvent
         {
             TEvent returnEvent = default(TEvent);
 
-            try
+            TEvent DoOperation(TcpClient client)
             {
-                Client.Connect(Host, Port);
-            }
-            catch (SocketException)
-            {
-                // no listener
-                return returnEvent;
-            }
-
-            try
-            {
-                using (var stream = Client.GetStream())
+                using (var stream = client.GetStream())
                 {
-                    _logger.Debug("Exchanging {@Event} with Remote", @event);
-                    
-                    var isSuccessful = HandlePublishEvent(
+                    this._logger.Debug("Exchanging {@Event} with Remote", @event);
+
+                    var isSuccessful = this.HandlePublishEvent(
                         stream,
                         @event,
                         PapercutIPCommCommandType.Exchange);
@@ -109,7 +124,7 @@ namespace Papercut.Network
                         if (response == "REPLY")
                         {
                             // get exchanged event
-                            returnEvent = stream.ReadString().FromJson<TEvent>();
+                            returnEvent = PapercutIPCommSerializer.FromJson<TEvent>(stream.ReadString());
                         }
                     }
 
@@ -118,31 +133,19 @@ namespace Papercut.Network
                     return returnEvent;
                 }
             }
-            finally
-            {
-                Client.Close();
-            }
+
+            return this.TryConnect(DoOperation);
         }
 
         public bool PublishEventServer<TEvent>(TEvent @event) where TEvent : IEvent
         {
-            try
+            bool DoOperation(TcpClient client)
             {
-                Client.Connect(Host, Port);
-            }
-            catch (SocketException)
-            {
-                // no listener
-                return false;
-            }
-
-            try
-            {
-                using (var stream = Client.GetStream())
+                using (var stream = client.GetStream())
                 {
-                    _logger.Debug("Publishing {@Event} to Remote", @event);
+                    this._logger.Debug("Publishing {@Event} to Remote", @event);
 
-                    var isSuccessful = HandlePublishEvent(
+                    var isSuccessful = this.HandlePublishEvent(
                         stream,
                         @event,
                         PapercutIPCommCommandType.Publish);
@@ -152,10 +155,8 @@ namespace Papercut.Network
                     return isSuccessful;
                 }
             }
-            finally
-            {
-                Client.Close();
-            }
+
+            return this.TryConnect(DoOperation);
         }
 
         bool HandlePublishEvent<TEvent>(
@@ -167,20 +168,20 @@ namespace Papercut.Network
 
             if (response != "PAPERCUT") return false;
 
-            _logger.Debug("Publishing {@Event} to Remote", @event);
+            this._logger.Debug("Publishing {@Event} to Remote", @event);
 
-            var eventJson = @event.ToJson();
+            var eventJson = PapercutIPCommSerializer.ToJson(@event);
 
-            stream.WriteLine(
+            stream.WriteLine(PapercutIPCommSerializer.ToJson(
                 new PapercutIPCommRequest()
                 {
                     CommandType = protocolCommandType,
                     Type = @event.GetType(),
-                    ByteSize = eventJson.Length
-                }.ToJson(_singleLineJsonSettings));
+                    ByteSize = Encoding.UTF8.GetBytes(eventJson).Length
+                }));
 
             response = stream.ReadString().Trim();
-            if (response == "ACK") stream.WriteStr(eventJson);
+            if (response == "ACK") stream.WriteStr(eventJson, Encoding.UTF8);
 
             return true;
         }

@@ -16,12 +16,10 @@
 // limitations under the License. 
 
 
-namespace Papercut.Network.Protocols
+namespace Papercut.Infrastructure.IPComm.Protocols
 {
     using System;
     using System.Text;
-
-    using Papercut.Core.Domain.Network;
 
     using Serilog;
 
@@ -43,15 +41,15 @@ namespace Papercut.Network.Protocols
             // Get the string data and append to buffer
             string data = encoding.GetString(bufferedData, 0, bufferedData.Length);
 
-            _stringBuffer.Append(data);
+            this._stringBuffer.Append(data);
 
             // Check if the string buffer contains a line break
-            string line = _stringBuffer.ToString().Replace("\r", string.Empty);
+            string line = this._stringBuffer.ToString().Replace("\r", string.Empty);
 
             while (line.Contains("\n"))
             {
                 // Take a snippet of the buffer, find the line, and process it
-                _stringBuffer =
+                this._stringBuffer =
                     new StringBuilder(
                         line.Substring(line.IndexOf("\n", StringComparison.Ordinal) + 1));
 
@@ -59,9 +57,9 @@ namespace Papercut.Network.Protocols
 
                 this.Logger.Debug("Received Line {Line}", line);
 
-                ProcessRequest(line);
+                this.ProcessRequest(line);
 
-                line = _stringBuffer.ToString();
+                line = this._stringBuffer.ToString();
             }
         }
 

@@ -26,9 +26,9 @@ namespace Papercut.Service
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Settings;
+    using Papercut.Infrastructure.IPComm;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Message;
-    using Papercut.Network;
     using Papercut.Rules;
     using Papercut.Service.Helpers;
     using Papercut.Service.Logging;
@@ -41,7 +41,7 @@ namespace Papercut.Service
         private IEnumerable<Module> GetPapercutServiceModules()
         {
             yield return new PapercutMessageModule();
-            yield return new PapercutNetworkModule();
+            yield return new PapercutIPCommModule();
             yield return new PapercutRuleModule();
             yield return new PapercutSmtpModule();
             yield return new PapercutWebApiModule();

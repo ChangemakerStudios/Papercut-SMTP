@@ -16,14 +16,9 @@
 // limitations under the License. 
 
 
-namespace Papercut.Network.Protocols
+namespace Papercut.Infrastructure.IPComm
 {
-    using System;
-    using System.IO;
-    using System.Net.Sockets;
     using System.Threading.Tasks;
-
-    using Papercut.Core.Domain.Network;
 
     public static class ConnectionExtensions
     {
@@ -31,15 +26,7 @@ namespace Papercut.Network.Protocols
         {
             connection.Logger.Debug("Sending Line {Message}", message);
 
-            return connection.SendData(connection.Encoding.GetBytes(message + "\r\n"));
-        }
-
-        public static Task SendLine(
-            this Connection connection,
-            string message,
-            params object[] args)
-        {
-            return connection.SendLine(string.Format(message, args));
+            return connection.SendData(connection.Encoding.GetBytes($"{message}\r\n"));
         }
 
         public static Task Send(
@@ -48,30 +35,6 @@ namespace Papercut.Network.Protocols
             params object[] args)
         {
             return connection.SendData(connection.Encoding.GetBytes(string.Format(message, args)));
-        }
-
-        public static TOut ReadTextStream<TOut>(
-            this Socket socket,
-            Func<StreamReader, TOut> read)
-        {
-            TOut output;
-            NetworkStream networkStream = null;
-
-            try
-            {
-                networkStream = new NetworkStream(socket, false);
-                using (var reader = new StreamReader(networkStream))
-                {
-                    output = read(reader);
-                    networkStream.Close();
-                }
-            }
-            finally
-            {
-                networkStream?.Dispose();
-            }
-
-            return output;
         }
     }
 }

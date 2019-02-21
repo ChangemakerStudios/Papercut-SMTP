@@ -16,7 +16,7 @@
 // limitations under the License. 
 
 
-namespace Papercut.Network
+namespace Papercut.Infrastructure.IPComm
 {
     using System;
     using System.Net.Sockets;
@@ -25,7 +25,7 @@ namespace Papercut.Network
 
     using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
-    using Papercut.Network.Protocols;
+    using Papercut.Infrastructure.IPComm.Protocols;
 
     using Serilog;
 
@@ -43,19 +43,19 @@ namespace Papercut.Network
         public Connection(int id, Socket client, IProtocol protocol, ILogger logger)
         {
             // Initialize members
-            Id = id;
-            Client = client;
-            Protocol = protocol;
-            Logger = logger;
+            this.Id = id;
+            this.Client = client;
+            this.Protocol = protocol;
+            this.Logger = logger;
 
-            Logger.ForContext("ConnectionId", id);
+            this.Logger.ForContext("ConnectionId", id);
 
-            Connected = true;
-            LastActivity = DateTime.Now;
+            this.Connected = true;
+            this.LastActivity = DateTime.Now;
 
-            BeginReceive();
+            this.BeginReceive();
 
-            Protocol.Begin(this);
+            this.Protocol.Begin(this);
         }
 
         #endregion
@@ -71,18 +71,18 @@ namespace Papercut.Network
         public void Close(bool triggerEvent = true)
         {
             // Set our internal flag for no longer connected
-            Connected = false;
+            this.Connected = false;
 
             // Close out the socket
-            if (Client != null && Client.Connected)
+            if (this.Client != null && this.Client.Connected)
             {
-                Client.Shutdown(SocketShutdown.Both);
-                Client.Close();
+                this.Client.Shutdown(SocketShutdown.Both);
+                this.Client.Close();
             }
 
-            if (triggerEvent) OnConnectionClosed(new EventArgs());
+            if (triggerEvent) this.OnConnectionClosed(new EventArgs());
 
-            Logger.Debug("Connection {ConnectionId} Closed", Id);
+            this.Logger.Debug("Connection {ConnectionId} Closed", this.Id);
         }
 
         #endregion
@@ -109,7 +109,7 @@ namespace Papercut.Network
 
         protected void OnConnectionClosed(EventArgs e)
         {
-            ConnectionClosed?.Invoke(this, e);
+            this.ConnectionClosed?.Invoke(this, e);
         }
 
         protected bool ContinueProcessReceive([NotNull] IAsyncResult result)
@@ -119,27 +119,27 @@ namespace Papercut.Network
             try
             {
                 // Receive the rest of the data
-                int sizeReceived = Client.EndReceive(result);
-                LastActivity = DateTime.Now;
+                int sizeReceived = this.Client.EndReceive(result);
+                this.LastActivity = DateTime.Now;
 
                 // Ensure we received bytes
-                if (sizeReceived <= 0 || (_receiveBuffer.Length == 64 && _receiveBuffer[0] == '\0'))
+                if (sizeReceived <= 0 || (this._receiveBuffer.Length == 64 && this._receiveBuffer[0] == '\0'))
                 {
                     // nothing received, close and return;
-                    Close();
+                    this.Close();
                     return false;
                 }
 
                 var incoming = new byte[sizeReceived];
-                Array.Copy(_receiveBuffer, incoming, sizeReceived);
-                Protocol.ProcessIncomingBuffer(incoming, Encoding);
+                Array.Copy(this._receiveBuffer, incoming, sizeReceived);
+                this.Protocol.ProcessIncomingBuffer(incoming, this.Encoding);
 
                 // continue receiving...
                 return true;
             }
             catch (Exception exception)
             {
-                Logger.Warning(exception, "Failed to End Receive on Async Socket");
+                this.Logger.Warning(exception, "Failed to End Receive on Async Socket");
             }
 
             return false;
@@ -150,12 +150,12 @@ namespace Papercut.Network
             try
             {
                 // Ensure we're connected... this method gets called when closing a socket with a pending BeginReceive();
-                if (!Connected) return false;
+                if (!this.Connected) return false;
 
                 // If the socket has been closed, then ensure we close it out
-                if (Client == null || !Client.Connected)
+                if (this.Client == null || !this.Client.Connected)
                 {
-                    Close();
+                    this.Close();
                     return false;
                 }
 
@@ -163,7 +163,7 @@ namespace Papercut.Network
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error in Connection.IsValidConnection");
+                this.Logger.Error(ex, "Error in Connection.IsValidConnection");
             }
 
             return false;
@@ -174,19 +174,19 @@ namespace Papercut.Network
             try
             {
                 // Begin to listen for data
-                Client.BeginReceive(
-                    _receiveBuffer,
+                this.Client.BeginReceive(
+                    this._receiveBuffer,
                     0,
                     BufferSize,
                     SocketFlags.None,
                     result =>
                     {
-                        if (IsValidConnection() && ContinueProcessReceive(result))
+                        if (this.IsValidConnection() && this.ContinueProcessReceive(result))
                         {
-                            if (Connected && Client.Connected)
+                            if (this.Connected && this.Client.Connected)
                             {
                                 // continue processing
-                                BeginReceive();
+                                this.BeginReceive();
                             }
                         }
                     },
@@ -194,13 +194,13 @@ namespace Papercut.Network
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error in Connection.BeginReceive");
+                this.Logger.Error(ex, "Error in Connection.BeginReceive");
             }
         }
 
         public Task SendData(byte[] data)
         {
-            if (!Connected || !Client.Connected) return TaskHelpers.FromResult(0);
+            if (!this.Connected || !this.Client.Connected) return TaskHelpers.FromResult(0);
 
             // Use overload that takes an IAsyncResult directly
             try

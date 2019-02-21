@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Network.Smtp
+namespace Papercut.Infrastructure.IPComm.IPComm
 {
     using System;
     using System.Net;
@@ -24,7 +24,7 @@ namespace Papercut.Network.Smtp
 
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Network;
-    using Papercut.Network.Protocols;
+    using Papercut.Infrastructure.IPComm.Protocols;
 
     using Serilog;
 

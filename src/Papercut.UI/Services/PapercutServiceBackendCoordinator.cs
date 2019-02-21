@@ -30,8 +30,7 @@ namespace Papercut.Services
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
-    using Papercut.Network;
-    using Papercut.Network.IPComm;
+    using Papercut.Infrastructure.IPComm.IPComm;
     using Papercut.Properties;
 
     using Serilog;

@@ -15,18 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Network.Protocols
+namespace Papercut.Infrastructure.IPComm.IPComm
 {
-    using System;
     using System.IO;
 
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
-    using Papercut.Core.Domain.Network;
     using Papercut.Core.Infrastructure.Json;
     using Papercut.Core.Infrastructure.MessageBus;
-    using Papercut.Network.Helpers;
-    using Papercut.Network.IPComm;
+    using Papercut.Infrastructure.IPComm.Protocols;
 
     using Serilog;
 
@@ -44,9 +41,9 @@ namespace Papercut.Network.Protocols
 
         public override void Begin(Connection connection)
         {
-            Connection = connection;
-            this.Logger.ForContext("ConnectionId", Connection.Id);
-            Connection.SendLine("PAPERCUT");
+            this.Connection = connection;
+            this.Logger.ForContext("ConnectionId", this.Connection.Id);
+            this.Connection.SendLine("PAPERCUT");
         }
 
         protected override void ProcessRequest(string incomingRequest)
@@ -57,12 +54,12 @@ namespace Papercut.Network.Protocols
 
                 this.Logger.Verbose("Incoming Request Received {@Request}", request);
 
-                Connection.Send("ACK").Wait();
+                this.Connection.Send("ACK").Wait();
 
                 if (request.CommandType.IsAny(PapercutIPCommCommandType.Publish, PapercutIPCommCommandType.Exchange))
                 {
                     // read the rest of the object...
-                    var remoteEvent = Connection.Client.ReadObj(request.Type, request.ByteSize);
+                    var remoteEvent = this.Connection.Client.ReadObj(request.Type, request.ByteSize);
 
                     this.Logger.Information("Publishing Event Received {@Event} from Remote", remoteEvent);
 
@@ -72,15 +69,15 @@ namespace Papercut.Network.Protocols
                     {
                         // send response back...
                         this.Logger.Information("Exchanging Event {@Event} -- Pushing to Remote", remoteEvent);
-                        Connection.Send("REPLY").Wait();
-                        Connection.SendLine(remoteEvent.ToJson()).Wait();
+                        this.Connection.Send("REPLY").Wait();
+                        this.Connection.SendLine(remoteEvent.ToJson()).Wait();
                     }
                 }
             }
             catch (IOException e)
             {
                 this.Logger.Error(e, "IOException received. Closing this connection.");
-                Connection.Close();
+                this.Connection.Close();
             }
         }
     }

@@ -1,4 +1,4 @@
-namespace Papercut.Network.IPComm
+namespace Papercut.Infrastructure.IPComm.IPComm
 {
     public enum PapercutIPCommCommandType
     {

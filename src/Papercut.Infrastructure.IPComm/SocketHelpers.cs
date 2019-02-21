@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Network.Helpers
+namespace Papercut.Infrastructure.IPComm
 {
     using System;
     using System.IO;
@@ -25,7 +25,7 @@ namespace Papercut.Network.Helpers
     using Papercut.Common.Extensions;
     using Papercut.Core.Infrastructure.Json;
 
-    public static class PapercutProtocolHelpers
+    public static class SocketHelpers
     {
         public static object ReadObj(this Socket socket, Type type, int payloadSize)
         {
@@ -36,7 +36,8 @@ namespace Papercut.Network.Helpers
             using (var memoryStream = new MemoryStream())
             {
                 networkStream.CopyBufferedLimited(memoryStream, payloadSize);
-                string incoming = new ASCIIEncoding().GetString(memoryStream.ToArray());
+                
+                string incoming = Encoding.UTF8.GetString(memoryStream.ToArray());
 
                 return incoming.FromJson(type);
             }

@@ -29,10 +29,8 @@ namespace Papercut.Service.Services
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Server;
+    using Papercut.Infrastructure.IPComm.IPComm;
     using Papercut.Infrastructure.Smtp;
-    using Papercut.Network;
-    using Papercut.Network.IPComm;
-    using Papercut.Network.Smtp;
     using Papercut.Service.Helpers;
 
     using Serilog;
