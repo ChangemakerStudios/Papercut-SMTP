@@ -26,6 +26,8 @@ namespace Papercut
 
     using Autofac;
 
+    using Caliburn.Micro;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Async;
     using Papercut.Core.Infrastructure.Container;
@@ -46,6 +48,8 @@ namespace Papercut
             new Lazy<ILifetimeScope>(
                 () => RootContainer.BeginLifetimeScope(ContainerScope.UIScopeTag));
 
+        private Task _publishTask;
+
         static App()
         {
             BootstrapLogger.SetRootGlobal();
@@ -63,81 +67,53 @@ namespace Papercut
         {
             var messageBus = this.Container.Resolve<IMessageBus>();
 
-            Task.Run(
-                async () =>
+            try
+            {
+                var appPreStartEvent = new PapercutClientPreStartEvent();
+
+                messageBus.Publish(appPreStartEvent);
+
+                if (appPreStartEvent.CancelStart)
                 {
+                    // force shut down...
+                    messageBus.Publish(new AppForceShutdownEvent());
 
-                    try
-                    {
-                        var appPreStartEvent = new PapercutClientPreStartEvent();
+                    Shutdown();
 
-                        await messageBus.Publish(appPreStartEvent);
+                    return;
+                }
 
-                        if (appPreStartEvent.CancelStart)
-                        {
-                            // force shut down...
-                            await messageBus.Publish(new AppForceShutdownEvent());
+                base.OnStartup(e);
 
-                            return false;
-                        }
-
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Fatal(ex, "Fatal Error Starting Papercut");
-                    }
-
-                    return false;
-                }).ContinueWith(
-                s =>
-                {
-                    if (s.IsCompleted && s.Result)
-                    {
-                        base.OnStartup(e);
-
-                        messageBus.Publish(new PapercutClientReadyEvent());
-                    }
-                    else
-                    {
-                        Shutdown();
-                    }
-                },
-                CancellationToken.None,
-                TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.FromCurrentSynchronizationContext());
-
+                messageBus.Publish(new PapercutClientReadyEvent());
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Fatal(ex, "Fatal Error Starting Papercut");
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             Debug.WriteLine("App.OnExit()");
 
-            Task.Run(
-                async () =>
-                {
-                    try
-                    {
-                        await this.Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent());
+            this.Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent());
 
-                        Container.Dispose();
+            try
+            {
+                Container.Dispose();
 
-                        _lifetimeScope = null;
+                _lifetimeScope = null;
 
-                        RootContainer.Dispose();
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        // no bother
-                    }
-                }).ContinueWith(
-                s =>
-                {
-                    base.OnExit(e);
-                },
-                CancellationToken.None,
-                TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.FromCurrentSynchronizationContext());
+                RootContainer.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // no bother
+            }
+
+
+            base.OnExit(e);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Papercut.Services
             _logger = logger;
         }
 
-        public Task Handle(PapercutClientExitEvent @event)
+        public void Handle(PapercutClientExitEvent @event)
         {
             try
             {
@@ -55,8 +55,6 @@ namespace Papercut.Services
             {
                 _logger.Error(ex, "Failure Saving Settings File");
             }
-
-            return Task.CompletedTask;
         }
     }
 }

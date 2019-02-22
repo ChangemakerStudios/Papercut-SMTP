@@ -61,14 +61,12 @@ namespace Papercut.Services
             this._messageBus = messageBus;
         }
 
-        public Task Handle(PapercutClientExitEvent @event)
+        public void Handle(PapercutClientExitEvent @event)
         {
             Save();
-
-            return Task.CompletedTask;
         }
 
-        public async Task Handle(PapercutClientReadyEvent @event)
+        public void Handle(PapercutClientReadyEvent @event)
         {
             _logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
 
@@ -89,7 +87,7 @@ namespace Papercut.Services
             }
 
             // rules loaded/updated event
-            await this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
+            this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
 
             Rules.CollectionChanged += RuleCollectionChanged;
             HookPropertyChangedForRules(Rules);
@@ -109,9 +107,9 @@ namespace Papercut.Services
             }
         }
 
-        Task PublishUpdateEventAsync()
+        void PublishUpdateEventAsync()
         {
-            return this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
+            this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
         }
 
         void RuleCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)

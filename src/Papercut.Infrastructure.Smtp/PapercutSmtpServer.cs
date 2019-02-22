@@ -86,17 +86,17 @@ namespace Papercut.Infrastructure.Smtp
 
         public void Dispose()
         {
-            this.Stop().Wait();
+            this.Stop();
         }
 
-        public async Task Stop()
+        public void Stop()
         {
             if (this._smtpServerTask == null) return;
 
             try
             {
                 this._tokenSource?.Cancel();
-                await this._smtpServerTask.ConfigureAwait(false);
+                this._smtpServerTask.Wait();
                 this._tokenSource?.Dispose();
             }
             catch (Exception ex) when (ex is AggregateException || ex is TaskCanceledException || ex is OperationCanceledException)
@@ -121,7 +121,7 @@ namespace Papercut.Infrastructure.Smtp
                 .Build();
         }
 
-        public Task Start()
+        public void Start()
         {
             ServicePointManager.ServerCertificateValidationCallback = this.IgnoreCertificateValidationFailureForTestingOnly;
 
@@ -146,8 +146,6 @@ namespace Papercut.Infrastructure.Smtp
 
             this._tokenSource = new CancellationTokenSource();
             this._smtpServerTask = server.StartAsync(this._tokenSource.Token);
-
-            return Task.CompletedTask;
         }
 
         private MailboxFilterResult CanAcceptMailbox(ISessionContext sessionContext, IMailbox mailbox)

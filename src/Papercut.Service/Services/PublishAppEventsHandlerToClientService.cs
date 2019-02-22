@@ -42,19 +42,19 @@ namespace Papercut.Service.Services
             _logger = logger;
         }
 
-        public async Task Handle(PapercutServiceExitEvent @event)
+        public void Handle(PapercutServiceExitEvent @event)
         {
-            await Publish(@event);
+            Publish(@event);
         }
 
-        public async Task Handle(PapercutServicePreStartEvent @event)
+        public void Handle(PapercutServicePreStartEvent @event)
         {
-            await Publish(@event);
+            Publish(@event);
         }
 
-        public async Task Handle(PapercutServiceReadyEvent @event)
+        public void Handle(PapercutServiceReadyEvent @event)
         {
-            await Publish(@event);
+            Publish(@event);
         }
 
         PapercutIPCommClient GetClient()
@@ -64,11 +64,9 @@ namespace Papercut.Service.Services
             return messenger;
         }
 
-        public async Task Publish<T>(T @event)
+        public void Publish<T>(T @event)
             where T : IEvent
         {
-            await Task.CompletedTask;
-
             try
             {
                 _logger.Information(

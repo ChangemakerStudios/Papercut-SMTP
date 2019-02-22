@@ -77,61 +77,47 @@ namespace Papercut.Services
             // flush rules every 10 seconds
             rulesUpdateObservable.Buffer(TimeSpan.FromSeconds(10))
                 .Where(e => e.Any())
-                .Subscribe(async events => await PublishUpdateEvent(events.Last()));
+                .Subscribe(events => PublishUpdateEvent(events.Last()));
         }
 
         public bool IsBackendServiceOnline { get; private set; }
 
-        public async Task Handle(PapercutClientPreStartEvent @event)
+        public void Handle(PapercutClientPreStartEvent @event)
         {
-            await Task.CompletedTask;
-
-            await AttemptExchange();
+            AttemptExchange();
         }
 
-        public async Task Handle(PapercutServiceExitEvent @event)
+        public void Handle(PapercutServiceExitEvent @event)
         {
-            await Task.CompletedTask;
-
             IsBackendServiceOnline = false;
             _smtpServerCoordinator.SmtpServerEnabled = true;
         }
 
-        public async Task Handle(PapercutServicePreStartEvent @event)
+        public void Handle(PapercutServicePreStartEvent @event)
         {
-            await Task.CompletedTask;
-
             IsBackendServiceOnline = true;
             _smtpServerCoordinator.SmtpServerEnabled = false;
         }
 
-        public async Task Handle(PapercutServiceReadyEvent @event)
+        public void Handle(PapercutServiceReadyEvent @event)
         {
-            await Task.CompletedTask;
-
-            await AttemptExchange();
+            AttemptExchange();
         }
 
-        public async Task Handle(RulesUpdatedEvent @event)
+        public void Handle(RulesUpdatedEvent @event)
         {
-            await Task.CompletedTask;
-
             if (!IsBackendServiceOnline) return;
 
             _nextUpdateEvent(@event);
         }
 
-        public async Task Handle(SettingsUpdatedEvent @event)
+        public void Handle(SettingsUpdatedEvent @event)
         {
-            await Task.CompletedTask;
-
-            await PublishSmtpUpdated(@event);
+            PublishSmtpUpdated(@event);
         }
 
-        public async Task PublishSmtpUpdated(SettingsUpdatedEvent @event)
+        public void PublishSmtpUpdated(SettingsUpdatedEvent @event)
         {
-            await Task.CompletedTask;
-
             if (!IsBackendServiceOnline) return;
 
             // check if the setting changed
@@ -160,10 +146,8 @@ namespace Papercut.Services
             }
         }
 
-        private async Task AttemptExchange()
+        private void AttemptExchange()
         {
-            await Task.CompletedTask;
-
             try
             {
                 var sendEvent = new AppProcessExchangeEvent();
@@ -187,7 +171,7 @@ namespace Papercut.Services
                             "Background Process Returned {@Event} -- Publishing",
                             receivedEvent);
 
-                        await this._messageBus.Publish(receivedEvent);
+                        this._messageBus.Publish(receivedEvent);
                     }
                 }
             }
@@ -197,10 +181,8 @@ namespace Papercut.Services
             }
         }
 
-        async Task PublishUpdateEvent(RulesUpdatedEvent @event)
+        void PublishUpdateEvent(RulesUpdatedEvent @event)
         {
-            await Task.CompletedTask;
-
             try
             {
                 using (var ipCommClient = GetClient())

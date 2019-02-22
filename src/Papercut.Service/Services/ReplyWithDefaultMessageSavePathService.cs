@@ -37,10 +37,8 @@ namespace Papercut.Service.Services
             _serviceSettings = serviceSettings;
         }
 
-        public async Task Handle(AppProcessExchangeEvent @event)
+        public void Handle(AppProcessExchangeEvent @event)
         {
-            await Task.CompletedTask;
-
             // respond with the current save path...
             @event.MessageWritePath = _messagePathConfigurator.DefaultSavePath;
 

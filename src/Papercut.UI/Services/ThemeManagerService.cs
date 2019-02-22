@@ -31,17 +31,13 @@ namespace Papercut.Services
 
     public class ThemeManagerService : IEventHandler<PapercutClientPreStartEvent>, IEventHandler<SettingsUpdatedEvent>
     {
-        public async Task Handle(PapercutClientPreStartEvent @event)
+        public void Handle(PapercutClientPreStartEvent @event)
         {
-            await Task.CompletedTask;
-
             SetTheme();
         }
 
-        public async Task Handle(SettingsUpdatedEvent @event)
+        public void Handle(SettingsUpdatedEvent @event)
         {
-            await Task.CompletedTask;
-
             if (@event.PreviousSettings.Theme == @event.NewSettings.Theme) return;
 
             SetTheme();

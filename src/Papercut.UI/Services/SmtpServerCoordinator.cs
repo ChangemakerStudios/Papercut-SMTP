@@ -77,20 +77,20 @@ namespace Papercut.Services
             this._smtpServer?.Dispose();
         }
 
-        public async Task Handle(PapercutClientExitEvent @event)
+        public void Handle(PapercutClientExitEvent @event)
         {
-            await this.StopSmtpServer().ConfigureAwait(false);
+            this.StopSmtpServer();
         }
 
-        private async Task StopSmtpServer()
+        private void StopSmtpServer()
         {
             this._observeStartServer?.Dispose();
-            await this._smtpServer.Stop().ConfigureAwait(false);
+            this._smtpServer.Stop();
         }
 
-        public async Task Handle(PapercutClientReadyEvent @event)
+        public void Handle(PapercutClientReadyEvent @event)
         {
-            if (this.SmtpServerEnabled) await this.ListenSmtpServer().ConfigureAwait(false);
+            if (this.SmtpServerEnabled) this.ListenSmtpServer();
 
             this.PropertyChanged += (sender, args) =>
             {
@@ -98,27 +98,27 @@ namespace Papercut.Services
                 {
                     if (this.SmtpServerEnabled && !this._smtpServer.IsActive)
                     {
-                        this.ListenSmtpServer().Wait();
+                        this.ListenSmtpServer();
                     }
                     else if (!this.SmtpServerEnabled && this._smtpServer.IsActive)
                     {
-                        this.StopSmtpServer().Wait();
+                        this.StopSmtpServer();
                     }
                 }
             };
         }
 
-        public async Task Handle(SettingsUpdatedEvent @event)
+        public void Handle(SettingsUpdatedEvent @event)
         {
             if (!this.SmtpServerEnabled) return;
             if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
 
-            await this.ListenSmtpServer().ConfigureAwait(false);
+            this.ListenSmtpServer();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        Task ListenSmtpServer()
+        void ListenSmtpServer()
         {
             this._observeStartServer = this._smtpServer.ObserveStartServer(
                 Settings.Default.IP,
@@ -135,13 +135,11 @@ namespace Papercut.Services
                             Settings.Default.IP,
                             Settings.Default.Port);
 
-                        await this._messageBus.Publish(new SmtpServerBindFailedEvent()).ConfigureAwait(false); ;
+                        this._messageBus.Publish(new SmtpServerBindFailedEvent());
                     },
-                    async () =>
-                    await this._messageBus.Publish(
+                    () =>
+                    this._messageBus.Publish(
                         new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
-
-            return Task.CompletedTask;
         }
 
         [NotifyPropertyChangedInvocator]

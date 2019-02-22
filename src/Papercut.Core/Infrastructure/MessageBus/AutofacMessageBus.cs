@@ -37,7 +37,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             this._lifetimeScope = lifetimeScope;
         }
 
-        public virtual async Task Publish<T>(T eventObject) where T : IEvent
+        public virtual void Publish<T>(T eventObject) where T : IEvent
         {
             var eventHandlers = this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().ToList();
 
@@ -45,7 +45,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             {
                 try
                 {
-                    await ExecuteHandler(eventObject, @event);
+                    ExecuteHandler(eventObject, @event);
                 }
                 catch (Exception ex)
                 {
@@ -58,10 +58,10 @@ namespace Papercut.Core.Infrastructure.MessageBus
             }
         }
 
-        protected virtual async Task ExecuteHandler<T>(T eventObject, IEventHandler<T> @event)
+        protected virtual void ExecuteHandler<T>(T eventObject, IEventHandler<T> @event)
             where T : IEvent
         {
-            await @event.Handle(eventObject).ConfigureAwait(false);
+            @event.Handle(eventObject);
         }
 
         private List<T> MaybeByOrderable<T>(IEnumerable<T> @events)

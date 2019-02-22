@@ -88,10 +88,8 @@ namespace Papercut.Infrastructure.IPComm.IPComm
 
         public int ListenPort { get; set; }
 
-        public async Task Stop()
+        public void Stop()
         {
-            await Task.CompletedTask;
-
             if (!this.IsActive) return;
 
             this.Logger.Information("Stopping IPComm Server");
@@ -119,10 +117,8 @@ namespace Papercut.Infrastructure.IPComm.IPComm
             GC.SuppressFinalize(this);
         }
 
-        public async Task Start()
+        public void Start()
         {
-            await Task.CompletedTask;
-
             if (this.IsActive)
             {
                 return;
@@ -154,7 +150,7 @@ namespace Papercut.Infrastructure.IPComm.IPComm
             {
                 try
                 {
-                    this.Stop().Wait();
+                    this.Stop();
                     this.CleanupListener();
                     if (this.ConnectionManager != null)
                     {

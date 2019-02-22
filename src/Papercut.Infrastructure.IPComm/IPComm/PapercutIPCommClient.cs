@@ -84,7 +84,7 @@ namespace Papercut.Infrastructure.IPComm.IPComm
                 }
                 finally
                 {
-                    if (asyncResult != null)
+                    if (asyncResult != null && client.Connected)
                     {
                         client.EndConnect(asyncResult);
                     }

@@ -17,11 +17,8 @@
 
 namespace Papercut.Common.Domain
 {
-    using System.Threading.Tasks;
-    using System.Windows.Input;
-
     public interface IMessageBus
     {
-        Task Publish<T>(T eventObject) where T : IEvent;
+        void Publish<T>(T eventObject) where T : IEvent;
     }
 }

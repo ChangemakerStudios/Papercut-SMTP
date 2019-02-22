@@ -62,10 +62,8 @@ namespace Papercut.Services
             }
         }
 
-        public async Task Handle(PapercutClientPreStartEvent @event)
+        public void Handle(PapercutClientPreStartEvent @event)
         {
-            await Task.CompletedTask;
-
             // papercut is not already running...
             if (_appMutex.WaitOne(0, false)) return;
 

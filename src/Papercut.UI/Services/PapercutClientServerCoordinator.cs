@@ -44,15 +44,13 @@ namespace Papercut.Services
             this._papercutIPCommServer = ipCommServer;
         }
 
-        public async Task Handle(PapercutClientExitEvent @event)
+        public void Handle(PapercutClientExitEvent @event)
         {
-            await this._papercutIPCommServer.Stop();
+            this._papercutIPCommServer.Stop();
         }
 
-        public async Task Handle(PapercutClientReadyEvent @event)
+        public void Handle(PapercutClientReadyEvent @event)
         {
-            await Task.CompletedTask;
-
             this._papercutIPCommServer.ObserveStartServer(
                     IPCommConstants.Localhost,
                     IPCommConstants.UiListeningPort,

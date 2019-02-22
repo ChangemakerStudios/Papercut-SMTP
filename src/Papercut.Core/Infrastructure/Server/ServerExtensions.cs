@@ -36,17 +36,17 @@ namespace Papercut.Core.Infrastructure.Server
             if (server == null) throw new ArgumentNullException(nameof(server));
 
             IObservable<bool> bindObservable = Observable.Create(
-                async (IObserver<bool> o) =>
+                 (IObserver<bool> o) =>
                 {
                     Observer.Synchronize(o);
                     try
                     {
-                        await server.Stop();
+                        server.Stop();
 
                         server.ListenIpAddress = ip;
                         server.ListenPort = port;
 
-                        await server.Start();
+                        server.Start();
 
                         o.OnCompleted();
                     }

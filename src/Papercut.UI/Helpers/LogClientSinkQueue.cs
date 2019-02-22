@@ -34,10 +34,8 @@ namespace Papercut.Helpers
     {
         static readonly ConcurrentQueue<LogEvent> _logQueue = new ConcurrentQueue<LogEvent>();
 
-        public async Task Handle(ConfigureLoggerEvent @event)
+        public void Handle(ConfigureLoggerEvent @event)
         {
-            await Task.CompletedTask;
-
             bool showDebug = false;
 #if DEBUG
             showDebug = true;

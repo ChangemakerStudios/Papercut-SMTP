@@ -47,21 +47,21 @@ namespace Papercut.App.WebApi
             this._httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}).");
         }
 
-        public async Task Handle(PapercutServiceReadyEvent @event)
+        public void Handle(PapercutServiceReadyEvent @event)
         {
             this._logger.Debug("{@PapercutServiceReadyEvent}", @event);
 
-            await this.StartHttpServer();
+            this.StartHttpServer();
         }
 
-        public async Task Handle(PapercutClientReadyEvent @event)
+        public void Handle(PapercutClientReadyEvent @event)
         {
             this._logger.Debug("{@PapercutClientReadyEvent}", @event);
 
-            await this.StartHttpServer();
+            this.StartHttpServer();
         }
 
-        async Task StartHttpServer()
+        void StartHttpServer()
         {
             if (this._initialized) return;
 
@@ -75,7 +75,7 @@ namespace Papercut.App.WebApi
                 
                 RouteConfig.Init(config, this._scope);
 
-                await new HttpSelfHostServer(config).OpenAsync();
+                new HttpSelfHostServer(config).OpenAsync().Wait();
 
                 this._logger.Information("[WebUI] Papercut Web UI is browsable at {@WebUiUri}", uri);
             }

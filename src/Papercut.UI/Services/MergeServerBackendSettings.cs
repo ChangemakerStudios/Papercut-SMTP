@@ -41,7 +41,7 @@ namespace Papercut.Services
             this._messageBus = messageBus;
         }
 
-        public async Task Handle([NotNull] AppProcessExchangeEvent @event)
+        public void Handle([NotNull] AppProcessExchangeEvent @event)
         {
             if (@event == null) throw new ArgumentNullException(nameof(@event));
 
@@ -64,7 +64,7 @@ namespace Papercut.Services
             Settings.Default.Port = @event.Port;
             Settings.Default.Save();
 
-            await this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
+            this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
         }
     }
 }

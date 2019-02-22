@@ -36,14 +36,12 @@ namespace Papercut.Service.Logging
             this._settings = settings;
         }
 
-        public Task Handle(ConfigureLoggerEvent @event)
+        public void Handle(ConfigureLoggerEvent @event)
         {
             if (this._settings.SeqEndpoint.IsSet())
             {
                 @event.LogConfiguration.WriteTo.Seq(_settings.SeqEndpoint);
             }
-
-            return Task.CompletedTask;
         }
     }
 }

@@ -65,10 +65,8 @@ namespace Papercut.Service.Services
             this._ipCommServer = ipCommServer;
         }
 
-        public async Task Handle(SmtpServerBindEvent @event)
+        public void Handle(SmtpServerBindEvent @event)
         {
-            await Task.CompletedTask;
-
             _logger.Information(
                 "Received New Smtp Server Binding Settings from UI {@Event}",
                 @event);
@@ -79,23 +77,23 @@ namespace Papercut.Service.Services
             _serviceSettings.Save();
 
             // rebind the server...
-            await this.BindSMTPServer();
+            this.BindSMTPServer();
         }
 
-        async Task BindSMTPServer()
+        void BindSMTPServer()
         {
-            await _smtpServer.Stop();
+            _smtpServer.Stop();
 
             this._smtpServer.ListenIpAddress = this._serviceSettings.IP;
             this._smtpServer.ListenPort = this._serviceSettings.Port;
 
-            await _smtpServer.Start();
+            _smtpServer.Start();
         }
 
         public void Start()
         {
             this._messageBus.Publish(
-                new PapercutServicePreStartEvent { AppMeta = _applicationMetaData }).Wait();
+                new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
 
             this._ipCommServer.ObserveStartServer(
                     IPCommConstants.Localhost,
@@ -129,15 +127,16 @@ namespace Papercut.Service.Services
                             _serviceSettings.IP,
                             _serviceSettings.Port),
                     // on complete
-                    async () =>
-                        await this._messageBus.Publish(
+                    () =>
+                        this._messageBus.Publish(
                             new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
         }
 
         public void Stop()
         {
-            this._ipCommServer.Stop().Wait();
-            _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData }).Wait();
+            this._ipCommServer.Stop();
+
+            _messageBus.Publish(new PapercutServiceExitEvent { AppMeta = _applicationMetaData });
         }
 
         public void Dispose()

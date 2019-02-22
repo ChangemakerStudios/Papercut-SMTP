@@ -70,10 +70,8 @@ namespace Papercut
             }
         }
 
-        public async Task Handle(SettingsUpdatedEvent @event)
+        public void Handle(SettingsUpdatedEvent @event)
         {
-            await Task.CompletedTask;
-
             UpdatePathTemplates();
         }
 

@@ -31,8 +31,8 @@ namespace Papercut.Core.Domain.Network
 
         int ListenPort { get; set; }
 
-        Task Start();
+        void Start();
 
-        Task Stop();
+        void Stop();
     }
 }

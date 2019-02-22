@@ -89,28 +89,22 @@ namespace Papercut.Services
             this._notification = null;
         }
 
-        public async Task Handle(PapercutClientExitEvent message)
+        public void Handle(PapercutClientExitEvent message)
         {
-            await Task.CompletedTask;
-
             if (_notification == null) return;
 
             this.Reset();
         }
 
-        public async Task Handle(PapercutClientReadyEvent message)
+        public void Handle(PapercutClientReadyEvent message)
         {
-            await Task.CompletedTask;
-
             if (_notification != null) return;
 
-            await SetupNotification();
+            SetupNotification();
         }
 
-        async Task SetupNotification()
+        void SetupNotification()
         {
-            await Task.CompletedTask;
-
             // Set up the notification icon
             _notification = new NotifyIcon
             {
@@ -150,10 +144,8 @@ namespace Papercut.Services
             _notification.ContextMenu = new ContextMenu(menuItems);
         }
 
-        public async Task Handle(ShowBallonTip @event)
+        public void Handle(ShowBallonTip @event)
         {
-            await Task.CompletedTask;
-
             _notificationSubject.OnNext(@event);
         }
     }
