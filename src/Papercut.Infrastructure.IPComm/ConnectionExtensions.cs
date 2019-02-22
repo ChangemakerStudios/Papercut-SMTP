@@ -19,23 +19,20 @@
 namespace Papercut.Infrastructure.IPComm
 {
     using System;
-    using System.Net.Sockets;
     using System.Threading.Tasks;
 
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Infrastructure.Json;
     using Papercut.Infrastructure.IPComm.IPComm;
 
     public static class ConnectionExtensions
     {
-        public static Task SendString(this Connection connection, string message)
+        public static async Task SendString(this Connection connection, string message)
         {
-            return connection.SendData(connection.Encoding.GetBytes(message));
+            await connection.SendData(connection.Encoding.GetBytes(message));
         }
 
-        public static Task SendLine(this Connection connection, string message)
+        public static async Task SendLine(this Connection connection, string message)
         {
-            return connection.SendString($"{message}{Environment.NewLine}");
+            await connection.SendString($"{message}{Environment.NewLine}");
         }
 
         public static async Task SendJson(this Connection connection, Type type, object instance)
@@ -45,12 +42,12 @@ namespace Papercut.Infrastructure.IPComm
             await connection.SendData(connection.Encoding.GetBytes(json));
         }
 
-        public static Task Send(
+        public static async Task Send(
             this Connection connection,
             string message,
             params object[] args)
         {
-            return connection.SendData(connection.Encoding.GetBytes(string.Format(message, args)));
+            await connection.SendData(connection.Encoding.GetBytes(string.Format(message, args)));
         }
     }
 }

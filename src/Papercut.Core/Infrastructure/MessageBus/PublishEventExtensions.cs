@@ -19,7 +19,6 @@ namespace Papercut.Core.Infrastructure.MessageBus
 {
     using System;
     using System.Reflection;
-    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
@@ -29,7 +28,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
     {
         static readonly MethodInfo _publishMethodInfo = typeof(IMessageBus).GetMethod("Publish");
 
-        public static async Task PublishObject(
+        public static void PublishObject(
             this IMessageBus messageBus,
             object @event,
             Type eventType)
@@ -38,7 +37,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
 
             MethodInfo publishMethod = _publishMethodInfo.MakeGenericMethod(eventType);
 
-            await (Task)publishMethod.Invoke(messageBus, new[] { @event });
+            publishMethod.Invoke(messageBus, new[] { @event });
         }
     }
 }

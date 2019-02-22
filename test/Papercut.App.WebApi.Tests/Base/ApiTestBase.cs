@@ -25,18 +25,7 @@ namespace Papercut.App.WebApi.Tests.Base
 
     using Papercut.App.WebApi;
     using Papercut.App.WebApi.Tests.WebServerFacts;
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Domain.Paths;
     using Papercut.Core.Infrastructure.Container;
-
-    public class ApiTestModule : Module
-    {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.Register(c => new ApplicationMeta("Papercut.App.WebApi.Tests")).As<IAppMeta>().SingleInstance();
-            builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().SingleInstance();
-        }
-    }
 
     public class ApiTestBase : IDisposable
     {

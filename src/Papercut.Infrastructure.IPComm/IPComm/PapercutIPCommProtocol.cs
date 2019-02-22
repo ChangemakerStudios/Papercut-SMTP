@@ -44,7 +44,8 @@ namespace Papercut.Infrastructure.IPComm.IPComm
         {
             this.Connection = connection;
             this.Logger.ForContext("ConnectionId", this.Connection.Id);
-            this.Connection.SendLine("PAPERCUT");
+
+            this.Connection.SendLine("PAPERCUT").Wait();
         }
 
         protected override void ProcessRequest(string incomingRequest)
@@ -69,14 +70,14 @@ namespace Papercut.Infrastructure.IPComm.IPComm
 
                     this.Logger.Information("Publishing Event Received {@Event} from Remote", remoteEvent);
 
-                    this._messageBus.PublishObject(remoteEvent, request.Type).Wait();
+                    this._messageBus.PublishObject(remoteEvent, request.Type);
 
                     if (request.CommandType == PapercutIPCommCommandType.Exchange)
                     {
                         // send response back...
                         this.Logger.Information("Exchanging Event {@Event} -- Pushing to Remote", remoteEvent);
 
-                        this.Connection.SendJson(request.Type, remoteEvent).Wait();
+                        this.Connection.SendJson(request.Type, remoteEvent);
                     }
                 }
             }

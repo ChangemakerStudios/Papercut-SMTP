@@ -116,12 +116,22 @@ namespace Papercut.Infrastructure.IPComm
         {
             if (result == null) throw new ArgumentNullException(nameof(result));
 
+            SocketError socketError = SocketError.Success;
+
             try
             {
                 // Receive the rest of the data
-                int sizeReceived = this.Client.EndReceive(result);
+                int sizeReceived = this.Client.EndReceive(result, out socketError);
 
                 this.LastActivity = DateTime.Now;
+
+                if (socketError != SocketError.Success)
+                {
+                    this.Logger.Warning("Socket Error Ending Receive {SocketError}", socketError);
+                    this.Close();
+
+                    return false;
+                }
 
                 // Ensure we received bytes
                 if (sizeReceived <= 0 || (this._receiveBuffer.Length == 64 && this._receiveBuffer[0] == '\0'))
@@ -133,6 +143,7 @@ namespace Papercut.Infrastructure.IPComm
 
                 var incoming = new byte[sizeReceived];
                 Array.Copy(this._receiveBuffer, incoming, sizeReceived);
+
                 this.Protocol.ProcessIncomingBuffer(incoming, this.Encoding);
 
                 // continue receiving...
@@ -140,7 +151,7 @@ namespace Papercut.Infrastructure.IPComm
             }
             catch (Exception exception)
             {
-                this.Logger.Warning(exception, "Failed to End Receive on Async Socket");
+                this.Logger.Warning(exception, "Failed to End Receive on Async Socket {SocketError}", socketError);
             }
 
             return false;
@@ -199,18 +210,37 @@ namespace Papercut.Infrastructure.IPComm
             }
         }
 
-        public Task SendData(byte[] data)
+        public async Task<int> SendData(byte[] data)
         {
-            if (!this.Connected || !this.Client.Connected) return TaskHelpers.FromResult(0);
+            if (!this.Connected || !this.Client.Connected) return 0;
 
             // Use overload that takes an IAsyncResult directly
             try
             {
-                AsyncCallback nullOp = i => { };
-                IAsyncResult result = this.Client.BeginSend(data, 0, data.Length, SocketFlags.None, nullOp, null);
-                if (result != null)
+                void NullOp(IAsyncResult i)
                 {
-                    return Task.Factory.FromAsync(result, r => this.Client.Connected ? this.Client.EndSend(r) : 0);
+                }
+
+                IAsyncResult result = this.Client.BeginSend(data, 0, data.Length, SocketFlags.None, NullOp, null);
+
+                if (result != null && this.Client.Connected)
+                {
+                    await Task.Factory.FromAsync(result, r =>
+                    {
+                        if (this.Client.Connected)
+                        {
+                            var sendResult = this.Client.EndSend(r, out var socketError);
+
+                            if (socketError != SocketError.Success)
+                            {
+                                this.Logger.Warning("Socket Send {SocketError}", socketError);
+                            }
+
+                            return sendResult;
+                        }
+
+                        return 0;
+                    });
                 }
             }
             catch (ObjectDisposedException)
@@ -218,7 +248,7 @@ namespace Papercut.Infrastructure.IPComm
                 // sometimes happens when the socket has already been closed.   
             }
 
-            return TaskHelpers.FromResult(0);
+            return 0;
         }
 
         #endregion
