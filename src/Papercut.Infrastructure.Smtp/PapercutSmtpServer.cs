@@ -155,7 +155,7 @@ namespace Papercut.Infrastructure.Smtp
 
         private void OnSessionCompleted(object sender, SessionEventArgs e)
         {
-            this._logger.Information("Completed SMTP connection from {@Endpoint}", e.Context.EndpointDefinition.Endpoint);
+            this._logger.Information("Completed SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
         }
 
         private void OnSessionCreated(object sender, SessionEventArgs e)
@@ -165,7 +165,7 @@ namespace Papercut.Infrastructure.Smtp
                 this._logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
             };
 
-            this._logger.Information("New SMTP connection from {@Endpoint}", e.Context.EndpointDefinition.Endpoint);
+            this._logger.Information("New SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
         }
 
         private bool IgnoreCertificateValidationFailureForTestingOnly(
