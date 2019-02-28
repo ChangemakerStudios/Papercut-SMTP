@@ -144,7 +144,14 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string Version => $"Papercut v{Assembly.GetExecutingAssembly().GetName().Version.ToString(3)}";
+        string GetVersion()
+        {
+            var productVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
+
+            return productVersion.Split('+').FirstOrDefault();
+        }
+
+        public string Version => $"Papercut v{GetVersion()}";
 
         public bool IsLogOpen
         {
