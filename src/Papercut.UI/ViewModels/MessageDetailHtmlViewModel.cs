@@ -55,7 +55,7 @@ namespace Papercut.ViewModels
 
         public string HtmlFile
         {
-            get { return _htmlFile; }
+            get => _htmlFile;
             set
             {
                 _htmlFile = value;
@@ -79,19 +79,14 @@ namespace Papercut.ViewModels
             if (mailMessageEx == null)
                 throw new ArgumentNullException(nameof(mailMessageEx));
 
-            Observable.Start(() =>
+            try
             {
-                try
-                {
-                    return _previewGenerator.CreateFile(mailMessageEx);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
-                }
-
-                return null;
-            }).Subscribe(h => { HtmlFile = h; });
+                HtmlFile = _previewGenerator.CreateFile(mailMessageEx);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
+            }
         }
 
         public void OnNavigating(NavigatingCancelEventArgs e)
@@ -148,19 +143,20 @@ namespace Papercut.ViewModels
                         typedView.htmlView.Source = new Uri(string.IsNullOrWhiteSpace(file) ? "about:blank" : file);
                     });
 
+            void VisibilityChanged(DependencyPropertyChangedEventArgs o)
+            {
+                typedView.htmlView.Visibility = o.NewValue.ToType<bool>()
+                                                    ? Visibility.Visible
+                                                    : Visibility.Collapsed;
+            }
+
             Observable.FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
                 a => ((s, e) => a(e)),
                 h => typedView.IsEnabledChanged += h,
                 h => typedView.IsEnabledChanged -= h)
                 .Throttle(TimeSpan.FromMilliseconds(100))
                 .ObserveOnDispatcher()
-                .Subscribe(
-                    o =>
-                    {
-                        typedView.htmlView.Visibility = o.NewValue.ToType<bool>()
-                                                            ? Visibility.Visible
-                                                            : Visibility.Collapsed;
-                    });
+                .Subscribe(VisibilityChanged);
 
             typedView.htmlView.Navigated += (sender, args) =>
             {
@@ -179,22 +175,20 @@ namespace Papercut.ViewModels
             internal static void SetSilent(System.Windows.Controls.WebBrowser browser, bool silent)
             {
                 // get an IWebBrowser2 from the document
-                IOleServiceProvider sp = browser?.Document as IOleServiceProvider;
-                if (sp != null)
-                {
-                    Guid IID_IWebBrowserApp = new Guid(IWebBrowserAppGUID);
-                    Guid IID_IWebBrowser2 = new Guid(IWebBrowser2GUID);
+                if (!(browser?.Document is IOleServiceProvider sp)) return;
 
-                    object webBrowser;
-                    sp.QueryService(ref IID_IWebBrowserApp, ref IID_IWebBrowser2, out webBrowser);
-                    webBrowser?.GetType()
-                        .InvokeMember(
-                            "Silent",
-                            BindingFlags.Instance | BindingFlags.Public | BindingFlags.PutDispProperty,
-                            null,
-                            webBrowser,
-                            new object[] { silent });
-                }
+                Guid IID_IWebBrowserApp = new Guid(IWebBrowserAppGUID);
+                Guid IID_IWebBrowser2 = new Guid(IWebBrowser2GUID);
+
+                sp.QueryService(ref IID_IWebBrowserApp, ref IID_IWebBrowser2, out var webBrowser);
+
+                webBrowser?.GetType()
+                    .InvokeMember(
+                        "Silent",
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.PutDispProperty,
+                        null,
+                        webBrowser,
+                        new object[] { silent });
             }
 
         }
@@ -204,8 +198,6 @@ namespace Papercut.ViewModels
         {
             [PreserveSig]
             int QueryService([In] ref Guid guidService, [In] ref Guid riid, [MarshalAs(UnmanagedType.IDispatch)] out object ppvObject);
-
-
         }
     }
 }

@@ -20,6 +20,7 @@ namespace Papercut.Helpers
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
 
     using MimeKit;
     using MimeKit.Text;
@@ -65,6 +66,8 @@ namespace Papercut.Helpers
 
         bool TryGetImage(string url, out MimePart image)
         {
+            image = null;
+
             UriKind kind;
             Uri uri;
 
@@ -81,24 +84,25 @@ namespace Papercut.Helpers
             }
             catch (UriFormatException)
             {
-                image = null;
                 return false;
             }
 
-            for (int i = _stack.Count - 1; i >= 0; i--)
+            foreach (var item in this._stack.ToArray().Reverse())
             {
-                int index;
-                if ((index = _stack[i].IndexOf(uri)) == -1)
+                int index = item.IndexOf(uri);
+                
+                if (index == IndexNotFound)
                     continue;
 
-                image = _stack[i][index] as MimePart;
+                image = item[index] as MimePart;
+
                 return image != null;
             }
 
-            image = null;
-
             return false;
         }
+
+        const int IndexNotFound = -1;
 
         string SaveImage(MimePart image, string url)
         {
@@ -126,70 +130,99 @@ namespace Papercut.Helpers
                     image.Content.DecodeTo(output);
             }
 
-            return "file://" + path.Replace('\\', '/');
+            return $"file://{path.Replace('\\', '/')}";
         }
 
         void HtmlTagCallback(HtmlTagContext ctx, HtmlWriter htmlWriter)
         {
-            if (ctx.TagId == HtmlTagId.Image && !ctx.IsEndTag && _stack.Count > 0)
-            {
-                ctx.WriteTag(htmlWriter, false);
-
-                // replace the src attribute with a file:// URL
-                foreach (var attribute in ctx.Attributes)
-                {
-                    if (attribute.Id == HtmlAttributeId.Src)
-                    {
-
-                        if (!TryGetImage(attribute.Value, out MimePart image))
-                        {
-                            htmlWriter.WriteAttribute(attribute);
-                            continue;
-                        }
-
-                        var url = SaveImage(image, attribute.Value);
-
-                        htmlWriter.WriteAttributeName(attribute.Name);
-                        htmlWriter.WriteAttributeValue(url);
-                    }
-                    else
-                        htmlWriter.WriteAttribute(attribute);
-                }
-            }
-            else if (ctx.TagId == HtmlTagId.Body && !ctx.IsEndTag)
-            {
-                ctx.WriteTag(htmlWriter, false);
-
-                // add and/or replace oncontextmenu="return false;"
-                foreach (var attribute in ctx.Attributes)
-                {
-                    if (attribute.Name.ToLowerInvariant() == "oncontextmenu")
-                        continue;
-
-                    htmlWriter.WriteAttribute(attribute);
-                }
-
-                htmlWriter.WriteAttribute("oncontextmenu", "return false;");
-            }
-            else
+            void WriteTagAsIs()
             {
                 // pass the tag through to the output
                 ctx.WriteTag(htmlWriter, true);
             }
+
+            switch (ctx.TagId)
+            {
+                case HtmlTagId.Head when !ctx.IsEndTag:
+                    ctx.WriteTag(htmlWriter, false);
+                    AddMetaCompatibleIEEdge(htmlWriter);
+
+                    break;
+                    
+                case HtmlTagId.Image when !ctx.IsEndTag && this._stack.Count > 0:
+                    LinkImageTag(ctx, htmlWriter);
+
+                    break;
+                case HtmlTagId.Body when !ctx.IsEndTag:
+                    RemoveContextMenuFromBodyTag(ctx, htmlWriter);
+                    break;
+                default:
+                    
+                    WriteTagAsIs();
+
+                    break;
+            }
         }
 
-        static void GetHeaderFooter(out string header, out string footer)
+        private void AddMetaCompatibleIEEdge(HtmlWriter htmlWriter)
         {
-            var format = UIStrings.HtmlFormatWrapper;
-            int index = format.IndexOf("{0}");
+            htmlWriter.WriteStartTag(HtmlTagId.Meta);
+            htmlWriter.WriteAttribute("http-equiv", "X-UA-Compatible");
+            htmlWriter.WriteAttribute("content", "IE=Edge");
+            htmlWriter.WriteEndTag(HtmlTagId.Meta);
+        }
 
-            header = format.Substring(0, index);
-            footer = format.Substring(index + 3);
+        private static void RemoveContextMenuFromBodyTag(HtmlTagContext ctx, HtmlWriter htmlWriter)
+        {
+            ctx.WriteTag(htmlWriter, false);
+
+            // add and/or replace oncontextmenu="return false;"
+            foreach (var attribute in ctx.Attributes)
+            {
+                if (attribute.Name.ToLowerInvariant() == "oncontextmenu")
+                    continue;
+
+                htmlWriter.WriteAttribute(attribute);
+            }
+
+            htmlWriter.WriteAttribute("oncontextmenu", "return false;");
+        }
+
+        private void LinkImageTag(HtmlTagContext ctx, HtmlWriter htmlWriter)
+        {
+            ctx.WriteTag(htmlWriter, false);
+
+            // replace the src attribute with a file:// URL
+            foreach (var attribute in ctx.Attributes)
+            {
+                if (attribute.Id == HtmlAttributeId.Src)
+                {
+                    if (!this.TryGetImage(attribute.Value, out MimePart image))
+                    {
+                        htmlWriter.WriteAttribute(attribute);
+                        continue;
+                    }
+
+                    var url = this.SaveImage(image, attribute.Value);
+
+                    htmlWriter.WriteAttributeName(attribute.Name);
+                    htmlWriter.WriteAttributeValue(url);
+                }
+                else
+                    htmlWriter.WriteAttribute(attribute);
+            }
+        }
+
+        static (string Before,string After) GetBeforeAfterFormatWrapper(string formatWrapper)
+        {
+            //var format = UIStrings.TextToHtmlFormatWrapper;
+            int index = formatWrapper.IndexOf("{0}");
+
+            return (formatWrapper.Substring(0, index), formatWrapper.Substring(index + 3));
         }
 
         protected override void VisitTextPart(TextPart entity)
         {
-            TextConverter converter;
             if (_body != null)
             {
                 // since we've already found the body, treat this as an attachment
@@ -197,46 +230,74 @@ namespace Papercut.Helpers
                 return;
             }
 
-            GetHeaderFooter(out string header, out string footer);
-
             if (entity.IsHtml)
             {
-                converter = new HtmlToHtml
-                {
-                    Header = UIStrings.MarkOfTheWeb + Environment.NewLine,
-                    HeaderFormat = HeaderFooterFormat.Html,
-                    HtmlTagCallback = HtmlTagCallback
-                };
+                this.SetHtmlToBody(entity);
             }
             else if (entity.IsFlowed)
             {
-                var flowed = new FlowedToHtml
-                {
-                    Header = UIStrings.MarkOfTheWeb + Environment.NewLine + header,
-                    HeaderFormat = HeaderFooterFormat.Html,
-                    Footer = footer,
-                    FooterFormat = HeaderFooterFormat.Html
-                };
-
-                if (entity.ContentType.Parameters.TryGetValue("delsp", out string delsp))
-                    flowed.DeleteSpace = delsp.ToLowerInvariant() == "yes";
-
-                converter = flowed;
+                this.SetFlowedHtmlToBody(entity);
             }
             else
             {
-                converter = new TextToHtml
-                {
-                    Header = UIStrings.MarkOfTheWeb + Environment.NewLine + header,
-                    HeaderFormat = HeaderFooterFormat.Html,
-                    Footer = footer,
-                    FooterFormat = HeaderFooterFormat.Html
-                };
+                this.SetTextToHtml(entity);
             }
+        }
 
-            string text = entity.Text;
+        private void SetTextToHtml(TextPart entity)
+        {
+            var beforeAfter = GetBeforeAfterFormatWrapper(UIStrings.TextToHtmlFormatWrapper);
+
+            var converter = new TextToHtml
+                        {
+                            Header = $"{UIStrings.MarkOfTheWeb}{Environment.NewLine}{beforeAfter.Before}",
+                            HeaderFormat = HeaderFooterFormat.Html,
+                            Footer = beforeAfter.After,
+                            FooterFormat = HeaderFooterFormat.Html
+                        };
 
             _body = converter.Convert(entity.Text);
+        }
+
+        private void SetFlowedHtmlToBody(TextPart entity)
+        {
+            var beforeAfter = GetBeforeAfterFormatWrapper(UIStrings.HtmlToHtmlFormatWrapper);
+
+            var convertor = new FlowedToHtml
+                            {
+                                Header = $"{UIStrings.MarkOfTheWeb}{Environment.NewLine}{beforeAfter.Before}",
+                                HeaderFormat = HeaderFooterFormat.Html,
+                                Footer = beforeAfter.After,
+                                FooterFormat = HeaderFooterFormat.Html
+                            };
+
+            if (entity.ContentType.Parameters.TryGetValue("delsp", out string delsp))
+            {
+                convertor.DeleteSpace = delsp.ToLowerInvariant() == "yes";
+            }
+
+            _body = convertor.Convert(entity.Text);
+        }
+
+        private void SetHtmlToBody(TextPart entity)
+        {
+            var converter = new HtmlToHtml
+                            {
+                                Header = $"{UIStrings.MarkOfTheWeb}{Environment.NewLine}",
+                                HeaderFormat = HeaderFooterFormat.Html,
+                                HtmlTagCallback = this.HtmlTagCallback
+                            };
+
+            var html = entity.Text;
+
+            if (!html.Contains("<head>") || !html.Contains("<body>"))
+            {
+                var beforeAfter = GetBeforeAfterFormatWrapper(UIStrings.HtmlToHtmlFormatWrapper);
+
+                _body = converter.Convert(beforeAfter.Before + html + beforeAfter.After);
+
+            }
+            else _body = converter.Convert(html);
         }
 
         protected override void VisitTnefPart(TnefPart entity)
