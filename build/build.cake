@@ -4,11 +4,11 @@
 #tool "nuget:?package=OpenCover&version=4.6.519"
 #tool "nuget:?package=GitVersion.CommandLine"
 
+#addin "Cake.FileHelpers&version=3.1.0"
+#addin "Cake.Incubator&version=4.0.1"
+
 #reference "tools/MarkdownSharp.1.13.0.0/lib/35/MarkdownSharp.dll"
 #reference "tools/MimeKitLite.2.0.6/lib/net45/MimeKitLite.dll"
-
-#addin "Cake.FileHelpers"
-#addin "Cake.Incubator"
 
 #load "./BuildInformation.cake" 
 #load "./ReleaseNotes.cake" 
