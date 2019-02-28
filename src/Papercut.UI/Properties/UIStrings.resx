@@ -121,7 +121,7 @@
     <value>Delete{{#if HasSelectedMessage}} ({{SelectedMessageCount}}){{/if}}</value>
   </data>
   <data name="HtmlToHtmlFormatWrapper" xml:space="preserve">
-    <value>&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;{0}&lt;/body&gt;&lt;/html&gt;</value>
+    <value>&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body oncontextmenu="return false;"&gt;{0}&lt;/body&gt;&lt;/html&gt;</value>
   </data>
   <data name="MarkOfTheWeb" xml:space="preserve">
     <value>&lt;!-- saved from url=(0014)about:internet --&gt;</value>
