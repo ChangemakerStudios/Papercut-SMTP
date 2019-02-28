@@ -29,7 +29,7 @@ Download Papercut.Setup.exe installer.
 ![In Version 4.4: Logging View](http://www.tinygecko.com/images/Papercut/Papercut-Log.png)
 
 ## Papercut Background Service
-Papercut has an optional "always on" service to receive emails even when the client is not running. It's installed by default but can optionally be deselected during installation. Alternatively the service can be downloaded and installed independently [Downloading the Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), by unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
+Papercut has an optional "always on" service to receive emails even when the client is not running. It's installed by default but can optionally be deselected during installation. Alternatively, the service can be downloaded and installed independently by downloading [Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
 
 ## License
 Papercut is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
