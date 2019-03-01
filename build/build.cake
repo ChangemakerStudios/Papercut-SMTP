@@ -42,7 +42,7 @@ Teardown(ctx => Information("Finished running tasks."));
 // Configuration
 ///////////////////////////////////////////////////////////////////////////////
 var papercutBinDir = "../src/Papercut.UI/bin";
-var papercutServiceBinDir = "../src/Papercut.Service/bin";
+var papercutServiceBinDir = "../src/Papercut.Service/bin/net472";
 var webUiTestsBinDir = "../test/Papercut.Module.WebUI.Tests/bin";
 
 var outputDirectory = DirectoryPath.FromString("../out");

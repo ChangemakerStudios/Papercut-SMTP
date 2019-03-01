@@ -19,6 +19,7 @@
 namespace Papercut.App.WebApi
 {
     using System;
+    using System.Net;
     using System.Threading.Tasks;
     using System.Web.Http.SelfHost;
 
@@ -44,21 +45,27 @@ namespace Papercut.App.WebApi
         {
             this._scope = scope;
             this._logger = logger.ForContext<WebServer>();
-            this._httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}).");
+            this._httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}). Set to 0 to disable Http Web UI Server.");
         }
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
             this._logger.Debug("{@PapercutServiceReadyEvent}", @event);
 
-            this.StartHttpServer();
+            if (this._httpPort != 0)
+            {
+                this.StartHttpServer();
+            }
         }
 
         public void Handle(PapercutClientReadyEvent @event)
         {
             this._logger.Debug("{@PapercutClientReadyEvent}", @event);
 
-            this.StartHttpServer();
+            if (this._httpPort != 0)
+            {
+                this.StartHttpServer();
+            }
         }
 
         void StartHttpServer()
@@ -69,15 +76,20 @@ namespace Papercut.App.WebApi
 
             try
             {
-                this._initialized = true;
-
                 var config = new HttpSelfHostConfiguration(uri);
-                
+
                 RouteConfig.Init(config, this._scope);
 
                 new HttpSelfHostServer(config).OpenAsync().Wait();
 
+                this._initialized = true;
+
                 this._logger.Information("[WebUI] Papercut Web UI is browsable at {@WebUiUri}", uri);
+            }
+            catch (HttpListenerException ex)
+            {
+                this._logger.Warning(ex, "[WebUI] Run with elevated permissions (Administrator)");
+                this._initialized = false;
             }
             catch (Exception ex)
             {

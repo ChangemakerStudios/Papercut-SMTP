@@ -28,10 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="Papercut.Service.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>  
+    <None Include="app.config" />  
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
@@ -72,5 +69,10 @@
     <PackageReference Include="Topshelf.Serilog">
       <Version>4.2.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Papercut.Service.Settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
