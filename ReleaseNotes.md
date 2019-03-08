@@ -1,5 +1,13 @@
 # Release Notes
 
+## Papercut v5.4.1 [2019-03-07]
+- NOTE: Web UI is now only available in PapercutService.
+- Switched to using [SmtpServer](https://github.com/cosullivan/SmtpServer) project for Papercut's SMTP Server.
+- Added http:// link in log for Web UI improving discoverablity for the UI. Hopefully fixed the issues with the web ui binding.
+- [#137](https://github.com/ChangemakerStudios/Papercut/issues/137) - Removed plugin architecture.
+- [#96](https://github.com/ChangemakerStudios/Papercut/issues/96), [#132](https://github.com/ChangemakerStudios/Papercut/issues/132) - Fixed issue with receiving email as UTF-8 by default.
+- [#105](https://github.com/ChangemakerStudios/Papercut/issues/105) - Fixed: Clicking target="blank" links in emails will now use the default browser.
+
 ## Papercut v5.2.16 [2019-02-01]
 - Added http:// link in log for Web UI improving discoverablity for the UI. Hopefully fixed the issues with the web ui binding.
 - StartHttpServer for the Web UI needs to be called in another thread -- it was causing hangs on loading.
