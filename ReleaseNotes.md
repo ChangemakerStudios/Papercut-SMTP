@@ -1,6 +1,6 @@
 # Release Notes
 
-## Papercut v5.4.1 [2019-03-07]
+## Papercut v5.5.0 [2019-03-08]
 - NOTE: Web UI is now only available in PapercutService.
 - Switched to using [SmtpServer](https://github.com/cosullivan/SmtpServer) project for Papercut's SMTP Server.
 - Added http:// link in log for Web UI improving discoverablity for the UI. Hopefully fixed the issues with the web ui binding.
