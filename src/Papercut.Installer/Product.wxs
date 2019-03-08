@@ -7,7 +7,7 @@
     <?define Manufacturer="Changemaker Studios" ?>
     <?define BinPath="bin\$(var.Configuration)" ?>
     <?define AppBinPath="..\Papercut.UI\$(var.BinPath)\" ?>
-    <?define SrvBinPath="..\Papercut.Service\$(var.BinPath)\net472\" ?>
+    <?define SrvBinPath="..\Papercut.Service\$(var.BinPath)\" ?>
 
     <?ifndef env.APPVEYOR_BUILD_VERSION ?>
     <?define Version="5.0.0.0" ?>

@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <StartupObject />
     <DependsOnNETStandard>false</DependsOnNETStandard>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
