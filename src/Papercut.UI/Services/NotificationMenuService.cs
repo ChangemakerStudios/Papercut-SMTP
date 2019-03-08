@@ -22,7 +22,10 @@ namespace Papercut.Services
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
+
+    using Caliburn.Micro;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
@@ -31,7 +34,8 @@ namespace Papercut.Services
     using Disposable = Autofac.Util.Disposable;
 
     public class NotificationMenuService : Disposable,
-        IEventHandler<PapercutClientReadyEvent>,
+        IUIThreadEventHandler<PapercutClientReadyEvent>,
+        IUIThreadEventHandler<PapercutClientExitEvent>,
         IEventHandler<ShowBallonTip>
     {
         readonly IMessageBus _messageBus;
@@ -73,11 +77,23 @@ namespace Papercut.Services
         {
             if (disposing)
             {
-                _notificationSubject?.Dispose();
-                _notificationSubject = null;
-                _notification?.Dispose();
-                _notification = null;
+                this.Reset();
             }
+        }
+
+        private void Reset()
+        {
+            this._notificationSubject?.Dispose();
+            this._notificationSubject = null;
+            this._notification?.Dispose();
+            this._notification = null;
+        }
+
+        public void Handle(PapercutClientExitEvent message)
+        {
+            if (_notification == null) return;
+
+            this.Reset();
         }
 
         public void Handle(PapercutClientReadyEvent message)

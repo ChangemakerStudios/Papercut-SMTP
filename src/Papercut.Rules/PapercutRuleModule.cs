@@ -25,16 +25,11 @@ namespace Papercut.Rules
     using Autofac.Core;
 
     using Papercut.Core.Domain.Rules;
-    using Papercut.Core.Infrastructure.Plugins;
 
     using Module = Autofac.Module;
 
-    public class PapercutRuleModule : Module, IDiscoverableModule
+    public class PapercutRuleModule : Module
     {
-        public IModule Module => this;
-
-        public Guid Id => new Guid("206A6C11-690A-4035-A907-8F67B59E3F97");
-
         protected override void Load(ContainerBuilder builder)
         {
             // rules and rule dispatchers
@@ -51,7 +46,7 @@ namespace Papercut.Rules
 
             builder.RegisterType<RulesRunner>().As<IRulesRunner>().SingleInstance();
 
-            builder.RegisterType<RuleRespository>().AsSelf().SingleInstance();
+            builder.RegisterType<RuleRepository>().AsSelf().SingleInstance();
         }
     }
 }

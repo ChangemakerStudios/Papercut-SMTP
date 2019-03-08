@@ -18,6 +18,7 @@
 namespace Papercut.Services
 {
     using System;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;

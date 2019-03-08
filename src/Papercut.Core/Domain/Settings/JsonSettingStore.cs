@@ -31,7 +31,7 @@ namespace Papercut.Core.Domain.Settings
         {
             this.SettingsFilePath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
-                $"{appMeta.AppName}.json");
+                $"{appMeta.AppName}.Settings.json");
         }
 
         protected string SettingsFilePath { get; set; }

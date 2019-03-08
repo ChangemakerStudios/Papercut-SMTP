@@ -18,31 +18,51 @@
 namespace Papercut.Events
 {
     using System;
+    using System.Threading.Tasks;
+
+    using Autofac;
 
     using Caliburn.Micro;
 
     using Papercut.Common.Domain;
+    using Papercut.Core.Annotations;
     using Papercut.Core.Infrastructure.MessageBus;
 
-    public class EventPublishAll : IMessageBus
+    public class EventPublishAll : AutofacMessageBus
     {
-        readonly AutofacMessageBus _autofacMessageBus;
-
         readonly IEventAggregator _uiEventAggregator;
 
         public EventPublishAll(
-            AutofacMessageBus autofacMessageBus,
+            ILifetimeScope scope,
             IEventAggregator uiEventAggregator)
+            : base(scope)
         {
-            this._autofacMessageBus = autofacMessageBus;
             _uiEventAggregator = uiEventAggregator;
         }
 
-        public void Publish<T>(T eventObject)
-            where T : IEvent
+        public override void Publish<T>([NotNull] T eventObject)
         {
-            this._autofacMessageBus.Publish(eventObject);
+            if (eventObject == null) throw new ArgumentNullException(nameof(eventObject));
+
+            base.Publish(eventObject);
+
             _uiEventAggregator.PublishOnUIThread(eventObject);
+        }
+
+        protected override void ExecuteHandler<T>(T eventObject, IEventHandler<T> @event)
+        {
+            if (@event is IUIThreadEventHandler<T>)
+            {
+                PlatformProvider.Current.OnUIThread(
+                    () =>
+                {
+                    base.ExecuteHandler(eventObject, @event);
+                });
+            }
+            else
+            {
+                base.ExecuteHandler(eventObject, @event);
+            }
         }
     }
 }

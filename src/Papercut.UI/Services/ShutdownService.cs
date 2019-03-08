@@ -17,6 +17,7 @@
 
 namespace Papercut.Services
 {
+    using System.Threading.Tasks;
     using System.Windows;
 
     using Papercut.Common.Domain;

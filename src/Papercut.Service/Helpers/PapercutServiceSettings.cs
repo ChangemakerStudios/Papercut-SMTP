@@ -40,5 +40,11 @@ namespace Papercut.Service.Helpers
             get => Settings.GetOrSet<string>("MessagePath", @"%BaseDirectory%\Incoming", "Base path where incoming emails are written.");
             set { if (MessagePath != value) Settings.Set("MessagePath", value); }
         }
+
+        public string SeqEndpoint
+        {
+            get => Settings.GetOrSet<string>("SeqEndpoint", @"", "Populate with a endpoint if you want to enable SEQ (https://getseq.net/) logging.");
+            set { if (SeqEndpoint != value) Settings.Set("SeqEndpoint", value); }
+        }
     }
 }

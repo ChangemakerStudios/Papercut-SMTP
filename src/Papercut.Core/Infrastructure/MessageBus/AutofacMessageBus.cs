@@ -20,6 +20,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     using Autofac;
 
@@ -36,7 +37,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             this._lifetimeScope = lifetimeScope;
         }
 
-        public void Publish<T>(T eventObject) where T : IEvent
+        public virtual void Publish<T>(T eventObject) where T : IEvent
         {
             var eventHandlers = this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().ToList();
 
@@ -44,7 +45,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             {
                 try
                 {
-                    @event.Handle(eventObject);
+                    ExecuteHandler(eventObject, @event);
                 }
                 catch (Exception ex)
                 {
@@ -55,6 +56,12 @@ namespace Papercut.Core.Infrastructure.MessageBus
                         @event.GetType());
                 }
             }
+        }
+
+        protected virtual void ExecuteHandler<T>(T eventObject, IEventHandler<T> @event)
+            where T : IEvent
+        {
+            @event.Handle(eventObject);
         }
 
         private List<T> MaybeByOrderable<T>(IEnumerable<T> @events)

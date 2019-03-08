@@ -145,7 +145,7 @@
                    Grid.Column="2" />
 
             <Label Margin="52,0,0,13" Name="versionLabel" VerticalAlignment="Bottom" FontSize="10" Foreground="#696969"
-                   Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left" Width="132" Content="{Binding Version}" />
+                   Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left" Width="450" Content="{Binding Version}" />
 
             <Label Margin="53,0,0,2" VerticalAlignment="Bottom" FontSize="9" Foreground="#2e74a6" Cursor="Hand"
                    ToolTip="Click to visit the site" Grid.Column="2" Grid.Row="1"

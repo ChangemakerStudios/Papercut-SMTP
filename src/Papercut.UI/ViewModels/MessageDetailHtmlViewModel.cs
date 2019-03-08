@@ -24,6 +24,7 @@ namespace Papercut.ViewModels
     using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Windows;
+    using System.Windows.Controls;
     using System.Windows.Navigation;
 
     using Caliburn.Micro;
@@ -37,6 +38,8 @@ namespace Papercut.ViewModels
     using Papercut.Views;
 
     using Serilog;
+
+    using Action = Caliburn.Micro.Action;
 
     public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
     {
@@ -55,7 +58,7 @@ namespace Papercut.ViewModels
 
         public string HtmlFile
         {
-            get { return _htmlFile; }
+            get => _htmlFile;
             set
             {
                 _htmlFile = value;
@@ -63,6 +66,8 @@ namespace Papercut.ViewModels
                 NotifyOfPropertyChange(() => HasHtmlFile);
             }
         }
+
+        public Uri HtmlFileUri => new Uri(HtmlFile);
 
         public bool HasHtmlFile => !string.IsNullOrWhiteSpace(HtmlFile);
 
@@ -79,40 +84,48 @@ namespace Papercut.ViewModels
             if (mailMessageEx == null)
                 throw new ArgumentNullException(nameof(mailMessageEx));
 
-            Observable.Start(() =>
+            try
             {
-                try
-                {
-                    return _previewGenerator.CreateFile(mailMessageEx);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
-                }
-
-                return null;
-            }).Subscribe(h => { HtmlFile = h; });
+                HtmlFile = _previewGenerator.CreateFile(mailMessageEx);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
+            }
         }
 
+        [UsedImplicitly]
         public void OnNavigating(NavigatingCancelEventArgs e)
         {
-            if (e.Uri.Scheme == Uri.UriSchemeHttp || e.Uri.Scheme == Uri.UriSchemeHttps)
-            {
-                e.Cancel = true;
-                Process.Start(e.Uri.AbsoluteUri);
-            }
-            else if (e.Uri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
-            {
-                e.Cancel = true;
+            e.Cancel = this.TryHandleNavigateToUri(e.Uri);
+        }
 
+        private bool TryHandleNavigateToUri([NotNull] Uri navigateToUri)
+        {
+            if (navigateToUri == null) throw new ArgumentNullException(nameof(navigateToUri));
+
+            if (navigateToUri.Equals(HtmlFileUri))
+            {
+                return false;
+            }
+
+            if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
+            {
+                Process.Start(navigateToUri.AbsoluteUri);
+            }
+            else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
+            {
                 // direct to the parts area...
                 var model = this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
-                var part = model.Parts.FirstOrDefault(s => s.ContentId == e.Uri.AbsolutePath);
+                var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
                 if (part != null)
                 {
                     model.SelectedPart = part;
                 }
             }
+
+            // always cancel
+            return true;
         }
 
         protected override void OnViewLoaded(object view)
@@ -122,9 +135,7 @@ namespace Papercut.ViewModels
 
             base.OnViewLoaded(view);
 
-            var typedView = view as MessageDetailHtmlView;
-
-            if (typedView == null)
+            if (!(view is MessageDetailHtmlView typedView))
             {
                 _logger.Error("Unable to locate the MessageDetailHtmlView to hook the WebBrowser Control");
                 return;
@@ -148,23 +159,45 @@ namespace Papercut.ViewModels
                         typedView.htmlView.Source = new Uri(string.IsNullOrWhiteSpace(file) ? "about:blank" : file);
                     });
 
+            void VisibilityChanged(DependencyPropertyChangedEventArgs o)
+            {
+                typedView.htmlView.Visibility = o.NewValue.ToType<bool>()
+                                                    ? Visibility.Visible
+                                                    : Visibility.Collapsed;
+            }
+
             Observable.FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
                 a => ((s, e) => a(e)),
                 h => typedView.IsEnabledChanged += h,
                 h => typedView.IsEnabledChanged -= h)
                 .Throttle(TimeSpan.FromMilliseconds(100))
                 .ObserveOnDispatcher()
-                .Subscribe(
-                    o =>
-                    {
-                        typedView.htmlView.Visibility = o.NewValue.ToType<bool>()
-                                                            ? Visibility.Visible
-                                                            : Visibility.Collapsed;
-                    });
+                .Subscribe(VisibilityChanged);
+
+            typedView.htmlView.ContextMenuOpening += (sender, args) =>
+            {
+                args.Handled = true;
+            };
+
+            if (!BrowserHandler.TryGetWebBrowserInstance(typedView.htmlView, out var wb))
+            {
+                this._logger.Warning("Failure Retrieving COM+ Browser Instance");
+            }
+
+            if (wb != null)
+            {
+                wb.NewWindow3 += (ref object disp, ref bool cancel, uint flags, string context, string url) =>
+                {
+                    cancel = TryHandleNavigateToUri(new Uri(url));
+                };
+            }
 
             typedView.htmlView.Navigated += (sender, args) =>
             {
-                BrowserHandler.SetSilent(typedView.htmlView, true);
+                if (wb != null)
+                {
+                    wb.Silent = true;
+                }
             };
         }
 
@@ -173,30 +206,30 @@ namespace Papercut.ViewModels
         /// </summary>
         static class BrowserHandler
         {
-            private const string IWebBrowserAppGUID = "0002DF05-0000-0000-C000-000000000046";
-            private const string IWebBrowser2GUID = "D30C1661-CDAF-11d0-8A3E-00C04FC9E26E";
+            private static Guid IWebBrowserAppGUID = new Guid("0002DF05-0000-0000-C000-000000000046");
+            private static Guid IWebBrowser2GUID = typeof(SHDocVw.WebBrowser).GUID;
 
-            internal static void SetSilent(System.Windows.Controls.WebBrowser browser, bool silent)
+            internal static bool TryGetWebBrowserInstance(WebBrowser browser, out SHDocVw.WebBrowser webBrowser)
             {
-                // get an IWebBrowser2 from the document
-                IOleServiceProvider sp = browser?.Document as IOleServiceProvider;
-                if (sp != null)
-                {
-                    Guid IID_IWebBrowserApp = new Guid(IWebBrowserAppGUID);
-                    Guid IID_IWebBrowser2 = new Guid(IWebBrowser2GUID);
+                webBrowser = null;
 
-                    object webBrowser;
-                    sp.QueryService(ref IID_IWebBrowserApp, ref IID_IWebBrowser2, out webBrowser);
-                    webBrowser?.GetType()
-                        .InvokeMember(
-                            "Silent",
-                            BindingFlags.Instance | BindingFlags.Public | BindingFlags.PutDispProperty,
-                            null,
-                            webBrowser,
-                            new object[] { silent });
-                }
+                // get an IWebBrowser from the document
+                if (!(browser?.Document is IServiceProvider serviceProvider)) return false;
+
+                webBrowser = (SHDocVw.WebBrowser)serviceProvider.QueryService(ref IWebBrowserAppGUID, ref IWebBrowser2GUID);
+
+                if (webBrowser == null) return false;
+
+                return true;
             }
+        }
 
+        [ComImport, InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        [Guid("6d5140c1-7436-11ce-8034-00aa006009fa")]
+        internal interface IServiceProvider
+        {
+            [return: MarshalAs(UnmanagedType.IUnknown)]
+            object QueryService(ref Guid guidService, ref Guid riid);
         }
 
         [ComImport, Guid("6D5140C1-7436-11CE-8034-00AA006009FA"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -204,8 +237,6 @@ namespace Papercut.ViewModels
         {
             [PreserveSig]
             int QueryService([In] ref Guid guidService, [In] ref Guid riid, [MarshalAs(UnmanagedType.IDispatch)] out object ppvObject);
-
-
         }
     }
 }

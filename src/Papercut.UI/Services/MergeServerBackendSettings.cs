@@ -19,6 +19,7 @@ namespace Papercut.Services
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
@@ -55,6 +56,7 @@ namespace Papercut.Services
             }
 
             var previousSettings = new Settings();
+
             Settings.Default.CopyTo(previousSettings);
 
             // save ip:port bindings as our own to keep in sync...

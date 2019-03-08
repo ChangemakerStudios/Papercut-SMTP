@@ -19,11 +19,12 @@ namespace Papercut.Services
 {
     using System;
     using System.Threading;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
-    using Papercut.Network;
+    using Papercut.Infrastructure.IPComm.IPComm;
 
     using Serilog;
 
@@ -31,12 +32,12 @@ namespace Papercut.Services
     {
         readonly Mutex _appMutex = new Mutex(false, App.GlobalName);
 
-        readonly PapercutClient _papercutClient;
+        readonly PapercutIPCommClient _papercutIPCommClient;
 
-        public SingleInstanceService(PapercutClient papercutClient, ILogger logger)
+        public SingleInstanceService(PapercutIPCommClient papercutIPCommClient, ILogger logger)
         {
             Logger = logger;
-            _papercutClient = papercutClient;
+            this._papercutIPCommClient = papercutIPCommClient;
         }
 
         public ILogger Logger { get; set; }
@@ -67,10 +68,12 @@ namespace Papercut.Services
             if (_appMutex.WaitOne(0, false)) return;
 
             Logger.Debug(
-                "Second process run. Shutting this process and pushing show event to other process.");
+                "Second process run. Shutting this process down and pushing show event to other process");
 
-            // papercut is already running, push event to other process
-            _papercutClient.PublishEventServer(new ShowMainWindowEvent());
+            this._papercutIPCommClient.Port = IPCommConstants.UiListeningPort;
+
+            // papercut is already running, push event to other UI process
+            this._papercutIPCommClient.PublishEventServer(new ShowMainWindowEvent());
 
             // no need to go further
             @event.CancelStart = true;

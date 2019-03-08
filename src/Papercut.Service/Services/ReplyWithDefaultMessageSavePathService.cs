@@ -18,6 +18,7 @@
 namespace Papercut.Service.Services
 {
     using System.IO;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Paths;

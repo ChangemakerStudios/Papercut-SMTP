@@ -39,10 +39,10 @@ namespace Papercut.Service.Services
         readonly IRulesRunner _rulesRunner;
 
         public RuleService(
-            RuleRespository ruleRespository,
+            RuleRepository ruleRepository,
             ILogger logger,
             IRulesRunner rulesRunner)
-            : base(ruleRespository, logger)
+            : base(ruleRepository, logger)
         {
             _rulesRunner = rulesRunner;
         }
@@ -50,6 +50,7 @@ namespace Papercut.Service.Services
         public void Handle(PapercutClientReadyEvent @event)
         {
             _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+
             try
             {
                 // accessing "Rules" forces the collection to be loaded
@@ -74,10 +75,11 @@ namespace Papercut.Service.Services
                 @event.NewMessage);
 
             Task.Factory.StartNew(
-                () =>
+                async () =>
                 {
-                    Thread.Sleep(2000);
-                    _rulesRunner.Run(Rules.ToArray(), @event.NewMessage);
+                    await Task.Delay(2000);
+
+                    this._rulesRunner.Run(this.Rules.ToArray(), @event.NewMessage);
                 });
         }
 

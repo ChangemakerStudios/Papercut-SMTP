@@ -23,14 +23,9 @@ namespace Papercut.Message
     using Autofac.Core;
 
     using Papercut.Core.Domain.Message;
-    using Papercut.Core.Infrastructure.Plugins;
 
-    public class PapercutMessageModule : Autofac.Module, IDiscoverableModule
+    public class PapercutMessageModule : Autofac.Module
     {
-        public IModule Module => this;
-
-        public Guid Id => new Guid("C23AB1CA-B343-4459-A0BB-F194FFD557F4");
-
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();

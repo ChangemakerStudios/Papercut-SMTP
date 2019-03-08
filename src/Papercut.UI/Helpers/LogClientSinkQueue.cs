@@ -22,6 +22,7 @@ namespace Papercut.Helpers
     using System.Collections.Generic;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Logging;
@@ -51,8 +52,7 @@ namespace Papercut.Helpers
 
         public LogEvent GetLastEvent()
         {
-            LogEvent log;
-            return _logQueue.TryDequeue(out log) ? log : null;
+            return _logQueue.TryDequeue(out var log) ? log : null;
         }
 
         public IEnumerable<LogEvent> GetLastEvents()

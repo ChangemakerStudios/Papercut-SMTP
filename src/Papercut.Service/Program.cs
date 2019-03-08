@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2019 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,30 +17,46 @@
 
 namespace Papercut.Service
 {
-    using System;
+    using Autofac;
 
-    using Serilog;
+    using Papercut.Core.Infrastructure.Container;
+    using Papercut.Core.Infrastructure.Logging;
+    using Papercut.Service.Services;
 
-    class Program
+    using Topshelf;
+    using Topshelf.HostConfigurators;
+
+    internal class Program
     {
-        static RunServiceApp app;
+        private static IContainer _container;
 
         static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.UnhandledException += (sender, a) =>
-            {
-                if (Log.Logger == null) return;
-                if (a.IsTerminating) Log.Logger.Fatal(a.ExceptionObject as Exception, "Unhandled Exception");
-                else
-                {
-                    Log.Logger.Information(
-                        a.ExceptionObject as Exception,
-                        "Non-Fatal Unhandled Exception");
-                }
-            };
+            BootstrapLogger.SetRootGlobal();
 
-            app = new RunServiceApp();
-            app.Run();
+            using (_container = new SimpleContainer<PapercutServiceModule>().Build())
+            {
+                HostFactory.Run(ConfigureHost);
+            }
+        }
+
+        static void ConfigureHost(HostConfigurator x)
+        {
+            x.UseSerilog();
+            x.Service<ILifetimeScope>(
+                s =>
+                {
+                    s.ConstructUsing(serviceFactory => _container.BeginLifetimeScope());
+                    s.WhenStarted(scope => scope.Resolve<PapercutServerService>().Start());
+                    s.WhenStopped(scope => scope.Resolve<PapercutServerService>().Stop());
+                    s.WhenShutdown(scope => scope.Dispose());
+                });
+
+            x.RunAsLocalSystem();
+
+            x.SetDescription("Papercut SMTP Backend Service");
+            x.SetDisplayName("Papercut SMTP Service");
+            x.SetServiceName("PapercutServerService");
         }
     }
 }

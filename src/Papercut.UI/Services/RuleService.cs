@@ -23,6 +23,7 @@ namespace Papercut.Services
     using System.Linq;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Message;
@@ -46,13 +47,13 @@ namespace Papercut.Services
         readonly IRulesRunner _rulesRunner;
 
         public RuleService(
-            RuleRespository ruleRespository,
+            RuleRepository ruleRepository,
             ILogger logger,
             PapercutServiceBackendCoordinator coordinator,
             MessageWatcher messageWatcher,
             IRulesRunner rulesRunner,
             IMessageBus messageBus)
-            : base(ruleRespository, logger)
+            : base(ruleRepository, logger)
         {
             _coordinator = coordinator;
             _messageWatcher = messageWatcher;
@@ -86,7 +87,7 @@ namespace Papercut.Services
             }
 
             // rules loaded/updated event
-            this._messageBus.Publish(new RulesUpdatedEvent(Rules.ToArray()));
+            this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
 
             Rules.CollectionChanged += RuleCollectionChanged;
             HookPropertyChangedForRules(Rules);
@@ -106,9 +107,9 @@ namespace Papercut.Services
             }
         }
 
-        void PublishUpdateEvent()
+        void PublishUpdateEventAsync()
         {
-            this._messageBus.Publish(new RulesUpdatedEvent(Rules.ToArray()));
+            this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
         }
 
         void RuleCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -118,7 +119,7 @@ namespace Papercut.Services
                 if (args.NewItems != null)
                     HookPropertyChangedForRules(args.NewItems.OfType<IRule>());
 
-                PublishUpdateEvent();
+                this.PublishUpdateEventAsync();
             }
             catch (Exception ex)
             {
@@ -130,7 +131,7 @@ namespace Papercut.Services
         {
             foreach (IRule m in rules)
             {
-                m.PropertyChanged += (o, eventArgs) => PublishUpdateEvent();
+                m.PropertyChanged += (o, eventArgs) => this.PublishUpdateEventAsync();
             }
         }
     }

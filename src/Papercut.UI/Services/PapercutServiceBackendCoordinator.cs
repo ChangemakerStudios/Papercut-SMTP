@@ -22,6 +22,7 @@ namespace Papercut.Services
     using System.Reactive.Concurrency;
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Network.Smtp;
@@ -29,7 +30,7 @@ namespace Papercut.Services
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
-    using Papercut.Network;
+    using Papercut.Infrastructure.IPComm.IPComm;
     using Papercut.Properties;
 
     using Serilog;
@@ -46,7 +47,7 @@ namespace Papercut.Services
 
         readonly ILogger _logger;
 
-        readonly Func<PapercutClient> _papercutClientFactory;
+        readonly Func<PapercutIPCommClient> _papercutClientFactory;
 
         readonly IMessageBus _messageBus;
 
@@ -57,7 +58,7 @@ namespace Papercut.Services
         public PapercutServiceBackendCoordinator(
             ILogger logger,
             IMessageBus messageBus,
-            Func<PapercutClient> papercutClientFactory,
+            Func<PapercutIPCommClient> papercutClientFactory,
             SmtpServerCoordinator smtpServerCoordinator)
         {
             _logger = logger;
@@ -83,7 +84,7 @@ namespace Papercut.Services
 
         public void Handle(PapercutClientPreStartEvent @event)
         {
-            DoProcessExchange();
+            AttemptExchange();
         }
 
         public void Handle(PapercutServiceExitEvent @event)
@@ -100,7 +101,7 @@ namespace Papercut.Services
 
         public void Handle(PapercutServiceReadyEvent @event)
         {
-            DoProcessExchange();
+            AttemptExchange();
         }
 
         public void Handle(RulesUpdatedEvent @event)
@@ -112,6 +113,11 @@ namespace Papercut.Services
 
         public void Handle(SettingsUpdatedEvent @event)
         {
+            PublishSmtpUpdated(@event);
+        }
+
+        public void PublishSmtpUpdated(SettingsUpdatedEvent @event)
+        {
             if (!IsBackendServiceOnline) return;
 
             // check if the setting changed
@@ -119,15 +125,14 @@ namespace Papercut.Services
 
             try
             {
-                using (PapercutClient client = GetClient())
+                using (var messenger = GetClient())
                 {
                     // update the backend service with the new ip/port settings...
                     var smtpServerBindEvent = new SmtpServerBindEvent(
                         Settings.Default.IP,
                         Settings.Default.Port);
 
-                    bool successfulPublish =
-                        client.PublishEventServer(smtpServerBindEvent);
+                    bool successfulPublish = messenger.PublishEventServer(smtpServerBindEvent);
 
                     _logger.Information(
                         successfulPublish
@@ -141,36 +146,38 @@ namespace Papercut.Services
             }
         }
 
-        void DoProcessExchange()
+        private void AttemptExchange()
         {
             try
             {
-                var exchangeEvent = new AppProcessExchangeEvent();
+                var sendEvent = new AppProcessExchangeEvent();
 
                 // attempt to connect to the backend server...
-                using (PapercutClient client = GetClient())
+                using (var ipCommClient = this.GetClient())
                 {
-                    if (!client.ExchangeEventServer(ref exchangeEvent)) return;
+                    var receivedEvent = ipCommClient.ExchangeEventServer(sendEvent);
 
-                    IsBackendServiceOnline = true;
+                    if (receivedEvent == null) return;
+
+                    this.IsBackendServiceOnline = true;
 
                     // backend server is online...
-                    _logger.Information("Papercut Backend Service Running. Disabling SMTP in App.");
-                    _smtpServerCoordinator.SmtpServerEnabled = false;
+                    this._logger.Information("Papercut Backend Service Running. Disabling SMTP in App.");
+                    this._smtpServerCoordinator.SmtpServerEnabled = false;
 
-                    if (!string.IsNullOrWhiteSpace(exchangeEvent.MessageWritePath))
+                    if (!string.IsNullOrWhiteSpace(receivedEvent.MessageWritePath))
                     {
-                        _logger.Debug(
+                        this._logger.Debug(
                             "Background Process Returned {@Event} -- Publishing",
-                            exchangeEvent);
+                            receivedEvent);
 
-                        this._messageBus.Publish(exchangeEvent);
+                        this._messageBus.Publish(receivedEvent);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.Warning(ex, BackendServiceFailureMessage);
+                this._logger.Warning(ex, BackendServiceFailureMessage);
             }
         }
 
@@ -178,10 +185,9 @@ namespace Papercut.Services
         {
             try
             {
-                using (PapercutClient client = GetClient())
+                using (var ipCommClient = GetClient())
                 {
-                    bool successfulPublish =
-                        client.PublishEventServer(@event);
+                    bool successfulPublish = ipCommClient.PublishEventServer(@event);
 
                     _logger.Information(
                         successfulPublish
@@ -195,11 +201,11 @@ namespace Papercut.Services
             }
         }
 
-        PapercutClient GetClient()
+        PapercutIPCommClient GetClient()
         {
-            PapercutClient client = _papercutClientFactory();
-            client.Port = PapercutClient.ServerPort;
-            return client;
+            PapercutIPCommClient messenger = _papercutClientFactory();
+            messenger.Port = IPCommConstants.ServiceListeningPort;
+            return messenger;
         }
     }
 }

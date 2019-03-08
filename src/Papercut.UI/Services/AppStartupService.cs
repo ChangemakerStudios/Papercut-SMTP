@@ -18,6 +18,7 @@
 namespace Papercut.Services
 {
     using System.Security;
+    using System.Threading.Tasks;
 
     using Microsoft.Win32;
 
@@ -85,6 +86,7 @@ namespace Papercut.Services
             catch (SecurityException ex)
             {
                 _logger.Error(ex, "Error Opening Registry for App Startup Service");
+
                 this._messageBus.Publish(
                     new ShowMessageEvent(
                         "Failed to set Papercut to load at startup due to lack of permission. To fix, exit and run Papercut again with elevated (Admin) permissions.",

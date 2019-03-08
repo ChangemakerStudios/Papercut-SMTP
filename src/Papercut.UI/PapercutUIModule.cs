@@ -14,9 +14,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
+
 namespace Papercut
 {
     using System;
+    using System.Collections.Generic;
 
     using Autofac;
     using Autofac.Core;
@@ -24,22 +26,35 @@ namespace Papercut
     using Caliburn.Micro;
 
     using Papercut.Common.Domain;
+    using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Infrastructure.Container;
-    using Papercut.Core.Infrastructure.Plugins;
     using Papercut.Events;
     using Papercut.Helpers;
+    using Papercut.Infrastructure.IPComm;
+    using Papercut.Infrastructure.Smtp;
     using Papercut.Message;
+    using Papercut.Rules;
 
-    public class PapercutUIModule : Autofac.Module, IDiscoverableModule
+    [PublicAPI]
+    public class PapercutUIModule : Autofac.Module
     {
-        public IModule Module => this;
-
-        public Guid Id => new Guid("0D0B2889-C29B-4ECB-A8D2-AEB1015C664A");
+        private IEnumerable<Module> GetPapercutServiceModules()
+        {
+            yield return new PapercutMessageModule();
+            yield return new PapercutIPCommModule();
+            yield return new PapercutRuleModule();
+            yield return new PapercutSmtpModule();
+        }
 
         protected override void Load(ContainerBuilder builder)
         {
-            RegisterUI(builder);
+            foreach (var module in this.GetPapercutServiceModules())
+            {
+                builder.RegisterModule(module);
+            }
+
+            this.RegisterUI(builder);
 
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
@@ -59,20 +74,22 @@ namespace Papercut
             builder.RegisterType<EventAggregator>()
                 .As<IEventAggregator>()
                 .InstancePerLifetimeScope();
+
             builder.RegisterType<EventPublishAll>().As<IMessageBus>().InstancePerLifetimeScope();
 
             builder.RegisterType<SettingPathTemplateProvider>()
                 .AsImplementedInterfaces()
                 .SingleInstance();
+
             builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
 
             base.Load(builder);
         }
 
-        static void RegisterUI(ContainerBuilder builder)
+        void RegisterUI(ContainerBuilder builder)
         {
             //  register view models
-            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
+            builder.RegisterAssemblyTypes(ThisAssembly)
                 .Where(type => type.Name.EndsWith("ViewModel"))
                 .AsImplementedInterfaces()
                 .AsSelf()
@@ -80,7 +97,7 @@ namespace Papercut
                 .InstancePerDependency();
 
             //  register views
-            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
+            builder.RegisterAssemblyTypes(ThisAssembly)
                 .Where(type => type.Name.EndsWith("View"))
                 .AsImplementedInterfaces()
                 .AsSelf()
@@ -88,7 +105,7 @@ namespace Papercut
                 .InstancePerDependency();
 
             // register ui scope services
-            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
+            builder.RegisterAssemblyTypes(ThisAssembly)
                 .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
                 .AsImplementedInterfaces()
                 .AsSelf()

@@ -14,34 +14,53 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License. 
+
 namespace Papercut.Service
 {
-    using System;
+    using System.Collections.Generic;
     using System.Reflection;
 
     using Autofac;
-    using Autofac.Core;
 
+    using Papercut.App.WebApi;
+    using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Settings;
-    using Papercut.Core.Infrastructure.Plugins;
+    using Papercut.Infrastructure.IPComm;
+    using Papercut.Infrastructure.Smtp;
+    using Papercut.Message;
+    using Papercut.Rules;
     using Papercut.Service.Helpers;
+    using Papercut.Service.Logging;
 
     using Module = Autofac.Module;
 
-    public class PapercutServiceModule : Module, IDiscoverableModule
+    [PublicAPI]
+    public class PapercutServiceModule : Module
     {
-        public IModule Module => this;
-
-        public Guid Id => new Guid("E98901F7-8E3F-4940-A363-C8F9362D71F5");
+        private IEnumerable<Module> GetPapercutServiceModules()
+        {
+            yield return new PapercutMessageModule();
+            yield return new PapercutIPCommModule();
+            yield return new PapercutRuleModule();
+            yield return new PapercutSmtpModule();
+            yield return new PapercutWebApiModule();
+        }
 
         protected override void Load(ContainerBuilder builder)
         {
+            foreach (var module in this.GetPapercutServiceModules())
+            {
+                builder.RegisterModule(module);
+            }
+
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                 .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
                 .AsImplementedInterfaces()
                 .AsSelf()
-                .SingleInstance();
+                .InstancePerLifetimeScope();
+
+            builder.RegisterType<ConfigureSeqLogging>().AsImplementedInterfaces();
 
             builder.Register(
                 ctx => ctx.Resolve<ISettingStore>().UseTyped<PapercutServiceSettings>())

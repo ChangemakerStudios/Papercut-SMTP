@@ -18,10 +18,11 @@
 namespace Papercut.Service.Services
 {
     using System;
+    using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Network;
+    using Papercut.Infrastructure.IPComm.IPComm;
 
     using Serilog;
 
@@ -31,10 +32,10 @@ namespace Papercut.Service.Services
     {
         readonly ILogger _logger;
 
-        readonly Func<PapercutClient> _papercutClientFactory;
+        readonly Func<PapercutIPCommClient> _papercutClientFactory;
 
         public PublishAppEventsHandlerToClientService(
-            Func<PapercutClient> papercutClientFactory,
+            Func<PapercutIPCommClient> papercutClientFactory,
             ILogger logger)
         {
             _papercutClientFactory = papercutClientFactory;
@@ -56,11 +57,11 @@ namespace Papercut.Service.Services
             Publish(@event);
         }
 
-        PapercutClient GetClient()
+        PapercutIPCommClient GetClient()
         {
-            PapercutClient client = _papercutClientFactory();
-            client.Port = PapercutClient.ClientPort;
-            return client;
+            PapercutIPCommClient messenger = _papercutClientFactory();
+            messenger.Port = IPCommConstants.UiListeningPort;
+            return messenger;
         }
 
         public void Publish<T>(T @event)
@@ -72,18 +73,18 @@ namespace Papercut.Service.Services
                     "Publishing {@" + @event.GetType().Name + "} to the Papercut Client",
                     @event);
 
-                using (PapercutClient client = GetClient())
+                using (var ipCommClient = GetClient())
                 {
-                    client.PublishEventServer(@event);
+                    ipCommClient.PublishEventServer(@event);
                 }
             }
             catch (Exception ex)
             {
                 _logger.Warning(
                     ex,
-                    "Failed to publish {Address} {Port} specified. Papercut Client is most likely not running.",
-                    PapercutClient.Localhost,
-                    PapercutClient.ClientPort);
+                    "Failed to publish {Address} {Port} specified. Papercut UI is most likely not running.",
+                    IPCommConstants.Localhost,
+                    IPCommConstants.UiListeningPort);
             }
         }
     }

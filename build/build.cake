@@ -2,13 +2,13 @@
 #tool "nuget:?package=MimekitLite&version=2.0.6"
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.9.0"
 #tool "nuget:?package=OpenCover&version=4.6.519"
-#tool "nuget:?package=GitVersion.CommandLine"
+#tool "nuget:?package=GitVersion.CommandLine&version=4.0.0"
+
+#addin "nuget:?package=Cake.FileHelpers&version=3.1.0"
+#addin "nuget:?package=Cake.Incubator&version=3.1.0"
 
 #reference "tools/MarkdownSharp.1.13.0.0/lib/35/MarkdownSharp.dll"
 #reference "tools/MimeKitLite.2.0.6/lib/net45/MimeKitLite.dll"
-
-#addin "Cake.FileHelpers"
-#addin "Cake.Incubator"
 
 #load "./BuildInformation.cake" 
 #load "./ReleaseNotes.cake" 
@@ -42,7 +42,7 @@ Teardown(ctx => Information("Finished running tasks."));
 // Configuration
 ///////////////////////////////////////////////////////////////////////////////
 var papercutBinDir = "../src/Papercut.UI/bin";
-var papercutServiceBinDir = "../src/Papercut.Service/bin";
+var papercutServiceBinDir = "../src/Papercut.Service/bin/net472";
 var webUiTestsBinDir = "../test/Papercut.Module.WebUI.Tests/bin";
 
 var outputDirectory = DirectoryPath.FromString("../out");
@@ -132,21 +132,6 @@ Task("Test")
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
-Task("CopyPlugins")
-	.Does(() => 
-{
-    foreach (var directory in GetDirectories("../src/Papercut.Module.*")) {
-        var pluginOutputDir = directory.Combine(Directory("./bin/" + configuration));
-
-        Information("Copying Plugin in Directory {0} to App and Service...", pluginOutputDir);
-
-        CopyDirectory(pluginOutputDir, appBuildDir);
-        CopyDirectory(pluginOutputDir, svcBuildDir);
-    }
-})
-.OnError(exception => Error(exception));
-
-///////////////////////////////////////////////////////////////////////////////
 Task("Package")
     .Does(() =>
 {
@@ -180,7 +165,6 @@ Task("All")
     .IsDependentOn("Restore")
     .IsDependentOn("Build")
     .IsDependentOn("Test")
-	.IsDependentOn("CopyPlugins")
     .IsDependentOn("Package")
     .OnError(exception => Error(exception));
 

@@ -26,9 +26,6 @@ namespace Papercut.Core.Infrastructure.Container
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Logging;
     using Papercut.Core.Infrastructure.MessageBus;
-    using Papercut.Core.Infrastructure.Plugins;
-
-    using Serilog;
 
     using Module = Autofac.Module;
 
@@ -36,12 +33,7 @@ namespace Papercut.Core.Infrastructure.Container
     {
         protected override void Load(ContainerBuilder builder)
         {
-            new RegisterLogger().Register(builder);
-
-            new RegisterPlugins(Log.Logger).RegisterPluginModules(builder, PapercutContainer.ExtensionAssemblies);
-
-            builder.Register(c => PluginStore.Instance).As<IPluginStore>().SingleInstance();
-            builder.RegisterType<PluginReport>().AsImplementedInterfaces().SingleInstance();
+            RegisterLogging.Register(builder);
 
             builder.RegisterType<AutofacServiceProvider>()
                 .As<IServiceProvider>()

@@ -1,0 +1,13 @@
+﻿{
+    "HttpPort_Description": "## The Http Web UI Server listening port (Defaults to 37408). Set to 0 to disable Http Web UI Server.",
+    "HttpPort": "37408",
+
+    "IP_Description": "## SMTP Server listening IP. 'Any' is the default and it means '0.0.0.0'.",
+    "IP": "Any",
+
+    "Port_Description": "## SMTP Server listening Port. Default is 25.",
+    "Port": "25",
+
+    "SeqEndpoint_Description": "## Populate with a endpoint if you want to enable SEQ (https://getseq.net/) logging.",
+    "SeqEndpoint": null
+}
