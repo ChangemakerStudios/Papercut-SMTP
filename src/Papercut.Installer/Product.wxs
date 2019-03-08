@@ -127,7 +127,7 @@
         </Component>
 
         <Component Id="Papercut.Service.json" Guid="*" DiskId="1">
-          <File Source="$(var.SrvBinPath)Papercut.Service.json" KeyPath="yes"/>
+          <File Source="$(var.SrvBinPath)Papercut.Service.Settings.json" KeyPath="yes"/>
         </Component>
 
       </DirectoryRef>
