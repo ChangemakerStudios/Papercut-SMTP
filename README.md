@@ -18,7 +18,7 @@ Download Papercut.Setup.exe installer.
 
 ## Features
 #### Instant Feedback When New Email Arrives
-![Instant Feedback When New Email Arrives](https://changemakerstudios.us/images/Papercut-v3.1.0-S2.png)
+![Instant Feedback When New Email Arrives](https://changemakerstudios.us/images/Papercut/Papercut-v3.1.0-S2.png)
 #### Rich and Detailed View of Received Email
 ![Rich and Detailed View of Received Email](https://changemakerstudios.us/images/Papercut/Papercut-Main.png)
 #### View and Download the Mime Sections of your Email
