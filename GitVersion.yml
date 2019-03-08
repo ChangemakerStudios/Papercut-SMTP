@@ -1,0 +1,16 @@
+assembly-versioning-scheme: MajorMinorPatchTag
+assembly-file-versioning-scheme: MajorMinorPatch
+mode: Mainline
+increment: Patch
+commit-message-incrementing: Enabled
+branches:
+  master:
+    mode: ContinuousDelivery
+    tag: ''
+    increment: Patch
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    regex: master
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: true
