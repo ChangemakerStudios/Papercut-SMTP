@@ -18,15 +18,15 @@ Download Papercut.Setup.exe installer.
 
 ## Features
 #### Instant Feedback When New Email Arrives
-![Instant Feedback When New Email Arrives](http://www.tinygecko.com/downloads/Papercut-v3.1.0-S2.png)
+![Instant Feedback When New Email Arrives](https://changemakerstudios.us/images/Papercut-v3.1.0-S2.png)
 #### Rich and Detailed View of Received Email
-![Rich and Detailed View of Received Email](http://www.tinygecko.com/images/Papercut/Papercut-Main.png)
+![Rich and Detailed View of Received Email](https://changemakerstudios.us/images/Papercut/Papercut-Main.png)
 #### View and Download the Mime Sections of your Email
-![View and Download the Mime Sections of your Email](http://www.tinygecko.com/images/Papercut/Papercut-Mime.png)
+![View and Download the Mime Sections of your Email](https://changemakerstudios.us/images/Papercut/Papercut-Mime.png)
 #### In Version 4 the Raw View Returns
-![In Version 4 the Raw View Returns](http://www.tinygecko.com/images/Papercut/Papercut-Raw.png)
+![In Version 4 the Raw View Returns](https://changemakerstudios.us/images/Papercut/Papercut-Raw.png)
 #### New in Version 4.4: Logging View
-![In Version 4.4: Logging View](http://www.tinygecko.com/images/Papercut/Papercut-Log.png)
+![In Version 4.4: Logging View](https://changemakerstudios.us/images/Papercut/Papercut-Log.png)
 
 ## Papercut Background Service
 Papercut has an optional "always on" service to receive emails even when the client is not running. It's installed by default with [Papercut.Setup.exe](https://github.com/ChangemakerStudios/Papercut/releases) -- but can also be installed separately by downloading [Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
