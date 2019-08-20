@@ -10,8 +10,8 @@
 #reference "tools/MarkdownSharp.1.13.0.0/lib/35/MarkdownSharp.dll"
 #reference "tools/MimeKitLite.2.0.6/lib/net45/MimeKitLite.dll"
 
-#load "./BuildInformation.cake" 
-#load "./ReleaseNotes.cake" 
+#load "./BuildInformation.cake"
+#load "./ReleaseNotes.cake"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -26,12 +26,12 @@ GitVersion versionInfo = GitVersion(new GitVersionSettings{ OutputType = GitVers
 // SETUP / TEARDOWN
 ///////////////////////////////////////////////////////////////////////////////
 Setup(ctx => {
-    Information("Running tasks...");   
+    Information("Running tasks...");
 
     if(AppVeyor.IsRunningOnAppVeyor)
     {
         AppVeyor.UpdateBuildVersion(versionInfo.FullSemVer);
-    }    
+    }
 
     Information(versionInfo.Dump());
 });
@@ -74,7 +74,7 @@ Task("Clean")
         var pluginOutputDir = directory.Combine(Directory("./bin/" + configuration));
 
         CleanDirectory(pluginOutputDir);
-    }    
+    }
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ Task("PatchAssemblyInfo")
         UpdateAssemblyInfo = true,
         OutputType = GitVersionOutput.BuildServer,
         UpdateAssemblyInfoFilePath = "../src/GlobalAssemblyInfo.cs"
-    }); 
+    });
 })
 .OnError(exception => Error(exception));
 
@@ -113,7 +113,7 @@ Task("Build")
                             .SetPlatformTarget(PlatformTarget.MSIL)
                             .SetMSBuildPlatform(MSBuildPlatform.Automatic)
                             .UseToolVersion(MSBuildToolVersion.Default)
-                            .WithTarget("Build"));   
+                            .WithTarget("Build"));
 })
 .OnError(exception => Error(exception));
 
@@ -145,15 +145,21 @@ Task("Package")
     var svcFileName = outputDirectory.CombineWithFilePath(string.Format("PapercutService.{0}.zip", versionInfo.FullSemVer));
     Zip(svcBuildDir, svcFileName, GetFiles(svcBuildDir.ToString() + "/**/*"));
 
+    var chocolateyFileName = outputDirectory.CombineWithFilePath(string.Format("papercut.{0}.nupkg", versionInfo.NuGetVersion));
+    ChocolateyPack(
+        File("../chocolatey/Papercut.nuspec"),
+        new ChocolateyPackSettings {
+            Version = versionInfo.NuGetVersion,
+            OutputDirectory = outputDirectory
+        });
+
     if(AppVeyor.IsRunningOnAppVeyor)
     {
-        AppVeyor.UploadArtifact(appFileName);    
-        AppVeyor.UploadArtifact(svcFileName);    
-        AppVeyor.UploadArtifact("../src/Papercut.Bootstrapper/bin/" + configuration + "/Papercut.Setup.exe");    
+        AppVeyor.UploadArtifact(appFileName);
+        AppVeyor.UploadArtifact(svcFileName);
+        AppVeyor.UploadArtifact("../src/Papercut.Bootstrapper/bin/" + configuration + "/Papercut.Setup.exe");
+        AppVeyor.UploadArtifact(chocolateyFileName);
     }
-//   # Chocolately
-//   - nuget pack chocolately\Papercut.nuspec -version %APPVEYOR_BUILD_VERSION%
-//   - appveyor PushArtifact Papercut.%APPVEYOR_BUILD_VERSION%.nupkg
 })
 .OnError(exception => Error(exception));
 
