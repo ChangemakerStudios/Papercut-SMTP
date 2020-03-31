@@ -60,31 +60,31 @@ namespace Papercut.Service.Services
         PapercutIPCommClient GetClient()
         {
             PapercutIPCommClient messenger = _papercutClientFactory();
-            messenger.Port = IPCommConstants.UiListeningPort;
             return messenger;
         }
 
         public void Publish<T>(T @event)
             where T : IEvent
         {
-            try
+            using (var ipCommClient = GetClient())
             {
-                _logger.Information(
-                    "Publishing {@" + @event.GetType().Name + "} to the Papercut Client",
-                    @event);
-
-                using (var ipCommClient = GetClient())
+                try
                 {
+                    _logger.Information(
+                        "Publishing {@" + @event.GetType().Name + "} to the Papercut Client",
+                        @event);
+
                     ipCommClient.PublishEventServer(@event);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning(
-                    ex,
-                    "Failed to publish {Address} {Port} specified. Papercut UI is most likely not running.",
-                    IPCommConstants.Localhost,
-                    IPCommConstants.UiListeningPort);
+
+                catch (Exception ex)
+                {
+                    _logger.Warning(
+                        ex,
+                        "Failed to publish {Address} {Port} specified. Papercut UI is most likely not running.",
+                        ipCommClient.Host,
+                        ipCommClient.Port);
+                }
             }
         }
     }

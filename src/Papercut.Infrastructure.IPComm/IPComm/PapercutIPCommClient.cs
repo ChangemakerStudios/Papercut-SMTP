@@ -24,24 +24,20 @@ namespace Papercut.Infrastructure.IPComm.IPComm
 
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
-
+    using Papercut.Core.Domain.Settings;
     using Serilog;
 
     public class PapercutIPCommClient : IDisposable
     {
-        public const string Localhost = "127.0.0.1";
-
-        public const int ClientPort = 37402;
-
-        public const int ServerPort = 37403;
 
         readonly ILogger _logger;
 
-        public PapercutIPCommClient(ILogger logger)
+        public PapercutIPCommClient(ISettingStore settingStore, 
+            ILogger logger)
         {
             this._logger = logger;
-            this.Host = Localhost;
-            this.Port = ClientPort;
+            this.Host = settingStore.GetOrSet("IPCommServerIPAddress", IPCommConstants.Localhost, $"The IP Comm Server IP address (Defaults to {IPCommConstants.Localhost}).");
+            this.Port = settingStore.GetOrSet("IPCommServerUIPort", IPCommConstants.UiListeningPort, $"The IP Comm Server UI listening port (Defaults to {IPCommConstants.UiListeningPort}).");
         }
 
         public string Host { get; set; }

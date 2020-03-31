@@ -24,6 +24,7 @@ namespace Papercut.Infrastructure.IPComm.IPComm
 
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Network;
+    using Papercut.Core.Domain.Settings;
     using Papercut.Infrastructure.IPComm.Protocols;
 
     using Serilog;
@@ -41,11 +42,15 @@ namespace Papercut.Infrastructure.IPComm.IPComm
         public PapercutIPCommServer(
             Func<PapercutIPCommProtocol> protocolFactory,
             ConnectionManager connectionManager,
+            ISettingStore settingStore,
             ILogger logger)
         {
             this.ConnectionManager = connectionManager;
             this.Logger = logger;
             this._protocolFactory = protocolFactory;
+            this._address = ParseIpAddress(settingStore.GetOrSet("IPCommServerIPAddress", IPCommConstants.Localhost, $"The IP Comm Server IP address (Defaults to {IPCommConstants.Localhost})."));
+            this.ListenPort = settingStore.GetOrSet("IPCommServerPort", IPCommConstants.ServiceListeningPort, $"The IP Comm Server listening port (Defaults to {IPCommConstants.ServiceListeningPort}).");
+            this.UIListenPort = settingStore.GetOrSet("IPCommServerUIPort", IPCommConstants.UiListeningPort, $"The IP Comm Server UI listening port (Defaults to {IPCommConstants.UiListeningPort}).");
         }
 
         public ConnectionManager ConnectionManager { get; set; }
@@ -75,18 +80,25 @@ namespace Papercut.Infrastructure.IPComm.IPComm
             get => this._address.ToString();
             set
             {
-                if (string.IsNullOrWhiteSpace(value) || string.Equals(value, "any", StringComparison.OrdinalIgnoreCase))
-                {
-                    this._address = IPAddress.Any;
-                }
-                else
-                {
-                    this._address = IPAddress.Parse(value);
-                }
+                _address = ParseIpAddress(value);
+            }
+        }
+
+        private IPAddress ParseIpAddress(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || string.Equals(value, "any", StringComparison.OrdinalIgnoreCase))
+            {
+                return IPAddress.Any;
+            }
+            else
+            {
+                return IPAddress.Parse(value);
             }
         }
 
         public int ListenPort { get; set; }
+
+        public int UIListenPort { get; set; }
 
         public void Stop()
         {
