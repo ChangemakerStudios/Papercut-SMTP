@@ -15,15 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 namespace Papercut.App.WebApi
 {
     using System;
     using System.Net;
-    using System.Threading.Tasks;
-    using System.Web.Http.SelfHost;
+    using System.Web.Http;
 
     using Autofac;
+    using Autofac.Util;
+
+    using Microsoft.Owin.Hosting;
+
+    using Owin;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Settings;
@@ -31,7 +34,7 @@ namespace Papercut.App.WebApi
 
     using Serilog;
 
-    class WebServer : IEventHandler<PapercutServiceReadyEvent>, IEventHandler<PapercutClientReadyEvent>
+    class WebServer : Disposable, IEventHandler<PapercutServiceReadyEvent>, IEventHandler<PapercutClientReadyEvent>
     {
         readonly ILifetimeScope _scope;
         readonly ILogger _logger;
@@ -40,12 +43,23 @@ namespace Papercut.App.WebApi
         const int DefaultHttpPort = 37408;
 
         private volatile bool _initialized = false;
-        
+        private IDisposable _webAppDisposable;
+
         public WebServer(ILifetimeScope scope, ISettingStore settingStore, ILogger logger)
         {
             this._scope = scope;
             this._logger = logger.ForContext<WebServer>();
             this._httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}). Set to 0 to disable Http Web UI Server.");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (disposing)
+            {
+                this._webAppDisposable?.Dispose();
+            }
         }
 
         public void Handle(PapercutServiceReadyEvent @event)
@@ -76,14 +90,16 @@ namespace Papercut.App.WebApi
 
             try
             {
-                var config = new HttpSelfHostConfiguration(uri);
+                this._webAppDisposable = WebApp.Start(uri.ToString(), builder =>
+                {
+                    var config = new HttpConfiguration();
 
-                RouteConfig.Init(config, this._scope);
+                    RouteConfig.Init(config, this._scope);
 
-                new HttpSelfHostServer(config).OpenAsync().Wait();
+                    builder.UseWebApi(config);
+                });
 
                 this._initialized = true;
-
                 this._logger.Information("[WebUI] Papercut Web UI is browsable at {@WebUiUri}", uri);
             }
             catch (HttpListenerException ex)

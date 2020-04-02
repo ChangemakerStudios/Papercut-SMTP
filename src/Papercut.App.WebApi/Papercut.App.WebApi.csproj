@@ -57,9 +57,7 @@
     <PackageReference Include="Costura.Fody">
       <Version>3.3.2</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNet.WebApi.SelfHost">
-      <Version>5.2.7</Version>
-    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.WebApi.OwinSelfHost" Version="5.2.7" />
     <PackageReference Include="MimeKit">
       <Version>2.1.2</Version>
     </PackageReference>
