@@ -18,12 +18,13 @@
 namespace Papercut.Message
 {
     using System;
+    using System.IO;
 
     using Papercut.Core.Domain.Message;
 
     public static class MessageRepositoryExtensions
     {
-        public static byte[] GetMessage(
+        public static Stream GetMessage(
             this MessageRepository messageRepository,
             MessageEntry entry)
         {

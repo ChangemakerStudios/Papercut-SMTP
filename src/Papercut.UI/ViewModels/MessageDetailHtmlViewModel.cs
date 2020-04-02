@@ -67,7 +67,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public Uri HtmlFileUri => new Uri(HtmlFile);
+        public Uri HtmlFileUri => HtmlFile != null ? new Uri(HtmlFile) : null;
 
         public bool HasHtmlFile => !string.IsNullOrWhiteSpace(HtmlFile);
 

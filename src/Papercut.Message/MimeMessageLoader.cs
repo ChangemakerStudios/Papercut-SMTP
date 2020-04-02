@@ -100,27 +100,21 @@ namespace Papercut.Message
                         "Getting Message Data from Message Repository",
                         messageEntry);
 
-                    var messageData = this._messageRepository.GetMessage(messageEntry);
-                    MimeMessage mimeMessage;
+                    this._logger.Verbose(
+                        "MimeMessage Load for {@MessageEntry}",
+                        messageEntry);
 
-                    // wrap in a memorystream...
-                    using (var ms = new MemoryStream(messageData))
+                    using (var message = this._messageRepository.GetMessage(messageEntry))
                     {
-                        this._logger.Verbose(
-                            "MimeMessage Load for {@MessageEntry}",
-                            messageEntry);
-
-                        mimeMessage = MimeMessage.Load(ParserOptions.Default, ms);
+                        return MimeMessage.Load(ParserOptions.Default, message);
                     }
-
-                    return mimeMessage;
                 },
                 m =>
                 {
                     var policy = new CacheItemPolicy
-                                 {
-                                     SlidingExpiration = TimeSpan.FromSeconds(10)
-                                 };
+                    {
+                        SlidingExpiration = TimeSpan.FromSeconds(10)
+                    };
 
                     MimeMessageCache.Add(messageEntry.File, m, policy);
                 });

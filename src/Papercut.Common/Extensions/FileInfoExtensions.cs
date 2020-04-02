@@ -41,21 +41,15 @@ namespace Papercut.Common.Extensions
             return true;
         }
 
-        public static bool TryReadFile(this FileInfo file, out byte[] fileBytes)
+        public static bool TryGetReadFileStream(this FileInfo file, out Stream fileStream)
         {
             if (file == null) throw new ArgumentNullException(nameof(file));
 
-            fileBytes = null;
+            fileStream = Stream.Null;
 
             try
             {
-                using (var ms = new MemoryStream())
-                using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    fileStream.CopyTo(ms);
-                    fileBytes = ms.ToArray();
-                    fileStream.Close();
-                }
+                fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
             }
             catch (IOException)
             {
