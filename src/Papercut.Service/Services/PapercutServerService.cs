@@ -96,8 +96,8 @@ namespace Papercut.Service.Services
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
 
             this._ipCommServer.ObserveStartServer(
-                    IPCommConstants.Localhost,
-                    IPCommConstants.ServiceListeningPort,
+                    _ipCommServer.ListenIpAddress,
+                    _ipCommServer.ListenPort,
                 TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(
@@ -109,8 +109,8 @@ namespace Papercut.Service.Services
                     _logger.Warning(
                         e,
                         "Unable to Create Papercut IPComm Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                        IPCommConstants.Localhost,
-                        IPCommConstants.ServiceListeningPort),
+                        _ipCommServer.ListenIpAddress,
+                        _ipCommServer.ListenPort),
                     // on complete
                     () => { });
 

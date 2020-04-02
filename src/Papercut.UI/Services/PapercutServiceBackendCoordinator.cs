@@ -204,7 +204,6 @@ namespace Papercut.Services
         PapercutIPCommClient GetClient()
         {
             PapercutIPCommClient messenger = _papercutClientFactory();
-            messenger.Port = IPCommConstants.ServiceListeningPort;
             return messenger;
         }
     }

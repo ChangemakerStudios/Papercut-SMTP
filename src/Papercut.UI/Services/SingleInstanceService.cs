@@ -69,9 +69,7 @@ namespace Papercut.Services
 
             Logger.Debug(
                 "Second process run. Shutting this process down and pushing show event to other process");
-
-            this._papercutIPCommClient.Port = IPCommConstants.UiListeningPort;
-
+            
             // papercut is already running, push event to other UI process
             this._papercutIPCommClient.PublishEventServer(new ShowMainWindowEvent());
 

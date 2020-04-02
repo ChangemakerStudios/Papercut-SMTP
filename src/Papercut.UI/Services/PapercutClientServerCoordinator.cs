@@ -52,8 +52,8 @@ namespace Papercut.Services
         public void Handle(PapercutClientReadyEvent @event)
         {
             this._papercutIPCommServer.ObserveStartServer(
-                    IPCommConstants.Localhost,
-                    IPCommConstants.UiListeningPort,
+                    _papercutIPCommServer.ListenIpAddress,
+                    _papercutIPCommServer.UIListenPort,
                     TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
                 .Subscribe(
@@ -61,8 +61,8 @@ namespace Papercut.Services
                     ex => this._logger.Warning(
                         ex,
                         "Papercut IPComm Server failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
-                        IPCommConstants.Localhost,
-                        IPCommConstants.UiListeningPort),
+                        _papercutIPCommServer.ListenIpAddress,
+                        _papercutIPCommServer.UIListenPort),
                     () => { });
         }
     }
