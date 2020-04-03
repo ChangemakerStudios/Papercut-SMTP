@@ -30,7 +30,7 @@ Setup(ctx => {
 
     if(AppVeyor.IsRunningOnAppVeyor)
     {
-        AppVeyor.UpdateBuildVersion(versionInfo.FullSemVer);
+        AppVeyor.UpdateBuildVersion(versionInfo.SemVer);
     }
 });
 
