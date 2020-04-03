@@ -1,6 +1,6 @@
 # Release Notes
 
-## Papercut v5.5.4 [2020-04-02]
+## Papercut v5.6.0 [2020-04-02]
 - [#143](https://github.com/ChangemakerStudios/Papercut/issues/143) Added "Delete All" button.
 - Switch "Self Hosted Web" to use OWIN/Katana -- which should fix issues with binding.
 - Added IP and port Papercut IPComm configuration in json settings.
