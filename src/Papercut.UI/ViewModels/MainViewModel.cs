@@ -25,6 +25,7 @@ namespace Papercut.ViewModels
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reflection;
+    using System.Security.RightsManagement;
     using System.Threading.Tasks;
     using System.Windows;
 
@@ -157,14 +158,27 @@ namespace Papercut.ViewModels
 
         public bool IsLogOpen
         {
-            get
-            {
-                return _isLogOpen;
-            }
+            get => _isLogOpen;
             set
             {
-                _isLogOpen = value;
-                NotifyOfPropertyChange(() => IsLogOpen);
+                if (_isLogOpen != value)
+                {
+                    _isLogOpen = value;
+                    NotifyOfPropertyChange(() => IsLogOpen);
+                }
+            }
+        }
+
+        public bool IsDeleteAllConfirmOpen
+        {
+            get => _isDeleteAllConfirmOpen;
+            set
+            {
+                if (_isDeleteAllConfirmOpen != value)
+                {
+                    _isDeleteAllConfirmOpen = value;
+                    NotifyOfPropertyChange(() => IsDeleteAllConfirmOpen);
+                }
             }
         }
 
@@ -244,6 +258,7 @@ namespace Papercut.ViewModels
         }
 
         public Deque<string> _currentLogHistory = new Deque<string>();
+        private bool _isDeleteAllConfirmOpen;
 
         void SetupObservables()
         {
@@ -306,6 +321,15 @@ namespace Papercut.ViewModels
                         MessageListViewModel.IsLoading = m;
                         MessageDetailViewModel.IsLoading = m;
                     });
+
+            this.GetPropertyValues(m => m.IsDeleteAllConfirmOpen)
+                .ObserveOnDispatcher()
+                .Subscribe(
+                    m =>
+                    {
+                        MessageListViewModel.IsLoading = m;
+                        MessageDetailViewModel.IsLoading = m;
+                    });
         }
 
         public void GoToSite()
@@ -315,21 +339,49 @@ namespace Papercut.ViewModels
 
         public void ShowRulesConfiguration()
         {
-            if (IsLogOpen) IsLogOpen = false;
+            CloseFlyouts();
 
             _viewModelWindowManager.ShowDialogWithViewModel<RulesConfigurationViewModel>();
         }
 
+        public void DeleteAll()
+        {
+            MessageListViewModel.DeleteAll();
+            this.IsDeleteAllConfirmOpen = false;
+        }
+
+        public void CancelDeleteAll()
+        {
+            this.IsDeleteAllConfirmOpen = false;
+        }
+
+        public void ShowConfirmDeleteAll()
+        {
+            CloseFlyouts();
+            this.IsDeleteAllConfirmOpen = true;
+        }
+
         public void ToggleLog()
         {
+            if (!IsLogOpen)
+            {
+                CloseFlyouts();
+            }
+
             IsLogOpen = !IsLogOpen;
         }
 
         public void ShowOptions()
         {
-            if (IsLogOpen) IsLogOpen = false;
+            CloseFlyouts();
 
             _viewModelWindowManager.ShowDialogWithViewModel<OptionsViewModel>();
+        }
+
+        private void CloseFlyouts()
+        {
+            IsLogOpen = false;
+            IsDeleteAllConfirmOpen = false;
         }
 
         public void Exit()

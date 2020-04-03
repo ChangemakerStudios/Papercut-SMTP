@@ -105,6 +105,8 @@ namespace Papercut.ViewModels
 
         public bool HasSelectedMessage => GetSelected().Any();
 
+        public bool HasMessages => Messages.Any();
+
         public int SelectedMessageCount => GetSelected().Count();
 
         public bool IsLoading
@@ -320,6 +322,17 @@ namespace Papercut.ViewModels
             }
         }
 
+        public void DeleteAll()
+        {
+            // Lock to prevent rapid clicking issues
+            lock (_deleteLockObject)
+            {
+                this.ClearSelected();
+
+                DeleteMessages(Messages.ToList());
+            }
+        }
+
         public void DeleteSelected()
         {
             // Lock to prevent rapid clicking issues
@@ -329,35 +342,42 @@ namespace Papercut.ViewModels
 
                 var selectedMessageEntries = this.GetSelected().ToList();
 
-                List<string> failedEntries =
-                    selectedMessageEntries.Select(
-                        entry =>
-                        {
-                            try
-                            {
-                                _messageRepository.DeleteMessage(entry);
-                                return null;
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.Error(
-                                    ex,
-                                    "Failure Deleting Message {EmailMessageFile}",
-                                    entry.File);
-
-                                return ex.Message;
-                            }
-                        }).Where(f => f != null).ToList();
-
-                if (failedEntries.Any())
-                {
-                    // show errors...
-                    this._messageBus.Publish(
-                        new ShowMessageEvent(
-                            string.Join("\r\n", failedEntries),
-                            $"Failed to Delete Message{(failedEntries.Count > 1 ? "s" : string.Empty)}"));
-                }
+                DeleteMessages(selectedMessageEntries);
             }
+        }
+
+        private List<string> DeleteMessages(List<MimeMessageEntry> selectedMessageEntries)
+        {
+            List<string> failedEntries =
+                selectedMessageEntries.Select(
+                    entry =>
+                    {
+                        try
+                        {
+                            _messageRepository.DeleteMessage(entry);
+                            return null;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(
+                                ex,
+                                "Failure Deleting Message {EmailMessageFile}",
+                                entry.File);
+
+                            return ex.Message;
+                        }
+                    }).Where(f => f != null).ToList();
+
+            if (failedEntries.Any())
+            {
+                // show errors...
+                this._messageBus.Publish(
+                    new ShowMessageEvent(
+                        string.Join("\r\n", failedEntries),
+                        $"Failed to Delete Message{(failedEntries.Count > 1 ? "s" : string.Empty)}"));
+            }
+
+            return failedEntries;
         }
 
         public void MessageListKeyDown(KeyEventArgs e)
