@@ -33,24 +33,19 @@ namespace Papercut.Infrastructure.IPComm.IPComm
     {
         private readonly Func<IProtocol> _protocolFactory;
 
-        IPAddress _address;
-
         bool _isActive;
 
         Socket _listener;
+        private EndpointDefinition _currentEndpoint;
 
         public PapercutIPCommServer(
             Func<PapercutIPCommProtocol> protocolFactory,
             ConnectionManager connectionManager,
-            ISettingStore settingStore,
             ILogger logger)
         {
             this.ConnectionManager = connectionManager;
             this.Logger = logger;
             this._protocolFactory = protocolFactory;
-            this._address = ParseIpAddress(settingStore.GetOrSet("IPCommServerIPAddress", IPCommConstants.Localhost, $"The IP Comm Server IP address (Defaults to {IPCommConstants.Localhost})."));
-            this.ListenPort = settingStore.GetOrSet("IPCommServerPort", IPCommConstants.ServiceListeningPort, $"The IP Comm Server listening port (Defaults to {IPCommConstants.ServiceListeningPort}).");
-            this.UIListenPort = settingStore.GetOrSet("IPCommServerUIPort", IPCommConstants.UiListeningPort, $"The IP Comm Server UI listening port (Defaults to {IPCommConstants.UiListeningPort}).");
         }
 
         public ConnectionManager ConnectionManager { get; set; }
@@ -75,30 +70,9 @@ namespace Papercut.Infrastructure.IPComm.IPComm
             }
         }
 
-        public string ListenIpAddress
-        {
-            get => this._address.ToString();
-            set
-            {
-                _address = ParseIpAddress(value);
-            }
-        }
+        public IPAddress ListenIpAddress => _currentEndpoint?.Address;
 
-        private IPAddress ParseIpAddress(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value) || string.Equals(value, "any", StringComparison.OrdinalIgnoreCase))
-            {
-                return IPAddress.Any;
-            }
-            else
-            {
-                return IPAddress.Parse(value);
-            }
-        }
-
-        public int ListenPort { get; set; }
-
-        public int UIListenPort { get; set; }
+        public int ListenPort => _currentEndpoint?.Port ?? 0;
 
         public void Stop()
         {
@@ -129,12 +103,14 @@ namespace Papercut.Infrastructure.IPComm.IPComm
             GC.SuppressFinalize(this);
         }
 
-        public void Start()
+        public void Start(EndpointDefinition endpoint)
         {
             if (this.IsActive)
             {
                 return;
             }
+
+            this._currentEndpoint = endpoint;
 
             try
             {
@@ -196,14 +172,13 @@ namespace Papercut.Infrastructure.IPComm.IPComm
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            this._listener.Bind(new IPEndPoint(this._address, this.ListenPort));
+            this._listener.Bind(this._currentEndpoint.ToIPEndPoint());
             this._listener.Listen(20);
             this._listener.BeginAccept(this.OnClientAccept, null);
 
             this.Logger.Information(
-                "IPComm Server Ready: Listening for New Connections at {Address}:{ClientPort}",
-                this._address,
-                this.ListenPort);
+                "IPComm Server Ready: Listening for New Connections at {Endpoint}",
+                this._currentEndpoint);
         }
 
         void OnClientAccept([NotNull] IAsyncResult asyncResult)

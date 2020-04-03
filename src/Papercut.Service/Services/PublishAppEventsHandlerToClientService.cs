@@ -20,6 +20,8 @@ namespace Papercut.Service.Services
     using System;
     using System.Threading.Tasks;
 
+    using Core.Domain.Network;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Infrastructure.IPComm.IPComm;
@@ -32,13 +34,16 @@ namespace Papercut.Service.Services
     {
         readonly ILogger _logger;
 
-        readonly Func<PapercutIPCommClient> _papercutClientFactory;
+        readonly Func<EndpointDefinition, PapercutIPCommClient> _papercutClientFactory;
+        private readonly IPCommBidirectionalSettings _ipCommBidirectionalSettings;
 
         public PublishAppEventsHandlerToClientService(
-            Func<PapercutIPCommClient> papercutClientFactory,
+            Func<EndpointDefinition, PapercutIPCommClient> papercutClientFactory,
+            IPCommBidirectionalSettings ipCommBidirectionalSettings,
             ILogger logger)
         {
             _papercutClientFactory = papercutClientFactory;
+            _ipCommBidirectionalSettings = ipCommBidirectionalSettings;
             _logger = logger;
         }
 
@@ -59,8 +64,7 @@ namespace Papercut.Service.Services
 
         PapercutIPCommClient GetClient()
         {
-            PapercutIPCommClient messenger = _papercutClientFactory();
-            return messenger;
+            return _papercutClientFactory(this._ipCommBidirectionalSettings.UI);
         }
 
         public void Publish<T>(T @event)
@@ -71,7 +75,7 @@ namespace Papercut.Service.Services
                 try
                 {
                     _logger.Information(
-                        "Publishing {@" + @event.GetType().Name + "} to the Papercut Client",
+                        $"Publishing {{@{@event.GetType().Name}}} to the Papercut Client",
                         @event);
 
                     ipCommClient.PublishEventServer(@event);
@@ -81,9 +85,8 @@ namespace Papercut.Service.Services
                 {
                     _logger.Warning(
                         ex,
-                        "Failed to publish {Address} {Port} specified. Papercut UI is most likely not running.",
-                        ipCommClient.Host,
-                        ipCommClient.Port);
+                        "Failed to publish {Endpoint} specified. Papercut UI is most likely not running.",
+                        ipCommClient.Endpoint);
                 }
             }
         }

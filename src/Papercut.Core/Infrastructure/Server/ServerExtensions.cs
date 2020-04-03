@@ -33,6 +33,14 @@ namespace Papercut.Core.Infrastructure.Server
             int port,
             IScheduler scheduler = null)
         {
+            return server.ObserveStartServer(new EndpointDefinition(ip, port), scheduler);
+        }
+
+        public static IObservable<bool> ObserveStartServer(
+            [NotNull] this IServer server,
+            EndpointDefinition endpoint,
+            IScheduler scheduler = null)
+        {
             if (server == null) throw new ArgumentNullException(nameof(server));
 
             IObservable<bool> bindObservable = Observable.Create(
@@ -43,10 +51,7 @@ namespace Papercut.Core.Infrastructure.Server
                     {
                         server.Stop();
 
-                        server.ListenIpAddress = ip;
-                        server.ListenPort = port;
-
-                        server.Start();
+                        server.Start(endpoint);
 
                         o.OnCompleted();
                     }

@@ -18,6 +18,7 @@
 namespace Papercut.Core.Domain.Network
 {
     using System;
+    using System.Net;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -27,11 +28,11 @@ namespace Papercut.Core.Domain.Network
     {
         bool IsActive { get; }
 
-        string ListenIpAddress { get; set; }
+        IPAddress ListenIpAddress { get; }
 
-        int ListenPort { get; set; }
+        int ListenPort { get; }
 
-        void Start();
+        void Start(EndpointDefinition endpoint);
 
         void Stop();
     }

@@ -19,7 +19,11 @@ namespace Papercut.Infrastructure.IPComm
 {
     using Autofac;
 
+    using Core.Domain.Network;
+
     using Papercut.Infrastructure.IPComm.IPComm;
+
+    using Serilog;
 
     using Module = Autofac.Module;
 
@@ -28,10 +32,15 @@ namespace Papercut.Infrastructure.IPComm
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<PapercutIPCommProtocol>().AsSelf().InstancePerDependency();
-            builder.RegisterType<PapercutIPCommClient>().AsSelf().InstancePerDependency();
             builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
             builder.RegisterType<Connection>().AsSelf().InstancePerDependency();
             builder.RegisterType<PapercutIPCommServer>().AsSelf().SingleInstance();
+            builder.RegisterType<IPCommBidirectionalSettings>().AsSelf().SingleInstance();
+
+            builder.Register((c, p) => new PapercutIPCommClient(p.TypedAs<EndpointDefinition>(), c.Resolve<ILogger>()))
+                .AsSelf().InstancePerDependency();
+
+            builder.RegisterType<PapercutIPCommServer>().AsSelf().InstancePerDependency();
         }
     }
 }

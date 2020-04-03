@@ -2,42 +2,48 @@
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2020 Jaben Cargman
-//  
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Services
 {
     using System;
     using System.Threading;
-    using System.Threading.Tasks;
 
-    using Papercut.Common.Domain;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Events;
-    using Papercut.Infrastructure.IPComm.IPComm;
+    using Common.Domain;
+
+    using Core.Domain.Network;
+    using Core.Infrastructure.Lifecycle;
+
+    using Events;
+
+    using Infrastructure.IPComm.IPComm;
 
     using Serilog;
 
     public class SingleInstanceService : IDisposable, IEventHandler<PapercutClientPreStartEvent>
     {
         readonly Mutex _appMutex = new Mutex(false, App.GlobalName);
+        private readonly IPCommBidirectionalSettings _ipCommBidirectionalSettings;
 
-        readonly PapercutIPCommClient _papercutIPCommClient;
+        readonly Func<EndpointDefinition, PapercutIPCommClient> _papercutIPCommClient;
 
-        public SingleInstanceService(PapercutIPCommClient papercutIPCommClient, ILogger logger)
+        public SingleInstanceService(Func<EndpointDefinition, PapercutIPCommClient> papercutIPCommClient, IPCommBidirectionalSettings ipCommBidirectionalSettings,  ILogger logger)
         {
             Logger = logger;
-            this._papercutIPCommClient = papercutIPCommClient;
+            _papercutIPCommClient = papercutIPCommClient;
+            _ipCommBidirectionalSettings = ipCommBidirectionalSettings;
         }
 
         public ILogger Logger { get; set; }
@@ -46,6 +52,21 @@ namespace Papercut.Services
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public void Handle(PapercutClientPreStartEvent @event)
+        {
+            // papercut is not already running...
+            if (_appMutex.WaitOne(0, false)) return;
+
+            Logger.Debug(
+                "Second process run. Shutting this process down and pushing show event to other process");
+            
+            // papercut is already running, push event to other UI process
+            _papercutIPCommClient(_ipCommBidirectionalSettings.Service).PublishEventServer(new ShowMainWindowEvent());
+
+            // no need to go further
+            @event.CancelStart = true;
         }
 
         protected virtual void Dispose(bool disposing)
@@ -60,21 +81,6 @@ namespace Papercut.Services
                 {
                 }
             }
-        }
-
-        public void Handle(PapercutClientPreStartEvent @event)
-        {
-            // papercut is not already running...
-            if (_appMutex.WaitOne(0, false)) return;
-
-            Logger.Debug(
-                "Second process run. Shutting this process down and pushing show event to other process");
-            
-            // papercut is already running, push event to other UI process
-            this._papercutIPCommClient.PublishEventServer(new ShowMainWindowEvent());
-
-            // no need to go further
-            @event.CancelStart = true;
         }
     }
 }

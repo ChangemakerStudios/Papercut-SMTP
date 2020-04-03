@@ -48,21 +48,24 @@ namespace Papercut.Service.Services
         readonly IMessageBus _messageBus;
 
         readonly PapercutServiceSettings _serviceSettings;
+        private readonly IPCommBidirectionalSettings _ipCommBidirectionalSettings;
 
         public PapercutServerService(
             PapercutIPCommServer ipCommServer,
             PapercutSmtpServer smtpServer,
             PapercutServiceSettings serviceSettings,
+            IPCommBidirectionalSettings ipCommBidirectionalSettings,
             IAppMeta applicationMetaData,
             ILogger logger,
             IMessageBus messageBus)
         {
             _smtpServer = smtpServer;
             _serviceSettings = serviceSettings;
+            _ipCommBidirectionalSettings = ipCommBidirectionalSettings;
             _applicationMetaData = applicationMetaData;
             _logger = logger;
             _messageBus = messageBus;
-            this._ipCommServer = ipCommServer;
+            _ipCommServer = ipCommServer;
         }
 
         public void Handle(SmtpServerBindEvent @event)
@@ -83,11 +86,7 @@ namespace Papercut.Service.Services
         void BindSMTPServer()
         {
             _smtpServer.Stop();
-
-            this._smtpServer.ListenIpAddress = this._serviceSettings.IP;
-            this._smtpServer.ListenPort = this._serviceSettings.Port;
-
-            _smtpServer.Start();
+            _smtpServer.Start(new EndpointDefinition(this._serviceSettings.IP, this._serviceSettings.Port));
         }
 
         public void Start()
@@ -95,9 +94,7 @@ namespace Papercut.Service.Services
             this._messageBus.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
 
-            this._ipCommServer.ObserveStartServer(
-                    _ipCommServer.ListenIpAddress,
-                    _ipCommServer.ListenPort,
+            this._ipCommServer.ObserveStartServer(_ipCommBidirectionalSettings.Service,
                 TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(
@@ -129,7 +126,7 @@ namespace Papercut.Service.Services
                     // on complete
                     () =>
                         this._messageBus.Publish(
-                            new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
+                            new PapercutServiceReadyEvent {AppMeta = _applicationMetaData}));
         }
 
         public void Stop()
