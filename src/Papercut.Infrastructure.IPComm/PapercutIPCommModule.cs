@@ -23,8 +23,6 @@ namespace Papercut.Infrastructure.IPComm
 
     using Network;
 
-    using Serilog;
-
     using Module = Autofac.Module;
 
     public class PapercutIPCommModule : Module
@@ -36,11 +34,8 @@ namespace Papercut.Infrastructure.IPComm
             builder.RegisterType<Connection>().AsSelf().InstancePerDependency();
             builder.RegisterType<PapercutIPCommServer>().AsSelf().SingleInstance();
             builder.RegisterType<PapercutIPCommEndpoints>().AsSelf().SingleInstance();
-
-            builder.Register((c, p) => new PapercutIPCommClient(p.TypedAs<EndpointDefinition>(), c.Resolve<ILogger>()))
-                .AsSelf().InstancePerDependency();
-
             builder.RegisterType<PapercutIPCommServer>().AsSelf().InstancePerDependency();
+            builder.RegisterType<PapercutIPCommClientFactory>().AsSelf().SingleInstance();
         }
     }
 }

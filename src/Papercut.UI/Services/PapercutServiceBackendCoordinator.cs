@@ -26,6 +26,7 @@ namespace Papercut.Services
 
     using Core.Domain.Network;
 
+    using Infrastructure.IPComm;
     using Infrastructure.IPComm.Network;
 
     using Papercut.Common.Domain;
@@ -50,8 +51,7 @@ namespace Papercut.Services
 
         readonly ILogger _logger;
 
-        readonly Func<EndpointDefinition, PapercutIPCommClient> _papercutClientFactory;
-        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
+        readonly PapercutIPCommClientFactory _ipCommClientFactory;
 
         readonly IMessageBus _messageBus;
 
@@ -62,14 +62,12 @@ namespace Papercut.Services
         public PapercutServiceBackendCoordinator(
             ILogger logger,
             IMessageBus messageBus,
-            Func<EndpointDefinition, PapercutIPCommClient> papercutClientFactory,
-            PapercutIPCommEndpoints papercutIpCommEndpoints,
+            PapercutIPCommClientFactory ipCommClientFactory,
             SmtpServerCoordinator smtpServerCoordinator)
         {
             _logger = logger;
             this._messageBus = messageBus;
-            _papercutClientFactory = papercutClientFactory;
-            _papercutIpCommEndpoints = papercutIpCommEndpoints;
+            _ipCommClientFactory = ipCommClientFactory;
             _smtpServerCoordinator = smtpServerCoordinator;
 
             IObservable<RulesUpdatedEvent> rulesUpdateObservable = Observable
@@ -209,7 +207,7 @@ namespace Papercut.Services
 
         PapercutIPCommClient GetClient()
         {
-            return _papercutClientFactory(this._papercutIpCommEndpoints.Service);
+            return _ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.Service);
         }
     }
 }

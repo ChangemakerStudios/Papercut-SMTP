@@ -28,6 +28,7 @@ namespace Papercut.Services
 
     using Events;
 
+    using Infrastructure.IPComm;
     using Infrastructure.IPComm.Network;
 
     using Serilog;
@@ -35,15 +36,14 @@ namespace Papercut.Services
     public class SingleInstanceService : IDisposable, IEventHandler<PapercutClientPreStartEvent>
     {
         readonly Mutex _appMutex = new Mutex(false, App.GlobalName);
-        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
-        readonly Func<EndpointDefinition, PapercutIPCommClient> _papercutIPCommClient;
+        readonly PapercutIPCommClientFactory _ipCommClientFactory;
 
-        public SingleInstanceService(Func<EndpointDefinition, PapercutIPCommClient> papercutIPCommClient, PapercutIPCommEndpoints papercutIpCommEndpoints,  ILogger logger)
+        public SingleInstanceService(PapercutIPCommClientFactory ipCommClientFactory,
+            ILogger logger)
         {
             Logger = logger;
-            _papercutIPCommClient = papercutIPCommClient;
-            _papercutIpCommEndpoints = papercutIpCommEndpoints;
+            _ipCommClientFactory = ipCommClientFactory;
         }
 
         public ILogger Logger { get; set; }
@@ -63,7 +63,7 @@ namespace Papercut.Services
                 "Second process run. Shutting this process down and pushing show event to other process");
             
             // papercut is already running, push event to other UI process
-            _papercutIPCommClient(_papercutIpCommEndpoints.UI).PublishEventServer(new ShowMainWindowEvent());
+            _ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI).PublishEventServer(new ShowMainWindowEvent());
 
             // no need to go further
             @event.CancelStart = true;
