@@ -2,10 +2,10 @@
 #tool "nuget:?package=MimekitLite&version=2.0.6"
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.9.0"
 #tool "nuget:?package=OpenCover&version=4.6.519"
-#tool "nuget:?package=GitVersion.CommandLine&version=4.0.0"
+#tool "nuget:?package=GitVersion.CommandLine&version=5.2.4"
 
-#addin "nuget:?package=Cake.FileHelpers&version=3.1.0"
-#addin "nuget:?package=Cake.Incubator&version=3.1.0"
+#addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+#addin "nuget:?package=Cake.Incubator&version=5.1.0"
 
 #reference "tools/MarkdownSharp.1.13.0.0/lib/35/MarkdownSharp.dll"
 #reference "tools/MimeKitLite.2.0.6/lib/net45/MimeKitLite.dll"
@@ -32,8 +32,6 @@ Setup(ctx => {
     {
         AppVeyor.UpdateBuildVersion(versionInfo.FullSemVer);
     }
-
-    Information(versionInfo.Dump());
 });
 
 Teardown(ctx => Information("Finished running tasks."));

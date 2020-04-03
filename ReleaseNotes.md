@@ -1,5 +1,11 @@
 # Release Notes
 
+## Papercut v5.5.3 [2020-04-02]
+- Switch "Self Hosted Web" to use OWIN/Katana -- which should fix issues with binding.
+- Added IP and port Papercut IPComm configuration in json settings.
+- Improved message loading speed.
+- Limited logging and added automatic logging pruning.
+
 ## Papercut v5.5.0 [2019-03-08]
 - NOTE: Web UI is now only available in PapercutService.
 - Switched to using [SmtpServer](https://github.com/cosullivan/SmtpServer) project for Papercut's SMTP Server.
