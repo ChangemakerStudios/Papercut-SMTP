@@ -1,14 +1,14 @@
 ﻿// Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//
+// Copyright © 2013 - 2020 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,81 +20,104 @@ namespace Papercut.App.WebApi
 {
     using System;
     using System.Net;
-    using System.Threading.Tasks;
-    using System.Web.Http.SelfHost;
+    using System.Web.Http;
 
     using Autofac;
+    using Autofac.Util;
 
-    using Papercut.Common.Domain;
-    using Papercut.Core.Domain.Settings;
-    using Papercut.Core.Infrastructure.Lifecycle;
+    using Common.Domain;
+
+    using Core.Domain.Settings;
+    using Core.Infrastructure.Lifecycle;
+
+    using Microsoft.Owin.Hosting;
+
+    using Owin;
 
     using Serilog;
 
-    class WebServer : IEventHandler<PapercutServiceReadyEvent>, IEventHandler<PapercutClientReadyEvent>
+    internal class WebServer : Disposable, IEventHandler<PapercutServiceReadyEvent>, IEventHandler<PapercutClientReadyEvent>
     {
-        readonly ILifetimeScope _scope;
-        readonly ILogger _logger;
-        readonly int _httpPort;
-        const string BaseAddress = "http://127.0.0.1";
+        const string DefaultHttpBaseAddress = "http://127.0.0.1";
         const int DefaultHttpPort = 37408;
+        readonly string _httpBaseAddress;
+        readonly int _httpPort;
+        readonly bool _httpServerEnabled;
+        readonly ILogger _logger;
+        readonly ILifetimeScope _scope;
 
-        private volatile bool _initialized = false;
-        
+        volatile bool _initialized;
+        IDisposable _webAppDisposable;
+
         public WebServer(ILifetimeScope scope, ISettingStore settingStore, ILogger logger)
         {
-            this._scope = scope;
-            this._logger = logger.ForContext<WebServer>();
-            this._httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Http Web UI Server listening port (Defaults to {DefaultHttpPort}). Set to 0 to disable Http Web UI Server.");
-        }
-
-        public void Handle(PapercutServiceReadyEvent @event)
-        {
-            this._logger.Debug("{@PapercutServiceReadyEvent}", @event);
-
-            if (this._httpPort != 0)
-            {
-                this.StartHttpServer();
-            }
+            _scope = scope;
+            _logger = logger.ForContext<WebServer>();
+            _httpServerEnabled = settingStore.GetOrSet("HttpServerEnabled", true, $"Is the Papercut Web UI Server enabled (Defaults to true)?");
+            _httpBaseAddress = settingStore.GetOrSet("HttpBaseAddress", DefaultHttpBaseAddress, $"The Papercut Web UI Server listening address (Defaults to {DefaultHttpBaseAddress}).");
+            _httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Papercut Web UI Server listening port (Defaults to {DefaultHttpPort}).");
         }
 
         public void Handle(PapercutClientReadyEvent @event)
         {
-            this._logger.Debug("{@PapercutClientReadyEvent}", @event);
+            _logger.Debug("{@PapercutClientReadyEvent}", @event);
 
-            if (this._httpPort != 0)
+            if (_httpServerEnabled)
             {
-                this.StartHttpServer();
+                StartHttpServer();
+            }
+        }
+
+        public void Handle(PapercutServiceReadyEvent @event)
+        {
+            _logger.Debug("{@PapercutServiceReadyEvent}", @event);
+
+            if (_httpServerEnabled)
+            {
+                StartHttpServer();
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (disposing)
+            {
+                _webAppDisposable?.Dispose();
             }
         }
 
         void StartHttpServer()
         {
-            if (this._initialized) return;
+            if (_initialized) return;
 
-            var uri = new UriBuilder(BaseAddress) { Port = this._httpPort }.Uri;
+            var uri = new UriBuilder(_httpBaseAddress) { Port = _httpPort }.Uri;
 
             try
             {
-                var config = new HttpSelfHostConfiguration(uri);
+                _webAppDisposable = WebApp.Start(uri.ToString(), builder =>
+                {
+                    var config = new HttpConfiguration();
 
-                RouteConfig.Init(config, this._scope);
+                    RouteConfig.Init(config, _scope);
 
-                new HttpSelfHostServer(config).OpenAsync().Wait();
+                    builder.UseWebApi(config);
+                });
 
-                this._initialized = true;
+                _initialized = true;
 
-                this._logger.Information("[WebUI] Papercut Web UI is browsable at {@WebUiUri}", uri);
+                _logger.Information("[WebUI] Papercut Web UI is browsable at {@WebUiUri}", uri);
             }
             catch (HttpListenerException ex)
             {
-                this._logger.Warning(ex, "[WebUI] Run with elevated permissions (Administrator)");
-                this._initialized = false;
+                _logger.Warning(ex, "[WebUI] Run with elevated permissions (Administrator)");
+                _initialized = false;
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, "[WebUI] Can not start Web UI Http server at {@WebUiUri}", uri);
-                this._initialized = false;
+                _logger.Error(ex, "[WebUI] Can not start Web UI Http server at {@WebUiUri}", uri);
+                _initialized = false;
             }
         }
     }

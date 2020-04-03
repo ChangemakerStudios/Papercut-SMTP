@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ namespace Papercut.Service.Services
     using System.Reactive.Linq;
     using System.Threading.Tasks;
 
+    using Infrastructure.IPComm.Network;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Network;
@@ -29,7 +31,6 @@ namespace Papercut.Service.Services
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Server;
-    using Papercut.Infrastructure.IPComm.IPComm;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Service.Helpers;
 
@@ -48,21 +49,24 @@ namespace Papercut.Service.Services
         readonly IMessageBus _messageBus;
 
         readonly PapercutServiceSettings _serviceSettings;
+        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
         public PapercutServerService(
             PapercutIPCommServer ipCommServer,
             PapercutSmtpServer smtpServer,
             PapercutServiceSettings serviceSettings,
+            PapercutIPCommEndpoints papercutIpCommEndpoints,
             IAppMeta applicationMetaData,
             ILogger logger,
             IMessageBus messageBus)
         {
             _smtpServer = smtpServer;
             _serviceSettings = serviceSettings;
+            _papercutIpCommEndpoints = papercutIpCommEndpoints;
             _applicationMetaData = applicationMetaData;
             _logger = logger;
             _messageBus = messageBus;
-            this._ipCommServer = ipCommServer;
+            _ipCommServer = ipCommServer;
         }
 
         public void Handle(SmtpServerBindEvent @event)
@@ -83,11 +87,7 @@ namespace Papercut.Service.Services
         void BindSMTPServer()
         {
             _smtpServer.Stop();
-
-            this._smtpServer.ListenIpAddress = this._serviceSettings.IP;
-            this._smtpServer.ListenPort = this._serviceSettings.Port;
-
-            _smtpServer.Start();
+            _smtpServer.Start(new EndpointDefinition(this._serviceSettings.IP, this._serviceSettings.Port));
         }
 
         public void Start()
@@ -95,9 +95,7 @@ namespace Papercut.Service.Services
             this._messageBus.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
 
-            this._ipCommServer.ObserveStartServer(
-                    IPCommConstants.Localhost,
-                    IPCommConstants.ServiceListeningPort,
+            this._ipCommServer.ObserveStartServer(_papercutIpCommEndpoints.Service,
                 TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(
@@ -109,8 +107,8 @@ namespace Papercut.Service.Services
                     _logger.Warning(
                         e,
                         "Unable to Create Papercut IPComm Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                        IPCommConstants.Localhost,
-                        IPCommConstants.ServiceListeningPort),
+                        _ipCommServer.ListenIpAddress,
+                        _ipCommServer.ListenPort),
                     // on complete
                     () => { });
 
@@ -129,7 +127,7 @@ namespace Papercut.Service.Services
                     // on complete
                     () =>
                         this._messageBus.Publish(
-                            new PapercutServiceReadyEvent { AppMeta = _applicationMetaData }));
+                            new PapercutServiceReadyEvent {AppMeta = _applicationMetaData}));
         }
 
         public void Stop()

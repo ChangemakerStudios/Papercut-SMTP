@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ namespace Papercut.Infrastructure.IPComm
 {
     using Autofac;
 
-    using Papercut.Infrastructure.IPComm.IPComm;
+    using Core.Domain.Network;
+
+    using Network;
 
     using Module = Autofac.Module;
 
@@ -28,10 +30,12 @@ namespace Papercut.Infrastructure.IPComm
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<PapercutIPCommProtocol>().AsSelf().InstancePerDependency();
-            builder.RegisterType<PapercutIPCommClient>().AsSelf().InstancePerDependency();
             builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
             builder.RegisterType<Connection>().AsSelf().InstancePerDependency();
             builder.RegisterType<PapercutIPCommServer>().AsSelf().SingleInstance();
+            builder.RegisterType<PapercutIPCommEndpoints>().AsSelf().SingleInstance();
+            builder.RegisterType<PapercutIPCommServer>().AsSelf().InstancePerDependency();
+            builder.RegisterType<PapercutIPCommClientFactory>().AsSelf().SingleInstance();
         }
     }
 }

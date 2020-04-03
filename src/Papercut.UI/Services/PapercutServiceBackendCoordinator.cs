@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,13 +24,17 @@ namespace Papercut.Services
     using System.Reactive.Linq;
     using System.Threading.Tasks;
 
+    using Core.Domain.Network;
+
+    using Infrastructure.IPComm;
+    using Infrastructure.IPComm.Network;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Domain.Rules;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
-    using Papercut.Infrastructure.IPComm.IPComm;
     using Papercut.Properties;
 
     using Serilog;
@@ -47,7 +51,7 @@ namespace Papercut.Services
 
         readonly ILogger _logger;
 
-        readonly Func<PapercutIPCommClient> _papercutClientFactory;
+        readonly PapercutIPCommClientFactory _ipCommClientFactory;
 
         readonly IMessageBus _messageBus;
 
@@ -58,12 +62,12 @@ namespace Papercut.Services
         public PapercutServiceBackendCoordinator(
             ILogger logger,
             IMessageBus messageBus,
-            Func<PapercutIPCommClient> papercutClientFactory,
+            PapercutIPCommClientFactory ipCommClientFactory,
             SmtpServerCoordinator smtpServerCoordinator)
         {
             _logger = logger;
             this._messageBus = messageBus;
-            _papercutClientFactory = papercutClientFactory;
+            _ipCommClientFactory = ipCommClientFactory;
             _smtpServerCoordinator = smtpServerCoordinator;
 
             IObservable<RulesUpdatedEvent> rulesUpdateObservable = Observable
@@ -203,9 +207,7 @@ namespace Papercut.Services
 
         PapercutIPCommClient GetClient()
         {
-            PapercutIPCommClient messenger = _papercutClientFactory();
-            messenger.Port = IPCommConstants.ServiceListeningPort;
-            return messenger;
+            return _ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.Service);
         }
     }
 }

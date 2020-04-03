@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@
 namespace Papercut.Message
 {
     using System;
+    using System.IO;
 
     using Papercut.Core.Domain.Message;
 
     public static class MessageRepositoryExtensions
     {
-        public static byte[] GetMessage(
+        public static Stream GetMessage(
             this MessageRepository messageRepository,
             MessageEntry entry)
         {

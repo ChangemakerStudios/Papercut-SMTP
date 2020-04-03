@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2019 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Infrastructure.IPComm.IPComm
+namespace Papercut.Infrastructure.IPComm.Network
 {
     using System;
     using System.Net;
     using System.Net.Sockets;
-    using System.Threading.Tasks;
 
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Network;
-    using Papercut.Infrastructure.IPComm.Protocols;
+    using Core.Annotations;
+    using Core.Domain.Network;
+
+    using Protocols;
 
     using Serilog;
 
@@ -32,11 +32,10 @@ namespace Papercut.Infrastructure.IPComm.IPComm
     {
         private readonly Func<IProtocol> _protocolFactory;
 
-        IPAddress _address;
-
         bool _isActive;
 
         Socket _listener;
+        private EndpointDefinition _currentEndpoint;
 
         public PapercutIPCommServer(
             Func<PapercutIPCommProtocol> protocolFactory,
@@ -70,23 +69,9 @@ namespace Papercut.Infrastructure.IPComm.IPComm
             }
         }
 
-        public string ListenIpAddress
-        {
-            get => this._address.ToString();
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value) || string.Equals(value, "any", StringComparison.OrdinalIgnoreCase))
-                {
-                    this._address = IPAddress.Any;
-                }
-                else
-                {
-                    this._address = IPAddress.Parse(value);
-                }
-            }
-        }
+        public IPAddress ListenIpAddress => _currentEndpoint?.Address;
 
-        public int ListenPort { get; set; }
+        public int ListenPort => _currentEndpoint?.Port ?? 0;
 
         public void Stop()
         {
@@ -117,12 +102,14 @@ namespace Papercut.Infrastructure.IPComm.IPComm
             GC.SuppressFinalize(this);
         }
 
-        public void Start()
+        public void Start(EndpointDefinition endpoint)
         {
             if (this.IsActive)
             {
                 return;
             }
+
+            this._currentEndpoint = endpoint;
 
             try
             {
@@ -184,14 +171,13 @@ namespace Papercut.Infrastructure.IPComm.IPComm
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            this._listener.Bind(new IPEndPoint(this._address, this.ListenPort));
+            this._listener.Bind(this._currentEndpoint.ToIPEndPoint());
             this._listener.Listen(20);
             this._listener.BeginAccept(this.OnClientAccept, null);
 
             this.Logger.Information(
-                "IPComm Server Ready: Listening for New Connections at {Address}:{ClientPort}",
-                this._address,
-                this.ListenPort);
+                "IPComm Server Ready: Listening for New Connections at {Endpoint}",
+                this._currentEndpoint);
         }
 
         void OnClientAccept([NotNull] IAsyncResult asyncResult)

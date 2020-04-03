@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,21 +41,15 @@ namespace Papercut.Common.Extensions
             return true;
         }
 
-        public static bool TryReadFile(this FileInfo file, out byte[] fileBytes)
+        public static bool TryGetReadFileStream(this FileInfo file, out Stream fileStream)
         {
             if (file == null) throw new ArgumentNullException(nameof(file));
 
-            fileBytes = null;
+            fileStream = Stream.Null;
 
             try
             {
-                using (var ms = new MemoryStream())
-                using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    fileStream.CopyTo(ms);
-                    fileBytes = ms.ToArray();
-                    fileStream.Close();
-                }
+                fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
             }
             catch (IOException)
             {

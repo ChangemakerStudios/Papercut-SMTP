@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 namespace Papercut.Core.Domain.Network
 {
     using System;
+    using System.Net;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -27,11 +28,11 @@ namespace Papercut.Core.Domain.Network
     {
         bool IsActive { get; }
 
-        string ListenIpAddress { get; set; }
+        IPAddress ListenIpAddress { get; }
 
-        int ListenPort { get; set; }
+        int ListenPort { get; }
 
-        void Start();
+        void Start(EndpointDefinition endpoint);
 
         void Stop();
     }

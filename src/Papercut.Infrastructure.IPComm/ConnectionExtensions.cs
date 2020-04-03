@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ namespace Papercut.Infrastructure.IPComm
     using System;
     using System.Threading.Tasks;
 
-    using Papercut.Infrastructure.IPComm.IPComm;
+    using Network;
 
     public static class ConnectionExtensions
     {

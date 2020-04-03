@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ namespace Papercut.ViewModels
     using System.Windows;
 
     using Caliburn.Micro;
+
+    using ICSharpCode.AvalonEdit.Utils;
 
     using MahApps.Metro.Controls;
     using MahApps.Metro.Controls.Dialogs;
@@ -215,12 +217,17 @@ namespace Papercut.ViewModels
             var typedView = view as MainView;
 
             var logPanel = typedView.LogPanel;
-            logPanel.Text = _resourceLocator.GetResourceString("LogClientSink.html");
+            logPanel.Text = GetLogSinkHtml();
 
             this.GetPropertyValues(m => m.LogText)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
                 .Subscribe(m => logPanel.Text = m);
+        }
+
+        private string GetLogSinkHtml()
+        {
+            return _resourceLocator.GetResourceString("LogClientSink.html");
         }
 
         public IEnumerable<string> RenderLogEventParts(LogEvent e)
@@ -235,6 +242,8 @@ namespace Papercut.ViewModels
             }
             yield return @"</div>";
         }
+
+        public Deque<string> _currentLogHistory = new Deque<string>();
 
         void SetupObservables()
         {
@@ -257,15 +266,36 @@ namespace Papercut.ViewModels
                         return
                             _logClientSinkQueue.GetLastEvents()
                                 .Select(e => string.Join(" ", RenderLogEventParts(e)))
-                                .Reverse()
                                 .ToList();
                     })
                 .ObserveOnDispatcher().Subscribe(
                     o =>
                     {
-                        LogText = LogText.Replace(
-                            "<body>",
-                            $"<body>{string.Join("", o)}");
+                        foreach (var s in o) _currentLogHistory.PushFront(s);
+
+                        if (_currentLogHistory.Count > 150)
+                        {
+                            // prune
+                            while (_currentLogHistory.Count > 100)
+                            {
+                                _currentLogHistory.PopBack();
+                            }
+
+                            // required pruning -- go ahead and replace the whole thing
+                            var html = GetLogSinkHtml();
+                            var logItems = _currentLogHistory.ToList();
+                            LogText = html.Replace(
+                                "<body>",
+                                $"<body>{string.Join("", logItems)}");
+                        }
+                        else
+                        {
+                            o.Reverse();
+
+                            LogText = LogText.Replace(
+                                "<body>",
+                                $"<body>{string.Join("", o)}");
+                        }
                     });
 
             this.GetPropertyValues(m => m.IsLogOpen)

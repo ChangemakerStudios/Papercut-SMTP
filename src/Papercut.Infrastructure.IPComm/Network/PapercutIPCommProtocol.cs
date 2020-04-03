@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //  
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,16 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Infrastructure.IPComm.IPComm
+namespace Papercut.Infrastructure.IPComm.Network
 {
     using System.IO;
     using System.Net.Sockets;
 
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Infrastructure.Json;
-    using Papercut.Core.Infrastructure.MessageBus;
-    using Papercut.Infrastructure.IPComm.Protocols;
+    using Common.Domain;
+    using Common.Extensions;
+
+    using Core.Infrastructure.Json;
+    using Core.Infrastructure.MessageBus;
+
+    using Protocols;
 
     using Serilog;
 
@@ -77,7 +79,7 @@ namespace Papercut.Infrastructure.IPComm.IPComm
                         // send response back...
                         this.Logger.Information("Exchanging Event {@Event} -- Pushing to Remote", remoteEvent);
 
-                        this.Connection.SendJson(request.Type, remoteEvent);
+                        this.Connection.SendJson(request.Type, remoteEvent).Wait();
                     }
                 }
             }

@@ -1,13 +1,30 @@
 ﻿{
-    "HttpPort_Description": "## The Http Web UI Server listening port (Defaults to 37408). Set to 0 to disable Http Web UI Server.",
-    "HttpPort": "37408",
-
-    "IP_Description": "## SMTP Server listening IP. 'Any' is the default and it means '0.0.0.0'.",
-    "IP": "Any",
-
-    "Port_Description": "## SMTP Server listening Port. Default is 25.",
-    "Port": "25",
-
-    "SeqEndpoint_Description": "## Populate with a endpoint if you want to enable SEQ (https://getseq.net/) logging.",
-    "SeqEndpoint": null
+  "HttpBaseAddress": "http://127.0.0.1",
+  "HttpBaseAddress_Description": "## The Papercut Web UI Server listening address (Defaults to http://127.0.0.1).",
+  "HttpPort": "37408",
+  "HttpPort_Description": "## The Http Web UI Server listening port (Defaults to 37408). Set to 0 to disable Http Web UI Server.",
+  "HttpServerEnabled": "True",
+  "HttpServerEnabled_Description": "## Is the Papercut Web UI Server enabled (Defaults to true)?",
+  "IP": "Any",
+  "IP_Description": "## SMTP Server listening IP. 'Any' is the default and it means '0.0.0.0'.",
+  "IPCommServerIPAddress": "127.0.0.1",
+  "IPCommServerIPAddress_Description": "## The IP Comm Server IP address (Defaults to 127.0.0.1).",
+  "IPCommServerPort": "37403",
+  "IPCommServerPort_Description": "## The IP Comm Server listening port (Defaults to 37403).",
+  "IPCommServerUIPort": "37402",
+  "IPCommServerUIPort_Description": "## The IP Comm Server UI listening port (Defaults to 37402).",
+  "IPCommServiceAddress": "127.0.0.1",
+  "IPCommServiceAddress_Description": "## The IP Comm Service IP address (Defaults to 127.0.0.1).",
+  "IPCommServicePort": "37403",
+  "IPCommServicePort_Description": "## The IP Comm Service UI listening port (Defaults to 37403).",
+  "IPCommUIAddress": "127.0.0.1",
+  "IPCommUIAddress_Description": "## The IP Comm UI IP address (Defaults to 127.0.0.1).",
+  "IPCommUIPort": "37402",
+  "IPCommUIPort_Description": "## The IP Comm UI listening port (Defaults to 37402).",
+  "MessagePath": "%BaseDirectory%\\Incoming",
+  "MessagePath_Description": "## Base path where incoming emails are written.",
+  "Port": "25",
+  "Port_Description": "## SMTP Server listening Port. Default is 25.",
+  "SeqEndpoint": null,
+  "SeqEndpoint_Description": "## Populate with a endpoint if you want to enable SEQ (https://getseq.net/) logging."
 }

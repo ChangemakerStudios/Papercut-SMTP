@@ -1,7 +1,7 @@
 ﻿// Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
+// Copyright © 2013 - 2020 Jaben Cargman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -75,16 +75,16 @@ namespace Papercut.Message
             return true;
         }
 
-        public byte[] GetMessage(string file)
+        public Stream GetMessage(string file)
         {
             if (!File.Exists(file))
                 throw new IOException($"File {file} Does Not Exist");
 
             var info = new FileInfo(file);
-            byte[] data;
+            Stream fileStream;
             int retryCount = 0;
 
-            while (!info.TryReadFile(out data))
+            while (!info.TryGetReadFileStream(out fileStream))
             {
                 Thread.Sleep(500);
 
@@ -95,7 +95,7 @@ namespace Papercut.Message
                 }
             }
 
-            return data;
+            return fileStream;
         }
 
         /// <summary>
