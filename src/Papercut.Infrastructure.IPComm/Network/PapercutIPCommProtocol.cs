@@ -15,16 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Infrastructure.IPComm.IPComm
+namespace Papercut.Infrastructure.IPComm.Network
 {
     using System.IO;
     using System.Net.Sockets;
 
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Infrastructure.Json;
-    using Papercut.Core.Infrastructure.MessageBus;
-    using Papercut.Infrastructure.IPComm.Protocols;
+    using Common.Domain;
+    using Common.Extensions;
+
+    using Core.Infrastructure.Json;
+    using Core.Infrastructure.MessageBus;
+
+    using Protocols;
 
     using Serilog;
 

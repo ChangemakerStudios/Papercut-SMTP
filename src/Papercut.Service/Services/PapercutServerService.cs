@@ -22,6 +22,8 @@ namespace Papercut.Service.Services
     using System.Reactive.Linq;
     using System.Threading.Tasks;
 
+    using Infrastructure.IPComm.Network;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Network;
@@ -29,7 +31,6 @@ namespace Papercut.Service.Services
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Server;
-    using Papercut.Infrastructure.IPComm.IPComm;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Service.Helpers;
 
@@ -48,20 +49,20 @@ namespace Papercut.Service.Services
         readonly IMessageBus _messageBus;
 
         readonly PapercutServiceSettings _serviceSettings;
-        private readonly IPCommBidirectionalSettings _ipCommBidirectionalSettings;
+        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
         public PapercutServerService(
             PapercutIPCommServer ipCommServer,
             PapercutSmtpServer smtpServer,
             PapercutServiceSettings serviceSettings,
-            IPCommBidirectionalSettings ipCommBidirectionalSettings,
+            PapercutIPCommEndpoints papercutIpCommEndpoints,
             IAppMeta applicationMetaData,
             ILogger logger,
             IMessageBus messageBus)
         {
             _smtpServer = smtpServer;
             _serviceSettings = serviceSettings;
-            _ipCommBidirectionalSettings = ipCommBidirectionalSettings;
+            _papercutIpCommEndpoints = papercutIpCommEndpoints;
             _applicationMetaData = applicationMetaData;
             _logger = logger;
             _messageBus = messageBus;
@@ -94,7 +95,7 @@ namespace Papercut.Service.Services
             this._messageBus.Publish(
                 new PapercutServicePreStartEvent { AppMeta = _applicationMetaData });
 
-            this._ipCommServer.ObserveStartServer(_ipCommBidirectionalSettings.Service,
+            this._ipCommServer.ObserveStartServer(_papercutIpCommEndpoints.Service,
                 TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromSeconds(1)).Retry(5)
                 .Subscribe(

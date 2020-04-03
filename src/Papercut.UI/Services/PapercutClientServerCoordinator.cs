@@ -27,25 +27,25 @@ namespace Papercut.Services
     using Core.Infrastructure.Lifecycle;
     using Core.Infrastructure.Server;
 
-    using Infrastructure.IPComm.IPComm;
+    using Infrastructure.IPComm.Network;
 
     using Serilog;
 
     public class PapercutClientServerCoordinator : IEventHandler<PapercutClientReadyEvent>,
         IEventHandler<PapercutClientExitEvent>
     {
-        private readonly IPCommBidirectionalSettings _ipCommBidirectionalSettings;
+        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
         readonly ILogger _logger;
 
         readonly PapercutIPCommServer _papercutIpCommServer;
 
         public PapercutClientServerCoordinator(
-            IPCommBidirectionalSettings ipCommBidirectionalSettings,
+            PapercutIPCommEndpoints papercutIpCommEndpoints,
             PapercutIPCommServer ipCommServer,
             ILogger logger)
         {
-            _ipCommBidirectionalSettings = ipCommBidirectionalSettings;
+            _papercutIpCommEndpoints = papercutIpCommEndpoints;
             _logger = logger;
             _papercutIpCommServer = ipCommServer;
         }
@@ -57,7 +57,7 @@ namespace Papercut.Services
 
         public void Handle(PapercutClientReadyEvent @event)
         {
-            _papercutIpCommServer.ObserveStartServer(_ipCommBidirectionalSettings.UI,
+            _papercutIpCommServer.ObserveStartServer(_papercutIpCommEndpoints.UI,
                     TaskPoolScheduler.Default)
                 .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
                 .Subscribe(

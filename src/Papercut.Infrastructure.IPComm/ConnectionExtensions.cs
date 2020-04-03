@@ -21,7 +21,7 @@ namespace Papercut.Infrastructure.IPComm
     using System;
     using System.Threading.Tasks;
 
-    using Papercut.Infrastructure.IPComm.IPComm;
+    using Network;
 
     public static class ConnectionExtensions
     {

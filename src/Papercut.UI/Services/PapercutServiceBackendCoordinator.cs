@@ -26,13 +26,14 @@ namespace Papercut.Services
 
     using Core.Domain.Network;
 
+    using Infrastructure.IPComm.Network;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Domain.Rules;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
-    using Papercut.Infrastructure.IPComm.IPComm;
     using Papercut.Properties;
 
     using Serilog;
@@ -50,7 +51,7 @@ namespace Papercut.Services
         readonly ILogger _logger;
 
         readonly Func<EndpointDefinition, PapercutIPCommClient> _papercutClientFactory;
-        private readonly IPCommBidirectionalSettings _ipCommBidirectionalSettings;
+        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
         readonly IMessageBus _messageBus;
 
@@ -62,13 +63,13 @@ namespace Papercut.Services
             ILogger logger,
             IMessageBus messageBus,
             Func<EndpointDefinition, PapercutIPCommClient> papercutClientFactory,
-            IPCommBidirectionalSettings ipCommBidirectionalSettings,
+            PapercutIPCommEndpoints papercutIpCommEndpoints,
             SmtpServerCoordinator smtpServerCoordinator)
         {
             _logger = logger;
             this._messageBus = messageBus;
             _papercutClientFactory = papercutClientFactory;
-            _ipCommBidirectionalSettings = ipCommBidirectionalSettings;
+            _papercutIpCommEndpoints = papercutIpCommEndpoints;
             _smtpServerCoordinator = smtpServerCoordinator;
 
             IObservable<RulesUpdatedEvent> rulesUpdateObservable = Observable
@@ -208,7 +209,7 @@ namespace Papercut.Services
 
         PapercutIPCommClient GetClient()
         {
-            return _papercutClientFactory(this._ipCommBidirectionalSettings.Service);
+            return _papercutClientFactory(this._papercutIpCommEndpoints.Service);
         }
     }
 }

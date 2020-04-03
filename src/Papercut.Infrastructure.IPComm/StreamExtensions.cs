@@ -21,7 +21,7 @@ namespace Papercut.Infrastructure.IPComm
     using System.Net.Sockets;
     using System.Text;
 
-    using Papercut.Infrastructure.IPComm.IPComm;
+    using Network;
 
     public static class StreamExtensions
     { 

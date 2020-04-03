@@ -15,9 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Infrastructure.IPComm.IPComm
+namespace Papercut.Infrastructure.IPComm.Network
 {
-    public static class IPCommConstants
+    public static class PapercutIPCommConstants
     {
         public const ushort UiListeningPort = 37402;
         public const ushort ServiceListeningPort = 37403;

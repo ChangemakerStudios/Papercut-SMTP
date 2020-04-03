@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Infrastructure.IPComm.IPComm
+namespace Papercut.Infrastructure.IPComm.Network
 {
     using System;
     using System.Net.Sockets;
@@ -156,8 +156,6 @@ namespace Papercut.Infrastructure.IPComm.IPComm
             string response = stream.ReadStringBuffered().Trim();
 
             if (response != "PAPERCUT") return false;
-
-            _logger.Debug("Publishing {@Event} to Remote", @event);
 
             var eventJson = PapercutIPCommSerializer.ToJson(@event);
 

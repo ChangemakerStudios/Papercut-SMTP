@@ -22,9 +22,10 @@ namespace Papercut.Service.Services
 
     using Core.Domain.Network;
 
+    using Infrastructure.IPComm.Network;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Infrastructure.IPComm.IPComm;
 
     using Serilog;
 
@@ -35,15 +36,15 @@ namespace Papercut.Service.Services
         readonly ILogger _logger;
 
         readonly Func<EndpointDefinition, PapercutIPCommClient> _papercutClientFactory;
-        private readonly IPCommBidirectionalSettings _ipCommBidirectionalSettings;
+        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
         public PublishAppEventsHandlerToClientService(
             Func<EndpointDefinition, PapercutIPCommClient> papercutClientFactory,
-            IPCommBidirectionalSettings ipCommBidirectionalSettings,
+            PapercutIPCommEndpoints papercutIpCommEndpoints,
             ILogger logger)
         {
             _papercutClientFactory = papercutClientFactory;
-            _ipCommBidirectionalSettings = ipCommBidirectionalSettings;
+            _papercutIpCommEndpoints = papercutIpCommEndpoints;
             _logger = logger;
         }
 
@@ -64,7 +65,7 @@ namespace Papercut.Service.Services
 
         PapercutIPCommClient GetClient()
         {
-            return _papercutClientFactory(this._ipCommBidirectionalSettings.UI);
+            return _papercutClientFactory(this._papercutIpCommEndpoints.UI);
         }
 
         public void Publish<T>(T @event)

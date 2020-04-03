@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Infrastructure.IPComm.IPComm
+namespace Papercut.Infrastructure.IPComm.Network
 {
     using System;
 
@@ -24,25 +24,25 @@ namespace Papercut.Infrastructure.IPComm.IPComm
     using Core.Domain.Network;
     using Core.Domain.Settings;
 
-    public class IPCommBidirectionalSettings
+    public class PapercutIPCommEndpoints
     {
-        public IPCommBidirectionalSettings([NotNull] ISettingStore settingStore)
+        public PapercutIPCommEndpoints([NotNull] ISettingStore settingStore)
         {
             if (settingStore == null) throw new ArgumentNullException(nameof(settingStore));
 
-            var uiAddress = settingStore.GetOrSet("IPCommUIAddress", IPCommConstants.Localhost,
-                $"The IP Comm UI IP address (Defaults to {IPCommConstants.Localhost}).");
+            var uiAddress = settingStore.GetOrSet("IPCommUIAddress", PapercutIPCommConstants.Localhost,
+                $"The IP Comm UI IP address (Defaults to {PapercutIPCommConstants.Localhost}).");
 
-            var uiPort = settingStore.GetOrSet("IPCommUIPort", IPCommConstants.UiListeningPort,
-                $"The IP Comm UI listening port (Defaults to {IPCommConstants.UiListeningPort}).");
+            var uiPort = settingStore.GetOrSet("IPCommUIPort", PapercutIPCommConstants.UiListeningPort,
+                $"The IP Comm UI listening port (Defaults to {PapercutIPCommConstants.UiListeningPort}).");
 
             this.UI = new EndpointDefinition(uiAddress, uiPort);
 
-            var serviceAddress = settingStore.GetOrSet("IPCommServiceAddress", IPCommConstants.Localhost,
-                $"The IP Comm Service IP address (Defaults to {IPCommConstants.Localhost}).");
+            var serviceAddress = settingStore.GetOrSet("IPCommServiceAddress", PapercutIPCommConstants.Localhost,
+                $"The IP Comm Service IP address (Defaults to {PapercutIPCommConstants.Localhost}).");
 
-            var servicePort = settingStore.GetOrSet("IPCommServicePort", IPCommConstants.ServiceListeningPort,
-                $"The IP Comm Service UI listening port (Defaults to {IPCommConstants.ServiceListeningPort}).");
+            var servicePort = settingStore.GetOrSet("IPCommServicePort", PapercutIPCommConstants.ServiceListeningPort,
+                $"The IP Comm Service UI listening port (Defaults to {PapercutIPCommConstants.ServiceListeningPort}).");
 
             this.Service = new EndpointDefinition(serviceAddress, servicePort);
         }
