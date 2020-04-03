@@ -63,7 +63,7 @@ namespace Papercut.Services
                 "Second process run. Shutting this process down and pushing show event to other process");
             
             // papercut is already running, push event to other UI process
-            _papercutIPCommClient(_ipCommBidirectionalSettings.Service).PublishEventServer(new ShowMainWindowEvent());
+            _papercutIPCommClient(_ipCommBidirectionalSettings.UI).PublishEventServer(new ShowMainWindowEvent());
 
             // no need to go further
             @event.CancelStart = true;
