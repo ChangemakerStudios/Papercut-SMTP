@@ -303,6 +303,7 @@ namespace Papercut.ViewModels
                 Subject = mailMessageEx.Subject ?? string.Empty;
                 
                 AttachmentCount = parts.GetAttachments().Count();
+
                 RawViewModel.MimeMessage = mailMessageEx;
                 PartsListViewModel.MimeMessage = mailMessageEx;
 
