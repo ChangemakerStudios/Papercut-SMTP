@@ -34,13 +34,13 @@ namespace Papercut.Helpers
             loader.Get(this).Subscribe(m => { Subject = m.Subject; },
                 e =>
                 {
-                    Subject = "Failure loading message: " + e.Message;
+                    Subject = $"Failure loading message: {e.Message}";
                 });
         }
 
         public string Subject
         {
-            get { return _subject; }
+            get => _subject;
             protected set
             {
                 _subject = value;

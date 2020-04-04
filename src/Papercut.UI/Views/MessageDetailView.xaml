@@ -56,6 +56,14 @@
                 <Label Grid.Column="0" Content="Date" HorizontalAlignment="Right" />
                 <TextBox Grid.Column="1" Name="Date" Margin="2" IsReadOnly="True" />
             </Grid>
+            <Grid Visibility="{Binding Priority,Converter={StaticResource CollapsedIfFalse}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="150*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Priority" HorizontalAlignment="Right" />
+                <TextBox Grid.Column="1" Name="Priority" FontWeight="Bold" Foreground="{Binding PriorityColor}" Margin="2" IsReadOnly="True" />
+            </Grid>
             <Grid Visibility="{Binding Subject,Converter={StaticResource CollapsedIfFalse}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="100" />

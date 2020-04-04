@@ -19,7 +19,7 @@
 // want this to be in this namespace to match KeyValuePair namespace
 namespace System.Collections.Generic
 {
-    internal static class KeyValuePair
+    public static class KeyValuePair
     {
         public static KeyValuePair<TKey, TValue> Create<TKey, TValue>(TKey key, TValue value)
         {

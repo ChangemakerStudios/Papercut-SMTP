@@ -13,7 +13,7 @@
     <i:Interaction.Behaviors>
         <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />
     </i:Interaction.Behaviors>
-    <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="false" 
+    <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="true" 
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
              cal:Message.Attach="[Event KeyDown] = [Action MessageListKeyDown($eventArgs)]"
