@@ -25,6 +25,7 @@ namespace Papercut.Infrastructure.IPComm.Network
     using Common;
     using Common.Domain;
 
+    using Core;
     using Core.Domain.Network;
 
     using Serilog;

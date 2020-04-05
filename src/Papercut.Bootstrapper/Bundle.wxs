@@ -18,7 +18,8 @@
                                                     LogoSideFile="Resources\Papercut-Sidelogo.png" />
         </BootstrapperApplicationRef>
 
-        <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]!(bind.packageManufacturer.PapercutMsi)\Papercut"/>
+        <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]!(bind.packageManufacturer.PapercutMsi)\Papercut SMTP"/>
+        <Variable Name="CommonDataFolder" Type="string" Value="[CommonAppDataFolder]!(bind.packageManufacturer.PapercutMsi)\Papercut SMTP"/>
 
         <Chain>
             <PackageGroupRef Id="NetFx45Web" />
@@ -31,6 +32,7 @@
                         DisplayInternalUI="yes"
                         Vital="yes">
                 <MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
+                <MsiProperty Name="COMMONDATAFOLDER" Value="[CommonDataFolder]" />
             </MsiPackage>
         </Chain>
     </Bundle>

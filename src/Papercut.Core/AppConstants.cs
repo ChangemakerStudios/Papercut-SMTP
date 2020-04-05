@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Common
+namespace Papercut.Core
 {
     using System;
     using System.IO;
@@ -25,8 +25,11 @@ namespace Papercut.Common
     {
         public const string ApplicationName = "Papercut SMTP";
 
+        public const string CompanyName = "Changemaker Studios";
+
         public static string DataDirectory { get; } =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                CompanyName,
                 ApplicationName);
     }
 }

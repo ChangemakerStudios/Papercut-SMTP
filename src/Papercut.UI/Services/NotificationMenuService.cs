@@ -26,6 +26,7 @@ namespace Papercut.Services
 
     using Common;
 
+    using Core;
     using Core.Annotations;
 
     using Papercut.Common.Domain;

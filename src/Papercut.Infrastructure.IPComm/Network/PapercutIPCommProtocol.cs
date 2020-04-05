@@ -24,6 +24,7 @@ namespace Papercut.Infrastructure.IPComm.Network
     using Common.Domain;
     using Common.Extensions;
 
+    using Core;
     using Core.Infrastructure.Json;
     using Core.Infrastructure.MessageBus;
 

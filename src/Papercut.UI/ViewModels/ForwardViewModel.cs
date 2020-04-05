@@ -24,6 +24,8 @@ namespace Papercut.ViewModels
 
     using Common;
 
+    using Core;
+
     using Papercut.Properties;
 
     public class ForwardViewModel : Screen

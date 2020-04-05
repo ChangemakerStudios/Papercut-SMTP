@@ -28,7 +28,7 @@
                  Compressed="yes"
                  InstallScope="perMachine" />
 
-        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="no" />
+        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
 
         <MediaTemplate EmbedCab="yes" />
 
@@ -44,11 +44,11 @@
 
     <Fragment>
         <FeatureGroup Id="InstallFeatures">
-            <Feature Id="FeatureApplication" Title="Papercut Application" Level="1">
+            <Feature Id="FeatureApplication" Title="Papercut SMTP Application" Level="1">
                 <ComponentGroupRef Id="ComponentApplication" />
             </Feature>
 
-            <Feature Id="FeatureService" Title="Papercut Service" Level="1">
+            <Feature Id="FeatureService" Title="Papercut SMTP Service" Level="1">
                 <ComponentGroupRef Id="ComponentService" />
             </Feature>
 
@@ -60,11 +60,19 @@
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="ProgramFilesFolder">
                 <Directory Id="ManufacturerFolder" Name="Changemaker Studios">
-                    <Directory Id="INSTALLFOLDER" Name="Papercut">
+                    <Directory Id="INSTALLFOLDER" Name="Papercut SMTP">
                       <Directory Id="INCOMINGFOLDER" Name="Incoming" />
                     </Directory>
                 </Directory>
             </Directory>
+
+          <Directory Id="CommonAppDataFolder">
+            <Directory Id="ManufacturerFolder2" Name="Changemaker Studios">
+              <Directory Id="COMMONDATAFOLDER" Name="Papercut SMTP">
+                <Directory Id="INCOMINGFOLDERCOMMON" Name="Incoming" />
+              </Directory>
+            </Directory>
+          </Directory>
 
             <Directory Id="ProgramMenuFolder">
                 <Directory Id="ApplicationProgramsFolder" Name="Changemaker Studios" />
@@ -85,10 +93,6 @@
 
         <Component Id="Papercut.exe.manifest" Guid="*" DiskId="1">
           <File Source="$(var.AppBinPath)Papercut.exe.manifest" KeyPath="yes"/>
-        </Component>
-
-        <Component Id="Readme.eml" Guid="*" DiskId="1">
-          <File Source="$(var.AppBinPath)Readme.eml" KeyPath="yes"/>
         </Component>
 
         <Component Id="Papercut.Service.exe" Guid="*" DiskId="1">
@@ -131,9 +135,25 @@
         </Component>
 
       </DirectoryRef>
+
+      <DirectoryRef Id="INCOMINGFOLDERCOMMON">
+
+        <Component Id="Readme.eml" Guid="*" DiskId="1">
+          <File Source="$(var.AppBinPath)Readme.eml" KeyPath="yes"/>
+        </Component>
+
+      </DirectoryRef>
       
       <DirectoryRef Id="INCOMINGFOLDER">
         <Component Id="IncomingPermissions" Guid="D98936AA-3ED4-4DC6-B469-63CFEEF58066">
+          <CreateFolder>
+            <util:PermissionEx User="Everyone" GenericAll="yes" />
+          </CreateFolder>
+        </Component>
+      </DirectoryRef>
+
+      <DirectoryRef Id="INCOMINGFOLDERCOMMON">
+        <Component Id="IncomingPermissionsCommon" Guid="D98936AB-7ED4-4DC6-B469-63CFEEF58066">
           <CreateFolder>
             <util:PermissionEx User="Everyone" GenericAll="yes" />
           </CreateFolder>
@@ -145,7 +165,7 @@
 
                 <Shortcut Id="ApplicationStartMenuShortcut"
                           Name="Papercut"
-                          Description="Launch Papercut"
+                          Description="Launch Papercut SMTP"
                           Target="[#Papercut.exe]"
                           WorkingDirectory="INSTALLFOLDER"/>
 
@@ -168,7 +188,8 @@
             <ComponentRef Id="Papercut.exe.config"/>
             <ComponentRef Id="Papercut.exe.manifest"/>
             <ComponentRef Id="Readme.eml"/>
-          <ComponentRef Id="IncomingPermissions" />
+            <ComponentRef Id="IncomingPermissions" />
+            <ComponentRef Id="IncomingPermissionsCommon" />
             <ComponentRef Id="ApplicationShortcut"/>
         </ComponentGroup>
 

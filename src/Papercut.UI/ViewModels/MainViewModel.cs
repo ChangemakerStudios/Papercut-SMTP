@@ -33,6 +33,8 @@ namespace Papercut.ViewModels
 
     using Common;
 
+    using Core;
+
     using ICSharpCode.AvalonEdit.Utils;
 
     using MahApps.Metro.Controls;

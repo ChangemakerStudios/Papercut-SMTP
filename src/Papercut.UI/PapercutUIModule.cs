@@ -27,6 +27,8 @@ namespace Papercut
 
     using Common;
 
+    using Core;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Application;
