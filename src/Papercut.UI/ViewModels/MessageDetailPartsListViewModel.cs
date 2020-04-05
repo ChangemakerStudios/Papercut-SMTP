@@ -191,12 +191,29 @@ namespace Papercut.ViewModels
             }
             else if (SelectedPart is MessagePart messagePart)
             {
-                var fileName = this._messageRepository.SaveMessage(messagePart.Message.Subject,
-                    stream => { messagePart.Message.WriteTo(stream); });
+                var dlg = new SaveFileDialog();
 
-                _logger.Information("Saved Embedded Message as {MessageFile}", fileName);
+                var fileName = this._messageRepository.GetFullMailFilename(messagePart.Message.Subject);
 
-                MessageBox.Show($"Embedded Message Saved as '{fileName}'");
+                if (!string.IsNullOrWhiteSpace(fileName))
+                    dlg.FileName = fileName;
+
+                var extensions = new List<string> {"Email (*.eml)|*.eml", "All (*.*)|*.*"};
+
+                dlg.Filter = string.Join("|", extensions.ToArray());
+
+                bool? result = dlg.ShowDialog();
+
+                if (result.HasValue && result.Value)
+                {
+                    _logger.Debug("Saved Embedded Message as {MessageFile}", dlg.FileName);
+
+                    // save it..
+                    using (Stream outputFile = dlg.OpenFile())
+                    {
+                        messagePart.Message.WriteTo(outputFile);
+                    }
+                }
             }
         }
 
