@@ -2,18 +2,19 @@
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2020 Jaben Cargman
-//  
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
 
 namespace Papercut.ViewModels
 {
@@ -27,42 +28,46 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
+    using Common.Extensions;
+    using Common.Helper;
+
+    using Helpers;
+
+    using Message;
+    using Message.Helpers;
+
     using Microsoft.Win32;
 
     using MimeKit;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
-    using Papercut.Helpers;
-    using Papercut.Message.Helpers;
 
     using Serilog;
 
     public class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
     {
+        readonly ILogger _logger;
+
+        private readonly MessageRepository _messageRepository;
+        readonly IViewModelWindowManager _viewModelWindowManager;
         bool _hasSelectedPart;
 
         MimeMessage _mimeMessage;
 
-        MimePart _selectedPart;
+        MimeEntity _selectedPart;
 
-        readonly ILogger _logger;
-
-        readonly IViewModelWindowManager _viewModelWindowManager;
-
-        public MessageDetailPartsListViewModel(IViewModelWindowManager viewModelWindowManager, ILogger logger)
+        public MessageDetailPartsListViewModel(MessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
         {
             DisplayName = "Sections";
+            _messageRepository = messageRepository;
             _viewModelWindowManager = viewModelWindowManager;
             _logger = logger;
-            Parts = new ObservableCollection<MimePart>();
+            Parts = new ObservableCollection<MimeEntity>();
         }
 
-        public ObservableCollection<MimePart> Parts { get; private set; }
+        public ObservableCollection<MimeEntity> Parts { get; }
 
         public MimeMessage MimeMessage
         {
-            get { return _mimeMessage; }
+            get => _mimeMessage;
             set
             {
                 _mimeMessage = value;
@@ -73,9 +78,9 @@ namespace Papercut.ViewModels
             }
         }
 
-        public MimePart SelectedPart
+        public MimeEntity SelectedPart
         {
-            get { return _selectedPart; }
+            get => _selectedPart;
             set
             {
                 _selectedPart = value;
@@ -86,7 +91,7 @@ namespace Papercut.ViewModels
 
         public bool HasSelectedPart
         {
-            get { return _hasSelectedPart; }
+            get => _hasSelectedPart;
             set
             {
                 _hasSelectedPart = value;
@@ -96,26 +101,28 @@ namespace Papercut.ViewModels
 
         public void ViewSection()
         {
-            MimePart part = SelectedPart;
+            MimeEntity part = SelectedPart;
 
             if (part == null)
             {
                 return;
             }
 
-            if (part is TextPart)
+            if (part is TextPart textPart)
             {
-                var textPart = part as TextPart;
-
                 // show in the viewer...
                 _viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = textPart.Text);
             }
-            else
+            else if (part is MessagePart messagePart)
+            {
+                _viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = messagePart.Message.ToString());
+            }
+            else if (part is MimePart mimePart)
             {
                 string tempFileName;
 
-                if (part.FileName.IsSet())
-                    tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), part.FileName);
+                if (mimePart.FileName.IsSet())
+                    tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), mimePart.FileName);
                 else
                 {
                     tempFileName = Path.GetTempFileName();
@@ -129,7 +136,7 @@ namespace Papercut.ViewModels
                 {
                     using (FileStream outputFile = File.Open(tempFileName, FileMode.Create))
                     {
-                        part.Content.DecodeTo(outputFile);
+                        mimePart.Content.DecodeTo(outputFile);
                     }
 
                     Process.Start(tempFileName);
@@ -145,38 +152,66 @@ namespace Papercut.ViewModels
 
         public void SaveAs()
         {
-            MimePart part = SelectedPart;
-
-            var dlg = new SaveFileDialog();
-            if (!string.IsNullOrWhiteSpace(part.FileName))
-                dlg.FileName = part.FileName;
-
-            var extensions = new List<string>();
-            if (part.ContentType.MediaSubtype != "Unknown")
+            if (SelectedPart is MimePart mimePart)
             {
-                string extension = part.ContentType.GetExtension();
+                var dlg = new SaveFileDialog();
+                if (!string.IsNullOrWhiteSpace(mimePart.FileName))
+                    dlg.FileName = mimePart.FileName;
 
-                if (!string.IsNullOrWhiteSpace(extension))
+                var extensions = new List<string>();
+                if (mimePart.ContentType.MediaSubtype != "Unknown")
                 {
-                    extensions.Add(string.Format("{0} (*{1})|*{1}",
-                        Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(part.ContentType.MediaSubtype),
-                        extension));
+                    string extension = mimePart.ContentType.GetExtension();
+
+                    if (!string.IsNullOrWhiteSpace(extension))
+                    {
+                        extensions.Add(string.Format("{0} (*{1})|*{1}",
+                            Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(mimePart.ContentType.MediaSubtype),
+                            extension));
+                    }
+                }
+
+                extensions.Add("All (*.*)|*.*");
+                dlg.Filter = string.Join("|", extensions.ToArray());
+
+                bool? result = dlg.ShowDialog();
+
+                if (result.HasValue && result.Value)
+                {
+                    _logger.Debug("Saving File {File} as Output for MimePart {PartFileName}", dlg.FileName,
+                        mimePart.FileName);
+
+                    // save it..
+                    using (Stream outputFile = dlg.OpenFile())
+                    {
+                        mimePart.Content.DecodeTo(outputFile);
+                    }
                 }
             }
-
-            extensions.Add("All (*.*)|*.*");
-            dlg.Filter = string.Join("|", extensions.ToArray());
-
-            bool? result = dlg.ShowDialog();
-
-            if (result.HasValue && result.Value)
+            else if (SelectedPart is MessagePart messagePart)
             {
-                _logger.Debug("Saving File {File} as Output for MimePart {PartFileName}", dlg.FileName, part.FileName);
+                var dlg = new SaveFileDialog();
 
-                // save it..
-                using (Stream outputFile = dlg.OpenFile())
+                var fileName = _messageRepository.GetFullMailFilename(messagePart.Message.Subject);
+
+                dlg.FileName = Path.GetFileName(fileName);
+                dlg.InitialDirectory = Path.GetDirectoryName(fileName);
+
+                var extensions = new List<string> {"Email (*.eml)|*.eml", "All (*.*)|*.*"};
+
+                dlg.Filter = string.Join("|", extensions.ToArray());
+
+                bool? result = dlg.ShowDialog();
+
+                if (result.HasValue && result.Value)
                 {
-                    part.Content.DecodeTo(outputFile);
+                    _logger.Debug("Saved Embedded Message as {MessageFile}", dlg.FileName);
+
+                    // save it..
+                    using (Stream outputFile = dlg.OpenFile())
+                    {
+                        messagePart.Message.WriteTo(outputFile);
+                    }
                 }
             }
         }

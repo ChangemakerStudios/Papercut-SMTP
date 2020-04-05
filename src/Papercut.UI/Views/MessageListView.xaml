@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:cal="http://www.caliburnproject.org"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
@@ -41,8 +42,16 @@
                     <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}" FontWeight="Bold"
                                TextTrimming="CharacterEllipsis"
                                Visibility="{Binding Subject, Converter={StaticResource CollapsedIfFalse}}" FontSize="14"/>
-                    <TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding DisplayText}"
-                               TextTrimming="CharacterEllipsis" />
+                    <Grid Grid.Column="0" Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding DisplayText}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </Grid>
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>

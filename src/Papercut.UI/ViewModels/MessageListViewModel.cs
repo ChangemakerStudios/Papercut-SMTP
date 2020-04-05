@@ -33,6 +33,8 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
+    using Message.Helpers;
+
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
     using Papercut.Common.Helper;
@@ -210,7 +212,7 @@ namespace Papercut.ViewModels
 
         void AddNewMessage(MessageEntry entry)
         {
-            var observable = _mimeMessageLoader.Get(entry);
+            var observable = _mimeMessageLoader.GetObservable(entry);
 
             observable.ObserveOnDispatcher().Subscribe(
                 message =>

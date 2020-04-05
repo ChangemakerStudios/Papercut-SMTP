@@ -33,7 +33,7 @@
       <Value Profile="(Default)">700</Value>
     </Setting>
     <Setting Name="MessagePaths" Type="System.String" Scope="User">
-      <Value Profile="(Default)">%ApplicationData%\Papercut;%BaseDirectory%;%BaseDirectory%\Incoming</Value>
+      <Value Profile="(Default)">%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%Papercut;%BaseDirectory%\Incoming;%DataDirectory%\Incoming</Value>
     </Setting>
     <Setting Name="MessageListSortOrder" Type="System.String" Scope="User">
       <Value Profile="(Default)">Ascending</Value>

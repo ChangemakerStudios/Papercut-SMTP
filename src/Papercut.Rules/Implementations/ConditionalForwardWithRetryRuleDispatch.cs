@@ -19,6 +19,7 @@ namespace Papercut.Rules.Implementations
 {
     using System;
     using System.Reactive.Linq;
+    using System.Reactive.Threading.Tasks;
 
     using MimeKit;
 
@@ -48,7 +49,7 @@ namespace Papercut.Rules.Implementations
             if (rule == null) throw new ArgumentNullException(nameof(rule));
             if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
-            var messageSource = _mimeMessageLoader.Value.Get(messageEntry)
+            var messageSource = _mimeMessageLoader.Value.GetObservable(messageEntry)
                 .Select(m => m.CloneMessage())
                 .Where(m => RuleMatches(rule, m))
                 .Select(

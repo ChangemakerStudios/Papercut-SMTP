@@ -25,6 +25,10 @@ namespace Papercut
 
     using Caliburn.Micro;
 
+    using Common;
+
+    using Core;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Application;
@@ -59,7 +63,7 @@ namespace Papercut
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
 
-            builder.Register(c => new ApplicationMeta("Papercut"))
+            builder.Register(c => new ApplicationMeta(AppConstants.ApplicationName))
                 .As<IAppMeta>()
                 .SingleInstance();
 

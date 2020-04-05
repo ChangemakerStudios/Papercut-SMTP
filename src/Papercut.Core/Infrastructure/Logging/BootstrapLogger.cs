@@ -21,6 +21,8 @@ namespace Papercut.Core.Infrastructure.Logging
     using System.IO;
     using System.Threading.Tasks;
 
+    using Common;
+
     using Serilog;
     using Serilog.Events;
     using Serilog.Formatting.Json;
@@ -34,7 +36,7 @@ namespace Papercut.Core.Infrastructure.Logging
         {
             _rootLogger = new Lazy<ILogger>(() =>
             {
-                string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                string logFilePath = Path.Combine(AppConstants.DataDirectory,
                     "Logs",
                     "PapercutCoreFailure.json");
 

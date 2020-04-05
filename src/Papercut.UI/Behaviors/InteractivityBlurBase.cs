@@ -27,15 +27,15 @@ namespace Papercut.Behaviors
         // Using a DependencyProperty as the backing store for BlurRadius. This enables animation, styling, binding, etc...
         public static readonly DependencyProperty BlurRadiusProperty =
             DependencyProperty.Register(
-                "BlurRadius_" + typeof(T).Name,
+                $"BlurRadius_{typeof(T).Name}",
                 typeof(int),
                 typeof(FrameworkElement),
                 new UIPropertyMetadata(0));
 
         public int BlurRadius
         {
-            get { return (int) GetValue(BlurRadiusProperty); }
-            set { SetValue(BlurRadiusProperty, value); }
+            get => (int) GetValue(BlurRadiusProperty);
+            set => SetValue(BlurRadiusProperty, value);
         }
 
         protected virtual BlurEffect GetBlurEffect()

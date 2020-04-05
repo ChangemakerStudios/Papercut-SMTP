@@ -114,20 +114,23 @@ namespace Papercut.Message
                     .ToList();
         }
 
+        public string GetFullMailFilename(string mailSubject)
+        {
+            var validPart = MakeValidFileName(mailSubject.Truncate(40, string.Empty), "subject unknown");
+
+            var dateTimeFormatted = DateTime.Now.ToString(MessageEntry.DateTimeFormat);
+
+            // the file must not exist:  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
+            return Path.Combine(_messagePathConfigurator.DefaultSavePath,
+                $"{dateTimeFormatted} {validPart} {StringHelpers.SmallRandomString()}.eml");
+        }
+
         public string SaveMessage(string mailSubject, Action<FileStream> writeTo)
         {
-            string fileName = null;
+            var fileName = GetFullMailFilename(mailSubject);
 
             try
             {
-                var validPart = MakeValidFileName(mailSubject.Truncate(40, string.Empty), "subject unknown");
-
-                var dateTimeFormatted = DateTime.Now.ToString(MessageEntry.DateTimeFormat);
-
-                // the file must not exist:  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
-                fileName = Path.Combine(_messagePathConfigurator.DefaultSavePath,
-                    $"{dateTimeFormatted} {validPart} {StringHelpers.SmallRandomString()}.eml");
-
                 using (var fileStream = File.Create(fileName))
                 {
                     writeTo(fileStream);

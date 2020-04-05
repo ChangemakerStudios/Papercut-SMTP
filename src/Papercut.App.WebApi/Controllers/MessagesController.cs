@@ -25,6 +25,7 @@ namespace Papercut.App.WebApi.Controllers
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Net.Mime;
+    using System.Threading.Tasks;
     using System.Web.Http;
 
     using MimeKit;
@@ -47,16 +48,18 @@ namespace Papercut.App.WebApi.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage GetAll(int limit = 10, int start = 0)
+        public async Task<HttpResponseMessage> GetAll(int limit = 10, int start = 0)
         {
             var messageEntries = this._messageRepository.LoadMessages();
 
-            var messages = messageEntries
+            var messageTasks = messageEntries
                 .OrderByDescending(msg => msg.ModifiedDate)
                 .Skip(start)
                 .Take(limit)
-                .Select(e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, this._messageLoader.LoadMailMessage(e))))
-                .ToList();
+                .Select(async e =>
+                    MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, await this._messageLoader.GetAsync(e))));
+
+            var messages = await Task.WhenAll(messageTasks);
 
             return this.Request.CreateResponse(HttpStatusCode.OK, new
             {
@@ -85,7 +88,7 @@ namespace Papercut.App.WebApi.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage Get(string id)
+        public async Task<HttpResponseMessage> Get(string id)
         {
             var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
             if (messageEntry == null)
@@ -93,7 +96,7 @@ namespace Papercut.App.WebApi.Controllers
                 return this.Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
-            var dto = MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, this._messageLoader.LoadMailMessage(messageEntry)));
+            var dto = MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, await this._messageLoader.GetAsync(messageEntry)));
             return this.Request.CreateResponse(HttpStatusCode.OK, dto);
         }
 
@@ -117,18 +120,18 @@ namespace Papercut.App.WebApi.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage DownloadSection(string messageId, int index)
+        public Task<HttpResponseMessage> DownloadSection(string messageId, int index)
         {
             return this.DownloadSection(messageId, sections => (index >=0 && index < sections.Count ? sections[index] : null));
         }
 
         [HttpGet]
-        public HttpResponseMessage DownloadSectionContent(string messageId, string contentId)
+        public Task<HttpResponseMessage> DownloadSectionContent(string messageId, string contentId)
         {
             return this.DownloadSection(messageId, sections => sections.FirstOrDefault(s => s.ContentId == contentId));
         }
 
-        HttpResponseMessage DownloadSection(string messageId, Func<List<MimePart>, MimePart> findSection)
+        async Task<HttpResponseMessage> DownloadSection(string messageId, Func<List<MimePart>, MimePart> findSection)
         {
             var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
             if (messageEntry == null)
@@ -136,7 +139,7 @@ namespace Papercut.App.WebApi.Controllers
                 return this.Request.CreateResponse(HttpStatusCode.NotFound);
             }
 
-            var mimeMessage = new MimeMessageEntry(messageEntry, this._messageLoader.LoadMailMessage(messageEntry));
+            var mimeMessage = new MimeMessageEntry(messageEntry, await this._messageLoader.GetAsync(messageEntry));
             var sections = mimeMessage.MailMessage.BodyParts.OfType<MimePart>().ToList();
 
             var mimePart = findSection(sections);

@@ -22,8 +22,10 @@ namespace Papercut.Infrastructure.IPComm.Network
     using System.Net.Sockets;
     using System.Text;
 
+    using Common;
     using Common.Domain;
 
+    using Core;
     using Core.Domain.Network;
 
     using Serilog;
@@ -155,7 +157,7 @@ namespace Papercut.Infrastructure.IPComm.Network
         {
             string response = stream.ReadStringBuffered().Trim();
 
-            if (response != "PAPERCUT") return false;
+            if (response != AppConstants.ApplicationName.ToUpper()) return false;
 
             var eventJson = PapercutIPCommSerializer.ToJson(@event);
 

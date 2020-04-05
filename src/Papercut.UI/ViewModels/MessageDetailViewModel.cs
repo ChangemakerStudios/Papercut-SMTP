@@ -2,38 +2,44 @@
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2020 Jaben Cargman
-//  
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.ViewModels
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
     using System.Text;
 
     using Caliburn.Micro;
 
-    using MimeKit;
+    using Core.Annotations;
+    using Core.Domain.Message;
 
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Domain.Message;
-    using Papercut.Helpers;
-    using Papercut.Message;
-    using Papercut.Message.Helpers;
+    using Helpers;
+
+    using Message;
+    using Message.Helpers;
+
+    using MimeKit;
 
     public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
     {
+        readonly MimeMessageLoader _mimeMessageLoader;
+
         int _attachmentCount;
 
         string _bcc;
@@ -51,6 +57,7 @@ namespace Papercut.ViewModels
         bool _isLoading;
 
         IDisposable _loadingDisposable;
+        private string _priority;
 
         int _selectedTabIndex;
 
@@ -59,8 +66,7 @@ namespace Papercut.ViewModels
         string _textBody;
 
         string _to;
-
-        readonly MimeMessageLoader _mimeMessageLoader;
+        private string _priorityColor;
 
         public MessageDetailViewModel(
             Func<MessageDetailPartsListViewModel> partsListViewModelFactory,
@@ -87,7 +93,7 @@ namespace Papercut.ViewModels
 
         public string Subject
         {
-            get { return _subject; }
+            get => _subject;
             set
             {
                 _subject = value;
@@ -97,7 +103,7 @@ namespace Papercut.ViewModels
 
         public string To
         {
-            get { return _to; }
+            get => _to;
             set
             {
                 _to = value;
@@ -107,7 +113,7 @@ namespace Papercut.ViewModels
 
         public string Bcc
         {
-            get { return _bcc; }
+            get => _bcc;
             set
             {
                 _bcc = value;
@@ -115,9 +121,29 @@ namespace Papercut.ViewModels
             }
         }
 
+        public string Priority
+        {
+            get => _priority;
+            set
+            {
+                _priority = value;
+                NotifyOfPropertyChange(() => Priority);
+            }
+        }
+
+        public string PriorityColor
+        {
+            get => _priorityColor;
+            set
+            {
+                _priorityColor = value;
+                NotifyOfPropertyChange(() => PriorityColor);
+            }
+        }
+
         public string Date
         {
-            get { return _date; }
+            get => _date;
             set
             {
                 _date = value;
@@ -127,7 +153,7 @@ namespace Papercut.ViewModels
 
         public string From
         {
-            get { return _from; }
+            get => _from;
             set
             {
                 _from = value;
@@ -137,7 +163,7 @@ namespace Papercut.ViewModels
 
         public string CC
         {
-            get { return _cc; }
+            get => _cc;
             set
             {
                 _cc = value;
@@ -147,7 +173,7 @@ namespace Papercut.ViewModels
 
         public string TextBody
         {
-            get { return _textBody; }
+            get => _textBody;
             set
             {
                 _textBody = value;
@@ -157,7 +183,7 @@ namespace Papercut.ViewModels
 
         public bool IsLoading
         {
-            get { return _isLoading; }
+            get => _isLoading;
             set
             {
                 _isLoading = value;
@@ -167,7 +193,7 @@ namespace Papercut.ViewModels
 
         public bool IsHtml
         {
-            get { return _isHtml; }
+            get => _isHtml;
             set
             {
                 _isHtml = value;
@@ -177,7 +203,7 @@ namespace Papercut.ViewModels
 
         public int SelectedTabIndex
         {
-            get { return _selectedTabIndex; }
+            get => _selectedTabIndex;
             set
             {
                 _selectedTabIndex = value;
@@ -187,7 +213,7 @@ namespace Papercut.ViewModels
 
         public int AttachmentCount
         {
-            get { return _attachmentCount; }
+            get => _attachmentCount;
             set
             {
                 _attachmentCount = value;
@@ -200,7 +226,7 @@ namespace Papercut.ViewModels
 
         public string HtmlFile
         {
-            get { return _htmlFile; }
+            get => _htmlFile;
             set
             {
                 _htmlFile = value;
@@ -208,15 +234,15 @@ namespace Papercut.ViewModels
             }
         }
 
-        public MessageDetailPartsListViewModel PartsListViewModel { get; private set; }
+        public MessageDetailPartsListViewModel PartsListViewModel { get; }
 
-        public MessageDetailHtmlViewModel HtmlViewModel { get; private set; }
+        public MessageDetailHtmlViewModel HtmlViewModel { get; }
 
-        public MessageDetailRawViewModel RawViewModel { get; private set; }
+        public MessageDetailRawViewModel RawViewModel { get; }
 
-        public MessageDetailHeaderViewModel HeaderViewModel { get; private set; }
+        public MessageDetailHeaderViewModel HeaderViewModel { get; }
 
-        public MessageDetailBodyViewModel BodyViewModel { get; private set; }
+        public MessageDetailBodyViewModel BodyViewModel { get; }
 
         public void LoadMessageEntry(MessageEntry messageEntry)
         {
@@ -237,7 +263,7 @@ namespace Papercut.ViewModels
                     IsLoading = true;
 
                 // load and show it...
-                _loadingDisposable = _mimeMessageLoader.Get(messageEntry).ObserveOnDispatcher().Subscribe(m =>
+                _loadingDisposable = _mimeMessageLoader.GetObservable(messageEntry).ObserveOnDispatcher().Subscribe(m =>
                 {
                     DisplayMimeMessage(m);
                     if (handleLoading)
@@ -270,10 +296,14 @@ namespace Papercut.ViewModels
                 To = mailMessageEx.To?.ToString() ?? string.Empty;
                 CC = mailMessageEx.Cc?.ToString() ?? string.Empty;
                 Bcc = mailMessageEx.Bcc?.ToString() ?? string.Empty;
+                var priority = GetPriority(mailMessageEx);
+                Priority = priority.Name;
+                PriorityColor = priority.Color;
                 Date = mailMessageEx.Date.ToString();
                 Subject = mailMessageEx.Subject ?? string.Empty;
                 
                 AttachmentCount = parts.GetAttachments().Count();
+
                 RawViewModel.MimeMessage = mailMessageEx;
                 PartsListViewModel.MimeMessage = mailMessageEx;
 
@@ -293,6 +323,21 @@ namespace Papercut.ViewModels
             }
 
             SelectedTabIndex = 0;
+        }
+
+        private static (string Name, string Color) GetPriority([NotNull] MimeMessage message)
+        {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+
+            switch (message.Priority)
+            {
+                case MessagePriority.NonUrgent: return ("Low", "Blue");
+                case MessagePriority.Urgent: return ("High", "Red");
+                case MessagePriority.Normal:
+                    break;
+            }
+
+            return default;
         }
 
         void ResetMessage()
