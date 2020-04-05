@@ -2,18 +2,19 @@
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2020 Jaben Cargman
-//  
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
 
 namespace Papercut.ViewModels
 {
@@ -22,38 +23,36 @@ namespace Papercut.ViewModels
     using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.IO;
-    using System.Linq;
-    using System.Net.Mail;
     using System.Threading;
     using System.Windows;
 
     using Caliburn.Micro;
 
+    using Common.Extensions;
+    using Common.Helper;
+
+    using Helpers;
+
     using Message;
+    using Message.Helpers;
 
     using Microsoft.Win32;
 
     using MimeKit;
 
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
-    using Papercut.Helpers;
-    using Papercut.Message.Helpers;
-
     using Serilog;
 
     public class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
     {
+        readonly ILogger _logger;
+
+        private readonly MessageRepository _messageRepository;
+        readonly IViewModelWindowManager _viewModelWindowManager;
         bool _hasSelectedPart;
 
         MimeMessage _mimeMessage;
 
         MimeEntity _selectedPart;
-
-        readonly ILogger _logger;
-
-        private readonly MessageRepository _messageRepository;
-        readonly IViewModelWindowManager _viewModelWindowManager;
 
         public MessageDetailPartsListViewModel(MessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
         {
@@ -64,7 +63,7 @@ namespace Papercut.ViewModels
             Parts = new ObservableCollection<MimeEntity>();
         }
 
-        public ObservableCollection<MimeEntity> Parts { get; private set; }
+        public ObservableCollection<MimeEntity> Parts { get; }
 
         public MimeMessage MimeMessage
         {
@@ -193,10 +192,10 @@ namespace Papercut.ViewModels
             {
                 var dlg = new SaveFileDialog();
 
-                var fileName = this._messageRepository.GetFullMailFilename(messagePart.Message.Subject);
+                var fileName = _messageRepository.GetFullMailFilename(messagePart.Message.Subject);
 
-                if (!string.IsNullOrWhiteSpace(fileName))
-                    dlg.FileName = fileName;
+                dlg.FileName = Path.GetFileName(fileName);
+                dlg.InitialDirectory = Path.GetDirectoryName(fileName);
 
                 var extensions = new List<string> {"Email (*.eml)|*.eml", "All (*.*)|*.*"};
 

@@ -53,48 +53,18 @@ namespace Papercut.Message
             _logger = logger.ForContext<MimeMessageLoader>();
         }
 
-        public IObservable<MimeMessage> Get(MessageEntry messageEntry)
+        public Task<MimeMessage> GetAsync(MessageEntry messageEntry)
         {
             _logger.Verbose("Loading Message Entry {@MessageEntry}", messageEntry);
 
-            return Observable.Create<MimeMessage>(
-                o =>
-                {
-                    // in case of multiple subscriptions...
-                    var observer = Observer.Synchronize(o, true);
-                    var disposable = new CancellationDisposable();
-
-                    MimeMessage message = null;
-
-                    try
-                    {
-                        message = this.GetMimeMessageFromCache(messageEntry);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // no need to respond...
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(ex, "Exception Loading {@MessageEntry}", messageEntry);
-                        observer.OnError(ex);
-                    }
-
-                    if (message != null)
-                    {
-                        observer.OnNext(message);
-                        observer.OnCompleted();
-                    }
-
-                    return disposable;
-                }).SubscribeOn(TaskPoolScheduler.Default);
+            return this.GetMimeMessageFromCache(messageEntry);
         }
 
-        private MimeMessage GetMimeMessageFromCache(MessageEntry messageEntry)
+        private Task<MimeMessage> GetMimeMessageFromCache(MessageEntry messageEntry, CancellationToken token = default)
         {
             return MimeMessageCache.GetOrSet(
                 messageEntry.File,
-                () =>
+                async () =>
                 {
                     this._logger.Verbose(
                         "Getting Message Data from Message Repository",
@@ -104,10 +74,13 @@ namespace Papercut.Message
                         "MimeMessage Load for {@MessageEntry}",
                         messageEntry);
 
-                    using (var message = this._messageRepository.GetMessage(messageEntry))
+                    return await Task.Run(() =>
                     {
-                        return MimeMessage.Load(ParserOptions.Default, message);
-                    }
+                        using (var message = this._messageRepository.GetMessage(messageEntry))
+                        {
+                            return MimeMessage.Load(ParserOptions.Default, message);
+                        }
+                    }, token);
                 },
                 m =>
                 {

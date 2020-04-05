@@ -18,6 +18,12 @@
 namespace Papercut.Helpers
 {
     using System;
+    using System.Linq;
+    using System.Windows.Media.Effects;
+
+    using Message.Helpers;
+
+    using MimeKit;
 
     using Papercut.Core.Domain.Message;
     using Papercut.Message;
@@ -25,17 +31,46 @@ namespace Papercut.Helpers
     public class MimeMessageEntry : MessageEntry
     {
         string _subject;
+        private MessagePriority _priority;
+        private int _attachmentsCount;
 
         public MimeMessageEntry(MessageEntry entry, MimeMessageLoader loader)
             : base(entry.File)
         {
             IsSelected = entry.IsSelected;
 
-            loader.Get(this).Subscribe(m => { Subject = m.Subject; },
+            loader.GetObservable(this).Subscribe(m =>
+                {
+                    Subject = m.Subject;
+                    Priority = m.Priority;
+                    AttachmentsCount = m.Attachments.Count();
+                },
                 e =>
                 {
                     Subject = $"Failure loading message: {e.Message}";
                 });
+        }
+        
+        public int AttachmentsCount
+        {
+            get => _attachmentsCount;
+            set
+            {
+                if (value == _attachmentsCount) return;
+                _attachmentsCount = value;
+                OnPropertyChanged(nameof(AttachmentsCount));
+            }
+        }
+
+        public MessagePriority Priority
+        {
+            get => _priority;
+            protected set
+            {
+                if (value == _priority) return;
+                _priority = value;
+                OnPropertyChanged(nameof(Priority));
+            }
         }
 
         public string Subject
@@ -43,6 +78,7 @@ namespace Papercut.Helpers
             get => _subject;
             protected set
             {
+                if (value == _subject) return;
                 _subject = value;
                 OnPropertyChanged(nameof(Subject));
             }

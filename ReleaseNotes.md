@@ -1,5 +1,8 @@
 # Release Notes
 
+## Papercut v5.6.1
+- Renamed to "Papercut SMTP" to seperate from other products.
+
 ## Papercut v5.6.0 [2020-04-02]
 - [#143](https://github.com/ChangemakerStudios/Papercut/issues/143) Added "Delete All" button.
 - Switch "Self Hosted Web" to use OWIN/Katana -- which should fix issues with binding.

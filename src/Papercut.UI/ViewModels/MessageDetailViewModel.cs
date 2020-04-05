@@ -263,7 +263,7 @@ namespace Papercut.ViewModels
                     IsLoading = true;
 
                 // load and show it...
-                _loadingDisposable = _mimeMessageLoader.Get(messageEntry).ObserveOnDispatcher().Subscribe(m =>
+                _loadingDisposable = _mimeMessageLoader.GetObservable(messageEntry).ObserveOnDispatcher().Subscribe(m =>
                 {
                     DisplayMimeMessage(m);
                     if (handleLoading)

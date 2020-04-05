@@ -22,10 +22,11 @@ namespace Papercut.Services
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
-    using System.Threading.Tasks;
     using System.Windows.Forms;
 
-    using Caliburn.Micro;
+    using Common;
+
+    using Core.Annotations;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
@@ -33,6 +34,7 @@ namespace Papercut.Services
 
     using Disposable = Autofac.Util.Disposable;
 
+    [UsedImplicitly]
     public class NotificationMenuService : Disposable,
         IUIThreadEventHandler<PapercutClientReadyEvent>,
         IUIThreadEventHandler<PapercutClientExitEvent>,
@@ -109,7 +111,7 @@ namespace Papercut.Services
             _notification = new NotifyIcon
             {
                 Icon = new Icon(_resourceLocator.GetResource("App.ico").Stream),
-                Text = "Papercut",
+                Text = AppConstants.ApplicationName,
                 Visible = true
             };
 

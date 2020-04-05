@@ -23,12 +23,12 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("Papercut")]
+[assembly: AssemblyTitle("Papercut SMTP")]
 [assembly: AssemblyDescription("Standalone SMTP server designed for viewing received messages")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Papercut")]
-[assembly: AssemblyProduct("Papercut")]
-[assembly: AssemblyCopyright("Copyright © 2008 - 2017 Ken Robertson & Jaben Cargman")]
+[assembly: AssemblyCompany("Changemaker Studios")]
+[assembly: AssemblyProduct("Papercut SMTP")]
+[assembly: AssemblyCopyright("Copyright © 2008 - 2020 Ken Robertson & Jaben Cargman")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

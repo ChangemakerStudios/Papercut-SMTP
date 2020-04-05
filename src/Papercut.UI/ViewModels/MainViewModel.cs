@@ -31,6 +31,8 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
+    using Common;
+
     using ICSharpCode.AvalonEdit.Utils;
 
     using MahApps.Metro.Controls;
@@ -55,7 +57,7 @@ namespace Papercut.ViewModels
         IHandle<ShowMainWindowEvent>,
         IHandle<ShowOptionWindowEvent>
     {
-        const string WindowTitleDefault = "Papercut";
+        const string WindowTitleDefault = AppConstants.ApplicationName;
 
         readonly ForwardRuleDispatch _forwardRuleDispatch;
 
@@ -110,10 +112,7 @@ namespace Papercut.ViewModels
 
         public string LogText
         {
-            get
-            {
-                return _logText;
-            }
+            get => _logText;
             set
             {
                 _logText = value;
@@ -123,10 +122,7 @@ namespace Papercut.ViewModels
 
         public bool IsDeactivated
         {
-            get
-            {
-                return _isDeactivated;
-            }
+            get => _isDeactivated;
             set
             {
                 _isDeactivated = value;
@@ -136,10 +132,7 @@ namespace Papercut.ViewModels
 
         public string WindowTitle
         {
-            get
-            {
-                return _windowTitle;
-            }
+            get => _windowTitle;
             set
             {
                 _windowTitle = value;
@@ -154,7 +147,7 @@ namespace Papercut.ViewModels
             return productVersion.Split('+').FirstOrDefault();
         }
 
-        public string Version => $"Papercut v{GetVersion()}";
+        public string Version => $"{AppConstants.ApplicationName} v{GetVersion()}";
 
         public bool IsLogOpen
         {

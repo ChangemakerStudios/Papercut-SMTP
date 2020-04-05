@@ -19,7 +19,10 @@
 namespace Papercut.Rules.Implementations
 {
     using System;
+    using System.Linq;
     using System.Reactive.Linq;
+
+    using Common.Extensions;
 
     using MimeKit;
 
@@ -49,26 +52,23 @@ namespace Papercut.Rules.Implementations
             if (rule == null) throw new ArgumentNullException(nameof(rule));
             if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
-            _mimeMessageLoader.Value.Get(messageEntry)
-                .Select(m => m.CloneMessage())
-                .Where(m => RuleMatches(rule, m))
-                .Subscribe(
-                    m =>
-                    {
-                        try
-                        {
-                            using (var client = rule.CreateConnectedSmtpClient())
-                            {
-                                rule.PopulateFromRule(m);
-                                client.Send(m);
-                                client.Disconnect(true);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            HandleSendFailure(rule, messageEntry, ex);
-                        }
-                    });
+            var mimeMessage = _mimeMessageLoader.Value.Get(messageEntry).CloneMessage();
+
+            if (!RuleMatches(rule, mimeMessage)) return;
+
+            try
+            {
+                using (var client = rule.CreateConnectedSmtpClient())
+                {
+                    rule.PopulateFromRule(mimeMessage);
+                    client.Send(mimeMessage);
+                    client.Disconnect(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleSendFailure(rule, messageEntry, ex);
+            }
         }
 
         protected virtual bool RuleMatches(T rule, MimeMessage mimeMessage)

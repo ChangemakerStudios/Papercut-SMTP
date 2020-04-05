@@ -29,7 +29,7 @@ src=""data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOgAAAAyCAMAAABh0mcDAAAAGXRF
             Subject = "Welcome to Papercut!",
             Body = body.ToMessageBody(),
         };
-        message.From.Add(new MimeKit.MailboxAddress("Papercut", "Papercut@papercut.com"));
+        message.From.Add(new MimeKit.MailboxAddress(Constants.ApplicationName, "Papercut@papercut.com"));
         message.To.Add(new MimeKit.MailboxAddress("", "Papercut@user.com"));
         message.WriteTo(System.IO.Path.GetFullPath("..\\src\\Papercut.UI\\Readme.eml"));    
     }

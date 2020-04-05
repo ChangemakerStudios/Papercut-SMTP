@@ -22,6 +22,8 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
+    using Common;
+
     using Papercut.Properties;
 
     public class ForwardViewModel : Screen
@@ -118,7 +120,7 @@ namespace Papercut.ViewModels
             {
                 MessageBox.Show(
                     "All the text boxes are required, fill them in please.",
-                    "Papercut",
+                    AppConstants.ApplicationName,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
                 return;
@@ -128,7 +130,7 @@ namespace Papercut.ViewModels
             {
                 MessageBox.Show(
                     "You need to enter valid email addresses.",
-                    "Papercut",
+                    AppConstants.ApplicationName,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
                 return;

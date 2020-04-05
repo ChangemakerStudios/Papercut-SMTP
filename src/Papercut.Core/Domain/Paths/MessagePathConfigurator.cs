@@ -24,7 +24,8 @@ namespace Papercut.Core.Domain.Paths
     using System.Linq;
     using System.Text.RegularExpressions;
 
-    using Papercut.Common.Extensions;
+    using Common;
+
     using Papercut.Common.Helper;
 
     using Serilog;
@@ -33,7 +34,7 @@ namespace Papercut.Core.Domain.Paths
     {
         static readonly IDictionary<string, string> _templateDictionary;
 
-        static readonly Regex _templateRegex = new Regex(
+        static readonly Regex TemplateRegex = new Regex(
             @"\%(?<name>.+?)\%",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
 
@@ -47,7 +48,8 @@ namespace Papercut.Core.Domain.Paths
         {
             _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                { "BaseDirectory", AppDomain.CurrentDomain.BaseDirectory }
+                {"BaseDirectory", AppDomain.CurrentDomain.BaseDirectory},
+                {"DataDirectory", AppConstants.DataDirectory}
             };
 
             foreach (
@@ -94,7 +96,7 @@ namespace Papercut.Core.Domain.Paths
 
                 return this._defaultSavePath;
             }
-            private set { this._defaultSavePath = value; }
+            private set => this._defaultSavePath = value;
         }
 
         public IEnumerable<string> LoadPaths { get; private set; }
@@ -126,7 +128,7 @@ namespace Papercut.Core.Domain.Paths
         string RenderPathTemplate(string pathTemplate)
         {
             IEnumerable<string> pathKeys =
-                _templateRegex.Matches(pathTemplate)
+                TemplateRegex.Matches(pathTemplate)
                     .OfType<Match>()
                     .Select(s => s.Groups["name"].Value);
             string renderedPath = pathTemplate;

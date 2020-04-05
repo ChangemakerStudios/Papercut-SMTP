@@ -20,6 +20,7 @@ namespace Papercut.Infrastructure.IPComm.Network
     using System.IO;
     using System.Net.Sockets;
 
+    using Common;
     using Common.Domain;
     using Common.Extensions;
 
@@ -47,7 +48,7 @@ namespace Papercut.Infrastructure.IPComm.Network
             this.Connection = connection;
             this.Logger.ForContext("ConnectionId", this.Connection.Id);
 
-            this.Connection.SendLine("PAPERCUT").Wait();
+            this.Connection.SendLine(AppConstants.ApplicationName.ToUpper()).Wait();
         }
 
         protected override void ProcessRequest(string incomingRequest)

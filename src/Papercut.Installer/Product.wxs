@@ -16,7 +16,7 @@
     <?endif?>
 
     <Product Id="*"
-             Name="Papercut"
+             Name="Papercut SMTP"
              Language="1033"
              Version="$(var.Version)"
              Manufacturer="$(var.Manufacturer)"
