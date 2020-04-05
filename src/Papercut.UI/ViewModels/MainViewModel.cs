@@ -177,6 +177,36 @@ namespace Papercut.ViewModels
             }
         }
 
+        public int MainWindowHeight
+        {
+            get => _mainWindowHeight;
+            set
+            {
+                if (value == _mainWindowHeight) return;
+
+                // ignore non-normal window sizes
+                if (_window.WindowState != WindowState.Normal) return;
+
+                _mainWindowHeight = value;
+                NotifyOfPropertyChange(() => MainWindowHeight);
+            }
+        }
+
+        public int MainWindowWidth
+        {
+            get => _mainWindowWidth;
+            set
+            {
+                if (value == _mainWindowWidth) return;
+
+                // ignore non-normal window sizes
+                if (_window.WindowState != WindowState.Normal) return;
+
+                _mainWindowWidth = value;
+                NotifyOfPropertyChange(() => MainWindowWidth);
+            }
+        }
+
         void IHandle<ShowMainWindowEvent>.Handle(ShowMainWindowEvent message)
         {
             if (!_window.IsVisible) _window.Show();
@@ -254,6 +284,8 @@ namespace Papercut.ViewModels
 
         public Deque<string> _currentLogHistory = new Deque<string>();
         private bool _isDeleteAllConfirmOpen;
+        private int _mainWindowWidth;
+        private int _mainWindowHeight;
 
         void SetupObservables()
         {
