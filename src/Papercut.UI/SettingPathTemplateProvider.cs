@@ -66,7 +66,7 @@ namespace Papercut
                 this._logger.Error(ex, "Failed to load message paths");
 
                 // use default
-                return "%ApplicationData%\\Papercut;%BaseDirectory%;%BaseDirectory%\\Incoming";
+                return @"%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%\Papercut;%BaseDirectory%\Incoming;%DataDirectory%\Incoming";
             }
         }
 

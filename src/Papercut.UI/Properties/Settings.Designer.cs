@@ -145,7 +145,8 @@ namespace Papercut.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("%ApplicationData%\\Papercut;%BaseDirectory%\\Incoming;%DataDirectory%\\Incoming")]
+        [global::System.Configuration.DefaultSettingValueAttribute("%ApplicationData%\\Changemaker Studios\\Papercut SMTP;%ApplicationData%Papercut;%Ba" +
+            "seDirectory%\\Incoming;%DataDirectory%\\Incoming")]
         public string MessagePaths {
             get {
                 return ((string)(this["MessagePaths"]));

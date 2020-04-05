@@ -1,7 +1,12 @@
 # Release Notes
 
-## Papercut v5.6.1
-- Renamed to "Papercut SMTP" to seperate from other products.
+## Papercut v5.7.0 [2020-04-05]
+- Renamed product to "Papercut SMTP" to seperate from other products.
+- Moved "Readme.eml" and logs to *\ProgramData\Changemaker Studios\Papercut SMTP* allowing it to be deleted.
+- Changed default save directory for Papercut UI to *\%ApplicationData%\Changemaker Studios\Papercut SMTP*. Mail in legacy paths are still supported.
+- Added support for embedded message mime types and the ability to save the embedded eml.
+- Performance improvements loading messages.
+- Misc bug fixes. 
 
 ## Papercut v5.6.0 [2020-04-02]
 - [#143](https://github.com/ChangemakerStudios/Papercut/issues/143) Added "Delete All" button.
