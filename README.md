@@ -5,6 +5,7 @@ The Simple Desktop Email Helper
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Jaben/Papercut?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/Jaben)
 
+*Note*: **Papercut** is now **Papercut SMTP**.
 
 ## The problem
 If you ever send emails from an application or web site during development, you're familiar with the fear of an email being released into the wild. Are you positive none of the 'test' emails are addressed to colleagues or worse, customers? Of course, you can setting up and maintain a test email server for development -- but that's a chore. Plus, the delay when you are waiting to view new test emails can radically slow your development cycle.
