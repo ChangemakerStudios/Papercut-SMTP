@@ -1,0 +1,186 @@
+a:focus, a:hover{
+    text-decoration:none;
+}
+/*********/
+/* Modal */
+.modal-dialog {
+  margin-top: 65px;
+}
+
+/*******/
+/* Nav */
+.navbar .col-md-10 {
+  padding-left: 0;
+}
+
+.navbar-brand > img {
+  display: inline-block;
+}
+
+.navbar-form {
+  padding-left: 0;
+}
+
+
+
+/* http://stackoverflow.com/questions/18838964/add-bootstrap-glyphicon-to-input-box */
+.left-inner-addon {
+  position: relative;
+}
+
+.left-inner-addon input {
+  padding-left: 30px;
+}
+
+.left-inner-addon .glyphicon {
+  color: #aaa;
+  position: absolute;
+  padding: 9px 10px;
+  pointer-events: none;
+}
+
+/***************/
+/* Sidebar nav */
+.nav-stacked {
+  margin-top: 10px;
+}
+
+.has-event-source {
+  color: green;
+}
+
+.no-event-source {
+  color: red;
+}
+
+.nav > li > a.btn-delete-all{
+    position: absolute;
+    right: 0;
+    top: 5px;
+    display: none;
+}
+
+.nav > li:hover > a.btn-delete-all{
+  display: block;
+}
+
+/***********/
+/* Toolbar */
+.toolbar {
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+}
+
+.toolbar .btn {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.toolbar .spacer {
+  display: inline-block;
+  width: 20px;
+}
+
+.message-count {
+  padding-right: 10px;
+}
+
+/***********/
+/* Content */
+.content {
+  position: fixed;
+  right: 0;
+  top: 51px;
+  bottom: 0;
+  overflow-y: scroll;
+  padding-bottom: 80px;
+}
+
+.mail-content {
+  margin-top: 20px;
+}
+
+.msglist-message {
+  border-bottom: 1px solid #ccc;
+  margin: 5px 0;
+  padding: 5px 0;
+  cursor: pointer;
+}
+
+.msglist-message .subject.unread {
+  color: #666;
+  font-weight: bold;
+}
+
+.mail-content .download-raw{
+    display:inline-block;
+    margin-top:5px;
+}
+
+/***********/
+/* Preview */
+#preview-plain, #preview-source {
+  white-space: pre;
+  font-family: Courier New, Courier, System, fixed-width;
+  padding: 10px;
+}
+
+#preview-headers ul{
+    margin: 0;
+    padding: 0;
+    margin-top: 15px;
+}
+
+#preview-headers ul li{
+    list-style: none;
+    margin: 5px 0;
+}
+
+#preview-headers ul li .header-name{
+    font-weight:bold;
+}
+
+#preview-sections table {
+    margin-top: 15px;
+    min-width: 450px;
+}
+
+#preview-sections table tbody tr:hover {
+    background: #ebf1f5;
+}
+
+#preview-sections table td {
+    padding: 5px;
+}
+
+.preview .tab-content {
+  overflow-y: visible;
+}
+
+.headers {
+  margin-top: 10px;
+}
+
+.headers tbody td.header-name {
+  white-space: nowrap;
+  text-align: right;
+  color: #666;
+  font-weight: normal;
+  width: 80px;
+  padding-right: 10px;
+}
+
+.haeders table td, .headers table th {
+  padding: 2px 10px
+}
+
+.mime-part {
+  padding: 10px;
+}
+
+label.mail-address{
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: 0;
+    font-weight: normal;
+}

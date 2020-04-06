@@ -18,7 +18,9 @@
 namespace Papercut.Core.Infrastructure.Logging
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
+    using System.Reflection;
     using System.Threading.Tasks;
 
     using Common;
@@ -45,7 +47,8 @@ namespace Papercut.Core.Infrastructure.Logging
                 return
                     new LoggerConfiguration().MinimumLevel.Information()
                         .Enrich.With<EnvironmentEnricher>()
-                        .WriteTo.LiterateConsole()
+                        .WriteTo.Console()
+                        .Enrich.WithProperty("AppName", AppConstants.ApplicationName)
                         .WriteTo.Sink(jsonSink, LogEventLevel.Information).CreateLogger();
             });
 

@@ -48,6 +48,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Infrastructure.Smt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Infrastructure.IPComm", "src\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj", "{DA92047E-B764-41B4-B2D9-1C66C5449FA9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Smtp.Service", "src\Papercut.Smtp.Service\Papercut.Smtp.Service.csproj", "{6EF5FA8F-8632-4173-9622-DA6C09F09C0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -152,6 +154,14 @@ Global
 		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Release|x86.ActiveCfg = Release|Any CPU
 		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Release|x86.Build.0 = Release|Any CPU
+		{6EF5FA8F-8632-4173-9622-DA6C09F09C0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EF5FA8F-8632-4173-9622-DA6C09F09C0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EF5FA8F-8632-4173-9622-DA6C09F09C0E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6EF5FA8F-8632-4173-9622-DA6C09F09C0E}.Debug|x86.Build.0 = Debug|Any CPU
+		{6EF5FA8F-8632-4173-9622-DA6C09F09C0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EF5FA8F-8632-4173-9622-DA6C09F09C0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EF5FA8F-8632-4173-9622-DA6C09F09C0E}.Release|x86.ActiveCfg = Release|Any CPU
+		{6EF5FA8F-8632-4173-9622-DA6C09F09C0E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
