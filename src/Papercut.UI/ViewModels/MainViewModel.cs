@@ -144,7 +144,8 @@ namespace Papercut.ViewModels
 
         string GetVersion()
         {
-            var productVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
+            var productVersion =
+                FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
 
             return productVersion.Split('+').FirstOrDefault();
         }
@@ -279,6 +280,7 @@ namespace Papercut.ViewModels
             {
                 yield return $@"<br/><span class=""fatal""><b>Exception:</b> {e.Exception.Message.Linkify()}</span>";
             }
+
             yield return @"</div>";
         }
 
@@ -361,7 +363,7 @@ namespace Papercut.ViewModels
 
         public void GoToSite()
         {
-            Process.Start("https://github.com/ChangemakerStudios/Papercut");
+            Process.Start("https://github.com/ChangemakerStudios/Papercut-SMTP");
         }
 
         public void ShowRulesConfiguration()
@@ -420,7 +422,7 @@ namespace Papercut.ViewModels
         {
             if (MessageListViewModel.SelectedMessage == null) return;
 
-            var forwardViewModel = new ForwardViewModel { FromSetting = true };
+            var forwardViewModel = new ForwardViewModel {FromSetting = true};
             bool? result = _viewModelWindowManager.ShowDialog(forwardViewModel);
             if (result == null || !result.Value) return;
 
@@ -437,10 +439,10 @@ namespace Papercut.ViewModels
                         progressDialog.SetIndeterminate();
 
                         var forwardRule = new ForwardRule
-                                          {
-                                              FromEmail = forwardViewModel.From,
-                                              ToEmail = forwardViewModel.To
-                                          };
+                        {
+                            FromEmail = forwardViewModel.From,
+                            ToEmail = forwardViewModel.To
+                        };
 
                         forwardRule.PopulateServerFromUri(forwardViewModel.Server);
 

@@ -224,12 +224,12 @@ namespace Papercut.ViewModels
                             $"From: {message.From.ToString().Truncate(50)}\r\nSubject: {message.Subject.Truncate(50)}",
                             ToolTipIcon.Info));
 
-                    // Add it to the list box
-                    ClearSelected();
-                    PopSelectedIndex();
 
-                    entry.IsSelected = true;
+
                     Messages.Add(new MimeMessageEntry(entry, _mimeMessageLoader));
+
+                    // handle selection if nothing is selected
+                    ValidateSelected();
                 },
                 e =>
                 {
