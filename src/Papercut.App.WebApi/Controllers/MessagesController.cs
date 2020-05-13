@@ -18,6 +18,7 @@
 namespace Papercut.App.WebApi.Controllers
 {
     using System;
+    using System.CodeDom;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -27,6 +28,7 @@ namespace Papercut.App.WebApi.Controllers
     using System.Net.Mime;
     using System.Threading.Tasks;
     using System.Web.Http;
+    using System.Web.Http.Results;
 
     using MimeKit;
 
@@ -36,15 +38,20 @@ namespace Papercut.App.WebApi.Controllers
     using Papercut.Message;
     using Papercut.Message.Helpers;
 
+    using Serilog;
+    using Serilog.Context;
+
     public class MessagesController : ApiController
     {
         readonly MessageRepository _messageRepository;
         readonly MimeMessageLoader _messageLoader;
+        private readonly ILogger _logger;
 
-        public MessagesController(MessageRepository messageRepository, MimeMessageLoader messageLoader)
+        public MessagesController(MessageRepository messageRepository, MimeMessageLoader messageLoader, ILogger logger)
         {
             this._messageRepository = messageRepository;
             this._messageLoader = messageLoader;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -74,30 +81,65 @@ namespace Papercut.App.WebApi.Controllers
             this._messageRepository.LoadMessages()
                 .ForEach(msg =>
                 {
-                    try
+                    using (LogContext.PushProperty("MessageEntry", msg, true))
                     {
-                        this._messageRepository.DeleteMessage(msg);
-                    }
-                    catch
-                    {
-                        // ignored
+                        try
+                        {
+                            this._messageRepository.DeleteMessage(msg);
+                        }
+                        catch (Exception ex) when (LogFailure(ex, "Failure Deleting Message"))
+                        {
+                        }
                     }
                 });
 
             return this.Request.CreateResponse(HttpStatusCode.OK);
         }
 
+        [HttpDelete]
+        public IHttpActionResult DeleteMessage(string id)
+        {
+            var msg = this._messageRepository.LoadMessages()
+                .FirstOrDefault(m => m.Name == id);
+
+            if (msg == null)
+            {
+                return this.NotFound();
+            }
+
+            using (LogContext.PushProperty("MessageEntry", msg, true))
+            {
+                try
+                {
+                    this._messageRepository.DeleteMessage(msg);
+                }
+                catch (Exception ex) when (LogFailure(ex, "Failure Deleting Message"))
+                {
+                }
+            }
+
+            return this.Ok();
+        }
+
+        private bool LogFailure(Exception ex, string message)
+        {
+            this._logger.Error(ex, message);
+
+            return true;
+        }
+
         [HttpGet]
-        public async Task<HttpResponseMessage> Get(string id)
+        public async Task<IHttpActionResult> Get(string id)
         {
             var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
             if (messageEntry == null)
             {
-                return this.Request.CreateResponse(HttpStatusCode.NotFound);
+                return this.NotFound();
             }
 
             var dto = MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, await this._messageLoader.GetAsync(messageEntry)));
-            return this.Request.CreateResponse(HttpStatusCode.OK, dto);
+
+            return this.Ok(dto);
         }
 
         [HttpGet]
