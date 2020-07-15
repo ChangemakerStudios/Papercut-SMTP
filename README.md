@@ -17,15 +17,15 @@ Download Papercut.Setup.exe installer.
 
 ## Features
 #### Instant Feedback When New Email Arrives
-![Instant Feedback When New Email Arrives](https://changemakerstudios.us/images/Papercut/Papercut-v3.1.0-S2.png)
+![Instant Feedback When New Email Arrives](https://changemakerstudios.us/content/images/2020/07/Papercut-2013.3-SS2.png)
 #### Rich and Detailed View of Received Email
-![Rich and Detailed View of Received Email](https://changemakerstudios.us/images/Papercut/Papercut-Main.png)
+![Rich and Detailed View of Received Email](https://changemakerstudios.us/content/images/2020/07/Papercut-Main.png)
 #### View and Download the Mime Sections of your Email
-![View and Download the Mime Sections of your Email](https://changemakerstudios.us/images/Papercut/Papercut-Mime.png)
-#### In Version 4 the Raw View Returns
-![In Version 4 the Raw View Returns](https://changemakerstudios.us/images/Papercut/Papercut-Raw.png)
-#### New in Version 4.4: Logging View
-![In Version 4.4: Logging View](https://changemakerstudios.us/images/Papercut/Papercut-Log.png)
+![View and Download the Mime Sections of your Email](https://changemakerstudios.us/content/images/2020/07/Papercut-Mime.png)
+#### Raw View
+![Raw View](https://changemakerstudios.us/content/images/2020/07/Papercut-Raw.png)
+#### Logging View
+![Logging View](https://changemakerstudios.us/content/images/2020/07/Papercut-Log.png)
 
 ## Papercut SMTP Background Service
 Papercut SMTP has an optional "always on" service to receive emails even when the client is not running. It's installed by default with [Papercut.Setup.exe](https://github.com/ChangemakerStudios/Papercut/releases) -- but can also be installed separately by downloading [Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
