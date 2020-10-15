@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Papercut.Service.Web.Hosting.InProcess
 {
@@ -18,7 +17,6 @@ namespace Papercut.Service.Web.Hosting.InProcess
     {
         private readonly IWebHost _hostInstance;
         private bool _disposed;
-        private IHttpApplication<Context> _application;
 
         public HttpServer(IWebHostBuilder builder)
         {
@@ -40,16 +38,16 @@ namespace Papercut.Service.Web.Hosting.InProcess
 
         IFeatureCollection IServer.Features { get; }
 
-        public HttpMessageHandler CreateHandler()
-        {
-            var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new ClientHandler(pathBase, _application);
-        }
+        //public HttpMessageHandler CreateHandler()
+        //{
+        //    var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
+        //    return new ClientHandler(pathBase, _application);
+        //}
 
-        public HttpClient CreateClient()
-        {
-            return new HttpClient(CreateHandler()) { BaseAddress = BaseAddress };
-        }
+        //public HttpClient CreateClient()
+        //{
+        //    return new HttpClient(CreateHandler()) { BaseAddress = BaseAddress };
+        //}
 
         public void Dispose()
         {
@@ -62,13 +60,13 @@ namespace Papercut.Service.Web.Hosting.InProcess
 
         Task IServer.StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
-            _application = new ApplicationWrapper<Context>((IHttpApplication<Context>)application, () =>
-            {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException(GetType().FullName);
-                }
-            });
+            //_application = new ApplicationWrapper<Context>((IHttpApplication<Context>)application, () =>
+            //{
+            //    if (_disposed)
+            //    {
+            //        throw new ObjectDisposedException(GetType().FullName);
+            //    }
+            //});
             return Task.FromResult(0);
         }
 

@@ -15,50 +15,53 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.IO;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Mvc;
+
+using MimeKit;
+
 namespace Papercut.Service.Web
 {
-    using Microsoft.AspNetCore.Mvc;
-    using MimeKit;
-    using System.IO;
-    using System.Threading.Tasks;
-
-
     public class MimePartFileStreamResult : FileStreamResult
     {
-        readonly string tempFilePath;
+        private readonly string _tempFilePath;
 
-        public MimePartFileStreamResult(IContentObject contentObject, string contentType) : base(new MemoryStream(), contentType)
+        public MimePartFileStreamResult(IMimeContent contentObject, string contentType)
+            : base(new MemoryStream(), contentType)
         {
-            tempFilePath = Path.GetTempFileName();
+            this._tempFilePath = Path.GetTempFileName();
 
-            using (var tempFile = File.OpenWrite(tempFilePath))
+            using (var tempFile = File.OpenWrite(this._tempFilePath))
             {
                 contentObject.DecodeTo(tempFile);
             }
 
             this.FileStream.Dispose();
-            this.FileStream = File.OpenRead(tempFilePath);
+            this.FileStream = File.OpenRead(this._tempFilePath);
         }
 
         public override void ExecuteResult(ActionContext context)
         {
             base.ExecuteResult(context);
-            Cleanup();
+            this.Cleanup();
         }
 
         public override Task ExecuteResultAsync(ActionContext context)
         {
-            return base.ExecuteResultAsync(context).ContinueWith((task) => {
-                Cleanup();
-            });
+            return base.ExecuteResultAsync(context).ContinueWith(
+                task =>
+                {
+                    this.Cleanup();
+                });
         }
 
-
-        void Cleanup()
+        private void Cleanup()
         {
             try
             {
-                File.Delete(tempFilePath);
+                File.Delete(this._tempFilePath);
             }
             catch
             {

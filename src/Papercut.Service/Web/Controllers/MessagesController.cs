@@ -138,7 +138,7 @@ namespace Papercut.Service.Web.Controllers
             }
 
             var response = new MimePartFileStreamResult(
-                mimePart.ContentObject,
+                mimePart.Content,
                 $"{mimePart.ContentType.MediaType}/{mimePart.ContentType.MediaSubtype}");
             var filename = mimePart.FileName ?? mimePart.ContentId ?? Guid.NewGuid().ToString();
             response.FileDownloadName = Uri.EscapeDataString(FileHelper.NormalizeFilename(filename));

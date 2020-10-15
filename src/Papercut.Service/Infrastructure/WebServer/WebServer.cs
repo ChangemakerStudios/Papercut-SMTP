@@ -67,17 +67,17 @@ namespace Papercut.Service.Infrastructure.WebServer
         {
             this._logger.Information("Starting Web Server on Port {httpPort}...", this._httpPort);
 
-            HttpClient client;
+            HttpClient client = null;
 
             if (this._httpPort <= 0)
             {
                 var server = WebStartup.StartInProcessServer(token);
-                client = server.CreateClient();
+                //client = server.CreateClient();
             }
             else
             {
                 WebStartup.Start(this._httpPort, token);
-                client = new HttpClient { BaseAddress = new Uri($"http://localhost:{this._httpPort}") };
+                //client = new HttpClient { BaseAddress = new Uri($"http://localhost:{this._httpPort}") };
             }
 
             this._messageBus.Publish(new PapercutWebServerReadyEvent { HttpClient = client });

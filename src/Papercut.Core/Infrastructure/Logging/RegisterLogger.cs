@@ -62,8 +62,7 @@ namespace Papercut.Core.Infrastructure.Logging
                                 .Enrich.FromLogContext()
                                 .Enrich.WithProperty("AppName", appMeta.AppName)
                                 .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-                                .WriteTo.LiterateConsole()
-                                .WriteTo.RollingFile(logFilePath);
+                                .WriteTo.Console();
 
                         // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
                         try

@@ -83,7 +83,7 @@ namespace Papercut.Service.Infrastructure.WebServer
             services.AddMemoryCache();
 
             var mvcCore = services.AddMvcCore();
-            mvcCore.AddJsonFormatters();
+            //mvcCore.AddJsonFormatters();
             services.AddSignalR();
 
             services.AddCors(
@@ -101,7 +101,7 @@ namespace Papercut.Service.Infrastructure.WebServer
             builder.Populate(services);
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            builder.Update(Scope.ComponentRegistry);
+            //builder.Update(Scope.ComponentRegistry);
 
             return new AutofacServiceProvider(Scope);
         }
@@ -115,7 +115,7 @@ namespace Papercut.Service.Infrastructure.WebServer
                 routes.MapHub<NewMessagesHub>("/new-messages");
             });
             app.UseMvc();
-            app.UseResponseBuffering();
+            //app.UseResponseBuffering();
         }
     }
 }

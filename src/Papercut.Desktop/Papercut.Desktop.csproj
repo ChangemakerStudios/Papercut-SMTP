@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>exe</OutputType>
     <OutputTypeEx>exe</OutputTypeEx>
     <DebugType>portable</DebugType>
@@ -12,14 +12,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.8.1" />
-    <PackageReference Include="ElectronNET.API" Version="0.0.9" />
+    <PackageReference Include="Autofac" Version="6.0.0" />
+    <PackageReference Include="ElectronNET.API" Version="9.31.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Service\Papercut.Service.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <DotNetCliToolReference Include="ElectronNET.CLI" Version="0.0.7" />
   </ItemGroup>
   <ItemGroup>
     <None Include="main.js" CopyToOutputDirectory="Always" />

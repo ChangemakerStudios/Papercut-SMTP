@@ -11,14 +11,13 @@
     "license": "ISC",
     "dependencies": {
         "detect-port": "^1.2.1",
-        "electron": "^1.7.8",
+        "electron": "^10.1.3",
         "electron-localshortcut": "^3.1.0",
         "socket.io": "^2.0.3",
-        "sudo-prompt": "^8.1.0",
-        "tmp": "^0.0.33"
+        "sudo-prompt": "^9.2.1",
+        "tmp": "^0.2.1"
     },
     "devDependencies": {
-        "@types/electron": "^1.6.10",
-        "@types/socket.io": "^1.4.31"
+        "@types/socket.io": "^2.1.11"
     }
 }

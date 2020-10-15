@@ -15,48 +15,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Papercut.Common.Helper;
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Infrastructure.Lifecycle;
+using Papercut.Service.Helpers;
+
+using SmtpServer;
+using SmtpServer.Mail;
+using SmtpServer.Storage;
 
 namespace Papercut.Service.Infrastructure.SmtpServer
 {
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Security;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using global::SmtpServer;
-    using global::SmtpServer.Mail;
-    using global::SmtpServer.Storage;
-
-    using Papercut.Common.Domain;
-    using Papercut.Common.Helper;
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Service.Helpers;
-
-    using Serilog.Context;
-
-    using ILogger = Serilog.ILogger;
-
     public class SmtpServerStartup : IStartupService
     {
-        readonly IAppMeta _applicationMetaData;
+        private readonly IAppMeta _applicationMetaData;
 
-        readonly ILogger _logger;
+        private readonly ILogger _bridgeLogger;
+
+        private readonly Serilog.ILogger _logger;
 
         private readonly MessageStore _messageStore;
 
-        private readonly global::SmtpServer.ILogger _bridgeLogger;
-
-        readonly PapercutServiceSettings _serviceSettings;
+        private readonly PapercutServiceSettings _serviceSettings;
 
         public SmtpServerStartup(
             PapercutServiceSettings serviceSettings,
             IAppMeta applicationMetaData,
-            ILogger logger,
+            Serilog.ILogger logger,
             MessageStore messageStore,
-            global::SmtpServer.ILogger bridgeLogger)
+            ILogger bridgeLogger)
         {
             this._serviceSettings = serviceSettings;
             this._applicationMetaData = applicationMetaData;
@@ -65,24 +59,12 @@ namespace Papercut.Service.Infrastructure.SmtpServer
             this._bridgeLogger = bridgeLogger;
         }
 
-        IEnumerable<IEndpointDefinition> GetEndpoints()
-        {
-            yield return new EndpointDefinitionBuilder()
-                .Endpoint(
-                    new IPEndPoint(
-                        IPAddress.Parse(ListenIpAddress),
-                        this._serviceSettings.Port))
-                .IsSecure(false).Build();
-        }
-
         private string ListenIpAddress
         {
             get
             {
-                if (this._serviceSettings.IP.IsNullOrWhiteSpace() || this._serviceSettings.IP.CaseInsensitiveEquals("Any"))
-                {
-                    return "0.0.0.0";
-                }
+                if (this._serviceSettings.IP.IsNullOrWhiteSpace()
+                    || this._serviceSettings.IP.CaseInsensitiveEquals("Any")) return "0.0.0.0";
 
                 return this._serviceSettings.IP;
             }
@@ -90,39 +72,53 @@ namespace Papercut.Service.Infrastructure.SmtpServer
 
         public async Task Start(CancellationToken token)
         {
-            ServicePointManager.ServerCertificateValidationCallback = this.IgnoreCertificateValidationFailureForTestingOnly;
+            ServicePointManager.ServerCertificateValidationCallback =
+                this.IgnoreCertificateValidationFailureForTestingOnly;
 
             var options = new SmtpServerOptionsBuilder()
                 .ServerName(this._applicationMetaData.AppName)
-                .AllowUnsecureAuthentication(false)
-                .MailboxFilter(new DelegatingMailboxFilter(CanAcceptMailbox))
+                .MailboxFilter(new DelegatingMailboxFilter(this.CanAcceptMailbox))
                 .UserAuthenticator(new SimpleAuthentication())
-                .Logger(_bridgeLogger)
-                .MessageStore(_messageStore);
+                .Logger(this._bridgeLogger)
+                .MessageStore(this._messageStore);
 
-            foreach (var endpoint in GetEndpoints())
-            {
-                options = options.Endpoint(endpoint);
-            }
+            foreach (var endpoint in this.GetEndpoints()) options = options.Endpoint(endpoint);
 
-            var server = new SmtpServer(options.Build());
+            var server = new global::SmtpServer.SmtpServer(options.Build());
 
             server.SessionCreated += this.OnSessionCreated;
             server.SessionCompleted += this.OnSessionCompleted;
 
-            this._logger.Information("Starting Smtp Server on {IP}:{Port}...", ListenIpAddress, this._serviceSettings.Port);
+            this._logger.Information(
+                "Starting Smtp Server on {IP}:{Port}...",
+                this.ListenIpAddress,
+                this._serviceSettings.Port);
 
             await server.StartAsync(token);
         }
 
-        private MailboxFilterResult CanAcceptMailbox(ISessionContext sessionContext, IMailbox mailbox)
+        private IEnumerable<IEndpointDefinition> GetEndpoints()
+        {
+            yield return new EndpointDefinitionBuilder()
+                .Endpoint(
+                    new IPEndPoint(
+                        IPAddress.Parse(this.ListenIpAddress),
+                        this._serviceSettings.Port))
+                .IsSecure(false).Build();
+        }
+
+        private MailboxFilterResult CanAcceptMailbox(
+            ISessionContext sessionContext,
+            IMailbox mailbox)
         {
             return MailboxFilterResult.Yes;
         }
 
         private void OnSessionCompleted(object sender, SessionEventArgs e)
         {
-            this._logger.Information("Completed SMTP connection from {RemoteEndPoint}", e.Context.RemoteEndPoint);
+            this._logger.Information(
+                "Completed SMTP connection from {EndpointDefinition}",
+                e.Context.EndpointDefinition);
         }
 
         private void OnSessionCreated(object sender, SessionEventArgs e)
@@ -132,7 +128,9 @@ namespace Papercut.Service.Infrastructure.SmtpServer
                 this._logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
             };
 
-            this._logger.Information("New SMTP connection from {RemoteEndPoint}", e.Context.RemoteEndPoint);
+            this._logger.Information(
+                "New SMTP connection from {EndpointDefinition}",
+                e.Context.EndpointDefinition);
         }
 
         private bool IgnoreCertificateValidationFailureForTestingOnly(

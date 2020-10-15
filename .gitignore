@@ -51,3 +51,5 @@ src/Papercut.Desktop/Incoming/
 src/Papercut.Desktop/\\Incoming/
 src/Papercut.Desktop/Papercut.Service.json
 src/Papercut.Desktop/.vscode/
+build/
+out/

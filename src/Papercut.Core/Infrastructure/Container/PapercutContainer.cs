@@ -29,9 +29,7 @@ namespace Papercut.Core.Infrastructure.Container
     using Papercut.Core.Infrastructure.Logging;
 
     using Serilog;
-    using Serilog.Events;
-    using Serilog.Formatting.Json;
-    using Serilog.Sinks.RollingFile;
+
     using Microsoft.Extensions.PlatformAbstractions;
     using System.Runtime.Loader;
 
@@ -71,8 +69,7 @@ namespace Papercut.Core.Infrastructure.Container
                 return
                     new LoggerConfiguration().MinimumLevel.Information()
                         .Enrich.With<EnvironmentEnricher>()
-                        .WriteTo.LiterateConsole()
-                        .WriteTo.RollingFile(logFilePath).CreateLogger();
+                        .WriteTo.Console().CreateLogger();
             });
 
             _containerProvider = new Lazy<IContainer>(Build, LazyThreadSafetyMode.ExecutionAndPublication);
