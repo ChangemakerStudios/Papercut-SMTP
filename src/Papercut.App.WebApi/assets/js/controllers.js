@@ -117,7 +117,7 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
         } else {
             $scope.preview = message;
             var e = startEvent("Loading message", message.Id, "glyphicon-download-alt");
-            $http.get('api/messages/' + message.Id).then(function (resp) {
+            $http.get('api/messages/' + $scope.escapeUrl(message.Id)).then(function (resp) {
                 $scope.cache[message.Id] = resp.data;
 
                 resp.data.previewHTML = $sce.trustAsHtml(resp.data.HtmlBody);
@@ -163,6 +163,9 @@ papercutApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout, $int
         return (new Date(timestamp)).toString();
     };
 
+    $scope.escapeUrl = function (messageId) {
+        return messageId.replace("#", "%23");
+    }
 
     function startEvent(name, args, glyphicon) {
         var eID = guid();
