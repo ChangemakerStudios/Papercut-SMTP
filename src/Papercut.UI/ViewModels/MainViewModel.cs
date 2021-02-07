@@ -40,6 +40,8 @@ namespace Papercut.ViewModels
     using MahApps.Metro.Controls;
     using MahApps.Metro.Controls.Dialogs;
 
+    using Microsoft.Web.WebView2.Core;
+
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Infrastructure.Lifecycle;
@@ -256,13 +258,23 @@ namespace Papercut.ViewModels
 
             var typedView = view as MainView;
 
-            var logPanel = typedView.LogPanel;
-            logPanel.Text = GetLogSinkHtml();
+            typedView.LogPanel.CoreWebView2InitializationCompleted += (sender, args) =>
+            {
+                this.SetupWebView(typedView.LogPanel);
+            };
+        }
+
+        private void SetupWebView(WebView2Base logPanel)
+        {
+            logPanel.NavigateToString(GetLogSinkHtml());
 
             this.GetPropertyValues(m => m.LogText)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
-                .Subscribe(m => logPanel.Text = m);
+                .Subscribe(m =>
+                {
+                    logPanel.NavigateToString(m);
+                });
         }
 
         private string GetLogSinkHtml()
@@ -288,6 +300,8 @@ namespace Papercut.ViewModels
         private bool _isDeleteAllConfirmOpen;
         private int _mainWindowWidth;
         private int _mainWindowHeight;
+
+        private bool _isLogVisible;
 
         void SetupObservables()
         {

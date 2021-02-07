@@ -34,13 +34,13 @@ namespace Papercut.Helpers
 
         readonly List<MultipartRelated> _stack = new List<MultipartRelated>();
 
-        readonly string _tempDir;
+        public string TempDirectory { get; }
 
         string _body;
 
-        public HtmlPreviewVisitor(string tempDirectory)
+        public HtmlPreviewVisitor(string tempDirectory = null)
         {
-            _tempDir = tempDirectory;
+            this.TempDirectory = tempDirectory;
         }
 
         public IList<MimeEntity> Attachments => _attachments;
@@ -122,7 +122,7 @@ namespace Papercut.Helpers
                     break;
             }
 
-            string path = Path.Combine(_tempDir, fileName);
+            string path = Path.Combine(this.TempDirectory, fileName);
 
             if (!File.Exists(path))
             {

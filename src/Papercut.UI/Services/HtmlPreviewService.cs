@@ -40,7 +40,7 @@ namespace Papercut.Services
             _appMeta = appMeta;
         }
 
-        public string CreateFile(MimeMessage mailMessageEx)
+        public string GetHtmlPreview(MimeMessage mailMessageEx)
         {
             if (mailMessageEx == null) throw new ArgumentNullException(nameof(mailMessageEx));
 
@@ -48,14 +48,21 @@ namespace Papercut.Services
             var visitor = new HtmlPreviewVisitor(tempDir);
             mailMessageEx.Accept(visitor);
 
-            string htmlFile = Path.Combine(tempDir, "index.html");
-
-            _logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
-
-            File.WriteAllText(htmlFile, visitor.HtmlBody, Encoding.Unicode);
-
-            return htmlFile;
+            return visitor.HtmlBody;
         }
+
+        //public string CreateFile(MimeMessage mailMessageEx)
+        //{
+        //    var htmlPreview = GetHtmlPreview(mailMessageEx);
+
+        //    string htmlFile = Path.Combine(tempDir, "index.html");
+
+        //    _logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
+
+        //    File.WriteAllText(htmlFile, visitor.HtmlBody, Encoding.Unicode);
+
+        //    return htmlFile;
+        //}
 
         string CreateUniqueTempDirectory()
         {

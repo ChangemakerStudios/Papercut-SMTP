@@ -19,6 +19,8 @@ namespace Papercut.Views
 {
     using System.Windows.Controls;
 
+    using Microsoft.Web.WebView2.Core;
+
     /// <summary>
     ///     Interaction logic for MessageDetailHtmlView.xaml
     /// </summary>

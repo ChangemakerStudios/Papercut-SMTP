@@ -10,7 +10,7 @@
                       xmlns:cal="http://www.caliburnproject.org"
                       xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
                       xmlns:MahAppsBehaviors="http://metro.mahapps.com/winfx/xaml/shared"
-                      xmlns:Wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
+                      xmlns:Helpers="clr-namespace:Papercut.Helpers"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:MainViewModel}"
                       ResizeMode="CanResizeWithGrip"
@@ -86,9 +86,11 @@
 
     <controls:MetroWindow.Flyouts>
         <controls:FlyoutsControl>
-            <controls:Flyout Header="Log" IsOpen="{Binding IsLogOpen}" Name="LogFlyout" Position="Bottom">
+            <controls:Flyout Header="Log" IsOpen="{Binding IsLogOpen}" Name="LogFlyout" AreAnimationsEnabled="False" Position="Bottom">
                 <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto">
-                    <Wpf:HtmlPanel x:Name="LogPanel" MaxHeight="300" Background="#282828" />    
+                    <Helpers:WebView2Base x:Name="LogPanel" Width="Auto" MinHeight="300"
+                                       Source="about:blank"
+                    />   
                 </StackPanel>
             </controls:Flyout>
             

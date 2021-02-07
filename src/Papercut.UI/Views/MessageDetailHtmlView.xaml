@@ -4,11 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="http://www.caliburnproject.org"
+             xmlns:wv2b="clr-namespace:Papercut.Helpers"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="400" Background="White">
     <Grid>
         <Border BorderBrush="LightGray" BorderThickness="1">
-            <WebBrowser Name="htmlView" Width="Auto" Height="Auto" cal:Message.Attach="[Event Navigating] = [Action OnNavigating($eventArgs)]"></WebBrowser>
+            <wv2b:WebView2Base x:Name="htmlView" Width="Auto" Height="Auto"
+                               Source="about:blank"
+            />
         </Border>
     </Grid>
 </UserControl>
