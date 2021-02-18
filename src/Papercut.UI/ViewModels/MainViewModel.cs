@@ -266,6 +266,7 @@ namespace Papercut.ViewModels
 
         private void SetupWebView(WebView2Base logPanel)
         {
+            logPanel.CoreWebView2.DisableEdgeFeatures();
             logPanel.NavigateToString(GetLogSinkHtml());
 
             this.GetPropertyValues(m => m.LogText)

@@ -176,6 +176,7 @@
     <Compile Include="Events\ShowMessageEvent.cs" />
     <Compile Include="Events\ShowOptionWindowEvent.cs" />
     <Compile Include="Helpers\CalburnSerilogBridge.cs" />
+    <Compile Include="Helpers\DisableEdgeFeaturesHelper.cs" />
     <Compile Include="Helpers\HtmlPreviewVisitor.cs" />
     <Compile Include="Helpers\IViewModelWindowManager.cs" />
     <Compile Include="Helpers\LogClientSinkQueue.cs" />
@@ -343,6 +344,7 @@
     <EmbeddedResource Include="Properties\UIStrings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>UIStrings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>

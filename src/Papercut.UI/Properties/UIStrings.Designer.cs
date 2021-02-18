@@ -61,7 +61,7 @@ namespace Papercut.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Delete{{#if HasSelectedMessage}} ({{SelectedMessageCount}}){{/if}}.
+        ///   Looks up a localized string similar to Delete{{#if HasSelectedMessage}} ({{SelectedMessageCountHuman}}){{/if}}.
         /// </summary>
         public static string DeleteTextTemplate {
             get {

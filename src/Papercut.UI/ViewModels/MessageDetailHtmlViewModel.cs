@@ -158,6 +158,8 @@ namespace Papercut.ViewModels
                 e.Cancel = !this.ShouldNavigateToUrl(e.Uri);
             };
 
+            coreWebView.DisableEdgeFeatures();
+
             this.GetPropertyValues(p => p.HtmlPreview)
                 .Subscribe(
                     n =>

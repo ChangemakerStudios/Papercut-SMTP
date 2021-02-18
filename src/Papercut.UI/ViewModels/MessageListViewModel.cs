@@ -111,6 +111,23 @@ namespace Papercut.ViewModels
 
         public int SelectedMessageCount => GetSelected().Count();
 
+        public string SelectedMessageCountHuman
+        {
+            get
+            {
+                var count = this.SelectedMessageCount;
+
+                if (count < 1000) return count.ToString();
+                if (count < 1000000)
+                {
+                    return $"{(double)count / 1000:##.#}K";
+                }
+                
+                // do I need to support millions? probably not but why not...
+                return $"{(double)count / 1000000:##.##}M";
+            }
+        }
+
         public bool IsLoading
         {
             get { return _isLoading; }
