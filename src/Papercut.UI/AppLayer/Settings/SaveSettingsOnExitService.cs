@@ -41,13 +41,13 @@ namespace Papercut.AppLayer.Settings
         {
             try
             {
-                if (Settings.Default.Window_Height < 300)
+                if (Settings.Default.MainWindowHeight < 300)
                 {
-                    Settings.Default.Window_Height = 300;
+                    Settings.Default.MainWindowHeight = 300;
                 }
-                if (Settings.Default.Window_Width < 400)
+                if (Settings.Default.MainWindowWidth < 400)
                 {
-                    Settings.Default.Window_Width = 400;
+                    Settings.Default.MainWindowWidth = 400;
                 }
 
                 this._logger.Debug("Saving Updated Settings...");

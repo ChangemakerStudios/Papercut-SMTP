@@ -122,37 +122,24 @@ namespace Papercut.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("500")]
-        public int Window_Height {
+        public int MainWindowHeight {
             get {
-                return ((int)(this["Window_Height"]));
+                return ((int)(this["MainWindowHeight"]));
             }
             set {
-                this["Window_Height"] = value;
+                this["MainWindowHeight"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("700")]
-        public int Window_Width {
+        public int MainWindowWidth {
             get {
-                return ((int)(this["Window_Width"]));
+                return ((int)(this["MainWindowWidth"]));
             }
             set {
-                this["Window_Width"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("%ApplicationData%\\Changemaker Studios\\Papercut SMTP;%ApplicationData%Papercut;%Ba" +
-            "seDirectory%\\Incoming;%DataDirectory%\\Incoming")]
-        public string MessagePaths {
-            get {
-                return ((string)(this["MessagePaths"]));
-            }
-            set {
-                this["MessagePaths"] = value;
+                this["MainWindowWidth"] = value;
             }
         }
         
@@ -189,6 +176,19 @@ namespace Papercut.Properties {
             }
             set {
                 this["MinimizeToTray"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("%ApplicationData%\\Changemaker Studios\\Papercut SMTP;%ApplicationData%\\Papercut;%B" +
+            "aseDirectory%\\Incoming;%DataDirectory%\\Incoming")]
+        public string MessagePaths {
+            get {
+                return ((string)(this["MessagePaths"]));
+            }
+            set {
+                this["MessagePaths"] = value;
             }
         }
     }
