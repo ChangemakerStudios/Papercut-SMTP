@@ -5,6 +5,7 @@
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                       xmlns:model="clr-namespace:Papercut.ViewModels"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
                       xmlns:cal="http://www.caliburnproject.org"
@@ -26,13 +27,9 @@
             <Button ToolTip="View Log"
                     cal:Message.Attach="[Event Click] = [Action ToggleLog]">
                 <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20"
-                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                        <Rectangle.OpacityMask>
-                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_console}" />
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <iconPacks:PackIconMaterial Width="20"
+                                              Height="20"
+                                              Kind="Console" />
                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Log" />
@@ -41,13 +38,9 @@
             <Button ToolTip="Configure Automatic Rules"
                     cal:Message.Attach="[Event Click] = [Action ShowRulesConfiguration]">
                 <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20"
-                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                        <Rectangle.OpacityMask>
-                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_layer}" />
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <iconPacks:PackIconMaterial Width="20"
+                                                Height="20"
+                                                Kind="Robot" />
                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Rules" />
@@ -55,13 +48,9 @@
             </Button>
             <Button ToolTip="Configure Papercut Options" cal:Message.Attach="[Event Click] = [Action ShowOptions]">
                 <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20"
-                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                        <Rectangle.OpacityMask>
-                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_settings}" />
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <iconPacks:PackIconMaterial Width="20"
+                                                Height="20"
+                                                Kind="ApplicationCog" />
                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Options" />
@@ -69,13 +58,9 @@
             </Button>
             <Button ToolTip="Shut Down Papercut App" cal:Message.Attach="[Event Click] = [Action Exit]">
                 <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20"
-                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                        <Rectangle.OpacityMask>
-                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_power}" />
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <iconPacks:PackIconMaterial Width="20"
+                                                Height="20"
+                                                Kind="ExitToApp" />
                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Exit" />
@@ -97,11 +82,11 @@
                     <TextBlock FontSize="16" TextAlignment="Center" Margin="0 8 0 0">
                         Delete all <TextBlock FontWeight="Bold" Text="{Binding Path=MessageListViewModel.Messages.Count}" /> Message(s)?
                     </TextBlock>
-                    <Button Margin="4 32 4 0" Style="{StaticResource AccentedSquareButtonStyle}"
+                    <Button Margin="4 32 4 0" Style="{StaticResource  MahApps.Styles.Button.Square.Accent}"
                             cal:Message.Attach="[Event Click] = [Action DeleteAll]">
                         Proceed
                     </Button>
-                    <Button Margin="4 16 4 4" Style="{DynamicResource SquareButtonStyle}"
+                    <Button Margin="4 16 4 4" Style="{DynamicResource MahApps.Styles.Button.Square}"
                             cal:Message.Attach="[Event Click] = [Action CancelDeleteAll]">
                         Cancel
                     </Button>

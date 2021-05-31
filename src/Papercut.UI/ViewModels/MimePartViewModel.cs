@@ -17,6 +17,8 @@
 
 namespace Papercut.ViewModels
 {
+    using System.Threading.Tasks;
+
     using Caliburn.Micro;
 
     public class MimePartViewModel : Screen
@@ -45,9 +47,9 @@ namespace Papercut.ViewModels
             }
         }
 
-        public void Close()
+        public async Task Close()
         {
-            TryClose(false);
+            await TryCloseAsync(false);
         }
     }
 }

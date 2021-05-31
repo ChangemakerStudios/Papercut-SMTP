@@ -23,6 +23,7 @@ namespace Papercut.ViewModels
     using System.Reactive.Linq;
     using System.Reflection;
     using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Navigation;
@@ -97,10 +98,10 @@ namespace Papercut.ViewModels
         [UsedImplicitly]
         public void OnNavigating(NavigatingCancelEventArgs e)
         {
-            e.Cancel = this.TryHandleNavigateToUri(e.Uri);
+            e.Cancel = this.TryHandleNavigateToUri(e.Uri).Result;
         }
 
-        private bool TryHandleNavigateToUri([NotNull] Uri navigateToUri)
+        private async Task<bool> TryHandleNavigateToUri([NotNull] Uri navigateToUri)
         {
             if (navigateToUri == null) throw new ArgumentNullException(nameof(navigateToUri));
 
@@ -116,7 +117,7 @@ namespace Papercut.ViewModels
             else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
             {
                 // direct to the parts area...
-                var model = this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
+                var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
                 var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
                 if (part != null)
                 {
@@ -188,7 +189,7 @@ namespace Papercut.ViewModels
             {
                 wb.NewWindow3 += (ref object disp, ref bool cancel, uint flags, string context, string url) =>
                 {
-                    cancel = TryHandleNavigateToUri(new Uri(url));
+                    cancel = TryHandleNavigateToUri(new Uri(url)).Result;
                 };
             }
 

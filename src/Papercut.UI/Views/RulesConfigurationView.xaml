@@ -6,6 +6,7 @@
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                       xmlns:model="clr-namespace:Papercut.ViewModels"
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                       xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
@@ -26,12 +27,15 @@
                         <MenuItem.HeaderTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
+                                    <iconPacks:PackIconMaterial Width="20"
+                                                                Height="20"
+                                                                Kind="LayersPlus" />
+                                    <!--<Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
                                         <Rectangle.OpacityMask>
                                             <VisualBrush Stretch="Fill"
                                          Visual="{StaticResource appbar_layer_add}" />
                                         </Rectangle.OpacityMask>
-                                    </Rectangle>
+                                    </Rectangle>-->
                                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Add Rule" />
@@ -41,12 +45,15 @@
                         <MenuItem.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
+                                    <iconPacks:PackIconMaterial Width="20"
+                                                                Height="20"
+                                                                Kind="ArrowRightBoldBox" />
+                                    <!--<Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
                                         <Rectangle.OpacityMask>
                                             <VisualBrush Stretch="Fill"
                                          Visual="{StaticResource appbar_box}" />
                                         </Rectangle.OpacityMask>
-                                    </Rectangle>
+                                    </Rectangle>-->
                                     <TextBlock Margin="4 0 0 0" VerticalAlignment="Center" Text="{Binding Type}" />
                                 </StackPanel>
                             </DataTemplate>
@@ -57,12 +64,15 @@
                         <MenuItem.HeaderTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
+                                    <iconPacks:PackIconMaterial Width="20"
+                                                                Height="20"
+                                                                Kind="LayersMinus" />
+                                    <!--<Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
                                         <Rectangle.OpacityMask>
                                             <VisualBrush Stretch="Fill"
                                          Visual="{StaticResource appbar_layer_minus}" />
                                         </Rectangle.OpacityMask>
-                                    </Rectangle>
+                                    </Rectangle>-->
                                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Delete Rule" />

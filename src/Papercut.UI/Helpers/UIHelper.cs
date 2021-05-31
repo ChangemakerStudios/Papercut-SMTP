@@ -23,7 +23,8 @@ namespace Papercut.Helpers
     using System.Windows.Controls;
     using System.Windows.Media;
 
-    using MahApps.Metro;
+    using ControlzEx.Theming;
+
     using MahApps.Metro.Controls;
 
     using Papercut.Core.Annotations;
@@ -52,16 +53,17 @@ namespace Papercut.Helpers
         {
             var brushObjectName = "HighlightBrush";
 
-            var appStyle = ThemeManager.DetectAppStyle(Application.Current);
+            var appStyle = ThemeManager.Current.DetectTheme(Application.Current);
 
             // Only add borders if above call succeded and Aero Not enabled
             var resourceDictionary = window.Resources;
 
-            SetBorder(resourceDictionary, appStyle.Item2.Resources[brushObjectName]);
+            if (appStyle != null)
+                SetBorder(resourceDictionary, appStyle.Resources[brushObjectName]);
 
-            ThemeManager.IsThemeChanged += (sender, args) =>
+            ThemeManager.Current.ThemeChanged += (sender, args) =>
             {
-                SetBorder(resourceDictionary, args.Accent.Resources[brushObjectName]);
+                SetBorder(resourceDictionary, args.NewTheme.Resources[brushObjectName]);
             };
         }
 

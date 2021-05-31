@@ -23,6 +23,7 @@ namespace Papercut.ViewModels
     using System.ComponentModel;
     using System.Linq;
     using System.Net;
+    using System.Threading.Tasks;
 
     using Caliburn.Micro;
 
@@ -190,9 +191,10 @@ namespace Papercut.ViewModels
             return ips;
         }
 
-        public void Save()
+        public async Task Save()
         {
             var previousSettings = new Settings();
+
             Settings.Default.CopyTo(previousSettings);
 
             this.CopyTo(Settings.Default);
@@ -201,7 +203,7 @@ namespace Papercut.ViewModels
 
             this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
 
-            TryClose(true);
+            await TryCloseAsync(true);
         }
     }
 }

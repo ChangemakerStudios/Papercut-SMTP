@@ -18,8 +18,9 @@
 namespace Papercut.Behaviors
 {
     using System.Windows;
-    using System.Windows.Interactivity;
     using System.Windows.Media.Effects;
+
+    using Microsoft.Xaml.Behaviors;
 
     public class InteractivityBlurBase<T> : Behavior<T>
         where T : DependencyObject

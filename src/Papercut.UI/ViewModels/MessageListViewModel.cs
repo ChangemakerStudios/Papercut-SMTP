@@ -27,6 +27,8 @@ namespace Papercut.ViewModels
     using System.Linq;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows.Data;
     using System.Windows.Forms;
     using System.Windows.Input;
@@ -415,10 +417,12 @@ namespace Papercut.ViewModels
             PopSelectedIndex();
         }
 
-        public void Handle(SettingsUpdatedEvent message)
+        public Task HandleAsync(SettingsUpdatedEvent message, CancellationToken token)
         {
             MessagesSorted.SortDescriptions.Clear();
             MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", this.SortOrder));
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Papercut.ViewModels
     using System.Reactive.Linq;
     using System.Reflection;
     using System.Security.RightsManagement;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
 
@@ -208,7 +209,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        void IHandle<ShowMainWindowEvent>.Handle(ShowMainWindowEvent message)
+        Task IHandle<ShowMainWindowEvent>.HandleAsync(ShowMainWindowEvent message, CancellationToken cancellationToken)
         {
             if (!_window.IsVisible) _window.Show();
 
@@ -222,9 +223,11 @@ namespace Papercut.ViewModels
             _window.Focus();
 
             if (message.SelectMostRecentMessage) MessageListViewModel.TryGetValidSelectedIndex();
+
+            return Task.CompletedTask;
         }
 
-        void IHandle<ShowMessageEvent>.Handle(ShowMessageEvent message)
+        Task IHandle<ShowMessageEvent>.HandleAsync(ShowMessageEvent message, CancellationToken cancellationToken)
         {
             MessageDetailViewModel.IsLoading = true;
             _window.ShowMessageAsync(message.Caption, message.MessageText).ContinueWith(
@@ -234,20 +237,26 @@ namespace Papercut.ViewModels
                     MessageDetailViewModel.IsLoading = false;
                 },
                 TaskScheduler.FromCurrentSynchronizationContext());
+
+            return Task.CompletedTask;
         }
 
-        void IHandle<ShowOptionWindowEvent>.Handle(ShowOptionWindowEvent message)
+        Task IHandle<ShowOptionWindowEvent>.HandleAsync(ShowOptionWindowEvent message, CancellationToken cancellationToken)
         {
             ShowOptions();
+
+            return Task.CompletedTask;
         }
 
-        void IHandle<SmtpServerBindFailedEvent>.Handle(SmtpServerBindFailedEvent message)
+        Task IHandle<SmtpServerBindFailedEvent>.HandleAsync(SmtpServerBindFailedEvent message, CancellationToken cancellationToken)
         {
             MessageBox.Show(
                 "Failed to start SMTP server listening. The IP and Port combination is in use by another program. To fix, change the server bindings in the options.",
                 "Failed");
 
             ShowOptions();
+
+            return Task.CompletedTask;
         }
 
         protected override void OnViewLoaded(object view)
@@ -418,12 +427,12 @@ namespace Papercut.ViewModels
             this._messageBus.Publish(new AppForceShutdownEvent());
         }
 
-        public void ForwardSelected()
+        public async Task ForwardSelected()
         {
             if (MessageListViewModel.SelectedMessage == null) return;
 
             var forwardViewModel = new ForwardViewModel {FromSetting = true};
-            bool? result = _viewModelWindowManager.ShowDialog(forwardViewModel);
+            bool? result = await _viewModelWindowManager.ShowDialogAsync(forwardViewModel);
             if (result == null || !result.Value) return;
 
             MessageDetailViewModel.IsLoading = true;

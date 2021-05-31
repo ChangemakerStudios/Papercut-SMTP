@@ -46,15 +46,14 @@ namespace Papercut.Events
 
             base.Publish(eventObject);
 
-            _uiEventAggregator.PublishOnUIThread(eventObject);
+            _uiEventAggregator.PublishOnUIThreadAsync(eventObject);
         }
 
         protected override void ExecuteHandler<T>(T eventObject, IEventHandler<T> @event)
         {
             if (@event is IUIThreadEventHandler<T>)
             {
-                PlatformProvider.Current.OnUIThread(
-                    () =>
+                PlatformProvider.Current.OnUIThread(() =>
                 {
                     base.ExecuteHandler(eventObject, @event);
                 });

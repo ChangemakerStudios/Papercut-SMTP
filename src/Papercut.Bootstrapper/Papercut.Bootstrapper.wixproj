@@ -20,6 +20,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Bundle.wxs" />
+    <Compile Include="NetFx472.wxs" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixNetFxExtension">
