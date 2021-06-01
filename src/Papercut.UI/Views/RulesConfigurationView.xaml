@@ -30,12 +30,6 @@
                                     <iconPacks:PackIconMaterial Width="20"
                                                                 Height="20"
                                                                 Kind="LayersPlus" />
-                                    <!--<Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
-                                        <Rectangle.OpacityMask>
-                                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_layer_add}" />
-                                        </Rectangle.OpacityMask>
-                                    </Rectangle>-->
                                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Add Rule" />
@@ -48,12 +42,6 @@
                                     <iconPacks:PackIconMaterial Width="20"
                                                                 Height="20"
                                                                 Kind="ArrowRightBoldBox" />
-                                    <!--<Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
-                                        <Rectangle.OpacityMask>
-                                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_box}" />
-                                        </Rectangle.OpacityMask>
-                                    </Rectangle>-->
                                     <TextBlock Margin="4 0 0 0" VerticalAlignment="Center" Text="{Binding Type}" />
                                 </StackPanel>
                             </DataTemplate>
@@ -67,12 +55,6 @@
                                     <iconPacks:PackIconMaterial Width="20"
                                                                 Height="20"
                                                                 Kind="LayersMinus" />
-                                    <!--<Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}">
-                                        <Rectangle.OpacityMask>
-                                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_layer_minus}" />
-                                        </Rectangle.OpacityMask>
-                                    </Rectangle>-->
                                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Delete Rule" />

@@ -115,7 +115,7 @@ namespace Papercut.ViewModels
 
         public bool IsLoading
         {
-            get { return _isLoading; }
+            get => _isLoading;
             set
             {
                 _isLoading = value;

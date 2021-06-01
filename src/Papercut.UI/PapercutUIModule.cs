@@ -87,6 +87,8 @@ namespace Papercut
 
             builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
 
+            builder.RegisterStaticMethods(ThisAssembly);
+
             base.Load(builder);
         }
 

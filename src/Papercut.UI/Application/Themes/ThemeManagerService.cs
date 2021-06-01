@@ -18,10 +18,7 @@
 
 namespace Papercut.Services
 {
-    using System;
-    using System.Linq;
     using System.Windows;
-    using System.Windows.Media;
 
     using ControlzEx.Theming;
 
@@ -36,9 +33,12 @@ namespace Papercut.Services
     {
         private readonly ILogger _logger;
 
-        public ThemeManagerService(ILogger logger)
+        private readonly ThemeColorRepository _themeColorRepository;
+
+        public ThemeManagerService(ILogger logger, ThemeColorRepository themeColorRepository)
         {
             this._logger = logger;
+            this._themeColorRepository = themeColorRepository;
         }
 
         private static ThemeManager CurrentTheme => ThemeManager.Current;
@@ -57,18 +57,17 @@ namespace Papercut.Services
 
         private void SetTheme()
         {
-            var prop = typeof(Colors).GetProperties().FirstOrDefault(
-                s =>
-                    s.Name.Equals(Settings.Default.Theme, StringComparison.OrdinalIgnoreCase));
+            var colorTheme = this._themeColorRepository.FirstOrDefaultByName(
+                Settings.Default.Theme);
 
-            if (prop == null)
+            if (colorTheme == null)
             {
                 this._logger.Warning("Unable to find theme color {ThemeColor}. Setting to default: LightBlue.", Settings.Default.Theme);
                 Settings.Default.Theme = "LightBlue";
                 return;
             }
 
-            var themeColor = (Color)prop.GetValue(null);
+            var themeColor = colorTheme.Color;
 
             var theme = CurrentTheme.DetectTheme(Application.Current);
             if (theme != null)

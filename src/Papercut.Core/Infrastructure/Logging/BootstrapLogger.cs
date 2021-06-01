@@ -1,19 +1,20 @@
 ﻿// Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 
 namespace Papercut.Core.Infrastructure.Logging
 {
@@ -21,12 +22,9 @@ namespace Papercut.Core.Infrastructure.Logging
     using System.IO;
     using System.Threading.Tasks;
 
-    using Common;
-
     using Serilog;
     using Serilog.Events;
-    using Serilog.Formatting.Json;
-    using Serilog.Sinks.RollingFile;
+    using Serilog.Formatting.Compact;
 
     public static class BootstrapLogger
     {
@@ -40,18 +38,18 @@ namespace Papercut.Core.Infrastructure.Logging
                     "Logs",
                     "PapercutCoreFailure.json");
 
-                var jsonSink = new RollingFileSink(logFilePath, new JsonFormatter(), null, null);
-
                 return
                     new LoggerConfiguration().MinimumLevel.Information()
                         .Enrich.With<EnvironmentEnricher>()
-                        .WriteTo.LiterateConsole()
-                        .WriteTo.Sink(jsonSink, LogEventLevel.Information).CreateLogger();
+                        .WriteTo.Console()
+                        .WriteTo.File(new CompactJsonFormatter(), logFilePath, LogEventLevel.Information).CreateLogger();
             });
 
             AppDomain.CurrentDomain.UnhandledException += OnCurrentDomainOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
         }
+
+        public static ILogger Logger => _rootLogger.Value;
 
         static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
         {
@@ -77,7 +75,5 @@ namespace Papercut.Core.Infrastructure.Logging
             if (args.IsTerminating) logInstance.Fatal(args.ExceptionObject as Exception, "Unhandled Exception");
             else logInstance.Information(args.ExceptionObject as Exception, "Non-Fatal Unhandled Exception");
         }
-
-        public static ILogger Logger => _rootLogger.Value;
     }
 }

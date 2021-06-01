@@ -29,7 +29,7 @@ namespace Papercut.ViewModels
 
         public string WindowTitle
         {
-            get { return _windowTitle; }
+            get => _windowTitle;
             set
             {
                 _windowTitle = value;
@@ -39,7 +39,7 @@ namespace Papercut.ViewModels
 
         public string PartText
         {
-            get { return _partText; }
+            get => _partText;
             set
             {
                 _partText = value;

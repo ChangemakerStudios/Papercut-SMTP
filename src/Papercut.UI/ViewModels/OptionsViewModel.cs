@@ -24,6 +24,9 @@ namespace Papercut.ViewModels
     using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Media;
 
     using Caliburn.Micro;
 
@@ -34,6 +37,7 @@ namespace Papercut.ViewModels
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Properties;
+    using Papercut.Services;
 
     public class OptionsViewModel : Screen
     {
@@ -42,6 +46,8 @@ namespace Papercut.ViewModels
         static readonly Lazy<IList<string>> _ipList = new Lazy<IList<string>>(GetIPs);
 
         readonly IMessageBus _messageBus;
+
+        private readonly ThemeColorRepository _themeColorRepository;
 
         string _ip = "Any";
 
@@ -59,20 +65,21 @@ namespace Papercut.ViewModels
 
         private bool _minimizeToTray;
 
-        private string _theme;
+        private ThemeColor _themeColor;
 
-        public OptionsViewModel(IMessageBus messageBus)
+        public OptionsViewModel(IMessageBus messageBus, ThemeColorRepository themeColorRepository)
         {
             _messageBus = messageBus;
+            this._themeColorRepository = themeColorRepository;
             IPs = new ObservableCollection<string>(_ipList.Value);
             SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
-            Themes = new ObservableCollection<string>(EnumHelpers.GetNames<Themes>());
+            Themes = new ObservableCollection<ThemeColor>(themeColorRepository.GetAll());
             Load();
         }
 
         public string WindowTitle
         {
-            get { return _windowTitle; }
+            get => _windowTitle;
             set
             {
                 _windowTitle = value;
@@ -82,7 +89,7 @@ namespace Papercut.ViewModels
 
         public string MessageListSortOrder
         {
-            get { return this._messageListSortOrder; }
+            get => this._messageListSortOrder;
             set
             {
                 this._messageListSortOrder = value;
@@ -90,22 +97,19 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string Theme
+        public ThemeColor ThemeColor
         {
-            get
-            {
-                return this._theme;
-            }
+            get => this._themeColor;
             set
             {
-                this._theme = value;
-                NotifyOfPropertyChange(() => this.Theme);
+                this._themeColor = value;
+                NotifyOfPropertyChange(() => this.ThemeColor);
             }
         }
 
         public string IP
         {
-            get { return _ip; }
+            get => _ip;
             set
             {
                 _ip = value;
@@ -115,7 +119,7 @@ namespace Papercut.ViewModels
 
         public int Port
         {
-            get { return _port; }
+            get => _port;
             set
             {
                 _port = value;
@@ -125,7 +129,7 @@ namespace Papercut.ViewModels
 
         public bool RunOnStartup
         {
-            get { return _runOnStartup; }
+            get => _runOnStartup;
             set
             {
                 _runOnStartup = value;
@@ -135,7 +139,7 @@ namespace Papercut.ViewModels
 
         public bool MinimizeOnClose
         {
-            get { return _minimizeOnClose; }
+            get => _minimizeOnClose;
             set
             {
                 _minimizeOnClose = value;
@@ -145,10 +149,7 @@ namespace Papercut.ViewModels
 
         public bool MinimizeToTray
         {
-            get
-            {
-                return this._minimizeToTray;
-            }
+            get => this._minimizeToTray;
             set
             {
                 this._minimizeToTray = value;
@@ -158,7 +159,7 @@ namespace Papercut.ViewModels
 
         public bool StartMinimized
         {
-            get { return _startMinimized; }
+            get => _startMinimized;
             set
             {
                 _startMinimized = value;
@@ -170,11 +171,15 @@ namespace Papercut.ViewModels
 
         public ObservableCollection<string> SortOrders { get; private set; }
 
-        public ObservableCollection<string> Themes { get; private set; }
+        public ObservableCollection<ThemeColor> Themes { get; private set; }
 
         public void Load()
         {
             Settings.Default.CopyTo(this);
+
+            // set the theme color
+            this.ThemeColor =
+                this._themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme);
         }
 
         static IList<string> GetIPs()
@@ -198,6 +203,8 @@ namespace Papercut.ViewModels
             Settings.Default.CopyTo(previousSettings);
 
             this.CopyTo(Settings.Default);
+
+            Settings.Default.Theme = this.ThemeColor.Name;
 
             Settings.Default.Save();
 

@@ -21,6 +21,7 @@ namespace Papercut.Common.Extensions
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
 
     using Papercut.Core.Annotations;
@@ -33,6 +34,18 @@ namespace Papercut.Common.Extensions
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
             return keyValuePairs.ToDictionary(s => s.Key, s => s.Value);
+        }
+
+        [NotNull]
+        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>([CanBeNull] this IEnumerable<T> items)
+        {
+            return new ReadOnlyCollection<T>(items.IfNullEmpty().ToList());
+        }
+
+        [NotNull]
+        public static IReadOnlyList<T> ToReadOnlyList<T>([CanBeNull] this IEnumerable<T> items)
+        {
+            return items.ToReadOnlyCollection();
         }
 
         [NotNull]

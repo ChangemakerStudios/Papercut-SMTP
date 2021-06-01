@@ -206,7 +206,9 @@
     <Compile Include="Services\SingleInstanceService.cs" />
     <Compile Include="Services\SmtpServerCoordinator.cs" />
     <Compile Include="Services\TempDirectoryCleanupService.cs" />
-    <Compile Include="Services\ThemeManagerService.cs" />
+    <Compile Include="Domain\Themes\ThemeColor.cs" />
+    <Compile Include="Infrastructure\Themes\ThemeColorRepository.cs" />
+    <Compile Include="Application\Themes\ThemeManagerService.cs" />
     <Compile Include="SettingPathTemplateProvider.cs" />
     <Compile Include="PapercutUIModule.cs" />
     <Compile Include="Services\AppResourceLocator.cs" />
@@ -666,6 +668,7 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
