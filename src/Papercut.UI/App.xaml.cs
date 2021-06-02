@@ -1,48 +1,41 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
 
 namespace Papercut
 {
     using System;
     using System.Diagnostics;
     using System.Reflection;
-    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
 
     using Autofac;
 
-    using Caliburn.Micro;
-
     using Papercut.Common.Domain;
-    using Papercut.Core.Infrastructure.Async;
     using Papercut.Core.Infrastructure.Container;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Logging;
 
     using Serilog;
 
-    using SmtpServer;
-
     public partial class App : Application
     {
         public const string GlobalName = "Papercut.App";
-
-        public static string ExecutablePath { get; }
 
         Lazy<ILifetimeScope> _lifetimeScope =
             new Lazy<ILifetimeScope>(
@@ -58,10 +51,11 @@ namespace Papercut
             RootContainer = new SimpleContainer<PapercutUIModule>().Build();
         }
 
+        public static string ExecutablePath { get; }
+
         public static IContainer RootContainer { get; }
 
-        public ILifetimeScope Container => _lifetimeScope.Value;
-
+        public ILifetimeScope Container => this._lifetimeScope.Value;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -78,7 +72,7 @@ namespace Papercut
                     // force shut down...
                     messageBus.Publish(new AppForceShutdownEvent());
 
-                    Shutdown();
+                    this.Shutdown();
 
                     return;
                 }
@@ -101,9 +95,9 @@ namespace Papercut
 
             try
             {
-                Container.Dispose();
+                this.Container.Dispose();
 
-                _lifetimeScope = null;
+                this._lifetimeScope = null;
 
                 RootContainer.Dispose();
             }

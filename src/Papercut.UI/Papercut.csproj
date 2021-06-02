@@ -208,7 +208,7 @@
     <Compile Include="Services\TempDirectoryCleanupService.cs" />
     <Compile Include="Domain\Themes\ThemeColor.cs" />
     <Compile Include="Infrastructure\Themes\ThemeColorRepository.cs" />
-    <Compile Include="Application\Themes\ThemeManagerService.cs" />
+    <Compile Include="AppLayer\Themes\ThemeManagerService.cs" />
     <Compile Include="SettingPathTemplateProvider.cs" />
     <Compile Include="PapercutUIModule.cs" />
     <Compile Include="Infrastructure\Resources\AppResourceLocator.cs" />

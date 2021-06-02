@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Application.Themes
+namespace Papercut.AppLayer.Themes
 {
     using System.Windows;
 
