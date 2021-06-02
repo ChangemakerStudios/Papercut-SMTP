@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Services
+namespace Papercut.Domain.Themes
 {
     using System.Windows.Media;
 

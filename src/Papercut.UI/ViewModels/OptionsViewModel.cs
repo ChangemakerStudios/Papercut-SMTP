@@ -34,8 +34,10 @@ namespace Papercut.ViewModels
     using Papercut.Common.Extensions;
     using Papercut.Common.Helper;
     using Papercut.Core.Infrastructure.Network;
+    using Papercut.Domain.Themes;
     using Papercut.Events;
     using Papercut.Helpers;
+    using Papercut.Infrastructure.Themes;
     using Papercut.Properties;
     using Papercut.Services;
 

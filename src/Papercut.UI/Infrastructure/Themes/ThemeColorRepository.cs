@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Services
+namespace Papercut.Infrastructure.Themes
 {
     using System;
     using System.Collections.Generic;
@@ -26,12 +26,14 @@ namespace Papercut.Services
     using Autofac;
 
     using Papercut.Core.Annotations;
+    using Papercut.Domain.Themes;
 
     public class ThemeColorRepository
     {
         private static List<ThemeColor> ThemeColors { get; } = typeof(Colors)
             .GetProperties()
-            .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)))
+            .Where(s => !s.Name.Equals("Transparent"))
+            .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)))            
             .ToList();
 
         public IReadOnlyCollection<ThemeColor> GetAll() => ThemeColors;
@@ -46,8 +48,15 @@ namespace Papercut.Services
 
         #region Begin Static Container Registrations
 
-        static void Register(ContainerBuilder builder)
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
         {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
             builder.RegisterType<ThemeColorRepository>().AsSelf().InstancePerLifetimeScope();
         }
 

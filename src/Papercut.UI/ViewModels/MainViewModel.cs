@@ -46,6 +46,7 @@ namespace Papercut.ViewModels
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Helpers;
+    using Papercut.Infrastructure.Resources;
     using Papercut.Properties;
     using Papercut.Rules.Helpers;
     using Papercut.Rules.Implementations;

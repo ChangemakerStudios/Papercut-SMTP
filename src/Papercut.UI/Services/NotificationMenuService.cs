@@ -32,6 +32,7 @@ namespace Papercut.Services
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
+    using Papercut.Infrastructure.Resources;
 
     using Disposable = Autofac.Util.Disposable;
 

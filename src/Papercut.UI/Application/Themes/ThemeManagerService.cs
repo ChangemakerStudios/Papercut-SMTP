@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Services
+namespace Papercut.Application.Themes
 {
     using System.Windows;
 
@@ -25,6 +25,7 @@ namespace Papercut.Services
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
+    using Papercut.Infrastructure.Themes;
     using Papercut.Properties;
 
     using Serilog;

@@ -211,7 +211,7 @@
     <Compile Include="Application\Themes\ThemeManagerService.cs" />
     <Compile Include="SettingPathTemplateProvider.cs" />
     <Compile Include="PapercutUIModule.cs" />
-    <Compile Include="Services\AppResourceLocator.cs" />
+    <Compile Include="Infrastructure\Resources\AppResourceLocator.cs" />
     <Compile Include="Events\EventPublishAll.cs" />
     <Compile Include="Services\NotificationMenuService.cs" />
     <Compile Include="Events\ShowBallonTip.cs" />
