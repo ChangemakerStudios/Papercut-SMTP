@@ -62,8 +62,7 @@ namespace Papercut.AppLayer.Themes
 
         private void SetTheme()
         {
-            var colorTheme = this._themeColorRepository.FirstOrDefaultByName(
-                Settings.Default.Theme);
+            var colorTheme = this._themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme);
 
             if (colorTheme == null)
             {
