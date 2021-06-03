@@ -15,7 +15,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 namespace Papercut.Domain.Themes
 {
     using System.Windows.Media;
@@ -24,15 +23,16 @@ namespace Papercut.Domain.Themes
 
     public class ThemeColor
     {
-        public ThemeColor(string colorName, Color color)
+        public ThemeColor(string name, Color color)
         {
-            this.Name = colorName;
+            this.Name = name;
             this.Color = color;
+            this.Description = name.CamelCaseToSeparated();
         }
 
         public string Name { get; }
 
-        public string Description => this.Name.CamelCaseToSeparated();
+        public string Description { get; }
 
         public Color Color { get; }
 

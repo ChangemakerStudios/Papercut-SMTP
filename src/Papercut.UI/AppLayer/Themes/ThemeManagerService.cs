@@ -18,11 +18,15 @@
 
 namespace Papercut.AppLayer.Themes
 {
+    using System;
     using System.Windows;
+
+    using Autofac;
 
     using ControlzEx.Theming;
 
     using Papercut.Common.Domain;
+    using Papercut.Core.Annotations;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Infrastructure.Themes;
@@ -89,5 +93,21 @@ namespace Papercut.AppLayer.Themes
 
             Application.Current?.MainWindow?.Activate();
         }
+
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<ThemeManagerService>().AsImplementedInterfaces();
+        }
+
+        #endregion
     }
 }
