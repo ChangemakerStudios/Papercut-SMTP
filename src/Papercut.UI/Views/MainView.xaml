@@ -129,24 +129,25 @@
                             HorizontalAlignment="Stretch"
                             IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}" />
 
-            <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,9" Width="72"
-                    Name="ForwardSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}"
-                    Grid.Row="1">
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,9" Width="72" 
+                    Name="ForwardSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}">
                 Forward
-            </Button>
+                </Button>
 
-            <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="82,0,0,9" Width="72"
+                <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,9" MinWidth="72"
                     Name="DeleteSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}"
                     Content="{Binding Path=MessageListViewModel.DeleteText}"           
                     cal:Bind.ModelWithoutContext="{Binding Path=MessageListViewModel}"
-                    cal:Message.Attach="[Event Click] = [Action DeleteSelected]" Grid.Row="1" />
+                    cal:Message.Attach="[Event Click] = [Action DeleteSelected]" />
 
-            <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="160,0,0,9" Width="72"
+                <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,9" Width="72"
                     Name="DeleteAllSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}"
                     cal:Bind.ModelWithoutContext="{Binding Path=MessageListViewModel}"
-                    cal:Message.Attach="[Event Click] = [Action ShowConfirmDeleteAll]" Grid.Row="1">
+                    cal:Message.Attach="[Event Click] = [Action ShowConfirmDeleteAll]">
                 Delete All
-            </Button>
+                </Button>
+            </StackPanel>
 
             <Image Height="42" Margin="6,0,0,3" Name="image1" Stretch="Fill" VerticalAlignment="Bottom"
                    HorizontalAlignment="Left" Width="42" Source="/Papercut;component/App.ico" Grid.Row="1"
