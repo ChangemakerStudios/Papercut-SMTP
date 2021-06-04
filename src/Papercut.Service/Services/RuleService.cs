@@ -1,19 +1,20 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 
 namespace Papercut.Service.Services
 {
@@ -34,8 +35,11 @@ namespace Papercut.Service.Services
     public class RuleService : RuleServiceBase,
         IEventHandler<RulesUpdatedEvent>,
         IEventHandler<PapercutClientReadyEvent>,
-        IEventHandler<NewMessageEvent>
+        IEventHandler<NewMessageEvent>, IDisposable
     {
+        private readonly CancellationTokenSource _cancellationTokenSource =
+            new CancellationTokenSource();
+
         readonly IRulesRunner _rulesRunner;
 
         public RuleService(
@@ -44,50 +48,65 @@ namespace Papercut.Service.Services
             IRulesRunner rulesRunner)
             : base(ruleRepository, logger)
         {
-            _rulesRunner = rulesRunner;
+            this._rulesRunner = rulesRunner;
         }
 
-        public void Handle(PapercutClientReadyEvent @event)
+        public void Dispose()
         {
-            _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+            this._cancellationTokenSource.Cancel();
+        }
+
+        public Task HandleAsync(NewMessageEvent @event)
+        {
+            this._logger.Information(
+                "New Message {MessageFile} Arrived -- Running Rules",
+                @event.NewMessage);
+
+            Task.Run(
+                async () =>
+                {
+                    await Task.Delay(2000, this._cancellationTokenSource.Token);
+                    await this._rulesRunner.RunAsync(
+                        this.Rules.ToArray(),
+                        @event.NewMessage,
+                        this._cancellationTokenSource.Token);
+
+                },
+                this._cancellationTokenSource.Token);
+
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(PapercutClientReadyEvent @event)
+        {
+            this._logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
 
             try
             {
                 // accessing "Rules" forces the collection to be loaded
-                if (Rules.Any())
+                if (this.Rules.Any())
                 {
-                    _logger.Information(
+                    this._logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
-                        Rules.Count,
-                        RuleFileName);
+                        this.Rules.Count,
+                        this.RuleFileName);
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error loading rules from file {RuleFileName}", RuleFileName);
+                this._logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
             }
+
+            return Task.CompletedTask;
         }
 
-        public void Handle(NewMessageEvent @event)
+        public Task HandleAsync(RulesUpdatedEvent @event)
         {
-            _logger.Information(
-                "New Message {MessageFile} Arrived -- Running Rules",
-                @event.NewMessage);
+            this.Rules.Clear();
+            this.Rules.AddRange(@event.Rules);
+            this.Save();
 
-            Task.Factory.StartNew(
-                async () =>
-                {
-                    await Task.Delay(2000);
-
-                    this._rulesRunner.Run(this.Rules.ToArray(), @event.NewMessage);
-                });
-        }
-
-        public void Handle(RulesUpdatedEvent @event)
-        {
-            Rules.Clear();
-            Rules.AddRange(@event.Rules);
-            Save();
+            return Task.CompletedTask;
         }
     }
 }

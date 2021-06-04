@@ -1,7 +1,7 @@
-ï»¿// Papercut
+// Papercut
 // 
-// Copyright Â© 2008 - 2012 Ken Robertson
-// Copyright Â© 2013 - 2021 Jaben Cargman
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2021 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,11 +18,19 @@
 
 namespace Papercut.Common.Domain
 {
+    using System;
     using System.Threading.Tasks;
 
-    public interface IEventHandler<in TEvent>
-        where TEvent : IEvent
+    using Papercut.Core.Annotations;
+
+    public static class MessageBusExtensions
     {
-        Task HandleAsync(TEvent @event);
+        public static void Publish<T>([NotNull] this IMessageBus messageBus, T @event)
+            where T : IEvent
+        {
+            if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
+
+            Task.Run(() => messageBus.PublishAsync(@event)).Wait();
+        }
     }
 }

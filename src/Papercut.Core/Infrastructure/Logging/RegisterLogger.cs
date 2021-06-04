@@ -40,46 +40,48 @@ namespace Papercut.Core.Infrastructure.Logging
         internal static void Register(ContainerBuilder builder)
         {
             builder.Register(
-                                c =>
-                                {
-                                    var appMeta = c.Resolve<IAppMeta>();
+                    async c =>
+                    {
+                        var appMeta = c.Resolve<IAppMeta>();
 
-                                    string logFilePath = Path.Combine(
-                                        AppDomain.CurrentDomain.BaseDirectory,
-                                        "Logs",
-                                        $"{appMeta.AppName}.log");
+                        string logFilePath = Path.Combine(
+                            AppDomain.CurrentDomain.BaseDirectory,
+                            "Logs",
+                            $"{appMeta.AppName}.log");
 
-                                    LoggerConfiguration logConfiguration =
-                                        new LoggerConfiguration()
+                        LoggerConfiguration logConfiguration =
+                            new LoggerConfiguration()
 #if DEBUG
                                 .MinimumLevel.Verbose()
 #else
                                 .MinimumLevel.Information()
 #endif
                                 .Enrich.With<EnvironmentEnricher>()
-                                            .Enrich.FromLogContext()
-                                            .Enrich.WithProperty("AppName", appMeta.AppName)
-                                            .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-                                            .WriteTo.Console()
-                                            .WriteTo.File(logFilePath);
+                                .Enrich.FromLogContext()
+                                .Enrich.WithProperty("AppName", appMeta.AppName)
+                                .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
+                                .WriteTo.Console()
+                                .WriteTo.File(logFilePath);
 
                         // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
                         try
-                                    {
-                                        c.Resolve<IMessageBus>().Publish(new ConfigureLoggerEvent(logConfiguration));
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
-                                    }
+                        {
+                            await c.Resolve<IMessageBus>().PublishAsync(
+                                new ConfigureLoggerEvent(logConfiguration));
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(
+                                $"Failure Publishing ConfigurationLoggerEvent: {ex}");
+                        }
 
                         // support self-logging
                         SelfLog.Enable(s => Console.Error.WriteLine(s));
 
-                                    return logConfiguration;
-                                })
-                            .AsSelf()
-                            .SingleInstance();
+                        return logConfiguration;
+                    })
+                .AsSelf()
+                .SingleInstance();
 
             builder.Register(
                     c =>

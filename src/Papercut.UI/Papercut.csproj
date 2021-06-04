@@ -204,7 +204,7 @@
     <Compile Include="Services\SaveSettingsOnExitService.cs" />
     <Compile Include="Services\ShutdownService.cs" />
     <Compile Include="Services\SingleInstanceService.cs" />
-    <Compile Include="Services\SmtpServerCoordinator.cs" />
+    <Compile Include="AppLayer\SmtpServers\SmtpServerCoordinator.cs" />
     <Compile Include="Services\TempDirectoryCleanupService.cs" />
     <Compile Include="Domain\Themes\ThemeColor.cs" />
     <Compile Include="Infrastructure\Themes\ThemeColorRepository.cs" />

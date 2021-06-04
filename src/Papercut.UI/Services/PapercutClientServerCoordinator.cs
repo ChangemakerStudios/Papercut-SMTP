@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2021 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,24 +19,20 @@
 namespace Papercut.Services
 {
     using System;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
+    using System.Threading.Tasks;
 
-    using Common.Domain;
-
-    using Core.Infrastructure.Lifecycle;
-    using Core.Infrastructure.Server;
-
-    using Infrastructure.IPComm.Network;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Infrastructure.IPComm.Network;
 
     using Serilog;
 
     public class PapercutClientServerCoordinator : IEventHandler<PapercutClientReadyEvent>,
         IEventHandler<PapercutClientExitEvent>
     {
-        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
-
         readonly ILogger _logger;
+
+        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
         readonly PapercutIPCommServer _papercutIpCommServer;
 
@@ -45,29 +41,32 @@ namespace Papercut.Services
             PapercutIPCommServer ipCommServer,
             ILogger logger)
         {
-            _papercutIpCommEndpoints = papercutIpCommEndpoints;
-            _logger = logger;
-            _papercutIpCommServer = ipCommServer;
+            this._papercutIpCommEndpoints = papercutIpCommEndpoints;
+            this._logger = logger;
+            this._papercutIpCommServer = ipCommServer;
         }
 
-        public void Handle(PapercutClientExitEvent @event)
+        public async Task HandleAsync(PapercutClientExitEvent @event)
         {
-            _papercutIpCommServer.Stop();
+            await this._papercutIpCommServer.StopAsync();
         }
 
-        public void Handle(PapercutClientReadyEvent @event)
+        public async Task HandleAsync(PapercutClientReadyEvent @event)
         {
-            _papercutIpCommServer.ObserveStartServer(_papercutIpCommEndpoints.UI,
-                    TaskPoolScheduler.Default)
-                .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
-                .Subscribe(
-                    b => { },
-                    ex => _logger.Warning(
-                        ex,
-                        "Papercut IPComm Server failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
-                        _papercutIpCommServer.ListenIpAddress,
-                        _papercutIpCommServer.ListenPort),
-                    () => { });
+            await this._papercutIpCommServer.StopAsync();
+
+            try
+            {
+                await this._papercutIpCommServer.StartAsync(this._papercutIpCommEndpoints.UI);
+            }
+            catch (Exception ex)
+            {
+                this._logger.Warning(
+                    ex,
+                    "Papercut IPComm Server failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
+                    this._papercutIpCommServer.ListenIpAddress,
+                    this._papercutIpCommServer.ListenPort);
+            }
         }
     }
 }

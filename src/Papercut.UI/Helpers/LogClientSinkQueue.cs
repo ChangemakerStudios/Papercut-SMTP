@@ -34,7 +34,7 @@ namespace Papercut.Helpers
     {
         static readonly ConcurrentQueue<LogEvent> _logQueue = new ConcurrentQueue<LogEvent>();
 
-        public void Handle(ConfigureLoggerEvent @event)
+        public Task HandleAsync(ConfigureLoggerEvent @event)
         {
             bool showDebug = false;
 #if DEBUG
@@ -48,6 +48,8 @@ namespace Papercut.Helpers
                 }),
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                 showDebug ? LogEventLevel.Debug : LogEventLevel.Information);
+
+            return Task.CompletedTask;
         }
 
         public LogEvent GetLastEvent()

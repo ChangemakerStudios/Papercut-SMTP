@@ -1,19 +1,20 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
 
 namespace Papercut.Services
 {
@@ -22,19 +23,17 @@ namespace Papercut.Services
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
 
-    using Common;
-
-    using Core;
-    using Core.Annotations;
+    using Autofac.Util;
 
     using Papercut.Common.Domain;
+    using Papercut.Core;
+    using Papercut.Core.Annotations;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Events;
     using Papercut.Infrastructure.Resources;
-
-    using Disposable = Autofac.Util.Disposable;
 
     [UsedImplicitly]
     public class NotificationMenuService : Disposable,
@@ -45,7 +44,7 @@ namespace Papercut.Services
         readonly IMessageBus _messageBus;
 
         readonly AppResourceLocator _resourceLocator;
-            
+
         NotifyIcon _notification;
 
         Subject<ShowBallonTip> _notificationSubject;
@@ -54,22 +53,45 @@ namespace Papercut.Services
             AppResourceLocator resourceLocator,
             IMessageBus messageBus)
         {
-            _resourceLocator = resourceLocator;
+            this._resourceLocator = resourceLocator;
             this._messageBus = messageBus;
-            _notificationSubject = new Subject<ShowBallonTip>();
+            this._notificationSubject = new Subject<ShowBallonTip>();
 
-            InitObservables();
+            this.InitObservables();
+        }
+
+        public Task HandleAsync(ShowBallonTip @event)
+        {
+            this._notificationSubject.OnNext(@event);
+
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(PapercutClientExitEvent message)
+        {
+            if (this._notification == null) return Task.CompletedTask;
+
+            this.Reset();
+
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(PapercutClientReadyEvent message)
+        {
+            if (this._notification == null) this.SetupNotification();
+
+            return Task.CompletedTask;
         }
 
         void InitObservables()
         {
-            _notificationSubject
+            this._notificationSubject
                 .Sample(TimeSpan.FromSeconds(1), TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
                 .Subscribe(
                     @event =>
                     {
-                        _notification.ShowBalloonTip(
+                        this._notification.ShowBalloonTip(
                             @event.Timeout,
                             @event.TipTitle,
                             @event.TipText,
@@ -93,34 +115,20 @@ namespace Papercut.Services
             this._notification = null;
         }
 
-        public void Handle(PapercutClientExitEvent message)
-        {
-            if (_notification == null) return;
-
-            this.Reset();
-        }
-
-        public void Handle(PapercutClientReadyEvent message)
-        {
-            if (_notification != null) return;
-
-            SetupNotification();
-        }
-
         void SetupNotification()
         {
             // Set up the notification icon
-            _notification = new NotifyIcon
-            {
-                Icon = new Icon(_resourceLocator.GetResource("App.ico").Stream),
-                Text = AppConstants.ApplicationName,
-                Visible = true
-            };
+            this._notification = new NotifyIcon
+                                 {
+                                     Icon = new Icon(this._resourceLocator.GetResource("App.ico").Stream),
+                                     Text = AppConstants.ApplicationName,
+                                     Visible = true
+                                 };
 
-            _notification.Click +=
+            this._notification.Click +=
                 (sender, args) => this._messageBus.Publish(new ShowMainWindowEvent());
 
-            _notification.BalloonTipClicked +=
+            this._notification.BalloonTipClicked +=
                 (sender, args) =>
                 this._messageBus.Publish(new ShowMainWindowEvent { SelectMostRecentMessage = true });
 
@@ -145,12 +153,7 @@ namespace Papercut.Services
                     (sender, args) => this._messageBus.Publish(new AppForceShutdownEvent()))
             };
 
-            _notification.ContextMenu = new ContextMenu(menuItems);
-        }
-
-        public void Handle(ShowBallonTip @event)
-        {
-            _notificationSubject.OnNext(@event);
+            this._notification.ContextMenu = new ContextMenu(menuItems);
         }
     }
 }

@@ -25,10 +25,12 @@ namespace Papercut.Services
 
     public class ShutdownService : IEventHandler<AppForceShutdownEvent>
     {
-        public void Handle(AppForceShutdownEvent @event)
+        public Task HandleAsync(AppForceShutdownEvent @event)
         {
             Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             Application.Current.Shutdown(@event.ExitCode);
+
+            return Task.CompletedTask;
         }
     }
 }

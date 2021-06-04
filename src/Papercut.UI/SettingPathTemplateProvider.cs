@@ -70,9 +70,11 @@ namespace Papercut
             }
         }
 
-        public void Handle(SettingsUpdatedEvent @event)
+        public Task HandleAsync(SettingsUpdatedEvent @event)
         {
             UpdatePathTemplates();
+
+            return Task.CompletedTask;
         }
 
         public ObservableCollection<string> PathTemplates { get; }

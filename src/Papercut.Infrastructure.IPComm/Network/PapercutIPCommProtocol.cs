@@ -69,7 +69,7 @@ namespace Papercut.Infrastructure.IPComm.Network
 
                     using (var stream = new NetworkStream(this.Connection.Client, false))
                     {
-                        remoteEvent = stream.ReadJsonBuffered(request.Type, request.ByteSize);
+                        remoteEvent = stream.ReadJsonBufferedAsync(request.Type, request.ByteSize);
                     }
 
                     this.Logger.Information("Publishing Event Received {@Event} from Remote", remoteEvent);

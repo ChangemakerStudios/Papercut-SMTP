@@ -43,7 +43,7 @@ namespace Papercut.Services
             this._messageBus = messageBus;
         }
 
-        public void Handle(SettingsUpdatedEvent @event)
+        public async Task HandleAsync(SettingsUpdatedEvent @event)
         {
             // check if the setting changed
             if (@event.PreviousSettings.RunOnStartup == @event.NewSettings.RunOnStartup)
@@ -87,7 +87,7 @@ namespace Papercut.Services
             {
                 _logger.Error(ex, "Error Opening Registry for App Startup Service");
 
-                this._messageBus.Publish(
+                await this._messageBus.PublishAsync(
                     new ShowMessageEvent(
                         "Failed to set Papercut to load at startup due to lack of permission. To fix, exit and run Papercut again with elevated (Admin) permissions.",
                         "Failed"));

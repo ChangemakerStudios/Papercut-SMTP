@@ -39,10 +39,12 @@ namespace Papercut.Services
             _logger = logger;
         }
 
-        public void Handle(PapercutClientExitEvent @event)
+        public Task HandleAsync(PapercutClientExitEvent @event)
         {
             // time for temp file cleanup
             TryCleanUpTempDirectories();
+
+            return Task.CompletedTask;
         }
 
         private void TryCleanUpTempDirectories()

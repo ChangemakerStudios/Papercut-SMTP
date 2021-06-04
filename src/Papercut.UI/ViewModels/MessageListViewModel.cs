@@ -1,19 +1,20 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
 
 namespace Papercut.ViewModels
 {
@@ -35,8 +36,6 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
-    using Message.Helpers;
-
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
     using Papercut.Common.Helper;
@@ -45,14 +44,13 @@ namespace Papercut.ViewModels
     using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Message;
+    using Papercut.Message.Helpers;
     using Papercut.Properties;
-    using Papercut.Views;
 
     using Serilog;
 
     using Action = System.Action;
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-    using ListBox = System.Windows.Controls.ListBox;
     using Screen = Caliburn.Micro.Screen;
 
     public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
@@ -61,13 +59,13 @@ namespace Papercut.ViewModels
 
         readonly ILogger _logger;
 
+        readonly IMessageBus _messageBus;
+
         readonly MessageRepository _messageRepository;
 
         readonly MessageWatcher _messageWatcher;
 
         readonly MimeMessageLoader _mimeMessageLoader;
-
-        readonly IMessageBus _messageBus;
 
         bool _isLoading;
 
@@ -89,43 +87,55 @@ namespace Papercut.ViewModels
             if (messageBus == null)
                 throw new ArgumentNullException(nameof(messageBus));
 
-            _messageRepository = messageRepository;
-            _messageWatcher = messageWatcher;
-            _mimeMessageLoader = mimeMessageLoader;
+            this._messageRepository = messageRepository;
+            this._messageWatcher = messageWatcher;
+            this._mimeMessageLoader = mimeMessageLoader;
             this._messageBus = messageBus;
-            _logger = logger;
+            this._logger = logger;
 
-            SetupMessages();
-            RefreshMessageList();
+            this.SetupMessages();
+            this.RefreshMessageList();
         }
 
         public ObservableCollection<MimeMessageEntry> Messages { get; private set; }
 
         public ICollectionView MessagesSorted { get; private set; }
 
-        public MimeMessageEntry SelectedMessage => GetSelected().FirstOrDefault();
+        public MimeMessageEntry SelectedMessage => this.GetSelected().FirstOrDefault();
 
         public string DeleteText => UIStrings.DeleteTextTemplate.RenderTemplate(this);
 
-        public bool HasSelectedMessage => GetSelected().Any();
+        public bool HasSelectedMessage => this.GetSelected().Any();
 
-        public bool HasMessages => Messages.Any();
+        public bool HasMessages => this.Messages.Any();
 
-        public int SelectedMessageCount => GetSelected().Count();
+        public int SelectedMessageCount => this.GetSelected().Count();
 
         public bool IsLoading
         {
-            get => _isLoading;
+            get => this._isLoading;
             set
             {
-                _isLoading = value;
-                NotifyOfPropertyChange(() => IsLoading);
+                this._isLoading = value;
+                this.NotifyOfPropertyChange(() => this.IsLoading);
             }
+        }
+
+        private ListSortDirection SortOrder => Enum.TryParse<ListSortDirection>(Settings.Default.MessageListSortOrder, out var sortOrder)
+                                                   ? sortOrder
+                                                   : ListSortDirection.Ascending;
+
+        public Task HandleAsync(SettingsUpdatedEvent message, CancellationToken token)
+        {
+            this.MessagesSorted.SortDescriptions.Clear();
+            this.MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", this.SortOrder));
+
+            return Task.CompletedTask;
         }
 
         MimeMessageEntry GetMessageByIndex(int index)
         {
-            return MessagesSorted.OfType<MimeMessageEntry>().Skip(index).FirstOrDefault();
+            return this.MessagesSorted.OfType<MimeMessageEntry>().Skip(index).FirstOrDefault();
         }
 
         int? GetIndexOfMessage([CanBeNull] MessageEntry entry)
@@ -133,7 +143,7 @@ namespace Papercut.ViewModels
             if (entry == null)
                 return null;
 
-            int index = MessagesSorted.OfType<MessageEntry>().FindIndex(m => Equals(entry, m));
+            int index = this.MessagesSorted.OfType<MessageEntry>().FindIndex(m => Equals(entry, m));
 
             return index == -1 ? null : (int?)index;
         }
@@ -149,7 +159,7 @@ namespace Papercut.ViewModels
 
             if (selectedMessage != null)
             {
-                this._previousIndex = GetIndexOfMessage(selectedMessage);
+                this._previousIndex = this.GetIndexOfMessage(selectedMessage);
             }
         }
 
@@ -158,29 +168,25 @@ namespace Papercut.ViewModels
             this._previousIndex = null;
         }
 
-        private ListSortDirection SortOrder => Enum.TryParse<ListSortDirection>(Settings.Default.MessageListSortOrder, out var sortOrder)
-                                                     ? sortOrder
-                                                     : ListSortDirection.Ascending;
-
         void SetupMessages()
         {
-            Messages = new ObservableCollection<MimeMessageEntry>();
-            MessagesSorted = CollectionViewSource.GetDefaultView(Messages);
-            
-            MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", SortOrder));
+            this.Messages = new ObservableCollection<MimeMessageEntry>();
+            this.MessagesSorted = CollectionViewSource.GetDefaultView(this.Messages);
+
+            this.MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", this.SortOrder));
 
             // Begin listening for new messages
-            _messageWatcher.NewMessage += NewMessage;
+            this._messageWatcher.NewMessage += this.NewMessage;
 
             Observable.FromEventPattern(
-                e => _messageWatcher.RefreshNeeded += e,
-                e => _messageWatcher.RefreshNeeded -= e,
+                e => this._messageWatcher.RefreshNeeded += e,
+                e => this._messageWatcher.RefreshNeeded -= e,
                 TaskPoolScheduler.Default)
                 .Throttle(TimeSpan.FromMilliseconds(100))
                 .ObserveOnDispatcher()
-                .Subscribe(e => RefreshMessageList());
+                .Subscribe(e => this.RefreshMessageList());
 
-            Messages.CollectionChanged += CollectionChanged;
+            this.Messages.CollectionChanged += this.CollectionChanged;
         }
 
         void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -190,10 +196,10 @@ namespace Papercut.ViewModels
                 var notifyOfSelectionChange = new Action(
                     () =>
                     {
-                        NotifyOfPropertyChange(() => HasSelectedMessage);
-                        NotifyOfPropertyChange(() => SelectedMessageCount);
-                        NotifyOfPropertyChange(() => SelectedMessage);
-                        NotifyOfPropertyChange(() => DeleteText);
+                        this.NotifyOfPropertyChange(() => this.HasSelectedMessage);
+                        this.NotifyOfPropertyChange(() => this.SelectedMessageCount);
+                        this.NotifyOfPropertyChange(() => this.SelectedMessage);
+                        this.NotifyOfPropertyChange(() => this.DeleteText);
                     });
 
                 if (args.NewItems != null)
@@ -208,30 +214,28 @@ namespace Papercut.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failure Handling Message Collection Change {@Args}", args);
+                this._logger.Error(ex, "Failure Handling Message Collection Change {@Args}", args);
             }
         }
 
         void AddNewMessage(MessageEntry entry)
         {
-            var observable = _mimeMessageLoader.GetObservable(entry);
+            var observable = this._mimeMessageLoader.GetObservable(entry);
 
             observable.ObserveOnDispatcher().Subscribe(
-                message =>
+                async message =>
                 {
-                    this._messageBus.Publish(
+                    await this._messageBus.PublishAsync(
                         new ShowBallonTip(
                             3500,
                             "New Message Received",
                             $"From: {message.From.ToString().Truncate(50)}\r\nSubject: {message.Subject.Truncate(50)}",
                             ToolTipIcon.Info));
 
-
-
-                    Messages.Add(new MimeMessageEntry(entry, _mimeMessageLoader));
+                    this.Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));
 
                     // handle selection if nothing is selected
-                    ValidateSelected();
+                    this.ValidateSelected();
                 },
                 e =>
                 {
@@ -241,7 +245,7 @@ namespace Papercut.ViewModels
 
         public int? TryGetValidSelectedIndex(int? previousIndex = null)
         {
-            int messageCount = Messages.Count;
+            int messageCount = this.Messages.Count;
 
             if (messageCount == 0)
             {
@@ -292,8 +296,7 @@ namespace Papercut.ViewModels
 
         public void OpenMessageFolder()
         {
-            string[] folders =
-                GetSelected().Select(s => Path.GetDirectoryName(s.File)).Distinct().ToArray();
+            string[] folders = this.GetSelected().Select(s => Path.GetDirectoryName(s.File)).Distinct().ToArray();
             folders.ForEach(f => Process.Start(f));
         }
 
@@ -310,47 +313,40 @@ namespace Papercut.ViewModels
 
         void NewMessage(object sender, NewMessageEventArgs e)
         {
-            Execute.OnUIThread(() => AddNewMessage(e.NewMessage));
+            Execute.OnUIThread(() => this.AddNewMessage(e.NewMessage));
         }
 
         public IEnumerable<MimeMessageEntry> GetSelected()
         {
-            return Messages.Where(message => message.IsSelected);
+            return this.Messages.Where(message => message.IsSelected);
         }
 
         public void ClearSelected()
         {
-            foreach (MimeMessageEntry message in GetSelected().ToList())
+            foreach (MimeMessageEntry message in this.GetSelected().ToList())
             {
                 message.IsSelected = false;
             }
         }
 
-        public void DeleteAll()
+        public async Task DeleteAll()
         {
-            // Lock to prevent rapid clicking issues
-            lock (_deleteLockObject)
-            {
                 this.ClearSelected();
 
-                DeleteMessages(Messages.ToList());
-            }
+                await this.DeleteMessagesAsync(this.Messages.ToList());
         }
 
-        public void DeleteSelected()
+        public async Task DeleteSelectedAsync()
         {
             // Lock to prevent rapid clicking issues
-            lock (_deleteLockObject)
-            {
                 this.PushSelectedIndex();
 
                 var selectedMessageEntries = this.GetSelected().ToList();
 
-                DeleteMessages(selectedMessageEntries);
-            }
+                await this.DeleteMessagesAsync(selectedMessageEntries);
         }
 
-        private List<string> DeleteMessages(List<MimeMessageEntry> selectedMessageEntries)
+        private async Task<List<string>> DeleteMessagesAsync(List<MimeMessageEntry> selectedMessageEntries)
         {
             List<string> failedEntries =
                 selectedMessageEntries.Select(
@@ -358,12 +354,12 @@ namespace Papercut.ViewModels
                     {
                         try
                         {
-                            _messageRepository.DeleteMessage(entry);
+                            this._messageRepository.DeleteMessage(entry);
                             return null;
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error(
+                            this._logger.Error(
                                 ex,
                                 "Failure Deleting Message {EmailMessageFile}",
                                 entry.File);
@@ -375,7 +371,7 @@ namespace Papercut.ViewModels
             if (failedEntries.Any())
             {
                 // show errors...
-                this._messageBus.Publish(
+                await this._messageBus.PublishAsync(
                     new ShowMessageEvent(
                         string.Join("\r\n", failedEntries),
                         $"Failed to Delete Message{(failedEntries.Count > 1 ? "s" : string.Empty)}"));
@@ -384,45 +380,36 @@ namespace Papercut.ViewModels
             return failedEntries;
         }
 
-        public void MessageListKeyDown(KeyEventArgs e)
+        public async Task MessageListKeyDown(KeyEventArgs e)
         {
             if (e.Key != Key.Delete)
                 return;
-            DeleteSelected();
+
+            await this.DeleteSelectedAsync();
         }
 
         public void RefreshMessageList()
         {
-            PushSelectedIndex();
+            this.PushSelectedIndex();
 
-            List<MessageEntry> messageEntries =
-                _messageRepository.LoadMessages()
+            List<MessageEntry> messageEntries = this._messageRepository.LoadMessages()
                     .ToList();
 
             List<MimeMessageEntry> toAdd =
-                messageEntries.Except(Messages)
-                    .Select(m => new MimeMessageEntry(m, _mimeMessageLoader))
+                messageEntries.Except(this.Messages)
+                    .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
                     .ToList();
 
-            List<MimeMessageEntry> toDelete =
-                Messages.Except(messageEntries).OfType<MimeMessageEntry>().ToList();
-            toDelete.ForEach(m => Messages.Remove(m));
+            List<MimeMessageEntry> toDelete = this.Messages.Except(messageEntries).OfType<MimeMessageEntry>().ToList();
+            toDelete.ForEach(m => this.Messages.Remove(m));
 
-            Messages.AddRange(toAdd);
+            this.Messages.AddRange(toAdd);
 
-            MessagesSorted.Refresh();
+            this.MessagesSorted.Refresh();
 
-            ValidateSelected();
+            this.ValidateSelected();
 
-            PopSelectedIndex();
-        }
-
-        public Task HandleAsync(SettingsUpdatedEvent message, CancellationToken token)
-        {
-            MessagesSorted.SortDescriptions.Clear();
-            MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", this.SortOrder));
-
-            return Task.CompletedTask;
+            this.PopSelectedIndex();
         }
     }
 }

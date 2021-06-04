@@ -15,7 +15,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 namespace Papercut.Infrastructure.Smtp
 {
     using System;
@@ -29,8 +28,6 @@ namespace Papercut.Infrastructure.Smtp
     using Papercut.Core.Domain.Network;
 
     using SmtpServer;
-    using SmtpServer.Mail;
-    using SmtpServer.Storage;
 
     using ILogger = Serilog.ILogger;
 
@@ -44,39 +41,40 @@ namespace Papercut.Infrastructure.Smtp
 
         private EndpointDefinition _currentEndpoint;
 
-        private Task _smtpServerTask;
+        private SmtpServer _server;
 
         private CancellationTokenSource _tokenSource;
 
         public PapercutSmtpServer(
             IAppMeta applicationMetaData,
             ILogger logger,
-            Func<ISmtpServerOptions, SmtpServer> _smtpServerFactory)
+            Func<ISmtpServerOptions, SmtpServer> smtpServerFactory)
         {
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;
-            this._smtpServerFactory = _smtpServerFactory;
+            this._smtpServerFactory = smtpServerFactory;
         }
 
-        public bool IsActive => this._smtpServerTask != null;
+        public bool IsActive => this._server != null;
 
         public IPAddress ListenIpAddress => this._currentEndpoint?.Address;
 
         public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.Stop();
+            await this.StopAsync();
         }
 
-        public void Stop()
+        public async Task StopAsync()
         {
-            if (this._smtpServerTask == null) return;
-
             try
             {
                 this._tokenSource?.Cancel();
-                this._smtpServerTask.Wait();
+                if (this._server != null)
+                {
+                    await this._server.ShutdownTask;
+                }
                 this._tokenSource?.Dispose();
             }
             catch (Exception ex) when (ex is AggregateException || ex is TaskCanceledException || ex is OperationCanceledException)
@@ -84,13 +82,18 @@ namespace Papercut.Infrastructure.Smtp
             }
             finally
             {
-                this._smtpServerTask = null;
                 this._tokenSource = null;
+                this._server = null;
             }
         }
 
-        public void Start(EndpointDefinition smtpEndpoint)
+        public async Task StartAsync(EndpointDefinition smtpEndpoint)
         {
+            if (IsActive)
+            {
+                return;
+            }
+
             ServicePointManager.ServerCertificateValidationCallback = this.IgnoreCertificateValidationFailureForTestingOnly;
 
             this._currentEndpoint = smtpEndpoint;
@@ -104,15 +107,15 @@ namespace Papercut.Infrastructure.Smtp
                         .AllowUnsecureAuthentication(false)
                         .Build());
 
-            var server = this._smtpServerFactory(options.Build());
+            this._server = this._smtpServerFactory(options.Build());
 
-            server.SessionCreated += this.OnSessionCreated;
-            server.SessionCompleted += this.OnSessionCompleted;
+            this._server.SessionCreated += this.OnSessionCreated;
+            this._server.SessionCompleted += this.OnSessionCompleted;
 
             this._logger.Information("Starting Smtp Server on {IP}:{Port}...", this.ListenIpAddress, this.ListenPort);
-
             this._tokenSource = new CancellationTokenSource();
-            this._smtpServerTask = server.StartAsync(this._tokenSource.Token);
+
+            await this._server.StartAsync(this._tokenSource.Token);
         }
 
         private void OnSessionCompleted(object sender, SessionEventArgs e)

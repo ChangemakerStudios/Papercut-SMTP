@@ -17,11 +17,14 @@
 
 namespace Papercut.Core.Domain.Rules
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Message;
 
     public interface IRulesRunner
     {
-        void Run([NotNull] IRule[] rules, [NotNull] MessageEntry messageEntry);
+        Task RunAsync([NotNull] IRule[] rules, [NotNull] MessageEntry messageEntry, CancellationToken token = default);
     }
 }

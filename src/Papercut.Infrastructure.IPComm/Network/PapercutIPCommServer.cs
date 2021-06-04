@@ -1,30 +1,30 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
 
 namespace Papercut.Infrastructure.IPComm.Network
 {
     using System;
     using System.Net;
     using System.Net.Sockets;
+    using System.Threading.Tasks;
 
-    using Core.Annotations;
-    using Core.Domain.Network;
-
-    using Protocols;
+    using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Network;
+    using Papercut.Infrastructure.IPComm.Protocols;
 
     using Serilog;
 
@@ -32,10 +32,11 @@ namespace Papercut.Infrastructure.IPComm.Network
     {
         private readonly Func<IProtocol> _protocolFactory;
 
+        private EndpointDefinition _currentEndpoint;
+
         bool _isActive;
 
         Socket _listener;
-        private EndpointDefinition _currentEndpoint;
 
         public PapercutIPCommServer(
             Func<PapercutIPCommProtocol> protocolFactory,
@@ -69,12 +70,14 @@ namespace Papercut.Infrastructure.IPComm.Network
             }
         }
 
-        public IPAddress ListenIpAddress => _currentEndpoint?.Address;
+        public IPAddress ListenIpAddress => this._currentEndpoint?.Address;
 
-        public int ListenPort => _currentEndpoint?.Port ?? 0;
+        public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
-        public void Stop()
+        public async Task StopAsync()
         {
+            await Task.CompletedTask;
+
             if (!this.IsActive) return;
 
             this.Logger.Information("Stopping IPComm Server");
@@ -96,14 +99,30 @@ namespace Papercut.Infrastructure.IPComm.Network
             }
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.Dispose(true);
+            try
+            {
+                await this.StopAsync();
+                this.CleanupListener();
+                if (this.ConnectionManager != null)
+                {
+                    this.ConnectionManager.Dispose();
+                    this.ConnectionManager = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
+            }
+
             GC.SuppressFinalize(this);
         }
 
-        public void Start(EndpointDefinition endpoint)
+        public async Task StartAsync(EndpointDefinition endpoint)
         {
+            await Task.CompletedTask;
+
             if (this.IsActive)
             {
                 return;
@@ -131,27 +150,6 @@ namespace Papercut.Infrastructure.IPComm.Network
             return this._protocolFactory();
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                try
-                {
-                    this.Stop();
-                    this.CleanupListener();
-                    if (this.ConnectionManager != null)
-                    {
-                        this.ConnectionManager.Dispose();
-                        this.ConnectionManager = null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
-                }
-            }
-        }
-
         protected void CleanupListener()
         {
             if (this._listener == null) return;
@@ -172,6 +170,7 @@ namespace Papercut.Infrastructure.IPComm.Network
                 ProtocolType.Tcp);
 
             this._listener.Bind(this._currentEndpoint.ToIPEndPoint());
+
             this._listener.Listen(20);
             this._listener.BeginAccept(this.OnClientAccept, null);
 

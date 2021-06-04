@@ -20,6 +20,8 @@ namespace Papercut.Rules.Implementations
     using System;
     using System.Reactive.Linq;
     using System.Reactive.Threading.Tasks;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using MimeKit;
 
@@ -44,13 +46,13 @@ namespace Papercut.Rules.Implementations
             _logger = logger;
         }
 
-        public void Dispatch(ConditionalForwardWithRetryRule rule, MessageEntry messageEntry)
+        public async Task DispatchAsync(ConditionalForwardWithRetryRule rule, MessageEntry messageEntry, CancellationToken token)
         {
             if (rule == null) throw new ArgumentNullException(nameof(rule));
             if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
             var messageSource = _mimeMessageLoader.Value.GetObservable(messageEntry)
-                .Select(m => m.CloneMessage())
+                .Select(m => m.CloneMessageAsync())
                 .Where(m => RuleMatches(rule, m))
                 .Select(
                     m =>
@@ -62,14 +64,15 @@ namespace Papercut.Rules.Implementations
             var sendObservable = Observable.Create<bool>(o =>
             {
                 IDisposable subscription = null;
-                subscription = messageSource.Subscribe(x =>
+                subscription = messageSource.Subscribe(
+                    async x =>
                 {
                     try
                     {
-                        using (var client = rule.CreateConnectedSmtpClient())
+                        using (var client = rule.CreateConnectedSmtpClientAsync())
                         {
-                            client.Send(x);
-                            client.Disconnect(true);
+                            await client.SendAsync(x, token);
+                            await client.DisconnectAsync(true, token);
                             o.OnNext(true);
                         }
                     }

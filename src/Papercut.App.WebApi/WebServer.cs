@@ -20,6 +20,7 @@ namespace Papercut.App.WebApi
 {
     using System;
     using System.Net;
+    using System.Threading.Tasks;
     using System.Web.Http;
 
     using Autofac;
@@ -58,7 +59,7 @@ namespace Papercut.App.WebApi
             _httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Papercut Web UI Server listening port (Defaults to {DefaultHttpPort}).");
         }
 
-        public void Handle(PapercutClientReadyEvent @event)
+        public Task HandleAsync(PapercutClientReadyEvent @event)
         {
             _logger.Debug("{@PapercutClientReadyEvent}", @event);
 
@@ -66,9 +67,11 @@ namespace Papercut.App.WebApi
             {
                 StartHttpServer();
             }
+
+            return Task.CompletedTask;
         }
 
-        public void Handle(PapercutServiceReadyEvent @event)
+        public Task HandleAsync(PapercutServiceReadyEvent @event)
         {
             _logger.Debug("{@PapercutServiceReadyEvent}", @event);
 
@@ -76,6 +79,8 @@ namespace Papercut.App.WebApi
             {
                 StartHttpServer();
             }
+
+            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)

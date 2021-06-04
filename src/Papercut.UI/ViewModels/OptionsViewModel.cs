@@ -1,19 +1,20 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
 
 namespace Papercut.ViewModels
 {
@@ -24,9 +25,6 @@ namespace Papercut.ViewModels
     using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
-    using System.Windows;
-    using System.Windows.Controls;
-    using System.Windows.Media;
 
     using Caliburn.Micro;
 
@@ -36,10 +34,8 @@ namespace Papercut.ViewModels
     using Papercut.Core.Infrastructure.Network;
     using Papercut.Domain.Themes;
     using Papercut.Events;
-    using Papercut.Helpers;
     using Papercut.Infrastructure.Themes;
     using Papercut.Properties;
-    using Papercut.Services;
 
     public class OptionsViewModel : Screen
     {
@@ -53,39 +49,39 @@ namespace Papercut.ViewModels
 
         string _ip = "Any";
 
+        string _messageListSortOrder = "Descending";
+
         bool _minimizeOnClose;
 
-        int _port = 25;
+        private bool _minimizeToTray;
 
-        string _messageListSortOrder = "Descending";
+        int _port = 25;
 
         bool _runOnStartup;
 
         bool _startMinimized;
 
-        string _windowTitle = WindowTitleDefault;
-
-        private bool _minimizeToTray;
-
         private ThemeColor _themeColor;
+
+        string _windowTitle = WindowTitleDefault;
 
         public OptionsViewModel(IMessageBus messageBus, ThemeColorRepository themeColorRepository)
         {
-            _messageBus = messageBus;
+            this._messageBus = messageBus;
             this._themeColorRepository = themeColorRepository;
-            IPs = new ObservableCollection<string>(_ipList.Value);
-            SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
-            Themes = new ObservableCollection<ThemeColor>(themeColorRepository.GetAll());
-            Load();
+            this.IPs = new ObservableCollection<string>(_ipList.Value);
+            this.SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
+            this.Themes = new ObservableCollection<ThemeColor>(themeColorRepository.GetAll());
+            this.Load();
         }
 
         public string WindowTitle
         {
-            get => _windowTitle;
+            get => this._windowTitle;
             set
             {
-                _windowTitle = value;
-                NotifyOfPropertyChange(() => WindowTitle);
+                this._windowTitle = value;
+                this.NotifyOfPropertyChange(() => this.WindowTitle);
             }
         }
 
@@ -95,7 +91,7 @@ namespace Papercut.ViewModels
             set
             {
                 this._messageListSortOrder = value;
-                NotifyOfPropertyChange(() => this.MessageListSortOrder);
+                this.NotifyOfPropertyChange(() => this.MessageListSortOrder);
             }
         }
 
@@ -105,47 +101,47 @@ namespace Papercut.ViewModels
             set
             {
                 this._themeColor = value;
-                NotifyOfPropertyChange(() => this.ThemeColor);
+                this.NotifyOfPropertyChange(() => this.ThemeColor);
             }
         }
 
         public string IP
         {
-            get => _ip;
+            get => this._ip;
             set
             {
-                _ip = value;
-                NotifyOfPropertyChange(() => IP);
+                this._ip = value;
+                this.NotifyOfPropertyChange(() => this.IP);
             }
         }
 
         public int Port
         {
-            get => _port;
+            get => this._port;
             set
             {
-                _port = value;
-                NotifyOfPropertyChange(() => Port);
+                this._port = value;
+                this.NotifyOfPropertyChange(() => this.Port);
             }
         }
 
         public bool RunOnStartup
         {
-            get => _runOnStartup;
+            get => this._runOnStartup;
             set
             {
-                _runOnStartup = value;
-                NotifyOfPropertyChange(() => RunOnStartup);
+                this._runOnStartup = value;
+                this.NotifyOfPropertyChange(() => this.RunOnStartup);
             }
         }
 
         public bool MinimizeOnClose
         {
-            get => _minimizeOnClose;
+            get => this._minimizeOnClose;
             set
             {
-                _minimizeOnClose = value;
-                NotifyOfPropertyChange(() => MinimizeOnClose);
+                this._minimizeOnClose = value;
+                this.NotifyOfPropertyChange(() => this.MinimizeOnClose);
             }
         }
 
@@ -155,25 +151,25 @@ namespace Papercut.ViewModels
             set
             {
                 this._minimizeToTray = value;
-                NotifyOfPropertyChange(() => MinimizeToTray);
+                this.NotifyOfPropertyChange(() => this.MinimizeToTray);
             }
         }
 
         public bool StartMinimized
         {
-            get => _startMinimized;
+            get => this._startMinimized;
             set
             {
-                _startMinimized = value;
-                NotifyOfPropertyChange(() => StartMinimized);
+                this._startMinimized = value;
+                this.NotifyOfPropertyChange(() => this.StartMinimized);
             }
         }
 
-        public ObservableCollection<string> IPs { get; private set; }
+        public ObservableCollection<string> IPs { get; }
 
-        public ObservableCollection<string> SortOrders { get; private set; }
+        public ObservableCollection<string> SortOrders { get; }
 
-        public ObservableCollection<ThemeColor> Themes { get; private set; }
+        public ObservableCollection<ThemeColor> Themes { get; }
 
         public void Load()
         {
@@ -210,9 +206,9 @@ namespace Papercut.ViewModels
 
             Settings.Default.Save();
 
-            this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
+            await this._messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings));
 
-            await TryCloseAsync(true);
+            await this.TryCloseAsync(true);
         }
     }
 }

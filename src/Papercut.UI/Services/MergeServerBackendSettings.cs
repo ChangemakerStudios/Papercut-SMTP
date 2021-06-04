@@ -41,15 +41,14 @@ namespace Papercut.Services
             this._messageBus = messageBus;
         }
 
-        public void Handle([NotNull] AppProcessExchangeEvent @event)
+        public async Task HandleAsync([NotNull] AppProcessExchangeEvent @event)
         {
             if (@event == null) throw new ArgumentNullException(nameof(@event));
 
             if (string.IsNullOrWhiteSpace(@event.MessageWritePath))
                 return;
 
-            if (!_configurator.LoadPaths.Any(
-                s => s.StartsWith(@event.MessageWritePath, StringComparison.OrdinalIgnoreCase)))
+            if (!_configurator.LoadPaths.Any(s => s.StartsWith(@event.MessageWritePath, StringComparison.OrdinalIgnoreCase)))
             {
                 // add it for watching...
                 Settings.Default.MessagePaths = $"{Settings.Default.MessagePaths};{@event.MessageWritePath}";
@@ -64,7 +63,7 @@ namespace Papercut.Services
             Settings.Default.Port = @event.Port;
             Settings.Default.Save();
 
-            this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
+            await this._messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings));
         }
     }
 }

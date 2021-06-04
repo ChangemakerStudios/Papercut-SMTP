@@ -37,7 +37,7 @@ namespace Papercut.Service.Services
             _serviceSettings = serviceSettings;
         }
 
-        public void Handle(AppProcessExchangeEvent @event)
+        public Task HandleAsync(AppProcessExchangeEvent @event)
         {
             // respond with the current save path...
             @event.MessageWritePath = _messagePathConfigurator.DefaultSavePath;
@@ -45,6 +45,8 @@ namespace Papercut.Service.Services
             // share our current ip and port binding for the SMTP server.
             @event.IP = _serviceSettings.IP;
             @event.Port = _serviceSettings.Port;
+
+            return Task.CompletedTask;
         }
     }
 }

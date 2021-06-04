@@ -20,6 +20,7 @@ namespace Papercut.Services
 {
     using System;
     using System.Threading;
+    using System.Threading.Tasks;
 
     using Common.Domain;
 
@@ -54,16 +55,15 @@ namespace Papercut.Services
             GC.SuppressFinalize(this);
         }
 
-        public void Handle(PapercutClientPreStartEvent @event)
+        public async Task HandleAsync(PapercutClientPreStartEvent @event)
         {
             // papercut is not already running...
             if (_appMutex.WaitOne(0, false)) return;
 
-            Logger.Debug(
-                "Second process run. Shutting this process down and pushing show event to other process");
+            Logger.Debug("Second process run. Shutting this process down and pushing show event to other process");
             
             // papercut is already running, push event to other UI process
-            _ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI).PublishEventServer(new ShowMainWindowEvent());
+            await _ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI).PublishEventServer(new ShowMainWindowEvent());
 
             // no need to go further
             @event.CancelStart = true;

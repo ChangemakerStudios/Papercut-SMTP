@@ -41,8 +41,6 @@ namespace Papercut
             new Lazy<ILifetimeScope>(
                 () => RootContainer.BeginLifetimeScope(ContainerScope.UIScopeTag));
 
-        private Task _publishTask;
-
         static App()
         {
             BootstrapLogger.SetRootGlobal();
@@ -65,12 +63,12 @@ namespace Papercut
             {
                 var appPreStartEvent = new PapercutClientPreStartEvent();
 
-                messageBus.Publish(appPreStartEvent);
+                Task.Run(() => messageBus.PublishAsync(appPreStartEvent)).Wait();
 
                 if (appPreStartEvent.CancelStart)
                 {
                     // force shut down...
-                    messageBus.Publish(new AppForceShutdownEvent());
+                    Task.Run(() => messageBus.PublishAsync(new AppForceShutdownEvent()).Wait());
 
                     this.Shutdown();
 
@@ -79,7 +77,7 @@ namespace Papercut
 
                 base.OnStartup(e);
 
-                messageBus.Publish(new PapercutClientReadyEvent());
+                Task.Run(() => messageBus.PublishAsync(new PapercutClientReadyEvent())).Wait();
             }
             catch (Exception ex)
             {
@@ -91,7 +89,7 @@ namespace Papercut
         {
             Debug.WriteLine("App.OnExit()");
 
-            this.Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent());
+            Task.Run(() => this.Container.Resolve<IMessageBus>().PublishAsync(new PapercutClientExitEvent())).Wait();
 
             try
             {

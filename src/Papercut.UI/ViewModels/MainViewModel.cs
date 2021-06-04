@@ -423,9 +423,9 @@ namespace Papercut.ViewModels
             IsDeleteAllConfirmOpen = false;
         }
 
-        public void Exit()
+        public async Task Exit()
         {
-            this._messageBus.Publish(new AppForceShutdownEvent());
+            await this._messageBus.PublishAsync(new AppForceShutdownEvent());
         }
 
         public async Task ForwardSelected()

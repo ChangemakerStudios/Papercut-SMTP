@@ -61,12 +61,14 @@ namespace Papercut.Services
             this._messageBus = messageBus;
         }
 
-        public void Handle(PapercutClientExitEvent @event)
+        public Task HandleAsync(PapercutClientExitEvent @event)
         {
             Save();
+
+            return Task.CompletedTask;
         }
 
-        public void Handle(PapercutClientReadyEvent @event)
+        public async Task HandleAsync(PapercutClientReadyEvent @event)
         {
             _logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
 
@@ -87,7 +89,7 @@ namespace Papercut.Services
             }
 
             // rules loaded/updated event
-            this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
+            await this._messageBus.PublishAsync(new RulesUpdatedEvent(this.Rules.ToArray()));
 
             Rules.CollectionChanged += RuleCollectionChanged;
             HookPropertyChangedForRules(Rules);
@@ -99,17 +101,20 @@ namespace Papercut.Services
 
                 // observe message watcher and run rules when a new message arrives
                 Observable.FromEventPattern<NewMessageEventArgs>(
-                    e => _messageWatcher.NewMessage += e,
-                    e => _messageWatcher.NewMessage -= e,
-                    TaskPoolScheduler.Default)
+                        e => _messageWatcher.NewMessage += e,
+                        e => _messageWatcher.NewMessage -= e,
+                        TaskPoolScheduler.Default)
                     .DelaySubscription(TimeSpan.FromSeconds(1))
-                    .Subscribe(e => _rulesRunner.Run(Rules.ToArray(), e.EventArgs.NewMessage));
+                    .Subscribe(
+                        async e => await _rulesRunner.RunAsync(
+                                       Rules.ToArray(),
+                                       e.EventArgs.NewMessage));
             }
         }
 
-        void PublishUpdateEventAsync()
+        async Task PublishUpdateEventAsync()
         {
-            this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
+            await this._messageBus.PublishAsync(new RulesUpdatedEvent(this.Rules.ToArray()));
         }
 
         void RuleCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -119,7 +124,7 @@ namespace Papercut.Services
                 if (args.NewItems != null)
                     HookPropertyChangedForRules(args.NewItems.OfType<IRule>());
 
-                this.PublishUpdateEventAsync();
+                Task.Run(async () => await this.PublishUpdateEventAsync()).Wait();
             }
             catch (Exception ex)
             {
@@ -131,7 +136,7 @@ namespace Papercut.Services
         {
             foreach (IRule m in rules)
             {
-                m.PropertyChanged += (o, eventArgs) => this.PublishUpdateEventAsync();
+                m.PropertyChanged += async (o, eventArgs) => await this.PublishUpdateEventAsync();
             }
         }
     }

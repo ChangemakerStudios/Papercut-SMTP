@@ -22,6 +22,8 @@ namespace Papercut.Message.Helpers
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using Microsoft.Win32;
 
@@ -32,16 +34,16 @@ namespace Papercut.Message.Helpers
 
     public static class MessageHelper
     {
-        public static MimeMessage CloneMessage([NotNull] this MimeMessage mimeMessage)
+        public static async Task<MimeMessage> CloneMessageAsync([NotNull] this MimeMessage mimeMessage, CancellationToken token)
         {
             if (mimeMessage == null)
                 throw new ArgumentNullException(nameof(mimeMessage));
 
             using (var ms = new MemoryStream())
             {
-                mimeMessage.WriteTo(FormatOptions.Default, ms);
+                await mimeMessage.WriteToAsync(FormatOptions.Default, ms, token);
                 ms.Seek(0, SeekOrigin.Begin);
-                var clonedMessage = MimeMessage.Load(ParserOptions.Default, ms);
+                var clonedMessage = await MimeMessage.LoadAsync(ParserOptions.Default, ms, token);
 
                 return clonedMessage;
             }

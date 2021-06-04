@@ -1,19 +1,20 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 
 namespace Papercut.Core.Infrastructure.MessageBus
 {
@@ -37,7 +38,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             this._lifetimeScope = lifetimeScope;
         }
 
-        public virtual void Publish<T>(T eventObject) where T : IEvent
+        public virtual async Task PublishAsync<T>(T eventObject) where T : IEvent
         {
             var eventHandlers = this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().ToList();
 
@@ -45,7 +46,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             {
                 try
                 {
-                    ExecuteHandler(eventObject, @event);
+                    await this.ExecuteHandler(eventObject, @event);
                 }
                 catch (Exception ex)
                 {
@@ -58,10 +59,10 @@ namespace Papercut.Core.Infrastructure.MessageBus
             }
         }
 
-        protected virtual void ExecuteHandler<T>(T eventObject, IEventHandler<T> @event)
+        protected virtual async Task ExecuteHandler<T>(T eventObject, IEventHandler<T> @event)
             where T : IEvent
         {
-            @event.Handle(eventObject);
+            await @event.HandleAsync(eventObject);
         }
 
         private List<T> MaybeByOrderable<T>(IEnumerable<T> @events)
