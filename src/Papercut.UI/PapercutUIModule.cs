@@ -104,7 +104,7 @@ namespace Papercut
         static void SubscribeEventAggregator(IActivatedEventArgs<object> e)
         {
             // Automatically calls subscribe on activated Windows, Views and ViewModels
-            e.Context.Resolve<IEventAggregator>().PublishOnUIThreadAsync(e.Instance);
+            e.Context.Resolve<IEventAggregator>().SubscribeOnUIThread(e.Instance);
         }
     }
 }

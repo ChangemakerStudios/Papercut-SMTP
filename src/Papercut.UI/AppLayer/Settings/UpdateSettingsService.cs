@@ -19,6 +19,7 @@ namespace Papercut.AppLayer.Settings
 {
     using System;
     using System.Security;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Autofac;
@@ -51,7 +52,7 @@ namespace Papercut.AppLayer.Settings
             this._uiCommandHub = uiCommandHub;
         }
 
-        public Task HandleAsync(SettingsUpdatedEvent @event)
+        public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             // check if the setting changed
             if (@event.PreviousSettings.RunOnStartup == @event.NewSettings.RunOnStartup)

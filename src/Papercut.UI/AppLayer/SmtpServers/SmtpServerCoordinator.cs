@@ -21,6 +21,7 @@ namespace Papercut.AppLayer.SmtpServers
     using System;
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Autofac;
@@ -84,7 +85,7 @@ namespace Papercut.AppLayer.SmtpServers
             }
         }
 
-        public async Task HandleAsync(PapercutClientReadyEvent @event)
+        public async Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token)
         {
             if (this.SmtpServerEnabled) await this.ListenSmtpServer();
 
@@ -104,7 +105,7 @@ namespace Papercut.AppLayer.SmtpServers
             };
         }
 
-        public async Task HandleAsync(SettingsUpdatedEvent @event)
+        public async Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             if (!this.SmtpServerEnabled) return;
             if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
@@ -179,7 +180,8 @@ namespace Papercut.AppLayer.SmtpServers
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<SmtpServerCoordinator>().AsImplementedInterfaces()
+            builder.RegisterType<SmtpServerCoordinator>().AsSelf()
+                .AsImplementedInterfaces()
                 .InstancePerLifetimeScope();
         }
 

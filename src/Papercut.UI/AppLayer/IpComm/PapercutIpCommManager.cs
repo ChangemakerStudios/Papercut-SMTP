@@ -30,7 +30,7 @@ namespace Papercut.AppLayer.IpComm
 
     using Serilog;
 
-    public class PapercutClientServerCoordinator : Disposable, IAppLifecycleStarted
+    public class PapercutIpCommManager : Disposable, IAppLifecycleStarted
     {
         readonly ILogger _logger;
 
@@ -38,7 +38,7 @@ namespace Papercut.AppLayer.IpComm
 
         readonly PapercutIPCommServer _papercutIpCommServer;
 
-        public PapercutClientServerCoordinator(
+        public PapercutIpCommManager(
             PapercutIPCommEndpoints papercutIpCommEndpoints,
             PapercutIPCommServer ipCommServer,
             ILogger logger)
@@ -85,7 +85,7 @@ namespace Papercut.AppLayer.IpComm
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<PapercutClientServerCoordinator>().AsImplementedInterfaces()
+            builder.RegisterType<PapercutIpCommManager>().AsImplementedInterfaces()
                 .SingleInstance();
         }
 

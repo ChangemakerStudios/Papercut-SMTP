@@ -55,7 +55,7 @@ namespace Papercut.ViewModels
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
     using Screen = Caliburn.Micro.Screen;
 
-    public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
+    public class MessageListViewModel : Screen, IEventHandler<SettingsUpdatedEvent>
     {
         readonly object _deleteLockObject = new object();
 

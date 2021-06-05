@@ -19,6 +19,7 @@
 namespace Papercut.AppLayer.Events
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Autofac;
@@ -41,12 +42,37 @@ namespace Papercut.AppLayer.Events
             this._eventAggregator = eventAggregator;
         }
 
-        public override async Task PublishAsync<T>([NotNull] T eventObject)
+        public override async Task PublishAsync<T>([NotNull] T eventObject, CancellationToken token)
         {
             if (eventObject == null) throw new ArgumentNullException(nameof(eventObject));
 
-            await base.PublishAsync(eventObject);
-            await this._eventAggregator.PublishOnUIThreadAsync(eventObject);
+            await base.PublishAsync(eventObject, token);
+            await this._eventAggregator.PublishOnUIThreadAsync(eventObject, token);
+        }
+
+        protected override Task ExecuteEvent<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
+        {
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+
+            Execute.BeginOnUIThread(async () =>
+            {
+                try
+                {
+                    await base.ExecuteEvent(eventObject, @event, token);
+
+                    taskCompletionSource.SetResult(true);
+                }
+                catch (OperationCanceledException)
+                {
+                    taskCompletionSource.SetCanceled();
+                }
+                catch (Exception ex)
+                {
+                    taskCompletionSource.SetException(ex);
+                }
+            });
+
+            return taskCompletionSource.Task;
         }
 
         #region Begin Static Container Registrations

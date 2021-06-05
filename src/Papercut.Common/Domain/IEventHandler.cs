@@ -18,11 +18,12 @@
 
 namespace Papercut.Common.Domain
 {
+    using System.Threading;
     using System.Threading.Tasks;
 
     public interface IEventHandler<in TEvent>
         where TEvent : IEvent
     {
-        Task HandleAsync(TEvent @event);
+        Task HandleAsync(TEvent @event, CancellationToken token = default);
     }
 }

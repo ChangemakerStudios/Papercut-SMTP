@@ -33,13 +33,13 @@ namespace Papercut.AppLayer.HtmlPreviews
 
     using Serilog;
 
-    public class HtmlPreviewService : IHtmlPreviewGenerator
+    public class HtmlPreviewGeneratorImpl : IHtmlPreviewGenerator
     {
         readonly IAppMeta _appMeta;
 
         readonly ILogger _logger;
 
-        public HtmlPreviewService(ILogger logger, IAppMeta appMeta)
+        public HtmlPreviewGeneratorImpl(ILogger logger, IAppMeta appMeta)
         {
             this._logger = logger;
             this._appMeta = appMeta;
@@ -88,7 +88,7 @@ namespace Papercut.AppLayer.HtmlPreviews
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<HtmlPreviewService>().AsImplementedInterfaces()
+            builder.RegisterType<HtmlPreviewGeneratorImpl>().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();
         }
 

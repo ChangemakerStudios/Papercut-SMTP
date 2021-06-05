@@ -41,11 +41,8 @@ namespace Papercut.AppLayer.Notifications
     using Papercut.Infrastructure.Resources;
 
     [UsedImplicitly]
-    public class NotificationMenuCoordinator : Disposable, IAppLifecyclePreExit,
-        IHandle<PapercutClientReadyEvent>
+    public class NotificationMenuCoordinator : Disposable, IAppLifecyclePreExit, IEventHandler<PapercutClientReadyEvent>
     {
-        readonly IMessageBus _messageBus;
-
         readonly AppResourceLocator _resourceLocator;
 
         private readonly IAppCommandHub _appCommandHub;
@@ -57,13 +54,11 @@ namespace Papercut.AppLayer.Notifications
         public NotificationMenuCoordinator(
             IAppCommandHub appCommandHub,
             IUiCommandHub uiCommandHub,
-            AppResourceLocator resourceLocator,
-            IMessageBus messageBus)
+            AppResourceLocator resourceLocator)
         {
             this._appCommandHub = appCommandHub;
             this._uiCommandHub = uiCommandHub;
             this._resourceLocator = resourceLocator;
-            this._messageBus = messageBus;
 
             this.InitObservables();
         }
@@ -71,14 +66,8 @@ namespace Papercut.AppLayer.Notifications
         public AppLifecycleActionResultType OnPreExit()
         {
             this.Reset();
+
             return AppLifecycleActionResultType.Continue;
-        }
-
-        public Task HandleAsync(PapercutClientReadyEvent message, CancellationToken cancellationToken)
-        {
-            if (this._notification == null) this.SetupNotification();
-
-            return Task.CompletedTask;
         }
 
         void InitObservables()
@@ -95,6 +84,13 @@ namespace Papercut.AppLayer.Notifications
                             @event.TipText,
                             @event.ToolTipIcon);
                     });
+        }
+
+        public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token)
+        {
+            if (this._notification == null) this.SetupNotification();
+
+            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)
@@ -163,7 +159,7 @@ namespace Papercut.AppLayer.Notifications
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
             builder.RegisterType<NotificationMenuCoordinator>().AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
+                .SingleInstance();
         }
 
         #endregion

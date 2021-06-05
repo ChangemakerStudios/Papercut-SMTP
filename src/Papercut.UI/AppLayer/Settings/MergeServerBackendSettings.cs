@@ -20,6 +20,7 @@ namespace Papercut.AppLayer.Settings
 {
     using System;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Autofac;
@@ -44,7 +45,7 @@ namespace Papercut.AppLayer.Settings
             this._messageBus = messageBus;
         }
 
-        public async Task HandleAsync([NotNull] AppProcessExchangeEvent @event)
+        public async Task HandleAsync([NotNull] AppProcessExchangeEvent @event, CancellationToken token)
         {
             if (@event == null) throw new ArgumentNullException(nameof(@event));
 
@@ -66,7 +67,7 @@ namespace Papercut.AppLayer.Settings
             Settings.Default.Port = @event.Port;
             Settings.Default.Save();
 
-            await this._messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings));
+            await this._messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings), token);
         }
 
         #region Begin Static Container Registrations

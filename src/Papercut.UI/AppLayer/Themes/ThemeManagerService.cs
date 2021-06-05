@@ -19,6 +19,7 @@
 namespace Papercut.AppLayer.Themes
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
 
@@ -49,7 +50,7 @@ namespace Papercut.AppLayer.Themes
 
         private static ThemeManager CurrentTheme => ThemeManager.Current;
 
-        public Task HandleAsync(SettingsUpdatedEvent @event)
+        public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) this.SetTheme();
 

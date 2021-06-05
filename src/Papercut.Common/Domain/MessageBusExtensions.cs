@@ -30,7 +30,7 @@ namespace Papercut.Common.Domain
         {
             if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
 
-            Task.Run(() => messageBus.PublishAsync(@event));
+            Task.Run(() => messageBus.PublishAsync(@event, default));
         }
     }
 }

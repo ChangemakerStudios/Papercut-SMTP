@@ -21,6 +21,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Autofac;
@@ -38,15 +39,15 @@ namespace Papercut.Core.Infrastructure.MessageBus
             this._lifetimeScope = lifetimeScope;
         }
 
-        public virtual async Task PublishAsync<T>(T eventObject) where T : IEvent
+        public virtual async Task PublishAsync<T>(T eventObject, CancellationToken token) where T : IEvent
         {
             var eventHandlers = this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().ToList();
 
-            foreach (var @event in this.MaybeByOrderable(eventHandlers))
+            foreach (var @event in this.MaybeByOrder(eventHandlers))
             {
                 try
                 {
-                    await this.ExecuteHandler(eventObject, @event);
+                    await this.ExecuteEvent(eventObject, @event, token);
                 }
                 catch (Exception ex)
                 {
@@ -59,21 +60,21 @@ namespace Papercut.Core.Infrastructure.MessageBus
             }
         }
 
-        protected virtual async Task ExecuteHandler<T>(T eventObject, IEventHandler<T> @event)
+        protected virtual async Task ExecuteEvent<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
             where T : IEvent
         {
-            await @event.HandleAsync(eventObject);
+            await @event.HandleAsync(eventObject, token);
         }
 
-        private List<T> MaybeByOrderable<T>(IEnumerable<T> @events)
+        private List<T> MaybeByOrder<T>(IEnumerable<T> handlers)
         {
-            return @events.Distinct()
-                .Select((e, i) => new { Index = 100 + i, Event = e }).OrderBy(
+            return handlers.Distinct()
+                .Select((e, i) => new { Index = 100 + i, Handler = e }).OrderBy(
                     e =>
                     {
-                        var orderable = e.Event as IOrderable;
+                        var orderable = e.Handler as IOrderable;
                         return orderable?.Order ?? e.Index;
-                    }).Select(e => e.Event).ToList();
+                    }).Select(e => e.Handler).ToList();
         }
     }
 }

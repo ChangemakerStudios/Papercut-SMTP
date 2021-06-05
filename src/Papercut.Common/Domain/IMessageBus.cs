@@ -18,10 +18,11 @@
 
 namespace Papercut.Common.Domain
 {
+    using System.Threading;
     using System.Threading.Tasks;
 
     public interface IMessageBus
     {
-        Task PublishAsync<T>(T @event) where T : IEvent;
+        Task PublishAsync<T>(T @event, CancellationToken token = default) where T : IEvent;
     }
 }

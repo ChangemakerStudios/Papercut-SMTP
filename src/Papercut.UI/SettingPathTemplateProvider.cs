@@ -20,6 +20,7 @@ namespace Papercut
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
@@ -70,7 +71,7 @@ namespace Papercut
             }
         }
 
-        public Task HandleAsync(SettingsUpdatedEvent @event)
+        public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             UpdatePathTemplates();
 

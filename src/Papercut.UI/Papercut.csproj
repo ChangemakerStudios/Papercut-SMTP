@@ -210,11 +210,11 @@
       <DependentUpon>UIStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="AppLayer\Settings\UpdateSettingsService.cs" />
-    <Compile Include="AppLayer\HtmlPreviews\HtmlPreviewService.cs" />
+    <Compile Include="AppLayer\HtmlPreviews\HtmlPreviewGeneratorImpl.cs" />
     <Compile Include="Domain\HtmlPreviews\IHtmlPreviewGenerator.cs" />
     <Compile Include="AppLayer\Settings\MergeServerBackendSettings.cs" />
-    <Compile Include="AppLayer\IpComm\PapercutServiceBackendCoordinator.cs" />
-    <Compile Include="AppLayer\IpComm\PapercutClientServerCoordinator.cs" />
+    <Compile Include="AppLayer\IpComm\BackendServiceCoordinator.cs" />
+    <Compile Include="AppLayer\IpComm\PapercutIpCommManager.cs" />
     <Compile Include="AppLayer\Diagnostics\ReportVersionService.cs" />
     <Compile Include="AppLayer\Rules\RuleService.cs" />
     <Compile Include="AppLayer\Settings\SaveSettingsOnExitService.cs" />

@@ -148,7 +148,7 @@ namespace Papercut.AppLayer.Rules
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<RuleService>().AsImplementedInterfaces()
+            builder.RegisterType<RuleService>().AsSelf().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();
         }
 

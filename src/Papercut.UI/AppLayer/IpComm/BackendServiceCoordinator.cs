@@ -23,6 +23,7 @@ namespace Papercut.AppLayer.IpComm
     using System.Reactive.Concurrency;
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Autofac;
@@ -42,7 +43,7 @@ namespace Papercut.AppLayer.IpComm
 
     using Serilog;
 
-    public class PapercutServiceBackendCoordinator : IBackendServiceStatus,
+    public class BackendServiceCoordinator : IBackendServiceStatus,
         IEventHandler<SettingsUpdatedEvent>,
         IEventHandler<RulesUpdatedEvent>,
         IEventHandler<PapercutServicePreStartEvent>,
@@ -62,7 +63,7 @@ namespace Papercut.AppLayer.IpComm
 
         Action<RulesUpdatedEvent> _nextUpdateEvent;
 
-        public PapercutServiceBackendCoordinator(
+        public BackendServiceCoordinator(
             ILogger logger,
             IMessageBus messageBus,
             PapercutIPCommClientFactory ipCommClientFactory,
@@ -89,7 +90,7 @@ namespace Papercut.AppLayer.IpComm
 
         public bool IsOnline { get; private set; }
 
-        public Task HandleAsync(PapercutServiceExitEvent @event)
+        public Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token)
         {
             this.IsOnline = false;
             this._smtpServerCoordinator.SmtpServerEnabled = true;
@@ -97,7 +98,7 @@ namespace Papercut.AppLayer.IpComm
             return Task.CompletedTask;
         }
 
-        public Task HandleAsync(PapercutServicePreStartEvent @event)
+        public Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token)
         {
             this.IsOnline = true;
             this._smtpServerCoordinator.SmtpServerEnabled = false;
@@ -105,12 +106,12 @@ namespace Papercut.AppLayer.IpComm
             return Task.CompletedTask;
         }
 
-        public async Task HandleAsync(PapercutServiceReadyEvent @event)
+        public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token)
         {
-            await this.AttemptExchange();
+            await this.AttemptExchangeAsync(token);
         }
 
-        public Task HandleAsync(RulesUpdatedEvent @event)
+        public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token)
         {
             if (this.IsOnline)
             {
@@ -120,12 +121,12 @@ namespace Papercut.AppLayer.IpComm
             return Task.CompletedTask;
         }
 
-        public async Task HandleAsync(SettingsUpdatedEvent @event)
+        public async Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
-            await this.PublishSmtpUpdated(@event);
+            await this.PublishSmtpUpdatedAsync(@event, token);
         }
 
-        public async Task PublishSmtpUpdated(SettingsUpdatedEvent @event)
+        public async Task PublishSmtpUpdatedAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             if (!this.IsOnline) return;
 
@@ -154,7 +155,7 @@ namespace Papercut.AppLayer.IpComm
             }
         }
 
-        private async Task AttemptExchange()
+        private async Task AttemptExchangeAsync(CancellationToken token)
         {
             try
             {
@@ -180,7 +181,7 @@ namespace Papercut.AppLayer.IpComm
                         "Background Process Returned {@Event} -- Publishing",
                         receivedEvent);
 
-                    await this._messageBus.PublishAsync(receivedEvent);
+                    await this._messageBus.PublishAsync(receivedEvent, token);
                 }
             }
             catch (Exception ex)
@@ -224,7 +225,7 @@ namespace Papercut.AppLayer.IpComm
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<PapercutClientServerCoordinator>().AsImplementedInterfaces()
+            builder.RegisterType<BackendServiceCoordinator>().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();
         }
 

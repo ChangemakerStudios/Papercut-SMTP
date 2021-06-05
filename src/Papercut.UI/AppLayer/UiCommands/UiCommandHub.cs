@@ -19,6 +19,7 @@
 namespace Papercut.AppLayer.UiCommands
 {
     using System;
+    using System.Reactive.Linq;
     using System.Reactive.Subjects;
     using System.Windows.Forms;
 
@@ -27,14 +28,13 @@ namespace Papercut.AppLayer.UiCommands
 
     using Caliburn.Micro;
 
+    using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
     using Papercut.Domain.UiCommands;
     using Papercut.Domain.UiCommands.Commands;
 
     public class UiCommandHub : Disposable, IUiCommandHub
     {
-        private readonly IEventAggregator _eventAggregator;
-
         private readonly Subject<ShowBalloonTipCommand> _onShowBalloonTip = new Subject<ShowBalloonTipCommand>();
 
         private readonly Subject<ShowMainWindowCommand> _onShowMainWindow = new Subject<ShowMainWindowCommand>();
@@ -42,11 +42,6 @@ namespace Papercut.AppLayer.UiCommands
         private readonly Subject<ShowMessageCommand> _onShowMessage = new Subject<ShowMessageCommand>();
 
         private readonly Subject<ShowOptionWindowCommand> _onShowOptionWindow = new Subject<ShowOptionWindowCommand>();
-
-        public UiCommandHub(IEventAggregator eventAggregator)
-        {
-            this._eventAggregator = eventAggregator;
-        }
 
         public IObservable<ShowBalloonTipCommand> OnShowBalloonTip => this._onShowBalloonTip;
 
@@ -61,28 +56,24 @@ namespace Papercut.AppLayer.UiCommands
             var command = new ShowMainWindowCommand(selectMostRecentMessage);
 
             this._onShowMainWindow.OnNext(command);
-            this._eventAggregator.PublishOnUIThreadAsync(command);
         }
 
         public void ShowMessage(string messageText, string caption)
         {
             var command = new ShowMessageCommand(messageText, caption);
             this._onShowMessage.OnNext(command);
-            this._eventAggregator.PublishOnUIThreadAsync(command);
         }
 
         public void ShowOptionWindow()
         {
             var command = new ShowOptionWindowCommand();
             this._onShowOptionWindow.OnNext(command);
-            this._eventAggregator.PublishOnUIThreadAsync(command);
         }
 
         public void ShowBalloonTip(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon)
         {
             var command = new ShowBalloonTipCommand(timeout, tipTitle, tipText, toolTipIcon);
             this._onShowBalloonTip.OnNext(command);
-            this._eventAggregator.PublishOnUIThreadAsync(command);
         }
 
         protected override void Dispose(bool disposing)
