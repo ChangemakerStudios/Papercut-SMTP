@@ -34,6 +34,7 @@ namespace Papercut.AppLayer.IpComm
     using Papercut.Core.Domain.Rules;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Network;
+    using Papercut.Domain.BackendService;
     using Papercut.Domain.Events;
     using Papercut.Infrastructure.IPComm;
     using Papercut.Infrastructure.IPComm.Network;
@@ -41,7 +42,8 @@ namespace Papercut.AppLayer.IpComm
 
     using Serilog;
 
-    public class PapercutServiceBackendCoordinator : IEventHandler<SettingsUpdatedEvent>,
+    public class PapercutServiceBackendCoordinator : IBackendServiceStatus,
+        IEventHandler<SettingsUpdatedEvent>,
         IEventHandler<RulesUpdatedEvent>,
         IEventHandler<PapercutServicePreStartEvent>,
         IEventHandler<PapercutServiceReadyEvent>,
@@ -85,11 +87,11 @@ namespace Papercut.AppLayer.IpComm
                 .Subscribe(async events => await this.PublishUpdateEvent(events.Last()));
         }
 
-        public bool IsBackendServiceOnline { get; private set; }
+        public bool IsOnline { get; private set; }
 
         public Task HandleAsync(PapercutServiceExitEvent @event)
         {
-            this.IsBackendServiceOnline = false;
+            this.IsOnline = false;
             this._smtpServerCoordinator.SmtpServerEnabled = true;
 
             return Task.CompletedTask;
@@ -97,7 +99,7 @@ namespace Papercut.AppLayer.IpComm
 
         public Task HandleAsync(PapercutServicePreStartEvent @event)
         {
-            this.IsBackendServiceOnline = true;
+            this.IsOnline = true;
             this._smtpServerCoordinator.SmtpServerEnabled = false;
 
             return Task.CompletedTask;
@@ -110,7 +112,7 @@ namespace Papercut.AppLayer.IpComm
 
         public Task HandleAsync(RulesUpdatedEvent @event)
         {
-            if (this.IsBackendServiceOnline)
+            if (this.IsOnline)
             {
                 this._nextUpdateEvent(@event);
             }
@@ -125,7 +127,7 @@ namespace Papercut.AppLayer.IpComm
 
         public async Task PublishSmtpUpdated(SettingsUpdatedEvent @event)
         {
-            if (!this.IsBackendServiceOnline) return;
+            if (!this.IsOnline) return;
 
             // check if the setting changed
             if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
@@ -165,7 +167,7 @@ namespace Papercut.AppLayer.IpComm
 
                 if (receivedEvent == null) return;
 
-                this.IsBackendServiceOnline = true;
+                this.IsOnline = true;
 
                 // backend server is online...
                 this._logger.Information(

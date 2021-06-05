@@ -229,7 +229,7 @@ namespace Papercut.ViewModels
             var observable = this._mimeMessageLoader.GetObservable(entry);
 
             observable.ObserveOnDispatcher().Subscribe(
-                async message =>
+                message =>
                 {
                     this._uiCommandHub.ShowBalloonTip(
                         3500,
@@ -334,24 +334,23 @@ namespace Papercut.ViewModels
             }
         }
 
-        public async Task DeleteAll()
+        public void DeleteAll()
         {
-                this.ClearSelected();
-
-                await this.DeleteMessagesAsync(this.Messages.ToList());
+            this.ClearSelected();
+            this.DeleteMessages(this.Messages.ToList());
         }
 
-        public async Task DeleteSelectedAsync()
+        public void DeleteSelected()
         {
             // Lock to prevent rapid clicking issues
-                this.PushSelectedIndex();
+            this.PushSelectedIndex();
 
-                var selectedMessageEntries = this.GetSelected().ToList();
+            var selectedMessageEntries = this.GetSelected().ToList();
 
-                await this.DeleteMessagesAsync(selectedMessageEntries);
+            this.DeleteMessages(selectedMessageEntries);
         }
 
-        private async Task<List<string>> DeleteMessagesAsync(List<MimeMessageEntry> selectedMessageEntries)
+        private List<string> DeleteMessages(List<MimeMessageEntry> selectedMessageEntries)
         {
             List<string> failedEntries =
                 selectedMessageEntries.Select(
@@ -383,12 +382,12 @@ namespace Papercut.ViewModels
             return failedEntries;
         }
 
-        public async Task MessageListKeyDown(KeyEventArgs e)
+        public void MessageListKeyDown(KeyEventArgs e)
         {
             if (e.Key != Key.Delete)
                 return;
 
-            await this.DeleteSelectedAsync();
+            this.DeleteSelected();
         }
 
         public void RefreshMessageList()

@@ -45,6 +45,7 @@ namespace Papercut.ViewModels
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Domain.AppCommands;
     using Papercut.Domain.UiCommands.Commands;
     using Papercut.Helpers;
     using Papercut.Infrastructure.Resources;
@@ -69,6 +70,8 @@ namespace Papercut.ViewModels
 
         readonly IMessageBus _messageBus;
 
+        private readonly IAppCommandHub _appCommandHub;
+
         readonly AppResourceLocator _resourceLocator;
 
         readonly IViewModelWindowManager _viewModelWindowManager;
@@ -86,6 +89,7 @@ namespace Papercut.ViewModels
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
             IMessageBus messageBus,
+            IAppCommandHub appCommandHub,
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
             Func<MessageDetailViewModel> messageDetailViewModelFactory,
@@ -94,6 +98,7 @@ namespace Papercut.ViewModels
         {
             _viewModelWindowManager = viewModelWindowManager;
             this._messageBus = messageBus;
+            this._appCommandHub = appCommandHub;
             _forwardRuleDispatch = forwardRuleDispatch;
 
             MessageListViewModel = messageListViewModelFactory();
@@ -380,7 +385,7 @@ namespace Papercut.ViewModels
 
         public void DeleteAll()
         {
-            MessageListViewModel.DeleteAll();
+            this.MessageListViewModel.DeleteAll();
             this.IsDeleteAllConfirmOpen = false;
         }
 
@@ -418,9 +423,9 @@ namespace Papercut.ViewModels
             IsDeleteAllConfirmOpen = false;
         }
 
-        public async Task Exit()
+        public void Exit()
         {
-            await this._messageBus.PublishAsync(new AppForceShutdownEvent());
+            this._appCommandHub.Shutdown();
         }
 
         public async Task ForwardSelected()

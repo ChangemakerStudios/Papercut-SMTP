@@ -35,6 +35,7 @@ namespace Papercut.AppLayer.Notifications
     using Papercut.Core;
     using Papercut.Core.Annotations;
     using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Domain.AppCommands;
     using Papercut.Domain.LifecycleHooks;
     using Papercut.Domain.UiCommands;
     using Papercut.Infrastructure.Resources;
@@ -47,15 +48,19 @@ namespace Papercut.AppLayer.Notifications
 
         readonly AppResourceLocator _resourceLocator;
 
+        private readonly IAppCommandHub _appCommandHub;
+
         private readonly IUiCommandHub _uiCommandHub;
 
         NotifyIcon _notification;
 
         public NotificationMenuCoordinator(
+            IAppCommandHub appCommandHub,
             IUiCommandHub uiCommandHub,
             AppResourceLocator resourceLocator,
             IMessageBus messageBus)
         {
+            this._appCommandHub = appCommandHub;
             this._uiCommandHub = uiCommandHub;
             this._resourceLocator = resourceLocator;
             this._messageBus = messageBus;
@@ -140,7 +145,7 @@ namespace Papercut.AppLayer.Notifications
                 options,
                 new MenuItem(
                     "Exit",
-                    (sender, args) => this._messageBus.PublishFireAndForget(new AppForceShutdownEvent()))
+                    (sender, args) => this._appCommandHub.Shutdown())
             };
 
             this._notification.ContextMenu = new ContextMenu(menuItems);

@@ -31,14 +31,7 @@ namespace Papercut.AppLayer.AppCommands
 
     public class AppCommandHub : Disposable, IAppCommandHub
     {
-        private readonly IEventAggregator _eventAggregator;
-
         private readonly Subject<ShutdownCommand> _onShutdown = new Subject<ShutdownCommand>();
-
-        public AppCommandHub(IEventAggregator eventAggregator)
-        {
-            this._eventAggregator = eventAggregator;
-        }
 
         public IObservable<ShutdownCommand> OnShutdown => this._onShutdown;
 

@@ -15,7 +15,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 namespace Papercut.AppLayer.Rules
 {
     using System;
@@ -28,11 +27,11 @@ namespace Papercut.AppLayer.Rules
 
     using Autofac;
 
-    using Papercut.AppLayer.IpComm;
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Message;
     using Papercut.Core.Domain.Rules;
+    using Papercut.Domain.BackendService;
     using Papercut.Domain.LifecycleHooks;
     using Papercut.Message;
     using Papercut.Rules;
@@ -41,7 +40,7 @@ namespace Papercut.AppLayer.Rules
 
     public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecyclePreExit
     {
-        readonly PapercutServiceBackendCoordinator _coordinator;
+        readonly IBackendServiceStatus _backendServiceStatus;
 
         readonly IMessageBus _messageBus;
 
@@ -52,13 +51,13 @@ namespace Papercut.AppLayer.Rules
         public RuleService(
             RuleRepository ruleRepository,
             ILogger logger,
-            PapercutServiceBackendCoordinator coordinator,
+            IBackendServiceStatus backendServiceStatus,
             MessageWatcher messageWatcher,
             IRulesRunner rulesRunner,
             IMessageBus messageBus)
             : base(ruleRepository, logger)
         {
-            this._coordinator = coordinator;
+            this._backendServiceStatus = backendServiceStatus;
             this._messageWatcher = messageWatcher;
             this._rulesRunner = rulesRunner;
             this._messageBus = messageBus;
@@ -98,7 +97,7 @@ namespace Papercut.AppLayer.Rules
             this.HookPropertyChangedForRules(this.Rules);
 
             // the backend service handles rules running if it's online
-            if (!this._coordinator.IsBackendServiceOnline)
+            if (!this._backendServiceStatus.IsOnline)
             {
                 this._logger.Debug("Setting up Rule Dispatcher Observable");
 
@@ -133,7 +132,8 @@ namespace Papercut.AppLayer.Rules
         {
             foreach (IRule m in rules)
             {
-                m.PropertyChanged += (o, eventArgs) => this._messageBus.PublishAsync(new RulesUpdatedEvent(this.Rules.ToArray()));
+                m.PropertyChanged += (o, eventArgs) =>
+                    this._messageBus.PublishAsync(new RulesUpdatedEvent(this.Rules.ToArray()));
             }
         }
 

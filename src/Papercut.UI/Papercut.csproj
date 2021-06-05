@@ -178,6 +178,7 @@
     <Compile Include="AppLayer\Behaviors\InteractivityBlurOnDisabled.cs" />
     <Compile Include="AppLayer\Behaviors\InteractivityBlurWindowOnDeactivate.cs" />
     <Compile Include="Domain\AppCommands\ShutdownCommand.cs" />
+    <Compile Include="Domain\BackendService\BackendServiceStatus.cs" />
     <Compile Include="Domain\LifecycleHooks\IAppLifecycleHook.cs" />
     <Compile Include="Domain\LifecycleHooks\IAppLifecycleStarted.cs" />
     <Compile Include="Domain\UiCommands\Commands\ShowBalloonTipCommand.cs" />

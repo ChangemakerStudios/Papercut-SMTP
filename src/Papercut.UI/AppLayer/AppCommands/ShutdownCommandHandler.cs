@@ -19,9 +19,9 @@
 namespace Papercut.AppLayer.AppCommands
 {
     using System;
-    using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Windows;
+    using System.Windows.Threading;
 
     using Autofac;
     using Autofac.Util;
@@ -31,7 +31,6 @@ namespace Papercut.AppLayer.AppCommands
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Domain.AppCommands;
-    using Papercut.Domain.LifecycleHooks;
 
     using Serilog;
 
@@ -62,7 +61,8 @@ namespace Papercut.AppLayer.AppCommands
 
         private void InitObservables()
         {
-            this._shutdownObservable = this._appCommandHub.OnShutdown.ObserveOn(TaskPoolScheduler.Default)
+            this._shutdownObservable = this._appCommandHub.OnShutdown
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(
                     async @event =>
                     {
