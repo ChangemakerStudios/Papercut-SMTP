@@ -28,8 +28,10 @@ namespace Papercut
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Container;
-    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Logging;
+    using Papercut.Domain.LifecycleHooks;
+    using Papercut.Infrastructure;
+    using Papercut.Infrastructure.Lifecycles;
 
     using Serilog;
 
@@ -57,27 +59,19 @@ namespace Papercut
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            var messageBus = this.Container.Resolve<IMessageBus>();
-
             try
             {
-                var appPreStartEvent = new PapercutClientPreStartEvent();
-
-                Task.Run(() => messageBus.PublishAsync(appPreStartEvent)).Wait();
-
-                if (appPreStartEvent.CancelStart)
+                // run prestart
+                if (this.Container.RunPreStart() == AppLifecycleActionResultType.Cancel)
                 {
-                    // force shut down...
-                    Task.Run(() => messageBus.PublishAsync(new AppForceShutdownEvent()).Wait());
-
                     this.Shutdown();
-
                     return;
                 }
 
                 base.OnStartup(e);
 
-                Task.Run(() => messageBus.PublishAsync(new PapercutClientReadyEvent())).Wait();
+                // startup the application
+                Task.Run(() => this.Container.RunStartedAsync());
             }
             catch (Exception ex)
             {
@@ -89,7 +83,12 @@ namespace Papercut
         {
             Debug.WriteLine("App.OnExit()");
 
-            Task.Run(() => this.Container.Resolve<IMessageBus>().PublishAsync(new PapercutClientExitEvent())).Wait();
+            // run pre-exit
+            if (this.Container.RunPreExit() == AppLifecycleActionResultType.Cancel)
+            {
+                // cancel exit
+                return;
+            }
 
             try
             {

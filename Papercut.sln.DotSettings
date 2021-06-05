@@ -123,4 +123,5 @@ limitations under the License. &#xD;
 	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/SearchPattern/@EntryValue"></s:String>
 	<s:String x:Key="/Default/PatternsAndTemplates/StructuralSearch/Pattern/=E1F72DD6C4D1114A8329A3D37FCFBFA4/Severity/@EntryValue">DO_NOT_SHOW</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Changemaker/@EntryIndexedValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/UserDictionary/Words/=Papercut/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Papercut/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Prestart/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

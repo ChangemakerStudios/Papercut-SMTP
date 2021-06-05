@@ -22,13 +22,15 @@ namespace Papercut.Infrastructure.IPComm.Network
     using System.Net.Sockets;
     using System.Threading.Tasks;
 
+    using Autofac.Util;
+
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Network;
     using Papercut.Infrastructure.IPComm.Protocols;
 
     using Serilog;
 
-    public class PapercutIPCommServer : IServer
+    public class PapercutIPCommServer : Disposable, IServer
     {
         private readonly Func<IProtocol> _protocolFactory;
 
@@ -99,24 +101,25 @@ namespace Papercut.Infrastructure.IPComm.Network
             }
         }
 
-        public async ValueTask DisposeAsync()
+        protected override async ValueTask DisposeAsync(bool disposing)
         {
-            try
+            if (disposing)
             {
-                await this.StopAsync();
-                this.CleanupListener();
-                if (this.ConnectionManager != null)
+                try
                 {
-                    this.ConnectionManager.Dispose();
-                    this.ConnectionManager = null;
+                    await this.StopAsync();
+                    this.CleanupListener();
+                    if (this.ConnectionManager != null)
+                    {
+                        this.ConnectionManager.Dispose();
+                        this.ConnectionManager = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
                 }
             }
-            catch (Exception ex)
-            {
-                this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
-            }
-
-            GC.SuppressFinalize(this);
         }
 
         public async Task StartAsync(EndpointDefinition endpoint)

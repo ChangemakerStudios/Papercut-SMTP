@@ -41,31 +41,31 @@ namespace Papercut.ViewModels
     using MahApps.Metro.Controls;
     using MahApps.Metro.Controls.Dialogs;
 
+    using Papercut.AppLayer.LogSinks;
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Events;
+    using Papercut.Domain.UiCommands.Commands;
     using Papercut.Helpers;
     using Papercut.Infrastructure.Resources;
     using Papercut.Properties;
     using Papercut.Rules.Helpers;
     using Papercut.Rules.Implementations;
-    using Papercut.Services;
     using Papercut.Views;
 
     using Serilog.Events;
 
     public class MainViewModel : Conductor<object>,
         IHandle<SmtpServerBindFailedEvent>,
-        IHandle<ShowMessageEvent>,
-        IHandle<ShowMainWindowEvent>,
-        IHandle<ShowOptionWindowEvent>
+        IHandle<ShowMessageCommand>,
+        IHandle<ShowMainWindowCommand>,
+        IHandle<ShowOptionWindowCommand>
     {
         const string WindowTitleDefault = AppConstants.ApplicationName;
 
         readonly ForwardRuleDispatch _forwardRuleDispatch;
 
-        readonly LogClientSinkQueue _logClientSinkQueue;
+        readonly UiLogSinkQueue _uiLogSinkQueue;
 
         readonly IMessageBus _messageBus;
 
@@ -89,7 +89,7 @@ namespace Papercut.ViewModels
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
             Func<MessageDetailViewModel> messageDetailViewModelFactory,
-            LogClientSinkQueue logClientSinkQueue,
+            UiLogSinkQueue uiLogSinkQueue,
             AppResourceLocator resourceLocator)
         {
             _viewModelWindowManager = viewModelWindowManager;
@@ -102,7 +102,7 @@ namespace Papercut.ViewModels
             MessageListViewModel.ConductWith(this);
             MessageDetailViewModel.ConductWith(this);
 
-            _logClientSinkQueue = logClientSinkQueue;
+            this._uiLogSinkQueue = uiLogSinkQueue;
             _resourceLocator = resourceLocator;
 
             LogText = _resourceLocator.GetResourceString("LogClientSink.html");
@@ -210,7 +210,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        Task IHandle<ShowMainWindowEvent>.HandleAsync(ShowMainWindowEvent message, CancellationToken cancellationToken)
+        public Task HandleAsync(ShowMainWindowCommand message, CancellationToken cancellationToken)
         {
             if (!_window.IsVisible) _window.Show();
 
@@ -228,28 +228,23 @@ namespace Papercut.ViewModels
             return Task.CompletedTask;
         }
 
-        Task IHandle<ShowMessageEvent>.HandleAsync(ShowMessageEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(
+            ShowMessageCommand message,
+            CancellationToken cancellationToken)
         {
             MessageDetailViewModel.IsLoading = true;
-            _window.ShowMessageAsync(message.Caption, message.MessageText).ContinueWith(
-                r =>
-                {
-                    var result = r.Result;
-                    MessageDetailViewModel.IsLoading = false;
-                },
-                TaskScheduler.FromCurrentSynchronizationContext());
-
-            return Task.CompletedTask;
+            await _window.ShowMessageAsync(message.Caption, message.MessageText);
+            MessageDetailViewModel.IsLoading = false;
         }
 
-        Task IHandle<ShowOptionWindowEvent>.HandleAsync(ShowOptionWindowEvent message, CancellationToken cancellationToken)
+        public Task HandleAsync(ShowOptionWindowCommand message, CancellationToken cancellationToken)
         {
             ShowOptions();
 
             return Task.CompletedTask;
         }
 
-        Task IHandle<SmtpServerBindFailedEvent>.HandleAsync(SmtpServerBindFailedEvent message, CancellationToken cancellationToken)
+        public Task HandleAsync(SmtpServerBindFailedEvent message, CancellationToken cancellationToken)
         {
             MessageBox.Show(
                 "Failed to start SMTP server listening. The IP and Port combination is in use by another program. To fix, change the server bindings in the options.",
@@ -310,15 +305,15 @@ namespace Papercut.ViewModels
 
             Observable.FromEventPattern<EventHandler, EventArgs>(
                     h => new EventHandler(h),
-                    h => _logClientSinkQueue.LogEvent += h,
-                    h => _logClientSinkQueue.LogEvent -= h,
+                    h => this._uiLogSinkQueue.LogEvent += h,
+                    h => this._uiLogSinkQueue.LogEvent -= h,
                     TaskPoolScheduler.Default)
                 .Buffer(TimeSpan.FromSeconds(1))
                 .Select(
                     s =>
                     {
                         return
-                            _logClientSinkQueue.GetLastEvents()
+                            this._uiLogSinkQueue.GetLastEvents()
                                 .Select(e => string.Join(" ", RenderLogEventParts(e)))
                                 .ToList();
                     })
@@ -441,7 +436,7 @@ namespace Papercut.ViewModels
                 _window.ShowProgressAsync("Forwarding Email...", "Please wait");
 
             Observable.Start(
-                    () =>
+                    async () =>
                     {
                         ProgressDialogController progressDialog = progressController.Result;
 
@@ -457,11 +452,11 @@ namespace Papercut.ViewModels
                         forwardRule.PopulateServerFromUri(forwardViewModel.Server);
 
                         // send message using relay dispatcher...
-                        _forwardRuleDispatch.Dispatch(
+                        await _forwardRuleDispatch.DispatchAsync(
                             forwardRule,
                             MessageListViewModel.SelectedMessage);
 
-                        progressDialog.CloseAsync().Wait();
+                        await progressDialog.CloseAsync();
 
                         return true;
                     },

@@ -74,7 +74,7 @@ namespace Papercut.Infrastructure.IPComm.Network
                 {
                     this._logger.Debug("Exchanging {@Event} with Remote", @event);
 
-                    var isSuccessful = await this.HandlePublishEventAsync(
+                    var isSuccessful = await this.HandlePublishMessageAsync(
                         stream,
                         @event,
                         PapercutIPCommCommandType.Exchange);
@@ -101,7 +101,7 @@ namespace Papercut.Infrastructure.IPComm.Network
                 {
                     this._logger.Debug("Publishing {@Event} to Remote", @event);
 
-                    var isSuccessful = await this.HandlePublishEventAsync(
+                    var isSuccessful = await this.HandlePublishMessageAsync(
                         stream,
                         @event,
                         PapercutIPCommCommandType.Publish);
@@ -115,10 +115,10 @@ namespace Papercut.Infrastructure.IPComm.Network
             return await this.TryConnect(DoOperation);
         }
 
-        async Task<bool> HandlePublishEventAsync<TEvent>(
+        async Task<bool> HandlePublishMessageAsync<TMessage>(
             NetworkStream stream,
-            TEvent @event,
-            PapercutIPCommCommandType protocolCommandType) where TEvent : IEvent
+            TMessage @event,
+            PapercutIPCommCommandType protocolCommandType) where TMessage : IMessage
         {
             string response = (await stream.ReadStringBufferedAsync()).Trim();
 

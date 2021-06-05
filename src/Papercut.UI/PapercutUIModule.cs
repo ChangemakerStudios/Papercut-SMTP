@@ -19,19 +19,16 @@
 namespace Papercut
 {
     using System.Collections.Generic;
-    using System.Threading.Tasks;
 
     using Autofac;
     using Autofac.Core;
 
     using Caliburn.Micro;
 
-    using Papercut.Common.Domain;
     using Papercut.Core;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Infrastructure.Container;
-    using Papercut.Events;
     using Papercut.Helpers;
     using Papercut.Infrastructure.IPComm;
     using Papercut.Infrastructure.Smtp;
@@ -65,10 +62,6 @@ namespace Papercut
                 .As<IAppMeta>()
                 .SingleInstance();
 
-            // must be single instance
-            builder.RegisterType<LogClientSinkQueue>().AsImplementedInterfaces().AsSelf()
-                .SingleInstance();
-
             builder.RegisterType<ViewModelWindowManager>()
                 .As<IViewModelWindowManager>()
                 .As<IWindowManager>()
@@ -77,8 +70,6 @@ namespace Papercut
             builder.RegisterType<EventAggregator>()
                 .As<IEventAggregator>()
                 .InstancePerLifetimeScope();
-
-            builder.RegisterType<EventPublishAll>().As<IMessageBus>().InstancePerLifetimeScope();
 
             builder.RegisterType<SettingPathTemplateProvider>()
                 .AsImplementedInterfaces()
@@ -98,7 +89,7 @@ namespace Papercut
                 .Where(type => type.Name.EndsWith("ViewModel"))
                 .AsImplementedInterfaces()
                 .AsSelf()
-                .OnActivated(SubscribeEventAggregatorAsync)
+                .OnActivated(SubscribeEventAggregator)
                 .InstancePerDependency();
 
             //  register views
@@ -106,21 +97,14 @@ namespace Papercut
                 .Where(type => type.Name.EndsWith("View"))
                 .AsImplementedInterfaces()
                 .AsSelf()
-                .OnActivated(SubscribeEventAggregatorAsync)
+                .OnActivated(SubscribeEventAggregator)
                 .InstancePerDependency();
-
-            // register ui scope services
-            builder.RegisterAssemblyTypes(this.ThisAssembly)
-                .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .InstancePerUIScope();
         }
 
-        static async ValueTask SubscribeEventAggregatorAsync(IActivatedEventArgs<object> e)
+        static void SubscribeEventAggregator(IActivatedEventArgs<object> e)
         {
             // Automatically calls subscribe on activated Windows, Views and ViewModels
-            await e.Context.Resolve<IEventAggregator>().PublishOnUIThreadAsync(e.Instance);
+            e.Context.Resolve<IEventAggregator>().PublishOnUIThreadAsync(e.Instance);
         }
     }
 }

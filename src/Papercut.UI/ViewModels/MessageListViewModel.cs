@@ -41,7 +41,9 @@ namespace Papercut.ViewModels
     using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Message;
-    using Papercut.Events;
+    using Papercut.Domain.Events;
+    using Papercut.Domain.UiCommands;
+    using Papercut.Domain.UiCommands.Commands;
     using Papercut.Helpers;
     using Papercut.Message;
     using Papercut.Message.Helpers;
@@ -61,6 +63,8 @@ namespace Papercut.ViewModels
 
         readonly IMessageBus _messageBus;
 
+        private readonly IUiCommandHub _uiCommandHub;
+
         readonly MessageRepository _messageRepository;
 
         readonly MessageWatcher _messageWatcher;
@@ -72,6 +76,7 @@ namespace Papercut.ViewModels
         private int? _previousIndex;
 
         public MessageListViewModel(
+            IUiCommandHub uiCommandHub,
             MessageRepository messageRepository,
             [NotNull] MessageWatcher messageWatcher,
             MimeMessageLoader mimeMessageLoader,
@@ -87,6 +92,7 @@ namespace Papercut.ViewModels
             if (messageBus == null)
                 throw new ArgumentNullException(nameof(messageBus));
 
+            this._uiCommandHub = uiCommandHub;
             this._messageRepository = messageRepository;
             this._messageWatcher = messageWatcher;
             this._mimeMessageLoader = mimeMessageLoader;
@@ -225,12 +231,11 @@ namespace Papercut.ViewModels
             observable.ObserveOnDispatcher().Subscribe(
                 async message =>
                 {
-                    await this._messageBus.PublishAsync(
-                        new ShowBallonTip(
-                            3500,
-                            "New Message Received",
-                            $"From: {message.From.ToString().Truncate(50)}\r\nSubject: {message.Subject.Truncate(50)}",
-                            ToolTipIcon.Info));
+                    this._uiCommandHub.ShowBalloonTip(
+                        3500,
+                        "New Message Received",
+                        $"From: {message.From.ToString().Truncate(50)}\r\nSubject: {message.Subject.Truncate(50)}",
+                        ToolTipIcon.Info);
 
                     this.Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));
 
@@ -370,11 +375,9 @@ namespace Papercut.ViewModels
 
             if (failedEntries.Any())
             {
-                // show errors...
-                await this._messageBus.PublishAsync(
-                    new ShowMessageEvent(
-                        string.Join("\r\n", failedEntries),
-                        $"Failed to Delete Message{(failedEntries.Count > 1 ? "s" : string.Empty)}"));
+                this._uiCommandHub.ShowMessage(
+                    string.Join("\r\n", failedEntries),
+                    $"Failed to Delete Message{(failedEntries.Count > 1 ? "s" : string.Empty)}");
             }
 
             return failedEntries;

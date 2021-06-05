@@ -25,12 +25,12 @@ namespace Papercut.Common.Domain
 
     public static class MessageBusExtensions
     {
-        public static void Publish<T>([NotNull] this IMessageBus messageBus, T @event)
+        public static void PublishFireAndForget<T>([NotNull] this IMessageBus messageBus, T @event)
             where T : IEvent
         {
             if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
 
-            Task.Run(() => messageBus.PublishAsync(@event)).Wait();
+            Task.Run(() => messageBus.PublishAsync(@event));
         }
     }
 }

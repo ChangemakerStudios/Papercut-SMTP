@@ -26,6 +26,8 @@ namespace Papercut.Infrastructure.Smtp
 
     using SmtpServer;
     using SmtpServer.Authentication;
+    using SmtpServer.Net;
+    using SmtpServer.Protocol;
     using SmtpServer.Storage;
 
     [PublicAPI]
@@ -37,14 +39,47 @@ namespace Papercut.Infrastructure.Smtp
 
             // smtp
             builder.RegisterType<SmtpMessageStore>().As<IMessageStore>();
-            builder.RegisterType<SimpleAuthentication>().As<IUserAuthenticatorFactory>();
             builder.RegisterType<SerilogSmtpServerLoggingBridge>().As<ILogger>();
-            builder.Register(c => new DelegatingMailboxFilter(mailbox => MailboxFilterResult.Yes))
-                .As<IMailboxFilter>();
+
+            // factories
+            builder.RegisterType<SimpleAuthentication>().As<IUserAuthenticatorFactory>();
+            builder.RegisterType<EndpointListenerFactory>().As<IEndpointListenerFactory>();
+            builder.RegisterType<SmtpCommandFactory>().As<ISmtpCommandFactory>();
+
             builder.Register(
-                (c, p) => new SmtpServer(
-                    p.TypedAs<ISmtpServerOptions>(),
-                    c.Resolve<IServiceProvider>())).As<SmtpServer>();
+                    ctx =>
+                    {
+                        var c = ctx.Resolve<IComponentContext>();
+                        return new DelegatingMessageStoreFactory(context => c.Resolve<IMessageStore>());
+                    })
+                .As<IMessageStoreFactory>();
+
+            builder.Register(
+                ctx =>
+                {
+                    return new DelegatingMailboxFilterFactory(
+                        context => new DelegatingMailboxFilter(mailbox => MailboxFilterResult.Yes));
+                }).As<IMailboxFilterFactory>();
+
+            builder.Register(
+                (ctx, p) =>
+                {
+                    var c = ctx.Resolve<IComponentContext>();
+
+                    try
+                    {
+                        return new SmtpServer(
+                            p.TypedAs<ISmtpServerOptions>(),
+                            (IServiceProvider)c);
+                    }
+                    catch (Exception ex)
+                    {
+                        ctx.Resolve<Serilog.ILogger>().ForContext<PapercutSmtpModule>()
+                            .Error(ex, "Failure Loading Smtp Server");
+                    }
+
+                    return null;
+                }).As<SmtpServer>();
         }
     }
 }

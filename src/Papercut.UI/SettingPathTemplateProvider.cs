@@ -25,7 +25,7 @@ namespace Papercut
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
     using Papercut.Core.Domain.Paths;
-    using Papercut.Events;
+    using Papercut.Domain.Events;
     using Papercut.Properties;
 
     using Serilog;

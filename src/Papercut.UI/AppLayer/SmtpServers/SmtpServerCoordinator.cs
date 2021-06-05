@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Services
+namespace Papercut.AppLayer.SmtpServers
 {
     using System;
     using System.ComponentModel;
@@ -24,23 +24,22 @@ namespace Papercut.Services
     using System.Threading.Tasks;
 
     using Autofac;
+    using Autofac.Util;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Network;
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Events;
+    using Papercut.Domain.Events;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Properties;
 
     using Serilog;
 
-    public class SmtpServerCoordinator : IEventHandler<PapercutClientReadyEvent>,
-        IEventHandler<PapercutClientExitEvent>,
+    public class SmtpServerCoordinator : Disposable, IEventHandler<PapercutClientReadyEvent>,
         IEventHandler<SettingsUpdatedEvent>,
-        INotifyPropertyChanged,
-        IAsyncDisposable
+        INotifyPropertyChanged
     {
         readonly ILogger _logger;
 
@@ -73,14 +72,16 @@ namespace Papercut.Services
             }
         }
 
-        public async ValueTask DisposeAsync()
+        protected override async ValueTask DisposeAsync(bool disposing)
         {
-            if (this._smtpServer != null) await this._smtpServer.DisposeAsync();
-        }
-
-        public async Task HandleAsync(PapercutClientExitEvent @event)
-        {
-            await this.StopSmtpServerAsync();
+            if (disposing)
+            {
+                if (this._smtpServer != null)
+                {
+                    await this.StopSmtpServerAsync();
+                    await this._smtpServer.DisposeAsync();
+                }
+            }
         }
 
         public async Task HandleAsync(PapercutClientReadyEvent @event)

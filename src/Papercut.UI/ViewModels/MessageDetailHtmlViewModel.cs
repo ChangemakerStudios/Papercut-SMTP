@@ -34,8 +34,8 @@ namespace Papercut.ViewModels
 
     using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
+    using Papercut.Domain.HtmlPreviews;
     using Papercut.Helpers;
-    using Papercut.Services;
     using Papercut.Views;
 
     using Serilog;

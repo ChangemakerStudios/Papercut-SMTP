@@ -19,6 +19,7 @@
 namespace Papercut.Rules
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using System.Threading;
@@ -55,14 +56,19 @@ namespace Papercut.Rules
             if (rules == null) throw new ArgumentNullException(nameof(rules));
             if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
+            var ruleTasks = new List<Task>();
+
             foreach (IRule rule in rules.Where(_ => _.IsEnabled))
             {
                 token.ThrowIfCancellationRequested();
 
-                await (Task)this._dispatchRuleMethod.MakeGenericMethod(rule.GetType()).Invoke(
-                    this,
-                    new object[] { rule, messageEntry, token });
+                ruleTasks.Add(
+                    (Task)this._dispatchRuleMethod.MakeGenericMethod(rule.GetType()).Invoke(
+                        this,
+                        new object[] { rule, messageEntry, token }));
             }
+
+            await Task.WhenAll(ruleTasks);
         }
 
         [UsedImplicitly]

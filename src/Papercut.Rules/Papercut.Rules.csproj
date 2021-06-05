@@ -40,6 +40,7 @@
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
     </PackageReference>
+    <PackageReference Include="Polly" Version="7.2.2" />
     <PackageReference Include="Serilog">
       <Version>2.10.0</Version>
     </PackageReference>

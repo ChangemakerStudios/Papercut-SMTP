@@ -15,6 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Infrastructure.Smtp
 {
     using System;
@@ -24,6 +25,8 @@ namespace Papercut.Infrastructure.Smtp
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Autofac.Util;
+
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Network;
 
@@ -31,7 +34,7 @@ namespace Papercut.Infrastructure.Smtp
 
     using ILogger = Serilog.ILogger;
 
-    public class PapercutSmtpServer : IServer
+    public class PapercutSmtpServer : Disposable, IServer
     {
         readonly IAppMeta _applicationMetaData;
 
@@ -61,11 +64,6 @@ namespace Papercut.Infrastructure.Smtp
 
         public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
-        public async ValueTask DisposeAsync()
-        {
-            await this.StopAsync();
-        }
-
         public async Task StopAsync()
         {
             try
@@ -89,7 +87,7 @@ namespace Papercut.Infrastructure.Smtp
 
         public async Task StartAsync(EndpointDefinition smtpEndpoint)
         {
-            if (IsActive)
+            if (this.IsActive)
             {
                 return;
             }
@@ -116,6 +114,14 @@ namespace Papercut.Infrastructure.Smtp
             this._tokenSource = new CancellationTokenSource();
 
             await this._server.StartAsync(this._tokenSource.Token);
+        }
+
+        protected override async ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+                await this.StopAsync();
+            }
         }
 
         private void OnSessionCompleted(object sender, SessionEventArgs e)

@@ -24,7 +24,7 @@ namespace Papercut.Core.Domain.Network
     /// <summary>
     ///     The Server interface.
     /// </summary>
-    public interface IServer : IAsyncDisposable
+    public interface IServer : IDisposable, IAsyncDisposable
     {
         bool IsActive { get; }
 

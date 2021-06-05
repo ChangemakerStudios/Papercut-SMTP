@@ -19,8 +19,11 @@
 namespace Papercut.Core.Infrastructure.Logging
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
 
     using Autofac;
 
@@ -39,8 +42,7 @@ namespace Papercut.Core.Infrastructure.Logging
     {
         internal static void Register(ContainerBuilder builder)
         {
-            builder.Register(
-                    async c =>
+            builder.Register(c =>
                     {
                         var appMeta = c.Resolve<IAppMeta>();
 
@@ -48,6 +50,9 @@ namespace Papercut.Core.Infrastructure.Logging
                             AppDomain.CurrentDomain.BaseDirectory,
                             "Logs",
                             $"{appMeta.AppName}.log");
+
+                        // support self-logging
+                        SelfLog.Enable(s => Console.Error.WriteLine(s));
 
                         LoggerConfiguration logConfiguration =
                             new LoggerConfiguration()
@@ -63,20 +68,10 @@ namespace Papercut.Core.Infrastructure.Logging
                                 .WriteTo.Console()
                                 .WriteTo.File(logFilePath);
 
-                        // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
-                        try
+                        foreach (var configureInstance in c.Resolve<IEnumerable<IConfigureLogging>>().ToList())
                         {
-                            await c.Resolve<IMessageBus>().PublishAsync(
-                                new ConfigureLoggerEvent(logConfiguration));
+                            configureInstance.Configure(logConfiguration);
                         }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(
-                                $"Failure Publishing ConfigurationLoggerEvent: {ex}");
-                        }
-
-                        // support self-logging
-                        SelfLog.Enable(s => Console.Error.WriteLine(s));
 
                         return logConfiguration;
                     })
