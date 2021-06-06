@@ -19,6 +19,7 @@
 namespace Papercut.Service.Services
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
@@ -43,17 +44,17 @@ namespace Papercut.Service.Services
             this._logger = logger;
         }
 
-        public Task HandleAsync(PapercutServiceExitEvent @event)
+        public Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token = default)
         {
             return this.PublishAsync(@event);
         }
 
-        public Task HandleAsync(PapercutServicePreStartEvent @event)
+        public Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token = default)
         {
             return this.PublishAsync(@event);
         }
 
-        public Task HandleAsync(PapercutServiceReadyEvent @event)
+        public Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
         {
             return this.PublishAsync(@event);
         }

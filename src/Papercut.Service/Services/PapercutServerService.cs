@@ -19,6 +19,7 @@
 namespace Papercut.Service.Services
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
@@ -67,7 +68,7 @@ namespace Papercut.Service.Services
             this._ipCommServer = ipCommServer;
         }
 
-        public async Task HandleAsync(SmtpServerBindEvent @event)
+        public async Task HandleAsync(SmtpServerBindEvent @event, CancellationToken token = default)
         {
             this._logger.Information(
                 "Received New Smtp Server Binding Settings from UI {@Event}",

@@ -53,7 +53,9 @@ namespace Papercut.Infrastructure.IPComm
 
             encoding = encoding ?? Encoding.UTF8;
 
-            return encoding.GetString(await stream.ReadBufferedAsync(maxBytes, bufferSize));
+            var readBufferedAsync = await stream.ReadBufferedAsync(maxBytes, bufferSize);
+
+            return encoding.GetString(readBufferedAsync);
         }
 
         public static async Task<object> ReadJsonBufferedAsync(
@@ -64,7 +66,9 @@ namespace Papercut.Infrastructure.IPComm
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            return PapercutIPCommSerializer.FromJson(type, await stream.ReadStringBufferedAsync(maxBytes, bufferSize, encoding));
+            var readStringBufferedAsync = await stream.ReadStringBufferedAsync(maxBytes, bufferSize, encoding);
+
+            return PapercutIPCommSerializer.FromJson(type, readStringBufferedAsync);
         }
 
         public static async Task WriteFormatAsync(this Stream stream, string format, params object[] args)

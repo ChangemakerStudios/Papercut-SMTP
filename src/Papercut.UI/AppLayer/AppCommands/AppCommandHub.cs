@@ -24,8 +24,6 @@ namespace Papercut.AppLayer.AppCommands
     using Autofac;
     using Autofac.Util;
 
-    using Caliburn.Micro;
-
     using Papercut.Core.Annotations;
     using Papercut.Domain.AppCommands;
 

@@ -20,6 +20,7 @@ namespace Papercut.App.WebApi
 {
     using System;
     using System.Net;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Web.Http;
 
@@ -59,7 +60,7 @@ namespace Papercut.App.WebApi
             _httpPort = settingStore.GetOrSet("HttpPort", DefaultHttpPort, $"The Papercut Web UI Server listening port (Defaults to {DefaultHttpPort}).");
         }
 
-        public Task HandleAsync(PapercutClientReadyEvent @event)
+        public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
         {
             _logger.Debug("{@PapercutClientReadyEvent}", @event);
 
@@ -71,7 +72,7 @@ namespace Papercut.App.WebApi
             return Task.CompletedTask;
         }
 
-        public Task HandleAsync(PapercutServiceReadyEvent @event)
+        public Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
         {
             _logger.Debug("{@PapercutServiceReadyEvent}", @event);
 

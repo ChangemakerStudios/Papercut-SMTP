@@ -35,20 +35,17 @@ namespace Papercut.AppLayer.Settings
 
     using Serilog;
 
-    public class UpdateSettingsService : IEventHandler<SettingsUpdatedEvent>
+    public class AppRunOnStartupService : IEventHandler<SettingsUpdatedEvent>
     {
         const string AppStartupKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
         readonly ILogger _logger;
 
-        readonly IMessageBus _messageBus;
-
         private readonly IUiCommandHub _uiCommandHub;
 
-        public UpdateSettingsService(ILogger logger, IMessageBus messageBus, IUiCommandHub uiCommandHub)
+        public AppRunOnStartupService(ILogger logger, IUiCommandHub uiCommandHub)
         {
             this._logger = logger;
-            this._messageBus = messageBus;
             this._uiCommandHub = uiCommandHub;
         }
 
@@ -115,7 +112,7 @@ namespace Papercut.AppLayer.Settings
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<UpdateSettingsService>().AsImplementedInterfaces()
+            builder.RegisterType<AppRunOnStartupService>().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();
         }
 

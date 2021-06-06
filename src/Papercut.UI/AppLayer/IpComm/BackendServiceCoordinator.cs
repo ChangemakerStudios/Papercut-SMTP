@@ -37,13 +37,14 @@ namespace Papercut.AppLayer.IpComm
     using Papercut.Core.Infrastructure.Network;
     using Papercut.Domain.BackendService;
     using Papercut.Domain.Events;
+    using Papercut.Domain.LifecycleHooks;
     using Papercut.Infrastructure.IPComm;
     using Papercut.Infrastructure.IPComm.Network;
     using Papercut.Properties;
 
     using Serilog;
 
-    public class BackendServiceCoordinator : IBackendServiceStatus,
+    public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleStarted,
         IEventHandler<SettingsUpdatedEvent>,
         IEventHandler<RulesUpdatedEvent>,
         IEventHandler<PapercutServicePreStartEvent>,
@@ -106,9 +107,12 @@ namespace Papercut.AppLayer.IpComm
             return Task.CompletedTask;
         }
 
-        public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token)
+        public Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token)
         {
-            await this.AttemptExchangeAsync(token);
+            this.IsOnline = true;
+            this._smtpServerCoordinator.SmtpServerEnabled = false;
+
+            return Task.CompletedTask;
         }
 
         public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token)
@@ -124,6 +128,11 @@ namespace Papercut.AppLayer.IpComm
         public async Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             await this.PublishSmtpUpdatedAsync(@event, token);
+        }
+
+        public async Task OnStartedAsync()
+        {
+            await this.AttemptExchangeAsync();
         }
 
         public async Task PublishSmtpUpdatedAsync(SettingsUpdatedEvent @event, CancellationToken token)
@@ -155,7 +164,7 @@ namespace Papercut.AppLayer.IpComm
             }
         }
 
-        private async Task AttemptExchangeAsync(CancellationToken token)
+        private async Task AttemptExchangeAsync(CancellationToken token = default)
         {
             try
             {

@@ -55,7 +55,7 @@ namespace Papercut.Infrastructure.IPComm
 
             this.BeginReceive();
 
-            this.Protocol.Begin(this);
+            Task.Run(() => this.Protocol.BeginAsync(this));
         }
 
         #endregion
@@ -144,7 +144,7 @@ namespace Papercut.Infrastructure.IPComm
                 var incoming = new byte[sizeReceived];
                 Array.Copy(this._receiveBuffer, incoming, sizeReceived);
 
-                this.Protocol.ProcessIncomingBuffer(incoming, this.Encoding);
+                this.Protocol.ProcessIncomingBufferAsync(incoming, this.Encoding);
 
                 // continue receiving...
                 return true;

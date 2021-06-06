@@ -209,7 +209,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>UIStrings.resx</DependentUpon>
     </Compile>
-    <Compile Include="AppLayer\Settings\UpdateSettingsService.cs" />
+    <Compile Include="AppLayer\Settings\AppRunOnStartupService.cs" />
     <Compile Include="AppLayer\HtmlPreviews\HtmlPreviewGeneratorImpl.cs" />
     <Compile Include="Domain\HtmlPreviews\IHtmlPreviewGenerator.cs" />
     <Compile Include="AppLayer\Settings\MergeServerBackendSettings.cs" />

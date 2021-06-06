@@ -48,8 +48,6 @@ namespace Papercut.AppLayer.SmtpServers
 
         private readonly PapercutSmtpServer _smtpServer;
 
-        //private IDisposable _observeStartServer;
-
         bool _smtpServerEnabled = true;
 
         public SmtpServerCoordinator(
@@ -70,18 +68,6 @@ namespace Papercut.AppLayer.SmtpServers
                 if (value.Equals(this._smtpServerEnabled)) return;
                 this._smtpServerEnabled = value;
                 this.OnPropertyChanged();
-            }
-        }
-
-        protected override async ValueTask DisposeAsync(bool disposing)
-        {
-            if (disposing)
-            {
-                if (this._smtpServer != null)
-                {
-                    await this.StopSmtpServerAsync();
-                    await this._smtpServer.DisposeAsync();
-                }
             }
         }
 
@@ -108,12 +94,25 @@ namespace Papercut.AppLayer.SmtpServers
         public async Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             if (!this.SmtpServerEnabled) return;
+
             if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
 
             await this.ListenSmtpServer();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        protected override async ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+                if (this._smtpServer != null)
+                {
+                    await this.StopSmtpServerAsync();
+                    await this._smtpServer.DisposeAsync();
+                }
+            }
+        }
 
         private async Task StopSmtpServerAsync()
         {
@@ -139,27 +138,6 @@ namespace Papercut.AppLayer.SmtpServers
 
                 await this._messageBus.PublishAsync(new SmtpServerBindFailedEvent());
             }
-
-            //this._observeStartServer = this._smtpServer.ObserveStartServer(
-            //        Settings.Default.IP,
-            //        Settings.Default.Port,
-            //        TaskPoolScheduler.Default)
-            //    .DelaySubscription(TimeSpan.FromMilliseconds(500)).Retry(5)
-            //    .Subscribe(
-            //        b => { },
-            //        async ex =>
-            //        {
-            //            this._logger.Warning(
-            //                ex,
-            //                "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
-            //                Settings.Default.IP,
-            //                Settings.Default.Port);
-
-            //            await this._messageBus.PublishAsync(new SmtpServerBindFailedEvent());
-            //        },
-            //        async () =>
-            //            await this._messageBus.PublishAsync(
-            //                new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port)));
         }
 
         [NotifyPropertyChangedInvocator]

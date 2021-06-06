@@ -20,6 +20,7 @@ namespace Papercut.Infrastructure.IPComm.Protocols
 {
     using System;
     using System.Text;
+    using System.Threading.Tasks;
 
     using Serilog;
 
@@ -34,9 +35,9 @@ namespace Papercut.Infrastructure.IPComm.Protocols
 
         protected ILogger Logger { get; set; }
 
-        public abstract void Begin(Connection connection);
+        public abstract Task BeginAsync(Connection connection);
 
-        public virtual void ProcessIncomingBuffer(byte[] bufferedData, Encoding encoding)
+        public virtual async Task ProcessIncomingBufferAsync(byte[] bufferedData, Encoding encoding)
         {
             // Get the string data and append to buffer
             string data = encoding.GetString(bufferedData, 0, bufferedData.Length);
@@ -57,12 +58,12 @@ namespace Papercut.Infrastructure.IPComm.Protocols
 
                 this.Logger.Debug("Received Line {Line}", line);
 
-                this.ProcessRequest(line);
+                await this.ProcessRequest(line);
 
                 line = this._stringBuffer.ToString();
             }
         }
 
-        protected abstract void ProcessRequest(string request);
+        protected abstract Task ProcessRequest(string request);
     }
 }

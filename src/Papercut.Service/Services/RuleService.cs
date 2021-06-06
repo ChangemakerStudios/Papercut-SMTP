@@ -35,7 +35,7 @@ namespace Papercut.Service.Services
     public class RuleService : RuleServiceBase,
         IEventHandler<RulesUpdatedEvent>,
         IEventHandler<PapercutClientReadyEvent>,
-        IEventHandler<NewMessageEvent>, IDisposable
+        IEventHandler<NewMessageEvent>
     {
         private readonly CancellationTokenSource _cancellationTokenSource =
             new CancellationTokenSource();
@@ -51,12 +51,7 @@ namespace Papercut.Service.Services
             this._rulesRunner = rulesRunner;
         }
 
-        public void Dispose()
-        {
-            this._cancellationTokenSource.Cancel();
-        }
-
-        public Task HandleAsync(NewMessageEvent @event)
+        public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
         {
             this._logger.Information(
                 "New Message {MessageFile} Arrived -- Running Rules",
@@ -77,7 +72,7 @@ namespace Papercut.Service.Services
             return Task.CompletedTask;
         }
 
-        public Task HandleAsync(PapercutClientReadyEvent @event)
+        public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
         {
             this._logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
 
@@ -100,13 +95,21 @@ namespace Papercut.Service.Services
             return Task.CompletedTask;
         }
 
-        public Task HandleAsync(RulesUpdatedEvent @event)
+        public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token = default)
         {
             this.Rules.Clear();
             this.Rules.AddRange(@event.Rules);
             this.Save();
 
             return Task.CompletedTask;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this._cancellationTokenSource.Cancel();
+            }
         }
     }
 }

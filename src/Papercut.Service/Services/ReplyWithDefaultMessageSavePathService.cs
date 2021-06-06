@@ -18,6 +18,7 @@
 namespace Papercut.Service.Services
 {
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
@@ -37,7 +38,7 @@ namespace Papercut.Service.Services
             _serviceSettings = serviceSettings;
         }
 
-        public Task HandleAsync(AppProcessExchangeEvent @event)
+        public Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token = default)
         {
             // respond with the current save path...
             @event.MessageWritePath = _messagePathConfigurator.DefaultSavePath;

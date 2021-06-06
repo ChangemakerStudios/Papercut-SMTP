@@ -48,7 +48,7 @@ namespace Papercut.Service
                 {
                     s.ConstructUsing(serviceFactory => _container.BeginLifetimeScope());
                     s.WhenStarted(scope => scope.Resolve<PapercutServerService>().Start());
-                    s.WhenStopped(scope => scope.Resolve<PapercutServerService>().Stop());
+                    s.WhenStopped(scope => scope.Resolve<PapercutServerService>().Stop().Wait());
                     s.WhenShutdown(scope => scope.Dispose());
                 });
 

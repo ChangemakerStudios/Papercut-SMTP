@@ -19,16 +19,12 @@
 namespace Papercut.AppLayer.UiCommands
 {
     using System;
-    using System.Reactive.Linq;
     using System.Reactive.Subjects;
     using System.Windows.Forms;
 
     using Autofac;
     using Autofac.Util;
 
-    using Caliburn.Micro;
-
-    using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
     using Papercut.Domain.UiCommands;
     using Papercut.Domain.UiCommands.Commands;

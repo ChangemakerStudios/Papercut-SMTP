@@ -17,11 +17,12 @@
 namespace Papercut.Infrastructure.IPComm.Protocols
 {
     using System.Text;
+    using System.Threading.Tasks;
 
     public interface IProtocol
     {
-        void Begin(Connection connection);
+        Task BeginAsync(Connection connection);
 
-        void ProcessIncomingBuffer(byte[] bufferedData, Encoding encoding);
+        Task ProcessIncomingBufferAsync(byte[] bufferedData, Encoding encoding);
     }
 }

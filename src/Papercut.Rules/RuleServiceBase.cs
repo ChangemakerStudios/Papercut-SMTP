@@ -23,11 +23,13 @@ namespace Papercut.Rules
     using System.Collections.ObjectModel;
     using System.IO;
 
+    using Autofac.Util;
+
     using Papercut.Core.Domain.Rules;
 
     using Serilog;
 
-    public class RuleServiceBase
+    public class RuleServiceBase : Disposable
     {
         protected readonly ILogger _logger;
 
