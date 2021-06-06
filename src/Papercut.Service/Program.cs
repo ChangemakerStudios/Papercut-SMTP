@@ -17,6 +17,8 @@
 
 namespace Papercut.Service
 {
+    using System.Threading.Tasks;
+
     using Autofac;
 
     using Papercut.Core.Infrastructure.Container;
@@ -47,7 +49,7 @@ namespace Papercut.Service
                 s =>
                 {
                     s.ConstructUsing(serviceFactory => _container.BeginLifetimeScope());
-                    s.WhenStarted(scope => scope.Resolve<PapercutServerService>().Start());
+                    s.WhenStarted(scope => Task.Run(() => scope.Resolve<PapercutServerService>().Start()));
                     s.WhenStopped(scope => scope.Resolve<PapercutServerService>().Stop().Wait());
                     s.WhenShutdown(scope => scope.Dispose());
                 });

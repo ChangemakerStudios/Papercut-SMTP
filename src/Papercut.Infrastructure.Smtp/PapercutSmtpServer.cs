@@ -85,11 +85,11 @@ namespace Papercut.Infrastructure.Smtp
             }
         }
 
-        public async Task StartAsync(EndpointDefinition smtpEndpoint)
+        public Task StartAsync(EndpointDefinition smtpEndpoint)
         {
             if (this.IsActive)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             ServicePointManager.ServerCertificateValidationCallback = this.IgnoreCertificateValidationFailureForTestingOnly;
@@ -113,7 +113,14 @@ namespace Papercut.Infrastructure.Smtp
             this._logger.Information("Starting Smtp Server on {IP}:{Port}...", this.ListenIpAddress, this.ListenPort);
             this._tokenSource = new CancellationTokenSource();
 
-            await this._server.StartAsync(this._tokenSource.Token);
+#pragma warning disable 4014
+            // server will block -- just let it run
+            Task.Factory.StartNew(
+                () => this._server.StartAsync(this._tokenSource.Token),
+                this._tokenSource.Token);
+#pragma warning restore 4014
+
+            return Task.CompletedTask;
         }
 
         protected override async ValueTask DisposeAsync(bool disposing)

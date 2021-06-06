@@ -27,6 +27,7 @@ namespace Papercut.Service.Services
     using Papercut.Core.Domain.Network;
     using Papercut.Core.Domain.Network.Smtp;
     using Papercut.Core.Domain.Settings;
+    using Papercut.Core.Domain.WebServer;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Infrastructure.IPComm.Network;
     using Papercut.Infrastructure.Smtp;
@@ -46,6 +47,8 @@ namespace Papercut.Service.Services
 
         private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
+        private readonly IPapercutWebServer _papercutWebServer;
+
         readonly PapercutServiceSettings _serviceSettings;
 
         private readonly PapercutSmtpServer _smtpServer;
@@ -55,6 +58,7 @@ namespace Papercut.Service.Services
             PapercutSmtpServer smtpServer,
             PapercutServiceSettings serviceSettings,
             PapercutIPCommEndpoints papercutIpCommEndpoints,
+            IPapercutWebServer papercutWebServer,
             IAppMeta applicationMetaData,
             ILogger logger,
             IMessageBus messageBus)
@@ -62,6 +66,7 @@ namespace Papercut.Service.Services
             this._smtpServer = smtpServer;
             this._serviceSettings = serviceSettings;
             this._papercutIpCommEndpoints = papercutIpCommEndpoints;
+            this._papercutWebServer = papercutWebServer;
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;
             this._messageBus = messageBus;
@@ -121,8 +126,13 @@ namespace Papercut.Service.Services
             }
 
             await this.BindSMTPServer();
+
+            await this._papercutWebServer.StartAsync();
+
             await this._messageBus.PublishAsync(
                 new PapercutServiceReadyEvent { AppMeta = this._applicationMetaData });
+
+            this._logger.Debug("Service Application Ready");
         }
 
         public async Task Stop()
