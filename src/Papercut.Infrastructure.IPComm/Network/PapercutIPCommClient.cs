@@ -41,14 +41,24 @@ namespace Papercut.Infrastructure.IPComm.Network
 
         public EndpointDefinition Endpoint { get; }
 
-        private async Task<T> TryConnect<T>(Func<TcpClient, Task<T>> doOperation)
+        private async Task<T> TryConnect<T>(Func<TcpClient, Task<T>> doOperation, TimeSpan connectTimeout)
         {
             try
             {
                 using (var client = new TcpClient())
                 {
+                    var cancelTask = Task.Delay(connectTimeout);
+                    var connectTask = client.ConnectAsync(this.Endpoint.Address, this.Endpoint.Port);
 
-                    await client.ConnectAsync(this.Endpoint.Address, this.Endpoint.Port);
+                    await await Task.WhenAny(connectTask, cancelTask);
+
+                    if (cancelTask.IsCompleted)
+                    {
+                        //If cancelTask and connectTask both finish at the same time,
+                        //we'll consider it to be a timeout. 
+                        throw new TaskCanceledException("Socket Operation Timed Out");
+                    }
+
                     if (client.Connected)
                     {
                         return await doOperation(client);
@@ -64,7 +74,7 @@ namespace Papercut.Infrastructure.IPComm.Network
             return default;
         }
 
-        public async Task<TEvent> ExchangeEventServer<TEvent>(TEvent @event) where TEvent : IEvent
+        public async Task<TEvent> ExchangeEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout) where TEvent : IEvent
         {
             async Task<TEvent> DoOperation(TcpClient client)
             {
@@ -90,10 +100,10 @@ namespace Papercut.Infrastructure.IPComm.Network
                 }
             }
 
-            return await this.TryConnect(DoOperation);
+            return await this.TryConnect(DoOperation, connectTimeout);
         }
 
-        public async Task<bool> PublishEventServer<TEvent>(TEvent @event) where TEvent : IEvent
+        public async Task<bool> PublishEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout) where TEvent : IEvent
         {
             async Task<bool> DoOperation(TcpClient client)
             {
@@ -112,7 +122,7 @@ namespace Papercut.Infrastructure.IPComm.Network
                 }
             }
 
-            return await this.TryConnect(DoOperation);
+            return await this.TryConnect(DoOperation, connectTimeout);
         }
 
         async Task<bool> HandlePublishEvent<TEvent>(

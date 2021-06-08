@@ -70,9 +70,11 @@ namespace Papercut.Service.Services
                     $"Publishing {{@{@event.GetType().Name}}} to the Papercut Client",
                     @event);
 
-                await ipCommClient.PublishEventServer(@event);
+                await ipCommClient.PublishEventServer(@event, TimeSpan.FromMilliseconds(500));
             }
-
+            catch (TaskCanceledException)
+            {
+            }
             catch (Exception ex)
             {
                 this._logger.Warning(

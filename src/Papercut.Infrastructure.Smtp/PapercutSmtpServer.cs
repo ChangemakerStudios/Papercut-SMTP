@@ -71,6 +71,8 @@ namespace Papercut.Infrastructure.Smtp
                 this._tokenSource?.Cancel();
                 if (this._server != null)
                 {
+                    this._logger.Information("Stopping Smtp Server");
+
                     await this._server.ShutdownTask;
                 }
                 this._tokenSource?.Dispose();

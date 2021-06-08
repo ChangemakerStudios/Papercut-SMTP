@@ -19,27 +19,24 @@
 namespace Papercut.Service.Services
 {
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
-    using Papercut.Core.Domain.Network;
-    using Papercut.Core.Domain.Network.Smtp;
-    using Papercut.Core.Domain.Settings;
     using Papercut.Core.Domain.WebServer;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Infrastructure.IPComm.Network;
     using Papercut.Infrastructure.Smtp;
-    using Papercut.Service.Helpers;
 
     using Serilog;
 
-    public class PapercutServerService : IEventHandler<SmtpServerBindEvent>
+    public class PapercutServerService
     {
         readonly IAppMeta _applicationMetaData;
 
         readonly PapercutIPCommServer _ipCommServer;
+
+        private readonly PapercutSmtpServer _smtpServer;
 
         readonly ILogger _logger;
 
@@ -49,61 +46,22 @@ namespace Papercut.Service.Services
 
         private readonly IPapercutWebServer _papercutWebServer;
 
-        readonly PapercutServiceSettings _serviceSettings;
-
-        private readonly PapercutSmtpServer _smtpServer;
-
         public PapercutServerService(
             PapercutIPCommServer ipCommServer,
             PapercutSmtpServer smtpServer,
-            PapercutServiceSettings serviceSettings,
             PapercutIPCommEndpoints papercutIpCommEndpoints,
             IPapercutWebServer papercutWebServer,
             IAppMeta applicationMetaData,
             ILogger logger,
             IMessageBus messageBus)
         {
-            this._smtpServer = smtpServer;
-            this._serviceSettings = serviceSettings;
             this._papercutIpCommEndpoints = papercutIpCommEndpoints;
             this._papercutWebServer = papercutWebServer;
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;
             this._messageBus = messageBus;
             this._ipCommServer = ipCommServer;
-        }
-
-        public async Task HandleAsync(SmtpServerBindEvent @event, CancellationToken token = default)
-        {
-            this._logger.Information(
-                "Received New Smtp Server Binding Settings from UI {@Event}",
-                @event);
-
-            // update settings...
-            this._serviceSettings.IP = @event.IP;
-            this._serviceSettings.Port = @event.Port;
-            this._serviceSettings.Save();
-
-            // rebind the server...
-            await this.BindSMTPServer();
-        }
-
-        async Task BindSMTPServer()
-        {
-            try
-            {
-                await this._smtpServer.StopAsync();
-                await this._smtpServer.StartAsync(
-                    new EndpointDefinition(this._serviceSettings.IP, this._serviceSettings.Port));
-            }
-            catch (Exception ex)
-            {
-                this._logger.Warning(
-                    ex,
-                    "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                    this._serviceSettings.IP,
-                    this._serviceSettings.Port);
-            }
+            this._smtpServer = smtpServer;
         }
 
         public async Task Start()
@@ -125,19 +83,16 @@ namespace Papercut.Service.Services
                     this._ipCommServer.ListenPort);
             }
 
-            await this.BindSMTPServer();
-
             await this._papercutWebServer.StartAsync();
 
             await this._messageBus.PublishAsync(
                 new PapercutServiceReadyEvent { AppMeta = this._applicationMetaData });
-
-            this._logger.Debug("Service Application Ready");
         }
 
         public async Task Stop()
         {
-            await this._ipCommServer.StopAsync();
+            await Task.WhenAll(this._smtpServer.StopAsync(), this._ipCommServer.StopAsync());
+
             await this._messageBus.PublishAsync(new PapercutServiceExitEvent { AppMeta = this._applicationMetaData });
         }
     }
