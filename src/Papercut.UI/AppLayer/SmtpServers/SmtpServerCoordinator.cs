@@ -60,10 +60,19 @@ namespace Papercut.AppLayer.SmtpServers
         {
             if (@event.PapercutServiceStatus == PapercutServiceStatusType.Online)
             {
+                this._logger.Information(
+                    "Papercut Backend Service is running. SMTP disabled in UI.");
+
                 if (this.IsServerActive) await this.StopServerAsync();
             }
-            else if (@event.PapercutServiceStatus == PapercutServiceStatusType.Online)
+            else if (@event.PapercutServiceStatus == PapercutServiceStatusType.Offline)
             {
+                this._logger.Information(
+                    "Papercut Backend Service is not running. SMTP enabled in UI.");
+
+                // give it a half second though
+                await Task.Delay(TimeSpan.FromMilliseconds(500), token);
+
                 if (!this.IsServerActive) await this.ListenServerAsync();
             }
         }
