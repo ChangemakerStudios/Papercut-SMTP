@@ -21,7 +21,11 @@ namespace Papercut.Rules
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Collections.Specialized;
     using System.IO;
+    using System.Reactive;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Linq;
 
     using Autofac.Util;
 
@@ -31,16 +35,16 @@ namespace Papercut.Rules
 
     public class RuleServiceBase : Disposable
     {
-        protected readonly ILogger _logger;
-
-        protected readonly RuleRepository _ruleRepository;
-
         readonly Lazy<ObservableCollection<IRule>> _rules;
+
+        protected readonly ILogger Logger;
+
+        protected readonly RuleRepository RuleRepository;
 
         protected RuleServiceBase(RuleRepository ruleRepository, ILogger logger)
         {
-            this._ruleRepository = ruleRepository;
-            this._logger = logger;
+            this.RuleRepository = ruleRepository;
+            this.Logger = logger;
             this.RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
             this._rules = new Lazy<ObservableCollection<IRule>>(this.GetRulesCollection);
         }
@@ -49,17 +53,28 @@ namespace Papercut.Rules
 
         public ObservableCollection<IRule> Rules => this._rules.Value;
 
+        public IObservable<EventPattern<NotifyCollectionChangedEventArgs>> GetRuleChangedObservable(IScheduler scheduler = null)
+        {
+            return Observable
+                .FromEventPattern<NotifyCollectionChangedEventHandler,
+                    NotifyCollectionChangedEventArgs>(
+                    h => new NotifyCollectionChangedEventHandler(h),
+                    h => this._rules.Value.CollectionChanged += h,
+                    h => this._rules.Value.CollectionChanged -= h,
+                    scheduler ?? Scheduler.Default);
+        }
+
         protected virtual ObservableCollection<IRule> GetRulesCollection()
         {
             IList<IRule> loadRules = null;
 
             try
             {
-                loadRules = this._ruleRepository.LoadRules(this.RuleFileName);
+                loadRules = this.RuleRepository.LoadRules(this.RuleFileName);
             }
             catch (Exception ex)
             {
-                this._logger.Warning(ex, "Failed to load rules in file {RuleFileName}", this.RuleFileName);
+                this.Logger.Warning(ex, "Failed to load rules in file {RuleFileName}", this.RuleFileName);
             }
 
             return new ObservableCollection<IRule>(loadRules ?? new List<IRule>(0));
@@ -69,15 +84,15 @@ namespace Papercut.Rules
         {
             try
             {
-                this._ruleRepository.SaveRules(this.Rules, this.RuleFileName);
-                this._logger.Information(
+                this.RuleRepository.SaveRules(this.Rules, this.RuleFileName);
+                this.Logger.Information(
                     "Saved {RuleCount} to {RuleFileName}",
                     this.Rules.Count,
                     this.RuleFileName);
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, "Error saving rules to file {RuleFileName}", this.RuleFileName);
+                this.Logger.Error(ex, "Error saving rules to file {RuleFileName}", this.RuleFileName);
             }
         }
     }

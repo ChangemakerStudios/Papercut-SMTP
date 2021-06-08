@@ -15,6 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.AppLayer.LifecycleHooks
 {
     using System;
@@ -28,7 +29,7 @@ namespace Papercut.AppLayer.LifecycleHooks
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Domain.LifecycleHooks;
 
-    public class ReadyEventTrigger : IAppLifecycleStarted
+    public class ReadyEventTrigger : IAppLifecycleStarted, IOrderable
     {
         private readonly IAppMeta _appMeta;
 
@@ -45,6 +46,11 @@ namespace Papercut.AppLayer.LifecycleHooks
             await this._messageBus.PublishAsync(
                 new PapercutClientReadyEvent() { AppMeta = this._appMeta });
         }
+
+        /// <summary>
+        /// Start this last
+        /// </summary>
+        public int Order => 999999;
 
         #region Begin Static Container Registrations
 

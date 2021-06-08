@@ -53,19 +53,31 @@ namespace Papercut.Service.Services
 
         public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
         {
-            this._logger.Information(
+            this.Logger.Information(
                 "New Message {MessageFile} Arrived -- Running Rules",
                 @event.NewMessage);
 
             Task.Run(
                 async () =>
                 {
-                    await Task.Delay(2000, this._cancellationTokenSource.Token);
-                    await this._rulesRunner.RunAsync(
-                        this.Rules.ToArray(),
-                        @event.NewMessage,
-                        this._cancellationTokenSource.Token);
-
+                    try
+                    {
+                        await Task.Delay(2000, this._cancellationTokenSource.Token);
+                        await this._rulesRunner.RunAsync(
+                            this.Rules.ToArray(),
+                            @event.NewMessage,
+                            this._cancellationTokenSource.Token);
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                    }
+                    catch (TaskCanceledException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Failure Running Rules");
+                    }
                 },
                 this._cancellationTokenSource.Token);
 
@@ -74,14 +86,14 @@ namespace Papercut.Service.Services
 
         public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
         {
-            this._logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
+            this.Logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
 
             try
             {
                 // accessing "Rules" forces the collection to be loaded
                 if (this.Rules.Any())
                 {
-                    this._logger.Information(
+                    this.Logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
                         this.Rules.Count,
                         this.RuleFileName);
@@ -89,7 +101,7 @@ namespace Papercut.Service.Services
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
+                this.Logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
             }
 
             return Task.CompletedTask;

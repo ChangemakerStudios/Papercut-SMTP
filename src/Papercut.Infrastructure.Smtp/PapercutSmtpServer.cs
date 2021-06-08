@@ -115,8 +115,18 @@ namespace Papercut.Infrastructure.Smtp
 
 #pragma warning disable 4014
             // server will block -- just let it run
-            Task.Factory.StartNew(
-                () => this._server.StartAsync(this._tokenSource.Token),
+            Task.Run(
+                async () =>
+                {
+                    try
+                    {
+                        await this._server.StartAsync(this._tokenSource.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        this._logger.Error(ex, "Smtp Server Error");
+                    }
+                },
                 this._tokenSource.Token);
 #pragma warning restore 4014
 

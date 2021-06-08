@@ -27,7 +27,7 @@ namespace Papercut.Infrastructure.IPComm
     {
         public static async Task SendStringAsync(this Connection connection, string message)
         {
-            await connection.SendData(connection.Encoding.GetBytes(message));
+            await connection.SendDataAsync(connection.Encoding.GetBytes(message));
         }
 
         public static async Task SendLineAsync(this Connection connection, string message)
@@ -39,7 +39,7 @@ namespace Papercut.Infrastructure.IPComm
         {
             var json = PapercutIPCommSerializer.ToJson(type, instance);
 
-            await connection.SendData(connection.Encoding.GetBytes(json));
+            await connection.SendDataAsync(connection.Encoding.GetBytes(json));
         }
 
         public static async Task SendAsync(
@@ -47,7 +47,7 @@ namespace Papercut.Infrastructure.IPComm
             string message,
             params object[] args)
         {
-            await connection.SendData(connection.Encoding.GetBytes(string.Format(message, args)));
+            await connection.SendDataAsync(connection.Encoding.GetBytes(string.Format(message, args)));
         }
     }
 }

@@ -16,15 +16,15 @@
 // limitations under the License.
 
 
-namespace Papercut.Infrastructure.Lifecycles
+namespace Papercut.Infrastructure.LifecycleHooks
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
 
     using Autofac;
 
+    using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
     using Papercut.Domain.LifecycleHooks;
 
@@ -39,7 +39,7 @@ namespace Papercut.Infrastructure.Lifecycles
 
             var logger = scope.Resolve<ILogger>();
 
-            foreach (var appLifecycleHook in scope.Resolve<IEnumerable<TLifecycle>>().ToList())
+            foreach (var appLifecycleHook in scope.Resolve<IEnumerable<TLifecycle>>().MaybeByOrderable())
             {
                 logger.Debug("Running {LifecycleHookType}...", appLifecycleHook.GetType().FullName);
 
@@ -72,7 +72,7 @@ namespace Papercut.Infrastructure.Lifecycles
 
             var logger = scope.Resolve<ILogger>();
 
-            foreach (var appLifecycleHook in scope.Resolve<IEnumerable<IAppLifecycleStarted>>().ToList())
+            foreach (var appLifecycleHook in scope.Resolve<IEnumerable<IAppLifecycleStarted>>().MaybeByOrderable())
             {
                 logger.Debug("Running {LifecycleHookType}...", appLifecycleHook.GetType().FullName);
 

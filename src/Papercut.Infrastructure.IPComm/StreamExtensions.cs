@@ -22,6 +22,7 @@ namespace Papercut.Infrastructure.IPComm
     using System.IO;
     using System.Net.Sockets;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Infrastructure.IPComm.Network;
@@ -31,13 +32,13 @@ namespace Papercut.Infrastructure.IPComm
         public static async Task<byte[]> ReadBufferedAsync(
             this NetworkStream stream,
             int? maxBytes = null,
-            int bufferSize = 0xFFF)
+            int bufferSize = 0xFFF, CancellationToken token = default)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             using (var ms = new MemoryStream())
             {
-                await stream.CopyBufferedToAsync(ms, maxBytes, bufferSize);
+                await stream.CopyBufferedToAsync(ms, maxBytes, bufferSize, token: token);
 
                 return ms.ToArray();
             }
@@ -47,13 +48,13 @@ namespace Papercut.Infrastructure.IPComm
             this NetworkStream stream,
             int? maxBytes = null,
             int bufferSize = 0xFFF,
-            Encoding encoding = null)
+            Encoding encoding = null, CancellationToken token = default)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             encoding = encoding ?? Encoding.UTF8;
 
-            var readBufferedAsync = await stream.ReadBufferedAsync(maxBytes, bufferSize);
+            var readBufferedAsync = await stream.ReadBufferedAsync(maxBytes, bufferSize, token: token);
 
             return encoding.GetString(readBufferedAsync);
         }
@@ -62,46 +63,39 @@ namespace Papercut.Infrastructure.IPComm
             this NetworkStream stream,
             Type type,
             int? maxBytes = null,
-            int bufferSize = 0xFFF, Encoding encoding = null)
+            int bufferSize = 0xFFF, Encoding encoding = null, CancellationToken token = default)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            var readStringBufferedAsync = await stream.ReadStringBufferedAsync(maxBytes, bufferSize, encoding);
+            var readStringBufferedAsync = await stream.ReadStringBufferedAsync(maxBytes, bufferSize, encoding, token: token);
 
             return PapercutIPCommSerializer.FromJson(type, readStringBufferedAsync);
         }
 
-        public static async Task WriteFormatAsync(this Stream stream, string format, params object[] args)
-        {
-            if (stream == null) throw new ArgumentNullException(nameof(stream));
-
-            await stream.WriteStrAsync(string.Format(format, args));
-        }
-
-        public static async Task WriteLineAsync(this Stream stream, string str, Encoding encoding = null)
+        public static async Task WriteLineAsync(this Stream stream, string str, Encoding encoding = null, CancellationToken token = default)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             encoding = encoding ?? Encoding.UTF8;
 
-            await stream.WriteBytesAsync(encoding.GetBytes($"{str}\r\n"));
+            await stream.WriteBytesAsync(encoding.GetBytes($"{str}\r\n"), token: token);
         }
 
-        public static async Task WriteStrAsync(this Stream stream, string str, Encoding encoding = null)
+        public static async Task WriteStrAsync(this Stream stream, string str, Encoding encoding = null, CancellationToken token = default)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             encoding = encoding ?? Encoding.UTF8;
 
-            await stream.WriteBytesAsync(encoding.GetBytes(str));
+            await stream.WriteBytesAsync(encoding.GetBytes(str), token: token);
         }
 
-        public static async Task WriteBytesAsync(this Stream stream, byte[] data)
+        public static async Task WriteBytesAsync(this Stream stream, byte[] data, CancellationToken token = default)
         {
-            await stream.WriteAsync(data, 0, data.Length);
+            await stream.WriteAsync(data, 0, data.Length, token);
         }
 
-        public static async Task<object> ReadJsonBufferedAsync(this NetworkStream stream, Type type, int payloadSize, Encoding encoding = null)
+        public static async Task<object> ReadJsonBufferedAsync(this NetworkStream stream, Type type, int payloadSize, Encoding encoding = null, CancellationToken token = default)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
             if (type == null) throw new ArgumentNullException(nameof(type));
@@ -110,7 +104,7 @@ namespace Papercut.Infrastructure.IPComm
 
             using (var memoryStream = new MemoryStream())
             {
-                await stream.CopyBufferedToAsync(memoryStream, payloadSize);
+                await stream.CopyBufferedToAsync(memoryStream, payloadSize, token: token);
 
                 return PapercutIPCommSerializer.FromJson(type, encoding.GetString(memoryStream.ToArray()));
             }
@@ -120,18 +114,19 @@ namespace Papercut.Infrastructure.IPComm
             this NetworkStream source,
             Stream destination,
             int? maxBytes = null,
-            int bufferLength = 0xFFF)
+            int bufferLength = 0xFFF,
+            CancellationToken token = default)
         {
             var buffer = new byte[bufferLength];
             int totalBytes = 0;
 
             do
             {
-                int bytesRead = await source.ReadAsync(buffer, 0, bufferLength);
+                int bytesRead = await source.ReadAsync(buffer, 0, bufferLength, token);
 
                 if (bytesRead == 0) break;
 
-                await destination.WriteAsync(buffer, 0, bytesRead);
+                await destination.WriteAsync(buffer, 0, bytesRead, token);
 
                 totalBytes += bytesRead;
 

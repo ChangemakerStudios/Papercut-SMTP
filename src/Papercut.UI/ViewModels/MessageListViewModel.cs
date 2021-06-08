@@ -57,11 +57,7 @@ namespace Papercut.ViewModels
 
     public class MessageListViewModel : Screen, IEventHandler<SettingsUpdatedEvent>
     {
-        readonly object _deleteLockObject = new object();
-
         readonly ILogger _logger;
-
-        readonly IMessageBus _messageBus;
 
         private readonly IUiCommandHub _uiCommandHub;
 
@@ -80,7 +76,6 @@ namespace Papercut.ViewModels
             MessageRepository messageRepository,
             [NotNull] MessageWatcher messageWatcher,
             MimeMessageLoader mimeMessageLoader,
-            IMessageBus messageBus,
             ILogger logger)
         {
             if (messageRepository == null)
@@ -89,14 +84,11 @@ namespace Papercut.ViewModels
                 throw new ArgumentNullException(nameof(messageWatcher));
             if (mimeMessageLoader == null)
                 throw new ArgumentNullException(nameof(mimeMessageLoader));
-            if (messageBus == null)
-                throw new ArgumentNullException(nameof(messageBus));
 
             this._uiCommandHub = uiCommandHub;
             this._messageRepository = messageRepository;
             this._messageWatcher = messageWatcher;
             this._mimeMessageLoader = mimeMessageLoader;
-            this._messageBus = messageBus;
             this._logger = logger;
 
             this.SetupMessages();

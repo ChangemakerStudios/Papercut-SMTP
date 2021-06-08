@@ -31,7 +31,7 @@ namespace Papercut
     using Papercut.Core.Infrastructure.Logging;
     using Papercut.Domain.LifecycleHooks;
     using Papercut.Infrastructure;
-    using Papercut.Infrastructure.Lifecycles;
+    using Papercut.Infrastructure.LifecycleHooks;
 
     using Serilog;
 
@@ -71,7 +71,17 @@ namespace Papercut
                 base.OnStartup(e);
 
                 // startup the application
-                Task.Run(() => this.Container.RunStartedAsync());
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        await this.Container.RunStartedAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Startup Error");
+                    }
+                });
             }
             catch (Exception ex)
             {

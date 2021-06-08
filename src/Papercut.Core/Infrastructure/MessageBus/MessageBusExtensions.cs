@@ -16,12 +16,15 @@
 // limitations under the License.
 
 
-namespace Papercut.Common.Domain
+namespace Papercut.Core.Infrastructure.MessageBus
 {
     using System;
     using System.Threading.Tasks;
 
+    using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
+
+    using Serilog;
 
     public static class MessageBusExtensions
     {
@@ -30,7 +33,17 @@ namespace Papercut.Common.Domain
         {
             if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
 
-            Task.Run(() => messageBus.PublishAsync(@event, default));
+            Task.Run(() =>
+            {
+                try
+                {
+                    messageBus.PublishAsync(@event, default);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Exception Publishing Event {EventType}", typeof(T).FullName);
+                }
+            });
         }
     }
 }

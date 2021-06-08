@@ -31,8 +31,10 @@ namespace Papercut.AppLayer.Rules
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Message;
     using Papercut.Core.Domain.Rules;
+    using Papercut.Core.Infrastructure.MessageBus;
     using Papercut.Domain.BackendService;
     using Papercut.Domain.LifecycleHooks;
+    using Papercut.Helpers;
     using Papercut.Message;
     using Papercut.Rules;
 
@@ -47,6 +49,8 @@ namespace Papercut.AppLayer.Rules
         readonly MessageWatcher _messageWatcher;
 
         readonly IRulesRunner _rulesRunner;
+
+        private IDisposable _rulesObservable;
 
         public RuleService(
             RuleRepository ruleRepository,
@@ -63,6 +67,14 @@ namespace Papercut.AppLayer.Rules
             this._messageBus = messageBus;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this._rulesObservable?.Dispose();
+            }
+        }
+
         public AppLifecycleActionResultType OnPreExit()
         {
             this.Save();
@@ -72,14 +84,14 @@ namespace Papercut.AppLayer.Rules
 
         public async Task OnStartedAsync()
         {
-            this._logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
+            this.Logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
 
             try
             {
                 // accessing "Rules" forces the collection to be loaded
                 if (this.Rules.Any())
                 {
-                    this._logger.Information(
+                    this.Logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
                         this.Rules.Count,
                         this.RuleFileName);
@@ -87,44 +99,41 @@ namespace Papercut.AppLayer.Rules
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
+                this.Logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
             }
 
             // rules loaded/updated event
             await this._messageBus.PublishAsync(new RulesUpdatedEvent(this.Rules.ToArray()));
 
-            this.Rules.CollectionChanged += this.RuleCollectionChanged;
+            this._rulesObservable = this.GetRuleChangedObservable(TaskPoolScheduler.Default)
+                .Subscribe(
+                    async args =>
+                    {
+                        // TODO: here be bugs
+                        if (args.EventArgs.NewItems != null)
+                            this.HookPropertyChangedForRules(
+                                args.EventArgs.NewItems.OfType<IRule>());
+
+                        await this._messageBus.PublishAsync(
+                            new RulesUpdatedEvent(this.Rules.ToArray()));
+                    },
+                    ex => this.Logger.Error(ex, "Failure Publishing Rules"));
+
             this.HookPropertyChangedForRules(this.Rules);
 
             // the backend service handles rules running if it's online
             if (!this._backendServiceStatus.IsOnline)
             {
-                this._logger.Debug("Setting up Rule Dispatcher Observable");
+                this.Logger.Debug("Setting up Rule Dispatcher Observable");
 
                 // observe message watcher and run rules when a new message arrives
-                Observable.FromEventPattern<NewMessageEventArgs>(
-                        e => this._messageWatcher.NewMessage += e,
-                        e => this._messageWatcher.NewMessage -= e,
-                        TaskPoolScheduler.Default)
+                this._messageWatcher.GetNewMessageObservable(TaskPoolScheduler.Default)
                     .DelaySubscription(TimeSpan.FromSeconds(1))
                     .Subscribe(
                         async e => await this._rulesRunner.RunAsync(
                                        this.Rules.ToArray(),
-                                       e.EventArgs.NewMessage));
-            }
-        }
-
-        void RuleCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
-        {
-            try
-            {
-                if (args.NewItems != null) this.HookPropertyChangedForRules(args.NewItems.OfType<IRule>());
-
-                this._messageBus.PublishFireAndForget(new RulesUpdatedEvent(this.Rules.ToArray()));
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(ex, "Failure Handling Rule Collection Change {@Args}", args);
+                                       e.EventArgs.NewMessage),
+                        ex => this.Logger.Error(ex, "Error Running Rules on New Message"));
             }
         }
 
@@ -132,8 +141,12 @@ namespace Papercut.AppLayer.Rules
         {
             foreach (IRule m in rules)
             {
-                m.PropertyChanged += (o, eventArgs) =>
-                    this._messageBus.PublishAsync(new RulesUpdatedEvent(this.Rules.ToArray()));
+                m.GetPropertyChangedEvents(TaskPoolScheduler.Default)
+                    .Subscribe(
+                        async (args) =>
+                            await this._messageBus.PublishAsync(
+                                new RulesUpdatedEvent(this.Rules.ToArray())),
+                        ex => this.Logger.Error(ex, "Error Publishing Rules Updated Event"));
             }
         }
 

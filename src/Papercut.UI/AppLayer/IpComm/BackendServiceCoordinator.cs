@@ -49,7 +49,7 @@ namespace Papercut.AppLayer.IpComm
         IEventHandler<RulesUpdatedEvent>,
         IEventHandler<PapercutServicePreStartEvent>,
         IEventHandler<PapercutServiceReadyEvent>,
-        IEventHandler<PapercutServiceExitEvent>
+        IEventHandler<PapercutServiceExitEvent>, IOrderable
     {
         const string BackendServiceFailureMessage =
             "Papercut Backend Service Exception Attempting to Contact";
@@ -67,13 +67,11 @@ namespace Papercut.AppLayer.IpComm
         public BackendServiceCoordinator(
             ILogger logger,
             IMessageBus messageBus,
-            PapercutIPCommClientFactory ipCommClientFactory,
-            SmtpServerCoordinator smtpServerCoordinator)
+            PapercutIPCommClientFactory ipCommClientFactory)
         {
             this._logger = logger;
             this._messageBus = messageBus;
             this._ipCommClientFactory = ipCommClientFactory;
-            this._smtpServerCoordinator = smtpServerCoordinator;
 
             IObservable<RulesUpdatedEvent> rulesUpdateObservable = Observable
                 .Create<RulesUpdatedEvent>(
@@ -89,30 +87,35 @@ namespace Papercut.AppLayer.IpComm
                 .Subscribe(async events => await this.PublishUpdateEvent(events.Last()));
         }
 
+        public async Task OnStartedAsync()
+        {
+            await this.AttemptExchangeAsync();
+        }
+
+        private async Task SetOnlineStatus(bool newStatus, CancellationToken token = default)
+        {
+            if (this.IsOnline != newStatus)
+            {
+                this.IsOnline = newStatus;
+                await this.PublishStatusMessage(token);
+            }
+        }
+
         public bool IsOnline { get; private set; }
 
-        public Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token)
+        public async Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token)
         {
-            this.IsOnline = false;
-            this._smtpServerCoordinator.SmtpServerEnabled = true;
-
-            return Task.CompletedTask;
+            await SetOnlineStatus(false, token);
         }
 
-        public Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token)
+        public async Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token)
         {
-            this.IsOnline = true;
-            this._smtpServerCoordinator.SmtpServerEnabled = false;
-
-            return Task.CompletedTask;
+            await SetOnlineStatus(true, token);
         }
 
-        public Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token)
+        public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token)
         {
-            this.IsOnline = true;
-            this._smtpServerCoordinator.SmtpServerEnabled = false;
-
-            return Task.CompletedTask;
+            await SetOnlineStatus(true, token);
         }
 
         public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token)
@@ -130,10 +133,7 @@ namespace Papercut.AppLayer.IpComm
             await this.PublishSmtpUpdatedAsync(@event, token);
         }
 
-        public async Task OnStartedAsync()
-        {
-            await this.AttemptExchangeAsync();
-        }
+        public int Order => 10;
 
         public async Task PublishSmtpUpdatedAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
@@ -175,28 +175,41 @@ namespace Papercut.AppLayer.IpComm
 
                 var receivedEvent = await ipCommClient.ExchangeEventServer(sendEvent);
 
-                if (receivedEvent == null) return;
-
-                this.IsOnline = true;
-
-                // backend server is online...
-                this._logger.Information(
-                    "Papercut Backend Service Running. Disabling SMTP in App.");
-                this._smtpServerCoordinator.SmtpServerEnabled = false;
-
-                if (!string.IsNullOrWhiteSpace(receivedEvent.MessageWritePath))
+                if (receivedEvent != null)
                 {
-                    this._logger.Debug(
-                        "Background Process Returned {@Event} -- Publishing",
-                        receivedEvent);
+                    this.IsOnline = true;
 
-                    await this._messageBus.PublishAsync(receivedEvent, token);
+                    // backend server is online...
+                    this._logger.Information(
+                        "Papercut Backend Service Running. Disabling SMTP in App.");
+
+                    if (!string.IsNullOrWhiteSpace(receivedEvent.MessageWritePath))
+                    {
+                        this._logger.Debug(
+                            "Background Process Returned {@Event} -- Publishing",
+                            receivedEvent);
+
+                        await this._messageBus.PublishAsync(receivedEvent, token);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 this._logger.Warning(ex, BackendServiceFailureMessage);
             }
+
+            // publish status message regardless
+            await this.PublishStatusMessage(token);
+        }
+
+        private async Task PublishStatusMessage(CancellationToken token)
+        {
+            await this._messageBus.PublishAsync(
+                new PapercutServiceStatusEvent(
+                    this.IsOnline
+                        ? PapercutServiceStatusType.Online
+                        : PapercutServiceStatusType.Offline),
+                token);
         }
 
         async Task PublishUpdateEvent(RulesUpdatedEvent @event)

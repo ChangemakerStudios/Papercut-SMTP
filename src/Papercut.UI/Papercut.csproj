@@ -179,6 +179,7 @@
     <Compile Include="AppLayer\Behaviors\InteractivityBlurWindowOnDeactivate.cs" />
     <Compile Include="Domain\AppCommands\ShutdownCommand.cs" />
     <Compile Include="Domain\BackendService\BackendServiceStatus.cs" />
+    <Compile Include="Domain\Events\PapercutServiceStatusEvent.cs" />
     <Compile Include="Domain\LifecycleHooks\IAppLifecycleHook.cs" />
     <Compile Include="Domain\LifecycleHooks\IAppLifecycleStarted.cs" />
     <Compile Include="Domain\UiCommands\Commands\ShowBalloonTipCommand.cs" />
@@ -203,7 +204,7 @@
     <Compile Include="Helpers\ViewModelWindowManager.cs" />
     <Compile Include="Helpers\WireupLogBridge.cs" />
     <Compile Include="Helpers\WPFValueConverters.cs" />
-    <Compile Include="Infrastructure\Lifecycles\LifecycleHookHelpers.cs" />
+    <Compile Include="Infrastructure\LifecycleHooks\LifecycleHookHelpers.cs" />
     <Compile Include="Properties\UIStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

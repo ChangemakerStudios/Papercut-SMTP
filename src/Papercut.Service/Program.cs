@@ -17,6 +17,7 @@
 
 namespace Papercut.Service
 {
+    using System;
     using System.Threading.Tasks;
 
     using Autofac;
@@ -24,6 +25,8 @@ namespace Papercut.Service
     using Papercut.Core.Infrastructure.Container;
     using Papercut.Core.Infrastructure.Logging;
     using Papercut.Service.Services;
+
+    using Serilog;
 
     using Topshelf;
     using Topshelf.HostConfigurators;
@@ -49,7 +52,17 @@ namespace Papercut.Service
                 s =>
                 {
                     s.ConstructUsing(serviceFactory => _container.BeginLifetimeScope());
-                    s.WhenStarted(scope => Task.Run(() => scope.Resolve<PapercutServerService>().Start()));
+                    s.WhenStarted(scope => Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await scope.Resolve<PapercutServerService>().Start();
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "Exception Caught Running Service");
+                        }
+                    }));
                     s.WhenStopped(scope => scope.Resolve<PapercutServerService>().Stop().Wait());
                     s.WhenShutdown(scope => scope.Dispose());
                 });

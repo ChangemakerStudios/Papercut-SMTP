@@ -27,6 +27,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
     using Autofac;
 
     using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
 
     using Serilog;
 
@@ -41,9 +42,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
 
         public virtual async Task PublishAsync<T>(T eventObject, CancellationToken token) where T : IEvent
         {
-            var eventHandlers = this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().ToList();
-
-            foreach (var @event in this.MaybeByOrder(eventHandlers))
+            foreach (var @event in this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().MaybeByOrderable())
             {
                 try
                 {
@@ -64,17 +63,6 @@ namespace Papercut.Core.Infrastructure.MessageBus
             where T : IEvent
         {
             await @event.HandleAsync(eventObject, token);
-        }
-
-        private List<T> MaybeByOrder<T>(IEnumerable<T> handlers)
-        {
-            return handlers.Distinct()
-                .Select((e, i) => new { Index = 100 + i, Handler = e }).OrderBy(
-                    e =>
-                    {
-                        var orderable = e.Handler as IOrderable;
-                        return orderable?.Order ?? e.Index;
-                    }).Select(e => e.Handler).ToList();
         }
     }
 }

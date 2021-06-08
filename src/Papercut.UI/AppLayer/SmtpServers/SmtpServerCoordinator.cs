@@ -19,8 +19,6 @@
 namespace Papercut.AppLayer.SmtpServers
 {
     using System;
-    using System.ComponentModel;
-    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -31,24 +29,20 @@ namespace Papercut.AppLayer.SmtpServers
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Network;
     using Papercut.Core.Domain.Network.Smtp;
-    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Domain.Events;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Properties;
 
     using Serilog;
 
-    public class SmtpServerCoordinator : Disposable, IEventHandler<PapercutClientReadyEvent>,
-        IEventHandler<SettingsUpdatedEvent>,
-        INotifyPropertyChanged
+    public class SmtpServerCoordinator : Disposable,
+        IEventHandler<SettingsUpdatedEvent>, IEventHandler<PapercutServiceStatusEvent>
     {
         readonly ILogger _logger;
 
         readonly IMessageBus _messageBus;
 
         private readonly PapercutSmtpServer _smtpServer;
-
-        bool _smtpServerEnabled = true;
 
         public SmtpServerCoordinator(
             PapercutSmtpServer smtpServer,
@@ -60,47 +54,28 @@ namespace Papercut.AppLayer.SmtpServers
             this._messageBus = messageBus;
         }
 
-        public bool SmtpServerEnabled
+        public bool IsServerActive => this._smtpServer.IsActive;
+
+        public async Task HandleAsync(PapercutServiceStatusEvent @event, CancellationToken token = default)
         {
-            get => this._smtpServerEnabled;
-            set
+            if (@event.PapercutServiceStatus == PapercutServiceStatusType.Online)
             {
-                if (value.Equals(this._smtpServerEnabled)) return;
-                this._smtpServerEnabled = value;
-                this.OnPropertyChanged();
+                if (this.IsServerActive) await this.StopServerAsync();
             }
-        }
-
-        public async Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token)
-        {
-            if (this.SmtpServerEnabled) await this.ListenSmtpServer();
-
-            this.PropertyChanged += async (sender, args) =>
+            else if (@event.PapercutServiceStatus == PapercutServiceStatusType.Online)
             {
-                if (args.PropertyName == "StmpServerEnabled")
-                {
-                    if (this.SmtpServerEnabled && !this._smtpServer.IsActive)
-                    {
-                        await this.ListenSmtpServer();
-                    }
-                    else if (!this.SmtpServerEnabled && this._smtpServer.IsActive)
-                    {
-                        await this.StopSmtpServerAsync();
-                    }
-                }
-            };
+                if (!this.IsServerActive) await this.ListenServerAsync();
+            }
         }
 
         public async Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
-            if (!this.SmtpServerEnabled) return;
+            if (!this.IsServerActive) return;
 
             if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
 
-            await this.ListenSmtpServer();
+            await this.ListenServerAsync();
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         protected override async ValueTask DisposeAsync(bool disposing)
         {
@@ -108,19 +83,18 @@ namespace Papercut.AppLayer.SmtpServers
             {
                 if (this._smtpServer != null)
                 {
-                    await this.StopSmtpServerAsync();
+                    await this.StopServerAsync();
                     await this._smtpServer.DisposeAsync();
                 }
             }
         }
 
-        private async Task StopSmtpServerAsync()
+        private async Task StopServerAsync()
         {
-            //this._observeStartServer?.Dispose();
             await this._smtpServer.StopAsync();
         }
 
-        async Task ListenSmtpServer()
+        async Task ListenServerAsync()
         {
             try
             {
@@ -138,13 +112,6 @@ namespace Papercut.AppLayer.SmtpServers
 
                 await this._messageBus.PublishAsync(new SmtpServerBindFailedEvent());
             }
-        }
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = this.PropertyChanged;
-            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #region Begin Static Container Registrations
