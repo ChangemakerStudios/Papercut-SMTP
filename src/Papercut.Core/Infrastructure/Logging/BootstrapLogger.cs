@@ -47,6 +47,12 @@ namespace Papercut.Core.Infrastructure.Logging
 
             AppDomain.CurrentDomain.UnhandledException += OnCurrentDomainOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
+
+            //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
+            //{
+            //    var logger = (IsLoggerConfigured() ? Log.Logger : Logger);
+            //    logger.Information(eventArgs.Exception, "First Change Exception Caught");
+            //};
         }
 
         public static ILogger Logger => _rootLogger.Value;
@@ -56,6 +62,8 @@ namespace Papercut.Core.Infrastructure.Logging
             var logInstance = IsLoggerConfigured() ? Log.Logger : Logger;
 
             if (!args.Observed) logInstance.Error(args.Exception, "Unobserved Task Exception");
+
+            args.SetObserved();
         }
 
         public static void SetRootGlobal()

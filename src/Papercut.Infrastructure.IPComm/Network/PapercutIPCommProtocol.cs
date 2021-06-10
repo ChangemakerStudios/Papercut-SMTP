@@ -1,34 +1,35 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Infrastructure.IPComm.Network
 {
     using System.IO;
     using System.Net.Sockets;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
 
-    using Common;
-    using Common.Domain;
-    using Common.Extensions;
-
-    using Core;
-    using Core.Infrastructure.Json;
-    using Core.Infrastructure.MessageBus;
-
-    using Protocols;
+    using Papercut.Common.Domain;
+    using Papercut.Common.Extensions;
+    using Papercut.Core;
+    using Papercut.Core.Infrastructure.Json;
+    using Papercut.Core.Infrastructure.MessageBus;
+    using Papercut.Infrastructure.IPComm.Protocols;
 
     using Serilog;
 
@@ -44,15 +45,20 @@ namespace Papercut.Infrastructure.IPComm.Network
 
         public Connection Connection { get; protected set; }
 
-        public override void Begin(Connection connection)
+        public override async Task BeginAsync(
+            Connection connection,
+            CancellationToken token = default)
         {
             this.Connection = connection;
             this.Logger.ForContext("ConnectionId", this.Connection.Id);
-
-            this.Connection.SendLine(AppConstants.ApplicationName.ToUpper()).Wait();
+            await this.Connection.SendLineAsync(AppConstants.ApplicationName.ToUpper());
+            var response = await this.Connection.ReceiveDataAsync();
+            await this.ProcessIncomingBufferAsync(response, Encoding.UTF8, token);
         }
 
-        protected override void ProcessRequest(string incomingRequest)
+        protected override async Task ProcessRequest(
+            string incomingRequest,
+            CancellationToken token = default)
         {
             try
             {
@@ -60,28 +66,35 @@ namespace Papercut.Infrastructure.IPComm.Network
 
                 this.Logger.Verbose("Incoming Request Received {@Request}", request);
 
-                this.Connection.Send("ACK").Wait();
+                await this.Connection.SendAsync("ACK");
 
-                if (request.CommandType.IsAny(PapercutIPCommCommandType.Publish, PapercutIPCommCommandType.Exchange))
+                if (request.CommandType.IsAny(
+                    PapercutIPCommCommandType.Publish,
+                    PapercutIPCommCommandType.Exchange))
                 {
-                    // read the rest of the object...
-                    object remoteEvent = null;
+                    var remoteObjectBuffer = await this.Connection.ReceiveDataAsync();
 
-                    using (var stream = new NetworkStream(this.Connection.Client, false))
-                    {
-                        remoteEvent = stream.ReadJsonBuffered(request.Type, request.ByteSize);
-                    }
+                    var remoteEvent = PapercutIPCommSerializer.FromJson(
+                        request.Type,
+                        Encoding.UTF8.GetString(remoteObjectBuffer));
 
-                    this.Logger.Information("Publishing Event Received {@Event} from Remote", remoteEvent);
+                    this.Logger.Information(
+                        "Publishing Event Received {@Event} from Remote",
+                        remoteEvent);
 
-                    this._messageBus.PublishObject(remoteEvent, request.Type);
+                    await this._messageBus.PublishObjectAsync(
+                        remoteEvent,
+                        request.Type,
+                        token: token);
 
                     if (request.CommandType == PapercutIPCommCommandType.Exchange)
                     {
                         // send response back...
-                        this.Logger.Information("Exchanging Event {@Event} -- Pushing to Remote", remoteEvent);
+                        this.Logger.Information(
+                            "Exchanging Event {@Event} -- Pushing to Remote",
+                            remoteEvent);
 
-                        this.Connection.SendJson(request.Type, remoteEvent).Wait();
+                        await this.Connection.SendJsonAsync(request.Type, remoteEvent);
                     }
                 }
             }

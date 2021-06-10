@@ -36,15 +36,14 @@ namespace Papercut.Common.Extensions
         /// <returns></returns>
         public static T ToType<T>([CanBeNull] this object instance)
         {
-            if (instance == null) return default(T);
+            if (instance == null) return default;
 
-            if (Equals(instance, default(T))) return default(T);
-            if (Equals(instance, DBNull.Value)) return default(T);
+            if (Equals(instance, default(T))) return default;
+            if (Equals(instance, DBNull.Value)) return default;
 
-            var str = instance as string;
-            if (str != null)
+            if (instance is string str)
             {
-                if (String.IsNullOrEmpty(str)) return default(T);
+                if (string.IsNullOrEmpty(str)) return default;
             }
             else if (!(instance is IConvertible) && !instance.GetType().IsValueType)
             {
@@ -99,7 +98,7 @@ namespace Papercut.Common.Extensions
         public static bool IsDefault<TIn>(this TIn value)
         {
             // from the master, J. Skeet:
-            return EqualityComparer<TIn>.Default.Equals(value, default(TIn));
+            return EqualityComparer<TIn>.Default.Equals(value, default);
         }
 
         /// <summary>
@@ -137,9 +136,24 @@ namespace Papercut.Common.Extensions
                         .OfType<DisplayNameAttribute>()
                         .FirstOrDefault();
 
-                yield return
-                    KeyValuePair.Create(displayName?.DisplayName ?? prop.Name,
-                        new Lazy<object>(() => prop.GetValue(obj, null)));
+                var password =
+                    prop.GetCustomAttributes(typeof (PasswordPropertyTextAttribute), false)
+                        .OfType<PasswordPropertyTextAttribute>()
+                        .FirstOrDefault();
+
+                if (password != null)
+                {
+                    yield return KeyValuePair.Create(
+                        displayName?.DisplayName ?? prop.Name,
+                        new Lazy<object>(() => "***********"));
+                }
+                else
+                {
+                    yield return
+                        KeyValuePair.Create(
+                            displayName?.DisplayName ?? prop.Name,
+                            new Lazy<object>(() => prop.GetValue(obj, null)));
+                }
             }
         }
     }

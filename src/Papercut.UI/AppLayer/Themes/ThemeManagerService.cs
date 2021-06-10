@@ -19,6 +19,8 @@
 namespace Papercut.AppLayer.Themes
 {
     using System;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows;
 
     using Autofac;
@@ -27,14 +29,14 @@ namespace Papercut.AppLayer.Themes
 
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Events;
+    using Papercut.Domain.Events;
+    using Papercut.Domain.LifecycleHooks;
     using Papercut.Infrastructure.Themes;
     using Papercut.Properties;
 
     using Serilog;
 
-    public class ThemeManagerService : IEventHandler<PapercutClientPreStartEvent>, IEventHandler<SettingsUpdatedEvent>
+    public class ThemeManagerService : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
     {
         private readonly ILogger _logger;
 
@@ -48,16 +50,17 @@ namespace Papercut.AppLayer.Themes
 
         private static ThemeManager CurrentTheme => ThemeManager.Current;
 
-        public void Handle(PapercutClientPreStartEvent @event)
+        public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
-            this.SetTheme();
+            if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) this.SetTheme();
+
+            return Task.CompletedTask;
         }
 
-        public void Handle(SettingsUpdatedEvent @event)
+        public AppLifecycleActionResultType OnPreStart()
         {
-            if (@event.PreviousSettings.Theme == @event.NewSettings.Theme) return;
-
             this.SetTheme();
+            return AppLifecycleActionResultType.Continue;
         }
 
         private void SetTheme()

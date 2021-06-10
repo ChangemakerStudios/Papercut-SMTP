@@ -1,23 +1,26 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Rules.Implementations
 {
     using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using MailKit.Net.Smtp;
     using MailKit.Security;
@@ -26,13 +29,17 @@ namespace Papercut.Rules.Implementations
 
     public static class RelayRuleExtensions
     {
-        public static SmtpClient CreateConnectedSmtpClient([NotNull] this RelayRule forwardRule)
+        public static async Task<SmtpClient> CreateConnectedSmtpClientAsync([NotNull] this RelayRule forwardRule, CancellationToken token)
         {
             if (forwardRule == null) throw new ArgumentNullException(nameof(forwardRule));
 
             var client = new SmtpClient();
 
-            client.Connect(forwardRule.SmtpServer, forwardRule.SmtpPort, forwardRule.SmtpUseSSL ? SecureSocketOptions.Auto : SecureSocketOptions.None);
+            await client.ConnectAsync(
+                forwardRule.SmtpServer,
+                forwardRule.SmtpPort,
+                forwardRule.SmtpUseSSL ? SecureSocketOptions.Auto : SecureSocketOptions.None,
+                token);
 
             // Note: since we don't have an OAuth2 token, disable
             // the XOAUTH2 authentication mechanism.
@@ -42,7 +49,7 @@ namespace Papercut.Rules.Implementations
                 && !string.IsNullOrWhiteSpace(forwardRule.SmtpUsername))
             {
                 // Note: only needed if the SMTP server requires authentication
-                client.Authenticate(forwardRule.SmtpUsername, forwardRule.SmtpPassword);
+                await client.AuthenticateAsync(forwardRule.SmtpUsername, forwardRule.SmtpPassword, token);
             }
 
             return client;

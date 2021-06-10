@@ -18,8 +18,8 @@
 namespace Papercut.Rules.Implementations
 {
     using System;
-    using System.Reactive.Linq;
-    using System.Reactive.Threading.Tasks;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using MimeKit;
 
@@ -28,7 +28,8 @@ namespace Papercut.Rules.Implementations
     using Papercut.Core.Domain.Rules;
     using Papercut.Message;
     using Papercut.Message.Helpers;
-    using Papercut.Rules.Helpers;
+
+    using Polly;
 
     using Serilog;
 
@@ -44,55 +45,44 @@ namespace Papercut.Rules.Implementations
             _logger = logger;
         }
 
-        public void Dispatch(ConditionalForwardWithRetryRule rule, MessageEntry messageEntry)
+        public async Task DispatchAsync(ConditionalForwardWithRetryRule rule, MessageEntry messageEntry, CancellationToken token)
         {
             if (rule == null) throw new ArgumentNullException(nameof(rule));
             if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
-            var messageSource = _mimeMessageLoader.Value.GetObservable(messageEntry)
-                .Select(m => m.CloneMessage())
-                .Where(m => RuleMatches(rule, m))
-                .Select(
-                    m =>
-                    {
-                        rule.PopulateFromRule(m);
-                        return m;
-                    });
+            var message = await _mimeMessageLoader.Value.GetClonedAsync(messageEntry, token);
 
-            var sendObservable = Observable.Create<bool>(o =>
+            if (!RuleMatches(rule, message))
             {
-                IDisposable subscription = null;
-                subscription = messageSource.Subscribe(x =>
-                {
-                    try
-                    {
-                        using (var client = rule.CreateConnectedSmtpClient())
-                        {
-                            client.Send(x);
-                            client.Disconnect(true);
-                            o.OnNext(true);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        o.OnError(ex);
-                        subscription?.Dispose();
-                    }
-                }, o.OnError, o.OnCompleted);
+                return;
+            }
 
-                return subscription;
-            });
+            rule.PopulateFromRule(message);
 
-            sendObservable.RetryWithDelay(rule.RetryAttempts, TimeSpan.FromSeconds(rule.RetryAttemptDelaySeconds))
-                .Subscribe(
-                    s =>
+            var polly = Policy
+                .Handle<Exception>()
+                .WaitAndRetryAsync(
+                    rule.RetryAttempts,
+                    (attempt) => TimeSpan.FromSeconds(rule.RetryAttemptDelaySeconds),
+                    (exception, span) =>
                     {
-                        // success!
-                    },
-                    e =>
-                    {
-                        this._logger.Error(e, "Failed to send {@MessageEntry} after {RetryAttempts}", messageEntry, rule.RetryAttempts);
+                        this._logger.Error(
+                            exception,
+                            "Failed to send {@MessageEntry} after {RetryAttempts}",
+                            messageEntry,
+                            rule.RetryAttempts);
                     });
+
+            async Task SendMessage()
+            {
+                using (var client = await rule.CreateConnectedSmtpClientAsync(token))
+                {
+                    await client.SendAsync(message, token);
+                    await client.DisconnectAsync(true, token);
+                }
+            }
+
+            await polly.ExecuteAsync(async () => await SendMessage());
         }
 
         protected virtual bool RuleMatches(ConditionalForwardWithRetryRule rule, MimeMessage mimeMessage)

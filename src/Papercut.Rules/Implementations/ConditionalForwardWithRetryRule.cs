@@ -40,7 +40,7 @@ namespace Papercut.Rules.Implementations
         [DisplayName("Retry Attempts")]
         public int RetryAttempts
         {
-            get { return _retryAttempts; }
+            get => _retryAttempts;
             set
             {
                 if (value == _retryAttempts) return;
@@ -53,7 +53,7 @@ namespace Papercut.Rules.Implementations
         [DisplayName("Retry Attempt Delay in Seconds")]
         public int RetryAttemptDelaySeconds
         {
-            get { return _retryAttemptDelaySeconds; }
+            get => _retryAttemptDelaySeconds;
             set
             {
                 if (value == _retryAttemptDelaySeconds) return;

@@ -15,6 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Infrastructure.Smtp
 {
     using System.Buffers;
@@ -38,17 +39,17 @@ namespace Papercut.Infrastructure.Smtp
             this._receivedDataHandler = receivedDataHandler;
         }
 
-        public override Task<SmtpResponse> SaveAsync(
+        public override async Task<SmtpResponse> SaveAsync(
             ISessionContext context,
             IMessageTransaction transaction,
             ReadOnlySequence<byte> buffer,
             CancellationToken cancellationToken)
         {
-            this._receivedDataHandler.HandleReceived(
+            await this._receivedDataHandler.HandleReceivedAsync(
                 buffer.ToArray(),
                 transaction.To.Select(s => s.AsAddress()).ToArray());
 
-            return Task.FromResult(SmtpResponse.Ok);
+            return SmtpResponse.Ok;
         }
     }
 }

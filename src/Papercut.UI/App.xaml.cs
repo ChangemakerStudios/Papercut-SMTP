@@ -28,8 +28,10 @@ namespace Papercut
 
     using Papercut.Common.Domain;
     using Papercut.Core.Infrastructure.Container;
-    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Logging;
+    using Papercut.Domain.LifecycleHooks;
+    using Papercut.Infrastructure;
+    using Papercut.Infrastructure.LifecycleHooks;
 
     using Serilog;
 
@@ -40,8 +42,6 @@ namespace Papercut
         Lazy<ILifetimeScope> _lifetimeScope =
             new Lazy<ILifetimeScope>(
                 () => RootContainer.BeginLifetimeScope(ContainerScope.UIScopeTag));
-
-        private Task _publishTask;
 
         static App()
         {
@@ -59,27 +59,29 @@ namespace Papercut
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            var messageBus = this.Container.Resolve<IMessageBus>();
-
             try
             {
-                var appPreStartEvent = new PapercutClientPreStartEvent();
-
-                messageBus.Publish(appPreStartEvent);
-
-                if (appPreStartEvent.CancelStart)
+                // run prestart
+                if (this.Container.RunPreStart() == AppLifecycleActionResultType.Cancel)
                 {
-                    // force shut down...
-                    messageBus.Publish(new AppForceShutdownEvent());
-
                     this.Shutdown();
-
                     return;
                 }
 
                 base.OnStartup(e);
 
-                messageBus.Publish(new PapercutClientReadyEvent());
+                // startup the application
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        await this.Container.RunStartedAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Startup Error");
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -91,7 +93,12 @@ namespace Papercut
         {
             Debug.WriteLine("App.OnExit()");
 
-            this.Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent());
+            // run pre-exit
+            if (this.Container.RunPreExit() == AppLifecycleActionResultType.Cancel)
+            {
+                // cancel exit
+                return;
+            }
 
             try
             {

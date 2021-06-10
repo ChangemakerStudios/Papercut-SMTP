@@ -25,16 +25,16 @@ namespace Papercut.Infrastructure.Smtp
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Autofac.Util;
+
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Network;
 
     using SmtpServer;
-    using SmtpServer.Mail;
-    using SmtpServer.Storage;
 
     using ILogger = Serilog.ILogger;
 
-    public class PapercutSmtpServer : IServer
+    public class PapercutSmtpServer : Disposable, IServer
     {
         readonly IAppMeta _applicationMetaData;
 
@@ -44,39 +44,37 @@ namespace Papercut.Infrastructure.Smtp
 
         private EndpointDefinition _currentEndpoint;
 
-        private Task _smtpServerTask;
+        private SmtpServer _server;
 
         private CancellationTokenSource _tokenSource;
 
         public PapercutSmtpServer(
             IAppMeta applicationMetaData,
             ILogger logger,
-            Func<ISmtpServerOptions, SmtpServer> _smtpServerFactory)
+            Func<ISmtpServerOptions, SmtpServer> smtpServerFactory)
         {
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;
-            this._smtpServerFactory = _smtpServerFactory;
+            this._smtpServerFactory = smtpServerFactory;
         }
 
-        public bool IsActive => this._smtpServerTask != null;
+        public bool IsActive => this._server != null;
 
         public IPAddress ListenIpAddress => this._currentEndpoint?.Address;
 
         public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
-        public void Dispose()
+        public async Task StopAsync()
         {
-            this.Stop();
-        }
-
-        public void Stop()
-        {
-            if (this._smtpServerTask == null) return;
-
             try
             {
                 this._tokenSource?.Cancel();
-                this._smtpServerTask.Wait();
+                if (this._server != null)
+                {
+                    this._logger.Information("Stopping Smtp Server");
+
+                    await this._server.ShutdownTask;
+                }
                 this._tokenSource?.Dispose();
             }
             catch (Exception ex) when (ex is AggregateException || ex is TaskCanceledException || ex is OperationCanceledException)
@@ -84,13 +82,18 @@ namespace Papercut.Infrastructure.Smtp
             }
             finally
             {
-                this._smtpServerTask = null;
                 this._tokenSource = null;
+                this._server = null;
             }
         }
 
-        public void Start(EndpointDefinition smtpEndpoint)
+        public Task StartAsync(EndpointDefinition smtpEndpoint)
         {
+            if (this.IsActive)
+            {
+                return Task.CompletedTask;
+            }
+
             ServicePointManager.ServerCertificateValidationCallback = this.IgnoreCertificateValidationFailureForTestingOnly;
 
             this._currentEndpoint = smtpEndpoint;
@@ -104,15 +107,40 @@ namespace Papercut.Infrastructure.Smtp
                         .AllowUnsecureAuthentication(false)
                         .Build());
 
-            var server = this._smtpServerFactory(options.Build());
+            this._server = this._smtpServerFactory(options.Build());
 
-            server.SessionCreated += this.OnSessionCreated;
-            server.SessionCompleted += this.OnSessionCompleted;
+            this._server.SessionCreated += this.OnSessionCreated;
+            this._server.SessionCompleted += this.OnSessionCompleted;
 
             this._logger.Information("Starting Smtp Server on {IP}:{Port}...", this.ListenIpAddress, this.ListenPort);
-
             this._tokenSource = new CancellationTokenSource();
-            this._smtpServerTask = server.StartAsync(this._tokenSource.Token);
+
+#pragma warning disable 4014
+            // server will block -- just let it run
+            Task.Run(
+                async () =>
+                {
+                    try
+                    {
+                        await this._server.StartAsync(this._tokenSource.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        this._logger.Error(ex, "Smtp Server Error");
+                    }
+                },
+                this._tokenSource.Token);
+#pragma warning restore 4014
+
+            return Task.CompletedTask;
+        }
+
+        protected override async ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+                await this.StopAsync();
+            }
         }
 
         private void OnSessionCompleted(object sender, SessionEventArgs e)

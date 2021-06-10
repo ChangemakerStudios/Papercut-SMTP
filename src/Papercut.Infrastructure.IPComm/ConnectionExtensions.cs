@@ -25,29 +25,29 @@ namespace Papercut.Infrastructure.IPComm
 
     public static class ConnectionExtensions
     {
-        public static async Task SendString(this Connection connection, string message)
+        public static async Task SendStringAsync(this Connection connection, string message)
         {
-            await connection.SendData(connection.Encoding.GetBytes(message));
+            await connection.SendDataAsync(connection.Encoding.GetBytes(message));
         }
 
-        public static async Task SendLine(this Connection connection, string message)
+        public static async Task SendLineAsync(this Connection connection, string message)
         {
-            await connection.SendString($"{message}{Environment.NewLine}");
+            await connection.SendStringAsync($"{message}{Environment.NewLine}");
         }
 
-        public static async Task SendJson(this Connection connection, Type type, object instance)
+        public static async Task SendJsonAsync(this Connection connection, Type type, object instance)
         {
             var json = PapercutIPCommSerializer.ToJson(type, instance);
 
-            await connection.SendData(connection.Encoding.GetBytes(json));
+            await connection.SendDataAsync(connection.Encoding.GetBytes(json));
         }
 
-        public static async Task Send(
+        public static async Task SendAsync(
             this Connection connection,
             string message,
             params object[] args)
         {
-            await connection.SendData(connection.Encoding.GetBytes(string.Format(message, args)));
+            await connection.SendDataAsync(connection.Encoding.GetBytes(string.Format(message, args)));
         }
     }
 }
