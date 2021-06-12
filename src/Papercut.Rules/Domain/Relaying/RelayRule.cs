@@ -16,17 +16,21 @@
 // limitations under the License.
 
 
-namespace Papercut.Rules.Implementations
+namespace Papercut.Rules.Domain.Relaying
 {
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
 
+    using Autofac;
+
     using MimeKit;
 
     using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Rules;
+    using Papercut.Rules.Domain.Rules;
 
     [Serializable]
     public class RelayRule : RuleBase
@@ -48,12 +52,12 @@ namespace Papercut.Rules.Implementations
         [PasswordPropertyText]
         public string SmtpPassword
         {
-            get => _smtpPassword;
+            get => this._smtpPassword;
             set
             {
-                if (value == _smtpPassword) return;
-                _smtpPassword = value;
-                OnPropertyChanged(nameof(SmtpPassword));
+                if (value == this._smtpPassword) return;
+                this._smtpPassword = value;
+                this.OnPropertyChanged(nameof(this.SmtpPassword));
             }
         }
 
@@ -61,12 +65,12 @@ namespace Papercut.Rules.Implementations
         [DisplayName("SMTP Username")]
         public string SmtpUsername
         {
-            get => _smtpUsername;
+            get => this._smtpUsername;
             set
             {
-                if (value == _smtpUsername) return;
-                _smtpUsername = value;
-                OnPropertyChanged(nameof(SmtpUsername));
+                if (value == this._smtpUsername) return;
+                this._smtpUsername = value;
+                this.OnPropertyChanged(nameof(this.SmtpUsername));
             }
         }
 
@@ -74,12 +78,12 @@ namespace Papercut.Rules.Implementations
         [DisplayName("SMTP Port")]
         public int SmtpPort
         {
-            get => _smtpPort;
+            get => this._smtpPort;
             set
             {
-                if (value == _smtpPort) return;
-                _smtpPort = value;
-                OnPropertyChanged(nameof(SmtpPort));
+                if (value == this._smtpPort) return;
+                this._smtpPort = value;
+                this.OnPropertyChanged(nameof(this.SmtpPort));
             }
         }
 
@@ -87,12 +91,12 @@ namespace Papercut.Rules.Implementations
         [DisplayName("SMTP Use SSL")]
         public bool SmtpUseSSL
         {
-            get => _smtpUseSsl;
+            get => this._smtpUseSsl;
             set
             {
-                if (value.Equals(_smtpUseSsl)) return;
-                _smtpUseSsl = value;
-                OnPropertyChanged(nameof(SmtpUseSSL));
+                if (value.Equals(this._smtpUseSsl)) return;
+                this._smtpUseSsl = value;
+                this.OnPropertyChanged(nameof(this.SmtpUseSSL));
             }
         }
 
@@ -103,12 +107,12 @@ namespace Papercut.Rules.Implementations
         [DisplayName("SMTP Server")]
         public string SmtpServer
         {
-            get => _smtpServer;
+            get => this._smtpServer;
             set
             {
-                if (value == _smtpServer) return;
-                _smtpServer = value;
-                OnPropertyChanged(nameof(SmtpServer));
+                if (value == this._smtpServer) return;
+                this._smtpServer = value;
+                this.OnPropertyChanged(nameof(this.SmtpServer));
             }
         }
 
@@ -122,7 +126,7 @@ namespace Papercut.Rules.Implementations
             {
                 if (value == this._toBcc) return;
                 this._toBcc = value;
-                OnPropertyChanged(nameof(this.ToBcc));
+                this.OnPropertyChanged(nameof(this.ToBcc));
             }
         }
 
@@ -130,12 +134,12 @@ namespace Papercut.Rules.Implementations
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            if (string.IsNullOrWhiteSpace(ToBcc))
+            if (string.IsNullOrWhiteSpace(this.ToBcc))
             {
                 return;
             }
 
-            foreach (var bcc in ToBcc.Split(new[] { ',', '|', ';' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()))
+            foreach (var bcc in this.ToBcc.Split(new[] { ',', '|', ';' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()))
             {
                 message.Bcc.Add(new MailboxAddress(bcc, bcc));
             }
@@ -145,5 +149,21 @@ namespace Papercut.Rules.Implementations
         {
             return base.GetPropertiesForDescription().Concat(this.GetProperties());
         }
+
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<RelayRule>().AsSelf().As<IRule>().InstancePerDependency();
+        }
+
+        #endregion
     }
 }

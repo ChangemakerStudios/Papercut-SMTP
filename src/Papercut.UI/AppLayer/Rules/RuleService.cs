@@ -19,7 +19,6 @@ namespace Papercut.AppLayer.Rules
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
     using System.Linq;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
@@ -29,14 +28,13 @@ namespace Papercut.AppLayer.Rules
 
     using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Message;
     using Papercut.Core.Domain.Rules;
-    using Papercut.Core.Infrastructure.MessageBus;
     using Papercut.Domain.BackendService;
     using Papercut.Domain.LifecycleHooks;
     using Papercut.Helpers;
     using Papercut.Message;
-    using Papercut.Rules;
+    using Papercut.Rules.App;
+    using Papercut.Rules.Domain.Rules;
 
     using Serilog;
 
@@ -53,7 +51,7 @@ namespace Papercut.AppLayer.Rules
         private IDisposable _rulesObservable;
 
         public RuleService(
-            RuleRepository ruleRepository,
+            IRuleRepository ruleRepository,
             ILogger logger,
             IBackendServiceStatus backendServiceStatus,
             MessageWatcher messageWatcher,

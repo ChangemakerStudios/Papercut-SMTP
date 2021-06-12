@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Rules
+namespace Papercut.Rules.App
 {
     using System;
     using System.Collections.Generic;
@@ -94,5 +94,21 @@ namespace Papercut.Rules
                     messageEntry);
             }
         }
+
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<RulesRunner>().As<IRulesRunner>().SingleInstance();
+        }
+
+        #endregion
     }
 }

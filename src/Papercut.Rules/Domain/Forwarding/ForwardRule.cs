@@ -16,16 +16,21 @@
 // limitations under the License.
 
 
-namespace Papercut.Rules.Implementations
+namespace Papercut.Rules.Domain.Forwarding
 {
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
 
+    using Autofac;
+
     using MimeKit;
 
     using Papercut.Common.Extensions;
+    using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Rules;
+    using Papercut.Rules.Domain.Relaying;
 
     [Serializable]
     public class ForwardRule : RelayRule
@@ -42,12 +47,12 @@ namespace Papercut.Rules.Implementations
         [Description("Forward From Email")]
         public string FromEmail
         {
-            get => _fromEmail;
+            get => this._fromEmail;
             set
             {
-                if (value == _fromEmail) return;
-                _fromEmail = value;
-                OnPropertyChanged(nameof(FromEmail));
+                if (value == this._fromEmail) return;
+                this._fromEmail = value;
+                this.OnPropertyChanged(nameof(this.FromEmail));
             }
         }
 
@@ -56,12 +61,12 @@ namespace Papercut.Rules.Implementations
         [Description("Foward To Email")]
         public string ToEmail
         {
-            get => _toEmail;
+            get => this._toEmail;
             set
             {
-                if (value == _toEmail) return;
-                _toEmail = value;
-                OnPropertyChanged(nameof(ToEmail));
+                if (value == this._toEmail) return;
+                this._toEmail = value;
+                this.OnPropertyChanged(nameof(this.ToEmail));
             }
         }
 
@@ -91,5 +96,21 @@ namespace Papercut.Rules.Implementations
         {
             return base.GetPropertiesForDescription().Concat(this.GetProperties());
         }
+
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<ForwardRule>().AsSelf().As<IRule>().InstancePerDependency();
+        }
+
+        #endregion
     }
 }

@@ -29,6 +29,9 @@ namespace Papercut.Service.Services
     using Papercut.Core.Domain.Rules;
     using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Rules;
+    using Papercut.Rules.App;
+    using Papercut.Rules.Domain.Rules;
+    using Papercut.Rules.Infrastructure;
 
     using Serilog;
 
@@ -43,7 +46,7 @@ namespace Papercut.Service.Services
         readonly IRulesRunner _rulesRunner;
 
         public RuleService(
-            RuleRepository ruleRepository,
+            IRuleRepository ruleRepository,
             ILogger logger,
             IRulesRunner rulesRunner)
             : base(ruleRepository, logger)

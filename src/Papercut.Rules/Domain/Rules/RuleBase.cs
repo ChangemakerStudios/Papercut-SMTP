@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Rules
+namespace Papercut.Rules.Domain.Rules
 {
     using System;
     using System.Collections.Generic;
@@ -38,7 +38,7 @@ namespace Papercut.Rules
 
         protected RuleBase()
         {
-            Id = Guid.NewGuid();
+            this.Id = Guid.NewGuid();
         }
 
         [Category("Information")]
@@ -50,25 +50,27 @@ namespace Papercut.Rules
         [Description("Is the Rule Enabled for Processing?")]
         public virtual bool IsEnabled
         {
-            get => _isEnabled;
+            get => this._isEnabled;
             set
             {
-                if (value.Equals(_isEnabled)) return;
-                _isEnabled = value;
-                OnPropertyChanged(nameof(IsEnabled));
+                if (value.Equals(this._isEnabled)) return;
+                this._isEnabled = value;
+                this.OnPropertyChanged(nameof(this.IsEnabled));
             }
         }
 
+        public virtual string Icon => null;
+
         [Category("Information")]
         [Browsable(false)]
-        public virtual string Type => GetType().Name;
+        public virtual string Type => this.GetType().Name;
 
         [Category("Information")]
         [Browsable(false)]
         [JsonIgnore]
         public virtual string Description
             =>
-                GetPropertiesForDescription()
+                this.GetPropertiesForDescription()
                     .Where(s => !s.Key.IsAny("Id", "Type", "Description"))
                     .OrderBy(s => s.Key)
                     .ToFormattedPairs()
@@ -86,7 +88,7 @@ namespace Papercut.Rules
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            PropertyChangedEventHandler handler = this.PropertyChanged;
             if (handler != null)
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));

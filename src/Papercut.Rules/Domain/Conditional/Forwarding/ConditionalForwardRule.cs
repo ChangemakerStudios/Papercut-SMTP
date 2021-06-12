@@ -15,18 +15,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Rules.Implementations
+namespace Papercut.Rules.Domain.Conditional.Forwarding
 {
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
 
+    using Autofac;
+
     using Papercut.Common.Extensions;
     using Papercut.Common.Helper;
+    using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Rules;
+    using Papercut.Rules.Domain.Conditional;
+    using Papercut.Rules.Domain.Forwarding;
 
     [Serializable]
-    public class ConditionalForwardRule : ForwardRule
+    public class ConditionalForwardRule : ForwardRule, IConditionalRule
     {
         string _regexBodyMatch;
 
@@ -35,27 +41,27 @@ namespace Papercut.Rules.Implementations
         [DisplayName("Regex Header Match")]
         public string RegexHeaderMatch
         {
-            get => _regexHeaderMatch;
+            get => this._regexHeaderMatch;
             set
             {
-                if (value == _regexHeaderMatch)
+                if (value == this._regexHeaderMatch)
                     return;
-                _regexHeaderMatch = value.IsSet() && value.IsValidRegex() ? value : null; ;
-                OnPropertyChanged(nameof(RegexHeaderMatch));
+                this._regexHeaderMatch = value.IsSet() && value.IsValidRegex() ? value : null; ;
+                this.OnPropertyChanged(nameof(this.RegexHeaderMatch));
             }
         }
 
         [DisplayName("Regex Body Match")]
         public string RegexBodyMatch
         {
-            get => _regexBodyMatch;
+            get => this._regexBodyMatch;
             set
             {
-                if (value == _regexBodyMatch)
+                if (value == this._regexBodyMatch)
                     return;
 
-                _regexBodyMatch = value.IsSet() && value.IsValidRegex() ? value : null;
-                OnPropertyChanged(nameof(RegexBodyMatch));
+                this._regexBodyMatch = value.IsSet() && value.IsValidRegex() ? value : null;
+                this.OnPropertyChanged(nameof(this.RegexBodyMatch));
             }
         }
 
@@ -66,5 +72,21 @@ namespace Papercut.Rules.Implementations
         {
             return base.GetPropertiesForDescription().Concat(this.GetProperties());
         }
+
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<ConditionalForwardRule>().AsSelf().As<IRule>().InstancePerDependency();
+        }
+
+        #endregion
     }
 }

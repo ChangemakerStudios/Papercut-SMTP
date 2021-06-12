@@ -48,11 +48,13 @@ namespace Papercut.Infrastructure.IPComm.Network
                 using (var client = new TcpClient())
                 {
                     var cancelTask = Task.Delay(connectTimeout);
-                    var connectTask = client.ConnectAsync(this.Endpoint.Address, this.Endpoint.Port);
+                    var connectTask = client.ConnectAsync(
+                        this.Endpoint.Address,
+                        this.Endpoint.Port);
 
                     await await Task.WhenAny(connectTask, cancelTask);
 
-                    if (cancelTask.IsCompleted)
+                    if (cancelTask.IsCanceled)
                     {
                         //If cancelTask and connectTask both finish at the same time,
                         //we'll consider it to be a timeout. 
@@ -66,7 +68,8 @@ namespace Papercut.Infrastructure.IPComm.Network
                 }
 
             }
-            catch (Exception e) when (e is ObjectDisposedException || e is SocketException)
+            catch (Exception e) when (e is TaskCanceledException || e is ObjectDisposedException
+                                                                 || e is SocketException)
             {
                 // already disposed or no listener
             }

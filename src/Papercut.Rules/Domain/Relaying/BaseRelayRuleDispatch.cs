@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Rules.Implementations
+namespace Papercut.Rules.Domain.Relaying
 {
     using System;
     using System.Threading;

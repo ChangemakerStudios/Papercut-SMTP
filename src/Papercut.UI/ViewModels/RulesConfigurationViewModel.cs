@@ -48,7 +48,7 @@ namespace Papercut.ViewModels
 
         public string WindowTitle
         {
-            get { return _windowTitle; }
+            get => _windowTitle;
             set
             {
                 _windowTitle = value;
@@ -58,7 +58,7 @@ namespace Papercut.ViewModels
 
         public IRule SelectedRule
         {
-            get { return _selectedRule; }
+            get => _selectedRule;
             set
             {
                 _selectedRule = value;

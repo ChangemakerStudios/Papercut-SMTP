@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Rules.Helpers
+namespace Papercut.Rules.Infrastructure
 {
     using System;
     using System.Reactive.Linq;
@@ -25,9 +25,9 @@ namespace Papercut.Rules.Helpers
         public static IObservable<T> RetryWithDelay<T>(this IObservable<T> source, int retryCount, TimeSpan timeSpan)
         {
             if (source == null)
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             if (timeSpan < TimeSpan.Zero)
-                throw new ArgumentOutOfRangeException("timeSpan");
+                throw new ArgumentOutOfRangeException(nameof(timeSpan));
             if (timeSpan == TimeSpan.Zero)
                 return source.Retry(retryCount);
 

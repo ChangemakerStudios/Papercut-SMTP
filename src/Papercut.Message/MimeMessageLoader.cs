@@ -19,9 +19,13 @@
 namespace Papercut.Message
 {
     using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Runtime.Caching;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Autofac.Util;
 
     using MimeKit;
 
@@ -30,7 +34,7 @@ namespace Papercut.Message
 
     using Serilog;
 
-    public class MimeMessageLoader
+    public class MimeMessageLoader : Disposable
     {
         public static MemoryCache MimeMessageCache;
 
@@ -38,34 +42,129 @@ namespace Papercut.Message
 
         readonly MessageRepository _messageRepository;
 
+        private readonly Task[] _backgroundLoaders;
+
         static MimeMessageLoader()
         {
-            MimeMessageCache = new MemoryCache("MimeMessage");
+            MimeMessageCache = new MemoryCache(nameof(MimeMessage));
         }
 
         public MimeMessageLoader(MessageRepository messageRepository, ILogger logger)
         {
             this._messageRepository = messageRepository;
             this._logger = logger.ForContext<MimeMessageLoader>();
+            this._cancellationSource = new CancellationTokenSource();
+
+            // run two background loaders
+            this._backgroundLoaders = new[]
+                                      {
+                                          Task.Run(
+                                              this.LoopAsync,
+                                              this._cancellationSource.Token)
+                                      };
+        }
+
+        protected class MessageLoadRequest
+        {
+            public MessageLoadRequest(MessageEntry messageEntry, Action<MimeMessage> callback)
+            {
+                this.MessageEntry = messageEntry;
+                this.Callback = callback;
+            }
+
+            public MessageEntry MessageEntry { get; }
+            private Action<MimeMessage> Callback { get; }
+
+            public void InvokeCallback(MimeMessage mimeMessage)
+            {
+                Callback.Invoke(mimeMessage);
+            }
+        }
+
+        private readonly ConcurrentQueue<MessageLoadRequest> _queue =
+            new ConcurrentQueue<MessageLoadRequest>();
+
+        private readonly CancellationTokenSource _cancellationSource;
+
+        private async Task LoopAsync()
+        {
+            try
+            {
+                while (!this._cancellationSource.IsCancellationRequested)
+                {
+                    if (this._queue.IsEmpty)
+                    {
+                        await Task.Delay(50, this._cancellationSource.Token);
+                        continue;
+                    }
+
+                    var tasks = new List<Task>();
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (this._cancellationSource.IsCancellationRequested)
+                        {
+                            return;
+                        }
+
+                        if (this._queue.TryDequeue(out MessageLoadRequest request))
+                        {
+                            tasks.Add(
+                                GetMimeMessageFromCacheAsync(
+                                        request.MessageEntry,
+                                        this._cancellationSource.Token)
+                                    .ContinueWith(
+                                        t =>
+                                        {
+                                            request.InvokeCallback(t.Result);
+                                        }));
+                        }
+                    }
+
+                    await Task.WhenAll(tasks);
+                }
+            }
+            catch (Exception e) when (e is ObjectDisposedException || e is TaskCanceledException)
+            {
+                // no need
+            }
+        }
+
+        protected override async ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+                this._cancellationSource.Cancel();
+
+                try
+                {
+                    await Task.WhenAll(this._backgroundLoaders);
+                }
+                catch (Exception)
+                {
+                    // catch all
+                }
+            }
+        }
+
+        public void GetMessageCallback(
+            MessageEntry messageEntry,
+            Action<MimeMessage> callback)
+        {
+            this._queue.Enqueue(new MessageLoadRequest(messageEntry, callback));
         }
 
         public Task<MimeMessage> GetAsync(MessageEntry messageEntry, CancellationToken token = default)
         {
-            this._logger.Verbose("Loading Message Entry {@MessageEntry}", messageEntry);
-
             return this.GetMimeMessageFromCacheAsync(messageEntry, token);
         }
 
-        private Task<MimeMessage> GetMimeMessageFromCacheAsync(MessageEntry messageEntry, CancellationToken token)
+        private async Task<MimeMessage> GetMimeMessageFromCacheAsync(MessageEntry messageEntry, CancellationToken token = default)
         {
-            return MimeMessageCache.GetOrSet(
+            return await MimeMessageCache.GetOrSetAsync(
                 messageEntry.File,
                 async () =>
                 {
-                    this._logger.Verbose(
-                        "Getting Message Data from Message Repository",
-                        messageEntry);
-
                     this._logger.Verbose(
                         "MimeMessage Load for {@MessageEntry}",
                         messageEntry);

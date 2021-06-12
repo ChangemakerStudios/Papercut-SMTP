@@ -20,6 +20,7 @@ namespace Papercut.AppLayer.IpComm
 {
     using System;
     using System.Linq;
+    using System.Net.Sockets;
     using System.Reactive.Concurrency;
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
@@ -161,12 +162,18 @@ namespace Papercut.AppLayer.IpComm
                     Settings.Default.IP,
                     Settings.Default.Port);
 
-                bool successfulPublish = await messenger.PublishEventServer(smtpServerBindEvent, TimeSpan.FromSeconds(1));
+                bool successfulPublish = await messenger.PublishEventServer(
+                                             smtpServerBindEvent,
+                                             TimeSpan.FromSeconds(1));
 
                 this._logger.Information(
                     successfulPublish
                         ? "Successfully pushed new Smtp Server Binding to Backend Service"
                         : "Papercut Backend Service Failed to Update. Could be offline.");
+            }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is ObjectDisposedException)
+            {
+                // do nothing
             }
             catch (Exception ex)
             {
@@ -201,6 +208,10 @@ namespace Papercut.AppLayer.IpComm
                     return;
                 }
             }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is ObjectDisposedException)
+            {
+                // do nothing
+            }
             catch (Exception ex)
             {
                 this._logger.Warning(ex, BackendServiceFailureMessage);
@@ -222,6 +233,10 @@ namespace Papercut.AppLayer.IpComm
                     successfulPublish
                         ? "Successfully Updated Rules on Backend Service"
                         : "Papercut Backend Service Failed to Update Rules. Could be offline.");
+            }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is ObjectDisposedException)
+            {
+                // do nothing
             }
             catch (Exception ex)
             {

@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Rules
+namespace Papercut.Rules.App
 {
     using System;
     using System.Collections.Generic;
@@ -30,6 +30,8 @@ namespace Papercut.Rules
     using Autofac.Util;
 
     using Papercut.Core.Domain.Rules;
+    using Papercut.Rules.Domain.Rules;
+    using Papercut.Rules.Infrastructure;
 
     using Serilog;
 
@@ -39,9 +41,9 @@ namespace Papercut.Rules
 
         protected readonly ILogger Logger;
 
-        protected readonly RuleRepository RuleRepository;
+        protected readonly IRuleRepository RuleRepository;
 
-        protected RuleServiceBase(RuleRepository ruleRepository, ILogger logger)
+        protected RuleServiceBase(IRuleRepository ruleRepository, ILogger logger)
         {
             this.RuleRepository = ruleRepository;
             this.Logger = logger;

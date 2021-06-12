@@ -15,11 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Rules.Implementations
+namespace Papercut.Rules.Domain.Conditional.Forwarding
 {
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Autofac;
 
     using MimeKit;
 
@@ -28,12 +30,12 @@ namespace Papercut.Rules.Implementations
     using Papercut.Core.Domain.Rules;
     using Papercut.Message;
     using Papercut.Message.Helpers;
+    using Papercut.Rules.Domain.Relaying;
 
     using Polly;
 
     using Serilog;
 
-    [UsedImplicitly]
     public class ConditionalForwardWithRetryRuleDispatch : IRuleDispatcher<ConditionalForwardWithRetryRule>
     {
         private readonly Lazy<MimeMessageLoader> _mimeMessageLoader;
@@ -41,8 +43,8 @@ namespace Papercut.Rules.Implementations
 
         public ConditionalForwardWithRetryRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
         {
-            _mimeMessageLoader = mimeMessageLoader;
-            _logger = logger;
+            this._mimeMessageLoader = mimeMessageLoader;
+            this._logger = logger;
         }
 
         public async Task DispatchAsync(ConditionalForwardWithRetryRule rule, MessageEntry messageEntry, CancellationToken token)
@@ -50,9 +52,9 @@ namespace Papercut.Rules.Implementations
             if (rule == null) throw new ArgumentNullException(nameof(rule));
             if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
-            var message = await _mimeMessageLoader.Value.GetClonedAsync(messageEntry, token);
+            var message = await this._mimeMessageLoader.Value.GetClonedAsync(messageEntry, token);
 
-            if (!RuleMatches(rule, message))
+            if (!this.RuleMatches(rule, message))
             {
                 return;
             }
@@ -89,5 +91,22 @@ namespace Papercut.Rules.Implementations
         {
             return rule.IsConditionalForwardRuleMatch(mimeMessage);
         }
+
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<ConditionalForwardWithRetryRuleDispatch>()
+                .As<IRuleDispatcher<ConditionalForwardWithRetryRule>>().AsSelf().InstancePerDependency();
+        }
+
+        #endregion
     }
 }

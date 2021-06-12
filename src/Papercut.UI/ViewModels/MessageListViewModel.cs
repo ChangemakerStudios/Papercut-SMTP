@@ -391,6 +391,7 @@ namespace Papercut.ViewModels
 
             List<MimeMessageEntry> toAdd =
                 messageEntries.Except(this.Messages)
+                    .OrderBy(s => s.ModifiedDate)
                     .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
                     .ToList();
 

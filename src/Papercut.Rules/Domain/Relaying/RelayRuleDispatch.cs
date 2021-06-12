@@ -15,11 +15,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
-namespace Papercut.Rules.Implementations
+namespace Papercut.Rules.Domain.Relaying
 {
     using System;
 
+    using Autofac;
+
     using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Rules;
     using Papercut.Message;
 
     using Serilog;
@@ -31,5 +34,22 @@ namespace Papercut.Rules.Implementations
             : base(mimeMessageLoader, logger)
         {
         }
+
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<RelayRuleDispatch>()
+                .As<IRuleDispatcher<RelayRule>>().AsSelf().InstancePerDependency();
+        }
+
+        #endregion
     }
 }

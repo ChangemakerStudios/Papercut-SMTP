@@ -46,8 +46,8 @@ namespace Papercut.ViewModels
     using Papercut.Helpers;
     using Papercut.Infrastructure.Resources;
     using Papercut.Properties;
-    using Papercut.Rules.Helpers;
-    using Papercut.Rules.Implementations;
+    using Papercut.Rules.Domain.Forwarding;
+    using Papercut.Rules.Domain.Relaying;
     using Papercut.Views;
 
     using Serilog.Events;

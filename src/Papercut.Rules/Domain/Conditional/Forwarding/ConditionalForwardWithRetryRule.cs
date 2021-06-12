@@ -15,14 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Rules.Implementations
+namespace Papercut.Rules.Domain.Conditional.Forwarding
 {
     using System;
     using System.ComponentModel;
     using System.Linq;
 
+    using Autofac;
+
     using Papercut.Common.Extensions;
     using Papercut.Common.Helper;
+    using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Rules;
 
     [Serializable]
     public class ConditionalForwardWithRetryRule : ConditionalForwardRule
@@ -40,12 +44,12 @@ namespace Papercut.Rules.Implementations
         [DisplayName("Retry Attempts")]
         public int RetryAttempts
         {
-            get => _retryAttempts;
+            get => this._retryAttempts;
             set
             {
-                if (value == _retryAttempts) return;
-                _retryAttempts = value;
-                OnPropertyChanged(nameof(RetryAttempts));
+                if (value == this._retryAttempts) return;
+                this._retryAttempts = value;
+                this.OnPropertyChanged(nameof(this.RetryAttempts));
             }
         }
 
@@ -53,12 +57,12 @@ namespace Papercut.Rules.Implementations
         [DisplayName("Retry Attempt Delay in Seconds")]
         public int RetryAttemptDelaySeconds
         {
-            get => _retryAttemptDelaySeconds;
+            get => this._retryAttemptDelaySeconds;
             set
             {
-                if (value == _retryAttemptDelaySeconds) return;
-                _retryAttemptDelaySeconds = value;
-                OnPropertyChanged(nameof(RetryAttemptDelaySeconds));
+                if (value == this._retryAttemptDelaySeconds) return;
+                this._retryAttemptDelaySeconds = value;
+                this.OnPropertyChanged(nameof(this.RetryAttemptDelaySeconds));
             }
         }
 
@@ -69,5 +73,21 @@ namespace Papercut.Rules.Implementations
         {
             return this.GetProperties().OrderBy(s => s.Key).ToFormattedPairs().Join("\r\n");
         }
+
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<ConditionalForwardWithRetryRule>().AsSelf().As<IRule>().InstancePerDependency();
+        }
+
+        #endregion
     }
 }

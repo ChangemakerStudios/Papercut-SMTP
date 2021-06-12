@@ -69,6 +69,17 @@
                   SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
                   ItemsSource="{Binding Rules}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Width="20"
+                                                            Height="20"
+                                                            Kind="LayersPlus" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" />
                 <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" />
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" />
