@@ -59,8 +59,6 @@ namespace Papercut.Rules.Domain.Rules
             }
         }
 
-        public virtual string Icon => null;
-
         [Category("Information")]
         [Browsable(false)]
         public virtual string Type => this.GetType().Name;

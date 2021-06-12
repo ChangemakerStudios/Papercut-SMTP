@@ -75,7 +75,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Width="20"
                                                             Height="20"
-                                                            Kind="LayersPlus" />
+                                                            Kind="ArrowRightBoldBox" />
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

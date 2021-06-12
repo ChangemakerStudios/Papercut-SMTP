@@ -26,6 +26,5 @@ namespace Papercut.Core.Domain.Rules
         bool IsEnabled { get; set; }
         string Type { get; }
         string Description { get; }
-        string Icon { get; }
     }
 }
