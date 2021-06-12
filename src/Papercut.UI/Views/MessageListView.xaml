@@ -19,9 +19,6 @@
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
              cal:Message.Attach="[Event KeyDown] = [Action MessageListKeyDown($eventArgs)]"
-             VirtualizingPanel.IsContainerVirtualizable="True"
-             VirtualizingPanel.IsVirtualizing="True"
-             VirtualizingPanel.IsVirtualizingWhenGrouping="True"
              ItemsSource="{Binding MessagesSorted}">
         <ListBox.ContextMenu>
             <ContextMenu>

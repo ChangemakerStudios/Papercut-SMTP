@@ -389,13 +389,27 @@ namespace Papercut.ViewModels
             List<MessageEntry> messageEntries = this._messageRepository.LoadMessages()
                     .ToList();
 
-            List<MimeMessageEntry> toAdd =
-                messageEntries.Except(this.Messages)
-                    .OrderBy(s => s.ModifiedDate)
-                    .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
-                    .ToList();
+            List<MimeMessageEntry> toAdd = null;
 
-            List<MimeMessageEntry> toDelete = this.Messages.Except(messageEntries).OfType<MimeMessageEntry>().ToList();
+            if (this.SortOrder == ListSortDirection.Ascending)
+            {
+                toAdd =
+                    messageEntries.Except(this.Messages)
+                        .OrderBy(s => s.ModifiedDate)
+                        .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
+                        .ToList();
+            }
+            else
+            {
+                // descending -- load messages in that order too
+                toAdd =
+                    messageEntries.Except(this.Messages)
+                        .OrderByDescending(s => s.ModifiedDate)
+                        .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
+                        .ToList();
+            }
+
+            var toDelete = this.Messages.Except(messageEntries).OfType<MimeMessageEntry>().ToList();
             toDelete.ForEach(m => this.Messages.Remove(m));
 
             this.Messages.AddRange(toAdd);

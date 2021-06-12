@@ -33,16 +33,22 @@ namespace Papercut.Message
     using Papercut.Core.Domain.Message;
 
     using Serilog;
+    using Serilog.Events;
 
     public class MimeMessageLoader : Disposable
     {
         public static MemoryCache MimeMessageCache;
 
+        private readonly Task[] _backgroundLoaders;
+
+        private readonly CancellationTokenSource _cancellationSource;
+
         readonly ILogger _logger;
 
         readonly MessageRepository _messageRepository;
 
-        private readonly Task[] _backgroundLoaders;
+        private readonly ConcurrentQueue<MessageLoadRequest> _queue =
+            new ConcurrentQueue<MessageLoadRequest>();
 
         static MimeMessageLoader()
         {
@@ -63,28 +69,6 @@ namespace Papercut.Message
                                               this._cancellationSource.Token)
                                       };
         }
-
-        protected class MessageLoadRequest
-        {
-            public MessageLoadRequest(MessageEntry messageEntry, Action<MimeMessage> callback)
-            {
-                this.MessageEntry = messageEntry;
-                this.Callback = callback;
-            }
-
-            public MessageEntry MessageEntry { get; }
-            private Action<MimeMessage> Callback { get; }
-
-            public void InvokeCallback(MimeMessage mimeMessage)
-            {
-                Callback.Invoke(mimeMessage);
-            }
-        }
-
-        private readonly ConcurrentQueue<MessageLoadRequest> _queue =
-            new ConcurrentQueue<MessageLoadRequest>();
-
-        private readonly CancellationTokenSource _cancellationSource;
 
         private async Task LoopAsync()
         {
@@ -110,7 +94,7 @@ namespace Papercut.Message
                         if (this._queue.TryDequeue(out MessageLoadRequest request))
                         {
                             tasks.Add(
-                                GetMimeMessageFromCacheAsync(
+                                this.GetMimeMessageFromCacheAsync(
                                         request.MessageEntry,
                                         this._cancellationSource.Token)
                                     .ContinueWith(
@@ -118,6 +102,10 @@ namespace Papercut.Message
                                         {
                                             request.InvokeCallback(t.Result);
                                         }));
+                        }
+                        else
+                        {
+                            break;
                         }
                     }
 
@@ -165,9 +153,12 @@ namespace Papercut.Message
                 messageEntry.File,
                 async () =>
                 {
-                    this._logger.Verbose(
-                        "MimeMessage Load for {@MessageEntry}",
-                        messageEntry);
+                    if (this._logger.IsEnabled(LogEventLevel.Verbose))
+                    {
+                        this._logger.Verbose(
+                            "Loading Message for File {MessageFile}",
+                            messageEntry.File);
+                    }
 
                     using (var message = this._messageRepository.GetMessage(messageEntry))
                     {
@@ -183,6 +174,24 @@ namespace Papercut.Message
 
                     MimeMessageCache.Add(messageEntry.File, m, policy);
                 });
+        }
+
+        protected class MessageLoadRequest
+        {
+            public MessageLoadRequest(MessageEntry messageEntry, Action<MimeMessage> callback)
+            {
+                this.MessageEntry = messageEntry;
+                this.Callback = callback;
+            }
+
+            public MessageEntry MessageEntry { get; }
+
+            private Action<MimeMessage> Callback { get; }
+
+            public void InvokeCallback(MimeMessage mimeMessage)
+            {
+                this.Callback.Invoke(mimeMessage);
+            }
         }
     }
 }
