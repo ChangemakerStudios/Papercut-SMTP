@@ -20,62 +20,62 @@
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
              cal:Message.Attach="[Event KeyDown] = [Action MessageListKeyDown($eventArgs)]"
              ItemsSource="{Binding MessagesSorted}">
-		<ListBox.ContextMenu>
-			<ContextMenu>
-				<MenuItem Header="Open Containing Folder..." IsEnabled="{Binding Path=HasSelectedMessage}"
+        <ListBox.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Open Containing Folder..." IsEnabled="{Binding Path=HasSelectedMessage}"
                           cal:Message.Attach="OpenMessageFolder" />
-			</ContextMenu>
-		</ListBox.ContextMenu>
-		<i:Interaction.Behaviors>
-			<Behaviors:DragDropIFile />
-		</i:Interaction.Behaviors>
-		<ListBox.ItemTemplate>
-			<DataTemplate>
-				<Grid ToolTip="{Binding File}" Margin="2">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition
+            </ContextMenu>
+        </ListBox.ContextMenu>
+        <b:Interaction.Behaviors>
+            <Behaviors:DragDropIFile />
+        </b:Interaction.Behaviors>
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <Grid ToolTip="{Binding File}" Margin="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition
                             Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
-					</Grid.ColumnDefinitions>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="*" />
-						<RowDefinition Height="*" />
-					</Grid.RowDefinitions>
-					<TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}"
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}"
 						TextTrimming="CharacterEllipsis"
 						Visibility="{Binding Subject, Converter={StaticResource CollapsedIfFalse}}" FontSize="14">
 
-						<TextBlock.Style>
-							<Style TargetType="TextBlock">
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding HasBeenSeen}" Value="True">
-										<Setter Property="FontWeight" Value="Normal"/>
-									</DataTrigger>
-									<DataTrigger Binding="{Binding HasBeenSeen}" Value="False">
-										<Setter Property="FontWeight" Value="Bold"/>
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</TextBlock.Style>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasBeenSeen}" Value="True">
+                                        <Setter Property="FontWeight" Value="Normal"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasBeenSeen}" Value="False">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
 
-					</TextBlock>
-					<Grid Grid.Column="0" Grid.Row="1">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
-						</Grid.ColumnDefinitions>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="*" />
-						</Grid.RowDefinitions>
-						<TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding DisplayText}"
+                    </TextBlock>
+                    <Grid Grid.Column="0" Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding DisplayText}"
                                    TextTrimming="CharacterEllipsis" />
-					</Grid>
-				</Grid>
-			</DataTemplate>
-		</ListBox.ItemTemplate>
-		<ListBox.ItemContainerStyle>
-			<Style TargetType="{x:Type ListBoxItem}">
-				<Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-			</Style>
-		</ListBox.ItemContainerStyle>
-	</ListBox>
+                    </Grid>
+                </Grid>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+        <ListBox.ItemContainerStyle>
+            <Style TargetType="{x:Type ListBoxItem}">
+                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+            </Style>
+        </ListBox.ItemContainerStyle>
+    </ListBox>
 
 </UserControl>
