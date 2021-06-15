@@ -24,7 +24,7 @@ namespace Papercut.Core.Domain.Network
     /// <summary>
     ///     The Server interface.
     /// </summary>
-    public interface IServer : IDisposable
+    public interface IServer : IDisposable, IAsyncDisposable
     {
         bool IsActive { get; }
 
@@ -32,8 +32,8 @@ namespace Papercut.Core.Domain.Network
 
         int ListenPort { get; }
 
-        void Start(EndpointDefinition endpoint);
+        Task StartAsync(EndpointDefinition endpoint);
 
-        void Stop();
+        Task StopAsync();
     }
 }

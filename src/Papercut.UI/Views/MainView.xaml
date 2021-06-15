@@ -5,12 +5,13 @@
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                       xmlns:model="clr-namespace:Papercut.ViewModels"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
                       xmlns:cal="http://www.caliburnproject.org"
-                      xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
                       xmlns:MahAppsBehaviors="http://metro.mahapps.com/winfx/xaml/shared"
                       xmlns:Wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
+                      xmlns:Behaviors="clr-namespace:Papercut.AppLayer.Behaviors"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:MainViewModel}"
                       ResizeMode="CanResizeWithGrip"
@@ -26,13 +27,9 @@
             <Button ToolTip="View Log"
                     cal:Message.Attach="[Event Click] = [Action ToggleLog]">
                 <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20"
-                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                        <Rectangle.OpacityMask>
-                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_console}" />
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <iconPacks:PackIconMaterial Width="20"
+                                              Height="20"
+                                              Kind="Console" />
                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Log" />
@@ -41,13 +38,9 @@
             <Button ToolTip="Configure Automatic Rules"
                     cal:Message.Attach="[Event Click] = [Action ShowRulesConfiguration]">
                 <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20"
-                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                        <Rectangle.OpacityMask>
-                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_layer}" />
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <iconPacks:PackIconMaterial Width="20"
+                                                Height="20"
+                                                Kind="Robot" />
                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Rules" />
@@ -55,13 +48,9 @@
             </Button>
             <Button ToolTip="Configure Papercut Options" cal:Message.Attach="[Event Click] = [Action ShowOptions]">
                 <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20"
-                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                        <Rectangle.OpacityMask>
-                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_settings}" />
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <iconPacks:PackIconMaterial Width="20"
+                                                Height="20"
+                                                Kind="ApplicationCog" />
                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Options" />
@@ -69,13 +58,9 @@
             </Button>
             <Button ToolTip="Shut Down Papercut App" cal:Message.Attach="[Event Click] = [Action Exit]">
                 <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20"
-                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                        <Rectangle.OpacityMask>
-                            <VisualBrush Stretch="Fill"
-                                         Visual="{StaticResource appbar_power}" />
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <iconPacks:PackIconMaterial Width="20"
+                                                Height="20"
+                                                Kind="ExitToApp" />
                     <TextBlock Margin="4 0 0 0"
                                VerticalAlignment="Center"
                                Text="Exit" />
@@ -97,11 +82,11 @@
                     <TextBlock FontSize="16" TextAlignment="Center" Margin="0 8 0 0">
                         Delete all <TextBlock FontWeight="Bold" Text="{Binding Path=MessageListViewModel.Messages.Count}" /> Message(s)?
                     </TextBlock>
-                    <Button Margin="4 32 4 0" Style="{StaticResource AccentedSquareButtonStyle}"
+                    <Button Margin="4 32 4 0" Style="{StaticResource  MahApps.Styles.Button.Square.Accent}"
                             cal:Message.Attach="[Event Click] = [Action DeleteAll]">
                         Proceed
                     </Button>
-                    <Button Margin="4 16 4 4" Style="{DynamicResource SquareButtonStyle}"
+                    <Button Margin="4 16 4 4" Style="{DynamicResource MahApps.Styles.Button.Square}"
                             cal:Message.Attach="[Event Click] = [Action CancelDeleteAll]">
                         Cancel
                     </Button>
@@ -144,24 +129,25 @@
                             HorizontalAlignment="Stretch"
                             IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}" />
 
-            <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,9" Width="72"
-                    Name="ForwardSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}"
-                    Grid.Row="1">
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,9" Width="72" 
+                    Name="ForwardSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}">
                 Forward
-            </Button>
+                </Button>
 
-            <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="82,0,0,9" Width="72"
+                <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,9" MinWidth="72"
                     Name="DeleteSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}"
                     Content="{Binding Path=MessageListViewModel.DeleteText}"           
                     cal:Bind.ModelWithoutContext="{Binding Path=MessageListViewModel}"
-                    cal:Message.Attach="[Event Click] = [Action DeleteSelected]" Grid.Row="1" />
+                    cal:Message.Attach="[Event Click] = [Action DeleteSelected]" />
 
-            <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="160,0,0,9" Width="72"
+                <Button Height="28" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,9" Width="72"
                     Name="DeleteAllSelected" IsEnabled="{Binding Path=MessageListViewModel.HasSelectedMessage}"
                     cal:Bind.ModelWithoutContext="{Binding Path=MessageListViewModel}"
-                    cal:Message.Attach="[Event Click] = [Action ShowConfirmDeleteAll]" Grid.Row="1">
+                    cal:Message.Attach="[Event Click] = [Action ShowConfirmDeleteAll]">
                 Delete All
-            </Button>
+                </Button>
+            </StackPanel>
 
             <Image Height="42" Margin="6,0,0,3" Name="image1" Stretch="Fill" VerticalAlignment="Bottom"
                    HorizontalAlignment="Left" Width="42" Source="/Papercut;component/App.ico" Grid.Row="1"

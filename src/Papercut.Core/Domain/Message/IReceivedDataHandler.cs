@@ -1,7 +1,9 @@
 namespace Papercut.Core.Domain.Message
 {
+    using System.Threading.Tasks;
+
     public interface IReceivedDataHandler
     {
-        void HandleReceived(byte[] message, string[] recipients);
+        Task HandleReceivedAsync(byte[] message, string[] recipients);
     }
 }

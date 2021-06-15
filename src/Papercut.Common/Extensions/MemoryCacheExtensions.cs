@@ -1,24 +1,27 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Common.Extensions
 {
     using System;
     using System.Runtime.Caching;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using Papercut.Core.Annotations;
 
@@ -38,7 +41,7 @@ namespace Papercut.Common.Extensions
         /// <summary>
         ///     The lock cache items.
         /// </summary>
-        static readonly object[] _lockCacheItems;
+        static readonly SemaphoreSlim[] _lockCacheItems;
 
         #endregion
 
@@ -49,42 +52,49 @@ namespace Papercut.Common.Extensions
         /// </summary>
         static MemoryCacheExtensions()
         {
-            _lockCacheItems = new object[LockObjectCount + 1];
+            _lockCacheItems = new SemaphoreSlim[LockObjectCount + 1];
         }
 
         #endregion
 
         #region Public Methods and Operators
 
-        public static T GetOrSet<T>(
+        public static async Task<T> GetOrSetAsync<T>(
             [NotNull] this MemoryCache cache,
             [NotNull] string key,
-            [NotNull] Func<T> getValue,
+            [NotNull] Func<Task<T>> getValue,
             [NotNull] Action<T> addToCacheFunction)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (getValue == null) throw new ArgumentNullException(nameof(getValue));
             if (addToCacheFunction == null) throw new ArgumentNullException(nameof(addToCacheFunction));
 
-            var cachedItem = (T)(cache[key]);
+            var cachedItem = (T)cache[key];
 
             if (!cachedItem.IsDefault()) return cachedItem;
 
-            lock (GetLockObject(key))
+            var lockObject = GetLockObject(key);
+
+            try
             {
-                // now that we're on lockdown, try one more time...
-                cachedItem = (T)(cache[key]);
+                await lockObject.WaitAsync().ConfigureAwait(false);
+
+                cachedItem = (T)cache[key];
 
                 if (!cachedItem.IsDefault()) return cachedItem;
 
                 // materialize the query
-                cachedItem = getValue();
+                cachedItem = await getValue();
 
                 if (!cachedItem.IsDefault())
                 {
                     // add to cache...
                     addToCacheFunction(cachedItem);
                 }
+            }
+            finally
+            {
+                lockObject.Release();
             }
 
             return cachedItem;
@@ -104,7 +114,7 @@ namespace Papercut.Common.Extensions
         ///     The get.
         /// </returns>
         [NotNull]
-        static object GetLockObject([NotNull] string originalKey)
+        static SemaphoreSlim GetLockObject([NotNull] string originalKey)
         {
             if (originalKey == null) throw new ArgumentNullException(nameof(originalKey));
 
@@ -117,7 +127,7 @@ namespace Papercut.Common.Extensions
             int lockItemId = keyHash % LockObjectCount;
 
             // init the lock object if it hasn't been created yet...
-            return _lockCacheItems[lockItemId] ?? (_lockCacheItems[lockItemId] = new object());
+            return _lockCacheItems[lockItemId] ?? (_lockCacheItems[lockItemId] = new SemaphoreSlim(1));
         }
 
         #endregion
