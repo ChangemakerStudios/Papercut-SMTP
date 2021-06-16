@@ -64,6 +64,17 @@ namespace Papercut.Core.Domain.Message
             {
                 _created = this._info.CreationTime;
             }
+
+            if (this._created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
+            {
+                // anything under 5 minutes old is "new" still by default
+                this._hasBeenSeen = false;
+            }
+            else
+            {
+                // everything else has been seen by default
+                this._hasBeenSeen = true;
+            }
         }
 
         public MessageEntry(string file)

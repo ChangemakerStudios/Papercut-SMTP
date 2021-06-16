@@ -33,6 +33,7 @@ namespace Papercut.ViewModels
     using System.Windows.Data;
     using System.Windows.Forms;
     using System.Windows.Input;
+    using System.Windows.Threading;
 
     using Caliburn.Micro;
 
@@ -126,7 +127,10 @@ namespace Papercut.ViewModels
         public Task HandleAsync(SettingsUpdatedEvent message, CancellationToken token)
         {
             this.MessagesSorted.SortDescriptions.Clear();
-            this.MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", this.SortOrder));
+            this.MessagesSorted.SortDescriptions.Add(
+                new SortDescription("ModifiedDate", this.SortOrder));
+
+            this.MessagesSorted.Refresh();
 
             return Task.CompletedTask;
         }
@@ -170,7 +174,6 @@ namespace Papercut.ViewModels
         {
             this.Messages = new ObservableCollection<MimeMessageEntry>();
             this.MessagesSorted = CollectionViewSource.GetDefaultView(this.Messages);
-
             this.MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", this.SortOrder));
 
             // Begin listening for new messages
