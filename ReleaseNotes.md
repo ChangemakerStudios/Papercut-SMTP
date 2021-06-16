@@ -1,5 +1,17 @@
 # Release Notes
 
+## Papercut v5.8.0 [2021-06-16]
+- Moved to .NET Framework 4.7.2
+- Upgraded to latest dependencies (Caliburn Micro, Autofac, MahApps)
+- Fixed: Window sizes weren't binding properly. 
+- Converted system to Async.
+- Added additional theme colors.
+- Fixed: Hide passwords in rules logging output.
+- Fixed: Don't show passwords in rules logging output.
+- [#175] Added font weight changing when message has been seen (PR thanks to [LewisJohnson](https://github.com/LewisJohnson))
+- [#180] Fixed message not displaying in Web UI when id includes '#' symbol (PR thanks to [ryan-warrener](https://github.com/ryan-warrener))
+- [#185] Responsive Delete button (PR thanks to [rfverbruggen](https://github.com/rfverbruggen)) 
+
 ## Papercut v5.7.0 [2020-04-05]
 - Renamed product to "Papercut SMTP" to seperate from other products.
 - Moved "Readme.eml" and logs to *\ProgramData\Changemaker Studios\Papercut SMTP* allowing it to be deleted.
