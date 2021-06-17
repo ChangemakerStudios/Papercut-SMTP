@@ -9,7 +9,6 @@
                       xmlns:Helpers="clr-namespace:Papercut.Helpers"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
-                      xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:ForwardViewModel}"
                       Title="{Binding WindowTitle}"

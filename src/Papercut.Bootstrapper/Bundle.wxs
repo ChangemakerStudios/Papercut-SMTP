@@ -8,7 +8,7 @@
             Manufacturer="!(bind.packageManufacturer.PapercutMsi)"
             UpgradeCode="72719c72-122e-4313-8a57-0a0fc666ba75"
             AboutUrl="https://github.com/ChangemakerStudios/Papercut"
-            Copyright="Copyright (c) 2020 by Changemaker Studios"
+            Copyright="Copyright (c) 2021 by Changemaker Studios"
             HelpUrl="https://github.com/ChangemakerStudios/Papercut"
             IconSourceFile="Resources\App.ico">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkSidebarLicense">
@@ -22,7 +22,7 @@
         <Variable Name="CommonDataFolder" Type="string" Value="[CommonAppDataFolder]!(bind.packageManufacturer.PapercutMsi)\Papercut SMTP"/>
 
         <Chain>
-            <PackageGroupRef Id="NetFx45Web" />
+            <PackageGroupRef Id="NetFx472Web" />
 
             <RollbackBoundary />
 

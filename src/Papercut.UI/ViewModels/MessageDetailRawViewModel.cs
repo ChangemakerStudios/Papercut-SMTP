@@ -20,6 +20,8 @@ namespace Papercut.ViewModels
     using System;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using Caliburn.Micro;
 
@@ -142,10 +144,10 @@ namespace Papercut.ViewModels
                 });
         }
 
-        protected override void OnActivate()
+        protected override Task OnActivateAsync(CancellationToken token)
         {
             RefreshDump();
-            base.OnActivate();
+            return base.OnActivateAsync(token);
         }
     }
 }

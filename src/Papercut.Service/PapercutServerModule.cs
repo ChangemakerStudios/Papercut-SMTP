@@ -26,12 +26,12 @@ namespace Papercut.Service
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Settings;
+    using Papercut.Core.Infrastructure.Container;
     using Papercut.Infrastructure.IPComm;
     using Papercut.Infrastructure.Smtp;
     using Papercut.Message;
     using Papercut.Rules;
     using Papercut.Service.Helpers;
-    using Papercut.Service.Logging;
 
     using Module = Autofac.Module;
 
@@ -60,8 +60,6 @@ namespace Papercut.Service
                 .AsSelf()
                 .InstancePerLifetimeScope();
 
-            builder.RegisterType<ConfigureSeqLogging>().AsImplementedInterfaces();
-
             builder.Register(
                 ctx => ctx.Resolve<ISettingStore>().UseTyped<PapercutServiceSettings>())
                 .AsSelf()
@@ -70,6 +68,8 @@ namespace Papercut.Service
             builder.Register(c => new ApplicationMeta("Papercut.Service"))
                 .As<IAppMeta>()
                 .SingleInstance();
+
+            builder.RegisterStaticMethods(this.ThisAssembly);
 
             base.Load(builder);
         }

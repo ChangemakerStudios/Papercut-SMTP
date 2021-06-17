@@ -1,19 +1,19 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
 
 
 namespace Papercut.ViewModels
@@ -25,57 +25,63 @@ namespace Papercut.ViewModels
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reflection;
-    using System.Security.RightsManagement;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
 
     using Caliburn.Micro;
-
-    using Common;
-
-    using Core;
 
     using ICSharpCode.AvalonEdit.Utils;
 
     using MahApps.Metro.Controls;
     using MahApps.Metro.Controls.Dialogs;
 
+    using Papercut.AppLayer.LogSinks;
     using Papercut.Common.Domain;
+    using Papercut.Core;
     using Papercut.Core.Domain.Network.Smtp;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Events;
+    using Papercut.Domain.AppCommands;
+    using Papercut.Domain.UiCommands;
+    using Papercut.Domain.UiCommands.Commands;
     using Papercut.Helpers;
+    using Papercut.Infrastructure.Resources;
     using Papercut.Properties;
-    using Papercut.Rules.Helpers;
-    using Papercut.Rules.Implementations;
-    using Papercut.Services;
+    using Papercut.Rules.Domain.Forwarding;
+    using Papercut.Rules.Domain.Relaying;
     using Papercut.Views;
 
     using Serilog.Events;
 
     public class MainViewModel : Conductor<object>,
-        IHandle<SmtpServerBindFailedEvent>,
-        IHandle<ShowMessageEvent>,
-        IHandle<ShowMainWindowEvent>,
-        IHandle<ShowOptionWindowEvent>
+        IHandle<SmtpServerBindFailedEvent>
     {
         const string WindowTitleDefault = AppConstants.ApplicationName;
 
+        private readonly IAppCommandHub _appCommandHub;
+
         readonly ForwardRuleDispatch _forwardRuleDispatch;
-
-        readonly LogClientSinkQueue _logClientSinkQueue;
-
-        readonly IMessageBus _messageBus;
 
         readonly AppResourceLocator _resourceLocator;
 
+        private readonly IUiCommandHub _uiCommandHub;
+
+        readonly UiLogSinkQueue _uiLogSinkQueue;
+
         readonly IViewModelWindowManager _viewModelWindowManager;
 
+        public Deque<string> CurrentLogHistory = new Deque<string>();
+
         bool _isDeactivated;
+
+        private bool _isDeleteAllConfirmOpen;
 
         bool _isLogOpen;
 
         string _logText;
+
+        private int _mainWindowHeight;
+
+        private int _mainWindowWidth;
 
         MetroWindow _window;
 
@@ -83,170 +89,176 @@ namespace Papercut.ViewModels
 
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
-            IMessageBus messageBus,
+            IAppCommandHub appCommandHub,
+            IUiCommandHub uiCommandHub,
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
             Func<MessageDetailViewModel> messageDetailViewModelFactory,
-            LogClientSinkQueue logClientSinkQueue,
+            UiLogSinkQueue uiLogSinkQueue,
             AppResourceLocator resourceLocator)
         {
-            _viewModelWindowManager = viewModelWindowManager;
-            this._messageBus = messageBus;
-            _forwardRuleDispatch = forwardRuleDispatch;
+            this._viewModelWindowManager = viewModelWindowManager;
+            this._appCommandHub = appCommandHub;
+            this._uiCommandHub = uiCommandHub;
+            this._forwardRuleDispatch = forwardRuleDispatch;
 
-            MessageListViewModel = messageListViewModelFactory();
-            MessageDetailViewModel = messageDetailViewModelFactory();
+            this.MessageListViewModel = messageListViewModelFactory();
+            this.MessageDetailViewModel = messageDetailViewModelFactory();
 
-            MessageListViewModel.ConductWith(this);
-            MessageDetailViewModel.ConductWith(this);
+            this.MessageListViewModel.ConductWith(this);
+            this.MessageDetailViewModel.ConductWith(this);
 
-            _logClientSinkQueue = logClientSinkQueue;
-            _resourceLocator = resourceLocator;
+            this._uiLogSinkQueue = uiLogSinkQueue;
+            this._resourceLocator = resourceLocator;
 
-            LogText = _resourceLocator.GetResourceString("LogClientSink.html");
+            this.LogText = this._resourceLocator.GetResourceString("LogClientSink.html");
 
-            SetupObservables();
+            this.SetupObservables();
         }
 
-        public MessageListViewModel MessageListViewModel { get; private set; }
+        public MessageListViewModel MessageListViewModel { get; }
 
-        public MessageDetailViewModel MessageDetailViewModel { get; private set; }
+        public MessageDetailViewModel MessageDetailViewModel { get; }
 
         public string LogText
         {
-            get => _logText;
+            get => this._logText;
             set
             {
-                _logText = value;
-                NotifyOfPropertyChange(() => LogText);
+                this._logText = value;
+                this.NotifyOfPropertyChange(() => this.LogText);
             }
         }
 
         public bool IsDeactivated
         {
-            get => _isDeactivated;
+            get => this._isDeactivated;
             set
             {
-                _isDeactivated = value;
-                NotifyOfPropertyChange(() => IsDeactivated);
+                this._isDeactivated = value;
+                this.NotifyOfPropertyChange(() => this.IsDeactivated);
             }
         }
 
         public string WindowTitle
         {
-            get => _windowTitle;
+            get => this._windowTitle;
             set
             {
-                _windowTitle = value;
-                NotifyOfPropertyChange(() => WindowTitle);
+                this._windowTitle = value;
+                this.NotifyOfPropertyChange(() => this.WindowTitle);
             }
         }
 
-        string GetVersion()
-        {
-            var productVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
-
-            return productVersion.Split('+').FirstOrDefault();
-        }
-
-        public string Version => $"{AppConstants.ApplicationName} v{GetVersion()}";
+        public string Version => $"{AppConstants.ApplicationName} v{this.GetVersion()}";
 
         public bool IsLogOpen
         {
-            get => _isLogOpen;
+            get => this._isLogOpen;
             set
             {
-                if (_isLogOpen != value)
+                if (this._isLogOpen != value)
                 {
-                    _isLogOpen = value;
-                    NotifyOfPropertyChange(() => IsLogOpen);
+                    this._isLogOpen = value;
+                    this.NotifyOfPropertyChange(() => this.IsLogOpen);
                 }
             }
         }
 
         public bool IsDeleteAllConfirmOpen
         {
-            get => _isDeleteAllConfirmOpen;
+            get => this._isDeleteAllConfirmOpen;
             set
             {
-                if (_isDeleteAllConfirmOpen != value)
+                if (this._isDeleteAllConfirmOpen != value)
                 {
-                    _isDeleteAllConfirmOpen = value;
-                    NotifyOfPropertyChange(() => IsDeleteAllConfirmOpen);
+                    this._isDeleteAllConfirmOpen = value;
+                    this.NotifyOfPropertyChange(() => this.IsDeleteAllConfirmOpen);
                 }
             }
         }
 
         public int MainWindowHeight
         {
-            get => _mainWindowHeight;
+            get => this._mainWindowHeight;
             set
             {
-                if (value == _mainWindowHeight) return;
+                if (value == this._mainWindowHeight) return;
 
                 // ignore non-normal window sizes
-                if (_window.WindowState != WindowState.Normal) return;
+                if (this._window.WindowState != WindowState.Normal) return;
 
-                _mainWindowHeight = value;
-                NotifyOfPropertyChange(() => MainWindowHeight);
+                this._mainWindowHeight = value;
+                this.NotifyOfPropertyChange(() => this.MainWindowHeight);
             }
         }
 
         public int MainWindowWidth
         {
-            get => _mainWindowWidth;
+            get => this._mainWindowWidth;
             set
             {
-                if (value == _mainWindowWidth) return;
+                if (value == this._mainWindowWidth) return;
 
                 // ignore non-normal window sizes
-                if (_window.WindowState != WindowState.Normal) return;
+                if (this._window.WindowState != WindowState.Normal) return;
 
-                _mainWindowWidth = value;
-                NotifyOfPropertyChange(() => MainWindowWidth);
+                this._mainWindowWidth = value;
+                this.NotifyOfPropertyChange(() => this.MainWindowWidth);
             }
         }
 
-        void IHandle<ShowMainWindowEvent>.Handle(ShowMainWindowEvent message)
-        {
-            if (!_window.IsVisible) _window.Show();
-
-            if (_window.WindowState == WindowState.Minimized) _window.WindowState = WindowState.Normal;
-
-            _window.Activate();
-
-            _window.Topmost = true;
-            _window.Topmost = false;
-
-            _window.Focus();
-
-            if (message.SelectMostRecentMessage) MessageListViewModel.TryGetValidSelectedIndex();
-        }
-
-        void IHandle<ShowMessageEvent>.Handle(ShowMessageEvent message)
-        {
-            MessageDetailViewModel.IsLoading = true;
-            _window.ShowMessageAsync(message.Caption, message.MessageText).ContinueWith(
-                r =>
-                {
-                    var result = r.Result;
-                    MessageDetailViewModel.IsLoading = false;
-                },
-                TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        void IHandle<ShowOptionWindowEvent>.Handle(ShowOptionWindowEvent message)
-        {
-            ShowOptions();
-        }
-
-        void IHandle<SmtpServerBindFailedEvent>.Handle(SmtpServerBindFailedEvent message)
+        public Task HandleAsync(SmtpServerBindFailedEvent message, CancellationToken cancellationToken = default)
         {
             MessageBox.Show(
                 "Failed to start SMTP server listening. The IP and Port combination is in use by another program. To fix, change the server bindings in the options.",
                 "Failed");
 
-            ShowOptions();
+            this.ShowOptions();
+
+            return Task.CompletedTask;
+        }
+
+        string GetVersion()
+        {
+            var productVersion =
+                FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
+
+            return productVersion.Split('+').FirstOrDefault();
+        }
+
+        public Task ExecuteAsync(ShowMainWindowCommand command, CancellationToken cancellationToken = default)
+        {
+            if (!this._window.IsVisible) this._window.Show();
+
+            if (this._window.WindowState == WindowState.Minimized) this._window.WindowState = WindowState.Normal;
+
+            this._window.Activate();
+
+            this._window.Topmost = true;
+            this._window.Topmost = false;
+
+            this._window.Focus();
+
+            if (command.SelectMostRecentMessage) this.MessageListViewModel.TryGetValidSelectedIndex();
+
+            return Task.CompletedTask;
+        }
+
+        public async Task ExecuteAsync(
+            ShowMessageCommand message,
+            CancellationToken cancellationToken = default)
+        {
+            this.MessageDetailViewModel.IsLoading = true;
+            await this._window.ShowMessageAsync(message.Caption, message.MessageText);
+            this.MessageDetailViewModel.IsLoading = false;
+        }
+
+        public Task ExecuteAsync(ShowOptionWindowCommand message, CancellationToken cancellationToken = default)
+        {
+            this.ShowOptions();
+
+            return Task.CompletedTask;
         }
 
         protected override void OnViewLoaded(object view)
@@ -256,7 +268,7 @@ namespace Papercut.ViewModels
             var typedView = view as MainView;
 
             var logPanel = typedView.LogPanel;
-            logPanel.Text = GetLogSinkHtml();
+            logPanel.Text = this.GetLogSinkHtml();
 
             this.GetPropertyValues(m => m.LogText)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
@@ -266,7 +278,7 @@ namespace Papercut.ViewModels
 
         private string GetLogSinkHtml()
         {
-            return _resourceLocator.GetResourceString("LogClientSink.html");
+            return this._resourceLocator.GetResourceString("LogClientSink.html");
         }
 
         public IEnumerable<string> RenderLogEventParts(LogEvent e)
@@ -279,54 +291,49 @@ namespace Papercut.ViewModels
             {
                 yield return $@"<br/><span class=""fatal""><b>Exception:</b> {e.Exception.Message.Linkify()}</span>";
             }
+
             yield return @"</div>";
         }
 
-        public Deque<string> _currentLogHistory = new Deque<string>();
-        private bool _isDeleteAllConfirmOpen;
-        private int _mainWindowWidth;
-        private int _mainWindowHeight;
-
         void SetupObservables()
         {
-            MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
+            this.MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
                 .Subscribe(
-                    m =>
-                        MessageDetailViewModel.LoadMessageEntry(MessageListViewModel.SelectedMessage));
+                    m => this.MessageDetailViewModel.LoadMessageEntry(this.MessageListViewModel.SelectedMessage));
 
             Observable.FromEventPattern<EventHandler, EventArgs>(
                     h => new EventHandler(h),
-                    h => _logClientSinkQueue.LogEvent += h,
-                    h => _logClientSinkQueue.LogEvent -= h,
+                    h => this._uiLogSinkQueue.LogEvent += h,
+                    h => this._uiLogSinkQueue.LogEvent -= h,
                     TaskPoolScheduler.Default)
                 .Buffer(TimeSpan.FromSeconds(1))
                 .Select(
                     s =>
                     {
                         return
-                            _logClientSinkQueue.GetLastEvents()
-                                .Select(e => string.Join(" ", RenderLogEventParts(e)))
+                            this._uiLogSinkQueue.GetLastEvents()
+                                .Select(e => string.Join(" ", this.RenderLogEventParts(e)))
                                 .ToList();
                     })
                 .ObserveOnDispatcher().Subscribe(
                     o =>
                     {
-                        foreach (var s in o) _currentLogHistory.PushFront(s);
+                        foreach (var s in o) this.CurrentLogHistory.PushFront(s);
 
-                        if (_currentLogHistory.Count > 150)
+                        if (this.CurrentLogHistory.Count > 150)
                         {
                             // prune
-                            while (_currentLogHistory.Count > 100)
+                            while (this.CurrentLogHistory.Count > 100)
                             {
-                                _currentLogHistory.PopBack();
+                                this.CurrentLogHistory.PopBack();
                             }
 
                             // required pruning -- go ahead and replace the whole thing
-                            var html = GetLogSinkHtml();
-                            var logItems = _currentLogHistory.ToList();
-                            LogText = html.Replace(
+                            var html = this.GetLogSinkHtml();
+                            var logItems = this.CurrentLogHistory.ToList();
+                            this.LogText = html.Replace(
                                 "<body>",
                                 $"<body>{string.Join("", logItems)}");
                         }
@@ -334,7 +341,7 @@ namespace Papercut.ViewModels
                         {
                             o.Reverse();
 
-                            LogText = LogText.Replace(
+                            this.LogText = this.LogText.Replace(
                                 "<body>",
                                 $"<body>{string.Join("", o)}");
                         }
@@ -345,8 +352,8 @@ namespace Papercut.ViewModels
                 .Subscribe(
                     m =>
                     {
-                        MessageListViewModel.IsLoading = m;
-                        MessageDetailViewModel.IsLoading = m;
+                        this.MessageListViewModel.IsLoading = m;
+                        this.MessageDetailViewModel.IsLoading = m;
                     });
 
             this.GetPropertyValues(m => m.IsDeleteAllConfirmOpen)
@@ -354,26 +361,36 @@ namespace Papercut.ViewModels
                 .Subscribe(
                     m =>
                     {
-                        MessageListViewModel.IsLoading = m;
-                        MessageDetailViewModel.IsLoading = m;
+                        this.MessageListViewModel.IsLoading = m;
+                        this.MessageDetailViewModel.IsLoading = m;
                     });
+
+            this._uiCommandHub.OnShowMainWindow.ObserveOnDispatcher()
+                .Subscribe(async c => await this.ExecuteAsync(c));
+
+            this._uiCommandHub.OnShowMessage.ObserveOnDispatcher()
+                .Subscribe(async c => await this.ExecuteAsync(c));
+
+            this._uiCommandHub.OnShowOptionWindow.ObserveOnDispatcher()
+                .Subscribe(async c => await this.ExecuteAsync(c));
+
         }
 
         public void GoToSite()
         {
-            Process.Start("https://github.com/ChangemakerStudios/Papercut");
+            Process.Start("https://github.com/ChangemakerStudios/Papercut-SMTP");
         }
 
         public void ShowRulesConfiguration()
         {
-            CloseFlyouts();
+            this.CloseFlyouts();
 
-            _viewModelWindowManager.ShowDialogWithViewModel<RulesConfigurationViewModel>();
+            this._viewModelWindowManager.ShowDialogWithViewModel<RulesConfigurationViewModel>();
         }
 
         public void DeleteAll()
         {
-            MessageListViewModel.DeleteAll();
+            this.MessageListViewModel.DeleteAll();
             this.IsDeleteAllConfirmOpen = false;
         }
 
@@ -384,52 +401,51 @@ namespace Papercut.ViewModels
 
         public void ShowConfirmDeleteAll()
         {
-            CloseFlyouts();
+            this.CloseFlyouts();
             this.IsDeleteAllConfirmOpen = true;
         }
 
         public void ToggleLog()
         {
-            if (!IsLogOpen)
+            if (!this.IsLogOpen)
             {
-                CloseFlyouts();
+                this.CloseFlyouts();
             }
 
-            IsLogOpen = !IsLogOpen;
+            this.IsLogOpen = !this.IsLogOpen;
         }
 
         public void ShowOptions()
         {
-            CloseFlyouts();
+            this.CloseFlyouts();
 
-            _viewModelWindowManager.ShowDialogWithViewModel<OptionsViewModel>();
+            this._viewModelWindowManager.ShowDialogWithViewModel<OptionsViewModel>();
         }
 
         private void CloseFlyouts()
         {
-            IsLogOpen = false;
-            IsDeleteAllConfirmOpen = false;
+            this.IsLogOpen = false;
+            this.IsDeleteAllConfirmOpen = false;
         }
 
         public void Exit()
         {
-            this._messageBus.Publish(new AppForceShutdownEvent());
+            this._appCommandHub.Shutdown();
         }
 
-        public void ForwardSelected()
+        public async Task ForwardSelected()
         {
-            if (MessageListViewModel.SelectedMessage == null) return;
+            if (this.MessageListViewModel.SelectedMessage == null) return;
 
-            var forwardViewModel = new ForwardViewModel { FromSetting = true };
-            bool? result = _viewModelWindowManager.ShowDialog(forwardViewModel);
+            var forwardViewModel = new ForwardViewModel {FromSetting = true};
+            bool? result = await this._viewModelWindowManager.ShowDialogAsync(forwardViewModel);
             if (result == null || !result.Value) return;
 
-            MessageDetailViewModel.IsLoading = true;
-            Task<ProgressDialogController> progressController =
-                _window.ShowProgressAsync("Forwarding Email...", "Please wait");
+            this.MessageDetailViewModel.IsLoading = true;
+            Task<ProgressDialogController> progressController = this._window.ShowProgressAsync("Forwarding Email...", "Please wait");
 
             Observable.Start(
-                    () =>
+                    async () =>
                     {
                         ProgressDialogController progressDialog = progressController.Result;
 
@@ -437,47 +453,47 @@ namespace Papercut.ViewModels
                         progressDialog.SetIndeterminate();
 
                         var forwardRule = new ForwardRule
-                                          {
-                                              FromEmail = forwardViewModel.From,
-                                              ToEmail = forwardViewModel.To
-                                          };
+                        {
+                            FromEmail = forwardViewModel.From,
+                            ToEmail = forwardViewModel.To
+                        };
 
                         forwardRule.PopulateServerFromUri(forwardViewModel.Server);
 
                         // send message using relay dispatcher...
-                        _forwardRuleDispatch.Dispatch(
+                        await this._forwardRuleDispatch.DispatchAsync(
                             forwardRule,
-                            MessageListViewModel.SelectedMessage);
+                            this.MessageListViewModel.SelectedMessage);
 
-                        progressDialog.CloseAsync().Wait();
+                        await progressDialog.CloseAsync();
 
                         return true;
                     },
                     TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
-                .Subscribe(b => { MessageDetailViewModel.IsLoading = false; });
+                .Subscribe(b => { this.MessageDetailViewModel.IsLoading = false; });
         }
 
         protected override void OnViewAttached(object view, object context)
         {
             base.OnViewAttached(view, context);
 
-            _window = view as MainView;
+            this._window = view as MainView;
 
-            if (_window == null) return;
+            if (this._window == null) return;
 
             //_window.Flyouts.FindChild<FlyoutsControl>("LogFlyouts")
 
-            _window.StateChanged += (sender, args) =>
+            this._window.StateChanged += (sender, args) =>
             {
-                if (_window.WindowState == WindowState.Minimized && Settings.Default.MinimizeToTray)
+                if (this._window.WindowState == WindowState.Minimized && Settings.Default.MinimizeToTray)
                 {
                     // Hide the window if minimized so it doesn't show up on the task bar
-                    _window.Hide();
+                    this._window.Hide();
                 }
             };
 
-            _window.Closing += (sender, args) =>
+            this._window.Closing += (sender, args) =>
             {
                 if (Application.Current.ShutdownMode == ShutdownMode.OnExplicitShutdown) return;
 
@@ -485,23 +501,23 @@ namespace Papercut.ViewModels
                 if (Settings.Default.MinimizeOnClose)
                 {
                     args.Cancel = true;
-                    _window.WindowState = WindowState.Minimized;
+                    this._window.WindowState = WindowState.Minimized;
                 }
             };
 
-            _window.Activated += (sender, args) => IsDeactivated = false;
-            _window.Deactivated += (sender, args) => IsDeactivated = true;
+            this._window.Activated += (sender, args) => this.IsDeactivated = false;
+            this._window.Deactivated += (sender, args) => this.IsDeactivated = true;
 
             // Minimize if set to
             if (Settings.Default.StartMinimized)
             {
                 bool initialWindowActivate = true;
-                _window.Activated += (sender, args) =>
+                this._window.Activated += (sender, args) =>
                 {
                     if (initialWindowActivate)
                     {
                         initialWindowActivate = false;
-                        _window.WindowState = WindowState.Minimized;
+                        this._window.WindowState = WindowState.Minimized;
                     }
                 };
             }

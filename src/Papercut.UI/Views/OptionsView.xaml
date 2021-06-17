@@ -4,6 +4,7 @@
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                       xmlns:model="clr-namespace:Papercut.ViewModels"
+                      xmlns:cal="http://www.caliburnproject.org"
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
@@ -42,20 +43,29 @@
                       Name="IPs" SelectedItem="{Binding IP}" Grid.ColumnSpan="2" />
             <Grid Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2">
                 <TextBox Margin="2,2,0,2" Width="100" HorizontalAlignment="Left" Name="Port" />
-                <Label Margin="102,0,0,0">(default is 25)</Label>
+                <Label Margin="102,0,-0.2,0.4">(default is 25)</Label>
             </Grid>
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-116" Name="RunOnStartup" VerticalAlignment="Bottom"
                       Content="Run on startup" Grid.ColumnSpan="2" Height="18" />
             <CheckBox Grid.Row="4" Margin="5,0,5,-47" Name="StartMinimized" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Grid.Column="1">Start minimized</CheckBox>
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-93" Name="MinimizeOnClose" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18">Minimize on close</CheckBox>
-            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2,3,0,7"
+            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,2.6,0,7.4"
                 x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2">
             </ComboBox>
             <Label Grid.Column="0" Grid.Row="4" Content="Message Sort Order:" Margin="0,3,3,4"/>
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-70" Name="MinimizeToTray" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Content="Minimize to tray"/>
             <Label Grid.Column="0" Grid.Row="4" Content="Theme:" Margin="0,33,3,-26"/>
-            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2,33,0,-23"
-                x:Name="Themes" SelectedItem="{Binding Theme}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2"/>
+            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,33.6,0,-23.6"
+                x:Name="Themes" SelectedItem="{Binding ThemeColor}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0 2 5 2" />
+                            <TextBlock Text="{Binding Description}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
         </Grid>
     </DockPanel>
 </controls:MetroWindow>

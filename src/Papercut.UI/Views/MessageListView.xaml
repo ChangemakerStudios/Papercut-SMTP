@@ -7,14 +7,15 @@
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:cal="http://www.caliburnproject.org"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-             xmlns:Behaviors="clr-namespace:Papercut.Behaviors"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:Behaviors="clr-namespace:Papercut.AppLayer.Behaviors"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="200"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
-    <i:Interaction.Behaviors>
+    <b:Interaction.Behaviors>
         <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />
-    </i:Interaction.Behaviors>
-    <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="false" 
+    </b:Interaction.Behaviors>
+    <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended"
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
              cal:Message.Attach="[Event KeyDown] = [Action MessageListKeyDown($eventArgs)]"
@@ -25,9 +26,9 @@
                           cal:Message.Attach="OpenMessageFolder" />
             </ContextMenu>
         </ListBox.ContextMenu>
-        <i:Interaction.Behaviors>
+        <b:Interaction.Behaviors>
             <Behaviors:DragDropIFile />
-        </i:Interaction.Behaviors>
+        </b:Interaction.Behaviors>
         <ListBox.ItemTemplate>
             <DataTemplate>
                 <Grid ToolTip="{Binding File}" Margin="2">
@@ -39,9 +40,24 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}" FontWeight="Bold"
-                               TextTrimming="CharacterEllipsis"
-                               Visibility="{Binding Subject, Converter={StaticResource CollapsedIfFalse}}" FontSize="14"/>
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}"
+						TextTrimming="CharacterEllipsis"
+						Visibility="{Binding Subject, Converter={StaticResource CollapsedIfFalse}}" FontSize="14">
+
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasBeenSeen}" Value="True">
+                                        <Setter Property="FontWeight" Value="Normal"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasBeenSeen}" Value="False">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+
+                    </TextBlock>
                     <Grid Grid.Column="0" Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />

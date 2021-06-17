@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2021 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,122 +25,137 @@ namespace Papercut.Infrastructure.Smtp
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Core.Domain.Application;
-    using Core.Domain.Network;
+    using Autofac.Util;
+
+    using Papercut.Core.Domain.Application;
+    using Papercut.Core.Domain.Network;
 
     using SmtpServer;
-    using SmtpServer.Mail;
-    using SmtpServer.Storage;
 
     using ILogger = Serilog.ILogger;
 
-    public class PapercutSmtpServer : IServer
+    public class PapercutSmtpServer : Disposable, IServer
     {
         readonly IAppMeta _applicationMetaData;
 
-        private readonly global::SmtpServer.ILogger _bridgeLogger;
-
         readonly ILogger _logger;
 
-        private readonly MessageStore _messageStore;
+        private readonly Func<ISmtpServerOptions, SmtpServer> _smtpServerFactory;
 
         private EndpointDefinition _currentEndpoint;
 
-        private Task _smtpServerTask;
+        private SmtpServer _server;
 
         private CancellationTokenSource _tokenSource;
 
         public PapercutSmtpServer(
             IAppMeta applicationMetaData,
             ILogger logger,
-            MessageStore messageStore,
-            global::SmtpServer.ILogger bridgeLogger)
+            Func<ISmtpServerOptions, SmtpServer> smtpServerFactory)
         {
-            _applicationMetaData = applicationMetaData;
-            _logger = logger;
-            _messageStore = messageStore;
-            _bridgeLogger = bridgeLogger;
+            this._applicationMetaData = applicationMetaData;
+            this._logger = logger;
+            this._smtpServerFactory = smtpServerFactory;
         }
 
-        public bool IsActive => _smtpServerTask != null;
+        public bool IsActive => this._server != null;
 
-        public IPAddress ListenIpAddress => _currentEndpoint?.Address;
+        public IPAddress ListenIpAddress => this._currentEndpoint?.Address;
 
-        public int ListenPort => _currentEndpoint?.Port ?? 0;
+        public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
-        public void Dispose()
+        public async Task StopAsync()
         {
-            Stop();
-        }
-
-        public void Stop()
-        {
-            if (_smtpServerTask == null) return;
-
             try
             {
-                _tokenSource?.Cancel();
-                _smtpServerTask.Wait();
-                _tokenSource?.Dispose();
+                this._tokenSource?.Cancel();
+                if (this._server != null)
+                {
+                    this._logger.Information("Stopping Smtp Server");
+
+                    await this._server.ShutdownTask;
+                }
+                this._tokenSource?.Dispose();
             }
             catch (Exception ex) when (ex is AggregateException || ex is TaskCanceledException || ex is OperationCanceledException)
             {
             }
             finally
             {
-                _smtpServerTask = null;
-                _tokenSource = null;
+                this._tokenSource = null;
+                this._server = null;
             }
         }
 
-        public void Start(EndpointDefinition smtpEndpoint)
+        public Task StartAsync(EndpointDefinition smtpEndpoint)
         {
-            ServicePointManager.ServerCertificateValidationCallback = IgnoreCertificateValidationFailureForTestingOnly;
+            if (this.IsActive)
+            {
+                return Task.CompletedTask;
+            }
 
-            _currentEndpoint = smtpEndpoint;
+            ServicePointManager.ServerCertificateValidationCallback = this.IgnoreCertificateValidationFailureForTestingOnly;
+
+            this._currentEndpoint = smtpEndpoint;
 
             var options = new SmtpServerOptionsBuilder()
-                .ServerName(_applicationMetaData.AppName)
-                .UserAuthenticator(new SimpleAuthentication())
-                .MailboxFilter(new DelegatingMailboxFilter(CanAcceptMailbox))
-                .Logger(_bridgeLogger)
-                .MessageStore(_messageStore);
+                .ServerName(this._applicationMetaData.AppName)
+                .Endpoint(
+                    new EndpointDefinitionBuilder()
+                        .Endpoint(smtpEndpoint.ToIPEndPoint())
+                        .IsSecure(false)
+                        .AllowUnsecureAuthentication(false)
+                        .Build());
 
-            options = options.Endpoint(new EndpointDefinitionBuilder()
-                .Endpoint(smtpEndpoint.ToIPEndPoint())
-                .IsSecure(false)
-                .AllowUnsecureAuthentication(false)
-                .Build());
+            this._server = this._smtpServerFactory(options.Build());
 
-            var server = new SmtpServer(options.Build());
+            this._server.SessionCreated += this.OnSessionCreated;
+            this._server.SessionCompleted += this.OnSessionCompleted;
 
-            server.SessionCreated += OnSessionCreated;
-            server.SessionCompleted += OnSessionCompleted;
+            this._logger.Information("Starting Smtp Server on {IP}:{Port}...", this.ListenIpAddress, this.ListenPort);
+            this._tokenSource = new CancellationTokenSource();
 
-            _logger.Information("Starting Smtp Server on {IP}:{Port}...", ListenIpAddress, ListenPort);
+#pragma warning disable 4014
+            // server will block -- just let it run
+            Task.Run(
+                async () =>
+                {
+                    try
+                    {
+                        await this._server.StartAsync(this._tokenSource.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        this._logger.Error(ex, "Smtp Server Error");
+                    }
+                },
+                this._tokenSource.Token);
+#pragma warning restore 4014
 
-            _tokenSource = new CancellationTokenSource();
-            _smtpServerTask = server.StartAsync(_tokenSource.Token);
+            return Task.CompletedTask;
         }
 
-        private MailboxFilterResult CanAcceptMailbox(ISessionContext sessionContext, IMailbox mailbox)
+        protected override async ValueTask DisposeAsync(bool disposing)
         {
-            return MailboxFilterResult.Yes;
+            if (disposing)
+            {
+                await this.StopAsync();
+            }
         }
 
         private void OnSessionCompleted(object sender, SessionEventArgs e)
         {
-            _logger.Information("Completed SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
+            this._logger.Information("Completed SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
         }
 
         private void OnSessionCreated(object sender, SessionEventArgs e)
         {
             e.Context.CommandExecuting += (o, args) =>
             {
-                _logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
+                this._logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
             };
 
-            _logger.Information("New SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
+            this._logger.Information("New SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
         }
 
         private bool IgnoreCertificateValidationFailureForTestingOnly(

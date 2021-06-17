@@ -21,6 +21,9 @@ namespace Papercut.Message
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reactive;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -44,6 +47,14 @@ namespace Papercut.Message
             _messagePathConfigurator = messagePathConfigurator;
             _messagePathConfigurator.RefreshLoadPath += OnRefreshLoadPaths;
             SetupMessageWatchers();
+        }
+
+        public IObservable<EventPattern<NewMessageEventArgs>> GetNewMessageObservable(IScheduler scheduler = null)
+        {
+            return Observable.FromEventPattern<NewMessageEventArgs>(
+                    e => this.NewMessage += e,
+                    e => this.NewMessage -= e,
+                    scheduler?? Scheduler.Default);
         }
 
         public void Dispose()

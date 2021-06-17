@@ -22,6 +22,7 @@ namespace Papercut.Message
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
 
     using MimeKit;
 
@@ -49,7 +50,9 @@ namespace Papercut.Message
             _logger = logger;
         }
 
-        public void HandleReceived([NotNull] byte[] messageData, [NotNull] string[] recipients)
+        public async Task HandleReceivedAsync(
+            [NotNull] byte[] messageData,
+            [NotNull] string[] recipients)
         {
             if (messageData == null) throw new ArgumentNullException(nameof(messageData));
             if (recipients == null) throw new ArgumentNullException(nameof(recipients));
@@ -58,7 +61,7 @@ namespace Papercut.Message
 
             using (var ms = new MemoryStream(messageData))
             {
-                var message = MimeMessage.Load(ParserOptions.Default, ms, true);
+                var message = await MimeMessage.LoadAsync(ParserOptions.Default, ms, true);
 
                 var lookup = recipients.ToHashSet(StringComparer.CurrentCultureIgnoreCase);
 
@@ -83,7 +86,7 @@ namespace Papercut.Message
             try
             {
                 if (!string.IsNullOrWhiteSpace(file))
-                    this._messageBus.Publish(new NewMessageEvent(new MessageEntry(file)));
+                    await this._messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
             }
             catch (Exception ex)
             {

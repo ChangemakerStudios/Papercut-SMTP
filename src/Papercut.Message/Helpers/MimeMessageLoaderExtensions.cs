@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2021 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,32 +21,31 @@ namespace Papercut.Message.Helpers
     using System;
     using System.Reactive.Concurrency;
     using System.Reactive.Threading.Tasks;
+    using System.Threading;
     using System.Threading.Tasks;
-
-    using Core.Annotations;
-    using Core.Domain.Message;
 
     using MimeKit;
 
+    using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Message;
+
     public static class MimeMessageLoaderExtensions
     {
-        public static MimeMessage Get([NotNull] this MimeMessageLoader loader, [NotNull] MessageEntry entry)
+        public static async Task<MimeMessage> GetClonedAsync([NotNull] this MimeMessageLoader loader, [NotNull] MessageEntry entry, CancellationToken token = default)
         {
             if (loader == null) throw new ArgumentNullException(nameof(loader));
             if (entry == null) throw new ArgumentNullException(nameof(entry));
 
-            var loadTask = loader.GetAsync(entry);
-            loadTask.Wait();
-
-            return loadTask.Result;
+            var message = await loader.GetAsync(entry, token);
+            return await message.CloneMessageAsync(token);
         }
 
-        public static IObservable<MimeMessage> GetObservable([NotNull] this MimeMessageLoader loader, [NotNull] MessageEntry entry)
+        public static IObservable<MimeMessage> GetObservable([NotNull] this MimeMessageLoader loader, [NotNull] MessageEntry entry, CancellationToken token = default)
         {
             if (loader == null) throw new ArgumentNullException(nameof(loader));
             if (entry == null) throw new ArgumentNullException(nameof(entry));
 
-            return loader.GetAsync(entry).ToObservable(TaskPoolScheduler.Default);
+            return loader.GetAsync(entry, token).ToObservable(TaskPoolScheduler.Default);
         }
     }
 }

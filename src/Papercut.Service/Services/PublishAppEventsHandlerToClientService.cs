@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2021 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@
 namespace Papercut.Service.Services
 {
     using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
-    using Common.Domain;
-
-    using Core.Infrastructure.Lifecycle;
-
-    using Infrastructure.IPComm;
-    using Infrastructure.IPComm.Network;
+    using Papercut.Common.Domain;
+    using Papercut.Core.Infrastructure.Lifecycle;
+    using Papercut.Infrastructure.IPComm;
 
     using Serilog;
 
@@ -33,54 +32,55 @@ namespace Papercut.Service.Services
         IEventHandler<PapercutServiceReadyEvent>,
         IEventHandler<PapercutServicePreStartEvent>
     {
-        readonly ILogger _logger;
-
         readonly PapercutIPCommClientFactory _ipCommClientFactory;
+
+        readonly ILogger _logger;
 
         public PublishAppEventsHandlerToClientService(
             PapercutIPCommClientFactory ipCommClientFactory,
             ILogger logger)
         {
-            _ipCommClientFactory = ipCommClientFactory;
-            _logger = logger;
+            this._ipCommClientFactory = ipCommClientFactory;
+            this._logger = logger;
         }
 
-        public void Handle(PapercutServiceExitEvent @event)
+        public Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token = default)
         {
-            Publish(@event);
+            return this.PublishAsync(@event);
         }
 
-        public void Handle(PapercutServicePreStartEvent @event)
+        public Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token = default)
         {
-            Publish(@event);
+            return this.PublishAsync(@event);
         }
 
-        public void Handle(PapercutServiceReadyEvent @event)
+        public Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
         {
-            Publish(@event);
+            return this.PublishAsync(@event);
         }
 
-        public void Publish<T>(T @event)
+        public async Task PublishAsync<T>(T @event)
             where T : IEvent
         {
-            using (var ipCommClient = _ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI))
+            var ipCommClient = this._ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI);
+
+            try
             {
-                try
-                {
-                    _logger.Information(
-                        $"Publishing {{@{@event.GetType().Name}}} to the Papercut Client",
-                        @event);
+                this._logger.Information(
+                    $"Publishing {{@{@event.GetType().Name}}} to the Papercut Client",
+                    @event);
 
-                    ipCommClient.PublishEventServer(@event);
-                }
-
-                catch (Exception ex)
-                {
-                    _logger.Warning(
-                        ex,
-                        "Failed to publish {Endpoint} specified. Papercut UI is most likely not running.",
-                        ipCommClient.Endpoint);
-                }
+                await ipCommClient.PublishEventServer(@event, TimeSpan.FromMilliseconds(500));
+            }
+            catch (TaskCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                this._logger.Warning(
+                    ex,
+                    "Failed to publish {Endpoint} specified. Papercut UI is most likely not running.",
+                    ipCommClient.Endpoint);
             }
         }
     }

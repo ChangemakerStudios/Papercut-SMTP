@@ -20,12 +20,13 @@ namespace Papercut.App.WebApi
     using Autofac;
     using Autofac.Integration.WebApi;
 
+    using Papercut.Core.Domain.WebServer;
+
     public class PapercutWebApiModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<WebServer>()
-                .AsImplementedInterfaces()
+            builder.RegisterType<PapercutWebServer>().As<IPapercutWebServer>()
                 .SingleInstance();
 
             builder.RegisterApiControllers(this.ThisAssembly);

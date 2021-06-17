@@ -20,12 +20,13 @@ namespace Papercut
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
     using Papercut.Common.Extensions;
     using Papercut.Core.Domain.Paths;
-    using Papercut.Events;
+    using Papercut.Domain.Events;
     using Papercut.Properties;
 
     using Serilog;
@@ -70,9 +71,11 @@ namespace Papercut
             }
         }
 
-        public void Handle(SettingsUpdatedEvent @event)
+        public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             UpdatePathTemplates();
+
+            return Task.CompletedTask;
         }
 
         public ObservableCollection<string> PathTemplates { get; }

@@ -1,54 +1,47 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
 
 namespace Papercut
 {
     using System;
     using System.Diagnostics;
     using System.Reflection;
-    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
 
     using Autofac;
 
-    using Caliburn.Micro;
-
     using Papercut.Common.Domain;
-    using Papercut.Core.Infrastructure.Async;
     using Papercut.Core.Infrastructure.Container;
-    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Core.Infrastructure.Logging;
+    using Papercut.Domain.LifecycleHooks;
+    using Papercut.Infrastructure;
+    using Papercut.Infrastructure.LifecycleHooks;
 
     using Serilog;
-
-    using SmtpServer;
 
     public partial class App : Application
     {
         public const string GlobalName = "Papercut.App";
 
-        public static string ExecutablePath { get; }
-
         Lazy<ILifetimeScope> _lifetimeScope =
             new Lazy<ILifetimeScope>(
                 () => RootContainer.BeginLifetimeScope(ContainerScope.UIScopeTag));
-
-        private Task _publishTask;
 
         static App()
         {
@@ -58,34 +51,37 @@ namespace Papercut
             RootContainer = new SimpleContainer<PapercutUIModule>().Build();
         }
 
+        public static string ExecutablePath { get; }
+
         public static IContainer RootContainer { get; }
 
-        public ILifetimeScope Container => _lifetimeScope.Value;
-
+        public ILifetimeScope Container => this._lifetimeScope.Value;
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            var messageBus = this.Container.Resolve<IMessageBus>();
-
             try
             {
-                var appPreStartEvent = new PapercutClientPreStartEvent();
-
-                messageBus.Publish(appPreStartEvent);
-
-                if (appPreStartEvent.CancelStart)
+                // run prestart
+                if (this.Container.RunPreStart() == AppLifecycleActionResultType.Cancel)
                 {
-                    // force shut down...
-                    messageBus.Publish(new AppForceShutdownEvent());
-
-                    Shutdown();
-
+                    this.Shutdown();
                     return;
                 }
 
                 base.OnStartup(e);
 
-                messageBus.Publish(new PapercutClientReadyEvent());
+                // startup the application
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        await this.Container.RunStartedAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Startup Error");
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -97,13 +93,18 @@ namespace Papercut
         {
             Debug.WriteLine("App.OnExit()");
 
-            this.Container.Resolve<IMessageBus>().Publish(new PapercutClientExitEvent());
+            // run pre-exit
+            if (this.Container.RunPreExit() == AppLifecycleActionResultType.Cancel)
+            {
+                // cancel exit
+                return;
+            }
 
             try
             {
-                Container.Dispose();
+                this.Container.Dispose();
 
-                _lifetimeScope = null;
+                this._lifetimeScope = null;
 
                 RootContainer.Dispose();
             }
