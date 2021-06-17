@@ -2,8 +2,8 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>papercut-service</id>
-        <version>5.0.0.0</version>
-        <title>Papercut</title>
+        <version>5.8.0.0</version>
+        <title>Papercut-Smtp</title>
         <authors>Jaben</authors>
         <owners>Jaben</owners>
         <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
