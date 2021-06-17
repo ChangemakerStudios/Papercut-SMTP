@@ -6,6 +6,7 @@
 - Fixed: Window sizes weren't binding properly. 
 - Converted system to Async.
 - Added additional theme colors.
+- Updated the logo.
 - Fixed: Hide passwords in rules logging output.
 - Fixed: Don't show passwords in rules logging output.
 - [#175] Added font weight changing when message has been seen (PR thanks to [LewisJohnson](https://github.com/LewisJohnson))
