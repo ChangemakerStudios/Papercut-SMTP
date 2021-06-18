@@ -45,7 +45,9 @@ namespace Papercut.Core.Domain.Message
 
         bool _isSelected;
 
-        public MessageEntry(FileInfo fileInfo)
+		bool _hasBeenSeen;
+
+		public MessageEntry(FileInfo fileInfo)
         {
             this._info = fileInfo;
 
@@ -61,6 +63,17 @@ namespace Papercut.Core.Domain.Message
             else
             {
                 _created = this._info.CreationTime;
+            }
+
+            if (this._created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
+            {
+                // anything under 5 minutes old is "new" still by default
+                this._hasBeenSeen = false;
+            }
+            else
+            {
+                // everything else has been seen by default
+                this._hasBeenSeen = true;
             }
         }
 
@@ -83,11 +96,26 @@ namespace Papercut.Core.Domain.Message
             set
             {
                 this._isSelected = value;
-                this.OnPropertyChanged(nameof(this.IsSelected));
-            }
+
+				if (value)
+				{
+					this.HasBeenSeen = true;
+				}
+				this.OnPropertyChanged(nameof(this.IsSelected));
+			}
         }
 
-        public bool Equals(MessageEntry other)
+		public bool HasBeenSeen
+		{
+			get => this._hasBeenSeen;
+			set
+			{
+				this._hasBeenSeen = value;
+				this.OnPropertyChanged(nameof(this.HasBeenSeen));
+			}
+		}
+
+		public bool Equals(MessageEntry other)
         {
             return Equals(this._info, other._info);
         }

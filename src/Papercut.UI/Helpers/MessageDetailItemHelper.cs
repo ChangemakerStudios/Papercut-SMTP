@@ -19,6 +19,8 @@ namespace Papercut.Helpers
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
+
     using Caliburn.Micro;
 
     using Papercut.Core.Annotations;
@@ -32,7 +34,7 @@ namespace Papercut.Helpers
             return messageDetailItem.Parent as Conductor<IMessageDetailItem>.Collection.OneActive;
         }
 
-        public static T ActivateViewModelOf<T>(
+        public static async Task<T> ActivateViewModelOf<T>(
             [NotNull] this Conductor<IMessageDetailItem>.Collection.OneActive conductor)
         {
             if (conductor == null) throw new ArgumentNullException(nameof(conductor));
@@ -41,7 +43,7 @@ namespace Papercut.Helpers
 
             if (item != null)
             {
-                conductor.ActivateItem(item);
+                await conductor.ActivateItemAsync(item);
                 return (T)item;
             }
 

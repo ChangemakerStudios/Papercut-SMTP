@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Papercut</RootNamespace>
     <AssemblyName>Papercut</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -167,19 +167,34 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Behaviors\SettingBindingExtension.cs" />
-    <Compile Include="Behaviors\DragDropIFile.cs" />
-    <Compile Include="Behaviors\InteractivityBlurBase.cs" />
-    <Compile Include="Behaviors\InteractivityBlurOnDisabled.cs" />
-    <Compile Include="Behaviors\InteractivityBlurWindowOnDeactivate.cs" />
-    <Compile Include="Events\SettingsUpdatedEvent.cs" />
-    <Compile Include="Events\ShowMessageEvent.cs" />
-    <Compile Include="Events\ShowOptionWindowEvent.cs" />
+    <Compile Include="AppLayer\AppCommands\AppCommandHub.cs" />
+    <Compile Include="AppLayer\LifecycleHooks\ReadyEventTrigger.cs" />
+    <Compile Include="Domain\AppCommands\IAppCommandHub.cs" />
+    <Compile Include="AppLayer\AppCommands\ShutdownCommandHandler.cs" />
+    <Compile Include="AppLayer\UiCommands\UiCommandHub.cs" />
+    <Compile Include="AppLayer\Behaviors\SettingBindingExtension.cs" />
+    <Compile Include="AppLayer\Behaviors\DragDropIFile.cs" />
+    <Compile Include="AppLayer\Behaviors\InteractivityBlurBase.cs" />
+    <Compile Include="AppLayer\Behaviors\InteractivityBlurOnDisabled.cs" />
+    <Compile Include="AppLayer\Behaviors\InteractivityBlurWindowOnDeactivate.cs" />
+    <Compile Include="Domain\AppCommands\ShutdownCommand.cs" />
+    <Compile Include="Domain\BackendService\BackendServiceStatus.cs" />
+    <Compile Include="Domain\Events\PapercutServiceStatusEvent.cs" />
+    <Compile Include="Domain\LifecycleHooks\IAppLifecycleHook.cs" />
+    <Compile Include="Domain\LifecycleHooks\IAppLifecycleStarted.cs" />
+    <Compile Include="Domain\UiCommands\Commands\ShowBalloonTipCommand.cs" />
+    <Compile Include="Domain\LifecycleHooks\IAppLifecyclePreExit.cs" />
+    <Compile Include="Domain\LifecycleHooks\AppLifecycleActionResultType.cs" />
+    <Compile Include="Domain\LifecycleHooks\IAppLifecyclePreStart.cs" />
+    <Compile Include="Domain\Events\SettingsUpdatedEvent.cs" />
+    <Compile Include="Domain\UiCommands\Commands\ShowOptionWindowCommand.cs" />
+    <Compile Include="Domain\UiCommands\IUiCommandHub.cs" />
+    <Compile Include="Domain\UiCommands\Commands\ShowMessageCommand.cs" />
     <Compile Include="Helpers\CalburnSerilogBridge.cs" />
-    <Compile Include="Helpers\DisableEdgeFeaturesHelper.cs" />
+    <Compile Include="Helpers\EventHandlerHelpers.cs" />
     <Compile Include="Helpers\HtmlPreviewVisitor.cs" />
     <Compile Include="Helpers\IViewModelWindowManager.cs" />
-    <Compile Include="Helpers\LogClientSinkQueue.cs" />
+    <Compile Include="AppLayer\LogSinks\UiLogSinkQueue.cs" />
     <Compile Include="Helpers\MailMessageHelper.cs" />
     <Compile Include="Helpers\MimeMessageEntry.cs" />
     <Compile Include="Helpers\NotifyPropertyChangeReactiveExtensions.cs" />
@@ -190,36 +205,37 @@
     <Compile Include="Helpers\WebView2Base.cs" />
     <Compile Include="Helpers\WireupLogBridge.cs" />
     <Compile Include="Helpers\WPFValueConverters.cs" />
+    <Compile Include="Infrastructure\LifecycleHooks\LifecycleHookHelpers.cs" />
     <Compile Include="Properties\UIStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>UIStrings.resx</DependentUpon>
     </Compile>
-    <Compile Include="Services\AppStartupService.cs" />
-    <Compile Include="Services\HtmlPreviewService.cs" />
-    <Compile Include="Services\IHtmlPreviewGenerator.cs" />
-    <Compile Include="Services\MergeServerBackendSettings.cs" />
-    <Compile Include="Services\PapercutServiceBackendCoordinator.cs" />
-    <Compile Include="Services\PapercutClientServerCoordinator.cs" />
-    <Compile Include="Services\ReportVersionService.cs" />
-    <Compile Include="Services\RuleService.cs" />
-    <Compile Include="Services\SaveSettingsOnExitService.cs" />
-    <Compile Include="Services\ShutdownService.cs" />
-    <Compile Include="Services\SingleInstanceService.cs" />
-    <Compile Include="Services\SmtpServerCoordinator.cs" />
-    <Compile Include="Services\TempDirectoryCleanupService.cs" />
-    <Compile Include="Services\ThemeManagerService.cs" />
+    <Compile Include="AppLayer\Settings\AppRunOnStartupService.cs" />
+    <Compile Include="AppLayer\HtmlPreviews\HtmlPreviewGeneratorImpl.cs" />
+    <Compile Include="Domain\HtmlPreviews\IHtmlPreviewGenerator.cs" />
+    <Compile Include="AppLayer\Settings\MergeServerBackendSettings.cs" />
+    <Compile Include="AppLayer\IpComm\BackendServiceCoordinator.cs" />
+    <Compile Include="AppLayer\IpComm\PapercutIpCommManager.cs" />
+    <Compile Include="AppLayer\Diagnostics\ReportVersionService.cs" />
+    <Compile Include="AppLayer\Rules\RuleService.cs" />
+    <Compile Include="AppLayer\Settings\SaveSettingsOnExitService.cs" />
+    <Compile Include="AppLayer\LifecycleHooks\SingleInstanceCheck.cs" />
+    <Compile Include="AppLayer\SmtpServers\SmtpServerCoordinator.cs" />
+    <Compile Include="AppLayer\Cleanup\TempDirectoryCleanupService.cs" />
+    <Compile Include="Domain\Themes\ThemeColor.cs" />
+    <Compile Include="Infrastructure\Themes\ThemeColorRepository.cs" />
+    <Compile Include="AppLayer\Themes\ThemeManagerService.cs" />
     <Compile Include="SettingPathTemplateProvider.cs" />
     <Compile Include="PapercutUIModule.cs" />
-    <Compile Include="Services\AppResourceLocator.cs" />
-    <Compile Include="Events\EventPublishAll.cs" />
-    <Compile Include="Services\NotificationMenuService.cs" />
-    <Compile Include="Events\ShowBallonTip.cs" />
+    <Compile Include="Infrastructure\Resources\AppResourceLocator.cs" />
+    <Compile Include="AppLayer\Events\EventPublishAll.cs" />
+    <Compile Include="AppLayer\Notifications\NotificationMenuCoordinator.cs" />
     <Compile Include="Helpers\UIHelper.cs" />
     <Compile Include="ViewModels\ForwardViewModel.cs" />
     <Compile Include="ViewModels\IMessageDetailItem.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
-    <Compile Include="Events\ShowMainWindowEvent.cs" />
+    <Compile Include="Domain\UiCommands\Commands\ShowMainWindowCommand.cs" />
     <Compile Include="ViewModels\MessageDetailBodyViewModel.cs" />
     <Compile Include="ViewModels\MessageDetailHeaderViewModel.cs" />
     <Compile Include="Helpers\MessageDetailItemHelper.cs" />
@@ -236,14 +252,6 @@
     <Compile Include="Views\RulesConfigurationView.xaml.cs">
       <DependentUpon>RulesConfigurationView.xaml</DependentUpon>
     </Compile>
-    <Page Include="Resources\Icons.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\IconsNonShared.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views\MessageDetailBodyView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -344,7 +352,6 @@
     <EmbeddedResource Include="Properties\UIStrings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>UIStrings.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
@@ -355,7 +362,6 @@
     <None Include="Readme.eml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Resource Include="Resources\Entypo.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -620,48 +626,46 @@
       <Version>1.0.0</Version>
     </PackageReference>
     <PackageReference Include="Autofac">
-      <Version>4.9.0</Version>
+      <Version>6.2.0</Version>
     </PackageReference>
     <PackageReference Include="AvalonEdit">
-      <Version>5.0.4</Version>
+      <Version>6.1.1</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
-      <Version>3.2.0</Version>
+      <Version>4.0.173</Version>
     </PackageReference>
     <PackageReference Include="Costura.Fody">
-      <Version>4.1.0</Version>
+      <Version>5.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Extended.Wpf.Toolkit">
-      <Version>3.5.0</Version>
+      <Version>4.1.0</Version>
     </PackageReference>
     <PackageReference Include="MahApps.Metro">
-      <Version>1.6.5</Version>
+      <Version>2.4.5</Version>
     </PackageReference>
-    <PackageReference Include="MahApps.Metro.IconPacks.MaterialDesign">
-      <Version>3.7.0</Version>
-    </PackageReference>
-    <PackageReference Include="MahApps.Metro.Resources">
-      <Version>0.6.1</Version>
+    <PackageReference Include="MahApps.Metro.IconPacks.Material">
+      <Version>4.8.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2">
       <Version>1.0.705.50</Version>
     </PackageReference>
     <PackageReference Include="MimeKit">
-      <Version>2.5.2</Version>
+      <Version>2.12.0</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>2.8.0</Version>
+      <Version>2.10.0</Version>
     </PackageReference>
     <PackageReference Include="Serilog.Sinks.Observable">
       <Version>2.0.2</Version>
     </PackageReference>
+    <PackageReference Include="System.Reactive.PlatformServices">
+      <Version>5.0.0</Version>
+    </PackageReference>
     <PackageReference Include="Veil.Handlebars">
       <Version>0.3.1</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Entypo-license.txt" />
-    <Resource Include="Resources\WindowsIcons-license.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="FodyWeavers.xml" />
@@ -677,6 +681,7 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

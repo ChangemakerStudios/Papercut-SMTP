@@ -22,7 +22,12 @@ namespace Papercut.ViewModels
     using System.Diagnostics;
     using System.Linq;
     using System.Reactive.Linq;
+    using System.Reflection;
+    using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
     using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Navigation;
 
     using Caliburn.Micro;
 
@@ -32,12 +37,13 @@ namespace Papercut.ViewModels
 
     using Papercut.Common.Extensions;
     using Papercut.Core.Annotations;
+    using Papercut.Domain.HtmlPreviews;
     using Papercut.Helpers;
-    using Papercut.Services;
     using Papercut.Views;
 
     using Serilog;
 
+    using Action = Caliburn.Micro.Action;
     public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
@@ -48,21 +54,21 @@ namespace Papercut.ViewModels
 
         public MessageDetailHtmlViewModel(ILogger logger, IHtmlPreviewGenerator previewGenerator)
         {
-            this.DisplayName = "Message";
-            this._logger = logger;
-            this._previewGenerator = previewGenerator;
+            DisplayName = "Message";
+            _logger = logger;
+            _previewGenerator = previewGenerator;
         }
 
-        public string HtmlPreview
+        public string HtmlFile
         {
 
-            get => this._htmlPreview;
+            get => _htmlFile;
 
             set
             {
-                this._htmlPreview = value;
-                this.NotifyOfPropertyChange(() => this.HtmlPreview);
-                this.NotifyOfPropertyChange(() => this.HasHtmlPreview);
+                _htmlFile = value;
+                NotifyOfPropertyChange(() => HtmlFile);
+                NotifyOfPropertyChange(() => HasHtmlFile);
             }
         }
 
@@ -104,7 +110,7 @@ namespace Papercut.ViewModels
             else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
             {
                 // direct to the parts area...
-                var model = this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
+                var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
                 var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
                 if (part != null)
                 {

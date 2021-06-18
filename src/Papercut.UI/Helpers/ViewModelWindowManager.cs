@@ -18,54 +18,49 @@
 namespace Papercut.Helpers
 {
     using System;
-    using System.Windows;
+    using System.Threading.Tasks;
 
     using Autofac;
 
     using Caliburn.Micro;
 
-    using MahApps.Metro.Controls;
-
     public class ViewModelWindowManager : WindowManager, IViewModelWindowManager
     {
         readonly ILifetimeScope _lifetimeScope;
 
-        ResourceDictionary[] _resourceDictionaries;
-
-        public ViewModelWindowManager(
-            ILifetimeScope lifetimeScope)
+        public ViewModelWindowManager(ILifetimeScope lifetimeScope)
         {
             _lifetimeScope = lifetimeScope;
         }
 
-        public bool? ShowDialogWithViewModel<TViewModel>(
+        public async Task<bool?> ShowDialogWithViewModel<TViewModel>(
             Action<TViewModel> setViewModel = null,
             object context = null)
             where TViewModel : PropertyChangedBase
         {
             var viewModel = _lifetimeScope.Resolve<TViewModel>();
             setViewModel?.Invoke(viewModel);
-            return ShowDialog(viewModel, context);
+            return await ShowDialogAsync(viewModel, context);
         }
 
-        public void ShowWindowWithViewModel<TViewModel>(
+        public async Task ShowWindowWithViewModelAsync<TViewModel>(
             Action<TViewModel> setViewModel = null,
             object context = null)
             where TViewModel : PropertyChangedBase
         {
             var viewModel = _lifetimeScope.Resolve<TViewModel>();
             setViewModel?.Invoke(viewModel);
-            ShowWindow(viewModel, context);
+            await ShowWindowAsync(viewModel, context);
         }
 
-        public void ShowPopupWithViewModel<TViewModel>(
+        public async Task ShowPopupWithViewModel<TViewModel>(
             Action<TViewModel> setViewModel = null,
             object context = null)
             where TViewModel : PropertyChangedBase
         {
             var viewModel = _lifetimeScope.Resolve<TViewModel>();
             setViewModel?.Invoke(viewModel);
-            ShowPopup(viewModel, context);
+            await ShowPopupAsync(viewModel, context);
         }
     }
 }

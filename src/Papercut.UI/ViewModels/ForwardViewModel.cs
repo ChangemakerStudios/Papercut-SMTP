@@ -18,6 +18,7 @@
 namespace Papercut.ViewModels
 {
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
     using System.Windows;
 
     using Caliburn.Micro;
@@ -103,9 +104,9 @@ namespace Papercut.ViewModels
             From = Settings.Default.ForwardFrom;
         }
 
-        public void Cancel()
+        public async Task Cancel()
         {
-            TryClose(false);
+            await TryCloseAsync(false);
         }
 
         protected override void OnViewLoaded(object view)
@@ -115,7 +116,7 @@ namespace Papercut.ViewModels
             if (FromSetting) Load();
         }
 
-        public void Send()
+        public async Task Send()
         {
             if (string.IsNullOrEmpty(Server) || string.IsNullOrEmpty(From)
                 || string.IsNullOrEmpty(To))
@@ -147,7 +148,7 @@ namespace Papercut.ViewModels
                 Settings.Default.Save();
             }
 
-            TryClose(true);
+            await TryCloseAsync(true);
         }
     }
 }
