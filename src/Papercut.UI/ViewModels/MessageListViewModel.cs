@@ -429,7 +429,9 @@ namespace Papercut.ViewModels
                         .ToList();
             }
 
-            var toDelete = this.Messages.Except(messageEntries).OfType<MimeMessageEntry>().ToList();
+            var toDelete = this.Messages.Except(messageEntries)
+                .OfType<MimeMessageEntry>().ToList();
+
             toDelete.ForEach(m => this.Messages.Remove(m));
 
             this.Messages.AddRange(toAdd);

@@ -18,6 +18,7 @@
 namespace Papercut.Core.Domain.Message
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
     using System.Globalization;
     using System.IO;
@@ -117,7 +118,7 @@ namespace Papercut.Core.Domain.Message
 
 		public bool Equals(MessageEntry other)
         {
-            return Equals(this._info, other._info);
+            return Equals(this.File, other?.File);
         }
 
         public string File => this._info.FullName;
@@ -133,11 +134,16 @@ namespace Papercut.Core.Domain.Message
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return this.Equals((MessageEntry)obj);
+
+            if (obj is MessageEntry entry)
+            {
+                return this.Equals(entry);
+            }
+
+            return false;
         }
 
-        public override int GetHashCode() => this._info?.GetHashCode() ?? 0;
+        public override int GetHashCode() => this.File?.GetHashCode() ?? 0;
 
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged(string propertyName)
