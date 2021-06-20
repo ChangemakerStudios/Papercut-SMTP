@@ -347,7 +347,7 @@ namespace Papercut.ViewModels
             HtmlFile = null;
             TextBody = null;
 
-            HtmlViewModel.HtmlPreview = null;
+            HtmlViewModel.HtmlFile = null;
             HeaderViewModel.Headers = null;
             BodyViewModel.Body = null;
             PartsListViewModel.MimeMessage = null;

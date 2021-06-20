@@ -246,7 +246,7 @@ namespace Papercut.ViewModels
                     this._uiCommandHub.ShowBalloonTip(
                         3500,
                         "New Message Received",
-                        $"From: {message.From.ToString().Truncate(50)}\r\nSubject: {message.Subject.Truncate(50)}",
+                        $"From: {message.From.ToString().Truncate(50, "...")}\r\nSubject: {message.Subject.Truncate(50)}",
                         ToolTipIcon.Info);
 
                     this.Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));

@@ -116,7 +116,7 @@ namespace Papercut.Message
 
         public string GetFullMailFilename(string mailSubject)
         {
-            var validPart = MakeValidFileName(mailSubject.Truncate(40, string.Empty), "subject unknown");
+            var validPart = MakeValidFileName(mailSubject.Truncate(40), "subject unknown");
 
             var dateTimeFormatted = DateTime.Now.ToString(MessageEntry.DateTimeFormat);
 

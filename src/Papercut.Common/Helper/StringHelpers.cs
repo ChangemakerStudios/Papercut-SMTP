@@ -96,7 +96,7 @@ namespace Papercut.Common.Helper
             return string.Join(" ", lines);
         }
 
-        public static string Truncate([CanBeNull] this string input, int inputLimit, [CanBeNull] string cutOff = "...")
+        public static string Truncate([CanBeNull] this string input, int inputLimit, [CanBeNull] string cutOff = "")
         {
             cutOff = cutOff ?? string.Empty;
 
