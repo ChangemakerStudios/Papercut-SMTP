@@ -32,7 +32,9 @@ namespace Papercut.ViewModels
     using MimeKit;
 
     using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
+    using Papercut.Core.Infrastructure.Async;
     using Papercut.Domain.HtmlPreviews;
     using Papercut.Helpers;
     using Papercut.Views;
@@ -45,7 +47,7 @@ namespace Papercut.ViewModels
 
         readonly IHtmlPreviewGenerator _previewGenerator;
 
-        private string _htmlPreview;
+        private string _htmlFile;
 
         public MessageDetailHtmlViewModel(ILogger logger, IHtmlPreviewGenerator previewGenerator)
         {
@@ -54,20 +56,20 @@ namespace Papercut.ViewModels
             this._previewGenerator = previewGenerator;
         }
 
-        public string HtmlPreview
+        public string HtmlFile
         {
 
-            get => this._htmlPreview;
+            get => this._htmlFile;
 
             set
             {
-                this._htmlPreview = value;
-                this.NotifyOfPropertyChange(() => this.HtmlPreview);
-                this.NotifyOfPropertyChange(() => this.HasHtmlPreview);
+                this._htmlFile = value;
+                this.NotifyOfPropertyChange(() => this.HtmlFile);
+                this.NotifyOfPropertyChange(() => this.HasHtmlFile);
             }
         }
 
-        public bool HasHtmlPreview => !string.IsNullOrWhiteSpace(this.HtmlPreview);
+        public bool HasHtmlFile => !string.IsNullOrWhiteSpace(this.HtmlFile);
 
         public void ShowMessage([NotNull] MimeMessage mailMessageEx)
         {
@@ -76,7 +78,7 @@ namespace Papercut.ViewModels
 
             try
             {
-                this.HtmlPreview = this._previewGenerator.GetHtmlPreview(mailMessageEx);
+                this.HtmlFile = this._previewGenerator.GetHtmlPreviewFile(mailMessageEx);
             }
             catch (Exception ex)
             {
@@ -84,33 +86,16 @@ namespace Papercut.ViewModels
             }
         }
 
-        private async Task<bool> ShouldNavigateToUrlAsync([NotNull] string navigateToUrl)
+        private bool ShouldNavigateToUrl([NotNull] string navigateToUrl)
         {
             if (string.IsNullOrEmpty(navigateToUrl))
             {
                 return true;
             }
 
-            if (navigateToUrl.StartsWith("about:") || navigateToUrl.StartsWith("data:text/html"))
+            if (navigateToUrl.StartsWith("file:") || navigateToUrl.StartsWith("about:") || navigateToUrl.StartsWith("data:text/html"))
             {
                 return true;
-            }
-
-            var navigateToUri = new Uri(navigateToUrl);
-
-            if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
-            {
-                Process.Start(navigateToUri.AbsoluteUri);
-            }
-            else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
-            {
-                // direct to the parts area...
-                var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
-                var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
-                if (part != null)
-                {
-                    model.SelectedPart = part;
-                }
             }
 
             return false;
@@ -126,28 +111,20 @@ namespace Papercut.ViewModels
                 return;
             }
 
-            Observable
-                .FromEvent<EventHandler<CoreWebView2InitializationCompletedEventArgs>,
-                    CoreWebView2InitializationCompletedEventArgs>(
-                    a => (s, e) => a(e),
-                    h => typedView.htmlView.CoreWebView2InitializationCompleted += h,
-                    h => typedView.htmlView.CoreWebView2InitializationCompleted -= h)
-                .ObserveOnDispatcher()
-                .Subscribe(
-                    e =>
-                    {
-                        if (!e.IsSuccess)
-                        {
-                            this._logger.Error(
-                                e.InitializationException,
-                                "Failure Initializing Edge WebView2");
+            typedView.htmlView.CoreWebView2InitializationCompleted += (sender, args) =>
+            {
+                if (!args.IsSuccess)
+                {
+                    this._logger.Error(
+                        args.InitializationException,
+                        "Failure Initializing Edge WebView2");
 
-                        }
-                        else
-                        {
-                            this.SetupWebView(typedView.htmlView.CoreWebView2);
-                        }
-                    });
+                }
+                else
+                {
+                    this.SetupWebView(typedView.htmlView.CoreWebView2);
+                }
+            };
 
             void VisibilityChanged(DependencyPropertyChangedEventArgs o)
             {
@@ -172,28 +149,55 @@ namespace Papercut.ViewModels
 
         private void SetupWebView(CoreWebView2 coreWebView)
         {
-            Observable
-                .FromEvent<EventHandler<CoreWebView2NavigationStartingEventArgs>,
-                    CoreWebView2NavigationStartingEventArgs>(
-                    a => (s, e) => a(e),
-                    h => coreWebView.NavigationStarting += h,
-                    h => coreWebView.NavigationStarting -= h)
-                .ObserveOnDispatcher()
-                .Subscribe(
-                    async e =>
-                    {
-                        e.Cancel = await this.ShouldNavigateToUrlAsync(e.Uri);
-                    });
+            coreWebView.NavigationStarting += (sender, args) =>
+            {
+                var shouldNavigateToUrl = this.ShouldNavigateToUrl(args.Uri);
+
+                if (shouldNavigateToUrl)
+                {
+                    args.Cancel = false;
+                    return;
+                }
+
+                // do internal navigation
+                args.Cancel = true;
+                this.DoInternalNavigationAsync(new Uri(args.Uri)).RunAsync();
+            };
 
             coreWebView.DisableEdgeFeatures();
 
-            this.GetPropertyValues(p => p.HtmlPreview)
+            this.GetPropertyValues(p => p.HtmlFile)
                 .Subscribe(
-                    n =>
+                    file =>
                     {
-                        coreWebView.NavigateToString(n ?? string.Empty);
+                        if (file.IsNullOrWhiteSpace())
+                        {
+                            coreWebView.NavigateToString(string.Empty);
+                        }
+                        else
+                        {
+                            coreWebView.Navigate($"file://{file.Replace("/", @"\")}");
+                        }
                     }
                 );
+        }
+
+        private async Task DoInternalNavigationAsync(Uri navigateToUri)
+        {
+            if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
+            {
+                Process.Start(navigateToUri.AbsoluteUri);
+            }
+            else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
+            {
+                // direct to the parts area...
+                var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
+                var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
+                if (part != null)
+                {
+                    model.SelectedPart = part;
+                }
+            }
         }
     }
 }
