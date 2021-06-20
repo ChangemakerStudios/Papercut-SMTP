@@ -267,13 +267,24 @@ namespace Papercut.ViewModels
 
             var typedView = view as MainView;
 
-            var logPanel = typedView.LogPanel;
-            logPanel.Text = this.GetLogSinkHtml();
+            typedView.LogPanel.CoreWebView2InitializationCompleted += (sender, args) =>
+            {
+                this.SetupWebView(typedView.LogPanel);
+            };
+        }
+
+        private void SetupWebView(WebView2Base logPanel)
+        {
+            logPanel.CoreWebView2.DisableEdgeFeatures();
+            logPanel.NavigateToString(GetLogSinkHtml());
 
             this.GetPropertyValues(m => m.LogText)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
-                .Subscribe(m => logPanel.Text = m);
+                .Subscribe(m =>
+                {
+                    logPanel.NavigateToString(m);
+                });
         }
 
         private string GetLogSinkHtml()

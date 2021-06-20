@@ -22,12 +22,8 @@ namespace Papercut.ViewModels
     using System.Diagnostics;
     using System.Linq;
     using System.Reactive.Linq;
-    using System.Reflection;
-    using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using System.Windows;
-    using System.Windows.Controls;
-    using System.Windows.Navigation;
 
     using Caliburn.Micro;
 
@@ -43,7 +39,6 @@ namespace Papercut.ViewModels
 
     using Serilog;
 
-    using Action = Caliburn.Micro.Action;
     public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
@@ -54,21 +49,21 @@ namespace Papercut.ViewModels
 
         public MessageDetailHtmlViewModel(ILogger logger, IHtmlPreviewGenerator previewGenerator)
         {
-            DisplayName = "Message";
-            _logger = logger;
-            _previewGenerator = previewGenerator;
+            this.DisplayName = "Message";
+            this._logger = logger;
+            this._previewGenerator = previewGenerator;
         }
 
-        public string HtmlFile
+        public string HtmlPreview
         {
 
-            get => _htmlFile;
+            get => this._htmlPreview;
 
             set
             {
-                _htmlFile = value;
-                NotifyOfPropertyChange(() => HtmlFile);
-                NotifyOfPropertyChange(() => HasHtmlFile);
+                this._htmlPreview = value;
+                this.NotifyOfPropertyChange(() => this.HtmlPreview);
+                this.NotifyOfPropertyChange(() => this.HasHtmlPreview);
             }
         }
 
@@ -89,7 +84,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        private bool ShouldNavigateToUrl([NotNull] string navigateToUrl)
+        private async Task<bool> ShouldNavigateToUrlAsync([NotNull] string navigateToUrl)
         {
             if (string.IsNullOrEmpty(navigateToUrl))
             {
@@ -131,10 +126,28 @@ namespace Papercut.ViewModels
                 return;
             }
 
-            typedView.htmlView.CoreWebView2InitializationCompleted += (sender, args) =>
-            {
-                this.SetupWebView(typedView.htmlView.CoreWebView2);
-            };
+            Observable
+                .FromEvent<EventHandler<CoreWebView2InitializationCompletedEventArgs>,
+                    CoreWebView2InitializationCompletedEventArgs>(
+                    a => (s, e) => a(e),
+                    h => typedView.htmlView.CoreWebView2InitializationCompleted += h,
+                    h => typedView.htmlView.CoreWebView2InitializationCompleted -= h)
+                .ObserveOnDispatcher()
+                .Subscribe(
+                    e =>
+                    {
+                        if (!e.IsSuccess)
+                        {
+                            this._logger.Error(
+                                e.InitializationException,
+                                "Failure Initializing Edge WebView2");
+
+                        }
+                        else
+                        {
+                            this.SetupWebView(typedView.htmlView.CoreWebView2);
+                        }
+                    });
 
             void VisibilityChanged(DependencyPropertyChangedEventArgs o)
             {
@@ -144,9 +157,9 @@ namespace Papercut.ViewModels
             }
 
             Observable.FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
-                a => (s, e) => a(e),
-                h => typedView.IsEnabledChanged += h,
-                h => typedView.IsEnabledChanged -= h)
+                    a => (s, e) => a(e),
+                    h => typedView.IsEnabledChanged += h,
+                    h => typedView.IsEnabledChanged -= h)
                 .Throttle(TimeSpan.FromMilliseconds(100))
                 .ObserveOnDispatcher()
                 .Subscribe(VisibilityChanged);
@@ -159,10 +172,18 @@ namespace Papercut.ViewModels
 
         private void SetupWebView(CoreWebView2 coreWebView)
         {
-            coreWebView.NavigationStarting += (sender, e) =>
-            {
-                e.Cancel = !this.ShouldNavigateToUrl(e.Uri);
-            };
+            Observable
+                .FromEvent<EventHandler<CoreWebView2NavigationStartingEventArgs>,
+                    CoreWebView2NavigationStartingEventArgs>(
+                    a => (s, e) => a(e),
+                    h => coreWebView.NavigationStarting += h,
+                    h => coreWebView.NavigationStarting -= h)
+                .ObserveOnDispatcher()
+                .Subscribe(
+                    async e =>
+                    {
+                        e.Cancel = await this.ShouldNavigateToUrlAsync(e.Uri);
+                    });
 
             coreWebView.DisableEdgeFeatures();
 
