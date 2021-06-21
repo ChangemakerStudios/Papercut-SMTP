@@ -35,7 +35,7 @@ namespace Papercut.Rules.Domain.Relaying
             var uri = new Uri("smtp://" + smtpServer);
 
             rule.SmtpServer = uri.DnsSafeHost;
-            rule.SmtpPort = uri.Port;
+            rule.SmtpPort = uri.IsDefaultPort ? 25 : uri.Port;
         }
 
         public static async Task<SmtpClient> CreateConnectedSmtpClientAsync([NotNull] this RelayRule forwardRule, CancellationToken token)
