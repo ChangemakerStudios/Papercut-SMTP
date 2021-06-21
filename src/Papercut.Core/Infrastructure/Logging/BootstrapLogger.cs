@@ -61,7 +61,7 @@ namespace Papercut.Core.Infrastructure.Logging
         {
             var logInstance = IsLoggerConfigured() ? Log.Logger : Logger;
 
-            if (!args.Observed) logInstance.Error(args.Exception, "Unobserved Task Exception");
+            if (!args.Observed) logInstance.Warning(args.Exception, "Unobserved Task Exception");
 
             args.SetObserved();
         }

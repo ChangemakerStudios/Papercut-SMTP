@@ -34,6 +34,7 @@ namespace Papercut.Core.Infrastructure.Logging
 
     using Serilog;
     using Serilog.Debugging;
+    using Serilog.Events;
 
     /// <summary>
     /// Logging module is pulled into Core
@@ -65,6 +66,7 @@ namespace Papercut.Core.Infrastructure.Logging
                                 .Enrich.FromLogContext()
                                 .Enrich.WithProperty("AppName", appMeta.AppName)
                                 .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
+                                .Filter.ByExcluding(ExcludeTcpClientDisposeBugException)
                                 .WriteTo.Console()
                                 .WriteTo.File(logFilePath);
 
@@ -88,6 +90,28 @@ namespace Papercut.Core.Infrastructure.Logging
                 .SingleInstance();
 
             builder.RegisterLogger();
+        }
+
+        /// <summary>
+        /// https://stackoverflow.com/questions/59237011/how-to-avoid-objectdisposed-exception-after-closing-tcpclient
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private static bool ExcludeTcpClientDisposeBugException(LogEvent e)
+        {
+            var exception = e.Exception?.InnerException;
+
+            if (exception != null)
+            {
+                var exceptionText = exception.ToString();
+                if (exceptionText.Contains("System.Net.Sockets.TcpClient.EndConnect") && exceptionText.Contains("System.NullReferenceException: Object reference not set to an instance of an object"))
+                {
+                    // exclude this issue -- it's a known bug
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

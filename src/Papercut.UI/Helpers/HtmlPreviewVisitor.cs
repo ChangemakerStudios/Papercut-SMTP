@@ -90,7 +90,7 @@ namespace Papercut.Helpers
             foreach (var item in this._stack.ToArray().Reverse())
             {
                 int index = item.IndexOf(uri);
-                
+
                 if (index == IndexNotFound)
                     continue;
 
@@ -107,22 +107,9 @@ namespace Papercut.Helpers
         string SaveImage(MimePart image, string url)
         {
             string fileName = url.Replace(':', '_').Replace('\\', '_').Replace('/', '_');
+            var mimeExt = GetExtensionFromMimeType(image.ContentType.MimeType);
 
-            // try to add a file extension for niceness
-            switch (image.ContentType.MimeType.ToLowerInvariant())
-            {
-                case "image/jpeg":
-                    fileName += ".jpg";
-                    break;
-                case "image/png":
-                    fileName += ".png";
-                    break;
-                case "image/gif":
-                    fileName += ".gif";
-                    break;
-            }
-
-            string path = Path.Combine(this.TempDirectory, fileName);
+            string path = Path.Combine(this.TempDirectory, $"{fileName}.{mimeExt}");
 
             if (!File.Exists(path))
             {
@@ -131,6 +118,28 @@ namespace Papercut.Helpers
             }
 
             return $"file://{path.Replace('\\', '/')}";
+        }
+
+        private static readonly Dictionary<string, string> _mimeLookup
+            = new Dictionary<string, string>()
+              {
+                  { "image/jpeg", "jpg" },
+                  { "image/svg+xml", "svg" }
+              };
+
+        private static string GetExtensionFromMimeType(string mimeType)
+        {
+            // try to add a file extension for niceness
+            mimeType = mimeType.ToLowerInvariant();
+
+            foreach (var pair in _mimeLookup.Where(pair => mimeType.StartsWith(pair.Key)))
+            {
+                // match
+                return pair.Value;
+            }
+
+            // take the value after the split
+            return mimeType.Split('/').LastOrDefault();
         }
 
         void HtmlTagCallback(HtmlTagContext ctx, HtmlWriter htmlWriter)
