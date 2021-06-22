@@ -360,21 +360,11 @@ namespace Papercut.ViewModels
 
             this.GetPropertyValues(m => m.IsLogOpen)
                 .ObserveOnDispatcher()
-                .Subscribe(
-                    m =>
-                    {
-                        this.MessageListViewModel.IsLoading = m;
-                        this.MessageDetailViewModel.IsLoading = m;
-                    });
+                .Subscribe(this.SetIsLoading);
 
             this.GetPropertyValues(m => m.IsDeleteAllConfirmOpen)
                 .ObserveOnDispatcher()
-                .Subscribe(
-                    m =>
-                    {
-                        this.MessageListViewModel.IsLoading = m;
-                        this.MessageDetailViewModel.IsLoading = m;
-                    });
+                .Subscribe(this.SetIsLoading);
 
             this._uiCommandHub.OnShowMainWindow.ObserveOnDispatcher()
                 .Subscribe(async c => await this.ExecuteAsync(c));
@@ -384,7 +374,6 @@ namespace Papercut.ViewModels
 
             this._uiCommandHub.OnShowOptionWindow.ObserveOnDispatcher()
                 .Subscribe(async c => await this.ExecuteAsync(c));
-
         }
 
         public void GoToSite()
@@ -444,6 +433,28 @@ namespace Papercut.ViewModels
             this._appCommandHub.Shutdown();
         }
 
+        private void SetIsLoading(bool isLoading)
+        {
+            this.MessageListViewModel.IsLoading = isLoading;
+            this.MessageDetailViewModel.IsLoading = isLoading;
+        }
+
+        public async Task<ProgressDialogController> ShowForwardingEmailProgress()
+        {
+            this.SetIsLoading(true);
+
+            Task<ProgressDialogController> progressController = this._window.ShowProgressAsync("Forwarding Email...", "Please wait");
+
+            ProgressDialogController progressDialog = await progressController;
+
+            progressDialog.SetCancelable(false);
+            progressDialog.SetIndeterminate();
+
+            progressDialog.Closed += (sender, args) => this.SetIsLoading(false);
+
+            return progressDialog;
+        }
+
         public async Task ForwardSelected()
         {
             if (this.MessageListViewModel.SelectedMessage == null) return;
@@ -452,22 +463,16 @@ namespace Papercut.ViewModels
             bool? result = await this._viewModelWindowManager.ShowDialogAsync(forwardViewModel);
             if (result == null || !result.Value) return;
 
-            this.MessageDetailViewModel.IsLoading = true;
-            Task<ProgressDialogController> progressController = this._window.ShowProgressAsync("Forwarding Email...", "Please wait");
+            var progressDialog = await ShowForwardingEmailProgress();
 
             Observable.Start(
                     async () =>
                     {
-                        ProgressDialogController progressDialog = progressController.Result;
-
-                        progressDialog.SetCancelable(false);
-                        progressDialog.SetIndeterminate();
-
                         var forwardRule = new ForwardRule
-                        {
-                            FromEmail = forwardViewModel.From,
-                            ToEmail = forwardViewModel.To
-                        };
+                                          {
+                                              FromEmail = forwardViewModel.From,
+                                              ToEmail = forwardViewModel.To
+                                          };
 
                         forwardRule.PopulateServerFromUri(forwardViewModel.Server);
 
@@ -476,13 +481,11 @@ namespace Papercut.ViewModels
                             forwardRule,
                             this.MessageListViewModel.SelectedMessage);
 
-                        await progressDialog.CloseAsync();
-
                         return true;
                     },
                     TaskPoolScheduler.Default)
                 .ObserveOnDispatcher()
-                .Subscribe(b => { this.MessageDetailViewModel.IsLoading = false; });
+                .Subscribe(async b => await progressDialog.CloseAsync());
         }
 
         protected override void OnViewAttached(object view, object context)
