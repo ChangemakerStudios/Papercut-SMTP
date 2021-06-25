@@ -83,10 +83,12 @@
                         Delete all <TextBlock FontWeight="Bold" Text="{Binding Path=MessageListViewModel.Messages.Count}" /> Message(s)?
                     </TextBlock>
                     <Button Margin="4 32 4 0" Style="{StaticResource  MahApps.Styles.Button.Square.Accent}"
+                            controls:ControlsHelper.ContentCharacterCasing="Normal" 
                             cal:Message.Attach="[Event Click] = [Action DeleteAll]">
                         Proceed
                     </Button>
                     <Button Margin="4 16 4 4" Style="{DynamicResource MahApps.Styles.Button.Square}"
+                            controls:ControlsHelper.ContentCharacterCasing="Normal" 
                             cal:Message.Attach="[Event Click] = [Action CancelDeleteAll]">
                         Cancel
                     </Button>
