@@ -64,6 +64,8 @@ namespace Papercut.ViewModels
         private ThemeColor _themeColor;
 
         string _windowTitle = WindowTitleDefault;
+        
+        private bool _showNotifications;
 
         public OptionsViewModel(IMessageBus messageBus, ThemeColorRepository themeColorRepository)
         {
@@ -152,6 +154,16 @@ namespace Papercut.ViewModels
             {
                 this._minimizeToTray = value;
                 this.NotifyOfPropertyChange(() => this.MinimizeToTray);
+            }
+        }
+
+        public bool ShowNotifications
+        {
+            get => this._showNotifications;
+            set
+            {
+                this._showNotifications = value;
+                this.NotifyOfPropertyChange(() => this.ShowNotifications);
             }
         }
 
