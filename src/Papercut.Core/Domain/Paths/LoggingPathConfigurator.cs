@@ -30,7 +30,7 @@ namespace Papercut.Core.Domain.Paths
 
     using Serilog;
 
-    public class MessagePathConfigurator : IMessagePathConfigurator
+    public class LoggingPathConfigurator : ILoggingPathConfigurator
     {
         static readonly IDictionary<string, string> _templateDictionary;
 
@@ -44,7 +44,7 @@ namespace Papercut.Core.Domain.Paths
 
         string _defaultSavePath;
 
-        static MessagePathConfigurator()
+        static LoggingPathConfigurator()
         {
             _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -62,14 +62,14 @@ namespace Papercut.Core.Domain.Paths
             }
         }
 
-        public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
+        public LoggingPathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
         {
             if (pathTemplateProvider == null) throw new ArgumentNullException(nameof(pathTemplateProvider));
             if (logger == null) throw new ArgumentNullException(nameof(logger));
 
             this._logger = logger;
             this._pathTemplateProvider = pathTemplateProvider;
-            this._pathTemplateProvider.MessagePathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
+            this._pathTemplateProvider.LoggingPathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
 
             this.DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
             this.RenderLoadPaths();
@@ -77,7 +77,7 @@ namespace Papercut.Core.Domain.Paths
             if (this.LoadPaths.Any()) this.DefaultSavePath = this.LoadPaths.First();
 
             this._logger.Information(
-                "Default Message Save Path is Set to {DefaultSavePath}",
+                "Default Logging Save Path is Set to {DefaultSavePath}",
                 this.DefaultSavePath);
         }
 
@@ -88,7 +88,7 @@ namespace Papercut.Core.Domain.Paths
                 if (!Directory.Exists(this._defaultSavePath))
                 {
                     this._logger.Information(
-                        "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
+                        "Creating Default Logging Save Path {DefaultSavePath} because it does not exist",
                         this._defaultSavePath);
 
                     Directory.CreateDirectory(this._defaultSavePath);
@@ -112,11 +112,11 @@ namespace Papercut.Core.Domain.Paths
         void RenderLoadPaths()
         {
             this.LoadPaths =
-                this._pathTemplateProvider.MessagePathTemplates.Select(this.RenderPathTemplate)
+                this._pathTemplateProvider.LoggingPathTemplates.Select(this.RenderPathTemplate)
                     .Where(this.ValidatePathExists)
                     .ToList();
 
-            this._logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", this.LoadPaths);
+            this._logger.Information("Saving logs in the Following Path(s) {@LoadPaths}", this.LoadPaths);
         }
 
         protected virtual void OnRefreshLoadPath()

@@ -21,7 +21,6 @@ namespace Papercut.Service
     using System.Threading.Tasks;
 
     using Autofac;
-
     using Papercut.Core.Infrastructure.Container;
     using Papercut.Core.Infrastructure.Logging;
     using Papercut.Service.Services;

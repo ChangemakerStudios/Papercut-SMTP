@@ -191,5 +191,18 @@ namespace Papercut.Properties {
                 this["MessagePaths"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("%ApplicationData%\\Changemaker Studios\\Papercut SMTP;%ApplicationData%\\Papercut;%B" +
+            "aseDirectory%\\Logs;%DataDirectory%\\Logs")]
+        public string LoggingPaths {
+            get {
+                return ((string)(this["LoggingPaths"]));
+            }
+            set {
+                this["LoggingPaths"] = value;
+            }
+        }
     }
 }

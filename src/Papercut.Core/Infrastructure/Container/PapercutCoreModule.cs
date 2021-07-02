@@ -51,6 +51,11 @@ namespace Papercut.Core.Infrastructure.Container
                 .AsSelf()
                 .SingleInstance();
 
+            builder.RegisterType<LoggingPathConfigurator>()
+                .As<ILoggingPathConfigurator>()
+                .AsSelf()
+                .SingleInstance();
+
             builder.RegisterType<JsonSettingStore>()
                 .As<ISettingStore>()
                 .OnActivated(

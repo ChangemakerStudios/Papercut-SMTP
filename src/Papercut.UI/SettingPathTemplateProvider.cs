@@ -39,14 +39,42 @@ namespace Papercut
         public SettingPathTemplateProvider(ILogger logger)
         {
             _logger = logger;
-            PathTemplates = new ObservableCollection<string>(MessagePaths);
+            MessagePathTemplates = new ObservableCollection<string>(MessagePaths);
+            LoggingPathTemplates = new ObservableCollection<string>(LoggingPaths);
+        }
+
+        private IEnumerable<string> LoggingPaths
+        {
+            get
+            {
+                return GetLoggingPath()
+                    .Split(';', ',')
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .Distinct();
+            }
+        }
+
+        private string GetLoggingPath()
+        {
+            try
+            {
+                return Settings.Default.LoggingPaths;
+            }
+            catch (System.Exception ex)
+            {
+                // logging path loading is failing
+                this._logger.Error(ex, "Failed to load logging paths");
+
+                // use default
+                return @"%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%\Papercut;%BaseDirectory%\Logs;%DataDirectory%\Logs";
+            }
         }
 
         private IEnumerable<string> MessagePaths
         {
             get
             {
-
                 return GetMessagePath()
                     .Split(';', ',')
                     .Select(s => s.Trim())
@@ -73,26 +101,43 @@ namespace Papercut
 
         public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
-            UpdatePathTemplates();
+            UpdateMessagePathTemplates();
+            UpdateLoggingPathTemplates();
 
             return Task.CompletedTask;
         }
 
-        public ObservableCollection<string> PathTemplates { get; }
+        public ObservableCollection<string> MessagePathTemplates { get; }
+        public ObservableCollection<string> LoggingPathTemplates { get; }
 
-        void UpdatePathTemplates()
+        void UpdateMessagePathTemplates()
         {
             string[] paths = MessagePaths.ToArray();
-            List<string> toRemove = PathTemplates.Except(paths).ToList();
-            List<string> toAdd = paths.Except(PathTemplates).ToList();
+            List<string> toRemove = MessagePathTemplates.Except(paths).ToList();
+            List<string> toAdd = paths.Except(MessagePathTemplates).ToList();
 
-            if (toRemove.Any()) _logger.Information("Removing Path(s) {Paths} to Path Templates", toRemove);
+            if (toRemove.Any()) _logger.Information("Removing message Path(s) {Paths} to message Path Templates", toRemove);
 
-            toRemove.ForEach(s => PathTemplates.Remove(s));
+            toRemove.ForEach(s => MessagePathTemplates.Remove(s));
 
-            if (toAdd.Any()) _logger.Information("Added Path(s) {Paths} to Path Templates", toAdd);
+            if (toAdd.Any()) _logger.Information("Added message Path(s) {Paths} to message Path Templates", toAdd);
 
-            PathTemplates.AddRange(toAdd);
+            MessagePathTemplates.AddRange(toAdd);
+        }
+
+        void UpdateLoggingPathTemplates()
+        {
+            string[] paths = LoggingPaths.ToArray();
+            List<string> toRemove = LoggingPathTemplates.Except(paths).ToList();
+            List<string> toAdd = paths.Except(LoggingPathTemplates).ToList();
+
+            if (toRemove.Any()) _logger.Information("Removing logging Path(s) {Paths} to logging Path Templates", toRemove);
+
+            toRemove.ForEach(s => LoggingPathTemplates.Remove(s));
+
+            if (toAdd.Any()) _logger.Information("Added logging Path(s) {Paths} to logging Path Templates", toAdd);
+
+            LoggingPathTemplates.AddRange(toAdd);
         }
     }
 }
