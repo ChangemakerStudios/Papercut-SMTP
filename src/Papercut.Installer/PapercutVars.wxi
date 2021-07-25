@@ -25,8 +25,7 @@
     <?define UpgradeCode="74DA413C-2E60-4151-9E56-AD3CC6320F7D" ?>
   <?endif ?>
 
-  <?define BinPath="bin\$(var.PlatformPath)\$(var.Configuration)" ?>
-  <?define AppBinPath="..\Papercut.UI\$(var.BinPath)\" ?>
-  <?define SrvBinPath="..\Papercut.Service\$(var.BinPath)\" ?>
+  <?define AppBinPath="..\Papercut.UI\bin\$(var.PlatformPath)\$(var.Configuration)\" ?>
+  <?define SrvBinPath="..\Papercut.Service\bin\$(var.Configuration)\" ?>
 
 </Include>
