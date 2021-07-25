@@ -18,6 +18,15 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DefineConstants>Debug</DefineConstants>
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Bundle.wxs" />
     <Compile Include="NetFx472.wxs" />
@@ -50,6 +59,7 @@
     <Folder Include="Resources" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="PapercutVars.wxi" />
     <Content Include="Resources\App.ico" />
     <Content Include="Resources\Papercut-Logo.png" />
     <Content Include="Resources\Papercut-Sidelogo.png" />

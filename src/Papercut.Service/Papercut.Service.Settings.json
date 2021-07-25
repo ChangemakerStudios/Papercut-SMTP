@@ -21,7 +21,7 @@
   "IPCommUIAddress_Description": "## The IP Comm UI IP address (Defaults to 127.0.0.1).",
   "IPCommUIPort": "37402",
   "IPCommUIPort_Description": "## The IP Comm UI listening port (Defaults to 37402).",
-  "MessagePath": "%DataDirectory%\\Incoming;%BaseDirectory%\\Incoming",
+  "MessagePath": "%AppDataDirectory%\\Incoming;%BaseDirectory%\\Incoming",
   "MessagePath_Description": "## Base path where incoming emails are written.",
   "Port": "25",
   "Port_Description": "## SMTP Server listening Port. Default is 25.",

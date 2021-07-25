@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>    
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <Platform>AnyCPU</Platform>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -42,18 +42,11 @@ namespace Papercut
             PathTemplates = new ObservableCollection<string>(MessagePaths);
         }
 
-        private IEnumerable<string> MessagePaths
-        {
-            get
-            {
-
-                return GetMessagePath()
+        private IEnumerable<string> MessagePaths => GetMessagePath()
                     .Split(';', ',')
                     .Select(s => s.Trim())
                     .Where(s => !string.IsNullOrWhiteSpace(s))
                     .Distinct();
-            }
-        }
 
         private string GetMessagePath()
         {

@@ -34,7 +34,7 @@ namespace Papercut.Core.Infrastructure.Logging
         {
             _rootLogger = new Lazy<ILogger>(() =>
             {
-                string logFilePath = Path.Combine(AppConstants.DataDirectory,
+                string logFilePath = Path.Combine(AppConstants.AppDataDirectory,
                     "Logs",
                     "PapercutCoreFailure.json");
 

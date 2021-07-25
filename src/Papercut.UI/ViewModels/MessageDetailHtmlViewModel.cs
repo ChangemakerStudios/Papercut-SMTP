@@ -28,15 +28,18 @@ namespace Papercut.ViewModels
     using Caliburn.Micro;
 
     using Microsoft.Web.WebView2.Core;
+    using Microsoft.Web.WebView2.Wpf;
 
     using MimeKit;
 
     using Papercut.Common.Extensions;
     using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Paths;
     using Papercut.Core.Infrastructure.Async;
     using Papercut.Domain.HtmlPreviews;
     using Papercut.Helpers;
+    using Papercut.Properties;
     using Papercut.Views;
 
     using Serilog;
