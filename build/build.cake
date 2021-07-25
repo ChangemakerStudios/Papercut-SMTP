@@ -1,14 +1,14 @@
 #tool "nuget:?package=MarkdownSharp&version=1.13.0"
-#tool "nuget:?package=MimekitLite&version=2.0.6"
+#tool "nuget:?package=MimekitLite&version=2.13.0 "
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.9.0"
 #tool "nuget:?package=OpenCover&version=4.6.519"
 #tool "nuget:?package=GitVersion.CommandLine&version=5.2.4"
 
-#addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
-#addin "nuget:?package=Cake.Incubator&version=5.1.0"
+#addin "nuget:?package=Cake.FileHelpers&version=4.0.1"
+#addin "nuget:?package=Cake.Incubator&version=6.0.0"
 
 #reference "tools/MarkdownSharp.1.13.0.0/lib/35/MarkdownSharp.dll"
-#reference "tools/MimeKitLite.2.0.6/lib/net45/MimeKitLite.dll"
+#reference "tools/MimeKitLite.2.13.0/lib/net45/MimeKitLite.dll"
 
 #load "./BuildInformation.cake"
 #load "./ReleaseNotes.cake"
@@ -54,9 +54,14 @@ else {
     CleanDirectory(outputDirectory);
 }
 
-var appBuildDir = Directory(papercutBinDir) + Directory(configuration);
-var svcBuildDir = Directory(papercutServiceBinDir) + Directory(configuration);
-var testBuildDir = Directory(webUiTestsBinDir) + Directory(configuration);
+var x64Dir = Directory("x64");
+var x32Dir = Directory("x86");
+var cfgDir = Directory(configuration);
+
+var appBuildDir64 = Directory(papercutBinDir) + x64Dir + cfgDir;
+var appBuildDir32 = Directory(papercutBinDir) + x32Dir + cfgDir;
+var svcBuildDir = Directory(papercutServiceBinDir) + cfgDir;
+var testBuildDir = Directory(webUiTestsBinDir) + x64Dir + cfgDir;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
@@ -64,13 +69,13 @@ var testBuildDir = Directory(webUiTestsBinDir) + Directory(configuration);
 Task("Clean")
     .Does(() =>
 {
-    CleanDirectory(appBuildDir);
+    CleanDirectory(appBuildDir64);
+    CleanDirectory(appBuildDir32);
     CleanDirectory(svcBuildDir);
     CleanDirectory(testBuildDir);
 
     foreach (var directory in GetDirectories("../src/Papercut.Module.*")) {
         var pluginOutputDir = directory.Combine(Directory("./bin/" + configuration));
-
         CleanDirectory(pluginOutputDir);
     }
 });
@@ -84,6 +89,7 @@ Task("Restore")
 });
 
 ///////////////////////////////////////////////////////////////////////////////
+// Assembly Version Patching
 Task("PatchAssemblyInfo")
     .Does(() =>
 {
@@ -96,19 +102,35 @@ Task("PatchAssemblyInfo")
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
+// RELEASE NOTES
 Task("CreateReleaseNotes")
     .Does(() => ReleaseNotes.Create(Context))
     .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
-Task("Build")
+// BUILD
+Task("Build64")
     .IsDependentOn("Restore")
     .Does(() =>
 {
     MSBuild("../Papercut.sln", settings => settings
                             .SetConfiguration(configuration)
                             .SetVerbosity(Verbosity.Normal)
-                            .SetPlatformTarget(PlatformTarget.MSIL)
+                            .SetPlatformTarget(PlatformTarget.x64)
+                            .SetMSBuildPlatform(MSBuildPlatform.Automatic)
+                            .UseToolVersion(MSBuildToolVersion.Default)
+                            .WithTarget("Build"));
+})
+.OnError(exception => Error(exception));
+
+Task("Build32")
+    .IsDependentOn("Restore")
+    .Does(() =>
+{
+    MSBuild("../Papercut.sln", settings => settings
+                            .SetConfiguration(configuration)
+                            .SetVerbosity(Verbosity.Normal)
+                            .SetPlatformTarget(PlatformTarget.x86)
                             .SetMSBuildPlatform(MSBuildPlatform.Automatic)
                             .UseToolVersion(MSBuildToolVersion.Default)
                             .WithTarget("Build"));
@@ -116,11 +138,12 @@ Task("Build")
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
+// TESTS
 Task("Test")
-    .IsDependentOn("Build")
+    .IsDependentOn("Build64")
     .Does(() =>
 {
-    NUnit3("../test/**/bin/" + configuration + "/*.Test.dll", new NUnit3Settings()); // { NoResults = true });
+    NUnit3("../test/**/bin/x64/" + configuration + "/*.Test.dll", new NUnit3Settings()); // { NoResults = true });
 
     if(AppVeyor.IsRunningOnAppVeyor)
     {
@@ -130,18 +153,26 @@ Task("Test")
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
-Task("Package")
+// PACKAGE STEPS
+
+void MaybeUploadArtifact(FilePath fileName) {
+    if(AppVeyor.IsRunningOnAppVeyor)
+    {
+        Information("Uploading Artifact to AppVeyor: " + fileName);   
+        AppVeyor.UploadArtifact(fileName);
+    }
+}
+
+Task("PackagePapercut64")
     .Does(() =>
 {
     // remove the apppublish directory
-    var publishDir = appBuildDir + Directory("./app.publish");
+    var publishDir = appBuildDir64 + Directory("./app.publish");    
     DeleteDirectory(publishDir, new DeleteDirectorySettings { Recursive = true, Force = true });
 
-    var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.{0}.zip", versionInfo.FullSemVer));
-    Zip(appBuildDir, appFileName, GetFiles(appBuildDir.ToString() + "/**/*"));
-
-    var svcFileName = outputDirectory.CombineWithFilePath(string.Format("PapercutService.{0}.zip", versionInfo.FullSemVer));
-    Zip(svcBuildDir, svcFileName, GetFiles(svcBuildDir.ToString() + "/**/*"));
+    var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.Smtp.x64.{0}.zip", versionInfo.FullSemVer));
+    Zip(appBuildDir64, appFileName, GetFiles(appBuildDir64.ToString() + "/**/*"));
+    MaybeUploadArtifact(appFileName);
 
     var chocolateyFileName = outputDirectory.CombineWithFilePath(string.Format("papercut.{0}.nupkg", versionInfo.NuGetVersion));
     ChocolateyPack(
@@ -150,14 +181,40 @@ Task("Package")
             Version = versionInfo.NuGetVersion,
             OutputDirectory = outputDirectory
         });
+    
+    MaybeUploadArtifact(chocolateyFileName);
+})
+.OnError(exception => Error(exception));
 
-    if(AppVeyor.IsRunningOnAppVeyor)
-    {
-        AppVeyor.UploadArtifact(appFileName);
-        AppVeyor.UploadArtifact(svcFileName);
-        AppVeyor.UploadArtifact("../src/Papercut.Bootstrapper/bin/" + configuration + "/Papercut.Setup.exe");
-        AppVeyor.UploadArtifact(chocolateyFileName);
-    }
+Task("PackagePapercut32")
+    .Does(() =>
+{
+    // remove the apppublish directory
+    var publishDir = appBuildDir32 + Directory("./app.publish");
+    DeleteDirectory(publishDir, new DeleteDirectorySettings { Recursive = true, Force = true });
+
+    var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.Smtp.x86.{0}.zip", versionInfo.FullSemVer));
+    Zip(appBuildDir32, appFileName, GetFiles(appBuildDir32.ToString() + "/**/*"));
+    MaybeUploadArtifact(appFileName);
+})
+.OnError(exception => Error(exception));
+
+Task("PackagePapercutService")
+    .Does(() =>
+{    
+    var svcFileName = outputDirectory.CombineWithFilePath(string.Format("PapercutService.{0}.zip", versionInfo.FullSemVer));
+    Zip(svcBuildDir, svcFileName, GetFiles(svcBuildDir.ToString() + "/**/*"));
+    MaybeUploadArtifact(svcFileName);
+    MaybeUploadArtifact("../src/Papercut.Bootstrapper/bin/" + configuration + "/Papercut.Setup.exe");
+
+})
+.OnError(exception => Error(exception));
+
+Task("PackageSetup")
+    .Does(() =>
+{
+    MaybeUploadArtifact("../src/Papercut.Bootstrapper/bin/x64/" + configuration + "/Papercut.Smtp.Setup.exe");
+    MaybeUploadArtifact("../src/Papercut.Bootstrapper/bin/x86/" + x32Dir + configuration + "/Papercut.Smtp.Setup.exe");
 })
 .OnError(exception => Error(exception));
 
@@ -167,9 +224,13 @@ Task("All")
     .IsDependentOn("Clean")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
-    .IsDependentOn("Build")
+    .IsDependentOn("Build32")
+    .IsDependentOn("Build64")
     .IsDependentOn("Test")
-    .IsDependentOn("Package")
+    .IsDependentOn("PackagePapercut64")
+    .IsDependentOn("PackagePapercut32")
+    .IsDependentOn("PackagePapercutService")
+    .IsDependentOn("PackageSetup")
     .OnError(exception => Error(exception));
 
 RunTarget(target);
