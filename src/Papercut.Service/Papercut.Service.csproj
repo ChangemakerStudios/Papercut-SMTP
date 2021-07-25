@@ -6,7 +6,7 @@
     <StartupObject />
     <DependsOnNETStandard>false</DependsOnNETStandard>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <Platforms>x64;x86</Platforms>
+    <Platform>AnyCPU</Platform>
   </PropertyGroup>
 
   <PropertyGroup>
