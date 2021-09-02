@@ -45,7 +45,7 @@ namespace Papercut.Core.Infrastructure.Logging
             builder.Register(c =>
                     {
                         var appMeta = c.Resolve<IAppMeta>();
-                        var loggingPathConfigurator = c.Resolve<ILoggingPathConfigurator>();
+                        var loggingPathConfigurator = c.Resolve<LoggingPathConfigurator>();
 
                         string logFilePath = Path.Combine(
                             loggingPathConfigurator.DefaultSavePath,

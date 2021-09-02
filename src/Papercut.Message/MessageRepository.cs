@@ -39,9 +39,9 @@ namespace Papercut.Message
 
         readonly ILogger _logger;
 
-        readonly IMessagePathConfigurator _messagePathConfigurator;
+        readonly MessagePathConfigurator _messagePathConfigurator;
 
-        public MessageRepository(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
+        public MessageRepository(ILogger logger, MessagePathConfigurator messagePathConfigurator)
         {
             _logger = logger;
             _messagePathConfigurator = messagePathConfigurator;

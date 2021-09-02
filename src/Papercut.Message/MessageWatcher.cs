@@ -37,11 +37,11 @@ namespace Papercut.Message
     {
         readonly ILogger _logger;
 
-        readonly IMessagePathConfigurator _messagePathConfigurator;
+        readonly MessagePathConfigurator _messagePathConfigurator;
 
         List<FileSystemWatcher> _watchers;
 
-        public MessageWatcher(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
+        public MessageWatcher(ILogger logger, MessagePathConfigurator messagePathConfigurator)
         {
             _logger = logger;
             _messagePathConfigurator = messagePathConfigurator;

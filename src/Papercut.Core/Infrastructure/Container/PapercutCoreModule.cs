@@ -47,12 +47,10 @@ namespace Papercut.Core.Infrastructure.Container
                 .PreserveExistingDefaults();
 
             builder.RegisterType<MessagePathConfigurator>()
-                .As<IMessagePathConfigurator>()
                 .AsSelf()
                 .SingleInstance();
 
             builder.RegisterType<LoggingPathConfigurator>()
-                .As<ILoggingPathConfigurator>()
                 .AsSelf()
                 .SingleInstance();
 

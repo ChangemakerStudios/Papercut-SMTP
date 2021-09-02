@@ -35,11 +35,11 @@ namespace Papercut.AppLayer.Settings
 
     public class MergeServerBackendSettings : IEventHandler<AppProcessExchangeEvent>
     {
-        readonly IMessagePathConfigurator _configurator;
+        readonly MessagePathConfigurator _configurator;
 
         readonly IMessageBus _messageBus;
 
-        public MergeServerBackendSettings(IMessagePathConfigurator configurator, IMessageBus messageBus)
+        public MergeServerBackendSettings(MessagePathConfigurator configurator, IMessageBus messageBus)
         {
             this._configurator = configurator;
             this._messageBus = messageBus;
