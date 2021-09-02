@@ -41,6 +41,12 @@ namespace Papercut.Service.Helpers
             set { if (MessagePath != value) Settings.Set("MessagePath", value); }
         }
 
+        public string LoggingPath
+        {
+            get => Settings.GetOrSet<string>("LoggingPath", @"%DataDirectory%\Logs;%BaseDirectory%\Logs", "Base path where logs are written.");
+            set { if (LoggingPath != value) Settings.Set("LoggingPath", value); }
+        }
+
         public string SeqEndpoint
         {
             get => Settings.GetOrSet<string>("SeqEndpoint", @"", "Populate with a endpoint if you want to enable SEQ (https://getseq.net/) logging.");
