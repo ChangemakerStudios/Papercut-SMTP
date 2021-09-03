@@ -7,5 +7,5 @@ using System.Reflection;
 
 [assembly: AssemblyVersion("5.8.1.0")]
 [assembly: AssemblyFileVersion("5.8.1.0")]
-[assembly: AssemblyInformationalVersion("5.8.1-NewHTMLRender.16+Branch.NewHTMLRender.Sha.742077df6313ceb4badeb4c2f241fce6a999588c")]
+[assembly: AssemblyInformationalVersion("5.8.1-NewHTMLRender.30+Branch.NewHTMLRender.Sha.ef8f59f6f39b5af1aa13455a71ad21c8d0aab543")]
 

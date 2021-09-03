@@ -2,7 +2,7 @@
 #tool "nuget:?package=MimekitLite&version=2.13.0 "
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.9.0"
 #tool "nuget:?package=OpenCover&version=4.6.519"
-#tool "nuget:?package=GitVersion.CommandLine&version=5.2.4"
+#tool "nuget:?package=GitVersion.CommandLine&version=5.7.0"
 
 #addin "nuget:?package=Cake.FileHelpers&version=4.0.1"
 #addin "nuget:?package=Cake.Incubator&version=6.0.0"
@@ -202,10 +202,9 @@ Task("PackagePapercut32")
 Task("PackagePapercutService")
     .Does(() =>
 {    
-    var svcFileName = outputDirectory.CombineWithFilePath(string.Format("PapercutService.{0}.zip", versionInfo.FullSemVer));
+    var svcFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.Smtp.Service.{0}.zip", versionInfo.FullSemVer));
     Zip(svcBuildDir, svcFileName, GetFiles(svcBuildDir.ToString() + "/**/*"));
     MaybeUploadArtifact(svcFileName);
-    MaybeUploadArtifact("../src/Papercut.Bootstrapper/bin/" + configuration + "/Papercut.Setup.exe");
 
 })
 .OnError(exception => Error(exception));
@@ -214,7 +213,7 @@ Task("PackageSetup")
     .Does(() =>
 {
     MaybeUploadArtifact("../src/Papercut.Bootstrapper/bin/x64/" + configuration + "/Papercut.Smtp.Setup.exe");
-    MaybeUploadArtifact("../src/Papercut.Bootstrapper/bin/x86/" + x32Dir + configuration + "/Papercut.Smtp.Setup.exe");
+    MaybeUploadArtifact("../src/Papercut.Bootstrapper/bin/x86/" + configuration + "/Papercut.Smtp.Setup.exe");
 })
 .OnError(exception => Error(exception));
 
