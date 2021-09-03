@@ -23,43 +23,16 @@ namespace Papercut.Core.Domain.Paths
     using System.Collections.Specialized;
     using System.IO;
     using System.Linq;
-    using System.Text.RegularExpressions;
-
-    using Papercut.Common.Helper;
 
     using Serilog;
 
     public abstract class PathConfiguratorBase : IPathConfigurator
     {
-        static readonly IDictionary<string, string> _templateDictionary;
-
-        static readonly Regex TemplateRegex = new Regex(
-            @"\%(?<name>.+?)\%",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
-
         readonly ILogger _logger;
 
         readonly IPathTemplatesProvider _pathTemplateProvider;
 
         string _defaultSavePath;
-
-        static PathConfiguratorBase()
-        {
-            _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                {"BaseDirectory", AppDomain.CurrentDomain.BaseDirectory},
-                {"DataDirectory", AppConstants.DataDirectory}
-            };
-
-            foreach (
-                Environment.SpecialFolder specialPath in
-                EnumHelpers.GetEnumList<Environment.SpecialFolder>())
-            {
-                string specialPathName = specialPath.ToString();
-
-                if (!_templateDictionary.ContainsKey(specialPathName)) _templateDictionary.Add(specialPathName, Environment.GetFolderPath(specialPath));
-            }
-        }
 
         protected PathConfiguratorBase(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
         {
@@ -126,24 +99,7 @@ namespace Papercut.Core.Domain.Paths
 
         string RenderPathTemplate(string pathTemplate)
         {
-            IEnumerable<string> pathKeys =
-                TemplateRegex.Matches(pathTemplate)
-                    .OfType<Match>()
-                    .Select(s => s.Groups["name"].Value);
-            string renderedPath = pathTemplate;
-
-            foreach (string pathKeyName in pathKeys)
-            {
-                string path;
-                if (_templateDictionary.TryGetValue(pathKeyName, out path))
-                {
-                    renderedPath =
-                        renderedPath.Replace($"%{pathKeyName}%", path)
-                            .Replace(@"\\", @"\");
-                }
-            }
-
-            return renderedPath;
+            return MessagePathHelper.RenderPathTemplate(pathTemplate);
         }
 
         bool ValidatePathExists(string path)

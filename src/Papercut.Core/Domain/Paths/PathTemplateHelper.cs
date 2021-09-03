@@ -25,7 +25,7 @@ namespace Papercut.Core.Domain.Paths
 
     using Papercut.Common.Helper;
 
-    public class MessagePathHelper
+    public class PathTemplateHelper
     {
         static readonly IDictionary<string, string> _templateDictionary;
 
@@ -33,7 +33,7 @@ namespace Papercut.Core.Domain.Paths
             @"\%(?<name>.+?)\%",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
 
-        static MessagePathHelper()
+        static PathTemplateHelper()
         {
             _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {

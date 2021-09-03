@@ -33,7 +33,7 @@ namespace Papercut.Helpers
     {
         public WebView2Base()
         {
-            var webViewUserDataFolder = MessagePathHelper.RenderPathTemplate(Settings.Default.WebView2UserFolder);
+            var webViewUserDataFolder = PathTemplateHelper.RenderPathTemplate(Settings.Default.WebView2UserFolder);
 
             Log.Information("Setting WebView2 User Data Folder: {UserDataFolder}", webViewUserDataFolder);
 
