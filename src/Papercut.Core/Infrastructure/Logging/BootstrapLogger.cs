@@ -34,7 +34,7 @@ namespace Papercut.Core.Infrastructure.Logging
         {
             _rootLogger = new Lazy<ILogger>(() =>
             {
-                string logFilePath = Path.Combine(AppConstants.DataDirectory,
+                string logFilePath = Path.Combine(AppConstants.AppDataDirectory,
                     "Logs",
                     "PapercutCoreFailure.json");
 
@@ -61,7 +61,7 @@ namespace Papercut.Core.Infrastructure.Logging
         {
             var logInstance = IsLoggerConfigured() ? Log.Logger : Logger;
 
-            if (!args.Observed) logInstance.Error(args.Exception, "Unobserved Task Exception");
+            if (!args.Observed) logInstance.Warning(args.Exception, "Unobserved Task Exception");
 
             args.SetObserved();
         }

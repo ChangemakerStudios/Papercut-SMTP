@@ -17,6 +17,7 @@
 
 namespace Papercut.ViewModels
 {
+    using System;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Windows;

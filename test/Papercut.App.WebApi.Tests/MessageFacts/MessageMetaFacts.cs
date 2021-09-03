@@ -99,8 +99,8 @@ namespace Papercut.App.WebApi.Tests.MessageFacts
         private string CreateMessage()
         {
             var existedMail = new MimeMessage(
-                new[] { new MailboxAddress("from@from.com") },
-                new[] { new MailboxAddress("to@to.com") },
+                new[] { MailboxAddress.Parse("from@from.com") },
+                new[] { MailboxAddress.Parse("to@to.com") },
                  "Sample email",
                  new Multipart
                 {

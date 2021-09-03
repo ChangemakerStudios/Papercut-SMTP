@@ -56,7 +56,7 @@ namespace Papercut.App.WebApi.Tests.MessageFacts
             var existedMail = new MimeMessage
             {
                 Subject = "Test",
-                From = {new MailboxAddress("mffeng@gmail.com")}
+                From = {MailboxAddress.Parse("mffeng@gmail.com")}
             };
 
             this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
@@ -81,7 +81,7 @@ namespace Papercut.App.WebApi.Tests.MessageFacts
         {
             var existedMail = new MimeMessage
             {
-                From = {new MailboxAddress("mffeng@gmail.com")}
+                From = {MailboxAddress.Parse("mffeng@gmail.com")}
             };
 
             // clear out existing messages
@@ -121,10 +121,10 @@ namespace Papercut.App.WebApi.Tests.MessageFacts
             var existedMail = new MimeMessage
             {
                 Subject = "Test",
-                From = {new MailboxAddress("mffeng@gmail.com")},
-                To = {new MailboxAddress("xwliu@gmail.com")},
-                Cc = {new MailboxAddress("jjchen@gmail.com"), new MailboxAddress("ygma@gmail.com")},
-                Bcc = {new MailboxAddress("rzhe@gmail.com"), new MailboxAddress("xueting@gmail.com")},
+                From = {MailboxAddress.Parse("mffeng@gmail.com")},
+                To = {MailboxAddress.Parse("xwliu@gmail.com")},
+                Cc = {MailboxAddress.Parse("jjchen@gmail.com"), MailboxAddress.Parse("ygma@gmail.com")},
+                Bcc = {MailboxAddress.Parse("rzhe@gmail.com"), MailboxAddress.Parse("xueting@gmail.com")},
                 Body = new TextPart("plain") {Text = "Hello Buddy"}
             };
             this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
@@ -162,8 +162,8 @@ namespace Papercut.App.WebApi.Tests.MessageFacts
             var existedMail = new MimeMessage
             {
                 Subject = "Test",
-                From = {new MailboxAddress("mffeng@gmail.com")},
-                To = {new MailboxAddress("xwliu@gmail.com")},
+                From = {MailboxAddress.Parse("mffeng@gmail.com")},
+                To = {MailboxAddress.Parse("xwliu@gmail.com")},
                 Body = new TextPart("plain") {Text = "Hello Buddy"}
             };
             existedMail.Headers.Add(HeaderId.ReplyTo, "one@replyto.com");

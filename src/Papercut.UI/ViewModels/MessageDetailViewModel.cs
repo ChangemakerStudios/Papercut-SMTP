@@ -283,6 +283,21 @@ namespace Papercut.ViewModels
 
         void DisplayMimeMessage(MimeMessage mailMessageEx)
         {
+            (string Name, string Color) GetPriorityText(MimeMessage message)
+            {
+                if (message == null) throw new ArgumentNullException(nameof(message));
+
+                switch (message.Priority)
+                {
+                    case MessagePriority.NonUrgent: return ("Low", "Blue");
+                    case MessagePriority.Urgent: return ("High", "Red");
+                    case MessagePriority.Normal:
+                        break;
+                }
+
+                return default;
+            }
+
             ResetMessage();
 
             if (mailMessageEx != null)
@@ -296,9 +311,9 @@ namespace Papercut.ViewModels
                 To = mailMessageEx.To?.ToString() ?? string.Empty;
                 CC = mailMessageEx.Cc?.ToString() ?? string.Empty;
                 Bcc = mailMessageEx.Bcc?.ToString() ?? string.Empty;
-                var priority = GetPriority(mailMessageEx);
+                var priority = GetPriorityText(mailMessageEx);
                 Priority = priority.Name;
-                PriorityColor = priority.Color;
+                PriorityColor = priority.Color ?? "Black";
                 Date = mailMessageEx.Date.ToString();
                 Subject = mailMessageEx.Subject ?? string.Empty;
                 
@@ -323,21 +338,6 @@ namespace Papercut.ViewModels
             }
 
             SelectedTabIndex = 0;
-        }
-
-        private static (string Name, string Color) GetPriority([NotNull] MimeMessage message)
-        {
-            if (message == null) throw new ArgumentNullException(nameof(message));
-
-            switch (message.Priority)
-            {
-                case MessagePriority.NonUrgent: return ("Low", "Blue");
-                case MessagePriority.Urgent: return ("High", "Red");
-                case MessagePriority.Normal:
-                    break;
-            }
-
-            return default;
         }
 
         void ResetMessage()
