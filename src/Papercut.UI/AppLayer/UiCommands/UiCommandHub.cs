@@ -68,8 +68,11 @@ namespace Papercut.AppLayer.UiCommands
 
         public void ShowBalloonTip(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon)
         {
-            var command = new ShowBalloonTipCommand(timeout, tipTitle, tipText, toolTipIcon);
-            this._onShowBalloonTip.OnNext(command);
+            if (Papercut.Properties.Settings.Default.ShowNotifications)
+            {
+                var command = new ShowBalloonTipCommand(timeout, tipTitle, tipText, toolTipIcon);
+                this._onShowBalloonTip.OnNext(command);
+            }
         }
 
         protected override void Dispose(bool disposing)

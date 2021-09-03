@@ -50,5 +50,8 @@
     <Setting Name="LoggingPaths" Type="System.String" Scope="User">
       <Value Profile="(Default)">%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%\Papercut;%BaseDirectory%\Logs;%AppDataDirectory%\Logs</Value>
     </Setting>
+    <Setting Name="ShowNotifications" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
