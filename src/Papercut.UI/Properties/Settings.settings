@@ -42,7 +42,7 @@
       <Value Profile="(Default)">%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%\Papercut;%BaseDirectory%\Incoming;%AppDataDirectory%\Incoming</Value>
     </Setting>
     <Setting Name="Theme" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Cyan</Value>
+      <Value Profile="(Default)">Steel Blue</Value>
     </Setting>
     <Setting Name="WebView2UserFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)">%UserAppDataDirectory%\WebView2</Value>
