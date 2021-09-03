@@ -99,7 +99,7 @@ namespace Papercut.Core.Domain.Paths
 
         string RenderPathTemplate(string pathTemplate)
         {
-            return MessagePathHelper.RenderPathTemplate(pathTemplate);
+            return PathTemplateHelper.RenderPathTemplate(pathTemplate);
         }
 
         bool ValidatePathExists(string path)
