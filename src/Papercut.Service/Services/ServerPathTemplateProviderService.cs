@@ -28,13 +28,20 @@ namespace Papercut.Service.Services
     {
         public ServerPathTemplateProviderService(PapercutServiceSettings serviceSettings)
         {
-            var paths = serviceSettings.MessagePath.Split(';')
+            var messagePaths = serviceSettings.MessagePath.Split(';')
                 .Select(s => s.Trim())
                 .Where(s => !string.IsNullOrWhiteSpace(s));
 
-            PathTemplates = new ObservableCollection<string>(paths);
+            MessagePathTemplates = new ObservableCollection<string>(messagePaths);
+
+            var loggingPaths = serviceSettings.LoggingPath.Split(';')
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s));
+
+            LoggingPathTemplates = new ObservableCollection<string>(loggingPaths);
         }
 
-        public ObservableCollection<string> PathTemplates { get; private set; }
+        public ObservableCollection<string> MessagePathTemplates { get; private set; }
+        public ObservableCollection<string> LoggingPathTemplates { get; private set; }
     }
 }

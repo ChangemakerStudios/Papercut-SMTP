@@ -31,7 +31,7 @@ namespace Papercut.Core.Infrastructure.Logging
 
     using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
-
+    using Papercut.Core.Domain.Paths;
     using Serilog;
     using Serilog.Debugging;
     using Serilog.Events;
@@ -46,10 +46,10 @@ namespace Papercut.Core.Infrastructure.Logging
             builder.Register(c =>
                     {
                         var appMeta = c.Resolve<IAppMeta>();
+                        var loggingPathConfigurator = c.Resolve<LoggingPathConfigurator>();
 
                         string logFilePath = Path.Combine(
-                            AppDomain.CurrentDomain.BaseDirectory,
-                            "Logs",
+                            loggingPathConfigurator.DefaultSavePath,
                             $"{appMeta.AppName}.log");
 
                         // support self-logging

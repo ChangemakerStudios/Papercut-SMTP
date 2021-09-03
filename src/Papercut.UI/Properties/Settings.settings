@@ -47,5 +47,8 @@
     <Setting Name="WebView2UserFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)">%UserAppDataDirectory%\WebView2</Value>
     </Setting>
+    <Setting Name="LoggingPaths" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%\Papercut;%BaseDirectory%\Logs;%DataDirectory%\Logs</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

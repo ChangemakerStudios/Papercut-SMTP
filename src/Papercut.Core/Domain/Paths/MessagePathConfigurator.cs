@@ -15,104 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Core.Domain.Paths
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.IO;
-    using System.Linq;
-
     using Serilog;
 
-    public class MessagePathConfigurator : IMessagePathConfigurator
+    public class MessagePathConfigurator : PathConfiguratorBase
     {
-        readonly ILogger _logger;
-
-        readonly IPathTemplatesProvider _pathTemplateProvider;
-
-        string _defaultSavePath;
-
         public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
+            : base(pathTemplateProvider, logger)
         {
-            if (pathTemplateProvider == null) throw new ArgumentNullException(nameof(pathTemplateProvider));
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-
-            this._logger = logger;
-            this._pathTemplateProvider = pathTemplateProvider;
-            this._pathTemplateProvider.PathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
-
-            this.DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
-            this.RenderLoadPaths();
-
-            if (this.LoadPaths.Any()) this.DefaultSavePath = this.LoadPaths.First();
-
-            this._logger.Information(
-                "Default Message Save Path is Set to {DefaultSavePath}",
-                this.DefaultSavePath);
-        }
-
-        public string DefaultSavePath
-        {
-            get
-            {
-                if (!Directory.Exists(this._defaultSavePath))
-                {
-                    this._logger.Information(
-                        "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
-                        this._defaultSavePath);
-
-                    Directory.CreateDirectory(this._defaultSavePath);
-                }
-
-                return this._defaultSavePath;
-            }
-            private set => this._defaultSavePath = value;
-        }
-
-        public IEnumerable<string> LoadPaths { get; private set; }
-
-        public event EventHandler RefreshLoadPath;
-
-        void PathTemplatesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            this.RenderLoadPaths();
-            this.OnRefreshLoadPath();
-        }
-
-        void RenderLoadPaths()
-        {
-            this.LoadPaths =
-                this._pathTemplateProvider.PathTemplates
-                    .Select(MessagePathHelper.RenderPathTemplate)
-                    .Where(this.ValidatePathExists)
-                    .ToList();
-
-            this._logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", this.LoadPaths);
-        }
-
-        protected virtual void OnRefreshLoadPath()
-        {
-            EventHandler handler = this.RefreshLoadPath;
-            handler?.Invoke(this, EventArgs.Empty);
-        }
-
-        bool ValidatePathExists(string path)
-        {
-            if (path == null) throw new ArgumentNullException(nameof(path));
-
-            try
-            {
-                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
-            }
-
-            return false;
         }
     }
 }
