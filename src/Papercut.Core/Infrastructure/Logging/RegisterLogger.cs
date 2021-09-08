@@ -19,9 +19,7 @@
 namespace Papercut.Core.Infrastructure.Logging
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
 
@@ -29,10 +27,12 @@ namespace Papercut.Core.Infrastructure.Logging
 
     using AutofacSerilogIntegration;
 
-    using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.Paths;
+    using Papercut.Core.Infrastructure.CommandLine;
+
     using Serilog;
+    using Serilog.Configuration;
     using Serilog.Debugging;
     using Serilog.Events;
 
@@ -68,11 +68,12 @@ namespace Papercut.Core.Infrastructure.Logging
                                 .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
                                 .Filter.ByExcluding(ExcludeTcpClientDisposeBugException)
                                 .WriteTo.Console()
-                                .WriteTo.File(logFilePath);
+                                .WriteTo.File(logFilePath)
+                                .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(Environment.GetCommandLineArgs().ToArray()));
 
-                        foreach (var configureInstance in c.Resolve<IEnumerable<IConfigureLogging>>().ToList())
+                        foreach (var configureInstance in c.Resolve<IEnumerable<ILoggerSettings>>().ToList())
                         {
-                            configureInstance.Configure(logConfiguration);
+                            logConfiguration.ReadFrom.Settings(configureInstance);
                         }
 
                         return logConfiguration;
