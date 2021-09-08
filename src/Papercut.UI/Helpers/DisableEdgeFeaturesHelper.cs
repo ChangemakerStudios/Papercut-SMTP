@@ -35,7 +35,9 @@ namespace Papercut.Helpers
             coreWeb.Settings.AreDevToolsEnabled = false;
             coreWeb.Settings.AreDefaultScriptDialogsEnabled = false;
             coreWeb.Settings.IsBuiltInErrorPageEnabled = false;
-            coreWeb.Settings.IsStatusBarEnabled = false;
+
+            // Issue #145 fixed
+            coreWeb.Settings.IsStatusBarEnabled = true;
         }
     }
 }
