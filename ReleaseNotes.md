@@ -1,5 +1,8 @@
 # Release Notes
 
+## Papercut v6.0.0 [2021-06-16]
+- Moved to Edge (WebView2) for email display providing modern browser support for viewing.
+
 ## Papercut v5.8.0 [2021-06-16]
 - Moved to .NET Framework 4.7.2
 - Upgraded to latest dependencies (Caliburn Micro, Autofac, MahApps)
