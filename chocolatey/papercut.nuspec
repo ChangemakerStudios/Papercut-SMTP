@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>papercut</id>
-        <version>5.8.0.0</version>
+        <version>6.0.0.0</version>
         <title>Papercut-Smtp</title>
         <authors>Jaben</authors>
         <owners>Jaben</owners>
@@ -17,10 +17,11 @@ Papercut is the answer. Papercut is a simplified SMTP server designed to only re
         <tags>dummy smtp papercut</tags>
     </metadata>
     <files>
-        <file src="..\src\Papercut.UI\bin\Release\Papercut.application" target="bin\Papercut.application" />
-        <file src="..\src\Papercut.UI\bin\Release\Papercut.exe" target="bin\Papercut.exe" />
-        <file src="..\src\Papercut.UI\bin\Release\Papercut.exe.config" target="bin\Papercut.exe.config" />
-        <file src="..\src\Papercut.UI\bin\Release\Readme.eml" target="bin\Readme.eml" />
+        <file src="..\src\Papercut.UI\bin\x64\Release\Papercut.application" target="bin\Papercut.application" />
+        <file src="..\src\Papercut.UI\bin\x64\Release\Papercut.exe" target="bin\Papercut.exe" />
+        <file src="..\src\Papercut.UI\bin\x64\Release\Papercut.exe.config" target="bin\Papercut.exe.config" />
+        <file src="..\src\Papercut.UI\bin\x64\Release\Readme.eml" target="bin\Readme.eml" />
+        <file src="..\src\Papercut.UI\bin\x64\Release\runtimes\win-x64\native\WebView2Loader.dll" target="bin\runtimes\win-x64\native\WebView2Loader.dll" />
         <file src="tools\Papercut.exe.gui" target="bin\Papercut.exe.gui" />
         <file src="tools\License.txt" target="License.txt" />
         <file src="tools\Verification.txt" target="Verification.txt" />

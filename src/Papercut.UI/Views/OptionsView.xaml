@@ -11,7 +11,7 @@
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:OptionsViewModel}"
-                      Title="{Binding WindowTitle}" Width="313" Height="290" Icon="/Papercut;component/App.ico"
+                      Title="{Binding WindowTitle}" Width="313" Height="310" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="NoResize"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner"
@@ -36,6 +36,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Label Grid.Column="0" Grid.Row="0" Margin="0,2,0,29" Grid.RowSpan="2">IP Address:</Label>
             <Label Grid.Column="0" Grid.Row="1" Margin="0,2,10,0" Grid.RowSpan="3">Port:</Label>
@@ -48,6 +49,7 @@
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-116" Name="RunOnStartup" VerticalAlignment="Bottom"
                       Content="Run on startup" Grid.ColumnSpan="2" Height="18" />
             <CheckBox Grid.Row="4" Margin="5,0,5,-47" Name="StartMinimized" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Grid.Column="1">Start minimized</CheckBox>
+            <CheckBox Grid.Row="5" Margin="5,0,5,-139" Name="ShowNotifications" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Grid.Column="1">Show Notifications</CheckBox>
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-93" Name="MinimizeOnClose" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18">Minimize on close</CheckBox>
             <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,2.6,0,7.4"
                 x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2">

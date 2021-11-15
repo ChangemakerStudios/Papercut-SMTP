@@ -27,12 +27,12 @@ namespace Papercut.AppLayer.LogSinks
     using Autofac;
 
     using Papercut.Core.Annotations;
-    using Papercut.Core.Infrastructure.Logging;
 
     using Serilog;
+    using Serilog.Configuration;
     using Serilog.Events;
 
-    public class UiLogSinkQueue : IConfigureLogging
+    public class UiLogSinkQueue : ILoggerSettings
     {
         static readonly ConcurrentQueue<LogEvent> _logQueue = new ConcurrentQueue<LogEvent>();
 
@@ -85,7 +85,7 @@ namespace Papercut.AppLayer.LogSinks
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<UiLogSinkQueue>().As<IConfigureLogging>().AsSelf()
+            builder.RegisterType<UiLogSinkQueue>().As<ILoggerSettings>().AsSelf()
                 .SingleInstance();
         }
 

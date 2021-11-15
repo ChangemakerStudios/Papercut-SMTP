@@ -43,9 +43,9 @@ namespace Papercut.Infrastructure.IPComm.Network
 
         private async Task<T> TryConnect<T>(Func<TcpClient, Task<T>> doOperation, TimeSpan connectTimeout)
         {
-            try
+            using (var client = new TcpClient())
             {
-                using (var client = new TcpClient())
+                try
                 {
                     var cancelTask = Task.Delay(connectTimeout);
                     var connectTask = client.ConnectAsync(
@@ -56,8 +56,6 @@ namespace Papercut.Infrastructure.IPComm.Network
 
                     if (cancelTask.IsCanceled)
                     {
-                        connectTask.Dispose();
-
                         //If cancelTask and connectTask both finish at the same time,
                         //we'll consider it to be a timeout. 
                         throw new TaskCanceledException("Socket Operation Timed Out");
@@ -67,17 +65,18 @@ namespace Papercut.Infrastructure.IPComm.Network
                     {
                         return await doOperation(client);
                     }
-                }
 
-            }
-            catch (Exception e) when (e is TaskCanceledException || e is ObjectDisposedException
-                                                                 || e is SocketException)
-            {
-                // already disposed or no listener
-            }
-            catch (Exception e)
-            {
-                this._logger.Information(e, "Caught IP Comm Client Exception");
+
+                }
+                catch (Exception e) when (e is TaskCanceledException || e is ObjectDisposedException
+                                          || e is SocketException)
+                {
+                    // already disposed or no listener
+                }
+                catch (Exception e)
+                {
+                    this._logger.Information(e, "Caught IP Comm Client Exception");
+                }
             }
 
             return default;

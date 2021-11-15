@@ -26,6 +26,7 @@ namespace Papercut.AppLayer.HtmlPreviews
 
     using MimeKit;
 
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Application;
     using Papercut.Domain.HtmlPreviews;
@@ -45,19 +46,28 @@ namespace Papercut.AppLayer.HtmlPreviews
             this._appMeta = appMeta;
         }
 
-        public string CreateFile(MimeMessage mailMessageEx)
+        public string GetHtmlPreview(MimeMessage mailMessageEx, string tempDir = null)
         {
             if (mailMessageEx == null) throw new ArgumentNullException(nameof(mailMessageEx));
 
-            var tempDir = this.CreateUniqueTempDirectory();
+            tempDir = tempDir ?? this.CreateUniqueTempDirectory();
             var visitor = new HtmlPreviewVisitor(tempDir);
             mailMessageEx.Accept(visitor);
+
+            return visitor.HtmlBody;
+        }
+
+        public string GetHtmlPreviewFile(MimeMessage mailMessageEx, string tempDir = null)
+        {
+            tempDir = tempDir ?? this.CreateUniqueTempDirectory();
+
+            var htmlPreview = this.GetHtmlPreview(mailMessageEx, tempDir);
 
             string htmlFile = Path.Combine(tempDir, "index.html");
 
             this._logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
 
-            File.WriteAllText(htmlFile, visitor.HtmlBody, Encoding.Unicode);
+            File.WriteAllText(htmlFile, htmlPreview, Encoding.Unicode);
 
             return htmlFile;
         }
@@ -68,7 +78,7 @@ namespace Papercut.AppLayer.HtmlPreviews
             do
             {
                 // find unique temp directory
-                tempDir = Path.Combine(Path.GetTempPath(), $"{this._appMeta.AppName}-{Guid.NewGuid()}");
+                tempDir = Path.Combine(Path.GetTempPath(), $"{this._appMeta.AppName}-{Guid.NewGuid().ToString().Truncate(6)}");
             }
             while (Directory.Exists(tempDir));
 

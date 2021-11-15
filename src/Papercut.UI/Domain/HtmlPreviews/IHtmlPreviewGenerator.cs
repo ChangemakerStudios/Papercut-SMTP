@@ -4,6 +4,8 @@
 
     public interface IHtmlPreviewGenerator
     {
-        string CreateFile(MimeMessage mailMessageEx);
+        string GetHtmlPreview(MimeMessage mailMessageEx, string tempDir = null);
+
+        string GetHtmlPreviewFile(MimeMessage mailMessageEx, string tempDir = null);
     }
 }

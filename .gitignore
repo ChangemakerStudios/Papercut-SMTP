@@ -19,3 +19,4 @@ graphics/
 /tools
 out/
 /.vscode
+*.msi

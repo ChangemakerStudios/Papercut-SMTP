@@ -19,9 +19,7 @@
 namespace Papercut.Core.Infrastructure.Logging
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
 
@@ -29,11 +27,14 @@ namespace Papercut.Core.Infrastructure.Logging
 
     using AutofacSerilogIntegration;
 
-    using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
+    using Papercut.Core.Domain.Paths;
+    using Papercut.Core.Infrastructure.CommandLine;
 
     using Serilog;
+    using Serilog.Configuration;
     using Serilog.Debugging;
+    using Serilog.Events;
 
     /// <summary>
     /// Logging module is pulled into Core
@@ -45,10 +46,10 @@ namespace Papercut.Core.Infrastructure.Logging
             builder.Register(c =>
                     {
                         var appMeta = c.Resolve<IAppMeta>();
+                        var loggingPathConfigurator = c.Resolve<LoggingPathConfigurator>();
 
                         string logFilePath = Path.Combine(
-                            AppDomain.CurrentDomain.BaseDirectory,
-                            "Logs",
+                            loggingPathConfigurator.DefaultSavePath,
                             $"{appMeta.AppName}.log");
 
                         // support self-logging
@@ -65,12 +66,14 @@ namespace Papercut.Core.Infrastructure.Logging
                                 .Enrich.FromLogContext()
                                 .Enrich.WithProperty("AppName", appMeta.AppName)
                                 .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
+                                .Filter.ByExcluding(ExcludeTcpClientDisposeBugException)
                                 .WriteTo.Console()
-                                .WriteTo.File(logFilePath);
+                                .WriteTo.File(logFilePath)
+                                .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(Environment.GetCommandLineArgs().ToArray()));
 
-                        foreach (var configureInstance in c.Resolve<IEnumerable<IConfigureLogging>>().ToList())
+                        foreach (var configureInstance in c.Resolve<IEnumerable<ILoggerSettings>>().ToList())
                         {
-                            configureInstance.Configure(logConfiguration);
+                            logConfiguration.ReadFrom.Settings(configureInstance);
                         }
 
                         return logConfiguration;
@@ -88,6 +91,28 @@ namespace Papercut.Core.Infrastructure.Logging
                 .SingleInstance();
 
             builder.RegisterLogger();
+        }
+
+        /// <summary>
+        /// https://stackoverflow.com/questions/59237011/how-to-avoid-objectdisposed-exception-after-closing-tcpclient
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private static bool ExcludeTcpClientDisposeBugException(LogEvent e)
+        {
+            var exception = e.Exception?.InnerException;
+
+            if (exception != null)
+            {
+                var exceptionText = exception.ToString();
+                if (exceptionText.Contains("System.Net.Sockets.TcpClient.EndConnect") && exceptionText.Contains("System.NullReferenceException: Object reference not set to an instance of an object"))
+                {
+                    // exclude this issue -- it's a known bug
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

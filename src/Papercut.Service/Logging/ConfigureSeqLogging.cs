@@ -24,12 +24,12 @@ namespace Papercut.Service.Logging
 
     using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
-    using Papercut.Core.Infrastructure.Logging;
     using Papercut.Service.Helpers;
 
     using Serilog;
+    using Serilog.Configuration;
 
-    public class ConfigureSeqLogging : IConfigureLogging
+    public class ConfigureSeqLogging : ILoggerSettings
     {
         private readonly PapercutServiceSettings _settings;
 
@@ -57,7 +57,7 @@ namespace Papercut.Service.Logging
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<ConfigureSeqLogging>().As<IConfigureLogging>();
+            builder.RegisterType<ConfigureSeqLogging>().As<ILoggerSettings>();
         }
 
         #endregion

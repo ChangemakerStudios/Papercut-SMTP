@@ -110,6 +110,23 @@ namespace Papercut.ViewModels
 
         public int SelectedMessageCount => this.GetSelected().Count();
 
+        public string SelectedMessageCountHuman
+        {
+            get
+            {
+                var count = this.SelectedMessageCount;
+
+                if (count < 1000) return count.ToString();
+                if (count < 1000000)
+                {
+                    return $"{(double)count / 1000:##.#}K";
+                }
+                
+                // do I need to support millions? probably not but why not...
+                return $"{(double)count / 1000000:##.##}M";
+            }
+        }
+
         public bool IsLoading
         {
             get => this._isLoading;
@@ -229,7 +246,7 @@ namespace Papercut.ViewModels
                     this._uiCommandHub.ShowBalloonTip(
                         3500,
                         "New Message Received",
-                        $"From: {message.From.ToString().Truncate(50)}\r\nSubject: {message.Subject.Truncate(50)}",
+                        $"From: {message.From.ToString().Truncate(50, "...")}\r\nSubject: {message.Subject.Truncate(50)}",
                         ToolTipIcon.Info);
 
                     this.Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));
@@ -412,7 +429,9 @@ namespace Papercut.ViewModels
                         .ToList();
             }
 
-            var toDelete = this.Messages.Except(messageEntries).OfType<MimeMessageEntry>().ToList();
+            var toDelete = this.Messages.Except(messageEntries)
+                .OfType<MimeMessageEntry>().ToList();
+
             toDelete.ForEach(m => this.Messages.Remove(m));
 
             this.Messages.AddRange(toAdd);

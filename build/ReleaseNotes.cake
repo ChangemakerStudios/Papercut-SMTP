@@ -26,7 +26,7 @@ src=""data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRF
         var body = new MimeKit.BodyBuilder { HtmlBody = outPut };
         var message = new MimeKit.MimeMessage
         {
-            Subject = "Welcome to Papercut!",
+            Subject = "Welcome to Papercut SMTP!",
             Body = body.ToMessageBody(),
         };
         message.From.Add(new MimeKit.MailboxAddress("Papercut SMTP", "Papercut@papercut.com"));
