@@ -29,7 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Bundle.wxs" />
-    <Compile Include="NetFx48.wxs" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixUtilExtension">
@@ -59,6 +58,7 @@
     <Folder Include="Resources" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NetFx48.wxs" />
     <Content Include="PapercutVars.wxi" />
     <Content Include="Resources\App.ico" />
     <Content Include="Resources\Papercut-Logo.png" />
