@@ -25,7 +25,7 @@
         <Variable Name="CommonDataFolder" Type="string" Value="[CommonAppDataFolder]!(bind.packageManufacturer.PapercutMsi)\Papercut SMTP"/>
 
         <Chain>
-            <PackageGroupRef Id="NetFx472Web" />
+            <PackageGroupRef Id="NetFx48Web" />
 
             <RollbackBoundary />
 
