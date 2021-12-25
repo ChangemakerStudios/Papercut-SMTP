@@ -1,14 +1,14 @@
-#tool "nuget:?package=MarkdownSharp&version=1.13.0"
-#tool "nuget:?package=MimekitLite&version=2.13.0 "
-#tool "nuget:?package=NUnit.ConsoleRunner&version=3.9.0"
-#tool "nuget:?package=OpenCover&version=4.6.519"
-#tool "nuget:?package=GitVersion.CommandLine&version=5.7.0"
+#tool "nuget:?package=MarkdownSharp&version=2.0.5"
+#tool "nuget:?package=MimekitLite&version=3.0.0"
+#tool "nuget:?package=NUnit.ConsoleRunner&version=3.13.0"
+#tool "nuget:?package=OpenCover&version=4.7.1221"
+#tool "nuget:?package=GitVersion.CommandLine&version=5.8.1"
 
 #addin "nuget:?package=Cake.FileHelpers&version=4.0.1"
 #addin "nuget:?package=Cake.Incubator&version=6.0.0"
 
-#reference "tools/MarkdownSharp.1.13.0.0/lib/35/MarkdownSharp.dll"
-#reference "tools/MimeKitLite.2.13.0/lib/net45/MimeKitLite.dll"
+#reference "tools/MarkdownSharp.2.0.5/lib/net40/MarkdownSharp.dll"
+#reference "tools/MimeKitLite.3.0.0/lib/net452/MimeKitLite.dll"
 
 #load "./BuildInformation.cake"
 #load "./ReleaseNotes.cake"
