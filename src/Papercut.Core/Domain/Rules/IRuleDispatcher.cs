@@ -17,11 +17,14 @@
 
 namespace Papercut.Core.Domain.Rules
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+
     using Papercut.Core.Domain.Message;
 
     public interface IRuleDispatcher<in TRule>
         where TRule : IRule
     {
-        void Dispatch(TRule rule, MessageEntry messageEntry);
+        Task DispatchAsync(TRule rule, MessageEntry messageEntry, CancellationToken token);
     }
 }

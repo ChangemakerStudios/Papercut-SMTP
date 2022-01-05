@@ -27,8 +27,14 @@ namespace Papercut.Core
 
         public const string CompanyName = "Changemaker Studios";
 
-        public static string DataDirectory { get; } =
+        public static string AppDataDirectory { get; } =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                CompanyName,
+                ApplicationName);
+
+
+        public static string UserAppDataDirectory { get; } =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 CompanyName,
                 ApplicationName);
     }

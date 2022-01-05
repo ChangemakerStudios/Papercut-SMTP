@@ -18,6 +18,7 @@
 namespace Papercut.Core.Domain.Message
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
     using System.Globalization;
     using System.IO;
@@ -45,7 +46,9 @@ namespace Papercut.Core.Domain.Message
 
         bool _isSelected;
 
-        public MessageEntry(FileInfo fileInfo)
+		bool _hasBeenSeen;
+
+		public MessageEntry(FileInfo fileInfo)
         {
             this._info = fileInfo;
 
@@ -61,6 +64,17 @@ namespace Papercut.Core.Domain.Message
             else
             {
                 _created = this._info.CreationTime;
+            }
+
+            if (this._created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
+            {
+                // anything under 5 minutes old is "new" still by default
+                this._hasBeenSeen = false;
+            }
+            else
+            {
+                // everything else has been seen by default
+                this._hasBeenSeen = true;
             }
         }
 
@@ -83,13 +97,28 @@ namespace Papercut.Core.Domain.Message
             set
             {
                 this._isSelected = value;
-                this.OnPropertyChanged(nameof(this.IsSelected));
-            }
+
+				if (value)
+				{
+					this.HasBeenSeen = true;
+				}
+				this.OnPropertyChanged(nameof(this.IsSelected));
+			}
         }
 
-        public bool Equals(MessageEntry other)
+		public bool HasBeenSeen
+		{
+			get => this._hasBeenSeen;
+			set
+			{
+				this._hasBeenSeen = value;
+				this.OnPropertyChanged(nameof(this.HasBeenSeen));
+			}
+		}
+
+		public bool Equals(MessageEntry other)
         {
-            return Equals(this._info, other._info);
+            return Equals(this.File, other?.File);
         }
 
         public string File => this._info.FullName;
@@ -105,11 +134,16 @@ namespace Papercut.Core.Domain.Message
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return this.Equals((MessageEntry)obj);
+
+            if (obj is MessageEntry entry)
+            {
+                return this.Equals(entry);
+            }
+
+            return false;
         }
 
-        public override int GetHashCode() => this._info?.GetHashCode() ?? 0;
+        public override int GetHashCode() => this.File?.GetHashCode() ?? 0;
 
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged(string propertyName)

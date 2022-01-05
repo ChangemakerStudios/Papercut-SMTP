@@ -21,6 +21,7 @@ namespace Papercut.Core.Domain.Paths
 
     public interface IPathTemplatesProvider
     {
-        ObservableCollection<string> PathTemplates { get; }
+        ObservableCollection<string> MessagePathTemplates { get; }
+        ObservableCollection<string> LoggingPathTemplates { get; }
     }
 }

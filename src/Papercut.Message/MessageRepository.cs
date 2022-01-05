@@ -39,9 +39,9 @@ namespace Papercut.Message
 
         readonly ILogger _logger;
 
-        readonly IMessagePathConfigurator _messagePathConfigurator;
+        readonly MessagePathConfigurator _messagePathConfigurator;
 
-        public MessageRepository(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
+        public MessageRepository(ILogger logger, MessagePathConfigurator messagePathConfigurator)
         {
             _logger = logger;
             _messagePathConfigurator = messagePathConfigurator;
@@ -116,7 +116,7 @@ namespace Papercut.Message
 
         public string GetFullMailFilename(string mailSubject)
         {
-            var validPart = MakeValidFileName(mailSubject.Truncate(40, string.Empty), "subject unknown");
+            var validPart = MakeValidFileName(mailSubject.Truncate(40), "subject unknown");
 
             var dateTimeFormatted = DateTime.Now.ToString(MessageEntry.DateTimeFormat);
 

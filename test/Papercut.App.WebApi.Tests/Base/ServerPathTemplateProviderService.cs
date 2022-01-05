@@ -26,6 +26,9 @@ namespace Papercut.App.WebApi.Tests.Base
 
     public class ServerPathTemplateProviderService : IPathTemplatesProvider
     {
+        public ObservableCollection<string> MessagePathTemplates { get; }
+        public ObservableCollection<string> LoggingPathTemplates { get; }
+
         public ServerPathTemplateProviderService()
         {
             var basePath = Path.GetDirectoryName(typeof(ServerPathTemplateProviderService).Assembly.Location);
@@ -36,9 +39,16 @@ namespace Papercut.App.WebApi.Tests.Base
                 Directory.CreateDirectory(messageStoragePath);
             }
 
-            this.PathTemplates = new ObservableCollection<string>(new[] {messageStoragePath});
-        }
+            this.MessagePathTemplates = new ObservableCollection<string>(new[] {messageStoragePath});
 
-        public ObservableCollection<string> PathTemplates { get; }
+            var loggingStoragePath = Path.Combine(basePath, $"Papercut.Service-{StringHelpers.SmallRandomString()}");
+
+            if (!Directory.Exists(loggingStoragePath))
+            {
+                Directory.CreateDirectory(loggingStoragePath);
+            }
+
+            this.LoggingPathTemplates = new ObservableCollection<string>(new[] { loggingStoragePath });
+        }
     }
 }

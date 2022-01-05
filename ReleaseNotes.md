@@ -1,6 +1,32 @@
 # Release Notes
 
-## Papercut v5.7.0 [2020-04-05]
+## Papercut SMTP v6.0.0 [2021-11-14]
+
+_NOTE: Papercut SMTP now requires that Microsoft Edge WebView2 be installed. Papercut SMTP will automatically run the installation dependency if WebView2 is not available._
+
+- Moved to Edge (WebView2) for email display providing modern browser support for viewing.
+  - Support for SVGs.
+  - Support for newer HTML/CSS display.
+- Fixed: Progress bar for Forwarding Dialog displays correctly now.
+- Fixed: Multiple issues with the forwarding dialog.
+- [#193] Add logging path to settings.json (PR thanks to [1Jesper1](https://github.com/1Jesper1))
+- [#192] Adds an option (defaulting to true) to enable popup notifications when a new message is received. (PR thanks to [richardlawley](https://github.com/richardlawley))
+- [#189] Use first capital character in text in "proceed" and "cancel" buttons (PR thanks to [1Jesper1](https://github.com/1Jesper1)) 
+
+## Papercut SMTP v5.8.0 [2021-06-16]
+- Moved to .NET Framework 4.7.2
+- Upgraded to latest dependencies (Caliburn Micro, Autofac, MahApps)
+- Fixed: Window sizes weren't binding properly. 
+- Converted system to Async.
+- Added additional theme colors.
+- Updated the logo.
+- Fixed: Hide passwords in rules logging output.
+- Fixed: Don't show passwords in rules logging output.
+- [#175] Added font weight changing when message has been seen (PR thanks to [LewisJohnson](https://github.com/LewisJohnson))
+- [#180] Fixed message not displaying in Web UI when id includes '#' symbol (PR thanks to [ryan-warrener](https://github.com/ryan-warrener))
+- [#185] Responsive Delete button (PR thanks to [rfverbruggen](https://github.com/rfverbruggen)) 
+
+## Papercut SMTP v5.7.0 [2020-04-05]
 - Renamed product to "Papercut SMTP" to seperate from other products.
 - Moved "Readme.eml" and logs to *\ProgramData\Changemaker Studios\Papercut SMTP* allowing it to be deleted.
 - Changed default save directory for Papercut UI to *\%ApplicationData%\Changemaker Studios\Papercut SMTP*. Mail in legacy paths are still supported.

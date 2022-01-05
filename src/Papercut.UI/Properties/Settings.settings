@@ -26,22 +26,31 @@
     <Setting Name="RunOnStartup" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="Window_Height" Type="System.Int32" Scope="User">
+    <Setting Name="MainWindowHeight" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">500</Value>
     </Setting>
-    <Setting Name="Window_Width" Type="System.Int32" Scope="User">
+    <Setting Name="MainWindowWidth" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">700</Value>
-    </Setting>
-    <Setting Name="MessagePaths" Type="System.String" Scope="User">
-      <Value Profile="(Default)">%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%Papercut;%BaseDirectory%\Incoming;%DataDirectory%\Incoming</Value>
     </Setting>
     <Setting Name="MessageListSortOrder" Type="System.String" Scope="User">
       <Value Profile="(Default)">Ascending</Value>
     </Setting>
-    <Setting Name="Theme" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Cyan</Value>
-    </Setting>
     <Setting Name="MinimizeToTray" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="MessagePaths" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%\Papercut;%BaseDirectory%\Incoming;%AppDataDirectory%\Incoming</Value>
+    </Setting>
+    <Setting Name="Theme" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Steel Blue</Value>
+    </Setting>
+    <Setting Name="WebView2UserFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%UserAppDataDirectory%\WebView2</Value>
+    </Setting>
+    <Setting Name="LoggingPaths" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%\Papercut;%BaseDirectory%\Logs;%AppDataDirectory%\Logs</Value>
+    </Setting>
+    <Setting Name="ShowNotifications" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>

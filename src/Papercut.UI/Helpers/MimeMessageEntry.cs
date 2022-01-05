@@ -19,9 +19,7 @@ namespace Papercut.Helpers
 {
     using System;
     using System.Linq;
-    using System.Windows.Media.Effects;
-
-    using Message.Helpers;
+    using System.Threading.Tasks;
 
     using MimeKit;
 
@@ -38,19 +36,18 @@ namespace Papercut.Helpers
             : base(entry.File)
         {
             IsSelected = entry.IsSelected;
+            Subject = "Loading...";
 
-            loader.GetObservable(this).Subscribe(m =>
-                {
-                    Subject = m.Subject;
-                    Priority = m.Priority;
-                    AttachmentsCount = m.Attachments.Count();
-                },
-                e =>
-                {
-                    Subject = $"Failure loading message: {e.Message}";
-                });
+            loader.GetMessageCallback(this, LoadMessageDetails);
         }
-        
+
+        private void LoadMessageDetails(MimeMessage message)
+        {
+            Subject = message.Subject;
+            Priority = message.Priority;
+            AttachmentsCount = message.Attachments.Count();
+        }
+
         public int AttachmentsCount
         {
             get => _attachmentsCount;

@@ -18,22 +18,23 @@
 namespace Papercut.Helpers
 {
     using System;
+    using System.Threading.Tasks;
 
     using Caliburn.Micro;
 
     public interface IViewModelWindowManager : IWindowManager
     {
-        bool? ShowDialogWithViewModel<TViewModel>(
+        Task<bool?> ShowDialogWithViewModel<TViewModel>(
             Action<TViewModel> setViewModel = null,
             object context = null)
             where TViewModel : PropertyChangedBase;
 
-        void ShowWindowWithViewModel<TViewModel>(
+        Task ShowWindowWithViewModelAsync<TViewModel>(
             Action<TViewModel> setViewModel = null,
             object context = null)
             where TViewModel : PropertyChangedBase;
 
-        void ShowPopupWithViewModel<TViewModel>(
+        Task ShowPopupWithViewModel<TViewModel>(
             Action<TViewModel> setViewModel = null,
             object context = null)
             where TViewModel : PropertyChangedBase;

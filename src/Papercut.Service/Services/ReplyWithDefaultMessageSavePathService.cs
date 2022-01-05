@@ -18,6 +18,7 @@
 namespace Papercut.Service.Services
 {
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Papercut.Common.Domain;
@@ -27,17 +28,17 @@ namespace Papercut.Service.Services
 
     public class ReplyWithDefaultMessageSavePathService : IEventHandler<AppProcessExchangeEvent>
     {
-        readonly IMessagePathConfigurator _messagePathConfigurator;
+        readonly MessagePathConfigurator _messagePathConfigurator;
 
         readonly PapercutServiceSettings _serviceSettings;
 
-        public ReplyWithDefaultMessageSavePathService(IMessagePathConfigurator messagePathConfigurator, PapercutServiceSettings serviceSettings)
+        public ReplyWithDefaultMessageSavePathService(MessagePathConfigurator messagePathConfigurator, PapercutServiceSettings serviceSettings)
         {
             _messagePathConfigurator = messagePathConfigurator;
             _serviceSettings = serviceSettings;
         }
 
-        public void Handle(AppProcessExchangeEvent @event)
+        public Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token = default)
         {
             // respond with the current save path...
             @event.MessageWritePath = _messagePathConfigurator.DefaultSavePath;
@@ -45,6 +46,8 @@ namespace Papercut.Service.Services
             // share our current ip and port binding for the SMTP server.
             @event.IP = _serviceSettings.IP;
             @event.Port = _serviceSettings.Port;
+
+            return Task.CompletedTask;
         }
     }
 }

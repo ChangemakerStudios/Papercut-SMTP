@@ -1,14 +1,14 @@
 ﻿// Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,8 @@ namespace Papercut.Common.Helper
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Threading;
 
     using Papercut.Common.Extensions;
@@ -28,6 +30,8 @@ namespace Papercut.Common.Helper
 
     public static class StringHelpers
     {
+        static readonly Regex _upperCaseWordRegex = new Regex("([A-Z]{1,1})[a-z]+", RegexOptions.Singleline);
+
         public static string SmallRandomString()
         {
             return Guid.NewGuid().ToString("N").Substring(0, 6);
@@ -64,7 +68,35 @@ namespace Papercut.Common.Helper
             return string.IsNullOrWhiteSpace(str);
         }
 
-        public static string Truncate([CanBeNull] this string input, int inputLimit, [CanBeNull] string cutOff = "...")
+        public static string CamelCaseToSeparated(this string str)
+        {
+            if (str.IsNullOrWhiteSpace())
+            {
+                return str;
+            }
+
+            var lines = new List<string>();
+            var lastIndex = 0;
+	
+            foreach (var match in _upperCaseWordRegex.Matches(str).OfType<Match>().ToList())
+            {
+                if (match.Index > lastIndex)
+                {
+                    lines.Add(str.Substring(lastIndex, match.Index - lastIndex).Trim());
+                }
+
+                lines.Add(match.Captures[0].Value);
+                lastIndex = match.Index + match.Length + 1;
+            }
+	
+            if (lastIndex < str.Length) {
+                lines.Add(str.Substring(lastIndex, str.Length-lastIndex).Trim());
+            }
+
+            return string.Join(" ", lines);
+        }
+
+        public static string Truncate([CanBeNull] this string input, int inputLimit, [CanBeNull] string cutOff = "")
         {
             cutOff = cutOff ?? string.Empty;
 

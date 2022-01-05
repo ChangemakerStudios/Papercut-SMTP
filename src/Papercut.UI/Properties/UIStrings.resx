@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteTextTemplate" xml:space="preserve">
-    <value>Delete{{#if HasSelectedMessage}} ({{SelectedMessageCount}}){{/if}}</value>
+    <value>Delete{{#if HasSelectedMessage}} ({{SelectedMessageCountHuman}}){{/if}}</value>
   </data>
   <data name="HtmlToHtmlFormatWrapper" xml:space="preserve">
     <value>&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body oncontextmenu="return false;"&gt;{0}&lt;/body&gt;&lt;/html&gt;</value>

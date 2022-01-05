@@ -42,6 +42,11 @@ namespace Papercut.App.WebApi
                 new { controller = "Messages", action = "DeleteAll" },
                 new { HttpMethod = new HttpMethodConstraint(HttpMethod.Delete) });
 
+            config.Routes.MapHttpRoute("delete message",
+                "api/messages/{id}",
+                new {controller = "Messages", action = "DeleteMessage"},
+                new {HttpMethod = new HttpMethodConstraint(HttpMethod.Delete)});
+
             config.Routes.MapHttpRoute("load message detail",
                 "api/messages/{id}",
                 new {controller = "Messages", action = "Get"});
@@ -54,7 +59,7 @@ namespace Papercut.App.WebApi
                 "api/messages/{messageId}/sections/{index}",
                 new {controller = "Messages", action = "DownloadSection" });
 
-            config.Routes.MapHttpRoute("download raw message palyload",
+            config.Routes.MapHttpRoute("download raw message payload",
                 "api/messages/{messageId}/raw",
                 new { controller = "Messages", action = "DownloadRaw" });
 

@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>    
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+     <Platform>AnyCPU</Platform>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,7 +20,7 @@
   </ItemGroup>  
 
   <ItemGroup>
-    <PackageReference Include="System.Runtime.Caching" Version="4.5.0" />
+    <PackageReference Include="System.Runtime.Caching" Version="5.0.0" />
   </ItemGroup>
   
 </Project>

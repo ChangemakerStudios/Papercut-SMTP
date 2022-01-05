@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2021 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,156 +21,141 @@ namespace Papercut.Infrastructure.IPComm.Network
     using System;
     using System.Net.Sockets;
     using System.Text;
+    using System.Threading.Tasks;
 
-    using Common;
-    using Common.Domain;
-
-    using Core;
-    using Core.Domain.Network;
+    using Papercut.Common.Domain;
+    using Papercut.Core;
+    using Papercut.Core.Domain.Network;
 
     using Serilog;
 
-    public class PapercutIPCommClient : IDisposable
+    public class PapercutIPCommClient
     {
-        private readonly EndpointDefinition _endpointDefinition;
         readonly ILogger _logger;
 
         public PapercutIPCommClient(EndpointDefinition endpointDefinition, ILogger logger)
         {
-            _endpointDefinition = endpointDefinition;
-            _logger = logger;
+            this.Endpoint = endpointDefinition;
+            this._logger = logger;
         }
 
-        public EndpointDefinition Endpoint => this._endpointDefinition;
+        public EndpointDefinition Endpoint { get; }
 
-
-        public void Dispose()
+        private async Task<T> TryConnect<T>(Func<TcpClient, Task<T>> doOperation, TimeSpan connectTimeout)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            using (var client = new TcpClient())
             {
-            }
-        }
-
-        private T TryConnect<T>(Func<TcpClient, T> doOperation)
-        {
-            IAsyncResult asyncResult = null;
-
-            var result = default(T);
-
-            try
-            {
-                var client = new TcpClient();
-
                 try
                 {
-                    asyncResult = client.BeginConnect(this._endpointDefinition.Address, this._endpointDefinition.Port, null, null);
+                    var cancelTask = Task.Delay(connectTimeout);
+                    var connectTask = client.ConnectAsync(
+                        this.Endpoint.Address,
+                        this.Endpoint.Port);
 
-                    var success = asyncResult.AsyncWaitHandle.WaitOne(100);
+                    await await Task.WhenAny(connectTask, cancelTask);
 
-                    if (success)
+                    if (cancelTask.IsCanceled)
                     {
-                        result = doOperation(client);
+                        //If cancelTask and connectTask both finish at the same time,
+                        //we'll consider it to be a timeout. 
+                        throw new TaskCanceledException("Socket Operation Timed Out");
                     }
+
+                    if (client.Connected)
+                    {
+                        return await doOperation(client);
+                    }
+
+
                 }
-                finally
+                catch (Exception e) when (e is TaskCanceledException || e is ObjectDisposedException
+                                          || e is SocketException)
                 {
-                    if (asyncResult != null && client.Connected)
-                    {
-                        client.EndConnect(asyncResult);
-                    }
+                    // already disposed or no listener
                 }
-
-            }
-            catch (ObjectDisposedException)
-            {
-                // already disposed
-            }
-            catch (SocketException)
-            {
-                // no listener
+                catch (Exception e)
+                {
+                    this._logger.Information(e, "Caught IP Comm Client Exception");
+                }
             }
 
-            return result;
+            return default;
         }
 
-        public TEvent ExchangeEventServer<TEvent>(TEvent @event) where TEvent : IEvent
+        public async Task<TEvent> ExchangeEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout) where TEvent : IEvent
         {
-            TEvent DoOperation(TcpClient client)
+            async Task<TEvent> DoOperation(TcpClient client)
             {
                 TEvent returnEvent = default(TEvent);
 
                 using (var stream = client.GetStream())
                 {
-                    _logger.Debug("Exchanging {@Event} with Remote", @event);
+                    this._logger.Debug("Exchanging {@Event} with Remote", @event);
 
-                    var isSuccessful = HandlePublishEvent(
+                    var isSuccessful = await this.HandlePublishEvent(
                         stream,
                         @event,
                         PapercutIPCommCommandType.Exchange);
 
                     if (isSuccessful)
                     {
-                        returnEvent = (TEvent)stream.ReadJsonBuffered(typeof(TEvent));
+                        returnEvent = (TEvent)await stream.ReadJsonBufferedAsync(typeof(TEvent));
                     }
 
-                    stream.Flush();
+                    await stream.FlushAsync();
 
                     return returnEvent;
                 }
             }
 
-            return TryConnect(DoOperation);
+            return await this.TryConnect(DoOperation, connectTimeout);
         }
 
-        public bool PublishEventServer<TEvent>(TEvent @event) where TEvent : IEvent
+        public async Task<bool> PublishEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout) where TEvent : IEvent
         {
-            bool DoOperation(TcpClient client)
+            async Task<bool> DoOperation(TcpClient client)
             {
                 using (var stream = client.GetStream())
                 {
-                    _logger.Debug("Publishing {@Event} to Remote", @event);
+                    this._logger.Debug("Publishing {@Event} to Remote", @event);
 
-                    var isSuccessful = HandlePublishEvent(
+                    var isSuccessful = await this.HandlePublishEvent(
                         stream,
                         @event,
                         PapercutIPCommCommandType.Publish);
 
-                    stream.Flush();
+                    await stream.FlushAsync();
 
                     return isSuccessful;
                 }
             }
 
-            return TryConnect(DoOperation);
+            return await this.TryConnect(DoOperation, connectTimeout);
         }
 
-        bool HandlePublishEvent<TEvent>(
+        async Task<bool> HandlePublishEvent<TEvent>(
             NetworkStream stream,
             TEvent @event,
             PapercutIPCommCommandType protocolCommandType) where TEvent : IEvent
         {
-            string response = stream.ReadStringBuffered().Trim();
+            string response = (await stream.ReadStringBufferedAsync()).Trim();
 
             if (response != AppConstants.ApplicationName.ToUpper()) return false;
 
             var eventJson = PapercutIPCommSerializer.ToJson(@event);
 
-            stream.WriteLine(PapercutIPCommSerializer.ToJson(
+            var requestJson = PapercutIPCommSerializer.ToJson(
                 new PapercutIPCommRequest()
                 {
                     CommandType = protocolCommandType,
                     Type = @event.GetType(),
                     ByteSize = Encoding.UTF8.GetBytes(eventJson).Length
-                }));
+                });
 
-            response = stream.ReadStringBuffered().Trim();
-            if (response == "ACK") stream.WriteStr(eventJson);
+            await stream.WriteLineAsync(requestJson);
+
+            response = (await stream.ReadStringBufferedAsync()).Trim();
+            if (response == "ACK") await stream.WriteStrAsync(eventJson);
 
             return true;
         }

@@ -1,19 +1,20 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
 
 namespace Papercut.ViewModels
 {
@@ -21,63 +22,57 @@ namespace Papercut.ViewModels
     using System.Diagnostics;
     using System.Linq;
     using System.Reactive.Linq;
-    using System.Reflection;
-    using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
     using System.Windows;
-    using System.Windows.Controls;
-    using System.Windows.Navigation;
 
     using Caliburn.Micro;
+
+    using Microsoft.Web.WebView2.Core;
+    using Microsoft.Web.WebView2.Wpf;
 
     using MimeKit;
 
     using Papercut.Common.Extensions;
+    using Papercut.Common.Helper;
     using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Paths;
+    using Papercut.Core.Infrastructure.Async;
+    using Papercut.Domain.HtmlPreviews;
     using Papercut.Helpers;
-    using Papercut.Services;
+    using Papercut.Properties;
     using Papercut.Views;
 
     using Serilog;
 
-    using Action = Caliburn.Micro.Action;
-
     public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
     {
-        string _htmlFile;
-
         readonly ILogger _logger;
 
         readonly IHtmlPreviewGenerator _previewGenerator;
 
+        private string _htmlFile;
+
         public MessageDetailHtmlViewModel(ILogger logger, IHtmlPreviewGenerator previewGenerator)
         {
-            DisplayName = "Message";
-            _logger = logger;
-            _previewGenerator = previewGenerator;
+            this.DisplayName = "Message";
+            this._logger = logger;
+            this._previewGenerator = previewGenerator;
         }
 
         public string HtmlFile
         {
-            get => _htmlFile;
+
+            get => this._htmlFile;
+
             set
             {
-                _htmlFile = value;
-                NotifyOfPropertyChange(() => HtmlFile);
-                NotifyOfPropertyChange(() => HasHtmlFile);
+                this._htmlFile = value;
+                this.NotifyOfPropertyChange(() => this.HtmlFile);
+                this.NotifyOfPropertyChange(() => this.HasHtmlFile);
             }
         }
 
-        public Uri HtmlFileUri => HtmlFile != null ? new Uri(HtmlFile) : null;
-
-        public bool HasHtmlFile => !string.IsNullOrWhiteSpace(HtmlFile);
-
-        [DllImport("urlmon.dll")]
-        [PreserveSig]
-        [return: MarshalAs(UnmanagedType.Error)]
-        static extern int CoInternetSetFeatureEnabled(
-            int featureEntry,
-            [MarshalAs(UnmanagedType.U4)] int dwFlags,
-            bool fEnable);
+        public bool HasHtmlFile => !string.IsNullOrWhiteSpace(this.HtmlFile);
 
         public void ShowMessage([NotNull] MimeMessage mailMessageEx)
         {
@@ -86,78 +81,53 @@ namespace Papercut.ViewModels
 
             try
             {
-                HtmlFile = _previewGenerator.CreateFile(mailMessageEx);
+                this.HtmlFile = this._previewGenerator.GetHtmlPreviewFile(mailMessageEx);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
+                this._logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
             }
         }
 
-        [UsedImplicitly]
-        public void OnNavigating(NavigatingCancelEventArgs e)
+        private bool ShouldNavigateToUrl([NotNull] string navigateToUrl)
         {
-            e.Cancel = this.TryHandleNavigateToUri(e.Uri);
-        }
-
-        private bool TryHandleNavigateToUri([NotNull] Uri navigateToUri)
-        {
-            if (navigateToUri == null) throw new ArgumentNullException(nameof(navigateToUri));
-
-            if (navigateToUri.Equals(HtmlFileUri))
+            if (string.IsNullOrEmpty(navigateToUrl))
             {
-                return false;
+                return true;
             }
 
-            if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
+            if (navigateToUrl.StartsWith("file:") || navigateToUrl.StartsWith("about:") || navigateToUrl.StartsWith("data:text/html"))
             {
-                Process.Start(navigateToUri.AbsoluteUri);
-            }
-            else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
-            {
-                // direct to the parts area...
-                var model = this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
-                var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
-                if (part != null)
-                {
-                    model.SelectedPart = part;
-                }
+                return true;
             }
 
-            // always cancel
-            return true;
+            return false;
         }
 
         protected override void OnViewLoaded(object view)
         {
-            const int Feature = 21; //FEATURE_DISABLE_NAVIGATION_SOUNDS
-            const int SetFeatureOnProcess = 0x00000002;
-
             base.OnViewLoaded(view);
 
             if (!(view is MessageDetailHtmlView typedView))
             {
-                _logger.Error("Unable to locate the MessageDetailHtmlView to hook the WebBrowser Control");
+                this._logger.Error("Unable to locate the MessageDetailHtmlView to hook the WebBrowser Control");
                 return;
             }
 
-            try
+            typedView.htmlView.CoreWebView2InitializationCompleted += (sender, args) =>
             {
-                // disable the stupid click sound on navigate
-                var enabled = CoInternetSetFeatureEnabled(Feature, SetFeatureOnProcess, true);
-            }
-            catch (Exception ex)
-            {
-                // just have to live with the sound
-                _logger.Warning(ex, "Failed to disable the Navigation Sounds on the WebBrowser control");
-            }
+                if (!args.IsSuccess)
+                {
+                    this._logger.Error(
+                        args.InitializationException,
+                        "Failure Initializing Edge WebView2");
 
-            this.GetPropertyValues(p => p.HtmlFile)
-                .Subscribe(
-                    file =>
-                    {
-                        typedView.htmlView.Source = new Uri(string.IsNullOrWhiteSpace(file) ? "about:blank" : file);
-                    });
+                }
+                else
+                {
+                    this.SetupWebView(typedView.htmlView.CoreWebView2);
+                }
+            };
 
             void VisibilityChanged(DependencyPropertyChangedEventArgs o)
             {
@@ -167,9 +137,9 @@ namespace Papercut.ViewModels
             }
 
             Observable.FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
-                a => ((s, e) => a(e)),
-                h => typedView.IsEnabledChanged += h,
-                h => typedView.IsEnabledChanged -= h)
+                    a => (s, e) => a(e),
+                    h => typedView.IsEnabledChanged += h,
+                    h => typedView.IsEnabledChanged -= h)
                 .Throttle(TimeSpan.FromMilliseconds(100))
                 .ObserveOnDispatcher()
                 .Subscribe(VisibilityChanged);
@@ -178,65 +148,59 @@ namespace Papercut.ViewModels
             {
                 args.Handled = true;
             };
+        }
 
-            if (!BrowserHandler.TryGetWebBrowserInstance(typedView.htmlView, out var wb))
+        private void SetupWebView(CoreWebView2 coreWebView)
+        {
+            coreWebView.NavigationStarting += (sender, args) =>
             {
-                this._logger.Warning("Failure Retrieving COM+ Browser Instance");
-            }
+                var shouldNavigateToUrl = this.ShouldNavigateToUrl(args.Uri);
 
-            if (wb != null)
-            {
-                wb.NewWindow3 += (ref object disp, ref bool cancel, uint flags, string context, string url) =>
+                if (shouldNavigateToUrl)
                 {
-                    cancel = TryHandleNavigateToUri(new Uri(url));
-                };
-            }
-
-            typedView.htmlView.Navigated += (sender, args) =>
-            {
-                if (wb != null)
-                {
-                    wb.Silent = true;
+                    args.Cancel = false;
+                    return;
                 }
+
+                // do internal navigation
+                args.Cancel = true;
+                this.DoInternalNavigationAsync(new Uri(args.Uri)).RunAsync();
             };
+
+            coreWebView.DisableEdgeFeatures();
+
+            this.GetPropertyValues(p => p.HtmlFile)
+                .Subscribe(
+                    file =>
+                    {
+                        if (file.IsNullOrWhiteSpace())
+                        {
+                            coreWebView.NavigateToString(string.Empty);
+                        }
+                        else
+                        {
+                            coreWebView.Navigate($"file://{file.Replace("/", @"\")}");
+                        }
+                    }
+                );
         }
 
-        /// <summary>
-        /// From SO: http://stackoverflow.com/questions/1298255/how-do-i-suppress-script-errors-when-using-the-wpf-webbrowser-control
-        /// </summary>
-        static class BrowserHandler
+        private async Task DoInternalNavigationAsync(Uri navigateToUri)
         {
-            private static Guid IWebBrowserAppGUID = new Guid("0002DF05-0000-0000-C000-000000000046");
-            private static Guid IWebBrowser2GUID = typeof(SHDocVw.WebBrowser).GUID;
-
-            internal static bool TryGetWebBrowserInstance(WebBrowser browser, out SHDocVw.WebBrowser webBrowser)
+            if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
             {
-                webBrowser = null;
-
-                // get an IWebBrowser from the document
-                if (!(browser?.Document is IServiceProvider serviceProvider)) return false;
-
-                webBrowser = (SHDocVw.WebBrowser)serviceProvider.QueryService(ref IWebBrowserAppGUID, ref IWebBrowser2GUID);
-
-                if (webBrowser == null) return false;
-
-                return true;
+                Process.Start(navigateToUri.AbsoluteUri);
             }
-        }
-
-        [ComImport, InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        [Guid("6d5140c1-7436-11ce-8034-00aa006009fa")]
-        internal interface IServiceProvider
-        {
-            [return: MarshalAs(UnmanagedType.IUnknown)]
-            object QueryService(ref Guid guidService, ref Guid riid);
-        }
-
-        [ComImport, Guid("6D5140C1-7436-11CE-8034-00AA006009FA"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        public interface IOleServiceProvider
-        {
-            [PreserveSig]
-            int QueryService([In] ref Guid guidService, [In] ref Guid riid, [MarshalAs(UnmanagedType.IDispatch)] out object ppvObject);
+            else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
+            {
+                // direct to the parts area...
+                var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
+                var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
+                if (part != null)
+                {
+                    model.SelectedPart = part;
+                }
+            }
         }
     }
 }

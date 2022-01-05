@@ -23,7 +23,8 @@ namespace Papercut.Helpers
     using System.Windows.Controls;
     using System.Windows.Media;
 
-    using MahApps.Metro;
+    using ControlzEx.Theming;
+
     using MahApps.Metro.Controls;
 
     using Papercut.Core.Annotations;
@@ -50,18 +51,17 @@ namespace Papercut.Helpers
 
         public static void AutoAdjustBorders(this MetroWindow window)
         {
-            var brushObjectName = "HighlightBrush";
+            var appStyle = ThemeManager.Current.DetectTheme(Application.Current);
 
-            var appStyle = ThemeManager.DetectAppStyle(Application.Current);
-
-            // Only add borders if above call succeded and Aero Not enabled
+            // Only add borders if above call succeed and Aero Not enabled
             var resourceDictionary = window.Resources;
 
-            SetBorder(resourceDictionary, appStyle.Item2.Resources[brushObjectName]);
+            if (appStyle != null)
+                SetBorder(resourceDictionary, appStyle.ShowcaseBrush);
 
-            ThemeManager.IsThemeChanged += (sender, args) =>
+            ThemeManager.Current.ThemeChanged += (sender, args) =>
             {
-                SetBorder(resourceDictionary, args.Accent.Resources[brushObjectName]);
+                SetBorder(resourceDictionary, args.NewTheme.ShowcaseBrush);
             };
         }
 
@@ -96,26 +96,28 @@ namespace Papercut.Helpers
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
-            var element = source.InputHitTest(point) as UIElement;
-            if (element == null) return null;
-
-            // Get the object from the element
-            object data = DependencyProperty.UnsetValue;
-
-            while (data == DependencyProperty.UnsetValue)
+            if (source.InputHitTest(point) is UIElement element)
             {
-                // Try to get the object value for the corresponding element
-                data = source.ItemContainerGenerator.ItemFromContainer(element);
+                object data = DependencyProperty.UnsetValue;
 
-                // Get the parent and we will iterate again
-                if (data == DependencyProperty.UnsetValue && element != null)
-                    element = VisualTreeHelper.GetParent(element) as UIElement;
+                while (data == DependencyProperty.UnsetValue)
+                {
+                    // Try to get the object value for the corresponding element
+                    data = source.ItemContainerGenerator.ItemFromContainer(element);
 
-                // If we reach the actual listbox then we must break to avoid an infinite loop
-                if (Equals(element, source)) return null;
+                    // Get the parent and we will iterate again
+                    if (data == DependencyProperty.UnsetValue && element != null)
+                        element = VisualTreeHelper.GetParent(element) as UIElement;
+
+                    // If we reach the actual listbox then we must break to avoid an infinite loop
+                    if (Equals(element, source)) return null;
+                }
+
+                return data;
             }
 
-            return data;
+            // Get the object from the element
+            return null;
         }
 
         public static T FindAncestor<T>(this DependencyObject dependencyObject)

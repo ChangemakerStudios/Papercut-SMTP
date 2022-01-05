@@ -1,36 +1,40 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2021 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
 
 
 namespace Papercut.Core.Infrastructure.Logging
 {
     using System;
-    using System.Diagnostics;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
 
     using Autofac;
 
     using AutofacSerilogIntegration;
 
-    using Papercut.Common.Domain;
     using Papercut.Core.Domain.Application;
+    using Papercut.Core.Domain.Paths;
+    using Papercut.Core.Infrastructure.CommandLine;
 
     using Serilog;
+    using Serilog.Configuration;
     using Serilog.Debugging;
+    using Serilog.Events;
 
     /// <summary>
     /// Logging module is pulled into Core
@@ -39,47 +43,43 @@ namespace Papercut.Core.Infrastructure.Logging
     {
         internal static void Register(ContainerBuilder builder)
         {
-            builder.Register(
-                                c =>
-                                {
-                                    var appMeta = c.Resolve<IAppMeta>();
+            builder.Register(c =>
+                    {
+                        var appMeta = c.Resolve<IAppMeta>();
+                        var loggingPathConfigurator = c.Resolve<LoggingPathConfigurator>();
 
-                                    string logFilePath = Path.Combine(
-                                        AppDomain.CurrentDomain.BaseDirectory,
-                                        "Logs",
-                                        $"{appMeta.AppName}.log");
+                        string logFilePath = Path.Combine(
+                            loggingPathConfigurator.DefaultSavePath,
+                            $"{appMeta.AppName}.log");
 
-                                    LoggerConfiguration logConfiguration =
-                                        new LoggerConfiguration()
+                        // support self-logging
+                        SelfLog.Enable(s => Console.Error.WriteLine(s));
+
+                        LoggerConfiguration logConfiguration =
+                            new LoggerConfiguration()
 #if DEBUG
                                 .MinimumLevel.Verbose()
 #else
                                 .MinimumLevel.Information()
 #endif
                                 .Enrich.With<EnvironmentEnricher>()
-                                            .Enrich.FromLogContext()
-                                            .Enrich.WithProperty("AppName", appMeta.AppName)
-                                            .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-                                            .WriteTo.LiterateConsole()
-                                            .WriteTo.RollingFile(logFilePath);
+                                .Enrich.FromLogContext()
+                                .Enrich.WithProperty("AppName", appMeta.AppName)
+                                .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
+                                .Filter.ByExcluding(ExcludeTcpClientDisposeBugException)
+                                .WriteTo.Console()
+                                .WriteTo.File(logFilePath)
+                                .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(Environment.GetCommandLineArgs().ToArray()));
 
-                        // publish event so additional sinks, enrichers, etc can be added before logger creation is finalized.
-                        try
-                                    {
-                                        c.Resolve<IMessageBus>().Publish(new ConfigureLoggerEvent(logConfiguration));
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Debug.WriteLine("Failure Publishing ConfigurationLoggerEvent: " + ex.ToString());
-                                    }
+                        foreach (var configureInstance in c.Resolve<IEnumerable<ILoggerSettings>>().ToList())
+                        {
+                            logConfiguration.ReadFrom.Settings(configureInstance);
+                        }
 
-                        // support self-logging
-                        SelfLog.Enable(s => Console.Error.WriteLine(s));
-
-                                    return logConfiguration;
-                                })
-                            .AsSelf()
-                            .SingleInstance();
+                        return logConfiguration;
+                    })
+                .AsSelf()
+                .SingleInstance();
 
             builder.Register(
                     c =>
@@ -91,6 +91,28 @@ namespace Papercut.Core.Infrastructure.Logging
                 .SingleInstance();
 
             builder.RegisterLogger();
+        }
+
+        /// <summary>
+        /// https://stackoverflow.com/questions/59237011/how-to-avoid-objectdisposed-exception-after-closing-tcpclient
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private static bool ExcludeTcpClientDisposeBugException(LogEvent e)
+        {
+            var exception = e.Exception?.InnerException;
+
+            if (exception != null)
+            {
+                var exceptionText = exception.ToString();
+                if (exceptionText.Contains("System.Net.Sockets.TcpClient.EndConnect") && exceptionText.Contains("System.NullReferenceException: Object reference not set to an instance of an object"))
+                {
+                    // exclude this issue -- it's a known bug
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
