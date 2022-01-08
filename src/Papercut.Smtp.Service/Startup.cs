@@ -76,39 +76,6 @@ namespace Papercut.Smtp.Service
             {
                 config.MapControllers();
 
-                //config.MapControllerRoute("health", "health", new {controller = "Health"});
-
-                //config.MapControllerRoute(
-                //    "load all messages",
-                //    "api/messages",
-                //    new { controller = "Messages", action = "GetAll" });
-
-                //config.MapControllerRoute("delete all messages",
-                //    "api/messages",
-                //    new { controller = "Messages", action = "DeleteAll" },
-                //    new { httpMethod = HttpMethod.Delete });
-
-                //config.MapControllerRoute("delete message",
-                //    "api/messages/{id}",
-                //    new {controller = "Messages", action = "DeleteMessage"},
-                //    new {httpMethod = HttpMethod.Delete});
-
-                //config.MapControllerRoute("load message detail",
-                //    "api/messages/{id}",
-                //    new {controller = "Messages", action = "Get"});
-
-                //config.MapControllerRoute("download section by content id",
-                //    "api/messages/{messageId}/contents/{contentId}",
-                //    new {controller = "Messages", action = "DownloadSectionContent" });
-
-                //config.MapControllerRoute("download section by index",
-                //    "api/messages/{messageId}/sections/{index}",
-                //    new {controller = "Messages", action = "DownloadSection" });
-
-                //config.MapControllerRoute("download raw message payload",
-                //    "api/messages/{messageId}/raw",
-                //    new { controller = "Messages", action = "DownloadRaw" });
-
                 config.MapControllerRoute("Serve other requests as static content", "{*url}",
                     defaults: new { controller = "StaticContent", action = "Get" });
             });

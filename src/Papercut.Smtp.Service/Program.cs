@@ -32,7 +32,7 @@ public class Program
 
             Log.CloseAndFlush();
 
-            Log.Logger = new LoggerConfiguration().MinimumLevel.Information()
+            Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose()
                 .WriteTo.Console()
                 .Enrich.With<EnvironmentEnricher>()
                 .Enrich.WithProperty("AppName", AppConstants.ApplicationName)
