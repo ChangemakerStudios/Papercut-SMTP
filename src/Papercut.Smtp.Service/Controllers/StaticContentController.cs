@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2022 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,27 +16,13 @@
 // limitations under the License.
 
 
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc;
+
 namespace Papercut.Smtp.Service.Controllers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Reflection;
-
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http.Extensions;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Hosting;
-
     public class StaticContentController: Controller
     {
-        private readonly IWebHostEnvironment _webHostEnvironment;
-
-        public StaticContentController(IWebHostEnvironment webHostEnvironment)
-        {
-            _webHostEnvironment = webHostEnvironment;
-        }
-
         const string ResourcePath = "{0}.wwwroot.{1}";
 
         static readonly Dictionary<string, string> MimeMapping = new Dictionary<string, string>()
@@ -57,22 +43,29 @@ namespace Papercut.Smtp.Service.Controllers
             { "woff2", "application/font-woff2" },
         };
 
-//        [CacheOutput(
-//#if DEBUG
-//        ClientTimeSpan = 30,
-//#else
-//        ClientTimeSpan = 600,
-//#endif
-//        ServerTimeSpan = 86400, CacheKeyGenerator= typeof(PapercutResourceKeyGenerator))]
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public StaticContentController(IWebHostEnvironment webHostEnvironment)
+        {
+            this._webHostEnvironment = webHostEnvironment;
+        }
+
+        //        [CacheOutput(
+        //#if DEBUG
+        //        ClientTimeSpan = 30,
+        //#else
+        //        ClientTimeSpan = 600,
+        //#endif
+        //        ServerTimeSpan = 86400, CacheKeyGenerator= typeof(PapercutResourceKeyGenerator))]
         [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         public ActionResult Get()
         {
-            var resourceName = GetRequestedResourceName(new Uri(Request.GetDisplayUrl()));
+            var resourceName = GetRequestedResourceName(new Uri(this.Request.GetDisplayUrl()));
             var contentType = GetMimeType(resourceName);
 
             if (this._webHostEnvironment.IsDevelopment())
             {
-                return this.PhysicalFile(Path.Combine(_webHostEnvironment.WebRootPath, resourceName), contentType);
+                return this.PhysicalFile(Path.Combine(this._webHostEnvironment.WebRootPath, resourceName), contentType);
             }
 
             var resourceContent = GetResourceStream(resourceName);

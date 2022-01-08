@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2022 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,18 +18,13 @@
 
 namespace Papercut.Smtp.Service.Helpers
 {
-    using System.IO;
-    using System.Threading.Tasks;
-
-    using MimeKit;
-
     public class MimeTempFile
     {
         private readonly IMimeContent _contentObject;
 
         public MimeTempFile(IMimeContent contentObject)
         {
-            _contentObject = contentObject;
+            this._contentObject = contentObject;
         }
 
         public async Task<string> GetFileAsync()
@@ -38,7 +33,7 @@ namespace Papercut.Smtp.Service.Helpers
 
             await using (var tempFileStream = File.OpenWrite(tempFile))
             {
-                await _contentObject.DecodeToAsync(tempFileStream);
+                await this._contentObject.DecodeToAsync(tempFileStream);
             }
 
             return tempFile;

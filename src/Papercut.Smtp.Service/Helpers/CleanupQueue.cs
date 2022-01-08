@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2022 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,40 +16,52 @@
 // limitations under the License.
 
 
-namespace Papercut.Smtp.Service.Helpers
+using Autofac.Util;
+
+namespace Papercut.Smtp.Service.Helpers;
+
+public class CleanupQueue : Disposable
 {
-    using System.Collections.Concurrent;
-    using System.IO;
+    readonly ConcurrentQueue<string> _fileNames = new();
 
-    using Autofac.Util;
-
-    public class CleanupQueue : Disposable
+    public void EnqueueFile(string filename)
     {
-        readonly ConcurrentQueue<string> _fileNames = new ConcurrentQueue<string>();
+        this._fileNames.Enqueue(filename);
+    }
 
-        public void EnqueueFile(string filename)
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (disposing)
         {
-            _fileNames.Enqueue(filename);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-
-            if (disposing)
+            while (this._fileNames.TryDequeue(out string fileName))
             {
-                while (_fileNames.TryDequeue(out string fileName))
+                try
                 {
-                    try
-                    {
-                        File.Delete(fileName);
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
+                    File.Delete(fileName);
+                }
+                catch
+                {
+                    // ignored
                 }
             }
         }
     }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register([NotNull] ContainerBuilder builder)
+    {
+        if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+        builder.RegisterType<CleanupQueue>().AsSelf().SingleInstance();
+    }
+
+    #endregion
 }

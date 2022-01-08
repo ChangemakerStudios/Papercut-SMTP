@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Serilog" Version="2.10.0" />
-    <PackageReference Include="SmtpServer" Version="9.0.0" />
+    <PackageReference Include="SmtpServer" Version="9.0.1" />
   </ItemGroup>
 
   <ItemGroup>

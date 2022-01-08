@@ -1,24 +1,32 @@
+// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2022 Jaben Cargman
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+using Papercut.Smtp.Service.Services;
+
 namespace Papercut.Smtp.Service
 {
-    using Autofac;
-    using Autofac.Extensions.DependencyInjection;
-
-    using Core.Annotations;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Logging;
-
-    using Services;
-
     public class Startup
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.Configuration = configuration;
         }
 
         public ILifetimeScope AutofacContainer { get; private set; }
@@ -29,23 +37,15 @@ namespace Papercut.Smtp.Service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddHostedService<PapercutServerService>();
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         [UsedImplicitly]
         public void ConfigureContainer(ContainerBuilder builder)
         {
             builder.RegisterModule<ServiceModule>();
-
-            builder.Register(c =>
-                {
-                    var papercutService = c.Resolve<PapercutServerService>();
-
-                    papercutService.Start();
-
-                    return papercutService;
-                })
-                .Named<PapercutServerService>("AutoRunMainInstance").SingleInstance()
-                .AutoActivate();
+            builder.RegisterInstance(Log.Logger).As<ILogger>().SingleInstance();
         }
 
         [UsedImplicitly]
@@ -72,12 +72,45 @@ namespace Papercut.Smtp.Service
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
+            app.UseEndpoints(config =>
             {
-                endpoints.MapControllers();
+                config.MapControllers();
 
-                endpoints.MapControllerRoute("AppStatic", "{*url}",
-                    defaults: new {controller = "StaticContent", action = "Get"});
+                //config.MapControllerRoute("health", "health", new {controller = "Health"});
+
+                //config.MapControllerRoute(
+                //    "load all messages",
+                //    "api/messages",
+                //    new { controller = "Messages", action = "GetAll" });
+
+                //config.MapControllerRoute("delete all messages",
+                //    "api/messages",
+                //    new { controller = "Messages", action = "DeleteAll" },
+                //    new { httpMethod = HttpMethod.Delete });
+
+                //config.MapControllerRoute("delete message",
+                //    "api/messages/{id}",
+                //    new {controller = "Messages", action = "DeleteMessage"},
+                //    new {httpMethod = HttpMethod.Delete});
+
+                //config.MapControllerRoute("load message detail",
+                //    "api/messages/{id}",
+                //    new {controller = "Messages", action = "Get"});
+
+                //config.MapControllerRoute("download section by content id",
+                //    "api/messages/{messageId}/contents/{contentId}",
+                //    new {controller = "Messages", action = "DownloadSectionContent" });
+
+                //config.MapControllerRoute("download section by index",
+                //    "api/messages/{messageId}/sections/{index}",
+                //    new {controller = "Messages", action = "DownloadSection" });
+
+                //config.MapControllerRoute("download raw message payload",
+                //    "api/messages/{messageId}/raw",
+                //    new { controller = "Messages", action = "DownloadRaw" });
+
+                config.MapControllerRoute("Serve other requests as static content", "{*url}",
+                    defaults: new { controller = "StaticContent", action = "Get" });
             });
         }
     }

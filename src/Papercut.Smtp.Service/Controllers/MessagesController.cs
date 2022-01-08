@@ -1,52 +1,38 @@
 ﻿// Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//
+// Copyright © 2013 - 2022 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Smtp.Service.Controllers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Common.Extensions;
-
-    using Helpers;
-
-    using Message;
-
-    using Microsoft.AspNetCore.Mvc;
-
-    using MimeKit;
-
-    using Models;
-
     [ApiController]
     [Route("api/messages")]
     public class MessagesController : Controller
     {
-        readonly MessageRepository _messageRepository;
-        readonly MimeMessageLoader _messageLoader;
         private readonly CleanupQueue _cleanupQueue;
+
+        readonly MimeMessageLoader _messageLoader;
+
+        readonly MessageRepository _messageRepository;
 
         public MessagesController(MessageRepository messageRepository, MimeMessageLoader messageLoader, CleanupQueue cleanupQueue)
         {
             this._messageRepository = messageRepository;
             this._messageLoader = messageLoader;
-            _cleanupQueue = cleanupQueue;
+            this._cleanupQueue = cleanupQueue;
         }
 
         [HttpGet]
@@ -120,7 +106,7 @@ namespace Papercut.Smtp.Service.Controllers
         [HttpGet("{messageId}/sections/{index}")]
         public Task<ActionResult> DownloadSection(string messageId, int index)
         {
-            return this.DownloadSection(messageId, sections => (index >=0 && index < sections.Count ? sections[index] : null));
+            return this.DownloadSection(messageId, sections => index >=0 && index < sections.Count ? sections[index] : null);
         }
 
         [HttpGet("{messageId}/contents/{contentId}")]

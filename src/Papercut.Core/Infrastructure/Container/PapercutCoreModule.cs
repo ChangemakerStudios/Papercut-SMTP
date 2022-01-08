@@ -29,7 +29,7 @@ namespace Papercut.Core.Infrastructure.Container
 
     using Module = Autofac.Module;
 
-    internal class PapercutCoreModule : Module
+    public class PapercutCoreModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

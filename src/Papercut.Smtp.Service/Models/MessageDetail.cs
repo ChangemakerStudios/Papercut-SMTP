@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2022 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,17 +15,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Smtp.Service.Models
 {
     public class MessageDetail
     {
         public string Subject { get; set; }
+
         public string From { get; set; }
+
         public string To { get; set; }
+
         public string Cc { get; set; }
+
         public string Bcc { get; set; }
 
         public string BodyContent { get; set; }
+
         public bool IsBodyHtml { get; set; }
     }
 }
