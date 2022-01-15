@@ -1,6 +1,6 @@
 ﻿{
   "HttpBaseAddress": "http://127.0.0.1",
-  "HttpBaseAddress_Description": "## The Papercut Web UI Server listening address (Defaults to http://127.0.0.1).",
+  "HttpBaseAddress_Description": "## The Papercut Web UI Server listening address e.g. specific hostname http://hostname (Defaults to http://127.0.0.1). If you want listen to all hostnames use http://* . Warning: This option needs administrator permission. Please be carfully with this option for security reason! ",
   "HttpPort": "37408",
   "HttpPort_Description": "## The Http Web UI Server listening port (Defaults to 37408). Set to 0 to disable Http Web UI Server.",
   "HttpServerEnabled": "True",
