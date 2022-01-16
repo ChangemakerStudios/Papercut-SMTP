@@ -4,9 +4,9 @@
      xmlns:fw="http://schemas.microsoft.com/wix/FirewallExtension"
      >
 
-    <?include PapercutVars.wxi ?>
+	<?include PapercutVars.wxi ?>
 
-    <Product Id="*"
+	<Product Id="*"
              Name="$(var.ProductName)"
              Language="1033"
              Version="$(var.Version)"
@@ -14,198 +14,187 @@
              UpgradeCode="$(var.UpgradeCode)"
         >
 
-        <Package InstallerVersion="405"
+		<Package InstallerVersion="405"
                  Manufacturer="$(var.Company)"
                  Compressed="yes"
                  InstallScope="perMachine" />
 
-        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
 
-        <MediaTemplate EmbedCab="yes" />
+		<MediaTemplate EmbedCab="yes" />
 
-        <FeatureGroupRef Id="InstallFeatures"/>
+		<FeatureGroupRef Id="InstallFeatures"/>
 
-        <Property Id="WIXUI_INSTALLDIR"   Value="INSTALLDIR" />
-        <Property Id="INSTALLLEVEL"       Value="10" />
-        <WixVariable Id="WixUIBannerBmp"  Value="Resources\Papercut-banner.bmp" />
-        <WixVariable Id="WixUIDialogBmp"  Value="Resources\Papercut-dialog.bmp" />
+		<Property Id="WIXUI_INSTALLDIR"   Value="INSTALLDIR" />
+		<Property Id="INSTALLLEVEL"       Value="10" />
+		<WixVariable Id="WixUIBannerBmp"  Value="Resources\Papercut-banner.bmp" />
+		<WixVariable Id="WixUIDialogBmp"  Value="Resources\Papercut-dialog.bmp" />
 
-        <UIRef Id="UI_FeatureTree" />
+		<UIRef Id="UI_FeatureTree" />
 
-        <!-- Precondition: Check whether WebView RunTime already installed or not -->
-        <Property Id="WVRTINSTALLED">
-          <RegistrySearch Id="WVRTInstalled" Root="HKLM" Key="$(var.EdgeRegistryKey)" Name="name" Type="raw" Win64="$(var.Win64)"/>
-        </Property>
+		<!-- Precondition: Check whether WebView RunTime already installed or not -->
+		<Property Id="WVRTINSTALLED">
+			<RegistrySearch Id="WVRTInstalled" Root="HKLM" Key="$(var.EdgeRegistryKey)" Name="name" Type="raw" Win64="$(var.Win64)"/>
+		</Property>
+	</Product>
 
-        <CustomAction Id="DownloadAndInvokeBootstrapper" Directory="INSTALLFOLDER" Execute="deferred" ExeCommand='powershell.exe Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile "$env:TEMP\MicrosoftEdgeWebview2Setup.exe" ; &amp; $env:TEMP\MicrosoftEdgeWebview2Setup.exe /install ;' Return='check'/>
+	<Fragment>
+		<FeatureGroup Id="InstallFeatures">
+			<Feature Id="FeatureApplication" Title="$(var.ProductName) Application" Level="1">
+				<ComponentGroupRef Id="ComponentApplication" />
+			</Feature>
 
-        <InstallExecuteSequence>
-          <!-- [Download Bootstrapper] Use fwlink to download the bootstrapper to user TEMP folder and invoke-->
-          <!-- Only run DownloadAndInvokeBootstrapper action during app install, app repair and when WVRT wasn't installed-->
-          <Custom Action='DownloadAndInvokeBootstrapper' Before='InstallFinalize'>
-            <![CDATA[NOT(REMOVE OR WVRTINSTALLED)]]>
-          </Custom>
-        </InstallExecuteSequence>
+			<Feature Id="FeatureService" Title="$(var.ProductName) Service" Level="1">
+				<ComponentGroupRef Id="ComponentService" />
+			</Feature>
+		</FeatureGroup>
+	</Fragment>
 
-    </Product>
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="$(var.PlatformProgramFilesFolder)">
+				<Directory Id="ManufacturerFolder" Name="$(var.Company)">
+					<Directory Id="INSTALLFOLDER" Name="$(var.ProductName)">
+						<Directory Id="INCOMINGFOLDER" Name="Incoming" />
+						<Directory Id="RUNTIME" Name="runtimes">
+							<Directory Id="RUNTIMEPLATFORMFOLDER" Name="$(var.PlatformFolder)">
+								<Directory Id="RUNTIMEPLATFORMNATIVEFOLDER" Name="native">
+								</Directory>
+							</Directory>
+						</Directory>
+					</Directory>
+				</Directory>
+			</Directory>
 
-    <Fragment>
-        <FeatureGroup Id="InstallFeatures">
-            <Feature Id="FeatureApplication" Title="$(var.ProductName) Application" Level="1">
-                <ComponentGroupRef Id="ComponentApplication" />
-            </Feature>
+			<Directory Id="CommonAppDataFolder">
+				<Directory Id="ManufacturerFolder2" Name="$(var.Company)">
+					<Directory Id="COMMONDATAFOLDER" Name="$(var.ProductName)">
+						<Directory Id="INCOMINGFOLDERCOMMON" Name="Incoming" />
+					</Directory>
+				</Directory>
+			</Directory>
 
-            <Feature Id="FeatureService" Title="$(var.ProductName) Service" Level="1">
-                <ComponentGroupRef Id="ComponentService" />
-            </Feature>
-        </FeatureGroup>
-    </Fragment>
+			<Directory Id="ProgramMenuFolder">
+				<Directory Id="ApplicationProgramsFolder" Name="$(var.Company)" />
+			</Directory>
+		</Directory>
+	</Fragment>
 
-    <Fragment>
-        <Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="$(var.PlatformProgramFilesFolder)">
-                <Directory Id="ManufacturerFolder" Name="$(var.Company)">
-                    <Directory Id="INSTALLFOLDER" Name="$(var.ProductName)">
-                      <Directory Id="INCOMINGFOLDER" Name="Incoming" />
-                      <Directory Id="RUNTIME" Name="runtimes">
-                        <Directory Id="RUNTIMEPLATFORMFOLDER" Name="$(var.PlatformFolder)">
-                          <Directory Id="RUNTIMEPLATFORMNATIVEFOLDER" Name="native">
-                          </Directory>
-                        </Directory>
-                      </Directory>
-                    </Directory>
-                </Directory>
-            </Directory>
+	<Fragment>
+		<DirectoryRef Id="INSTALLFOLDER">
+			<Component Id="Papercut.exe" Guid="*" DiskId="1" Win64="$(var.Win64)">
+				<File Source="$(var.AppBinPath)Papercut.exe" KeyPath="yes"/>
+			</Component>
 
-            <Directory Id="CommonAppDataFolder">
-              <Directory Id="ManufacturerFolder2" Name="$(var.Company)">
-                <Directory Id="COMMONDATAFOLDER" Name="$(var.ProductName)">
-                  <Directory Id="INCOMINGFOLDERCOMMON" Name="Incoming" />
-                </Directory>
-              </Directory>
-            </Directory>
+			<Component Id="Papercut.exe.config" Guid="*" DiskId="1" Win64="$(var.Win64)">
+				<File Source="$(var.AppBinPath)Papercut.exe.config" KeyPath="yes"/>
+			</Component>
 
-            <Directory Id="ProgramMenuFolder">
-                <Directory Id="ApplicationProgramsFolder" Name="$(var.Company)" />
-            </Directory>
-        </Directory>
-    </Fragment>
+			<Component Id="Papercut.exe.manifest" Guid="*" DiskId="1" Win64="$(var.Win64)">
+				<File Source="$(var.AppBinPath)Papercut.exe.manifest" KeyPath="yes"/>
+			</Component>
 
-    <Fragment>
-      <DirectoryRef Id="INSTALLFOLDER">
-        <Component Id="Papercut.exe" Guid="*" DiskId="1" Win64="$(var.Win64)">
-          <File Source="$(var.AppBinPath)Papercut.exe" KeyPath="yes"/>
-        </Component>
+			<Component Id="Papercut.Service.exe" Guid="*" DiskId="1" Win64="$(var.Win64)">
+				<File Id="PapercutServiceExe" Source="$(var.SrvBinPath)Papercut.Service.exe" KeyPath="yes"/>
+				<ServiceInstall Id="PapercutService"
+								DisplayName="$(var.ProductName) Service"
+								Name="PapercutServerService"
+								Description="$(var.ProductName) Backend Service"
+								ErrorControl="normal"
+								Start="auto"
+								Type="ownProcess"
+								Account="LOCALSYSTEM"
+								Vital="yes"
+								Interactive="no">
+				</ServiceInstall>
+				<ServiceControl Id="PapercutServiceControl"
+								Name="PapercutServerService"
+								Stop="uninstall"
+								Remove="uninstall"
+								Wait="yes" />
+				<fw:FirewallException Id="PapercutServerException"
+									  Name="$(var.ProductName) Backend Service"
+									  Program="[#PapercutServiceExe]"
+									  IgnoreFailure="yes"
+									  Protocol="tcp"
+									  Scope="localSubnet"/>
+			</Component>
 
-        <Component Id="Papercut.exe.config" Guid="*" DiskId="1" Win64="$(var.Win64)">
-          <File Source="$(var.AppBinPath)Papercut.exe.config" KeyPath="yes"/>
-        </Component>
+			<Component Id="Papercut.Service.exe.config" Guid="*" DiskId="1" Win64="$(var.Win64)">
+				<File Source="$(var.SrvBinPath)Papercut.Service.exe.config" KeyPath="yes"/>
+			</Component>
 
-        <Component Id="Papercut.exe.manifest" Guid="*" DiskId="1" Win64="$(var.Win64)">
-          <File Source="$(var.AppBinPath)Papercut.exe.manifest" KeyPath="yes"/>
-        </Component>
+			<Component Id="Papercut.Service.json" Guid="*" DiskId="1" Win64="$(var.Win64)">
+				<File Source="$(var.SrvBinPath)Papercut.Service.Settings.json" KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
 
-        <Component Id="Papercut.Service.exe" Guid="*" DiskId="1" Win64="$(var.Win64)">
-          <File Id="PapercutServiceExe" Source="$(var.SrvBinPath)Papercut.Service.exe" KeyPath="yes"/>
-          <ServiceInstall Id="PapercutService"
-                          DisplayName="$(var.ProductName) Service"
-                          Name="PapercutServerService"
-                          Description="$(var.ProductName) Backend Service"
-                          ErrorControl="normal"
-                          Start="auto"
-                          Type="ownProcess"
-                          Account="LOCALSYSTEM"
-                          Vital="yes"
-                          Interactive="no">
-          </ServiceInstall>
-          <ServiceControl Id="PapercutServiceControl"
-                          Name="PapercutServerService"
-                          Stop="uninstall"
-                          Remove="uninstall"
-                          Wait="yes" />
-          <fw:FirewallException Id="PapercutServerException"
-                                Name="$(var.ProductName) Backend Service"
-                                Program="[#PapercutServiceExe]"
-                                IgnoreFailure="yes"
-                                Protocol="tcp"
-                                Scope="localSubnet"/>
-        </Component>
+		<DirectoryRef Id="INCOMINGFOLDERCOMMON">
+			<Component Id="Readme.eml" Guid="*" DiskId="1" Win64="$(var.Win64)">
+				<File Source="$(var.AppBinPath)Readme.eml" KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
 
-        <Component Id="Papercut.Service.exe.config" Guid="*" DiskId="1" Win64="$(var.Win64)">
-          <File Source="$(var.SrvBinPath)Papercut.Service.exe.config" KeyPath="yes"/>
-        </Component>
+		<DirectoryRef Id="RUNTIMEPLATFORMNATIVEFOLDER">
+			<Component Id="WebView2Loader.dll" Guid="*" DiskId="1" Win64="$(var.Win64)">
+				<File Source="$(var.AppBinPath)runtimes\$(var.PlatformFolder)\native\WebView2Loader.dll" KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
 
-        <Component Id="Papercut.Service.json" Guid="*" DiskId="1" Win64="$(var.Win64)">
-          <File Source="$(var.SrvBinPath)Papercut.Service.Settings.json" KeyPath="yes"/>
-        </Component>
-      </DirectoryRef>
+		<DirectoryRef Id="INCOMINGFOLDER">
+			<Component Id="IncomingPermissions" Guid="D98936AA-3ED4-4DC6-B469-63CFEEF58066" Win64="$(var.Win64)">
+				<CreateFolder>
+					<util:PermissionEx User="Everyone" GenericAll="yes" />
+				</CreateFolder>
+			</Component>
+		</DirectoryRef>
 
-      <DirectoryRef Id="INCOMINGFOLDERCOMMON">
-        <Component Id="Readme.eml" Guid="*" DiskId="1" Win64="$(var.Win64)">
-          <File Source="$(var.AppBinPath)Readme.eml" KeyPath="yes"/>
-        </Component>
-      </DirectoryRef>
+		<DirectoryRef Id="INCOMINGFOLDERCOMMON">
+			<Component Id="IncomingPermissionsCommon" Guid="D98936AB-7ED4-4DC6-B469-63CFEEF58066" Win64="$(var.Win64)">
+				<CreateFolder>
+					<util:PermissionEx User="Everyone" GenericAll="yes" />
+				</CreateFolder>
+			</Component>
+		</DirectoryRef>
 
-      <DirectoryRef Id="RUNTIMEPLATFORMNATIVEFOLDER">
-        <Component Id="WebView2Loader.dll" Guid="*" DiskId="1" Win64="$(var.Win64)">
-          <File Source="$(var.AppBinPath)runtimes\$(var.PlatformFolder)\native\WebView2Loader.dll" KeyPath="yes"/>
-        </Component>
-      </DirectoryRef>
-      
-      <DirectoryRef Id="INCOMINGFOLDER">
-        <Component Id="IncomingPermissions" Guid="D98936AA-3ED4-4DC6-B469-63CFEEF58066" Win64="$(var.Win64)">
-          <CreateFolder>
-            <util:PermissionEx User="Everyone" GenericAll="yes" />
-          </CreateFolder>
-        </Component>
-      </DirectoryRef>
+		<DirectoryRef Id="ApplicationProgramsFolder">
+			<Component Id="ApplicationShortcut" Guid="8B319445-90CE-490E-A9E4-E2834E1C76E5" Win64="$(var.Win64)">
 
-      <DirectoryRef Id="INCOMINGFOLDERCOMMON">
-        <Component Id="IncomingPermissionsCommon" Guid="D98936AB-7ED4-4DC6-B469-63CFEEF58066" Win64="$(var.Win64)">
-          <CreateFolder>
-            <util:PermissionEx User="Everyone" GenericAll="yes" />
-          </CreateFolder>
-        </Component>
-      </DirectoryRef>
+				<Shortcut Id="ApplicationStartMenuShortcut"
+						  Name="Papercut"
+						  Description="Launch $(var.ProductName)"
+						  Target="[#Papercut.exe]"
+						  WorkingDirectory="INSTALLFOLDER"/>
 
-      <DirectoryRef Id="ApplicationProgramsFolder">
-          <Component Id="ApplicationShortcut" Guid="8B319445-90CE-490E-A9E4-E2834E1C76E5" Win64="$(var.Win64)">
+				<RemoveFolder Id="CleanUpShortCut"
+							  Directory="ApplicationProgramsFolder"
+							  On="uninstall"/>
 
-              <Shortcut Id="ApplicationStartMenuShortcut"
-                        Name="Papercut"
-                        Description="Launch $(var.ProductName)"
-                        Target="[#Papercut.exe]"
-                        WorkingDirectory="INSTALLFOLDER"/>
+				<RegistryValue Root="HKCU" Key="Software\Microsoft\Papercut"
+							   Name="installed"
+							   Type="integer"
+							   Value="1"
+							   KeyPath="yes" />
+			</Component>
+		</DirectoryRef>
+	</Fragment>
 
-              <RemoveFolder Id="CleanUpShortCut"
-                            Directory="ApplicationProgramsFolder"
-                            On="uninstall"/>
+	<Fragment>
+		<ComponentGroup Id="ComponentApplication">
+			<ComponentRef Id="Papercut.exe"/>
+			<ComponentRef Id="Papercut.exe.config"/>
+			<ComponentRef Id="Papercut.exe.manifest"/>
+			<ComponentRef Id="WebView2Loader.dll"/>
+			<ComponentRef Id="Readme.eml"/>
+			<ComponentRef Id="IncomingPermissions" />
+			<ComponentRef Id="IncomingPermissionsCommon" />
+			<ComponentRef Id="ApplicationShortcut"/>
+		</ComponentGroup>
 
-              <RegistryValue Root="HKCU" Key="Software\Microsoft\Papercut"
-                             Name="installed"
-                             Type="integer"
-                             Value="1"
-                             KeyPath="yes" />
-          </Component>
-      </DirectoryRef>
-    </Fragment>
-
-    <Fragment>
-        <ComponentGroup Id="ComponentApplication">
-            <ComponentRef Id="Papercut.exe"/>
-            <ComponentRef Id="Papercut.exe.config"/>
-            <ComponentRef Id="Papercut.exe.manifest"/>
-            <ComponentRef Id="WebView2Loader.dll"/>
-            <ComponentRef Id="Readme.eml"/>
-            <ComponentRef Id="IncomingPermissions" />
-            <ComponentRef Id="IncomingPermissionsCommon" />
-            <ComponentRef Id="ApplicationShortcut"/>
-        </ComponentGroup>
-
-        <ComponentGroup Id="ComponentService">
-            <ComponentRef Id="Papercut.Service.exe"/>
-            <ComponentRef Id="Papercut.Service.exe.config"/>
-            <ComponentRef Id="Papercut.Service.json"/>
-        </ComponentGroup>
-    </Fragment>
+		<ComponentGroup Id="ComponentService">
+			<ComponentRef Id="Papercut.Service.exe"/>
+			<ComponentRef Id="Papercut.Service.exe.config"/>
+			<ComponentRef Id="Papercut.Service.json"/>
+		</ComponentGroup>
+	</Fragment>
 </Wix>
