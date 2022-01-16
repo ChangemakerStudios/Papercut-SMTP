@@ -99,12 +99,12 @@ namespace Papercut.App.WebApi
         void StartHttpServer()
         {
             if (this._isActive) return;
-
-            var uri = new UriBuilder(this._httpBaseAddress) { Port = this._httpPort }.Uri;
-
+            string uri = string.Empty;
             try
             {
-                this._webAppDisposable = WebApp.Start(uri.ToString(), builder =>
+                uri = $"{this._httpBaseAddress}:{this._httpPort}";
+
+                this._webAppDisposable = WebApp.Start(uri, builder =>
                 {
                     var config = new HttpConfiguration();
 
