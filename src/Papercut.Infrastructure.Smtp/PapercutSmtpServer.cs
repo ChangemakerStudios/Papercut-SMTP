@@ -128,6 +128,10 @@ namespace Papercut.Infrastructure.Smtp
                     {
                         this._logger.Error(ex, "Smtp Server Error");
                     }
+                    finally
+                    {
+                        this._server = null;
+                    }
                 },
                 this._tokenSource.Token);
 #pragma warning restore 4014

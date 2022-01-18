@@ -18,6 +18,7 @@
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using Papercut.Smtp.Service.Host;
 using Papercut.Smtp.Service.Services;
 
 namespace Papercut.Smtp.Service
@@ -37,7 +38,7 @@ namespace Papercut.Smtp.Service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            services.AddHostedService<PapercutServerService>();
+            services.AddHostedService<PapercutServerHost>();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 

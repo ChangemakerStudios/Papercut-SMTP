@@ -16,12 +16,11 @@
 // limitations under the License.
 
 
-using Papercut.Core.Domain.WebServer;
 using Papercut.Infrastructure.IPComm.Network;
 
-namespace Papercut.Smtp.Service.Services
+namespace Papercut.Smtp.Service.Host
 {
-    public class PapercutServerService : IHostedService
+    public class PapercutServerHost : IHostedService
     {
         readonly IAppMeta _applicationMetaData;
 
@@ -37,7 +36,7 @@ namespace Papercut.Smtp.Service.Services
 
         private readonly PapercutSmtpServer _smtpServer;
 
-        public PapercutServerService(
+        public PapercutServerHost(
             PapercutIPCommServer ipCommServer,
             PapercutSmtpServer smtpServer,
             PapercutIPCommEndpoints papercutIpCommEndpoints,

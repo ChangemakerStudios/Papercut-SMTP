@@ -1,0 +1,37 @@
+<nb-layout>
+
+  <nb-layout-header fixed>
+  <!-- Insert header here -->
+  </nb-layout-header>
+
+  <nb-layout-column>
+    <div class="w-full flex flex-col sm:flex-row flex-wrap sm:flex-nowrap py-4 flex-grow">
+        <!-- fixed-width -->
+        <div class="w-fixed w-full flex-shrink flex-grow-0 px-4">
+            <div class="sticky top-0 p-4 w-full h-full">
+                   
+            </div>
+        </div>
+        <main role="main" class="w-full flex-grow pt-1 px-3">
+            <!-- fluid-width: main content goes here -->
+            <router-outlet></router-outlet>
+        </main>
+        <div class="w-fixed w-full flex-shrink flex-grow-0 px-2">
+            <!-- fixed-width -->
+            <div class="flex sm:flex-col px-2">
+                <!-- sidebar goes here -->
+                dfsfdsdfsfds
+            </div>
+        </div>
+    </div>
+    <footer class="bg-black mt-auto">
+        blahl balh
+    </footer>
+    
+  </nb-layout-column>
+
+  <nb-layout-footer fixed>
+  <!-- Insert footer here -->
+  </nb-layout-footer>
+
+</nb-layout>

@@ -33,11 +33,11 @@ public class Program
             Log.CloseAndFlush();
 
             Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose()
-                .WriteTo.Console()
                 .Enrich.With<EnvironmentEnricher>()
                 .Enrich.WithProperty("AppName", AppConstants.ApplicationName)
                 .Enrich.WithProperty("AppVersion", FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
-                .ReadFrom.Configuration(builder.Configuration).CreateLogger();
+                .ReadFrom.Configuration(builder.Configuration)
+                .CreateLogger();
 
             builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory(startup.ConfigureContainer));
             builder.WebHost.ConfigureServices(startup.ConfigureServices).UseSerilog();

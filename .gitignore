@@ -18,5 +18,5 @@ graphics/
 /build/tools
 /tools
 out/
-/.vscode
+.vscode
 *.msi
