@@ -10,7 +10,7 @@
     <Grid>
         <Border BorderBrush="LightGray" BorderThickness="1">
             <wv2b:WebView2Base x:Name="htmlView" Width="Auto" Height="Auto"
-                               Source="about:blank"
+                               Source="about:blank" Visibility="{Binding HasHtmlFile, Converter={StaticResource HiddenIfFalse}}"
             />
         </Border>
     </Grid>
