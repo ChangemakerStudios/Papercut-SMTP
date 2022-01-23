@@ -4,7 +4,7 @@
   <?define ProductName="Papercut SMTP" ?>
 
   <?ifndef env.APPVEYOR_BUILD_VERSION ?>
-    <?define Version="5.0.0.0" ?>
+    <?define Version="6.0.0.0" ?>
   <?else?>
     <?define Version=$(env.APPVEYOR_BUILD_VERSION) ?>
   <?endif?>
