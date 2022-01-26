@@ -31,11 +31,6 @@
 		<WixVariable Id="WixUIDialogBmp"  Value="Resources\Papercut-dialog.bmp" />
 
 		<UIRef Id="UI_FeatureTree" />
-
-		<!-- Precondition: Check whether WebView RunTime already installed or not -->
-		<Property Id="WVRTINSTALLED">
-			<RegistrySearch Id="WVRTInstalled" Root="HKLM" Key="$(var.EdgeRegistryKey)" Name="name" Type="raw" Win64="$(var.Win64)"/>
-		</Property>
 	</Product>
 
 	<Fragment>
