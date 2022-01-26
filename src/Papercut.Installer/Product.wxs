@@ -36,9 +36,10 @@
         <Property Id="WVRTINSTALLEDCHECKONE">
           <RegistrySearch Id="WVRTInstalledCheckOne" Root="HKLM" Key="$(var.EdgeRegistryKeyOne)" Name="name" Type="raw" Win64="$(var.Win64)"/>
         </Property>
-		<Property Id="WVRTINSTALLEDCHECKTWO">
-			<RegistrySearch Id="WVRTInstalledCheckTwo" Root="HKCU" Key="$(var.EdgeRegistryKeyTwo)" Name="name" Type="raw" Win64="$(var.Win64)"/>
-		</Property>
+        
+        <Property Id="WVRTINSTALLEDCHECKTWO">
+          <RegistrySearch Id="WVRTInstalledCheckTwo" Root="HKCU" Key="$(var.EdgeRegistryKeyTwo)" Name="name" Type="raw" Win64="$(var.Win64)"/>
+        </Property>
 
         <CustomAction Id="DownloadAndInvokeBootstrapper" Directory="INSTALLFOLDER" Execute="deferred" ExeCommand='powershell.exe Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile "$env:TEMP\MicrosoftEdgeWebview2Setup.exe" ; &amp; $env:TEMP\MicrosoftEdgeWebview2Setup.exe /install ;' Return='check'/>
 
