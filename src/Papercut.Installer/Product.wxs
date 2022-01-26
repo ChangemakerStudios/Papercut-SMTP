@@ -30,8 +30,27 @@
 		<WixVariable Id="WixUIBannerBmp"  Value="Resources\Papercut-banner.bmp" />
 		<WixVariable Id="WixUIDialogBmp"  Value="Resources\Papercut-dialog.bmp" />
 
-		<UIRef Id="UI_FeatureTree" />
-	</Product>
+        <UIRef Id="UI_FeatureTree" />
+
+        <!-- Precondition: Check whether WebView RunTime already installed or not -->
+        <Property Id="WVRTINSTALLEDCHECKONE">
+          <RegistrySearch Id="WVRTInstalledCheckOne" Root="HKLM" Key="$(var.EdgeRegistryKeyOne)" Name="name" Type="raw" Win64="$(var.Win64)"/>
+        </Property>
+		<Property Id="WVRTINSTALLEDCHECKTWO">
+			<RegistrySearch Id="WVRTInstalledCheckTwo" Root="HKCU" Key="$(var.EdgeRegistryKeyTwo)" Name="name" Type="raw" Win64="$(var.Win64)"/>
+		</Property>
+
+        <CustomAction Id="DownloadAndInvokeBootstrapper" Directory="INSTALLFOLDER" Execute="deferred" ExeCommand='powershell.exe Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile "$env:TEMP\MicrosoftEdgeWebview2Setup.exe" ; &amp; $env:TEMP\MicrosoftEdgeWebview2Setup.exe /install ;' Return='check'/>
+
+        <InstallExecuteSequence>
+          <!-- [Download Bootstrapper] Use fwlink to download the bootstrapper to user TEMP folder and invoke-->
+          <!-- Only run DownloadAndInvokeBootstrapper action during app install, app repair and when WVRT wasn't installed-->
+          <Custom Action='DownloadAndInvokeBootstrapper' Before='InstallFinalize'>
+            <![CDATA[NOT(REMOVE OR WVRTINSTALLEDCHECKONE OR WVRTINSTALLEDCHECKTWO)]]>
+          </Custom>
+        </InstallExecuteSequence>
+
+    </Product>
 
 	<Fragment>
 		<FeatureGroup Id="InstallFeatures">
