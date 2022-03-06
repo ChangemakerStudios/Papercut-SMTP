@@ -25,6 +25,8 @@ namespace Papercut.AppLayer.IpComm
     using Autofac.Util;
 
     using Papercut.Core.Annotations;
+    using Papercut.Core.Domain.Network;
+    using Papercut.Core.Domain.Settings;
     using Papercut.Domain.LifecycleHooks;
     using Papercut.Infrastructure.IPComm.Network;
 
@@ -37,14 +39,17 @@ namespace Papercut.AppLayer.IpComm
         private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
         readonly PapercutIPCommServer _papercutIpCommServer;
+        private readonly ISettingStore _settingStore;
 
         public PapercutIpCommManager(
             PapercutIPCommEndpoints papercutIpCommEndpoints,
             PapercutIPCommServer ipCommServer,
+            ISettingStore settingStore,
             ILogger logger)
         {
             this._papercutIpCommEndpoints = papercutIpCommEndpoints;
             this._logger = logger;
+            this._settingStore = settingStore;
             this._papercutIpCommServer = ipCommServer;
         }
 
@@ -54,7 +59,17 @@ namespace Papercut.AppLayer.IpComm
 
             try
             {
-                await this._papercutIpCommServer.StartAsync(this._papercutIpCommEndpoints.UI);
+                if (_settingStore == null) throw new ArgumentNullException(nameof(_settingStore));
+
+                var serverAddress = _settingStore.GetOrSet("IPCommServerIPAddress", PapercutIPCommConstants.Localhost,
+                    $"The IP Comm Server IP address (Defaults to {PapercutIPCommConstants.Localhost}).");
+
+                var serverPort = _settingStore.GetOrSet("IPCommServerPort", PapercutIPCommConstants.UiListeningPort,
+                    $"The IP Comm Server listening port (Defaults to {PapercutIPCommConstants.UiListeningPort}).");
+
+                var settings = new EndpointDefinition(serverAddress, serverPort);
+
+                await this._papercutIpCommServer.StartAsync(settings);
             }
             catch (Exception ex)
             {
