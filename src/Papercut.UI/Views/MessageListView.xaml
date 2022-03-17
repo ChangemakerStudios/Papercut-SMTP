@@ -12,6 +12,9 @@
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="200"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
+    <UserControl.Resources>
+        <BitmapImage x:Key="AttachmentIconImageSource" UriSource="./../Resources/attachment-icon.png" />
+    </UserControl.Resources>
     <b:Interaction.Behaviors>
         <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />
     </b:Interaction.Behaviors>
@@ -31,10 +34,25 @@
         </b:Interaction.Behaviors>
         <ListBox.ItemTemplate>
             <DataTemplate>
-                <Grid ToolTip="{Binding File}" Margin="2">
+                <Grid ToolTip="{Binding File}" Margin="2"
+                      Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition
-                            Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
+                            Width="*" />
+                        <ColumnDefinition>
+                            <ColumnDefinition.Style>
+                                <Style TargetType="ColumnDefinition">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasAttachments}" Value="True">
+                                            <Setter Property="ColumnDefinition.Width" Value="50"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding HasAttachments}" Value="False">
+                                            <Setter Property="ColumnDefinition.Width" Value="0"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ColumnDefinition.Style>
+                        </ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
@@ -68,6 +86,15 @@
                         <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding DisplayText}"
                                    TextTrimming="CharacterEllipsis" />
                     </Grid>
+                    <StackPanel 
+                        VerticalAlignment="Center"
+                        Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
+                        <Image
+                            Stretch="None"
+                            Source="{StaticResource AttachmentIconImageSource}"
+                            Visibility="{Binding Path=HasAttachments, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        ></Image>
+                    </StackPanel>
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>
