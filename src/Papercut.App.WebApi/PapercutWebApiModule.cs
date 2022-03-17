@@ -29,6 +29,8 @@ namespace Papercut.App.WebApi
             builder.RegisterType<PapercutWebServer>().As<IPapercutWebServer>()
                 .SingleInstance();
 
+            builder.RegisterType<PapercutHttpServerSettings>().AsSelf().SingleInstance();
+
             builder.RegisterApiControllers(this.ThisAssembly);
         }
     }
