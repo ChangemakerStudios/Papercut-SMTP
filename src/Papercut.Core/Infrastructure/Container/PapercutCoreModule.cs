@@ -62,17 +62,9 @@ namespace Papercut.Core.Infrastructure.Container
                         try
                         {
                             j.Instance.Load();
-                        }
-                        catch
-                        {
-                        }
-                    })
-                .OnRelease(
-                    j =>
-                    {
-                        try
-                        {
-                            j.Save();
+
+                            // immediately save all settings
+                            j.Instance.Save();
                         }
                         catch
                         {
