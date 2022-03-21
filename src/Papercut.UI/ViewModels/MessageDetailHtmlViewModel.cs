@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using Papercut.Infrastructure.WebView;
+
 namespace Papercut.ViewModels
 {
     using System;
@@ -48,15 +50,34 @@ namespace Papercut.ViewModels
     {
         readonly ILogger _logger;
 
+        private readonly WebView2Information _webView2Information;
+
         readonly IHtmlPreviewGenerator _previewGenerator;
 
         private string _htmlFile;
 
-        public MessageDetailHtmlViewModel(ILogger logger, IHtmlPreviewGenerator previewGenerator)
+        private bool _isWebViewInstalled = false;
+
+        public MessageDetailHtmlViewModel(ILogger logger, WebView2Information webView2Information, IHtmlPreviewGenerator previewGenerator)
         {
             this.DisplayName = "Message";
             this._logger = logger;
+            this._webView2Information = webView2Information;
             this._previewGenerator = previewGenerator;
+            this.IsWebViewInstalled = this._webView2Information.IsInstalled;
+        }
+
+        public bool IsWebViewInstalled
+        {
+
+            get => this._isWebViewInstalled;
+
+            set
+            {
+                this._isWebViewInstalled = value;
+                this.NotifyOfPropertyChange(() => this.IsWebViewInstalled);
+                this.NotifyOfPropertyChange(() => this.ShowHtmlView);
+            }
         }
 
         public string HtmlFile
@@ -68,11 +89,11 @@ namespace Papercut.ViewModels
             {
                 this._htmlFile = value;
                 this.NotifyOfPropertyChange(() => this.HtmlFile);
-                this.NotifyOfPropertyChange(() => this.HasHtmlFile);
+                this.NotifyOfPropertyChange(() => this.ShowHtmlView);
             }
         }
 
-        public bool HasHtmlFile => !string.IsNullOrWhiteSpace(this.HtmlFile);
+        public bool ShowHtmlView => !string.IsNullOrWhiteSpace(this.HtmlFile);
 
         public void ShowMessage([NotNull] MimeMessage mailMessageEx)
         {
@@ -148,6 +169,7 @@ namespace Papercut.ViewModels
             {
                 args.Handled = true;
             };
+
         }
 
         private void SetupWebView(CoreWebView2 coreWebView)
