@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using Papercut.Infrastructure.WebView;
+
 namespace Papercut.ViewModels
 {
     using System;
@@ -65,6 +67,8 @@ namespace Papercut.ViewModels
 
         private readonly IUiCommandHub _uiCommandHub;
 
+        private readonly WebView2Information _webView2Information;
+
         readonly UiLogSinkQueue _uiLogSinkQueue;
 
         readonly IViewModelWindowManager _viewModelWindowManager;
@@ -87,10 +91,13 @@ namespace Papercut.ViewModels
 
         string _windowTitle = WindowTitleDefault;
 
+        private bool _isWebViewInstalled;
+
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
             IAppCommandHub appCommandHub,
             IUiCommandHub uiCommandHub,
+            WebView2Information webView2Information,
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
             Func<MessageDetailViewModel> messageDetailViewModelFactory,
@@ -100,6 +107,7 @@ namespace Papercut.ViewModels
             this._viewModelWindowManager = viewModelWindowManager;
             this._appCommandHub = appCommandHub;
             this._uiCommandHub = uiCommandHub;
+            this._webView2Information = webView2Information;
             this._forwardRuleDispatch = forwardRuleDispatch;
 
             this.MessageListViewModel = messageListViewModelFactory();
@@ -111,7 +119,11 @@ namespace Papercut.ViewModels
             this._uiLogSinkQueue = uiLogSinkQueue;
             this._resourceLocator = resourceLocator;
 
-            this.LogText = this._resourceLocator.GetResourceString("LogClientSink.html");
+            this.LogText = webView2Information.IsInstalled
+                ? this._resourceLocator.GetResourceString("LogClientSink.html")
+                : "";
+
+            this.IsWebViewInstalled = this._webView2Information.IsInstalled;
 
             this.SetupObservables();
         }
@@ -119,6 +131,18 @@ namespace Papercut.ViewModels
         public MessageListViewModel MessageListViewModel { get; }
 
         public MessageDetailViewModel MessageDetailViewModel { get; }
+
+        public bool IsWebViewInstalled
+        {
+
+            get => this._isWebViewInstalled;
+
+            set
+            {
+                this._isWebViewInstalled = value;
+                this.NotifyOfPropertyChange(() => this.IsWebViewInstalled);
+            }
+        }
 
         public string LogText
         {
@@ -267,10 +291,23 @@ namespace Papercut.ViewModels
 
             var typedView = view as MainView;
 
-            typedView.LogPanel.CoreWebView2InitializationCompleted += (sender, args) =>
+            if (!this._webView2Information.IsInstalled)
             {
-                this.SetupWebView(typedView.LogPanel);
-            };
+                this.GetPropertyValues(m => m.LogText)
+                    .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
+                    .ObserveOnDispatcher()
+                    .Subscribe(m =>
+                    {
+                        typedView.LogPanelNoWebView.AppendText(m);
+                    });
+            }
+            else
+            {
+                typedView.LogPanel.CoreWebView2InitializationCompleted += (sender, args) =>
+                {
+                    this.SetupWebView(typedView.LogPanel);
+                };
+            }
         }
 
         private void SetupWebView(WebView2Base logPanel)
@@ -294,16 +331,28 @@ namespace Papercut.ViewModels
 
         public IEnumerable<string> RenderLogEventParts(LogEvent e)
         {
-            yield return $@"<div class=""logEntry {e.Level}"">";
-            yield return $@"<span class=""date"">{e.Timestamp:G}</span>";
-            yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
-            yield return e.RenderMessage().Linkify();
-            if (e.Exception != null)
+            if (!this._webView2Information.IsInstalled)
             {
-                yield return $@"<br/><span class=""fatal""><b>Exception:</b> {e.Exception.Message.Linkify()}</span>";
+                yield return $"[{e.Timestamp:G}][\"{e.Level}\"] {e.RenderMessage()}\r";
+                if (e.Exception != null)
+                {
+                    yield return $"Exception:</b> {e.Exception.Message}\r";
+                }
             }
+            else
+            {
+                yield return $@"<div class=""logEntry {e.Level}"">";
+                yield return $@"<span class=""date"">{e.Timestamp:G}</span>";
+                yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
+                yield return e.RenderMessage().Linkify();
+                if (e.Exception != null)
+                {
+                    yield return
+                        $@"<br/><span class=""fatal""><b>Exception:</b> {e.Exception.Message.Linkify()}</span>";
+                }
 
-            yield return @"</div>";
+                yield return @"</div>";
+            }
         }
 
         void SetupObservables()
@@ -341,20 +390,35 @@ namespace Papercut.ViewModels
                                 this.CurrentLogHistory.PopBack();
                             }
 
-                            // required pruning -- go ahead and replace the whole thing
-                            var html = this.GetLogSinkHtml();
-                            var logItems = this.CurrentLogHistory.ToList();
-                            this.LogText = html.Replace(
-                                "<body>",
-                                $"<body>{string.Join("", logItems)}");
+                            if (!this._webView2Information.IsInstalled)
+                            {
+                                var logItems = this.CurrentLogHistory.ToList();
+                                this.LogText = string.Join("", logItems);
+                            }
+                            else
+                            {
+                                // required pruning -- go ahead and replace the whole thing
+                                var html = this.GetLogSinkHtml();
+                                var logItems = this.CurrentLogHistory.ToList();
+                                this.LogText = html.Replace(
+                                    "<body>",
+                                    $"<body>{string.Join("", logItems)}");
+                            }
                         }
                         else
                         {
                             o.Reverse();
 
-                            this.LogText = this.LogText.Replace(
-                                "<body>",
-                                $"<body>{string.Join("", o)}");
+                            if (!this._webView2Information.IsInstalled)
+                            {
+                                this.LogText = string.Join("", o);
+                            }
+                            else
+                            {                                
+                                this.LogText = this.LogText.Replace(
+                                    "<body>",
+                                    $"<body>{string.Join("", o)}");
+                            }
                         }
                     });
 

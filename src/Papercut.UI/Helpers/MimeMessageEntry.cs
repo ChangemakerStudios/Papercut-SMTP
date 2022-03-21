@@ -56,6 +56,7 @@ namespace Papercut.Helpers
                 if (value == _attachmentsCount) return;
                 _attachmentsCount = value;
                 OnPropertyChanged(nameof(AttachmentsCount));
+                OnPropertyChanged(nameof(HasAttachments));
             }
         }
 
@@ -79,6 +80,11 @@ namespace Papercut.Helpers
                 _subject = value;
                 OnPropertyChanged(nameof(Subject));
             }
+        }
+
+        public bool HasAttachments
+        {
+            get => this.AttachmentsCount > 0;
         }
     }
 }

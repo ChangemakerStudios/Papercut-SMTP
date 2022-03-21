@@ -205,7 +205,7 @@
     <Compile Include="Helpers\EventHandlerHelpers.cs" />
     <Compile Include="Helpers\HtmlPreviewVisitor.cs" />
     <Compile Include="Helpers\IViewModelWindowManager.cs" />
-    <Compile Include="AppLayer\LogSinks\UiLogSinkQueue.cs" />
+    <Compile Include="AppLayer\Logging\UiLogSinkQueue.cs" />
     <Compile Include="Helpers\MailMessageHelper.cs" />
     <Compile Include="Helpers\MimeMessageEntry.cs" />
     <Compile Include="Helpers\NotifyPropertyChangeReactiveExtensions.cs" />
@@ -217,6 +217,8 @@
     <Compile Include="Helpers\WireupLogBridge.cs" />
     <Compile Include="Helpers\WPFValueConverters.cs" />
     <Compile Include="Infrastructure\LifecycleHooks\LifecycleHookHelpers.cs" />
+    <Compile Include="Infrastructure\WebView\WebView2InformationReporter.cs" />
+    <Compile Include="Infrastructure\WebView\WebView2Information.cs" />
     <Compile Include="Properties\UIStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -691,6 +693,9 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\attachment-icon.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
