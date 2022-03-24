@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <ApplicationIcon>Papercut-Service-icon.ico</ApplicationIcon>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <OutputType>Exe</OutputType>
     <StartupObject />
     <DependsOnNETStandard>false</DependsOnNETStandard>
