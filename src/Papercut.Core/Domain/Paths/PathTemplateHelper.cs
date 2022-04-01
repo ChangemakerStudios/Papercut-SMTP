@@ -61,19 +61,25 @@ namespace Papercut.Core.Domain.Paths
                     .OfType<Match>()
                     .Select(s => s.Groups["name"].Value);
 
-            string renderedPath = pathTemplate;
+            string renderedPath = pathTemplate.Trim();
+
+            bool isUncPath = renderedPath.StartsWith(@"\\");
+
+            if (isUncPath)
+            {
+                // remove \\ from start of path
+                renderedPath = renderedPath.Substring(2, renderedPath.Length - 2);
+            }
 
             foreach (string pathKeyName in pathKeys)
             {
                 if (_templateDictionary.TryGetValue(pathKeyName, out var path))
                 {
-                    renderedPath =
-                        renderedPath.Replace($"%{pathKeyName}%", path)
-                            .Replace(@"\\", @"\");
+                    renderedPath = renderedPath.Replace($"%{pathKeyName}%", path).Replace(@"\\", @"\");
                 }
             }
 
-            return renderedPath;
+            return isUncPath ? $@"\\{renderedPath}" : renderedPath;
         }
     }
 }
