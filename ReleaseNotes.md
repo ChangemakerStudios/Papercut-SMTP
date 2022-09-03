@@ -1,6 +1,6 @@
 # Release Notes
 
-## Papercut SMTP v6.2.0 [2022-09-03]
+## Papercut SMTP v6.2.0 [2022-04-24]
 
 - Upgraded to .NET Framework v4.8 (PR thanks to [1Jesper1](https://github.com/1Jesper1))
 - Service doesn't overwrite settings on exit anymore.
