@@ -1,5 +1,16 @@
 # Release Notes
 
+## Papercut SMTP v6.2.0 [2022-09-03]
+
+- Upgraded to .NET Framework v4.8 (PR thanks to [1Jesper1](https://github.com/1Jesper1))
+- Service doesn't overwrite settings on exit anymore.
+- Simplified HTTP binding setting for Service. Basically, "http://0.0.0.0" for "all" binding works again.
+- Added Attachment Icon (PR thanks to [Cload](https://github.com/Cload)
+- Added graceful fall-back support and error message if WebView2 isn't properly installed.
+- Fix for checking registry key for installing edge webview2 & version fixes (PR thanks to [1Jesper1](https://github.com/1Jesper1))
+
+Thank you all for your feedback and assistance with this release!
+
 ## Papercut SMTP v6.0.0 [2021-11-14]
 
 _NOTE: Papercut SMTP now requires that Microsoft Edge WebView2 be installed. Papercut SMTP will automatically run the installation dependency if WebView2 is not available._
