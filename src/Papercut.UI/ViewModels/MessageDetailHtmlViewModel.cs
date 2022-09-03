@@ -157,6 +157,11 @@ namespace Papercut.ViewModels
                                                     : Visibility.Collapsed;
             }
 
+            if (!typedView.IsEnabled)
+            {
+                typedView.htmlView.Visibility = Visibility.Collapsed;
+            }
+
             Observable.FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
                     a => (s, e) => a(e),
                     h => typedView.IsEnabledChanged += h,
