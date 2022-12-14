@@ -21,6 +21,7 @@ namespace Papercut.Infrastructure.WebView
     using System;
     using System.IO;
     using System.Reflection;
+    using System.Runtime.InteropServices;
 
     using Autofac;
 
@@ -45,7 +46,7 @@ namespace Papercut.Infrastructure.WebView
 
         static WebView2Information()
         {
-            var loaderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "", @"runtimes\win-x64\native");
+            var loaderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "", $@"runtimes\win-{RuntimeInformation.ProcessArchitecture}\native");
 
             Log.Information("Setting WebView2 Loader Path to {LoaderPath}", loaderPath);
 
