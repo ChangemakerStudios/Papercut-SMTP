@@ -57,10 +57,10 @@ namespace Papercut.AppLayer.Themes
             return Task.CompletedTask;
         }
 
-        public AppLifecycleActionResultType OnPreStart()
+        public Task<AppLifecycleActionResultType> OnPreStart()
         {
             this.SetTheme();
-            return AppLifecycleActionResultType.Continue;
+            return Task.FromResult(AppLifecycleActionResultType.Continue);
         }
 
         private void SetTheme()

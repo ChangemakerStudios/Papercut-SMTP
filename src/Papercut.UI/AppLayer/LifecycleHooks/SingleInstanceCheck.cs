@@ -52,7 +52,7 @@ namespace Papercut.AppLayer.LifecycleHooks
             GC.SuppressFinalize(this);
         }
 
-        public AppLifecycleActionResultType OnPreStart()
+        public async Task<AppLifecycleActionResultType> OnPreStart()
         {
             // papercut is not already running...
             if (this._appMutex.WaitOne(0, false)) return AppLifecycleActionResultType.Continue;
@@ -60,9 +60,8 @@ namespace Papercut.AppLayer.LifecycleHooks
             this.Logger.Debug("Second process run. Shutting this process down and pushing show event to other process");
 
             // papercut is already running, push event to other UI process
-            //Task.Run(
-            //    () => this._ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI)
-            //        .PublishEventServer(new ShowMainWindowCommand())).RunSynchronously();
+            await this._ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI)
+                .PublishEventServer(new ShowMainWindowCommand(), TimeSpan.FromSeconds(5));
 
             // no need to go further
             return AppLifecycleActionResultType.Cancel;

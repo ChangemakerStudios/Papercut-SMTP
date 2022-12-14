@@ -73,11 +73,11 @@ namespace Papercut.AppLayer.Rules
             }
         }
 
-        public AppLifecycleActionResultType OnPreExit()
+        public Task<AppLifecycleActionResultType> OnPreExit()
         {
             this.Save();
 
-            return AppLifecycleActionResultType.Continue;
+            return Task.FromResult(AppLifecycleActionResultType.Continue);
         }
 
         public async Task OnStartedAsync()

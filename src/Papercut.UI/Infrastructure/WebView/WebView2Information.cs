@@ -16,16 +16,20 @@
 // limitations under the License.
 
 
-using System;
-
-using Autofac;
-
-using Microsoft.Web.WebView2.Core;
-
-using Papercut.Core.Annotations;
-
 namespace Papercut.Infrastructure.WebView
 {
+    using System;
+    using System.IO;
+    using System.Reflection;
+
+    using Autofac;
+
+    using Microsoft.Web.WebView2.Core;
+
+    using Papercut.Core.Annotations;
+
+    using Serilog;
+
     public enum WebView2InstallType
     {
         WebView2, EdgeChromiumBeta, EdgeChromiumCanary, EdgeChromiumDev, NotInstalled
@@ -37,28 +41,63 @@ namespace Papercut.Infrastructure.WebView
     /// </summary>
     public class WebView2Information
     {
-        public WebView2Information()
+        #region Constructors and Destructors
+
+        static WebView2Information()
         {
-            this.Version = GetWebView2Version();
-            this.InstallType = GetInstallType(this.Version);
+            var loaderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "", @"runtimes\win-x64\native");
+
+            Log.Information("Setting WebView2 Loader Path to {LoaderPath}", loaderPath);
+
+            try
+            {
+                CoreWebView2Environment.SetLoaderDllFolderPath(loaderPath);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failure Settings WebView2 Loader Path");
+            }
         }
 
-        public string Version { get; }
+        public WebView2Information()
+        {
+            this.Version = this.GetWebView2Version();
+            this.InstallType = this.GetInstallType(this.Version);
+        }
+
+        #endregion
+
+        #region Public Properties
 
         public WebView2InstallType InstallType { get; }
 
-        public bool IsInstalled => InstallType != WebView2InstallType.NotInstalled;
+        public bool IsInstalled => this.InstallType != WebView2InstallType.NotInstalled;
 
-        private static string GetWebView2Version()
+        public string Version { get; }
+
+        public Exception WebView2LoadException { get; private set; }
+
+        #endregion
+
+        #region Methods
+
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
         {
-            try
-            {
-                return CoreWebView2Environment.GetAvailableBrowserVersionString();
-            }
-            catch (Exception) { return ""; }
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<WebView2Information>().AsSelf().SingleInstance();
         }
 
-        private static WebView2InstallType GetInstallType(string version)
+        #endregion
+
+        private WebView2InstallType GetInstallType(string version)
         {
             if (string.IsNullOrWhiteSpace(version))
             {
@@ -73,22 +112,21 @@ namespace Papercut.Infrastructure.WebView
 
             if (version.Contains("canary"))
                 return WebView2InstallType.EdgeChromiumCanary;
-            
+
             return WebView2InstallType.WebView2;
         }
 
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        private string GetWebView2Version()
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-
-            builder.RegisterType<WebView2Information>().AsSelf().SingleInstance();
+            try
+            {
+                return CoreWebView2Environment.GetAvailableBrowserVersionString();
+            }
+            catch (Exception ex)
+            {
+                this.WebView2LoadException = ex;
+                return "";
+            }
         }
 
         #endregion

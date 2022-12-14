@@ -18,8 +18,10 @@
 
 namespace Papercut.Domain.LifecycleHooks
 {
+    using System.Threading.Tasks;
+
     public interface IAppLifecyclePreStart : IAppLifecycleHook
     {
-        AppLifecycleActionResultType OnPreStart();
+        Task<AppLifecycleActionResultType> OnPreStart();
     }
 }

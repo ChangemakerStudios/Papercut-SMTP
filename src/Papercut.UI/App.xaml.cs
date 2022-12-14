@@ -57,44 +57,19 @@ namespace Papercut
 
         public ILifetimeScope Container => this._lifetimeScope.Value;
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            try
-            {
-                // run prestart
-                if (this.Container.RunPreStart() == AppLifecycleActionResultType.Cancel)
-                {
-                    this.Shutdown();
-                    return;
-                }
-
-                base.OnStartup(e);
-
-                // startup the application
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        await this.Container.RunStartedAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error(ex, "Startup Error");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Fatal(ex, "Fatal Error Starting Papercut");
-            }
-        }
-
         protected override void OnExit(ExitEventArgs e)
         {
             Debug.WriteLine("App.OnExit()");
 
             // run pre-exit
-            if (this.Container.RunPreExit() == AppLifecycleActionResultType.Cancel)
+            AppLifecycleActionResultType runPreExit = AppLifecycleActionResultType.Continue;
+            
+            Task.Run(async () =>
+            {
+                runPreExit = await this.Container.RunPreExit();
+            }).Wait();
+
+            if (runPreExit == AppLifecycleActionResultType.Cancel)
             {
                 // cancel exit
                 return;

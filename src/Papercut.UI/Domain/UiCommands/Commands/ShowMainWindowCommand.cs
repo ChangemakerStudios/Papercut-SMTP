@@ -19,7 +19,7 @@ namespace Papercut.Domain.UiCommands.Commands
 {
     using Papercut.Common.Domain;
 
-    public class ShowMainWindowCommand : ICommand
+    public class ShowMainWindowCommand : IEvent
     {
         public ShowMainWindowCommand(bool selectMostRecentMessage = false)
         {

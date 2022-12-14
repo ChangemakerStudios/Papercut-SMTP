@@ -218,7 +218,7 @@
     <Compile Include="Helpers\WireupLogBridge.cs" />
     <Compile Include="Helpers\WPFValueConverters.cs" />
     <Compile Include="Infrastructure\LifecycleHooks\LifecycleHookHelpers.cs" />
-    <Compile Include="Infrastructure\WebView\WebView2InformationReporter.cs" />
+    <Compile Include="Infrastructure\WebView\WebView2Reporter.cs" />
     <Compile Include="Infrastructure\WebView\WebView2Information.cs" />
     <Compile Include="Properties\UIStrings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -640,36 +640,36 @@
       <Version>1.0.0</Version>
     </PackageReference>
     <PackageReference Include="Autofac">
-      <Version>6.2.0</Version>
+      <Version>6.5.0</Version>
     </PackageReference>
     <PackageReference Include="AvalonEdit">
-      <Version>6.1.2.30</Version>
+      <Version>6.2.0.78</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
-      <Version>4.0.173</Version>
+      <Version>4.0.212</Version>
     </PackageReference>
     <PackageReference Include="Costura.Fody">
-      <Version>5.3.0</Version>
+      <Version>5.7.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Extended.Wpf.Toolkit">
-      <Version>4.1.0</Version>
+      <Version>4.5.0</Version>
     </PackageReference>
     <PackageReference Include="MahApps.Metro">
-      <Version>2.4.7</Version>
+      <Version>2.4.9</Version>
     </PackageReference>
     <PackageReference Include="MahApps.Metro.IconPacks.Material">
-      <Version>4.8.0</Version>
+      <Version>4.11.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2">
-      <Version>1.0.864.35</Version>
+      <Version>1.0.1462.37</Version>
     </PackageReference>
     <PackageReference Include="MimeKit">
-      <Version>2.13.0</Version>
+      <Version>3.4.3</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>2.10.0</Version>
+      <Version>2.12.0</Version>
     </PackageReference>
     <PackageReference Include="Serilog.Sinks.Observable">
       <Version>2.0.2</Version>

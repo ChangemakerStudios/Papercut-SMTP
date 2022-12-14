@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2022 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,17 +20,22 @@ namespace Papercut.AppLayer.UiCommands
 {
     using System;
     using System.Reactive.Subjects;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
 
     using Autofac;
     using Autofac.Util;
 
+    using Papercut.Common.Domain;
     using Papercut.Core.Annotations;
     using Papercut.Domain.UiCommands;
     using Papercut.Domain.UiCommands.Commands;
 
-    public class UiCommandHub : Disposable, IUiCommandHub
+    public class UiCommandHub : Disposable, IUiCommandHub, IEventHandler<ShowMainWindowCommand>
     {
+        #region Fields
+
         private readonly Subject<ShowBalloonTipCommand> _onShowBalloonTip = new Subject<ShowBalloonTipCommand>();
 
         private readonly Subject<ShowMainWindowCommand> _onShowMainWindow = new Subject<ShowMainWindowCommand>();
@@ -39,13 +44,37 @@ namespace Papercut.AppLayer.UiCommands
 
         private readonly Subject<ShowOptionWindowCommand> _onShowOptionWindow = new Subject<ShowOptionWindowCommand>();
 
+        #endregion
+
+        #region Public Properties
+
         public IObservable<ShowBalloonTipCommand> OnShowBalloonTip => this._onShowBalloonTip;
 
-        public IObservable<ShowOptionWindowCommand> OnShowOptionWindow => this._onShowOptionWindow;
+        public IObservable<ShowMainWindowCommand> OnShowMainWindow => this._onShowMainWindow;
 
         public IObservable<ShowMessageCommand> OnShowMessage => this._onShowMessage;
 
-        public IObservable<ShowMainWindowCommand> OnShowMainWindow => this._onShowMainWindow;
+        public IObservable<ShowOptionWindowCommand> OnShowOptionWindow => this._onShowOptionWindow;
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        public Task HandleAsync(ShowMainWindowCommand @event, CancellationToken token = default)
+        {
+            this._onShowMainWindow.OnNext(@event);
+
+            return Task.CompletedTask;
+        }
+
+        public void ShowBalloonTip(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon)
+        {
+            if (Properties.Settings.Default.ShowNotifications)
+            {
+                var command = new ShowBalloonTipCommand(timeout, tipTitle, tipText, toolTipIcon);
+                this._onShowBalloonTip.OnNext(command);
+            }
+        }
 
         public void ShowMainWindow(bool selectMostRecentMessage = false)
         {
@@ -66,14 +95,9 @@ namespace Papercut.AppLayer.UiCommands
             this._onShowOptionWindow.OnNext(command);
         }
 
-        public void ShowBalloonTip(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon)
-        {
-            if (Papercut.Properties.Settings.Default.ShowNotifications)
-            {
-                var command = new ShowBalloonTipCommand(timeout, tipTitle, tipText, toolTipIcon);
-                this._onShowBalloonTip.OnNext(command);
-            }
-        }
+        #endregion
+
+        #region Methods
 
         protected override void Dispose(bool disposing)
         {
@@ -97,8 +121,10 @@ namespace Papercut.AppLayer.UiCommands
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<UiCommandHub>().As<IUiCommandHub>().SingleInstance();
+            builder.RegisterType<UiCommandHub>().As<IUiCommandHub>().As<IEventHandler<ShowMainWindowCommand>>().SingleInstance();
         }
+
+        #endregion
 
         #endregion
     }

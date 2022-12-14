@@ -21,36 +21,43 @@ using System;
 using Autofac;
 
 using Papercut.Core.Annotations;
-
 using Serilog;
 
 namespace Papercut.Infrastructure.WebView
 {
-    public class WebView2InformationReporter : IStartable
+    using System.IO;
+
+    using Microsoft.Web.WebView2.Core;
+    using Papercut.Helpers;
+    using System.Reflection;
+
+    public class WebView2Reporter : IStartable
     {
         private readonly Lazy<ILogger> _logger;
 
         private readonly WebView2Information _webView2Information;
 
-        public WebView2InformationReporter(WebView2Information webView2Information, Lazy<ILogger> logger)
+        protected ILogger Logger => this._logger.Value;
+
+        public WebView2Reporter(Lazy<ILogger> logger, WebView2Information webView2Information)
         {
-            this._webView2Information = webView2Information;
             this._logger = logger;
+            this._webView2Information = webView2Information;
         }
 
         public void Start()
         {
-            if (this._webView2Information.IsInstalled)
+            if (!_webView2Information.IsInstalled)
             {
-                this._logger.Value.Error(
-                    "Required Component 'WebView2' is NOT installed. Visit this url to download: https://go.microsoft.com/fwlink/p/?LinkId=2124703");
+                this.Logger.Error(_webView2Information.WebView2LoadException,
+                    "Failure Loading 'WebView2' or Required Component 'WebView2' is not installed. Visit this URL to download: https://go.microsoft.com/fwlink/p/?LinkId=2124703");
             }
             else
             {
-                this._logger.Value.Information(
+                this.Logger.Information(
                     "WebView2 Installed Version {WebView2:l} {WebView2InstallType}",
-                    this._webView2Information.Version,
-                    this._webView2Information.InstallType);
+                    _webView2Information.Version,
+                    _webView2Information.InstallType);
             }
         }
 
@@ -65,7 +72,7 @@ namespace Papercut.Infrastructure.WebView
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.RegisterType<WebView2InformationReporter>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<WebView2Reporter>().AsImplementedInterfaces().SingleInstance();
         }
 
         #endregion

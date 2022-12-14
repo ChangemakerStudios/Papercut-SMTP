@@ -18,6 +18,8 @@
 
 namespace Papercut.Helpers
 {
+    using System;
+    using System.IO;
     using System.Reflection;
     using System.Runtime.InteropServices;
 
@@ -25,6 +27,7 @@ namespace Papercut.Helpers
     using Microsoft.Web.WebView2.Wpf;
 
     using Papercut.Core.Domain.Paths;
+    using Papercut.Infrastructure.WebView;
     using Papercut.Properties;
 
     using Serilog;
@@ -35,10 +38,10 @@ namespace Papercut.Helpers
         {
             var webViewUserDataFolder = PathTemplateHelper.RenderPathTemplate(Settings.Default.WebView2UserFolder);
 
-            Log.Information("Setting WebView2 User Data Folder: {UserDataFolder}", webViewUserDataFolder);
-
             this.CreationProperties = new CoreWebView2CreationProperties()
                 { UserDataFolder = webViewUserDataFolder };
+
+            Log.Information("Setting WebView2 User Data Folder: {UserDataFolder}", webViewUserDataFolder);
         }
 
         protected override void DestroyWindowCore(HandleRef hwnd)

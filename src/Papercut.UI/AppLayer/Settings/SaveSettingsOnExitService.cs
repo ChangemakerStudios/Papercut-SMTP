@@ -19,6 +19,7 @@
 namespace Papercut.AppLayer.Settings
 {
     using System;
+    using System.Threading.Tasks;
 
     using Autofac;
 
@@ -37,7 +38,7 @@ namespace Papercut.AppLayer.Settings
             this._logger = logger;
         }
 
-        public AppLifecycleActionResultType OnPreExit()
+        public Task<AppLifecycleActionResultType> OnPreExit()
         {
             try
             {
@@ -58,7 +59,7 @@ namespace Papercut.AppLayer.Settings
                 this._logger.Error(ex, "Failure Saving Settings File");
             }
 
-            return AppLifecycleActionResultType.Continue;
+            return Task.FromResult(AppLifecycleActionResultType.Continue);
         }
 
         #region Begin Static Container Registrations

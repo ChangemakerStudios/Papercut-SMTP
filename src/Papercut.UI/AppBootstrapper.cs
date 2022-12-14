@@ -31,6 +31,10 @@ namespace Papercut
 
     using Papercut.Core.Annotations;
     using Papercut.ViewModels;
+    using Serilog;
+
+    using Papercut.Infrastructure.LifecycleHooks;
+    using Papercut.Domain.LifecycleHooks;
 
     public class AppBootstrapper : BootstrapperBase
     {
@@ -41,12 +45,29 @@ namespace Papercut
             Initialize();
         }
 
-        protected IComponentContext Container => _lifetimeScope.Value;
+        protected ILifetimeScope Container => _lifetimeScope.Value;
 
-        protected override void OnStartup(object sender, StartupEventArgs e)
+        protected override async void OnStartup(object sender, StartupEventArgs e)
         {
-            base.OnStartup(sender, e);
-            DisplayRootViewFor<MainViewModel>();
+            try
+            {
+                // run prestart
+                if (await this.Container.RunPreStart() == AppLifecycleActionResultType.Cancel)
+                {
+                    Application.Shutdown();
+                    return;
+                }
+
+                base.OnStartup(sender, e);
+
+                await DisplayRootViewForAsync(typeof(MainViewModel));
+
+                await this.Container.RunStarted();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Fatal Error Starting Papercut");
+            }
         }
 
         protected override void Configure()
@@ -72,19 +93,17 @@ namespace Papercut
                     .MakeGenericType(service)) as IEnumerable<object>;
         }
 
-        protected override object GetInstance([NotNull] Type service, string named = null)
+        protected override object GetInstance([NotNull] Type service, string named)
         {
             if (service == null) throw new ArgumentNullException(nameof(service));
 
             if (string.IsNullOrWhiteSpace(named))
             {
-                object result;
-                if (Container.TryResolve(service, out result)) return result;
+                if (Container.TryResolve(service, out var result)) return result;
             }
             else
             {
-                object result;
-                if (Container.TryResolveNamed(named, service, out result)) return result;
+                if (Container.TryResolveNamed(named, service, out var result)) return result;
             }
 
             throw new InstanceNotFoundException($"Could not locate any instances of contract {named ?? service.Name}.");

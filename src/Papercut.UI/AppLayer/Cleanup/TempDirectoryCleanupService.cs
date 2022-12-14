@@ -19,6 +19,7 @@ namespace Papercut.AppLayer.Cleanup
 {
     using System;
     using System.IO;
+    using System.Threading.Tasks;
 
     using Autofac;
 
@@ -75,12 +76,12 @@ namespace Papercut.AppLayer.Cleanup
                 this._logger.Information("Deleted {DeleteCount} temporary directories", deleteCount);
         }
 
-        public AppLifecycleActionResultType OnPreExit()
+        public Task<AppLifecycleActionResultType> OnPreExit()
         {
             // time for temp file cleanup
             this.TryCleanUpTempDirectories();
 
-            return AppLifecycleActionResultType.Continue;
+            return Task.FromResult(AppLifecycleActionResultType.Continue);
         }
 
         #region Begin Static Container Registrations

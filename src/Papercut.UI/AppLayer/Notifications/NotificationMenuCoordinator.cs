@@ -63,11 +63,11 @@ namespace Papercut.AppLayer.Notifications
             this.InitObservables();
         }
 
-        public AppLifecycleActionResultType OnPreExit()
+        public Task<AppLifecycleActionResultType> OnPreExit()
         {
             this.Reset();
 
-            return AppLifecycleActionResultType.Continue;
+            return Task.FromResult(AppLifecycleActionResultType.Continue);
         }
 
         void InitObservables()
