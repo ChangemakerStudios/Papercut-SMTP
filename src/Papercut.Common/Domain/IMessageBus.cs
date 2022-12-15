@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2022 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,13 @@ namespace Papercut.Common.Domain
 
     public interface IMessageBus
     {
+        #region Public Methods and Operators
+
+        Task<ExecutionResult> ExecuteAsync<T>(T @command, CancellationToken token = default)
+            where T : ICommand;
+
         Task PublishAsync<T>(T @event, CancellationToken token = default) where T : IEvent;
+
+        #endregion
     }
 }

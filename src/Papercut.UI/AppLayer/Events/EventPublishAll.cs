@@ -50,15 +50,15 @@ namespace Papercut.AppLayer.Events
             await this._eventAggregator.PublishOnUIThreadAsync(eventObject, token);
         }
 
-        protected override Task ExecuteEvent<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
+        protected override Task HandleAsync<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
         {
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            Execute.BeginOnUIThread(async () =>
+            async void InnerHandle()
             {
                 try
                 {
-                    await base.ExecuteEvent(eventObject, @event, token);
+                    await base.HandleAsync(eventObject, @event, token);
 
                     taskCompletionSource.SetResult(true);
                 }
@@ -70,7 +70,9 @@ namespace Papercut.AppLayer.Events
                 {
                     taskCompletionSource.SetException(ex);
                 }
-            });
+            }
+
+            Execute.BeginOnUIThread(InnerHandle);
 
             return taskCompletionSource.Task;
         }

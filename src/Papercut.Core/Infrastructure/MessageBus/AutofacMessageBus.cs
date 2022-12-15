@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2022 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ namespace Papercut.Core.Infrastructure.MessageBus
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -33,11 +32,33 @@ namespace Papercut.Core.Infrastructure.MessageBus
 
     public class AutofacMessageBus : IMessageBus
     {
+        #region Fields
+
         readonly ILifetimeScope _lifetimeScope;
+
+        #endregion
+
+        #region Constructors and Destructors
 
         public AutofacMessageBus(ILifetimeScope lifetimeScope)
         {
             this._lifetimeScope = lifetimeScope;
+        }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        public virtual async Task<ExecutionResult> ExecuteAsync<T>(T commandObject, CancellationToken token) where T : ICommand
+        {
+            var commandHandler = this._lifetimeScope.Resolve<ICommandHandler<T>>();
+
+            if (commandHandler != null)
+            {
+                return await commandHandler.ExecuteAsync(commandObject, token);
+            }
+
+            return ExecutionResult.Failure($"No Command Handler for {typeof(T)}");
         }
 
         public virtual async Task PublishAsync<T>(T eventObject, CancellationToken token) where T : IEvent
@@ -46,7 +67,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
             {
                 try
                 {
-                    await this.ExecuteEvent(eventObject, @event, token);
+                    await this.HandleAsync(eventObject, @event, token);
                 }
                 catch (Exception ex)
                 {
@@ -59,10 +80,16 @@ namespace Papercut.Core.Infrastructure.MessageBus
             }
         }
 
-        protected virtual async Task ExecuteEvent<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
+        #endregion
+
+        #region Methods
+
+        protected virtual async Task HandleAsync<T>(T eventObject, IEventHandler<T> handler, CancellationToken token)
             where T : IEvent
         {
-            await @event.HandleAsync(eventObject, token);
+            await handler.HandleAsync(eventObject, token);
         }
+
+        #endregion
     }
 }
