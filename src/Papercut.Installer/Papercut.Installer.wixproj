@@ -27,9 +27,9 @@
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WixToolset.Firewall.wixext" Version="4.0.0-preview.1" />
-    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.0-preview.1" />
-    <PackageReference Include="WixToolset.Util.wixext" Version="4.0.0-preview.1" />
+    <PackageReference Include="WixToolset.Firewall.wixext" Version="4.0.0-rc.1" />
+    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.0-rc.1" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="4.0.0-rc.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources" />
