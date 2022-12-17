@@ -1,0 +1,11 @@
+[12/16/2022 23:35:50.295]: Converting project file Papercut.Installer.wixproj...
+[12/16/2022 23:35:50.787]: Warning: Did not find any valid version of package 'WixToolset.Firewall.wixext' on NuGet package source 'https://api.nuget.org/v3/index.json'. Using default version 4.0.0-preview.1.
+[12/16/2022 23:35:50.914]: Warning: Did not find any valid version of package 'WixToolset.UI.wixext' on NuGet package source 'https://api.nuget.org/v3/index.json'. Using default version 4.0.0-preview.1.
+[12/16/2022 23:35:50.992]: Warning: Did not find any valid version of package 'WixToolset.Util.wixext' on NuGet package source 'https://api.nuget.org/v3/index.json'. Using default version 4.0.0-preview.1.
+[12/16/2022 23:35:51.154]: Warning: Did not find any valid version of package 'WixToolset.Sdk' on NuGet package source 'https://api.nuget.org/v3/index.json'. Using default version 4.0.0-preview.1.
+[12/16/2022 23:35:51.160]: Converting file: C:\Projects\Papercut-SMTP\src\Papercut.Installer\PapercutVars.wxi...
+[12/16/2022 23:35:51.174]: C:\Projects\Papercut-SMTP\src\Papercut.Installer\PapercutVars.wxi : information WIX0005: [Converted] This file contains an XML declaration on the first line. (DeclarationPresent)
+[12/16/2022 23:35:51.174]: C:\Projects\Papercut-SMTP\src\Papercut.Installer\PapercutVars.wxi(1) : information WIX0008: [Converted] The xmlns attribute is missing.  It must be present with a value of 'http://wixtoolset.org/schemas/v4/wxs'. (XmlnsMissing)
+[12/16/2022 23:35:51.178]: ---- Project Papercut.Installer: Converted 1 files.
+[12/16/2022 23:35:51.178]: ---- Total time: 00.890
+[12/16/2022 23:35:51.178]: ========== Import complete:  0 errors, 4 warnings

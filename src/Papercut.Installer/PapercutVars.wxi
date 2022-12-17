@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Include>
+﻿<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?define Company="Changemaker Studios" ?>
   <?define ProductName="Papercut SMTP" ?>
 
@@ -17,7 +16,7 @@
     <?define EdgeRegistryKeyOne = "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" ?>
     <?define EdgeRegistryKeyTwo = "SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" ?>
     <?define UpgradeCode="74DA413C-2E60-4151-9E56-AD3CC6320F7C" ?>
-  <?else ?>
+  <?else?>
     <?define Win64 = "no" ?>
     <?define PlatformPath = "x86" ?>
     <?define PlatformFolder = "win-x86" ?>
@@ -25,7 +24,7 @@
     <?define EdgeRegistryKeyOne = "SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" ?>
     <?define EdgeRegistryKeyTwo = "SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" ?>
     <?define UpgradeCode="74DA413C-2E60-4151-9E56-AD3CC6320F7D" ?>
-  <?endif ?>
+  <?endif?>
 
   <?define AppBinPath="..\Papercut.UI\bin\$(var.PlatformPath)\$(var.Configuration)\" ?>
   <?define SrvBinPath="..\Papercut.Service\bin\$(var.Configuration)\" ?>

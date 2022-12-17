@@ -1,0 +1,18 @@
+[12/16/2022 23:46:11.163]: Converting project file Papercut.Bootstrapper.wixproj...
+[12/16/2022 23:46:11.647]: Warning: Did not find any valid version of package 'WixToolset.Util.wixext' on NuGet package source 'https://api.nuget.org/v3/index.json'. Using default version 4.0.0-rc.1.
+[12/16/2022 23:46:11.719]: Warning: Did not find any valid version of package 'WixToolset.NetFx.wixext' on NuGet package source 'https://api.nuget.org/v3/index.json'. Using default version 4.0.0-rc.1.
+[12/16/2022 23:46:11.857]: Warning: Did not find any valid version of package 'WixToolset.Bal.wixext' on NuGet package source 'https://api.nuget.org/v3/index.json'. Using default version 4.0.0-rc.1.
+[12/16/2022 23:46:11.936]: Warning: Did not find any valid version of package 'WixToolset.Sdk' on NuGet package source 'https://api.nuget.org/v3/index.json'. Using default version 4.0.0-rc.1.
+[12/16/2022 23:46:11.945]: Converting file: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\Bundle.wxs...
+[12/16/2022 23:46:11.966]: *** ERROR ***: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\Bundle.wxs(24) : error WIX0034: The DisplayInternalUI functionality has fundamentally changed and requires BootstrapperApplication support. (DisplayInternalUiNotConvertable)
+[12/16/2022 23:46:11.966]: Converting file: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\NetFx48.wxs...
+[12/16/2022 23:46:11.967]: *** ERROR ***: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\NetFx48.wxs(25) : error WIX0069: The magic WixVariable 'WixMbaPrereqPackageId' has been removed. Add bal:PrereqPackage="yes" to the target package instead. (WixMbaPrereqPackageIdDeprecated)
+[12/16/2022 23:46:11.967]: *** ERROR ***: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\NetFx48.wxs(41) : error WIX0069: The magic WixVariable 'WixMbaPrereqPackageId' has been removed. Add bal:PrereqPackage="yes" to the target package instead. (WixMbaPrereqPackageIdDeprecated)
+[12/16/2022 23:46:11.967]: *** ERROR ***: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\NetFx48.wxs(26) : error WIX0068: The magic WixVariable 'WixMbaPrereqLicenseUrl' has been removed. Add bal:PrereqLicenseUrl="yes" to a prereq package instead. (WixMbaPrereqLicenseUrlDeprecated)
+[12/16/2022 23:46:11.967]: *** ERROR ***: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\NetFx48.wxs(42) : error WIX0068: The magic WixVariable 'WixMbaPrereqLicenseUrl' has been removed. Add bal:PrereqLicenseUrl="yes" to a prereq package instead. (WixMbaPrereqLicenseUrlDeprecated)
+[12/16/2022 23:46:11.967]: Converting file: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\PapercutVars.wxi...
+[12/16/2022 23:46:11.968]: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\PapercutVars.wxi : information WIX0005: [Converted] This file contains an XML declaration on the first line. (DeclarationPresent)
+[12/16/2022 23:46:11.968]: C:\Projects\Papercut-SMTP\src\Papercut.Bootstrapper\PapercutVars.wxi(1) : information WIX0008: [Converted] The xmlns attribute is missing. It must be present with a value of 'http://wixtoolset.org/schemas/v4/wxs'. (XmlnsMissing)
+[12/16/2022 23:46:11.975]: ---- Project Papercut.Bootstrapper: Converted 3 files.
+[12/16/2022 23:46:11.975]: ---- Total time: 00.820
+[12/16/2022 23:46:11.975]: ========== Import complete:  5 errors, 4 warnings
