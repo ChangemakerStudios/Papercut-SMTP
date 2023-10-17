@@ -123,6 +123,7 @@ namespace Papercut.AppLayer.Notifications
             this._notification.BalloonTipClicked +=
                 (sender, args) => this._uiCommandHub.ShowMainWindow(true);
 
+            // TODO MenuItem is no longer supported. Use ToolStripMenuItem instead. For more details see https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
             var options = new MenuItem(
                 "Options",
                 (sender, args) => this._uiCommandHub.ShowOptionWindow())
@@ -130,6 +131,7 @@ namespace Papercut.AppLayer.Notifications
                 DefaultItem = false,
             };
 
+            // TODO MenuItem is no longer supported. Use ToolStripMenuItem instead. For more details see https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
             var menuItems = new[]
             {
                 new MenuItem(
@@ -144,6 +146,7 @@ namespace Papercut.AppLayer.Notifications
                     (sender, args) => this._appCommandHub.Shutdown())
             };
 
+            // TODO ContextMenu is no longer supported. Use ContextMenuStrip instead. For more details see https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
             this._notification.ContextMenu = new ContextMenu(menuItems);
         }
 

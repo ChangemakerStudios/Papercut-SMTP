@@ -18,6 +18,7 @@
 namespace Papercut.Service
 {
     using System;
+    using System.Drawing;
     using System.Threading.Tasks;
 
     using Autofac;
