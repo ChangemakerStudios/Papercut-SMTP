@@ -1,0 +1,13 @@
+[01/28/2024 16:08:05.511]: Converting project file Papercut.Bootstrapper.wixproj...
+[01/28/2024 16:08:05.811]: *** ERROR ***: Import failed with an exception.
+System.InvalidOperationException: Duplicate attribute.
+   at System.Xml.Linq.XElement.AddAttribute(XAttribute a)
+   at System.Xml.Linq.XContainer.Add(Object content)
+   at FireGiant.HeatWave.ProjectConversion.VotiveProjectConverter.<ConvertAsync>d__16.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at FireGiant.HeatWave.ProjectConversion.VotiveProjectConverter.<TryConvertAsync>d__9.MoveNext().
+[01/28/2024 16:08:05.816]: ---- Project Papercut.Bootstrapper: Converted 2 files.
+[01/28/2024 16:08:05.816]: ---- Total time: 00.325
+[01/28/2024 16:08:05.816]: ========== Import complete:  1 errors, 0 warnings

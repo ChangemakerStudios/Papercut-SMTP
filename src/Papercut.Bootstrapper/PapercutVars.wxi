@@ -9,7 +9,7 @@
   <?endif?>
 
   <?if $(var.Platform) = x64 ?>
-    <?define Win64 = "yes" ?>
+    <?define Bitness = "always64" ?>
     <?define PlatformPath = "x64" ?>
     <?define PlatformFolder = "win-x64" ?>
     <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
@@ -17,7 +17,7 @@
 	<?define EdgeRegistryKeyTwo = "SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" ?>
 	<?define UpgradeCode="74DA413C-2E60-4151-9E56-AD3CC6320F7C" ?>
   <?else?>
-    <?define Win64 = "no" ?>
+	<?define Bitness = "always32" ?>
     <?define PlatformPath = "x86" ?>
     <?define PlatformFolder = "win-x86" ?>
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>

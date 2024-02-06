@@ -1,4 +1,4 @@
-<Project Sdk="WixToolset.Sdk/4.0.0-rc.1">
+<Project Sdk="WixToolset.Sdk/4.0.3">
   <PropertyGroup>
     <OutputName>Papercut.Smtp.Setup</OutputName>
     <OutputType>Bundle</OutputType>
@@ -22,9 +22,9 @@
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WixToolset.Util.wixext" Version="4.0.0-rc.1" />
-    <PackageReference Include="WixToolset.NetFx.wixext" Version="4.0.0-rc.1" />
-    <PackageReference Include="WixToolset.Bal.wixext" Version="4.0.0-rc.1" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="4.0.3" />
+    <PackageReference Include="WixToolset.NetFx.wixext" Version="4.0.3" />
+    <PackageReference Include="WixToolset.Bal.wixext" Version="4.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Installer\Papercut.Installer.wixproj">
