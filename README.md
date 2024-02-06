@@ -26,7 +26,8 @@ Download Papercut.Setup.exe installer.
 ![Logging View](https://changemakerstudios.us/content/images/2020/07/Papercut-Log.png)
 
 ## Papercut SMTP Background Service
-Papercut SMTP has an optional "always on" service to receive emails even when the client is not running. It's installed by default with [Papercut.Setup.exe](https://github.com/ChangemakerStudios/Papercut/releases) -- but can also be installed separately by downloading [Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
+Papercut SMTP has an optional "always on" service to receive emails even when the client is not running. It's installed by default with [Papercut.Setup.exe](https://github.com/ChangemakerStudios/Papercut/releases).
+Alternatively, it can be run in an almost portable way by downloading [Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
 
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

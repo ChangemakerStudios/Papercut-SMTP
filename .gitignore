@@ -20,3 +20,4 @@ graphics/
 out/
 /.vscode
 *.msi
+src/Papercut.Smtp.Service/webapp
