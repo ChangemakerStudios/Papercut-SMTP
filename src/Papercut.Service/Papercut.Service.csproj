@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <OutputType>exe</OutputType>
     <OutputTypeEx>exe</OutputTypeEx>
     <DebugType>portable</DebugType>
@@ -11,14 +11,14 @@
     <EmbeddedResource Include="Web\Assets\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.0.0" />
-    <PackageReference Include="AutofacSerilogIntegration" Version="4.0.0" />
+    <PackageReference Include="Autofac" Version="8.0.0" />
+    <PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
-    <PackageReference Include="Serilog" Version="2.10.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
-    <PackageReference Include="SmtpServer" Version="7.2.0" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="SmtpServer" Version="10.0.1" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.0.2" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />

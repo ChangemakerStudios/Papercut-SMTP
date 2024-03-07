@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <OutputType>exe</OutputType>
     <OutputTypeEx>exe</OutputTypeEx>
     <DebugType>portable</DebugType>
@@ -12,8 +12,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.0.0" />
-    <PackageReference Include="ElectronNET.API" Version="9.31.2" />
+    <PackageReference Include="Autofac" Version="8.0.0" />
+    <PackageReference Include="ElectronNET.API" Version="23.6.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Service\Papercut.Service.csproj" />

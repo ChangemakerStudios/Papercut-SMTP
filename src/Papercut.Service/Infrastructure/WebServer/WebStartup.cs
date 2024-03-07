@@ -48,7 +48,7 @@ namespace Papercut.Service.Infrastructure.WebServer
             hostBuilder
                 .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
                 .UseKestrel()
-                .UseSerilog(Scope.Resolve<ILogger>())
+                //.UseSerilog(Scope.Resolve<ILogger>())
                 .UseStartup<WebStartup>()
                 .UseUrls($"http://*:{httpPort}");
 
@@ -70,7 +70,7 @@ namespace Papercut.Service.Infrastructure.WebServer
              hostBuilder
                  .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
                  .UseEnvironment(env)
-                 .UseSerilog(Scope.Resolve<ILogger>())
+                 //.UseSerilog(Scope.Resolve<ILogger>())
                  .UseStartup<WebStartup>();
  
              return new HttpServer(hostBuilder);
@@ -110,10 +110,10 @@ namespace Papercut.Service.Infrastructure.WebServer
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             //loggerFactory.AddProvider(new SerilogLoggerProvider(Scope));
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<NewMessagesHub>("/new-messages");
-            });
+            //app.UseSignalR(routes =>
+            //{
+            //    routes.MapHub<NewMessagesHub>("/new-messages");
+            //});
             app.UseMvc();
             //app.UseResponseBuffering();
         }

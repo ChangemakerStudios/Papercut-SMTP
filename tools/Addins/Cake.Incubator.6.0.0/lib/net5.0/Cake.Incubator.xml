@@ -1,0 +1,1805 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Cake.Incubator</name>
+    </assembly>
+    <members>
+        <member name="T:Cake.Incubator.AssertExtensions.AssertExtensions">
+            <summary>
+            Contains extensions for guard clauses
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.AssertExtensions.AssertExtensions.ThrowIfNull``1(``0,System.String)">
+            <summary>
+            Throws a <see cref="T:System.ArgumentNullException"/> if the value is null, otherwise returns the value
+            </summary>
+            <typeparam name="T">The type to return</typeparam>
+            <param name="value">The object to check</param>
+            <param name="varName">The name of the variable</param>
+            <exception cref="T:System.ArgumentNullException">value is null.</exception>
+            <returns>The non-null value</returns>
+            <example>
+            replace the following
+            <code>
+            if (myArg == null) 
+            {
+              throw new ArgumentNullException(nameof(myArg));
+            }
+            var arg1 = myArg;
+            </code>
+            with 
+            <code>
+            var arg1 = myArg.ThrowIfNull(nameof(myArg));
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.AssertExtensions.AssertExtensions.ThrowIfNull``1(``0,System.String,System.String)">
+            <summary>
+            Throws a <see cref="T:System.ArgumentNullException"/> with a specific message if the value is null, otherwise returns the value
+            </summary>
+            <typeparam name="T">The type to return</typeparam>
+            <param name="value">The object to check</param>
+            <param name="varName">The name of the variable</param>
+            <param name="message">The exception message</param>
+            <exception cref="T:System.ArgumentNullException">value is null.</exception>
+            <returns>The non-null value</returns>
+            <example>
+            replace the following
+            <code>
+            if (myArg == null) 
+            {
+              throw new ArgumentNullException(nameof(myArg), "Oops");
+            }
+            var arg1 = myArg;
+            </code>
+            with 
+            <code>
+            var arg1 = myArg.ThrowIfNull(nameof(myArg), "Oops");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.AssertExtensions.AssertExtensions.ThrowIfNullOrWhiteSpace(System.String,System.String)">
+            <summary>
+            Throws a <see cref="T:System.ArgumentNullException"/> if a string is null or white space, otherwise returns the value
+            </summary>
+            <param name="value">The object to check</param>
+            <param name="varName">The name of the variable</param>
+            <exception cref="T:System.ArgumentNullException">value is null.</exception>
+            <returns>The non-null value</returns>
+            <example>
+            replace the following
+            <code>
+            string myArg = "";
+            if (string.IsNullOrWhiteSpace(myArg)) 
+            {
+              throw new ArgumentNullException(nameof(myArg));
+            }
+            var arg1 = myArg;
+            </code>
+            with 
+            <code>
+            string myArg = "";
+            var arg1 = myArg.ThrowIfNullOrWhiteSpace(nameof(myArg));
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.AssertExtensions.AssertExtensions.ThrowIfNullOrEmpty(System.String,System.String)">
+            <summary>
+            Throws a <see cref="T:System.ArgumentNullException"/> if a string is null or empty, otherwise returns the value
+            </summary>
+            <param name="value">The object to check</param>
+            <param name="varName">The name of the variable</param>
+            <exception cref="T:System.ArgumentNullException">value is null.</exception>
+            <returns>The non-null value</returns>
+            <example>
+            replace the following
+            <code>
+            string myArg = "";
+            if (string.IsNullOrEmpty(myArg)) 
+            {
+              throw new ArgumentNullException(nameof(myArg));
+            }
+            var arg1 = myArg;
+            </code>
+            with 
+            <code>
+            string myArg = "";
+            var arg1 = myArg.ThrowIfNullOrEmpty(nameof(myArg));
+            </code>
+            </example>
+        </member>
+        <member name="T:Cake.Incubator.DotNetBuildExtensions.DotNetBuildSettingsExtensions">
+            <summary>
+            Several extension methods when using DotNetBuildSettings.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.DotNetBuildExtensions.DotNetBuildSettingsExtensions.WithTargets(Cake.Common.Tools.DotNetCore.MSBuild.DotNetCoreMSBuildSettings,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Adds multiple .NET build targets to the configuration.
+            </summary>
+            <param name="settings">The settings.</param>
+            <param name="targets">The .NET build targets.</param>
+            <returns>The same <see cref="T:Cake.Common.Tools.DotNetCore.MSBuild.DotNetCoreMSBuildSettings"/> instance so that multiple calls can be chained.</returns>
+            <example>
+            Add many targets to the build settings
+            <code>
+            var settings = new DotNetCoreMSBuildSettings().WithTargets(new[] { "Clean", "Build", "Publish" });
+            </code>
+            </example>
+        </member>
+        <member name="T:Cake.Incubator.DotNetCoreTestExtensions.DotNetCoreTestExtensions">
+            <summary>
+            Several extension methods when using DotNetCoreTest.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.DotNetCoreTestExtensions.DotNetCoreTestExtensions.DotNetCoreTest(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.Common.Tools.XUnit.XUnit2Settings)">
+            <summary>
+            Runs DotNetCoreTest using the given <see cref="T:Cake.Common.Tools.XUnit.XUnit2Settings"/>
+            </summary>
+            <param name="context">The Cake Context</param>
+            <param name="project">DotNetCore Test Project File Path</param>
+            <param name="xunitSettings">XUnit2 DotNetCore Test Settings Configurer</param>
+        </member>
+        <member name="M:Cake.Incubator.DotNetCoreTestExtensions.DotNetCoreTestExtensions.DotNetCoreTest(Cake.Core.ICakeContext,Cake.Common.Tools.DotNetCore.Test.DotNetCoreTestSettings,Cake.Core.IO.FilePath,Cake.Common.Tools.XUnit.XUnit2Settings)">
+            <summary>
+            Appends <see cref="T:Cake.Common.Tools.XUnit.XUnit2Settings"/> to an <see cref="T:Cake.Common.Tools.DotNetCore.Test.DotNetCoreTestSettings"/> instance
+            </summary>
+            <param name="context">The Cake Context</param>
+            <param name="settings">DotNetCore Test Settings</param>
+            <param name="project">DotNetCore Test Project Path</param>
+            <param name="xunitSettings">XUnit2 DotNetCore Test Settings Configurer</param>
+        </member>
+        <member name="T:Cake.Incubator.EnumerableExtensions.EnumerableExtensions">
+            <summary>
+            Several extension methods when using IEnumerable.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.EnumerableExtensions.EnumerableExtensions.Each``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
+            <summary>
+            Performs an action on a collection of items
+            </summary>
+            <typeparam name="T">The item type</typeparam>
+            <param name="source">the collection</param>
+            <param name="action">the action to perform</param>
+            <example>
+            Replace the following
+            <code>
+            foreach(var item in items) 
+            {
+              Debug.WriteLine(item);
+            }
+            </code>
+            with
+            <code>
+            items.Each(item =&gt; Debug,WriteLine(item));
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.EnumerableExtensions.EnumerableExtensions.IsNullOrEmpty``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Checks whether specified IEnumerable is null or contains no elements
+            </summary>
+            <typeparam name="T">the item type</typeparam>
+            <param name="source">the collection</param>
+            <returns>true if element null or empty, else false</returns>
+            <example>
+            Replace
+            <code>collection == null || !collection.Any()</code>
+            with
+            <code>collection.IsNullOrEmpty()</code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.EnumerableExtensions.EnumerableExtensions.IsNullOrEmpty``1(System.Collections.Generic.IList{``0})">
+            <summary>
+            Checks whether specified IList is null or contains no elements
+            </summary>
+            <typeparam name="T">the item type</typeparam>
+            <param name="source">the collection</param>
+            <returns>true if element null or empty, else false</returns>
+            <example>
+            Replace
+            <code>collection == null || collection.Count == 0</code>
+            with
+            <code>collection.IsNullOrEmpty()</code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.EnumerableExtensions.EnumerableExtensions.IsNullOrEmpty``1(``0[])">
+            <summary>
+            Checks whether specified array is null or contains no elements
+            </summary>
+            <typeparam name="T">the item type</typeparam>
+            <param name="source">the array</param>
+            <returns>true if element null or empty, else false</returns>
+            <example>
+            Replace
+            <code>collection == null || collection.Length == 0</code>
+            with
+            <code>collection.IsNullOrEmpty()</code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.EnumerableExtensions.EnumerableExtensions.Distinct``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1})">
+            <summary>
+            Select a distinct instance of an object from a collection of objects.
+            </summary>
+            <typeparam name="TSource">The type of the object to select.</typeparam>
+            <typeparam name="TKey">The type of the key to search for.</typeparam>
+            <param name="source">The collection of objects to select from.</param>
+            <param name="getKey">The key that is being searched for.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Cake.Incubator.EnumerableExtensions.EnumerableExtensions.IsIn``1(``0,``0[])">
+            <summary>
+            Checks if the source is contained in a list
+            </summary>
+            <typeparam name="T">The source and list type</typeparam>
+            <param name="source">The source item</param>
+            <param name="list">The list of items to check</param>
+            <returns>True if found, false if not</returns>
+        </member>
+        <member name="T:Cake.Incubator.FileExtensions.FileExtensions">
+            <summary>
+            Extension methods when using Files.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.FileExtensions.FileExtensions.Filter(Cake.Core.IO.FilePathCollection,System.String[])">
+            <summary>
+            Filters FilePathCollection by filenames, in the order specified
+            </summary>
+            <param name="filePathCollection">the collection to filter</param>
+            <param name="fileNames">the file names to filter by</param>
+            <returns>the filtered list</returns>
+        </member>
+        <member name="M:Cake.Incubator.FileExtensions.FileExtensions.LoadXml(Cake.Core.IO.IFile)">
+            <summary>
+            Loads an xml file
+            </summary>
+            <param name="xmlFile">the xml file path</param>
+            <returns>An XDocument</returns>
+            <example>Load an xml document
+            <code>
+            XDocument doc = GetFile("./proj.csproj").LoadXml();
+            </code>
+            </example>
+        </member>
+        <member name="T:Cake.Incubator.FilePathExtensions.FilePathExtensions">
+            <summary>
+            Contains extension methods for working with <see cref="T:Cake.Core.IO.FilePath"/>'s
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.FilePathExtensions.FilePathExtensions.IsSolution(Cake.Core.IO.FilePath)">
+            <summary>
+            Checks if the FilePath is a solution file
+            </summary>
+            <param name="filePath">the path to check</param>
+            <returns>true if sln file</returns>
+            <example>
+            Check if the file is a solution
+            <code>
+            new FilePath("test.sln").IsSolution(); // true
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.FilePathExtensions.FilePathExtensions.IsProject(Cake.Core.IO.FilePath)">
+            <summary>
+            Checks if the FilePath is a vbproj/csproj/fsproj file
+            </summary>
+            <param name="filePath">the path to check</param>
+            <returns>true if a visual studio project file was recognised</returns>
+            <example>
+            Check if the file is a project
+            <code>
+            new FilePath("test.csproj").IsProject(); // true;
+            new FilePath("test.fsproj").IsProject(); // true;
+            new FilePath("test.vbproj").IsProject(); // true;
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.FilePathExtensions.FilePathExtensions.HasFileName(Cake.Core.IO.FilePath,System.String)">
+            <summary>
+            Checks if the path has a specific filename and extension
+            </summary>
+            <param name="path">the path to check</param>
+            <param name="fileName">the file name and extension</param>
+            <returns>true if filename and extension matches</returns>
+            <example>
+            Check by the filename (includes extension)
+            <code>
+            new FilePath("/folder/testing.cs").HasFileName("testing.cs"); // true
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.FilePathExtensions.FilePathExtensions.HasFileExtension(Cake.Core.IO.FilePath,System.String)">
+            <summary>
+            Checks if the path has a specific file extension (case-insensitive)
+            </summary>
+            <param name="path">the path to check</param>
+            <param name="fileExtension">the file extension name</param>
+            <returns>true if file extension matches</returns>
+            <example>
+            Check the file extension with or without the period ignoring case
+            <code>
+            new FilePath("/folder/testing.cs").HasExtension(".cs"); // true
+            new FilePath("/folder/testing.odd").HasExtension("ODD"); // true
+            </code>
+            </example>
+        </member>
+        <member name="T:Cake.Incubator.FileSystemExtensions.FileSystemExtensions">
+            <summary>
+            Contains extension methods for working with cakes <see cref="T:Cake.Core.IO.IFileSystem"/>
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.FileSystemExtensions.FileSystemExtensions.GetProjectFile(Cake.Core.IO.IFileSystem,Cake.Core.IO.FilePath)">
+            <summary>
+            Loads a visual studio project file
+            </summary>
+            <param name="fs">the filesystem</param>
+            <param name="projectPath">the path of the project file</param>
+            <returns>the project file</returns>
+            <exception cref="T:Cake.Core.CakeException">Throws if the file does not exist or is not a recognised visual studio project file</exception>
+        </member>
+        <member name="T:Cake.Incubator.GlobbingExtensions.GlobbingExtensions">
+            <summary>
+            Contains functionality related to file system globbing. 
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.GlobbingExtensions.GlobbingExtensions.GetMatchingFiles(Cake.Core.ICakeContext,System.Collections.Generic.IEnumerable{Cake.Core.IO.FilePath})">
+             <summary>
+             Returns files in the same directory that have the same file name but different extensions
+             </summary>
+             <param name="context">the cake context</param>
+             <param name="files">the files to return matches for</param>
+             <returns>a list of matching files</returns>
+             <example>
+             Locates files with the same name in the same directory, but different extensions.
+             The .pdb to your .dll as it were. If found, returns the original file as well.
+             <code>
+             // /output/file.dll
+             // /output/file.xml
+             // /output/file.pdb
+             // /output/another.dll
+            
+             FilePathCollection matchingFiles = GetMatchingFiles(new FilePath("/output/file.dll"));
+            
+             matchingFiles.First(); // /output/file.xml
+             matchingFiles.Skip(1).First(); // /output/file.pdb
+             matchingFiles.Last(); // /output/file.dll
+             
+             </code>
+             </example>
+        </member>
+        <member name="M:Cake.Incubator.GlobbingExtensions.GlobbingExtensions.GetFiles(Cake.Core.ICakeContext,System.String[])">
+             <summary>
+             Gets FilePaths using glob patterns
+             </summary>
+             <param name="context">the cake context</param>
+             <param name="patterns">the glob patterns</param>
+             <returns>the files matching the glob patterns</returns>
+             <example>
+             Pass multiple glob patterns 
+             <code>
+             // /output/file.dll
+             // /output/file.xml
+             // /output/file.pdb
+             // /output/another.dll
+            
+             IEnumerable&lt;FilePath&gt; matchingFiles = GetFiles("*.pdb", "*.xml"));
+            
+             matchingFiles[0]; // /output/file.xml
+             matchingFiles[1]; // /output/file.pdb
+             </code>
+             </example>
+        </member>
+        <member name="T:Cake.Incubator.LoggingExtensions.LoggingExtensions">
+            <summary>
+            Several extension methods when using Logging.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.LoggingExtensions.LoggingExtensions.Dump``1(``0)">
+             <summary>
+             Get a basic string representation of specified object.
+             </summary>
+             <typeparam name="T">Type of object</typeparam>
+             <param name="obj">Object to generate string representation of</param>
+             <returns>String representation of object in format in format `Prop: PropValue\r\nArrayProp: ArrayVal1, ArrayVal2`</returns>
+             <example>
+             Generates a string representation of objects public properties and values.
+             <code>
+             var person = new Person { Name = "Bob", Age = 24, Food = new[] { "Lasagne", "Pizza"} };
+             var data = person.Dump();
+            
+             // output:
+             "Name: Bob\r\nAge: 24\r\nFood: Lasagne, Pizza";
+             </code>
+             
+             Useful in for logging objects, e.g.
+             <code>
+             var gitVersionResults = GitVersion(new GitVersionSettings());
+             Information("GitResults -&gt; {0}", gitVersionResults.Dump());
+            
+             // output:
+             GitResults -&gt; Major: 0
+             Minor: 1
+             Patch: 0
+             PreReleaseTag: dev-19.1
+             PreReleaseTagWithDash: -dev-19.1
+             PreReleaseLabel: dev-19
+             PreReleaseNumber: 1
+             BuildMetaData: 26
+             ..snip..
+             </code>
+             </example>
+        </member>
+        <member name="T:Cake.Incubator.NamespaceDoc">
+            <summary>
+            This project contains various useful extension methods and aliases for Cake that over time may become part of the core project
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.ProjectPathExtensions.ProjectPathExtensions">
+            <summary>
+            Several extension methods when using ProjectPath.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.ProjectPathExtensions.ProjectPathExtensions.CombineWithProjectPath(Cake.Core.IO.DirectoryPath,System.String)">
+            <summary>
+            Combines a base project path with the name of the project file.
+            </summary>
+            <param name="basePath">The base path to the location of the Project File.</param>
+            <param name="path">The path to the actual Project file.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Cake.Incubator.Project.BuildTarget">
+            <summary>
+            A project build target
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.BuildTarget.Name">
+            <summary>
+            The build target name
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.BuildTarget.BeforeTargets">
+            <summary>
+            Targets that will run before this one
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.BuildTarget.AfterTargets">
+            <summary>
+            Targets that will run after this one
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.BuildTarget.DependsOn">
+            <summary>
+            Targets that will run before this one
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.BuildTarget.Executables">
+            <summary>
+            Any executable targets <see cref="T:Cake.Incubator.Project.BuildTargetExecutable"/>
+            </summary>
+            <value>The build target executables <see cref="T:Cake.Incubator.Project.BuildTargetExecutable"/></value>
+        </member>
+        <member name="T:Cake.Incubator.Project.BuildTargetExecutable">
+            <summary>
+            A executable build target 
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.BuildTargetExecutable.Command">
+            <summary>
+            The executable command
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.CustomProjectFile">
+            <summary>
+            Represents a MSBuild project file.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectFile.FilePath">
+            <summary>Gets or sets the project file path.</summary>
+            <value>The project file path.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectFile.RelativePath">
+            <summary>Gets or sets the relative path to the project file.</summary>
+            <value>The relative path to the project file.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectFile.Compile">
+            <summary>
+            Gets or sets a value indicating whether this <see cref="T:Cake.Common.Solution.Project.ProjectFile" /> is compiled.
+            </summary>
+            <value>
+              <c>true</c> if compiled; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:Cake.Incubator.Project.CustomProjectParserResult">
+            <summary>Represents the content in an MSBuild project file.</summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.ProjectFilePath">
+            <summary>
+            The path for the parsed project file
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.Configuration">
+            <summary>Gets the build configuration.</summary>
+            <value>The build configuration.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.Platform">
+            <summary>Gets the target platform.</summary>
+            <value>The platform.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.ProjectGuid">
+            <summary>Gets the unique project identifier.</summary>
+            <value>The unique project identifier.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.ProjectTypeGuids">
+            <summary>Gets the project type identifiers.</summary>
+            <value>The project type identifiers.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.OutputType">
+            <summary>
+            Gets the compiler output type, i.e. <c>Exe/Library</c>.
+            </summary>
+            <value>The output type.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.OutputPath">
+            <summary>
+            Gets the first compiler artifact output path.
+            Use OutputPaths for multi-targeting libraries
+            </summary>
+            <value>The output path.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.OutputPaths">
+            <summary>Gets the compiler artifact output paths.</summary>
+            <value>The output paths.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.RootNameSpace">
+            <summary>Gets the default root namespace.</summary>
+            <value>The root namespace.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.AssemblyName">
+            <summary>Gets the build target assembly name.</summary>
+            <value>The assembly name.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.TargetFrameworkVersion">
+            <summary>Gets the first compiler target framework version.</summary>
+            <value>The target framework version.</value>
+            <remarks>If this is a multi-target project, use </remarks>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.TargetFrameworkVersions">
+            <summary>Gets the first compiler target framework versions.</summary>
+            <value>An array of target framework versions.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.TargetFrameworkProfile">
+            <summary>Gets the compiler target framework profile.</summary>
+            <value>The target framework profile.</value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.Files">
+            <summary>Gets the project content files. <see cref="T:Cake.Incubator.Project.CustomProjectFile"/></summary>
+            <value>The files. <see cref="T:Cake.Incubator.Project.CustomProjectFile"/></value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.References">
+            <summary>Gets the references. <see cref="T:Cake.Common.Solution.Project.ProjectAssemblyReference"/></summary>
+            <value>The references. <see cref="T:Cake.Common.Solution.Project.ProjectAssemblyReference"/></value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.ProjectReferences">
+            <summary>Gets the references to other projects. <see cref="T:Cake.Common.Solution.Project.ProjectReference"/></summary>
+            <value>The references. <see cref="T:Cake.Common.Solution.Project.ProjectReference"/></value>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.IsNetCore">
+            <summary>
+            True if the project is a net core compatible project
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.IsNetFramework">
+            <summary>
+            True if the project is a net framework compatible project
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.IsNetStandard">
+            <summary>
+            True if the project is a net standard compatible project
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.NetCore">
+            <summary>
+            Contains properties specific to net core projects. See <see cref="T:Cake.Incubator.Project.NetCoreProject"/>
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.PackageReferences">
+            <summary>
+            The project package references. A collection of <see cref="T:Cake.Incubator.Project.PackageReference"/>
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.IsVS2017ProjectFormat">
+            <summary>
+            Whether the project parsed is in the newer VS2017 onwards format or the legacy pre 2017 format
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.CustomProjectParserResult.ProjectXml">
+            <summary>
+            The project file xml source
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.DotNetCliToolReference">
+            <summary>
+            A dotnet cli tool referenceS
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.DotNetCliToolReference.Name">
+            <summary>
+            The dotnet cli tool name
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.DotNetCliToolReference.Version">
+            <summary>
+            The tool version
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.NetCoreProject">
+            <summary>
+            Describes a netcore project
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.AllowUnsafeBlocks">
+            <summary>
+            True if the assembly allows unsafe blocks
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.ApplicationIcon">
+            <summary>
+            The application icon
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.AssemblyTitle">
+            <summary>
+            The assembly title, defaults to the assemblyname
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.AssemblyOriginatorKeyFile">
+            <summary>
+            The signing key file path
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.AssemblyVersion">
+            <summary>
+            The Assembly Version
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Authors">
+            <summary>
+            dotnet pack: A list of packages authors, matching the profile names on nuget.org. 
+            These are displayed in the NuGet Gallery on nuget.org and are used to cross-reference packages by the same authors.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.BuildOutputTargetFolder">
+            <summary>
+            dotnet pack: Specifies the folder where to place the output assemblies. 
+            The output assemblies (and other output files) are copied into their respective framework folders.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.ContentTargetFolders">
+            <summary>
+            dotnet pack: This property specifies the default location of where all the content files should go if PackagePath is not specified for them. 
+            The default value is "content;contentFiles".
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Copyright">
+            <summary>
+            Copyright details for the package.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Company">
+            <summary>
+            The assembly or package company
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.DebugSymbols">
+            <summary>
+            True if compilation will output debug symbols
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.DebugType">
+            <summary>
+            The debug type (portable, embedded, full)
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.DefineConstants">
+            <summary>
+            Build pre-processor directives
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.DelaySign">
+            <summary>
+            When delay signed, the project will not run or be debuggable
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Description">
+            <summary>
+            dotnet pack: A long description of the package for UI display.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.DocumentationFile">
+            <summary>
+            The documentation file path
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.DotNetCliToolReferences">
+            <summary>
+            The dotnet CLI tool references, a collection of <see cref="T:Cake.Incubator.Project.DotNetCliToolReference"/>
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.FileVersion">
+            <summary>
+            The File Version
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.GenerateDocumentationFile">
+            <summary>
+            True if assembly will generate xml documentation
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.GeneratePackageOnBuild">
+            <summary>
+            True if the package will be generated when building
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.GenerateSerializationAssemblies">
+            <summary>
+            Generate serialization assemblies (Off, On, Auto)
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.IncludeSymbols">
+            <summary>
+            dotnet pack: This Boolean value indicates whether the package should create an additional symbols package when the project is packed. 
+            This package will have a .symbols.nupkg extension and will copy the PDB files along with the DLL and other output files.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.IncludeSource">
+            <summary>
+            dotnet pack: This Boolean value indicates whether the pack process should create a source package. 
+            The source package contains the library's source code as well as PDB files. 
+            Source files are put under the src/ProjectName directory in the resulting package file.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.IncludeBuildOutput">
+            <summary>
+            dotnet pack: This Boolean values specifies whether the build output assemblies should be packed into the .nupkg file or not.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.IncludeContentInPack">
+            <summary>
+            dotnet pack: This Boolean value specifies whether any items that have a type of Content will be included in the resulting package automatically. The default is true.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.IsPackable">
+            <summary>
+            dotnet pack: A Boolean value that specifies whether the project can be packed. The default value is true.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.IsTool">
+            <summary>
+            dotnet pack: Specifies whether all output files are copied to the tools folder instead of the lib folder. 
+            Note that this is different from a DotNetCliTool which is specified by setting the PackageType in the .csproj file.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.IsWeb">
+            <summary>
+            True if this is a web project
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.LangVersion">
+            <summary>
+            Assembly language version (ISO-1, ISO-2, [C#]2-7)
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.MinClientVersion">
+            <summary>
+            dotnet pack: Specifies the minimum version of the NuGet client that can install this package, enforced by nuget.exe and the Visual Studio Package Manager.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.NetStandardImplicitPackageVersion">
+            <summary>
+            The netstandard package target version if specified
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.NeutralLanguage">
+            <summary>
+            The assembly neutral language
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.NoPackageAnalysis">
+            <summary>
+            dotnet pack: Specifies that pack should not run package analysis after building the package.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.NoWarn">
+            <summary>
+            The pragma warnings to ignore during compilation
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.NuspecBasePath">
+            <summary>
+            dotnet pack: Base path for the .nuspec file.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.NuspecFile">
+            <summary>
+            dotnet pack: Relative or absolute path to the .nuspec file being used for packing
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.NuspecProperties">
+            <summary>
+            dotnet pack: list of key=value pairs.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Optimize">
+            <summary>
+            The optimize code flag
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageIconUrl">
+            <summary>
+            dotnet pack: A URL for a 64x64 image with transparent background to use as the icon for the package in UI display.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageId">
+            <summary>
+            dotnet pack: The package id
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageLicenseUrl">
+            <summary>
+            dotnet pack: An URL to the license that is applicable to the package.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageOutputPath">
+            <summary>
+            dotnet pack: Determines the output path in which the packed package will be dropped. Default is the OutputPath
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageProjectUrl">
+            <summary>
+            dotnet pack: A URL for the package's home page, often shown in UI displays as well as nuget.org.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageReferences">
+            <summary>
+            The project package references. A collection of <see cref="T:Cake.Incubator.Project.PackageReference"/>
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageRequireLicenseAcceptance">
+            <summary>
+            dotnet pack: A Boolean value that specifies whether the client must prompt the consumer to accept the package license before installing the package. 
+            The default is false.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageReleaseNotes">
+            <summary>
+            dotnet pack: Release notes for the package.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageTags">
+            <summary>
+            dotnet pack: A list of tags that designates the package.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackageTargetFallbacks">
+            <summary>
+            The fallback targets to use when importing packages
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PreserveCompilationContext">
+            <summary>
+            Required to be true for the compilation of razor views
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Product">
+            <summary>
+            The product name
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.ProjectReferences">
+            <summary>
+            The references to other projects. A collection of <see cref="T:Cake.Common.Solution.Project.ProjectReference"/>
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PublicSign">
+            <summary>
+            Undocumented flag relating to assembly signing
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.RepositoryType">
+            <summary>
+            dotnet pack: Specifies the type of the repository. Default is "git"
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.RepositoryUrl">
+            <summary>
+            dotnet pack: Specifies the URL for the repository where the source code for the package resides and/or from which it's being built.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.RuntimeFrameworkVersion">
+            <summary>
+            The runtime framework version
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.RuntimeIdentifiers">
+            <summary>
+            The runtime identifiers
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.RuntimeOptions">
+            <summary>
+            Optional runtime options to override the default settings <see cref="P:Cake.Incubator.Project.NetCoreProject.RuntimeOptions"/>
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Sdk">
+            <summary>
+            The net core sdk
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.SignAssembly">
+            <summary>
+            True if the assembly is signed during compilation
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Targets">
+            <summary>
+            The projects build targets. A collection of <see cref="T:Cake.Incubator.Project.BuildTarget"/>
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Title">
+            <summary>
+            dotnet pack: A human-friendly title of the package, typically used in UI displays as on nuget.org and the Package Manager in Visual Studio. 
+            If not specified, the package ID is used instead.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.TargetFrameworks">
+            <summary>
+            The projects target frameworks
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.TreatSpecificWarningsAsErrors">
+            <summary>
+            The warnings to specifically treat as errors
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.TreatWarningsAsErrors">
+            <summary>
+            True if wanrings will be treated as errors during compilation
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.Version">
+            <summary>
+            The project version
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.WarningLevel">
+            <summary>
+            Compiler warning level
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.NetCoreProject.PackAsTool">
+            <summary>
+            True if it should pack it as global tool
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.NetFrameworkProjectProperties">
+            <summary>
+            Represents the project properties for a .Net Framework project file
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.PackageReference">
+            <summary>
+            A project package reference
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.PackageReference.Name">
+            <summary>
+            The package name
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.PackageReference.Version">
+            <summary>
+            The package version
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.PackageReference.TargetFramework">
+            <summary>
+            returns any package specific target framework
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.PackageReference.PrivateAssets">
+            <summary>
+            These assets will be consumed but won't flow to the parent project
+            </summary>
+            <remarks>For example, build-time only dependencies</remarks>
+        </member>
+        <member name="P:Cake.Incubator.Project.PackageReference.IncludeAssets">
+            <summary>
+            These assets will be consumed
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.PackageReference.ExcludeAssets">
+            <summary>
+            These assets will not be consumed
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.ProjectParserExtensions">
+            <summary>
+            Extension methods for parsing msbuild projects (csproj, vbproj, fsproj)
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsLibrary(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is a library
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is a library</returns>
+            <example>
+            Check if a parsed project is a library or exe
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsLibrary()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsGlobalTool(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is for a global tool
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is a global tool</returns>
+            <example>
+            Check if a parsed project is a global tool
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsGlobalTool()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsDotNetCliTestProject(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is a `dotnet test` compatible project
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is a dotnet test compatible project</returns>
+            <example>
+            Check if a parsed project is a dotnet test compatible project
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsDotNetCliTestProject()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsFrameworkTestProject(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is a pre `dotnet test` compatible project
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is a pre `dotnet test` compatible project</returns>
+            <example>
+            Check if a parsed project is a pre `dotnet test` compatible project
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsFrameworkTestProject()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsTestProject(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is a test compatible project
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is a test compatible project</returns>
+            <example>
+            Check if a parsed project is a test compatible project
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsTestProject()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsXUnitTestProject(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is an xunit test compatible project
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is an xunit test compatible project</returns>
+            <example>
+            Check if a parsed project is an xunit test compatible project
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsXUnitTestProject()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsFsUnitTestProject(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is an fsunit test compatible project
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is an fsunit test compatible project</returns>
+            <example>
+            Check if a parsed project is an fsunit test compatible project
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsFsUnitTestProject()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsNUnitTestProject(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is an NUnit test compatible project
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is an NUnit test compatible project</returns>
+            <example>
+            Check if a parsed project is an NUnit test compatible project
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsNUnitTestProject()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsExpectoTestProject(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is an Expecto test compatible project
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is an Expecto test compatible project</returns>
+            <example>
+            Check if a parsed project is an Expecto test compatible project
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsExpectoTestProject()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsFixieTestProject(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is an fixie test compatible project
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is a fixie test compatible project</returns>
+            <example>
+            Check if a parsed project is an fixie test compatible project
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsFixieTestProject()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsMSTestProject(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is an MSTest compatible project
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is an MSTest compatible project</returns>
+            <example>
+            Check if a parsed project is an MSTest compatible project
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsMSTestProject()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsWebApplication(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Checks if the project is a web application.
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>true if the project is a web application</returns>
+            <example>
+            Check if a parsed project is a web application
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            if (project.IsWebApplication()) { ... }
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetExtension(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Returns the parsed projects output assembly extension
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>the output assembly's file extension</returns>
+            <example>
+            Gets the output assembly extension
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            project.GetExtension(); // ".dll" or ".exe"
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetAssemblyFilePath(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Gets a parsed projects output assembly path
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>the output assembly path</returns>
+            <example>
+            Returns the absolute project assembly file path, respects build config and platform settings
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            project.GetAssemblyFilePath(); // returns '/root/project/bin/release/test.dll'
+            </code>
+            <remarks>NOTE: This does not currently support how runtime identifiers affect outputs</remarks>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetAssemblyFilePaths(Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Gets a parsed projects output assembly paths for mulit-targeting projects
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <returns>the output assembly paths</returns>
+            <example>
+            Returns the absolute project assembly file paths, respects explicit project overrides, build config, platform settings and target frameworks
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            project.GetAssemblyFilePaths(); // returns [] { '/root/project/bin/release/net45/test.dll', '/root/project/bin/release/netstandard1.6'
+            </code>
+            </example>
+            <remarks>NOTE: This does not currently support how runtime identifiers affect outputs</remarks>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.IsType(Cake.Incubator.Project.CustomProjectParserResult,Cake.Incubator.Project.ProjectType)">
+            <summary>
+            Checks the parsed projects type
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <param name="projectType">the <see cref="T:Cake.Incubator.Project.ProjectType"/> to check</param>
+            <returns>true if the project type matches</returns>
+            <remarks>Project Types are not supported in NetCore, this extension is for the Net Framework only</remarks>
+            <example>
+            Checks the project type
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), "Release");
+            project.IsType(ProjectType.CSharp); // true
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.HasPackage(Cake.Incubator.Project.CustomProjectParserResult,System.String,System.String)">
+            <summary>
+            Checks for a project package reference by name and optional TargetFramework
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <param name="packageName">the package name</param>
+            <param name="targetFramework">the target framework, if not specified, checks all TargetFrameworks for the package</param>
+            <returns>True if package exists in project, otherwise false</returns>
+            <example>
+            Checks if the project has an NUnit package
+            <code>
+            CustomParseProjectResult project 
+                    = ParseProject(new FilePath("test.csproj"), configuration: "Release", platform: "x86");
+            bool ref = project.HasReference("NUnit"); // true
+            bool ref = project.HasReference("NUnit", "net45"); // false
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.HasReference(Cake.Incubator.Project.CustomProjectParserResult,System.String)">
+            <summary>
+            Checks for a project assembly reference by name or alias
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <param name="referenceAssemblyName">the assembly name</param>
+            <returns>True if reference exists in project, otherwise false</returns>
+            <example>
+            Checks for a System.Configuration assembly reference
+            <code>
+            CustomParseProjectResult project 
+                    = ParseProject(new FilePath("test.csproj"), configuration: "Release", platform: "x86");
+            bool hasConfig = project.HasReference("System.Configuration");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetPackage(Cake.Incubator.Project.CustomProjectParserResult,System.String,System.String)">
+            <summary>
+            Gets a project package reference
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <param name="packageName">the package name</param>
+            <param name="targetFramework">the specific targetframework, if not specified, returns the package for any TargetFramework</param>
+            <returns>The package reference if found</returns>
+            <example>
+            Get the NUnit package reference
+            <code>
+            CustomParseProjectResult project 
+                    = ParseProject(new FilePath("test.csproj"), configuration: "Release", platform: "x86");
+            
+            PackageReference ref = project.GetReference("NUnit");
+            string nUnitVersion = ref.Version;
+            
+            PackageReference ref = project.GetReference("NUnit", "netstandard2.0");
+            string nUnitVersion = ref.Version;
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.HasDotNetCliToolReference(Cake.Incubator.Project.CustomProjectParserResult,System.String)">
+            <summary>
+            Checks for a DotNet Cli Tool Reference by name
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <param name="cliToolReferenceName">the cli tool reference name</param>
+            <returns>True if reference exists in project, otherwise false</returns>
+            <example>
+            Checks for a dotnet-xunit cli tool reference
+            <code>
+            CustomParseProjectResult project 
+                    = ParseProject(new FilePath("test.csproj"), configuration: "Release", platform: "x86");
+            bool hasConfig = project.HasDotNetCliToolReference("dotnet-xunit");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetDotNetCliToolReference(Cake.Incubator.Project.CustomProjectParserResult,System.String)">
+            <summary>
+            Gets a project DotNetCliToolReference
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <param name="cliToolReferenceName">the package name</param>
+            <returns>The dotnet cli tool reference if found</returns>
+            <example>
+            Get the XUnit Cli tool reference
+            <code>
+            CustomParseProjectResult project 
+                    = ParseProject(new FilePath("test.csproj"), configuration: "Release", platform: "x86");
+            
+            DotNetCliToolReference ref = project.GetDotNetCliToolReference("dotnet-xunit");
+            string xUnitVersion = ref.Version;
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetReference(Cake.Incubator.Project.CustomProjectParserResult,System.String)">
+            <summary>
+            Gets a project assembly reference by name or alias
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <param name="referenceAssemblyName">the assembly name</param>
+            <returns>the project assembly reference if found</returns>
+            <example>
+            Get the System.Configuration assembly reference
+            <code>
+            CustomParseProjectResult project 
+                    = ParseProject(new FilePath("test.csproj"), configuration: "Release", platform: "x86");
+            ProjectAssemblyReference ref = project.GetReference("System.Configuration");
+            string HintPath = ref.HintPath;
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetProjectProperty(Cake.Incubator.Project.CustomProjectParserResult,System.String)">
+            <summary>
+            Gets any project property by name. Useful for getting non-standard properties in the CustomProjectParserResult type
+            </summary>
+            <param name="projectParserResult">the parsed project</param>
+            <param name="propertyName">the project propertyName</param>
+            <returns>the project property value if found</returns>
+            <example>
+            Gets a project property by name, will return any config/platform specific values if they exist 
+            <code>
+            CustomParseProjectResult project 
+                    = ParseProject(new FilePath("test.csproj"), configuration: "Release", platform: "x86");
+            string propValue = project.GetProjectProperty("DocumentationFile");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.ParseProject(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String)">
+            <summary>
+            Parses a csproj file into a strongly typed <see cref="T:Cake.Incubator.Project.CustomProjectParserResult"/> object
+            using the specified build configuration and default platform (AnyCpu)
+            </summary>
+            <param name="context">the cake context</param>
+            <param name="project">the project filepath</param>
+            <param name="configuration">the build configuration</param>
+            <returns>The parsed project</returns>
+            <remarks>Defaults to 'AnyCPU' platform, use overload to override this default</remarks>
+            <example>
+            Returns the project information specific to a build configuration
+            <code>
+            CustomParseProjectResult project = ParseProject(new FilePath("test.csproj"), configuration: "Release");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.ParseProject(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String,System.String)">
+            <summary>
+            Parses a csproj file into a strongly typed <see cref="T:Cake.Incubator.Project.CustomProjectParserResult"/> object
+            using the specified build configuration and target platform
+            </summary>
+            <param name="context">the cake context</param>
+            <param name="project">the project filepath</param>
+            <param name="configuration">the build configuration</param>
+            <param name="platform">the build platform</param>
+            <returns>The parsed project</returns>
+            <example>
+            Returns the project information specific to a build configuration
+            <code>
+            CustomParseProjectResult project
+                    = ParseProject(new FilePath("test.csproj"), configuration: "Release", platform: "x86");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetOutputAssemblies(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String)">
+             <summary>
+             Gets the output assembly paths for solution or project files, for a specific build configuration
+             </summary>
+             <param name="context">the cake context</param>
+             <param name="target">the solution or project file</param>
+             <param name="configuration">the build configuration</param>
+             <returns>the list of output assembly paths</returns>
+             <exception cref="T:System.ArgumentException">Throws if the file is not a recognizable solution or project file</exception>
+             <example>
+             The project or solution's <see cref="T:Cake.Core.IO.FilePath"/> and the build configuration will 
+             return the output file/s (dll or exe) for the project and return as an <see cref="T:System.Collections.Generic.IEnumerable`1"/>
+             The alias expects a valid `.sln` or a `csproj` file.
+            
+             For a solution
+             <code>
+             // Solution output dll/exe's FilePath[] for 'Release' configuration for platform 'AnyCPU'
+             IEnumerable&lt;FilePath&gt; filePaths = GetOutputAssemblies(new FilePath("test.sln"), "Release");
+             </code>
+             
+             For a project
+             <code>
+             // Project output dll/exe as FilePath[] for 'Custom' configuration for platform 'AnyCPU'
+             IEnumerable&lt;FilePath&gt; filePaths = GetOutputAssemblies(new FilePath("test.csproj"), "Custom");
+             </code>
+             </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetOutputAssemblies(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String,System.String)">
+             <summary>
+             Gets the output assembly paths for solution or project files, for a specific build configuration
+             </summary>
+             <param name="context">the cake context</param>
+             <param name="target">the solution or project file</param>
+             <param name="configuration">the build configuration</param>
+            <param name="platform">the platform</param>
+            <returns>the list of output assembly paths</returns>
+             <exception cref="T:System.ArgumentException">Throws if the file is not a recognizable solution or project file</exception>
+             <example>
+             The project or solution's <see cref="T:Cake.Core.IO.FilePath"/> and the build configuration will 
+             return the output file/s (dll or exe) for the project and return as an <see cref="T:System.Collections.Generic.IEnumerable`1"/>
+             The alias expects a valid `.sln` or a `csproj` file.
+            
+             For a solution
+             <code>
+             // Solution output dll/exe's FilePath[] for 'Release' configuration for 'x86' platform
+             IEnumerable&lt;FilePath&gt; filePaths = GetOutputAssemblies(new FilePath("test.sln"), "Release", "x86");
+             </code>
+             
+             For a project
+             <code>
+             // Project output dll/exe as FilePath[] for 'Custom' configuration for 'x64' platform
+             IEnumerable&lt;FilePath&gt; filePaths = GetOutputAssemblies(new FilePath("test.csproj"), "Custom", "x64");
+             </code>
+             </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetSolutionAssemblies(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String)">
+            <summary>
+            Gets the output assembly paths for a solution file, for a specific build configuration
+            </summary>
+            <param name="context">the cake context</param>
+            <param name="target">the solution file</param>
+            <param name="configuration">the build configuration</param>
+            <returns>the list of output assembly paths</returns>
+            <exception cref="T:System.ArgumentException">Throws if the file is not a recognizable solution file</exception>
+            <example>
+            The Solution's <see cref="T:Cake.Core.IO.FilePath"/> and the build configuration will return the 
+            output files (dll or exe) for the projects and return as an <see cref="T:System.Collections.Generic.IEnumerable`1"/>
+            The alias expects a valid `.sln` file.
+            <code>
+            // Solution project's output dll/exe's for the 'Release' configuration and 'AnyCPU' platform
+            IEnumerable&lt;FilePath&gt; filePaths = GetOutputAssemblies(new FilePath("test.sln"), "Release");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetSolutionAssemblies(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String,System.String)">
+            <summary>
+            Gets the output assembly paths for a solution file, for a specific build configuration
+            </summary>
+            <param name="context">the cake context</param>
+            <param name="target">the solution file</param>
+            <param name="configuration">the build configuration</param>
+            <param name="platform">the platform</param>
+            <returns>the list of output assembly paths</returns>
+            <exception cref="T:System.ArgumentException">Throws if the file is not a recognizable solution file</exception>
+            <example>
+            The Solution's <see cref="T:Cake.Core.IO.FilePath"/> and the build configuration will return the 
+            output files (dll or exe) for the projects and return as an <see cref="T:System.Collections.Generic.IEnumerable`1"/>
+            The alias expects a valid `.sln` file.
+            <code>
+            // Solution project's output dll/exe's for the 'Release' configuration and 'x64' platform
+            IEnumerable&lt;FilePath&gt; filePaths = GetOutputAssemblies(new FilePath("test.sln"), "Release", "x64");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetProjectAssembly(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String)">
+            <summary>
+            Gets the output assembly path for a project file, for a specific build configuration
+            </summary>
+            <param name="context">the cake context</param>
+            <param name="target">the project file</param>
+            <param name="configuration">the build configuration</param>
+            <returns>the output assembly path</returns>
+            <exception cref="T:System.ArgumentException">Throws if the file is not a recognizable project file</exception>
+            <example>
+            The project's <see cref="T:Cake.Core.IO.FilePath"/> and the build configuration will return the 
+            output file (dll or exe) for the project and return as a <see cref="T:Cake.Core.IO.FilePath"/>
+            The alias expects a valid project file.
+            <code>
+            // Project output dll/exe as FilePath[] for 'Custom' configuration
+            IEnumerable&lt;FilePath&gt; filePaths = GetOutputAssemblies(new FilePath("test.csproj"), "Custom");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetProjectAssemblies(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String)">
+            <summary>
+            Gets the output assembly path for a project file, for a specific build configuration
+            </summary>
+            <param name="context">the cake context</param>
+            <param name="target">the project file</param>
+            <param name="configuration">the build configuration</param>
+            <returns>the output assembly path</returns>
+            <exception cref="T:System.ArgumentException">Throws if the file is not a recognizable project file</exception>
+            <example>
+            The project's <see cref="T:Cake.Core.IO.FilePath"/> and the build configuration will return the 
+            output file (dll or exe) for the project and return as a <see cref="T:Cake.Core.IO.FilePath"/>
+            The alias expects a valid project file.
+            <code>
+            // Project output dll/exe as FilePath[] for 'Custom' configuration for AnyCPU platform
+            IEnumerable&lt;FilePath&gt; filePaths = GetOutputAssemblies(new FilePath("test.csproj"), "Custom");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.GetProjectAssemblies(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String,System.String)">
+            <summary>
+            Gets the output assembly path for a project file, for a specific build configuration
+            </summary>
+            <param name="context">the cake context</param>
+            <param name="target">the project file</param>
+            <param name="configuration">the build configuration</param>
+            <param name="platform">the platform</param>
+            <returns>the output assembly path</returns>
+            <exception cref="T:System.ArgumentException">Throws if the file is not a recognizable project file</exception>
+            <example>
+            The project's <see cref="T:Cake.Core.IO.FilePath"/> and the build configuration will return the 
+            output file (dll or exe) for the project and return as a <see cref="T:Cake.Core.IO.FilePath"/>
+            The alias expects a valid project file.
+            <code>
+            // Project output dll/exe as FilePath[] for 'Debug' configuration and AnyCPU platform
+            IEnumerable&lt;FilePath&gt; filePaths = GetOutputAssemblies(new FilePath("test.csproj"), "Custom", "AnyCPU");
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectParserExtensions.ParseProjectFile(Cake.Core.IO.IFile,System.String,System.String)">
+            <summary>
+            Parses a csproj file into a strongly typed <see cref="T:Cake.Incubator.Project.CustomProjectParserResult"/> object
+            </summary>
+            <returns>The parsed project</returns>
+            <param name="projectFile">the project file</param>
+            <param name="configuration">the build configuration</param>
+            <param name="platform">the build configuration platform, defaults to AnyCPU if not specified</param>
+            <returns>The parsed project</returns>
+            <example>
+            Returns the project information specific to a build configuration
+            <code>
+            CustomParseProjectResult project
+                    = new File("./test.csproj").ParseProject(configuration: "Release", platform: "x86");
+            </code>
+            </example>
+        </member>
+        <member name="T:Cake.Incubator.Project.ProjectPath">
+            <summary>
+            Class which describes the Path to a Visual Studio Project.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.Project.ProjectPath.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Cake.Incubator.Project.ProjectPath"/> class.
+            </summary>
+            <param name="path">The path to the project file.</param>
+        </member>
+        <member name="P:Cake.Incubator.Project.ProjectPath.Path">
+            <summary>
+            Gets or sets the path to the Project file.
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.ProjectPath.IsFile">
+            <summary>
+            Gets a value indicating whether the Project Path is to an actual file.
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.ProjectType">
+            <summary>
+            Visual Studio project types
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.ProjectTypes">
+            <summary>
+            Class to contain a list of the Project Type ID's that exist within the Visual Studio eco-system.
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.ProjectXElement">
+            <summary>
+                MSBuild Project Xml Element XNames
+                original source: https://github.com/cake-build/cake/blob/main/src/Cake.Common/Solution/Project/ProjectXElement.cs
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.Project.RuntimeOptions">
+            <summary>
+            Optional runtime options to override the default settings
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.RuntimeOptions.ServerGarbageCollection">
+            <summary>
+            The runtime option for server GC
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.RuntimeOptions.RetainVMGarbageCollection">
+            <summary>
+            The runtime option for retaining vm GC
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.RuntimeOptions.ThreadPoolMinThreads">
+            <summary>
+            The runtime option for min thread pool threads
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.RuntimeOptions.ThreadPoolMaxThreads">
+            <summary>
+            The runtime option for max thread pool threads
+            </summary>
+        </member>
+        <member name="P:Cake.Incubator.Project.RuntimeOptions.ConcurrentGarbageCollection">
+            <summary>
+            The runtime option for concurrent GC
+            </summary>
+        </member>
+        <member name="T:Cake.Incubator.SolutionParserExtensions.SolutionParserExtensions">
+            <summary>
+            Several extension methods when using SolutionParser.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.SolutionParserExtensions.SolutionParserExtensions.IsSolutionFolder(Cake.Common.Solution.SolutionProject)">
+            <summary>
+            Checks if a SolutionProject is of type SolutionFolder
+            </summary>
+            <param name="project">the solutionproject</param>
+            <returns>true if the project is a solution folder</returns>
+            <example>
+            Identifies a SolutionProject as a solution folder type
+            <code>
+            // test.sln { proj1.csproj, solutionFolder }
+            var projects = ParseSolution(new FilePath("test.sln")).Projects;
+            
+            projects[0].IsSolutionFolder(); // false
+            projects[1].IsSolutionFolder(); // true
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.SolutionParserExtensions.SolutionParserExtensions.IsType(Cake.Common.Solution.SolutionProject,Cake.Incubator.Project.ProjectType)">
+            <summary>
+            Checks the SolutionProject type
+            </summary>
+            <param name="project">The solutionproject</param>
+            <param name="projectType">The type to check</param>
+            <returns>true if the project type matches</returns>
+        </member>
+        <member name="M:Cake.Incubator.SolutionParserExtensions.SolutionParserExtensions.GetProjects(Cake.Common.Solution.SolutionParserResult)">
+            <summary>
+            Gets the SolutionProjects, excluding any SolutionFolders
+            </summary>
+            <param name="projects">The SolutionProject collection</param>
+            <returns>The SolutionProjects</returns>
+            <example>
+            Gets an absolute assembly path for a project
+            <code>
+            SolutionProjectResult result = ParseSolution(new FilePath("test.sln"));
+            result.GetProjects();
+            </code>
+            </example>
+        </member>
+        <member name="M:Cake.Incubator.SolutionParserExtensions.SolutionParserExtensions.GetAssemblyFilePath(Cake.Common.Solution.SolutionProject,Cake.Incubator.Project.CustomProjectParserResult)">
+            <summary>
+            Gets the output assembly path for a SolutionProject
+            </summary>
+            <param name="solutionProject">The solutionproject</param>
+            <param name="project">The parsed project</param>
+            <returns>The SolutionProject output assembly path</returns>
+            <example>
+            Gets an absolute assembly path for a project
+            <code>
+            var projects = ParseSolution(new FilePath("test.sln")).GetProjects();
+            project[0].GetAssemblyFilePath(); 
+            </code>
+            </example>
+        </member>
+        <member name="T:Cake.Incubator.StringExtensions.StringExtensions">
+            <summary>
+            Several extension methods when using String.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.StringExtensions.StringExtensions.EqualsIgnoreCase(System.String,System.String)">
+            <summary>
+            Case-insensitive String.Equals
+            </summary>
+            <param name="source">the source string</param>
+            <param name="value">the string to compare</param>
+            <returns>true if strings are the same</returns>
+        </member>
+        <member name="M:Cake.Incubator.StringExtensions.StringExtensions.StartsWithIgnoreCase(System.String,System.String)">
+            <summary>
+            Case-insensitive String.StartsWith
+            </summary>
+            <param name="source">the source string</param>
+            <param name="value">the string to compare</param>
+            <returns>true if string starts with the value to check</returns>
+        </member>
+        <member name="M:Cake.Incubator.StringExtensions.StringExtensions.EndsWithIgnoreCase(System.String,System.String)">
+            <summary>
+            Case-insensitive String.EndsWith
+            </summary>
+            <param name="source">the source string</param>
+            <param name="value">the string to compare</param>
+            <returns>true if string ends with the value to check</returns>
+        </member>
+        <member name="T:Cake.Incubator.XDocumentExtensions.XDocumentExtensions">
+            <summary>
+            Several extension methods when using XDocument.
+            </summary>
+        </member>
+        <member name="M:Cake.Incubator.XDocumentExtensions.XDocumentExtensions.GetOutputPaths(System.Xml.Linq.XDocument,System.String,System.String[],Cake.Core.IO.DirectoryPath,System.String)">
+            <summary>
+            Gets the first output path value for a specific config from an xml document
+            </summary>
+            <param name="document">The xml document</param>
+            <param name="config">the configuration</param>
+            <param name="rootDirectoryPath">the root directory for any relative assembly paths</param>
+            <param name="platform">the platform</param>
+            <param name="targetFrameworks">the target frameworks expected (affects output paths)</param>
+            <returns>the output path</returns>
+        </member>
+        <member name="M:Cake.Incubator.XDocumentExtensions.XDocumentExtensions.IsDotNetSdk(System.Xml.Linq.XDocument)">
+            <summary>
+            Checks if an xml document for the dot net sdk attribute
+            </summary>
+            <param name="document">The xml document</param>
+            <returns>True if attribute was found</returns>
+        </member>
+        <member name="M:Cake.Incubator.XDocumentExtensions.XDocumentExtensions.GetFirstElementValue(System.Xml.Linq.XDocument,System.Xml.Linq.XName,System.String,System.String)">
+            <summary>
+            gets the first matching element value, if a config is passed, it will only match an element with the specified config and platform condition.
+            the platform defaults to AnyCPU
+            </summary>
+            <param name="document">the document</param>
+            <param name="elementName">the element name to match</param>
+            <param name="config">the configuration to match</param>
+            <param name="platform">the platform to match, default is AnyCPU</param>
+            <returns>the matching element value if found</returns>
+        </member>
+        <member name="M:Cake.Incubator.XElementExtensions.XElementExtensions.GetFirstElementValue(System.Xml.Linq.XElement,System.Xml.Linq.XName,System.String,System.String)">
+            <summary>
+            gets the first matching element value, if a config is passed, it will only match an element with the specified config and platform condition.
+            the platform defaults to AnyCPU
+            </summary>
+            <param name="element">the parent element</param>
+            <param name="elementName">the element name to match</param>
+            <param name="config">the configuration to match</param>
+            <param name="platform">the platform to match, default is AnyCPU</param>
+            <returns>the matching element value if found</returns>
+        </member>
+        <member name="M:Cake.Incubator.XElementExtensions.XElementExtensions.WithConfigCondition(System.Xml.Linq.XElement,System.String,System.String)">
+            <summary>
+            checks the element for a config condition attribute. If not found, also check the parent
+            </summary>
+            <param name="element">the element</param>
+            <param name="config">the optional config value to match</param>
+            <param name="platform">the optional platform value to match</param>
+            <returns>true if a matching condition is found</returns>
+        </member>
+        <member name="M:Cake.Incubator.XElementExtensions.XElementExtensions.Attribute(System.Xml.Linq.XElement,System.Xml.Linq.XName,System.Boolean)">
+            <summary>
+            Gets the first (in document order) attribute with the specified <see cref="T:System.Xml.Linq.XName"/>.
+            </summary>
+            <param name="element">The element.</param>
+            <param name="name">The <see cref="T:System.Xml.Linq.XName"/> to match.</param>
+            <param name="ignoreCase">If set to <c>true</c> case will be ignored whilst searching for the <see cref="T:System.Xml.Linq.XAttribute"/>.</param>
+            <returns>A <see cref="T:System.Xml.Linq.XAttribute"/> that matches the specified <see cref="T:System.Xml.Linq.XName"/>, or null. </returns>
+        </member>
+    </members>
+</doc>

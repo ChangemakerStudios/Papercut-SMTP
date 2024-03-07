@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.Extensions.PlatformAbstractions;
-using Quobject.SocketIoClientDotNet.Client;
 
 namespace Papercut.Desktop
 {
@@ -25,13 +25,14 @@ namespace Papercut.Desktop
         public static void Quit()
         {
             var socket = GetElectronSocket();
-            socket.On(Socket.EVENT_CONNECT, () =>
-            {
-                Electron.App.Quit();
+
+            //socket.On(Socket.EVENT_CONNECT, () =>
+            //{
+            //    Electron.App.Quit();
                 
-                Thread.Sleep(100);
-                Environment.Exit(-1);
-            });
+            //    Thread.Sleep(100);
+            //    Environment.Exit(-1);
+            //});
             
             // Wait at most 2 seconds
             Thread.Sleep(2000);
@@ -56,7 +57,7 @@ namespace Papercut.Desktop
                 Papercut.Service.Program.Shutdown();
             }
 
-            socket.On(eventType, Handler);
+            //socket.On(eventType, Handler);
         }
 
         static string WindowIcon()
@@ -89,8 +90,8 @@ namespace Papercut.Desktop
 
             var socket = GetElectronSocket();
 
-            QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
-            QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
+            //QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
+            //QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
         }
     }
 }

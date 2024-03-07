@@ -15,6 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Security;
@@ -22,10 +24,14 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Papercut.Common.Helper;
 using Papercut.Core.Domain.Application;
 using Papercut.Core.Infrastructure.Lifecycle;
 using Papercut.Service.Helpers;
+
+using Serilog;
 
 using SmtpServer;
 using SmtpServer.Mail;
@@ -43,15 +49,19 @@ namespace Papercut.Service.Infrastructure.SmtpServer
 
         private readonly MessageStore _messageStore;
 
+        private readonly IServiceProvider _serviceProvider;
+
         private readonly PapercutServiceSettings _serviceSettings;
 
         public SmtpServerStartup(
+            IServiceProvider serviceProvider,
             PapercutServiceSettings serviceSettings,
             IAppMeta applicationMetaData,
             Serilog.ILogger logger,
             MessageStore messageStore,
             ILogger bridgeLogger)
         {
+            this._serviceProvider = serviceProvider;
             this._serviceSettings = serviceSettings;
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;
@@ -63,8 +73,8 @@ namespace Papercut.Service.Infrastructure.SmtpServer
         {
             get
             {
-                if (this._serviceSettings.IP.IsNullOrWhiteSpace()
-                    || this._serviceSettings.IP.CaseInsensitiveEquals("Any")) return "0.0.0.0";
+                if (this._serviceSettings.IP.IsNullOrWhiteSpace()) return "0.0.0.0";
+                    //|| this._serviceSettings.IP.CaseInsensitiveEquals("Any")) return "0.0.0.0";
 
                 return this._serviceSettings.IP;
             }
@@ -76,15 +86,15 @@ namespace Papercut.Service.Infrastructure.SmtpServer
                 this.IgnoreCertificateValidationFailureForTestingOnly;
 
             var options = new SmtpServerOptionsBuilder()
-                .ServerName(this._applicationMetaData.AppName)
-                .MailboxFilter(new DelegatingMailboxFilter(this.CanAcceptMailbox))
-                .UserAuthenticator(new SimpleAuthentication())
-                .Logger(this._bridgeLogger)
-                .MessageStore(this._messageStore);
+                .ServerName(this._applicationMetaData.AppName);
+                //.MailboxFilter(new DelegatingMailboxFilter(this.CanAcceptMailbox))
+                //.UserAuthenticator(new SimpleAuthentication())
+                //.Logger(this._bridgeLogger)
+                //.MessageStore(this._messageStore);
 
             foreach (var endpoint in this.GetEndpoints()) options = options.Endpoint(endpoint);
 
-            var server = new global::SmtpServer.SmtpServer(options.Build());
+            var server = new global::SmtpServer.SmtpServer(options.Build(), this._serviceProvider);
 
             server.SessionCreated += this.OnSessionCreated;
             server.SessionCompleted += this.OnSessionCompleted;
@@ -107,12 +117,12 @@ namespace Papercut.Service.Infrastructure.SmtpServer
                 .IsSecure(false).Build();
         }
 
-        private MailboxFilterResult CanAcceptMailbox(
-            ISessionContext sessionContext,
-            IMailbox mailbox)
-        {
-            return MailboxFilterResult.Yes;
-        }
+        //private MailboxFilterResult CanAcceptMailbox(
+        //    ISessionContext sessionContext,
+        //    IMailbox mailbox)
+        //{
+        //    return MailboxFilterResult.Yes;
+        //}
 
         private void OnSessionCompleted(object sender, SessionEventArgs e)
         {

@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Cake.FileHelpers</id>
+    <version>4.0.1</version>
+    <title>Cake.FileHelpers</title>
+    <authors>Redth</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <icon>icon.png</icon>
+    <projectUrl>https://github.com/cake-contrib/Cake.FileHelpers</projectUrl>
+    <iconUrl>https://cdn.jsdelivr.net/gh/cake-contrib/graphics/png/cake-contrib-medium.png</iconUrl>
+    <description>Cake Build addon to provide Aliases for common File operations (Reading, Writing, Replacing Text).</description>
+    <copyright>Copyright 2017-2021 - Cake Contributions</copyright>
+    <tags>cake script build cake-addin</tags>
+    <repository type="git" url="https://github.com/cake-contrib/Cake.FileHelpers.git" commit="6d731725fadfed937de3fb6b093f609266cd20c4" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6" />
+      <group targetFramework="net5.0" />
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
+  </metadata>
+</package>
