@@ -1,139 +1,119 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
 
-namespace Papercut.Service
+
+using System;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+using ElectronNET.API;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.PlatformAbstractions;
+
+using Papercut.Service.Infrastructure.WebServer;
+
+using Serilog;
+using Serilog.ExceptionalLogContext;
+
+namespace Papercut.Service;
+
+public class Program
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Autofac;
-    
-    using Papercut.Core.Infrastructure.Container;
-
-    using System.Threading;
-
-    using Serilog;
-    using Papercut.Core.Domain.Application;
-    using System.Threading.Tasks;
-    using System.Reflection;
-    using System.Runtime.Loader;
-
-    using Papercut.Core.Infrastructure.Lifecycle;
-
-    public class Program
+    internal class BaseHostedService : IHostedService
     {
-        public static int Main(string[] args)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            Log.Logger = PapercutContainer.RootLogger;
-
-            return RunAsync().GetAwaiter().GetResult();
+            return Task.CompletedTask;
         }
 
-        private static void HookHandlers()
+        public Task StopAsync(CancellationToken cancellationToken)
         {
-            TaskScheduler.UnobservedTaskException += (sender, e) => Log.Logger.Error(e.Exception, "Unobserved Task Exception");
-            Console.CancelKeyPress += (s, e) => Shutdown(true);
-            AssemblyLoadContext.Default.Unloading += context => Shutdown();
+            return Task.CompletedTask;
         }
-
-        public static async Task<int> RunAsync()
-        {
-            HookHandlers();
-
-            return await RunContainer(
-                       (scope, token) =>
-                       {
-                           Console.Title = scope.Resolve<IAppMeta>().AppName;
-                           return Task.CompletedTask;
-                       });
-        }
-
-        #region Service Control
-
-        private static readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
-        public static bool HandleExceptions { get; set; } = true;
-
-        public static async Task<int> RunContainer(Func<ILifetimeScope, CancellationToken, Task> runAction, Func<ILifetimeScope, Task> shutdownAction = null)
-        {
-            try
-            {
-                if (PapercutCoreModule.SpecifiedEntryAssembly == null)
-                {
-                    PapercutCoreModule.SpecifiedEntryAssembly = Assembly.GetEntryAssembly();
-                }
-
-                using (var appContainer = PapercutContainer.Instance.BeginLifetimeScope())
-                {
-                    await runAction(appContainer, _cancellationTokenSource.Token);
-
-                    var tasks = new List<Task>();
-
-                    // run all
-                    foreach (var service in appContainer.Resolve<IEnumerable<IStartupService>>().ToList())
-                    {
-                        tasks.Add(service.Start(_cancellationTokenSource.Token));
-                    }
-
-                    _cancellationTokenSource.Token.WaitHandle.WaitOne();
-
-                    // wait for the processes to finish
-                    await Task.WhenAll(tasks);
-
-                    if (shutdownAction != null)
-                    {
-                        await shutdownAction.Invoke(appContainer);
-                    }
-                }
-
-                return 0;
-            }
-            catch (OperationCanceledException)
-            {
-                // all good
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Fatal(ex, "Unhandled Exception");
-
-                if (!HandleExceptions)
-                {
-                    throw;
-                }
-            }
-
-            return 1;
-        }
-
-        public static void Shutdown(bool cancelled = false)
-        {
-            try
-            {
-                PapercutContainer.RootLogger.Information("Shutting Down (Cancelled: {Cancelled})...", cancelled);
-
-                _cancellationTokenSource.Cancel();
-            }
-            catch (ObjectDisposedException)
-            {
-                // not logged
-            }
-        }
-
-        #endregion
     }
+
+    private static CancellationTokenSource _cancellationTokenSource;
+
+    public static async Task Main(string[] args)
+    {
+        Console.Title = "Papercut.Service";
+
+        Log.Logger = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .Enrich.WithExceptionalLogContext()
+            .WriteTo.Console()
+            .CreateBootstrapLogger(); // <-- 😎
+
+        await RunAsync<BaseHostedService>(args);
+    }
+
+    public static async Task RunAsync<THostedService>(string[] args)
+        where THostedService : class, IHostedService
+    {
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        try
+        {
+            await CreateHostBuilder<THostedService>(args).Build().RunAsync(_cancellationTokenSource.Token);
+        }
+        catch (Exception ex) when (ex is not TaskCanceledException and not ObjectDisposedException)
+        {
+            Log.Fatal(ex, "An unhandled exception occured during bootstrapping");
+        }
+        finally
+        {
+            _cancellationTokenSource?.Dispose();
+            await Log.CloseAndFlushAsync();
+        }
+    }
+
+    public static void Shutdown()
+    {
+        _cancellationTokenSource.Cancel();
+    }
+
+    public static IHostBuilder CreateHostBuilder<THostedService>(string[] args)
+        where THostedService : class, IHostedService =>
+        Host.CreateDefaultBuilder(args)
+            .UseContentRoot(PlatformServices.Default.Application.ApplicationBasePath)
+            .UseSerilog(
+                (context, services, configuration) => configuration
+                    .Enrich.FromLogContext()
+                    .Enrich.WithExceptionalLogContext()
+                    .WriteTo.Console()
+                    .ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(services))
+            .ConfigureServices(
+                (context, sp) =>
+                {
+                    sp.AddSingleton<IConfiguration>(context.Configuration);
+                    sp.AddSingleton<IHostEnvironment>(context.HostingEnvironment);
+                    sp.AddHostedService<THostedService>();
+                })
+            .ConfigureWebHostDefaults(
+                webBuilder =>
+                {
+                    webBuilder.UseElectron(args);
+                    webBuilder.UseStartup<WebStartup>();
+                });
 }

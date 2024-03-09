@@ -5,11 +5,14 @@
     <OutputType>exe</OutputType>
     <OutputTypeEx>exe</OutputTypeEx>
     <DebugType>portable</DebugType>
+	  <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <None Update="electron.manifest.json" CopyToOutputDirectory="Always">
-    </None>
+    <None Remove="electron.manifest.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="electron.manifest.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.0.0" />

@@ -40,16 +40,12 @@ namespace Papercut.Core.Infrastructure.Container
         protected override void Load(ContainerBuilder builder)
         {
             new RegisterLogger().Register(builder);
-            new RegisterPlugins(Log.Logger).Register(builder, PapercutContainer.ExtensionAssemblies);
+            //new RegisterPlugins(Log.Logger).Register(builder, PapercutContainer.ExtensionAssemblies);
 
             //builder.RegisterAssemblyModules(PapercutContainer.ExtensionAssemblies);
 
             builder.RegisterInstance(PluginStore.Instance).As<IPluginStore>().SingleInstance();
             builder.RegisterType<PluginReport>().AsImplementedInterfaces().SingleInstance();
-
-            builder.RegisterType<AutofacServiceProvider>()
-                .As<IServiceProvider>()
-                .InstancePerLifetimeScope();
 
             // events
             builder.RegisterType<AutofacMessageBus>()

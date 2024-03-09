@@ -5,7 +5,7 @@
 rem we need to use this command to 'build' an Electron.NET app. (But actually, we don't need to run it at this time; however, Electron.NET does not provide a switch for prevent running)
 if NOT "%1"=="nobuild" (
     echo rebuilding electron app... (To sktip rebuilding, just add 'nobuild' as an argument ^^^)
-    dotnet electronize start
+    electronize start
 )
 
 

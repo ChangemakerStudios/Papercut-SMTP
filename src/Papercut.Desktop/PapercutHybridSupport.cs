@@ -6,6 +6,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
+
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Papercut.Desktop
@@ -14,12 +16,16 @@ namespace Papercut.Desktop
 
     using Papercut.Core.Domain.Settings;
     using Papercut.Core.Infrastructure.Lifecycle;
+    using SmtpServer.Text;
 
-    public class PapercutHybridSupport : IStartupService
+    public class PapercutHybridSupport : IHostedService
     {
-        public PapercutHybridSupport(ISettingStore settingsStore)
+        private readonly IHostApplicationLifetime _hostApplicationLifetime;
+
+        public PapercutHybridSupport(IHostApplicationLifetime hostApplicationLifetime)
         {
-            settingsStore.Set("HttpPort", BridgeSettings.WebPort);
+            this._hostApplicationLifetime = hostApplicationLifetime;
+            //settingsStore.Set("HttpPort", BridgeSettings.WebPort);
         }
 
         public static void Quit()
@@ -35,8 +41,8 @@ namespace Papercut.Desktop
             //});
             
             // Wait at most 2 seconds
-            Thread.Sleep(2000);
-            Environment.Exit(-1);
+            //Thread.Sleep(2000);
+            //Environment.Exit(-1);
         }
 
         static Socket GetElectronSocket()
@@ -67,13 +73,19 @@ namespace Papercut.Desktop
                 isWindows ? "Papercut-icon.ico" : "Papercut-icon.png");
         }
 
-        public async Task Start(CancellationToken token)
+        public Task Start(CancellationToken token)
         {
-            token.Register(Quit);
+            return Task.CompletedTask;
 
+            //QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
+            //QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
+        }
+
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
             Electron.App.WillQuit += (q) =>
             {
-                Papercut.Service.Program.Shutdown();
+                this._hostApplicationLifetime.StopApplication();
                 return Task.CompletedTask;
             };
 
@@ -88,10 +100,12 @@ namespace Papercut.Desktop
                     Icon = WindowIcon()
                 });
 
-            var socket = GetElectronSocket();
+            //var socket = GetElectronSocket();
+        }
 
-            //QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
-            //QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 }

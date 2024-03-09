@@ -28,17 +28,17 @@ namespace Papercut.Desktop
 
     public class Program
     {
-        static int Main(string[] args)
+        static async Task Main(string[] args)
         {
             if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DEBUG_PAPAERCUT")))
             {
                 Console.WriteLine("Waiting 30s for the debugger to attach...");
-                Thread.Sleep(30 * 1000);
+                await Task.Delay(30 * 1000);
             }
 
-            Task<int> appTask;
+            //Task<int> appTask;
 
-            new WebHostBuilder().UseElectron(args);
+            //new WebHostBuilder().UseElectron(args);
 
             if (HybridSupport.IsElectronActive)
             {
@@ -50,15 +50,13 @@ namespace Papercut.Desktop
                     PapercutHybridSupport.Quit();
                 }
 
-                appTask = Service.Program.RunAsync();
+                await Service.Program.RunAsync<PapercutHybridSupport>(args);
             }
             else
             {
                 Console.Error.WriteLine("Electron context is not detected. The application will run in console mode.");
-                appTask = Service.Program.RunAsync();
+                //await Service.Program.RunAsync(args);
             }
-
-            return appTask.GetAwaiter().GetResult();
         }
     }
 }

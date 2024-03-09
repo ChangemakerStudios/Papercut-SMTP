@@ -40,21 +40,10 @@ namespace Papercut.Service.Infrastructure.WebServer
 
         private readonly ILogger _logger;
 
-        readonly IMessageBus _messageBus;
-
-        readonly ILifetimeScope _scope;
-
-        readonly ISettingStore _settingStore;
-
-        public WebServer(ILifetimeScope scope, ISettingStore settingStore, IMessageBus messageBus, ILogger logger)
+        public WebServer(ILifetimeScope scope, ISettingStore settingStore, ILogger logger)
         {
-            this._scope = scope;
-            this._settingStore = settingStore;
-            this._messageBus = messageBus;
             this._logger = logger;
-
             WebStartup.Scope = scope;
-
             this._httpPort = settingStore.Get("HttpPort", DefaultHttpPort);
         }
 
@@ -72,15 +61,15 @@ namespace Papercut.Service.Infrastructure.WebServer
             if (this._httpPort <= 0)
             {
                 var server = WebStartup.StartInProcessServer(token);
-                //client = server.CreateClient();
+                server.Dispose();
             }
             else
             {
-                WebStartup.Start(this._httpPort, token);
+               // WebStartup.Start(this._httpPort, token);
                 //client = new HttpClient { BaseAddress = new Uri($"http://localhost:{this._httpPort}") };
             }
 
-            this._messageBus.Publish(new PapercutWebServerReadyEvent { HttpClient = client });
+            //this._messageBus.Publish(new PapercutWebServerReadyEvent { HttpClient = client });
 
             return Task.CompletedTask;
         }

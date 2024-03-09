@@ -42,26 +42,16 @@ namespace Papercut.Service.Infrastructure.WebServer
     internal class WebStartup
     {
         public static ILifetimeScope Scope { get; set; }
-        public static IWebHost Start(ushort httpPort, CancellationToken cancellation)
+        public static IWebHost Start(ushort httpPort)
         {
             var hostBuilder = new WebHostBuilder();
             hostBuilder
                 .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
                 .UseKestrel()
-                //.UseSerilog(Scope.Resolve<ILogger>())
                 .UseStartup<WebStartup>()
-                .UseUrls($"http://*:{httpPort}");
+                .UseUrls($"http://localhost:{httpPort}");
 
-            var host = hostBuilder.Build();
-
-            Task.Factory.StartNew(
-                () =>
-                {
-                    var _ = host.RunAsync(cancellation);
-                },
-                cancellation);
-
-            return host;
+            return hostBuilder.Build();
         }
 
          public static HttpServer StartInProcessServer(CancellationToken cancellation, string env = "Production")
@@ -70,21 +60,20 @@ namespace Papercut.Service.Infrastructure.WebServer
              hostBuilder
                  .UseWebRoot(PlatformServices.Default.Application.ApplicationBasePath)
                  .UseEnvironment(env)
-                 //.UseSerilog(Scope.Resolve<ILogger>())
                  .UseStartup<WebStartup>();
  
              return new HttpServer(hostBuilder);
          }
 
         [UsedImplicitly]
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
             services.AddMemoryCache();
 
             var mvcCore = services.AddMvcCore();
             //mvcCore.AddJsonFormatters();
-            services.AddSignalR();
+            //services.AddSignalR();
 
             services.AddCors(
                 s =>
@@ -96,25 +85,17 @@ namespace Papercut.Service.Infrastructure.WebServer
                             c.AllowAnyOrigin();
                         });
                 });
-
-            var builder = new ContainerBuilder();
-            builder.Populate(services);
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            //builder.Update(Scope.ComponentRegistry);
-
-            return new AutofacServiceProvider(Scope);
         }
 
         [UsedImplicitly]
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
             //loggerFactory.AddProvider(new SerilogLoggerProvider(Scope));
             //app.UseSignalR(routes =>
             //{
             //    routes.MapHub<NewMessagesHub>("/new-messages");
             //});
-            app.UseMvc();
+            app.UseStaticFiles();
             //app.UseResponseBuffering();
         }
     }
