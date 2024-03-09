@@ -22,15 +22,15 @@ using Microsoft.AspNetCore.Mvc;
 
 using MimeKit;
 
-namespace Papercut.Service.Web
-{
-    public class MimePartFileStreamResult : FileStreamResult
-    {
-        private readonly string _tempFilePath;
+namespace Papercut.Service.Web;
 
-        public MimePartFileStreamResult(IMimeContent contentObject, string contentType)
-            : base(new MemoryStream(), contentType)
-        {
+public class MimePartFileStreamResult : FileStreamResult
+{
+    private readonly string _tempFilePath;
+
+    public MimePartFileStreamResult(IMimeContent contentObject, string contentType)
+        : base(new MemoryStream(), contentType)
+    {
             this._tempFilePath = Path.GetTempFileName();
 
             using (var tempFile = File.OpenWrite(this._tempFilePath))
@@ -42,14 +42,14 @@ namespace Papercut.Service.Web
             this.FileStream = File.OpenRead(this._tempFilePath);
         }
 
-        public override void ExecuteResult(ActionContext context)
-        {
+    public override void ExecuteResult(ActionContext context)
+    {
             base.ExecuteResult(context);
             this.Cleanup();
         }
 
-        public override Task ExecuteResultAsync(ActionContext context)
-        {
+    public override Task ExecuteResultAsync(ActionContext context)
+    {
             return base.ExecuteResultAsync(context).ContinueWith(
                 task =>
                 {
@@ -57,8 +57,8 @@ namespace Papercut.Service.Web
                 });
         }
 
-        private void Cleanup()
-        {
+    private void Cleanup()
+    {
             try
             {
                 File.Delete(this._tempFilePath);
@@ -68,5 +68,4 @@ namespace Papercut.Service.Web
                 // ignore errors
             }
         }
-    }
 }

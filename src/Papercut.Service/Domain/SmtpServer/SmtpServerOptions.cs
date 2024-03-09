@@ -15,20 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+namespace Papercut.Service.Domain.SmtpServer;
 
-using Microsoft.Extensions.DependencyInjection;
-
-using Papercut.Core.Domain.Message;
-
-namespace Papercut.Message
+public class SmtpServerOptions
 {
-    public class PapercutMessageModule
-    {
-        public void Register(IServiceCollection services)
-        {
-            services.AddSingleton<MessageRepository>();
-            services.AddSingleton<MimeMessageLoader>();
-            services.AddSingleton<IReceivedDataHandler,ReceivedDataMessageHandler>();
-        }
-    }
+    public string IP { get; set; } = "Any";
+
+    public int Port { get; set; } = 25;
+
+    public string MessagePath { get; set; } = "%BaseDirectory%\\Incoming";
 }

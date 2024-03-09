@@ -16,34 +16,34 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Web.Models
+namespace Papercut.Service.Web.Models;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Core.Domain.Message;
+using MimeKit;
+
+public class MimeMessageEntry : MessageEntry
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    public string Subject => MailMessage?.Subject;
 
-    using Core.Domain.Message;
-    using MimeKit;
+    public DateTime? Created => _created;
 
-    public class MimeMessageEntry : MessageEntry
+    public string Id => this.Name;
+
+    public MimeMessage MailMessage { get; }
+
+    public MimeMessageEntry(MessageEntry entry, MimeMessage message) : base(entry.File)
     {
-        public string Subject => MailMessage?.Subject;
-
-        public DateTime? Created => _created;
-
-        public string Id => this.Name;
-
-        public MimeMessage MailMessage { get; }
-
-        public MimeMessageEntry(MessageEntry entry, MimeMessage message) : base(entry.File)
-        {
             MailMessage = message;
         }
 
-        public class RefDto
+    public class RefDto
+    {
+        public static RefDto CreateFrom(MimeMessageEntry messageEntry)
         {
-            public static RefDto CreateFrom(MimeMessageEntry messageEntry)
-            {
                 return new RefDto
                 {
                     Subject = messageEntry.Subject,
@@ -53,19 +53,19 @@ namespace Papercut.Service.Web.Models
                 };
             }
 
-            public string Size { get; set; }
+        public string Size { get; set; }
 
-            public string Id { get; set; }
+        public string Id { get; set; }
 
-            public DateTime? CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
-            public string Subject { get; set; }
-        }
+        public string Subject { get; set; }
+    }
 
-        public class DetailDto
+    public class DetailDto
+    {
+        public static DetailDto CreateFrom(MimeMessageEntry messageEntry)
         {
-            public static DetailDto CreateFrom(MimeMessageEntry messageEntry)
-            {
                 var mail = messageEntry.MailMessage;
 
                 return new DetailDto
@@ -84,8 +84,8 @@ namespace Papercut.Service.Web.Models
                 };
             }
 
-            static List<EmailAttachmentDto> ToSectionDtos(IEnumerable<MimeEntity> bodyParts)
-            {
+        static List<EmailAttachmentDto> ToSectionDtos(IEnumerable<MimeEntity> bodyParts)
+        {
 
                 if (bodyParts == null) return new List<EmailAttachmentDto>();
 
@@ -99,8 +99,8 @@ namespace Papercut.Service.Web.Models
                     }).ToList();
             }
 
-            static List<EmailAddressDto> ToAddressList(IList<InternetAddress> mailAddresses)
-            {
+        static List<EmailAddressDto> ToAddressList(IList<InternetAddress> mailAddresses)
+        {
                 if (mailAddresses == null)
                 {
                     return new List<EmailAddressDto>();
@@ -112,36 +112,35 @@ namespace Papercut.Service.Web.Models
                     .ToList();
             }
 
-            public string Id { get; set; }
-            public DateTime? CreatedAt { get; set; }
-            public string Subject { get; set; }
-            public List<EmailAddressDto> From { get; set; } = new List<EmailAddressDto>();
-            public List<EmailAddressDto> To { get; set; } = new List<EmailAddressDto>();
-            public List<EmailAddressDto> Cc { get; set; } = new List<EmailAddressDto>();
-            public List<EmailAddressDto> BCc { get; set; } = new List<EmailAddressDto>();
-            public string HtmlBody { get; set; }
-            public string TextBody { get; set; }
-            public List<HeaderDto> Headers { get; set; }
-            public List<EmailAttachmentDto> Sections { get; set; }
-        }
+        public string Id { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string Subject { get; set; }
+        public List<EmailAddressDto> From { get; set; } = new List<EmailAddressDto>();
+        public List<EmailAddressDto> To { get; set; } = new List<EmailAddressDto>();
+        public List<EmailAddressDto> Cc { get; set; } = new List<EmailAddressDto>();
+        public List<EmailAddressDto> BCc { get; set; } = new List<EmailAddressDto>();
+        public string HtmlBody { get; set; }
+        public string TextBody { get; set; }
+        public List<HeaderDto> Headers { get; set; }
+        public List<EmailAttachmentDto> Sections { get; set; }
+    }
 
-        public class EmailAddressDto
-        {
-            public string Name { get; set; }
-            public string Address { get; set; }
-        }
+    public class EmailAddressDto
+    {
+        public string Name { get; set; }
+        public string Address { get; set; }
+    }
 
-        public class HeaderDto
-        {
-            public string Name { get; set; }
-            public string Value { get; set; }
-        }
+    public class HeaderDto
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
 
-        public class EmailAttachmentDto
-        {
-            public string Id { get; set; }
-            public string MediaType { get; set; }
-            public string FileName { get; set; }
-        }
+    public class EmailAttachmentDto
+    {
+        public string Id { get; set; }
+        public string MediaType { get; set; }
+        public string FileName { get; set; }
     }
 }

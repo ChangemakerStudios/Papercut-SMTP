@@ -16,13 +16,12 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Web.Hosting
-{
-    using System.Net.Http;
-    using Papercut.Common.Domain;
+namespace Papercut.Service.Web.Hosting;
 
-    public class PapercutWebServerReadyEvent : IEvent
-    {
-        public HttpClient HttpClient { get; set; }
-    }
+using System.Net.Http;
+using Papercut.Common.Domain;
+
+public class PapercutWebServerReadyEvent : IEvent
+{
+    public HttpClient HttpClient { get; set; }
 }

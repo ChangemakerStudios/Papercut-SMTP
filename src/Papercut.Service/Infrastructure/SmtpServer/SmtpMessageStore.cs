@@ -28,33 +28,33 @@ using SmtpServer.Mail;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
 
-namespace Papercut.Service.Infrastructure.SmtpServer
+namespace Papercut.Service.Infrastructure.SmtpServer;
+
+public class SmtpMessageStore : MessageStore
 {
-    public class SmtpMessageStore : MessageStore
+    #region Fields
+
+    private readonly IReceivedDataHandler _receivedDataHandler;
+
+    #endregion
+
+    #region Constructors and Destructors
+
+    public SmtpMessageStore(IReceivedDataHandler receivedDataHandler)
     {
-        #region Fields
-
-        private readonly IReceivedDataHandler _receivedDataHandler;
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        public SmtpMessageStore(IReceivedDataHandler receivedDataHandler)
-        {
             this._receivedDataHandler = receivedDataHandler;
         }
 
-        #endregion
+    #endregion
 
-        #region Public Methods and Operators
+    #region Public Methods and Operators
 
-        public override Task<SmtpResponse> SaveAsync(
-            ISessionContext context,
-            IMessageTransaction transaction,
-            ReadOnlySequence<byte> buffer,
-            CancellationToken cancellationToken)
-        {
+    public override Task<SmtpResponse> SaveAsync(
+        ISessionContext context,
+        IMessageTransaction transaction,
+        ReadOnlySequence<byte> buffer,
+        CancellationToken cancellationToken)
+    {
             this._receivedDataHandler.HandleReceived(
                 buffer.ToArray(),
                 transaction.To.Select(s => s.AsAddress()).ToArray());
@@ -62,6 +62,5 @@ namespace Papercut.Service.Infrastructure.SmtpServer
             return Task.FromResult(SmtpResponse.Ok);
         }
 
-        #endregion
-    }
+    #endregion
 }

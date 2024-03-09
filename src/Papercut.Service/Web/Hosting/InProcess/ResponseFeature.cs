@@ -9,15 +9,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 
-namespace Papercut.Service.Web.Hosting.InProcess
-{
-    internal class ResponseFeature : IHttpResponseFeature
-    {
-        private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
-        private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
+namespace Papercut.Service.Web.Hosting.InProcess;
 
-        public ResponseFeature()
-        {
+internal class ResponseFeature : IHttpResponseFeature
+{
+    private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
+    private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
+
+    public ResponseFeature()
+    {
             Headers = new HeaderDictionary();
             Body = new MemoryStream();
 
@@ -26,18 +26,18 @@ namespace Papercut.Service.Web.Hosting.InProcess
             StatusCode = 200;
         }
 
-        public int StatusCode { get; set; }
+    public int StatusCode { get; set; }
 
-        public string ReasonPhrase { get; set; }
+    public string ReasonPhrase { get; set; }
 
-        public IHeaderDictionary Headers { get; set; }
+    public IHeaderDictionary Headers { get; set; }
 
-        public Stream Body { get; set; }
+    public Stream Body { get; set; }
 
-        public bool HasStarted { get; set; }
+    public bool HasStarted { get; set; }
 
-        public void OnStarting(Func<object, Task> callback, object state)
-        {
+    public void OnStarting(Func<object, Task> callback, object state)
+    {
             var prior = _responseStartingAsync;
             _responseStartingAsync = async () =>
             {
@@ -46,8 +46,8 @@ namespace Papercut.Service.Web.Hosting.InProcess
             };
         }
 
-        public void OnCompleted(Func<object, Task> callback, object state)
-        {
+    public void OnCompleted(Func<object, Task> callback, object state)
+    {
             var prior = _responseCompletedAsync;
             _responseCompletedAsync = async () =>
             {
@@ -62,15 +62,14 @@ namespace Papercut.Service.Web.Hosting.InProcess
             };
         }
 
-        public async Task FireOnSendingHeadersAsync()
-        {
+    public async Task FireOnSendingHeadersAsync()
+    {
             await _responseStartingAsync();
             HasStarted = true;
         }
 
-        public Task FireOnResponseCompletedAsync()
-        {
+    public Task FireOnResponseCompletedAsync()
+    {
             return _responseCompletedAsync();
         }
-    }
 }

@@ -15,19 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Service.Web.Models
+namespace Papercut.Service.Web.Models;
+
+public class MessageDetail
 {
-    public class MessageDetail
-    {
 
-        public string Subject { get; set; }
-        public string From { get; set; }
-        public string To { get; set; }
-        public string Cc { get; set; }
-        public string Bcc { get; set; }
+    public string Subject { get; set; }
+    public string From { get; set; }
+    public string To { get; set; }
+    public string Cc { get; set; }
+    public string Bcc { get; set; }
 
-        public string BodyContent { get; set; }
-        public bool IsBodyHtml { get; set; }
+    public string BodyContent { get; set; }
+    public bool IsBodyHtml { get; set; }
 
-    }
 }

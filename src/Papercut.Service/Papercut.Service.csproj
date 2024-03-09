@@ -45,4 +45,15 @@
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
     <None Link="Papercut.Service.json" Include="Papercut.Service.Release.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="icons\Papercut-icon.icns">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="icons\Papercut-icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="icons\Papercut-icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

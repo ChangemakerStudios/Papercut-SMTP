@@ -96,7 +96,7 @@ namespace Papercut.Desktop
                     Height = 864,
                     Show = true,
                     BackgroundColor = "#f5f6f8",
-                    Title = "Papercut",
+                    Title = "Papercut SMTP",
                     Icon = WindowIcon()
                 });
 

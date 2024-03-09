@@ -47,13 +47,6 @@ namespace Papercut.Core.Infrastructure.Container
             builder.RegisterInstance(PluginStore.Instance).As<IPluginStore>().SingleInstance();
             builder.RegisterType<PluginReport>().AsImplementedInterfaces().SingleInstance();
 
-            // events
-            builder.RegisterType<AutofacMessageBus>()
-                .As<IMessageBus>()
-                .AsSelf()
-                .InstancePerLifetimeScope()
-                .PreserveExistingDefaults();
-
             builder.RegisterType<MessagePathConfigurator>()
                 .As<IMessagePathConfigurator>()
                 .AsSelf()

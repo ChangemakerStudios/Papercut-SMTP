@@ -9,28 +9,28 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Papercut.Service.Web.Hosting.InProcess
+namespace Papercut.Service.Web.Hosting.InProcess;
+
+// This steam accepts writes from the server/app, buffers them internally, and returns the data via Reads
+// when requested by the client.
+internal class ResponseStream : Stream
 {
-    // This steam accepts writes from the server/app, buffers them internally, and returns the data via Reads
-    // when requested by the client.
-    internal class ResponseStream : Stream
+    private bool _complete;
+    private bool _aborted;
+    private Exception _abortException;
+    private ConcurrentQueue<byte[]> _bufferedData;
+    private ArraySegment<byte> _topBuffer;
+    private SemaphoreSlim _readLock;
+    private SemaphoreSlim _writeLock;
+    private TaskCompletionSource<object> _readWaitingForData;
+    private object _signalReadLock;
+
+    private Func<Task> _onFirstWriteAsync;
+    private bool _firstWrite;
+    private Action _abortRequest;
+
+    internal ResponseStream(Func<Task> onFirstWriteAsync, Action abortRequest)
     {
-        private bool _complete;
-        private bool _aborted;
-        private Exception _abortException;
-        private ConcurrentQueue<byte[]> _bufferedData;
-        private ArraySegment<byte> _topBuffer;
-        private SemaphoreSlim _readLock;
-        private SemaphoreSlim _writeLock;
-        private TaskCompletionSource<object> _readWaitingForData;
-        private object _signalReadLock;
-
-        private Func<Task> _onFirstWriteAsync;
-        private bool _firstWrite;
-        private Action _abortRequest;
-
-        internal ResponseStream(Func<Task> onFirstWriteAsync, Action abortRequest)
-        {
             if (onFirstWriteAsync == null)
             {
                 throw new ArgumentNullException(nameof(onFirstWriteAsync));
@@ -52,48 +52,48 @@ namespace Papercut.Service.Web.Hosting.InProcess
             _signalReadLock = new object();
         }
 
-        public override bool CanRead
-        {
-            get { return true; }
-        }
+    public override bool CanRead
+    {
+        get { return true; }
+    }
 
-        public override bool CanSeek
-        {
-            get { return false; }
-        }
+    public override bool CanSeek
+    {
+        get { return false; }
+    }
 
-        public override bool CanWrite
-        {
-            get { return true; }
-        }
+    public override bool CanWrite
+    {
+        get { return true; }
+    }
 
-        #region NotSupported
+    #region NotSupported
 
-        public override long Length
-        {
-            get { throw new NotSupportedException(); }
-        }
+    public override long Length
+    {
+        get { throw new NotSupportedException(); }
+    }
 
-        public override long Position
-        {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
-        }
+    public override long Position
+    {
+        get { throw new NotSupportedException(); }
+        set { throw new NotSupportedException(); }
+    }
 
-        public override long Seek(long offset, SeekOrigin origin)
-        {
+    public override long Seek(long offset, SeekOrigin origin)
+    {
             throw new NotSupportedException();
         }
 
-        public override void SetLength(long value)
-        {
+    public override void SetLength(long value)
+    {
             throw new NotSupportedException();
         }
 
-        #endregion NotSupported
+    #endregion NotSupported
 
-        public override void Flush()
-        {
+    public override void Flush()
+    {
             CheckNotComplete();
 
             _writeLock.Wait();
@@ -109,8 +109,8 @@ namespace Papercut.Service.Web.Hosting.InProcess
             // TODO: Wait for data to drain?
         }
 
-        public override Task FlushAsync(CancellationToken cancellationToken)
-        {
+    public override Task FlushAsync(CancellationToken cancellationToken)
+    {
             if (cancellationToken.IsCancellationRequested)
             {
                 TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
@@ -125,8 +125,8 @@ namespace Papercut.Service.Web.Hosting.InProcess
             return Task.FromResult<object>(null);
         }
 
-        public override int Read(byte[] buffer, int offset, int count)
-        {
+    public override int Read(byte[] buffer, int offset, int count)
+    {
             VerifyBuffer(buffer, offset, count, allowEmpty: false);
             _readLock.Wait();
             try
@@ -170,56 +170,56 @@ namespace Papercut.Service.Web.Hosting.InProcess
             }
         }
 
-        public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        VerifyBuffer(buffer, offset, count, allowEmpty: false);
+        CancellationTokenRegistration registration = cancellationToken.Register(Abort);
+        await _readLock.WaitAsync(cancellationToken);
+        try
         {
-            VerifyBuffer(buffer, offset, count, allowEmpty: false);
-            CancellationTokenRegistration registration = cancellationToken.Register(Abort);
-            await _readLock.WaitAsync(cancellationToken);
-            try
+            int totalRead = 0;
+            do
             {
-                int totalRead = 0;
-                do
+                // Don't drained buffered data on abort.
+                CheckAborted();
+                if (_topBuffer.Count <= 0)
                 {
-                    // Don't drained buffered data on abort.
-                    CheckAborted();
-                    if (_topBuffer.Count <= 0)
+                    byte[] topBuffer = null;
+                    while (!_bufferedData.TryDequeue(out topBuffer))
                     {
-                        byte[] topBuffer = null;
-                        while (!_bufferedData.TryDequeue(out topBuffer))
+                        if (_complete)
                         {
-                            if (_complete)
-                            {
-                                CheckAborted();
-                                // Graceful close
-                                return totalRead;
-                            }
-                            await WaitForDataAsync();
+                            CheckAborted();
+                            // Graceful close
+                            return totalRead;
                         }
-                        _topBuffer = new ArraySegment<byte>(topBuffer);
+                        await WaitForDataAsync();
                     }
-                    int actualCount = Math.Min(count, _topBuffer.Count);
-                    Buffer.BlockCopy(_topBuffer.Array, _topBuffer.Offset, buffer, offset, actualCount);
-                    _topBuffer = new ArraySegment<byte>(_topBuffer.Array,
-                        _topBuffer.Offset + actualCount,
-                        _topBuffer.Count - actualCount);
-                    totalRead += actualCount;
-                    offset += actualCount;
-                    count -= actualCount;
+                    _topBuffer = new ArraySegment<byte>(topBuffer);
                 }
-                while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
-                // Keep reading while there is more data available and we have more space to put it in.
-                return totalRead;
+                int actualCount = Math.Min(count, _topBuffer.Count);
+                Buffer.BlockCopy(_topBuffer.Array, _topBuffer.Offset, buffer, offset, actualCount);
+                _topBuffer = new ArraySegment<byte>(_topBuffer.Array,
+                    _topBuffer.Offset + actualCount,
+                    _topBuffer.Count - actualCount);
+                totalRead += actualCount;
+                offset += actualCount;
+                count -= actualCount;
             }
-            finally
-            {
-                registration.Dispose();
-                _readLock.Release();
-            }
+            while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
+            // Keep reading while there is more data available and we have more space to put it in.
+            return totalRead;
         }
-
-        // Called under write-lock.
-        private Task FirstWriteAsync()
+        finally
         {
+            registration.Dispose();
+            _readLock.Release();
+        }
+    }
+
+    // Called under write-lock.
+    private Task FirstWriteAsync()
+    {
             if (_firstWrite)
             {
                 _firstWrite = false;
@@ -228,9 +228,9 @@ namespace Papercut.Service.Web.Hosting.InProcess
             return Task.FromResult(true);
         }
 
-        // Write with count 0 will still trigger OnFirstWrite
-        public override void Write(byte[] buffer, int offset, int count)
-        {
+    // Write with count 0 will still trigger OnFirstWrite
+    public override void Write(byte[] buffer, int offset, int count)
+    {
             VerifyBuffer(buffer, offset, count, allowEmpty: true);
             CheckNotComplete();
 
@@ -255,8 +255,8 @@ namespace Papercut.Service.Web.Hosting.InProcess
             }
         }
 
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
+    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
             VerifyBuffer(buffer, offset, count, allowEmpty: true);
             if (cancellationToken.IsCancellationRequested)
             {
@@ -269,8 +269,8 @@ namespace Papercut.Service.Web.Hosting.InProcess
             return Task.FromResult<object>(null);
         }
 
-        private static void VerifyBuffer(byte[] buffer, int offset, int count, bool allowEmpty)
-        {
+    private static void VerifyBuffer(byte[] buffer, int offset, int count, bool allowEmpty)
+    {
             if (buffer == null)
             {
                 throw new ArgumentNullException("buffer");
@@ -286,14 +286,14 @@ namespace Papercut.Service.Web.Hosting.InProcess
             }
         }
 
-        private void SignalDataAvailable()
-        {
+    private void SignalDataAvailable()
+    {
             // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
             Task.Factory.StartNew(() => _readWaitingForData.TrySetResult(null));
         }
 
-        private Task WaitForDataAsync()
-        {
+    private Task WaitForDataAsync()
+    {
             // Prevent race with Dispose
             lock (_signalReadLock)
             {
@@ -309,21 +309,21 @@ namespace Papercut.Service.Web.Hosting.InProcess
             }
         }
 
-        internal void Abort()
-        {
+    internal void Abort()
+    {
             Abort(new OperationCanceledException());
         }
 
-        internal void Abort(Exception innerException)
-        {
+    internal void Abort(Exception innerException)
+    {
             Contract.Requires(innerException != null);
             _aborted = true;
             _abortException = innerException;
             Complete();
         }
 
-        internal void Complete()
-        {
+    internal void Complete()
+    {
             // If HttpClient.Dispose gets called while HttpClient.SetTask...() is called
             // there is a chance that this method will be called twice and hang on the lock
             // to prevent this we can check if there is already a thread inside the lock
@@ -341,16 +341,16 @@ namespace Papercut.Service.Web.Hosting.InProcess
             }
         }
 
-        private void CheckAborted()
-        {
+    private void CheckAborted()
+    {
             if (_aborted)
             {
                 throw new IOException(string.Empty, _abortException);
             }
         }
 
-        protected override void Dispose(bool disposing)
-        {
+    protected override void Dispose(bool disposing)
+    {
             if (disposing)
             {
                 _abortRequest();
@@ -358,12 +358,11 @@ namespace Papercut.Service.Web.Hosting.InProcess
             base.Dispose(disposing);
         }
 
-        private void CheckNotComplete()
-        {
+    private void CheckNotComplete()
+    {
             if (_complete)
             {
                 throw new IOException("The request was aborted or the pipeline has finished");
             }
         }
-    }
 }

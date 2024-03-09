@@ -16,49 +16,49 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Web.Hosting
-{
-    using System;
-    using Microsoft.Extensions.Logging;
-    using Serilog.Events;
-    using System.Collections.Generic;
-    using Autofac;
+namespace Papercut.Service.Web.Hosting;
 
-    class SerilogLoggerProvider : ILoggerProvider
+using System;
+using Microsoft.Extensions.Logging;
+using Serilog.Events;
+using System.Collections.Generic;
+using Autofac;
+
+class SerilogLoggerProvider : ILoggerProvider
+{
+    ILifetimeScope _scope;
+    public SerilogLoggerProvider(ILifetimeScope scope)
     {
-        ILifetimeScope _scope;
-        public SerilogLoggerProvider(ILifetimeScope scope)
-        {
             this._scope = scope;
         }
 
-        public ILogger CreateLogger(string categoryName)
-        {
+    public ILogger CreateLogger(string categoryName)
+    {
             return new SerilogLoggerAdapter(_scope.Resolve<Serilog.ILogger>());
         }
 
-        public void Dispose()
-        {
+    public void Dispose()
+    {
 
         }
-    }
+}
 
-    class SerilogLoggerAdapter : ILogger, IDisposable
+class SerilogLoggerAdapter : ILogger, IDisposable
+{
+    private Serilog.ILogger logger;
+
+    public SerilogLoggerAdapter(Serilog.ILogger logger)
     {
-        private Serilog.ILogger logger;
-
-        public SerilogLoggerAdapter(Serilog.ILogger logger)
-        {
             this.logger = logger;
         }
 
-        public IDisposable BeginScope<TState>(TState state)
-        {
+    public IDisposable BeginScope<TState>(TState state)
+    {
             return this;
         }
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
+    public bool IsEnabled(LogLevel logLevel)
+    {
             if (logLevel == LogLevel.None)
             {
                 return false;
@@ -68,8 +68,8 @@ namespace Papercut.Service.Web.Hosting
             return logger.IsEnabled(serilogLevel);
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    {
             if (logLevel == LogLevel.None || !IsEnabled(logLevel))
             {
                 return;
@@ -82,19 +82,18 @@ namespace Papercut.Service.Web.Hosting
             logger.Write(serilogLevel, exception, logString);
         }
 
-        static Dictionary<LogLevel, LogEventLevel> levelMapping = new Dictionary<LogLevel, LogEventLevel>
-                {
-                    { LogLevel.Critical, LogEventLevel.Fatal },
-                    { LogLevel.Error, LogEventLevel.Error},
-                    { LogLevel.Warning, LogEventLevel.Warning},
-                    { LogLevel.Information, LogEventLevel.Information},
-                    { LogLevel.Debug, LogEventLevel.Debug},
-                    { LogLevel.Trace, LogEventLevel.Verbose },
-                };
+    static Dictionary<LogLevel, LogEventLevel> levelMapping = new Dictionary<LogLevel, LogEventLevel>
+                                                              {
+                                                                  { LogLevel.Critical, LogEventLevel.Fatal },
+                                                                  { LogLevel.Error, LogEventLevel.Error},
+                                                                  { LogLevel.Warning, LogEventLevel.Warning},
+                                                                  { LogLevel.Information, LogEventLevel.Information},
+                                                                  { LogLevel.Debug, LogEventLevel.Debug},
+                                                                  { LogLevel.Trace, LogEventLevel.Verbose },
+                                                              };
 
-        void IDisposable.Dispose()
-        {
+    void IDisposable.Dispose()
+    {
 
         }
-    }
 }

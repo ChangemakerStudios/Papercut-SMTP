@@ -6,12 +6,12 @@ using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Papercut.Service.Web.Hosting.InProcess
+namespace Papercut.Service.Web.Hosting.InProcess;
+
+internal class RequestFeature : IHttpRequestFeature
 {
-    internal class RequestFeature : IHttpRequestFeature
+    public RequestFeature()
     {
-        public RequestFeature()
-        {
             Body = Stream.Null;
             Headers = new HeaderDictionary();
             Method = "GET";
@@ -22,22 +22,21 @@ namespace Papercut.Service.Web.Hosting.InProcess
             Scheme = "http";
         }
 
-        public Stream Body { get; set; }
+    public Stream Body { get; set; }
 
-        public IHeaderDictionary Headers { get; set; }
+    public IHeaderDictionary Headers { get; set; }
 
-        public string Method { get; set; }
+    public string Method { get; set; }
 
-        public string Path { get; set; }
+    public string Path { get; set; }
 
-        public string PathBase { get; set; }
+    public string PathBase { get; set; }
 
-        public string Protocol { get; set; }
+    public string Protocol { get; set; }
 
-        public string QueryString { get; set; }
+    public string QueryString { get; set; }
 
-        public string Scheme { get; set; }
+    public string Scheme { get; set; }
 
-        public string RawTarget { get; set; }
-    }
+    public string RawTarget { get; set; }
 }

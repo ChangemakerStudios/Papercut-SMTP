@@ -17,8 +17,6 @@
 
 
 using System;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,8 +28,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
 
-using Papercut.Service.Infrastructure.WebServer;
-
 using Serilog;
 using Serilog.ExceptionalLogContext;
 
@@ -39,19 +35,6 @@ namespace Papercut.Service;
 
 public class Program
 {
-    internal class BaseHostedService : IHostedService
-    {
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-    }
-
     private static CancellationTokenSource _cancellationTokenSource;
 
     public static async Task Main(string[] args)
@@ -64,17 +47,16 @@ public class Program
             .WriteTo.Console()
             .CreateBootstrapLogger(); // <-- 😎
 
-        await RunAsync<BaseHostedService>(args);
+        await RunAsync(args);
     }
 
-    public static async Task RunAsync<THostedService>(string[] args)
-        where THostedService : class, IHostedService
+    public static async Task RunAsync(string[] args)
     {
         _cancellationTokenSource = new CancellationTokenSource();
 
         try
         {
-            await CreateHostBuilder<THostedService>(args).Build().RunAsync(_cancellationTokenSource.Token);
+            await CreateHostBuilder(args).Build().RunAsync(_cancellationTokenSource.Token);
         }
         catch (Exception ex) when (ex is not TaskCanceledException and not ObjectDisposedException)
         {
@@ -92,8 +74,7 @@ public class Program
         _cancellationTokenSource.Cancel();
     }
 
-    public static IHostBuilder CreateHostBuilder<THostedService>(string[] args)
-        where THostedService : class, IHostedService =>
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
             .UseContentRoot(PlatformServices.Default.Application.ApplicationBasePath)
             .UseSerilog(
@@ -108,12 +89,18 @@ public class Program
                 {
                     sp.AddSingleton<IConfiguration>(context.Configuration);
                     sp.AddSingleton<IHostEnvironment>(context.HostingEnvironment);
-                    sp.AddHostedService<THostedService>();
                 })
             .ConfigureWebHostDefaults(
                 webBuilder =>
                 {
                     webBuilder.UseElectron(args);
-                    webBuilder.UseStartup<WebStartup>();
+                    webBuilder.UseStartup<PapercutServiceStartup>();
+                        webBuilder.UseUrls($"http://localhost:{8001}");
+                })
+            .ConfigureServices(
+                (context, sp) =>
+                {
+                    if (HybridSupport.IsElectronActive)
+                        sp.AddHostedService<PapercutHybridSupport>();
                 });
 }

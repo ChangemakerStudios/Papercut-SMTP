@@ -16,24 +16,23 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Web
-{
-    using System.IO;
-    using System.Linq;
+namespace Papercut.Service.Web;
 
-    class FileHelper
+using System.IO;
+using System.Linq;
+
+class FileHelper
+{
+    public static string NormalizeFilename(string filename)
     {
-        public static string NormalizeFilename(string filename)
-        {
             var validFilename = RemoveInvalidFileNameChars(filename);
             return validFilename.Replace(" ", "_");
         }
 
-        static string RemoveInvalidFileNameChars(string filename)
-        {
+    static string RemoveInvalidFileNameChars(string filename)
+    {
             return Path.GetInvalidFileNameChars().Aggregate(filename,
                 (current, invalidChar) => current.Replace(invalidChar.ToString(), string.Empty));
         }
 
-    }
 }
