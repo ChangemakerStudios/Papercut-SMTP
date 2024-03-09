@@ -95,7 +95,6 @@ public class Program
                 {
                     webBuilder.UseElectron(args);
                     webBuilder.UseStartup<PapercutServiceStartup>();
-                        webBuilder.UseUrls($"http://localhost:{8001}");
                 })
             .ConfigureServices(
                 (context, sp) =>
