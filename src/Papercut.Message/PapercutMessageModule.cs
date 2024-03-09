@@ -26,9 +26,10 @@ namespace Papercut.Message
     {
         public void Register(IServiceCollection services)
         {
-            services.AddSingleton<MessageRepository>();
-            services.AddSingleton<MimeMessageLoader>();
-            services.AddSingleton<IReceivedDataHandler,ReceivedDataMessageHandler>();
+            services.AddScoped<MessageRepository>();
+            services.AddScoped<MimeMessageLoader>();
+
+            services.AddScoped<IReceivedDataHandler,ReceivedDataMessageHandler>();
         }
     }
 }

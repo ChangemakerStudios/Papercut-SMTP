@@ -36,9 +36,6 @@
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
     <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' != 'Release'">
     <None Include="Papercut.Service.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
@@ -56,4 +53,5 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="https://json.schemastore.org/appsscript.json" /></VisualStudio></ProjectExtensions>
 </Project>

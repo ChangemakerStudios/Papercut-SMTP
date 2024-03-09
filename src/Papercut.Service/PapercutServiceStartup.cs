@@ -18,7 +18,6 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 using Papercut.Common.Domain;
@@ -57,18 +56,24 @@ internal class PapercutServiceStartup
                     });
             });
 
+        services.AddSignalR();
+
         services.AddOptions<SmtpServerOptions>("SmtpServer");
         services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
 
         // add some services
         services.AddSingleton<IAppMeta>(new ApplicationMeta("Papercut.Service"));
-        services.AddSingleton<IMessagePathConfigurator, MessagePathConfigurator>();
+
+        services.AddScoped<IMessagePathConfigurator, MessagePathConfigurator>();
         services.AddScoped<IPathTemplatesProvider, ServerPathTemplateProviderService>();
         services.AddScoped<MessageStore, SmtpMessageStore>();
 
         // events
         services.AddScoped<IMessageBus, SimpleMediatorBus>();
         services.AddScoped<IEventHandler<NewMessageEvent>, NewMessageEventHandler>();
+
+        // hosted services
+        services.AddHostedService<SmtpServerService>();
 
         new PapercutMessageModule().Register(services);
     }

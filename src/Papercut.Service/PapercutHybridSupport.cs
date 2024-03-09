@@ -16,10 +16,7 @@
 // limitations under the License.
 
 
-using System;
 using System.IO;
-using System.Net.Sockets;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,14 +33,6 @@ namespace Papercut.Service;
 
 public class PapercutHybridSupport : IHostedService
 {
-    private readonly IHostApplicationLifetime _hostApplicationLifetime;
-
-    public PapercutHybridSupport(IHostApplicationLifetime hostApplicationLifetime)
-    {
-        this._hostApplicationLifetime = hostApplicationLifetime;
-        //settingsStore.Set("HttpPort", BridgeSettings.WebPort);
-    }
-
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         Log.Information("Running Electron Create Window Service");
@@ -54,16 +43,74 @@ public class PapercutHybridSupport : IHostedService
             return Task.CompletedTask;
         };
 
-        await Electron.WindowManager.CreateWindowAsync(
+        var browserWindow = await Electron.WindowManager.CreateWindowAsync(
             new BrowserWindowOptions
             {
                 Width = 1152,
                 Height = 864,
-                Show = true,
+                Show = false,
                 BackgroundColor = "#f5f6f8",
-                Title = "Papercut",
+                Title = "Papercut SMTP",
                 Icon = WindowIcon()
             });
+
+        await browserWindow.WebContents.Session.ClearCacheAsync();
+
+        browserWindow.OnReadyToShow += () =>
+        {
+            browserWindow.Show();
+        };
+
+        var menu = new MenuItem[]
+                   {
+
+                       new()
+                       {
+                           Type = MenuType.normal,
+                           Label = "MenuItem",
+                           Click = () =>
+                           {
+                               Electron.Notification.Show(
+                                   new NotificationOptions(
+                                       "Dock MenuItem Click",
+                                       "A menu item added to the Dock was selected;"));
+                           },
+                       },
+                       new()
+                       {
+                           Type = MenuType.submenu,
+                           Label = "SubMenu",
+                           Submenu =
+                           [
+                               new MenuItem
+                               {
+                                   Type = MenuType.normal,
+                                   Label = "Sub MenuItem",
+                                   Click = () =>
+                                   {
+                                       Electron.Notification.Show(
+                                           new NotificationOptions(
+                                               "Dock Sub MenuItem Click",
+                                               "A menu item added to the Dock was selected;"));
+                                   },
+                               }
+                           ]
+                       }
+                   };
+
+        Electron.Menu.SetApplicationMenu(menu);
+
+        await Electron.App.On("activate", (obj) =>
+        {
+            // obj should be a boolean that represents where there are active windows or not.
+            var hasWindows = (bool)obj;
+
+            Electron.Notification.Show(
+                new NotificationOptions("Activate", $"activate event has been captured. Active windows = {hasWindows}")
+                {
+                    Silent = false,
+                });
+        });
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -73,46 +120,10 @@ public class PapercutHybridSupport : IHostedService
         return Task.CompletedTask;
     }
 
-    public static void Quit()
-    {
-        //var socket = GetElectronSocket();
-         
-        //Electron.App.On(Socket.EVENT_CONNECT, () =>
-        //{
-        //    Electron.App.Quit();
-
-        //    Thread.Sleep(100);
-        //    Environment.Exit(-1);
-        //});
-
-        // Wait at most 2 seconds
-        //Thread.Sleep(2000);
-        //Environment.Exit(-1);
-    }
-
-    static void QuitOnConnectionProblems(Socket socket, string eventType)
-    {
-        void Handler()
-        {
-            Console.Error.WriteLine("Papercut backend process is exiting because of connection with frontend Electron process is error. Event type: " + eventType);
-            Service.Program.Shutdown();
-        }
-
-        //socket.On(eventType, Handler);
-    }
-
     static string WindowIcon()
     {
         var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         return Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "icons",
             isWindows ? "Papercut-icon.ico" : "Papercut-icon.png");
-    }
-
-    public Task Start(CancellationToken token)
-    {
-        return Task.CompletedTask;
-
-        //QuitOnConnectionProblems(socket, Socket.EVENT_CONNECT_ERROR);
-        //QuitOnConnectionProblems(socket, Socket.EVENT_RECONNECT_ERROR);
     }
 }
