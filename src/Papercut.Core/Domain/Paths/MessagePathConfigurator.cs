@@ -135,15 +135,17 @@ namespace Papercut.Core.Domain.Paths
             foreach (string pathKeyName in pathKeys)
             {
                 if (!_templateDictionary.TryGetValue(pathKeyName, out var path)) continue;
-
-                var separatorChar = new string(new[] {Path.DirectorySeparatorChar});
                 renderedPath = renderedPath
-                    .Replace($"%{pathKeyName}%", path)
-                    .Replace(@"\\", separatorChar)
-                    .Replace("//", separatorChar)
-                    .Replace("/", separatorChar)
-                    .Replace(@"\", separatorChar);
+                    .Replace($"%{pathKeyName}%", path);
             }
+            
+            var separatorChar = new string(new[] {Path.DirectorySeparatorChar});
+            
+            renderedPath = renderedPath
+                .Replace(@"\\", separatorChar)
+                .Replace("//", separatorChar)
+                .Replace("/", separatorChar)
+                .Replace(@"\", separatorChar);
 
             return renderedPath;
         }

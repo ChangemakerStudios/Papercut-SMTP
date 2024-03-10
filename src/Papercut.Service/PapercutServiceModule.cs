@@ -16,14 +16,9 @@
 // limitations under the License.
 
 
-using System.Reflection;
-
-using Autofac;
-
 using AutofacSerilogIntegration;
 
 using Papercut.Common.Domain;
-using Papercut.Common.Helper;
 using Papercut.Core.Domain.Application;
 using Papercut.Core.Domain.Message;
 using Papercut.Core.Domain.Paths;
@@ -43,7 +38,7 @@ public class PapercutServiceModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         builder.RegisterType<NewMessageEventHandler>().As<IEventHandler<NewMessageEvent>>().InstancePerLifetimeScope();
-        builder.RegisterType<MessagePathConfigurator>().As<IMessagePathConfigurator>().InstancePerLifetimeScope();
+        builder.RegisterType<MessagePathConfigurator>().As<IMessagePathConfigurator>().SingleInstance();
         builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().InstancePerLifetimeScope();
 
         builder.RegisterType<SmtpMessageStore>().As<IMessageStore>().AsSelf();
