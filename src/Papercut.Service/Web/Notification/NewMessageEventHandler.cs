@@ -16,39 +16,33 @@
 // limitations under the License.
 
 
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-
 using Papercut.Common.Domain;
 using Papercut.Core.Domain.Message;
-using Papercut.Message;
-using Papercut.Message.Helpers;
-using Papercut.Service.Web.Models;
 
 namespace Papercut.Service.Web.Notification;
 
 public class NewMessageEventHandler: IEventHandler<NewMessageEvent>
 {
-    private readonly IHubContext<NewMessagesHub> _hubContext;
+    //private readonly IHubContext<NewMessagesHub> _hubContext;
 
-    private readonly ILogger _logger;
+    //private readonly ILogger _logger;
 
-    private readonly MimeMessageLoader _messageLoader;
+    //private readonly MimeMessageLoader _messageLoader;
 
-    public NewMessageEventHandler(IHubContext<NewMessagesHub> hubContext, MimeMessageLoader messageLoader, ILogger<NewMessageEventHandler> logger)
-    {
-        this._hubContext = hubContext;
-        this._messageLoader = messageLoader;
-        this._logger = logger;
-        }
+    //public NewMessageEventHandler(IHubContext<NewMessagesHub> hubContext, MimeMessageLoader messageLoader, ILogger<NewMessageEventHandler> logger)
+    //{
+    //    this._hubContext = hubContext;
+    //    this._messageLoader = messageLoader;
+    //    this._logger = logger;
+    //    }
 
     public void Handle(NewMessageEvent messageEvent)
     {
-            var newMessageObj = MimeMessageEntry.RefDto.CreateFrom(
-                                    new MimeMessageEntry(messageEvent.NewMessage,
-                                        this._messageLoader.LoadMailMessage(messageEvent.NewMessage)));
+            //var newMessageObj = MimeMessageEntry.RefDto.CreateFrom(
+            //                        new MimeMessageEntry(messageEvent.NewMessage,
+            //                            this._messageLoader.LoadMailMessage(messageEvent.NewMessage)));
 
-            this._logger.LogInformation($"New message '{newMessageObj.Id}' has received. Notifying subscribed clients.");
-            this._hubContext.Clients.All.SendAsync("new-message-received", newMessageObj);
+            //this._logger.LogInformation($"New message '{newMessageObj.Id}' has received. Notifying subscribed clients.");
+            //this._hubContext.Clients.All.SendAsync("new-message-received", newMessageObj);
         }
 }

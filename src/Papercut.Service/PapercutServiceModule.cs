@@ -16,16 +16,25 @@
 // limitations under the License.
 
 
+using System.Reflection;
+
 using Autofac;
 
+using AutofacSerilogIntegration;
+
 using Papercut.Common.Domain;
+using Papercut.Common.Helper;
+using Papercut.Core.Domain.Application;
 using Papercut.Core.Domain.Message;
 using Papercut.Core.Domain.Paths;
+using Papercut.Service.Infrastructure;
 using Papercut.Service.Infrastructure.Paths;
 using Papercut.Service.Infrastructure.SmtpServer;
 using Papercut.Service.Web.Notification;
 
 using SmtpServer.Storage;
+
+using Module = Autofac.Module;
 
 namespace Papercut.Service;
 
@@ -40,5 +49,10 @@ public class PapercutServiceModule : Module
         builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().InstancePerLifetimeScope();
 
         builder.RegisterType<SmtpMessageStore>().As<IMessageStore>().AsSelf();
+        builder.RegisterType<SimpleMediatorBus>().As<IMessageBus>();
+
+        builder.Register<IAppMeta>(_ => new ApplicationMeta("Papercut.Service", Assembly.GetExecutingAssembly().GetVersion()));
+
+        builder.RegisterLogger();
     }
 }

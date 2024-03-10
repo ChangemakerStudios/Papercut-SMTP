@@ -18,8 +18,6 @@
 
 using Autofac;
 
-using Papercut.Core.Domain.Message;
-
 namespace Papercut.Message
 {
     public class PapercutMessageModule : Module

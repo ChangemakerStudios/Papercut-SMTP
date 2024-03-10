@@ -26,7 +26,9 @@ using System.Threading.Tasks;
 
 using MimeKit;
 
+using Papercut.Common.Domain;
 using Papercut.Common.Extensions;
+using Papercut.Core.Domain.Message;
 using Papercut.Message;
 
 using Serilog;
@@ -40,11 +42,17 @@ namespace Papercut.Service.Infrastructure.SmtpServer;
 
 public class SmtpMessageStore : MessageStore
 {
+    private readonly ILogger _logger;
+
+    private readonly IMessageBus _messageBus;
+
     private readonly MessageRepository _messageRepository;
 
-    public SmtpMessageStore(MessageRepository messageRepository)
+    public SmtpMessageStore(MessageRepository messageRepository, IMessageBus messageBus, ILogger logger)
     {
         this._messageRepository = messageRepository;
+        this._messageBus = messageBus;
+        this._logger = logger;
     }
 
     public async Task HandleReceived(Stream messageData, IEnumerable<string> recipients)
@@ -68,17 +76,17 @@ public class SmtpMessageStore : MessageStore
             }
         }
 
-        var file = this._messageRepository.SaveMessage(fs => message.WriteTo(fs));
+        var file = await this._messageRepository.SaveMessageAsync(async fs => await message.WriteToAsync(fs));
 
-        //try
-        //{
-        //    if (!string.IsNullOrWhiteSpace(file))
-        //        this._messageBus.Publish(new NewMessageEvent(new MessageEntry(file)));
-        //}
-        //catch (Exception ex)
-        //{
-        //    this._logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
-        //}
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(file))
+                this._messageBus.Publish(new NewMessageEvent(new MessageEntry(file)));
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Unable to publish new message event for message file: {MessageFile}", file);
+        }
     }
 
     public override async Task<SmtpResponse> SaveAsync(
@@ -87,7 +95,7 @@ public class SmtpMessageStore : MessageStore
         ReadOnlySequence<byte> buffer,
         CancellationToken cancellationToken)
     {
-        Log.Debug("Saving Message in the Message Store...");
+        this._logger.Debug("Saving Message in the Message Store...");
 
         await using var stream = new MemoryStream();
 

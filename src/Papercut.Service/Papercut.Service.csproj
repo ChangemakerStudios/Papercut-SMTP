@@ -5,6 +5,8 @@
 		<OutputType>exe</OutputType>
 		<OutputTypeEx>exe</OutputTypeEx>
 		<DebugType>portable</DebugType>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Web\Assets\**" />
@@ -19,6 +21,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="9.0.0" />
+		<PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
 		<PackageReference Include="ElectronNET.API" Version="23.6.2" />
 		<PackageReference Include="Serilog" Version="3.1.1" />
 		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />

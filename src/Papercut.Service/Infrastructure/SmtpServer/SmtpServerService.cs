@@ -57,7 +57,7 @@ public class SmtpServerService : IHostedService
         this._serviceProvider = serviceProvider;
         this._smtpServerOptions = smtpServerOptions;
         this._applicationMetaData = applicationMetaData;
-        this._logger = logger.ForContext<SmtpServerService>();
+        this._logger = logger;
     }
 
     private string ListenIpAddress
@@ -81,10 +81,6 @@ public class SmtpServerService : IHostedService
 
         var options = new SmtpServerOptionsBuilder()
             .ServerName(this._applicationMetaData.AppName);
-        //.MailboxFilter(new DelegatingMailboxFilter(this.CanAcceptMailbox))
-        //.UserAuthenticator(new SimpleAuthentication())
-        //.Logger(this._bridgeLogger)
-        //.MessageStore(this._messageStore);
 
         foreach (var endpoint in this.GetEndpoints()) options = options.Endpoint(endpoint);
 
@@ -131,13 +127,6 @@ public class SmtpServerService : IHostedService
                     this._smtpServerOptions.Port))
             .IsSecure(false).Build();
     }
-
-    //private MailboxFilterResult CanAcceptMailbox(
-    //    ISessionContext sessionContext,
-    //    IMailbox mailbox)
-    //{
-    //    return MailboxFilterResult.Yes;
-    //}
 
     private void OnSessionCompleted(object sender, SessionEventArgs e)
     {

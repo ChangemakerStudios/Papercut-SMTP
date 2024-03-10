@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Microsoft.Extensions.DependencyInjection;
+using Autofac;
 
 using Papercut.Common.Domain;
 
@@ -28,13 +28,13 @@ using Serilog;
 
 namespace Papercut.Service.Infrastructure
 {
-    public class SimpleMediatorBus(IServiceScopeFactory serviceScopeFactory) : IMessageBus
+    public class SimpleMediatorBus(ILifetimeScope lifetimeScope) : IMessageBus
     {
         public void Publish<T>(T eventObject) where T : IEvent
         {
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = lifetimeScope.BeginLifetimeScope();
 
-            foreach (var @event in this.MaybeByOrderable(scope.ServiceProvider.GetRequiredService<IEnumerable<IEventHandler<T>>>()))
+            foreach (var @event in this.MaybeByOrderable(scope.Resolve<IEnumerable<IEventHandler<T>>>()))
             {
                 try
                 {
@@ -42,7 +42,7 @@ namespace Papercut.Service.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    scope.ServiceProvider.GetRequiredService<ILogger>().ForContext<SimpleMediatorBus>().Error(
+                    scope.Resolve<ILogger>().ForContext<SimpleMediatorBus>().Error(
                         ex,
                         "Failed publishing {EventType} to {EventHandler}",
                         typeof(T),

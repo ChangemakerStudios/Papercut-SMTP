@@ -50,7 +50,7 @@ namespace Papercut.Desktop
                     PapercutHybridSupport.Quit();
                 }
 
-                await Service.Program.RunAsync<PapercutHybridSupport>(args);
+                await Service.Program.RunAsync(args);
             }
             else
             {
