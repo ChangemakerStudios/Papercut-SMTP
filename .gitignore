@@ -30,15 +30,6 @@ yarn.lock
 .DS_Store
 sh.exe.stackdump
 
-
-
-
-
-
-
-
-
-
 src/Papercut.Desktop/*.dll
 src/Papercut.Desktop/*.pdb
 src/Papercut.Desktop/*.exe
@@ -53,3 +44,4 @@ src/Papercut.Desktop/Papercut.Service.json
 src/Papercut.Desktop/.vscode/
 build/
 out/
+*.msi
