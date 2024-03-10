@@ -31,9 +31,9 @@ namespace Papercut.Core.Domain.Paths
             @"\%(?<name>.+?)\%",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
 
-        readonly string _defaultSavePath;
+        protected static readonly ILogger Logger = Log.Logger.ForContext<MessagePathConfigurator>();
 
-        readonly ILogger _logger;
+        readonly string _defaultSavePath;
 
         readonly IPathTemplatesProvider _pathTemplateProvider;
 
@@ -60,20 +60,19 @@ namespace Papercut.Core.Domain.Paths
             }
         }
 
-        public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
+        public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider)
         {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-
-            this._logger = logger.ForContext<MessagePathConfigurator>();
             this._pathTemplateProvider = pathTemplateProvider ?? throw new ArgumentNullException(nameof(pathTemplateProvider));
             this._pathTemplateProvider.PathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
 
             this.DefaultSavePath = PlatformServices.Default.Application.ApplicationBasePath;
-            this.LoadPaths = this.GenerateLoadPaths();
+            this.LoadPaths = GenerateLoadPaths(this._pathTemplateProvider.PathTemplates);
+
+            Logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", this.LoadPaths);
 
             if (this.LoadPaths.Any()) this.DefaultSavePath = this.LoadPaths.First();
 
-            this._logger.Information(
+            Logger.Information(
                 "Default Message Save Path is Set to {DefaultSavePath}",
                 this.DefaultSavePath);
         }
@@ -82,14 +81,16 @@ namespace Papercut.Core.Domain.Paths
         {
             get
             {
-                if (!Directory.Exists(this._defaultSavePath))
+                if (Directory.Exists(this._defaultSavePath))
                 {
-                    this._logger.Information(
-                        "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
-                        this._defaultSavePath);
-
-                    Directory.CreateDirectory(this._defaultSavePath);
+                    return this._defaultSavePath;
                 }
+
+                Logger.Information(
+                    "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
+                    this._defaultSavePath);
+
+                Directory.CreateDirectory(this._defaultSavePath);
 
                 return this._defaultSavePath;
             }
@@ -102,18 +103,16 @@ namespace Papercut.Core.Domain.Paths
 
         void PathTemplatesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            this.LoadPaths = this.GenerateLoadPaths();
+            this.LoadPaths = GenerateLoadPaths(this._pathTemplateProvider.PathTemplates);
             this.OnRefreshLoadPath();
         }
 
-        string[] GenerateLoadPaths()
+        static string[] GenerateLoadPaths(IEnumerable<string> pathTemplates)
         {
             var paths =
-                this._pathTemplateProvider.PathTemplates.Select(this.RenderPathTemplate)
-                    .Where(this.ValidatePathExists)
+                pathTemplates.Select(RenderPathTemplate)
+                    .Where(ValidatePathExists)
                     .ToArray();
-
-            this._logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", this.LoadPaths);
 
             return paths;
         }
@@ -124,7 +123,7 @@ namespace Papercut.Core.Domain.Paths
             handler?.Invoke(this, EventArgs.Empty);
         }
 
-        string RenderPathTemplate(string pathTemplate)
+        static string RenderPathTemplate(string pathTemplate)
         {
             var pathKeys =
                 _templateRegex.Matches(pathTemplate)
@@ -150,7 +149,7 @@ namespace Papercut.Core.Domain.Paths
             return renderedPath;
         }
 
-        bool ValidatePathExists(string path)
+        static bool ValidatePathExists(string path)
         {
 
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -163,7 +162,7 @@ namespace Papercut.Core.Domain.Paths
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
+                Logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
             }
 
             return false;

@@ -20,6 +20,6 @@ namespace Papercut.Core.Domain.Message
 {
     public interface IReceivedDataHandler
     {
-        void HandleReceived(byte[] message, string[] recipients);
+        Task HandleReceivedAsync(Stream messageData, IEnumerable<string> recipients);
     }
 }

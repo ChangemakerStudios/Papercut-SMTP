@@ -1,91 +1,74 @@
-﻿//// Papercut
-//// 
-//// Copyright © 2008 - 2012 Ken Robertson
-//// Copyright © 2013 - 2024 Jaben Cargman
-//// 
-//// Licensed under the Apache License, Version 2.0 (the "License");
-//// you may not use this file except in compliance with the License.
-//// You may obtain a copy of the License at
-//// 
-//// http://www.apache.org/licenses/LICENSE-2.0
-//// 
-//// Unless required by applicable law or agreed to in writing, software
-//// distributed under the License is distributed on an "AS IS" BASIS,
-//// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//// See the License for the specific language governing permissions and
-//// limitations under the License.
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 
-//using System;
-//using System.IO;
-//using System.Linq;
+using Papercut.Common.Domain;
 
-//using MimeKit;
+namespace Papercut.Message;
 
-//using Papercut.Common.Domain;
-//using Papercut.Common.Extensions;
-//using Papercut.Core.Annotations;
-//using Papercut.Core.Domain.Message;
+public class ReceivedDataMessageHandler : IReceivedDataHandler
+{
+    readonly ILogger _logger;
 
-//using Serilog;
+    readonly IMessageBus _messageBus;
 
-//namespace Papercut.Message
-//{
-//    public class ReceivedDataMessageHandler : IReceivedDataHandler
-//    {
-//        readonly ILogger _logger;
+    readonly MessageRepository _messageRepository;
 
-//        readonly IMessageBus _messageBus;
+    public ReceivedDataMessageHandler(
+        MessageRepository messageRepository,
+        IMessageBus messageBus,
+        ILogger logger)
+    {
+        this._messageRepository = messageRepository;
+        this._messageBus = messageBus;
+        this._logger = logger;
+    }
 
-//        readonly MessageRepository _messageRepository;
+    public async Task HandleReceivedAsync(Stream messageData, IEnumerable<string> recipients)
+    {
+        var message = await MimeMessage.LoadAsync(ParserOptions.Default, messageData, true);
 
-//        public ReceivedDataMessageHandler(
-//            MessageRepository messageRepository,
-//            IMessageBus messageBus,
-//            ILogger logger)
-//        {
-//            this._messageRepository = messageRepository;
-//            this._messageBus = messageBus;
-//            this._logger = logger;
-//        }
+        var lookup = recipients.IfNullEmpty().ToHashSet(StringComparer.CurrentCultureIgnoreCase);
 
-//        public void HandleReceived(byte[] messageData, [CanBeNull] string[] recipients)
-//        {
-//            string file;
+        // remove TO:
+        lookup.ExceptWith(message.To.Mailboxes.Select(s => s.Address));
 
-//            using (var ms = new MemoryStream(messageData))
-//            {
-//                var message = MimeMessage.Load(ParserOptions.Default, ms, true);
+        // remove CC:
+        lookup.ExceptWith(message.Cc.Mailboxes.Select(s => s.Address));
 
-//                var lookup = recipients.ToHashSet(StringComparer.CurrentCultureIgnoreCase);
+        if (lookup.Any())
+        {
+            // Bcc is remaining, add to message
+            foreach (var r in lookup)
+            {
+                message.Bcc.Add(MailboxAddress.Parse(r));
+            }
+        }
 
-//                // remove TO:
-//                lookup.ExceptWith(message.To.Mailboxes.Select(s => s.Address));
+        var file = await this._messageRepository.SaveMessageAsync(async fs => await message.WriteToAsync(fs));
 
-//                // remove CC:
-//                lookup.ExceptWith(message.Cc.Mailboxes.Select(s => s.Address));
-
-//                if (lookup.Any())
-//                {
-//                    // Bcc is remaining, add to message
-//                    foreach (var r in lookup)
-//                    {
-//                        message.Bcc.Add(MailboxAddress.Parse(r));
-//                    }
-//                }
-
-//                file = this._messageRepository.SaveMessage(fs => message.WriteTo(fs));
-//            }
-
-//            try
-//            {
-//                if (!string.IsNullOrWhiteSpace(file))
-//                    this._messageBus.Publish(new NewMessageEvent(new MessageEntry(file)));
-//            }
-//            catch (Exception ex)
-//            {
-//                this._logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
-//            }
-//        }
-//    }
-//}
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(file))
+                this._messageBus.Publish(new NewMessageEvent(new MessageEntry(file)));
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Unable to publish new message event for message file: {MessageFile}", file);
+        }
+    }
+}

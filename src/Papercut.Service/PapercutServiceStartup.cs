@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 using Papercut.Message;
+using Papercut.Rules;
 using Papercut.Service.Domain.SmtpServer;
 using Papercut.Service.Infrastructure.SmtpServer;
 
@@ -57,10 +58,19 @@ internal class PapercutServiceStartup
         services.AddHostedService<SmtpServerService>();
     }
 
+    IEnumerable<Autofac.Module> GetModules()
+    {
+        yield return new PapercutMessageModule();
+        yield return new PapercutRuleModule();
+        yield return new PapercutServiceModule();
+    }
+
     public void ConfigureContainer(ContainerBuilder builder)
     {
-        builder.RegisterModule<PapercutServiceModule>();
-        builder.RegisterModule<PapercutMessageModule>();
+        foreach (var module in GetModules())
+        {
+            builder.RegisterModule(module);
+        }
     }
 
     public void Configure(IApplicationBuilder app)

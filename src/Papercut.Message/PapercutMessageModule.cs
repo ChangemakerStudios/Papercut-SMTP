@@ -16,16 +16,14 @@
 // limitations under the License.
 
 
-using Autofac;
-
 namespace Papercut.Message;
 
 public class PapercutMessageModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterType<MessageRepository>().AsSelf();
-        builder.RegisterType<MimeMessageLoader>().AsSelf();
-        //builder.RegisterType<ReceivedDataMessageHandler>().As<IReceivedDataHandler>();
+        builder.RegisterType<MessageRepository>().AsSelf().InstancePerLifetimeScope();
+        builder.RegisterType<MimeMessageLoader>().AsSelf().InstancePerLifetimeScope();
+        builder.RegisterType<ReceivedDataMessageHandler>().As<IReceivedDataHandler>().InstancePerLifetimeScope();
     }
 }

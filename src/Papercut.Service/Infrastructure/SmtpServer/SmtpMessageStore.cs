@@ -17,14 +17,8 @@
 
 
 using System.Buffers;
-using System.Threading;
 
-using MimeKit;
-
-using Papercut.Common.Domain;
-using Papercut.Common.Extensions;
 using Papercut.Core.Domain.Message;
-using Papercut.Message;
 
 using SmtpServer;
 using SmtpServer.Mail;
@@ -33,62 +27,15 @@ using SmtpServer.Storage;
 
 namespace Papercut.Service.Infrastructure.SmtpServer;
 
-public class SmtpMessageStore : MessageStore
+public class SmtpMessageStore(IReceivedDataHandler receivedDataHandler, ILogger logger) : MessageStore
 {
-    private readonly ILogger _logger;
-
-    private readonly IMessageBus _messageBus;
-
-    private readonly MessageRepository _messageRepository;
-
-    public SmtpMessageStore(MessageRepository messageRepository, IMessageBus messageBus, ILogger logger)
-    {
-        this._messageRepository = messageRepository;
-        this._messageBus = messageBus;
-        this._logger = logger;
-    }
-
-    public async Task HandleReceived(Stream messageData, IEnumerable<string> recipients)
-    {
-        var message = await MimeMessage.LoadAsync(ParserOptions.Default, messageData, true);
-
-        var lookup = recipients.IfNullEmpty().ToHashSet(StringComparer.CurrentCultureIgnoreCase);
-
-        // remove TO:
-        lookup.ExceptWith(message.To.Mailboxes.Select(s => s.Address));
-
-        // remove CC:
-        lookup.ExceptWith(message.Cc.Mailboxes.Select(s => s.Address));
-
-        if (lookup.Any())
-        {
-            // Bcc is remaining, add to message
-            foreach (var r in lookup)
-            {
-                message.Bcc.Add(MailboxAddress.Parse(r));
-            }
-        }
-
-        var file = await this._messageRepository.SaveMessageAsync(async fs => await message.WriteToAsync(fs));
-
-        try
-        {
-            if (!string.IsNullOrWhiteSpace(file))
-                this._messageBus.Publish(new NewMessageEvent(new MessageEntry(file)));
-        }
-        catch (Exception ex)
-        {
-            this._logger.Error(ex, "Unable to publish new message event for message file: {MessageFile}", file);
-        }
-    }
-
     public override async Task<SmtpResponse> SaveAsync(
         ISessionContext context,
         IMessageTransaction transaction,
         ReadOnlySequence<byte> buffer,
         CancellationToken cancellationToken)
     {
-        this._logger.Debug("Saving Message in the Message Store...");
+        logger.Debug("Saving Message in the Message Store...");
 
         await using var stream = new MemoryStream();
 
@@ -101,7 +48,7 @@ public class SmtpMessageStore : MessageStore
 
         stream.Position = 0;
 
-        await this.HandleReceived(
+        await receivedDataHandler.HandleReceivedAsync(
             stream,
             transaction.To.Select(s => s.AsAddress()));
 
