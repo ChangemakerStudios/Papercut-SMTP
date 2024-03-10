@@ -31,31 +31,30 @@ public abstract class BaseRelayRuleDispatch<T> : IRuleDispatcher<T>
 
     protected ILogger Logger { get; }
 
-    public virtual void Dispatch([NotNull] T rule, MessageEntry messageEntry)
+    public virtual async Task Dispatch([NotNull] T rule, MessageEntry messageEntry)
     {
         if (rule == null) throw new ArgumentNullException(nameof(rule));
         if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
-        this._mimeMessageLoader.Value.Get(messageEntry)
-            .Select(m => m.CloneMessage())
-            .Where(m => this.RuleMatches(rule, m))
-            .Subscribe(
-                m =>
-                {
-                    try
-                    {
-                        using (var client = rule.CreateConnectedSmtpClient())
-                        {
-                            this.PopulateMessageFromRule(rule, m);
-                            client.Send(m);
-                            client.Disconnect(true);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        this.HandleSendFailure(rule, messageEntry, ex);
-                    }
-                });
+        var message = await this._mimeMessageLoader.Value.GetClonedMessageAsync(messageEntry);
+
+        if (message == null) return;
+
+        if (this.RuleMatches(rule, message))
+        {
+            try
+            {
+                using var client = rule.CreateConnectedSmtpClient();
+
+                this.PopulateMessageFromRule(rule, message);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+            catch (Exception ex)
+            {
+                this.HandleSendFailure(rule, messageEntry, ex);
+            }
+        }
     }
 
     protected virtual bool RuleMatches(T rule, MimeMessage mimeMessage)

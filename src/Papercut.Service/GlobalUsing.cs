@@ -25,6 +25,5 @@ global using System.Runtime.InteropServices;
 global using ElectronNET.API;
 global using ElectronNET.API.Entities;
 global using Microsoft.Extensions.Hosting;
-global using Microsoft.Extensions.PlatformAbstractions;
 
 global using Serilog;

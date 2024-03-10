@@ -20,15 +20,25 @@ namespace Papercut.Message.Helpers;
 
 public static class MessageHelper
 {
-    public static MimeMessage CloneMessage(this MimeMessage mimeMessage)
+    public static async Task<MimeMessage?> GetClonedMessageAsync(this MimeMessageLoader mimeMessageLoader, MessageEntry messageEntry)
+    {
+        ArgumentNullException.ThrowIfNull(mimeMessageLoader, nameof(mimeMessageLoader));
+        ArgumentNullException.ThrowIfNull(messageEntry, nameof(messageEntry));
+
+        var message = await mimeMessageLoader.Get(messageEntry);
+
+        return message != null ? await message.CloneMessageAsync() : null;
+    }
+
+    public static async Task<MimeMessage> CloneMessageAsync(this MimeMessage mimeMessage)
     {
         if (mimeMessage == null)
             throw new ArgumentNullException(nameof(mimeMessage));
 
         using var ms = new MemoryStream();
-        mimeMessage.WriteTo(FormatOptions.Default, ms);
+        await mimeMessage.WriteToAsync(FormatOptions.Default, ms);
         ms.Seek(0, SeekOrigin.Begin);
-        var clonedMessage = MimeMessage.Load(ParserOptions.Default, ms);
+        var clonedMessage = await MimeMessage.LoadAsync(ParserOptions.Default, ms);
 
         return clonedMessage;
     }

@@ -22,5 +22,5 @@ using Papercut.Core.Domain.Message;
 public interface IRuleDispatcher<in TRule>
     where TRule : IRule
 {
-    void Dispatch(TRule rule, MessageEntry messageEntry);
+    Task Dispatch(TRule rule, MessageEntry messageEntry);
 }

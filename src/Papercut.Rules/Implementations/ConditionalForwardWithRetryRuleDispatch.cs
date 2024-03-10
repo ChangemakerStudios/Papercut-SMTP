@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Reactive.Threading.Tasks;
+
 using Papercut.Rules.Helpers;
 
 namespace Papercut.Rules.Implementations;
@@ -32,20 +34,21 @@ public class ConditionalForwardWithRetryRuleDispatch : IRuleDispatcher<Condition
         this._logger = logger;
     }
 
-    public void Dispatch(ConditionalForwardWithRetryRule rule, MessageEntry messageEntry)
+    public Task Dispatch(ConditionalForwardWithRetryRule rule, MessageEntry messageEntry)
     {
         if (rule == null) throw new ArgumentNullException(nameof(rule));
         if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
-        var messageSource = this._mimeMessageLoader.Value.Get(messageEntry)
-            .Select(m => m.CloneMessage())
-            .Where(m => this.RuleMatches(rule, m))
+        var messageSource = this._mimeMessageLoader.Value.GetClonedMessageAsync(messageEntry).ToObservable()
+            .Where(m => m != null && this.RuleMatches(rule, m))
             .Select(
                 m =>
                 {
-                    this.PopulateMessageFromRule(rule, m);
+                    this.PopulateMessageFromRule(rule, m!);
                     return m;
                 });
+
+        // TODO: Convert to Polly with Async
 
         var sendObservable = Observable.Create<bool>(o =>
         {
@@ -54,12 +57,11 @@ public class ConditionalForwardWithRetryRuleDispatch : IRuleDispatcher<Condition
             {
                 try
                 {
-                    using (var client = rule.CreateConnectedSmtpClient())
-                    {
-                        client.Send(x);
-                        client.Disconnect(true);
-                        o.OnNext(true);
-                    }
+                    using var client = rule.CreateConnectedSmtpClient();
+
+                    client.Send(x);
+                    client.Disconnect(true);
+                    o.OnNext(true);
                 }
                 catch (Exception ex)
                 {
@@ -81,6 +83,8 @@ public class ConditionalForwardWithRetryRuleDispatch : IRuleDispatcher<Condition
                 {
                     this._logger.Error(e, "Failed to send {@MessageEntry} after {RetryAttempts}", messageEntry, rule.RetryAttempts);
                 });
+
+        return Task.CompletedTask;
     }
 
     protected virtual void PopulateMessageFromRule(ConditionalForwardWithRetryRule rule, MimeMessage mimeMessage)

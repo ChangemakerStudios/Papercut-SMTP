@@ -20,19 +20,9 @@ using Papercut.Core.Domain.Paths;
 
 namespace Papercut.Message;
 
-public class MessageRepository
+public class MessageRepository(IMessagePathConfigurator messagePathConfigurator, ILogger logger)
 {
     public const string MessageFileSearchPattern = "*.eml";
-
-    readonly ILogger _logger;
-
-    readonly IMessagePathConfigurator _messagePathConfigurator;
-
-    public MessageRepository(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
-    {
-        this._logger = logger;
-        this._messagePathConfigurator = messagePathConfigurator;
-    }
 
     public bool DeleteMessage(MessageEntry entry)
     {
@@ -62,32 +52,35 @@ public class MessageRepository
         return true;
     }
 
-    public byte[]? GetMessage(string? file)
+    public async Task<byte[]?> GetMessage(string? file)
     {
         if (!File.Exists(file))
             throw new IOException($"File {file} Does Not Exist");
 
         var info = new FileInfo(file);
-        byte[]? data;
         int retryCount = 0;
 
-        while (!info.TryReadFile(out data))
+        var result = await info.TryReadFile();
+
+        while (result.IsFailed)
         {
-            Thread.Sleep(500);
+            await Task.Delay(500);
 
             if (++retryCount > 10)
             {
                 throw new IOException(
                     $"Cannot Load File {file} After 5 Seconds");
             }
+
+            result = await info.TryReadFile();
         }
 
-        return data;
+        return result.Value;
     }
 
     public IList<MessageEntry> LoadMessages()
     {
-        IEnumerable<string?> files = this._messagePathConfigurator.LoadPaths.SelectMany(
+        IEnumerable<string?> files = messagePathConfigurator.LoadPaths.SelectMany(
             p => Directory.GetFiles(p, MessageFileSearchPattern));
 
         return
@@ -105,7 +98,7 @@ public class MessageRepository
         {
             // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
             fileName = Path.Combine(
-                this._messagePathConfigurator.DefaultSavePath,
+                messagePathConfigurator.DefaultSavePath,
                 $"{DateTime.Now:yyyyMMddHHmmssfff}-{StringHelpers.SmallRandomString()}.eml");
 
             await using (var fileStream = File.Create(fileName))
@@ -113,11 +106,11 @@ public class MessageRepository
                 await writeTo(fileStream);
             }
 
-            this._logger.Information("Successfully Saved email message: {EmailMessageFile}", fileName);
+            logger.Information("Successfully Saved email message: {EmailMessageFile}", fileName);
         }
         catch (Exception ex)
         {
-            this._logger.Error(ex, "Failure saving email message: {EmailMessageFile}", fileName);
+            logger.Error(ex, "Failure saving email message: {EmailMessageFile}", fileName);
         }
 
         return fileName;

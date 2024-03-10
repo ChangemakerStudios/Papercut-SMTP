@@ -16,17 +16,19 @@
 // limitations under the License.
 
 
+using FluentResults;
+
 namespace Papercut.Common.Extensions;
 
 public static class FileInfoExtensions
 {
-    public static bool CanReadFile(this FileInfo file)
+    public static async Task<bool> CanReadFile(this FileInfo file)
     {
-        if (file == null) throw new ArgumentNullException(nameof(file));
+        ArgumentNullException.ThrowIfNull(file, nameof(file));
 
         try
         {
-            using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) { }
+            await using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) { }
         }
         catch (IOException)
         {
@@ -36,26 +38,23 @@ public static class FileInfoExtensions
         return true;
     }
 
-    public static bool TryReadFile(this FileInfo file, out byte[]? fileBytes)
+    public static async Task<Result<byte[]>> TryReadFile(this FileInfo file)
     {
-        if (file == null) throw new ArgumentNullException(nameof(file));
-
-        fileBytes = null;
+        ArgumentNullException.ThrowIfNull(file, nameof(file));
 
         try
         {
             using var ms = new MemoryStream();
-            using var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            await using var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            fileStream.CopyTo(ms);
-            fileBytes = ms.ToArray();
+            await fileStream.CopyToAsync(ms);
+
+            return Result.Ok(ms.ToArray());
         }
         catch (IOException)
         {
             // the file is unavailable because it is still being written by another thread or process
-            return false;
+            return Result.Fail<byte[]>("File is unavailable");
         }
-
-        return true;
     }
 }

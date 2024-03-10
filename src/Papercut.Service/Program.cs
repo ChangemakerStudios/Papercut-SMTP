@@ -16,23 +16,14 @@
 // limitations under the License.
 
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 using Autofac.Extensions.DependencyInjection;
-
-using ElectronNET.API;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.PlatformAbstractions;
 
 using Papercut.Core.Domain.Application;
 
-using Serilog;
 using Serilog.Debugging;
 using Serilog.ExceptionalLogContext;
 
@@ -40,7 +31,7 @@ namespace Papercut.Service;
 
 public class Program
 {
-    private static CancellationTokenSource _cancellationTokenSource;
+    private static readonly CancellationTokenSource _cancellationTokenSource = new();
 
     public static async Task Main(string[] args)
     {
@@ -60,8 +51,6 @@ public class Program
 
     public static async Task RunAsync(string[] args)
     {
-        _cancellationTokenSource = new CancellationTokenSource();
-
         try
         {
             await CreateHostBuilder(args).Build().RunAsync(_cancellationTokenSource.Token);
@@ -84,7 +73,7 @@ public class Program
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
-            .UseContentRoot(PlatformServices.Default.Application.ApplicationBasePath)
+            .UseContentRoot(AppContext.BaseDirectory)
             .UseSerilog(CreateDefaultLogger)
             .UseServiceProviderFactory(new AutofacServiceProviderFactory())
             .ConfigureServices(

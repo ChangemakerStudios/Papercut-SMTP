@@ -29,31 +29,31 @@ public class MimePartFileStreamResult : FileStreamResult
     public MimePartFileStreamResult(IMimeContent contentObject, string contentType)
         : base(new MemoryStream(), contentType)
     {
-            this._tempFilePath = Path.GetTempFileName();
+        this._tempFilePath = Path.GetTempFileName();
 
-            using (var tempFile = File.OpenWrite(this._tempFilePath))
-            {
-                contentObject.DecodeTo(tempFile);
-            }
-
-            this.FileStream.Dispose();
-            this.FileStream = File.OpenRead(this._tempFilePath);
+        using (var tempFile = File.OpenWrite(this._tempFilePath))
+        {
+            contentObject.DecodeTo(tempFile);
         }
+
+        this.FileStream.Dispose();
+        this.FileStream = File.OpenRead(this._tempFilePath);
+    }
 
     public override void ExecuteResult(ActionContext context)
     {
-            base.ExecuteResult(context);
-            this.Cleanup();
-        }
+        base.ExecuteResult(context);
+        this.Cleanup();
+    }
 
     public override Task ExecuteResultAsync(ActionContext context)
     {
-            return base.ExecuteResultAsync(context).ContinueWith(
-                _ =>
-                {
-                    this.Cleanup();
-                });
-        }
+        return base.ExecuteResultAsync(context).ContinueWith(
+            _ =>
+            {
+                this.Cleanup();
+            });
+    }
 
     private void Cleanup()
     {

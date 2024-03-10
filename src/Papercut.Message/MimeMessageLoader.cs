@@ -16,93 +16,65 @@
 // limitations under the License.
 
 
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Papercut.Message;
 
-public class MimeMessageLoader
+public class MimeMessageLoader(MessageRepository messageRepository, ILogger logger)
 {
     public static MemoryCache _mimeMessageCache;
 
-    readonly ILogger _logger;
-
-    readonly MessageRepository _messageRepository;
+    readonly ILogger _logger = logger.ForContext<MimeMessageLoader>();
 
     static MimeMessageLoader()
     {
         _mimeMessageCache = new MemoryCache(new MemoryCacheOptions());
     }
 
-    public MimeMessageLoader(MessageRepository messageRepository, ILogger logger)
-    {
-        this._messageRepository = messageRepository;
-        this._logger = logger.ForContext<MimeMessageLoader>();
-    }
-
-    public IObservable<MimeMessage> Get(MessageEntry messageEntry)
+    public async Task<MimeMessage?> Get(MessageEntry messageEntry)
     {
         this._logger.Verbose("Loading Message Entry {@MessageEntry}", messageEntry);
 
-        return Observable.Create<MimeMessage>(
-            o =>
-            {
-                // in case of multiple subscriptions...
-                var observer = Observer.Synchronize(o, true);
-                var disposable = new CancellationDisposable();
+        try
+        {
+            return await this.GetMimeMessageFromCache(messageEntry);
+        }
+        catch (OperationCanceledException)
+        {
+            // no need to respond...
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Exception Loading {@MessageEntry}", messageEntry);
+        }
 
-                MimeMessage? message = null;
-
-                try
-                {
-                    message = this.GetMimeMessageFromCache(messageEntry);
-                }
-                catch (OperationCanceledException)
-                {
-                    // no need to respond...
-                }
-                catch (Exception ex)
-                {
-                    this._logger.Error(ex, "Exception Loading {@MessageEntry}", messageEntry);
-                    observer.OnError(ex);
-                }
-
-                if (message != null)
-                {
-                    observer.OnNext(message);
-                    observer.OnCompleted();
-                }
-
-                return disposable;
-            }).SubscribeOn(TaskPoolScheduler.Default);
+        return null;
     }
 
-    private MimeMessage GetMimeMessageFromCache(MessageEntry messageEntry)
+    private async Task<MimeMessage?> GetMimeMessageFromCache(MessageEntry messageEntry)
     {
-        return _mimeMessageCache.GetOrCreate(
+        if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
+        if (messageEntry.File == null) throw new ArgumentNullException(nameof(messageEntry.File));
+
+        return await _mimeMessageCache.GetOrCreateAsync(
             messageEntry.File,
-            (cacheEntry) =>
+            async cacheEntry =>
             {
                 cacheEntry.SlidingExpiration = TimeSpan.FromMinutes(3);
-                this._logger.Verbose(
-                    "Getting Message Data from Message Repository",
-                    messageEntry);
 
-                var messageData = this._messageRepository.GetMessage(messageEntry);
-                MimeMessage mimeMessage;
+                this._logger.Verbose("Getting Message Data from Message Repository");
 
-                // wrap in a memorystream...
+                var messageData = await messageRepository.GetMessage(messageEntry);
+
+                if (messageData == null) return null;
+
                 using var ms = new MemoryStream(messageData);
+
                 this._logger.Verbose(
                     "MimeMessage Load for {@MessageEntry}",
                     messageEntry);
 
-                mimeMessage = MimeMessage.Load(ParserOptions.Default, ms);
-
-                return mimeMessage;
+                return await MimeMessage.LoadAsync(ParserOptions.Default, ms);
             });
     }
 }

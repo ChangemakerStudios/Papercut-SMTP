@@ -20,12 +20,12 @@ namespace Papercut.Message;
 
 public static class MessageRepositoryExtensions
 {
-    public static byte[]? GetMessage(
+    public static Task<byte[]?> GetMessage(
         this MessageRepository messageRepository,
         MessageEntry entry)
     {
-        if (messageRepository == null) throw new ArgumentNullException(nameof(messageRepository));
-        if (entry == null) throw new ArgumentNullException(nameof(entry));
+        ArgumentNullException.ThrowIfNull(nameof(messageRepository));
+        ArgumentNullException.ThrowIfNull(nameof(entry));
 
         return messageRepository.GetMessage(entry.File);
     }

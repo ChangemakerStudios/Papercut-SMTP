@@ -16,20 +16,15 @@
 // limitations under the License.
 
 
-using System.Reactive.Threading.Tasks;
-
 namespace Papercut.Message.Helpers;
 
 public static class MimeMessageLoaderExtensions
 {
-    public static MimeMessage LoadMailMessage(this MimeMessageLoader loader, MessageEntry entry)
+    public static async Task<MimeMessage> LoadMailMessage(this MimeMessageLoader loader, MessageEntry entry)
     {
         if (loader == null) throw new ArgumentNullException(nameof(loader));
         if (entry == null) throw new ArgumentNullException(nameof(entry));
 
-        var loadTask = loader.Get(entry).ToTask();
-        loadTask.Wait();
-
-        return loadTask.Result;
+        return await loader.Get(entry);
     }
 }

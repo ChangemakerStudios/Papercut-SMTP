@@ -26,14 +26,14 @@ public class MessageWatcher : IDisposable
 
     readonly IMessagePathConfigurator _messagePathConfigurator;
 
-    List<FileSystemWatcher> _watchers;
+    readonly List<FileSystemWatcher> _watchers;
 
-    public MessageWatcher(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
+    public MessageWatcher(IMessagePathConfigurator messagePathConfigurator, ILogger logger)
     {
         this._logger = logger;
         this._messagePathConfigurator = messagePathConfigurator;
         this._messagePathConfigurator.RefreshLoadPath += this.OnRefreshLoadPaths;
-        this.SetupMessageWatchers();
+        this._watchers = this.CreateMessageWatchers().ToList();
     }
 
     public void Dispose()
@@ -46,29 +46,28 @@ public class MessageWatcher : IDisposable
     {
         if (!disposing) return;
 
-        foreach (FileSystemWatcher watch in this._watchers)
+        foreach (var watch in this._watchers)
         {
-            if (watch != null)
-                DisposeWatch(watch);
+            DisposeWatch(watch);
         }
     }
 
-    void OnRefreshLoadPaths(object sender, EventArgs eventArgs)
+    void OnRefreshLoadPaths(object? sender, EventArgs eventArgs)
     {
-        List<string> existingPaths = this._watchers.Select(s => s.Path).ToList();
-        List<string> removePaths = existingPaths.Except(this._messagePathConfigurator.LoadPaths).ToList();
-        List<string> addPaths = this._messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
+        var existingPaths = this._watchers.Select(s => s.Path).ToList();
+        var removePaths = existingPaths.Except(this._messagePathConfigurator.LoadPaths).ToList();
+        var addPaths = this._messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
 
-        foreach (FileSystemWatcher watch in this._watchers.Where(s => removePaths.Contains(s.Path)).ToList())
+        foreach (var watch in this._watchers.Where(s => removePaths.Contains(s.Path)).ToList())
         {
             DisposeWatch(watch);
             this._watchers.Remove(watch);
         }
 
         // setup new ones...
-        foreach (string newPath in addPaths)
+        foreach (var newPath in addPaths)
         {
-            this.AddWatcher(newPath);
+            this._watchers.Add(this.CreateWatcher(newPath));
         }
     }
 
@@ -81,23 +80,22 @@ public class MessageWatcher : IDisposable
         }
         catch (Exception)
         {
+            // ignored
         }
     }
 
-    void SetupMessageWatchers()
+    IEnumerable<FileSystemWatcher> CreateMessageWatchers()
     {
-        this._watchers = [];
-
         // setup watcher for each path...
-        foreach (string path in this._messagePathConfigurator.LoadPaths)
+        foreach (var path in this._messagePathConfigurator.LoadPaths)
         {
-            this.AddWatcher(path);
+            yield return this.CreateWatcher(path);
         }
     }
 
-    void AddWatcher(string path)
+    FileSystemWatcher CreateWatcher(string path)
     {
-        this._logger.Debug("Adding FileSystemWatcher for {Path}", path);
+        this._logger.Debug("Creating FileSystemWatcher for {Path}", path);
 
         var watcher = new FileSystemWatcher(path, MessageRepository.MessageFileSearchPattern)
                       {
@@ -113,7 +111,7 @@ public class MessageWatcher : IDisposable
         // Begin watching.
         watcher.EnableRaisingEvents = true;
 
-        this._watchers.Add(watcher);
+        return watcher;
     }
 
     void OnDeleted(object sender, FileSystemEventArgs e)
@@ -129,15 +127,15 @@ public class MessageWatcher : IDisposable
     void OnChanged(object sender, FileSystemEventArgs e)
     {
         Task.Factory.StartNew(
-            () =>
+            async () =>
             {
                 var info = new FileInfo(e.FullPath);
-                int retryCount = 0;
+                var retryCount = 0;
 
                 do
                 {
                     var timeout = 500 + retryCount * 100;
-                    Thread.Sleep(timeout);
+                    await Task.Delay(timeout);
                     if (++retryCount > 30)
                     {
                         this._logger.Error(
@@ -147,10 +145,12 @@ public class MessageWatcher : IDisposable
                         break;
                     }
                 }
-                while (!info.CanReadFile());
+                while (!await info.CanReadFile());
+
+                this.OnNewMessage(new NewMessageEventArgs(new MessageEntry(info)));
 
                 return info;
-            }).ContinueWith(r => this.OnNewMessage(new NewMessageEventArgs(new MessageEntry(r.Result))));
+            });
     }
 
     public event EventHandler<NewMessageEventArgs> NewMessage;
@@ -159,13 +159,13 @@ public class MessageWatcher : IDisposable
 
     protected virtual void OnRefreshNeeded()
     {
-        EventHandler handler = this.RefreshNeeded;
+        var handler = this.RefreshNeeded;
         handler?.Invoke(this, EventArgs.Empty);
     }
 
     protected virtual void OnNewMessage(NewMessageEventArgs e)
     {
-        EventHandler<NewMessageEventArgs> handler = this.NewMessage;
+        var handler = this.NewMessage;
         handler?.Invoke(this, e);
     }
 }

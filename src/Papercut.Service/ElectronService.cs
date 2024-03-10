@@ -112,7 +112,7 @@ public class ElectronService : IHostedService
     static string WindowIcon()
     {
         var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        return Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "icons",
+        return Path.Combine(AppContext.BaseDirectory, "icons",
             isWindows ? "Papercut-icon.ico" : "Papercut-icon.png");
     }
 }
