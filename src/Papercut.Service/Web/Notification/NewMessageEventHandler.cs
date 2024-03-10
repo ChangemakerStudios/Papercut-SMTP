@@ -48,7 +48,7 @@ public class NewMessageEventHandler: IEventHandler<NewMessageEvent>
                                     new MimeMessageEntry(messageEvent.NewMessage,
                                         this._messageLoader.LoadMailMessage(messageEvent.NewMessage)));
 
-            this._logger.LogInformation($"New message '{newMessageObj.Id}' has received. Nofifying subscribed clients.");
+            this._logger.LogInformation($"New message '{newMessageObj.Id}' has received. Notifying subscribed clients.");
             this._hubContext.Clients.All.SendAsync("new-message-received", newMessageObj);
         }
 }

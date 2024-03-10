@@ -1,91 +1,91 @@
-﻿// Papercut
-// 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//  
-// http://www.apache.org/licenses/LICENSE-2.0
-//  
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License. 
+﻿//// Papercut
+//// 
+//// Copyright © 2008 - 2012 Ken Robertson
+//// Copyright © 2013 - 2024 Jaben Cargman
+//// 
+//// Licensed under the Apache License, Version 2.0 (the "License");
+//// you may not use this file except in compliance with the License.
+//// You may obtain a copy of the License at
+//// 
+//// http://www.apache.org/licenses/LICENSE-2.0
+//// 
+//// Unless required by applicable law or agreed to in writing, software
+//// distributed under the License is distributed on an "AS IS" BASIS,
+//// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//// See the License for the specific language governing permissions and
+//// limitations under the License.
 
-namespace Papercut.Message
-{
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
 
-    using MimeKit;
+//using System;
+//using System.IO;
+//using System.Linq;
 
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Message;
+//using MimeKit;
 
-    using Serilog;
+//using Papercut.Common.Domain;
+//using Papercut.Common.Extensions;
+//using Papercut.Core.Annotations;
+//using Papercut.Core.Domain.Message;
 
-    public class ReceivedDataMessageHandler : IReceivedDataHandler
-    {
-        readonly ILogger _logger;
+//using Serilog;
 
-        readonly MessageRepository _messageRepository;
+//namespace Papercut.Message
+//{
+//    public class ReceivedDataMessageHandler : IReceivedDataHandler
+//    {
+//        readonly ILogger _logger;
 
-        readonly IMessageBus _messageBus;
+//        readonly IMessageBus _messageBus;
 
-        public ReceivedDataMessageHandler(MessageRepository messageRepository,
-            IMessageBus messageBus,
-            ILogger logger)
-        {
-            _messageRepository = messageRepository;
-            this._messageBus = messageBus;
-            _logger = logger;
-        }
+//        readonly MessageRepository _messageRepository;
 
-        public void HandleReceived(byte[] messageData, [CanBeNull] string[] recipients)
-        {
-            string file;
+//        public ReceivedDataMessageHandler(
+//            MessageRepository messageRepository,
+//            IMessageBus messageBus,
+//            ILogger logger)
+//        {
+//            this._messageRepository = messageRepository;
+//            this._messageBus = messageBus;
+//            this._logger = logger;
+//        }
 
-            using (var ms = new MemoryStream(messageData))
-            {
-                var message = MimeMessage.Load(ParserOptions.Default, ms, true);
+//        public void HandleReceived(byte[] messageData, [CanBeNull] string[] recipients)
+//        {
+//            string file;
 
-                var lookup = recipients.ToHashSet(StringComparer.CurrentCultureIgnoreCase);
+//            using (var ms = new MemoryStream(messageData))
+//            {
+//                var message = MimeMessage.Load(ParserOptions.Default, ms, true);
 
-                // remove TO:
-                lookup.ExceptWith(message.To.Mailboxes.Select(s => s.Address));
+//                var lookup = recipients.ToHashSet(StringComparer.CurrentCultureIgnoreCase);
 
-                // remove CC:
-                lookup.ExceptWith(message.Cc.Mailboxes.Select(s => s.Address));
+//                // remove TO:
+//                lookup.ExceptWith(message.To.Mailboxes.Select(s => s.Address));
 
-                if (lookup.Any())
-                {
-                    // Bcc is remaining, add to message
-                    foreach (var r in lookup)
-                    {
-                        message.Bcc.Add(MailboxAddress.Parse(r));
-                    }
-                }
+//                // remove CC:
+//                lookup.ExceptWith(message.Cc.Mailboxes.Select(s => s.Address));
 
-                file = _messageRepository.SaveMessage(fs => message.WriteTo(fs));
-            }
+//                if (lookup.Any())
+//                {
+//                    // Bcc is remaining, add to message
+//                    foreach (var r in lookup)
+//                    {
+//                        message.Bcc.Add(MailboxAddress.Parse(r));
+//                    }
+//                }
 
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(file))
-                    this._messageBus.Publish(new NewMessageEvent(new MessageEntry(file)));
-            }
-            catch (Exception ex)
-            {
-                _logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
-            }
-        }
-    }
-}
+//                file = this._messageRepository.SaveMessage(fs => message.WriteTo(fs));
+//            }
+
+//            try
+//            {
+//                if (!string.IsNullOrWhiteSpace(file))
+//                    this._messageBus.Publish(new NewMessageEvent(new MessageEntry(file)));
+//            }
+//            catch (Exception ex)
+//            {
+//                this._logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
+//            }
+//        }
+//    }
+//}

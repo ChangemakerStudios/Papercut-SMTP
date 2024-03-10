@@ -16,22 +16,21 @@
 // limitations under the License.
 
 
+using System.Reflection;
+
+using Autofac;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Papercut.Common.Domain;
 using Papercut.Core.Annotations;
 using Papercut.Core.Domain.Application;
-using Papercut.Core.Domain.Message;
-using Papercut.Core.Domain.Paths;
 using Papercut.Message;
 using Papercut.Service.Domain.SmtpServer;
-using Papercut.Service.Infrastructure;
-using Papercut.Service.Infrastructure.Paths;
 using Papercut.Service.Infrastructure.SmtpServer;
-using Papercut.Service.Web.Notification;
-using SmtpServer.Storage;
+
+using Serilog;
 
 namespace Papercut.Service;
 
@@ -56,32 +55,33 @@ internal class PapercutServiceStartup
                     });
             });
 
-        services.AddSignalR();
-
         services.AddOptions<SmtpServerOptions>("SmtpServer");
         services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
 
         // add some services
-        services.AddSingleton<IAppMeta>(new ApplicationMeta("Papercut.Service"));
+        services.AddSingleton<IAppMeta>(new ApplicationMeta("Papercut.Service", Assembly.GetExecutingAssembly().GetName()?.Version?.ToString()));
 
-        services.AddScoped<IMessagePathConfigurator, MessagePathConfigurator>();
-        services.AddScoped<IPathTemplatesProvider, ServerPathTemplateProviderService>();
-        services.AddScoped<MessageStore, SmtpMessageStore>();
-
-        // events
-        services.AddScoped<IMessageBus, SimpleMediatorBus>();
-        services.AddScoped<IEventHandler<NewMessageEvent>, NewMessageEventHandler>();
+        //// events
+        //services.AddTransient<IMessageBus, SimpleMediatorBus>();
+        ////services.AddTransient<IEventHandler<NewMessageEvent>, NewMessageEventHandler>();
 
         // hosted services
         services.AddHostedService<SmtpServerService>();
+    }
 
-        new PapercutMessageModule().Register(services);
+    [UsedImplicitly]
+    public void ConfigureContainer(ContainerBuilder builder)
+    {
+        builder.RegisterModule<PapercutServiceModule>();
+        builder.RegisterModule<PapercutMessageModule>();
     }
 
     [UsedImplicitly]
     public void Configure(IApplicationBuilder app)
     {
         app.UseRouting();
+
+        app.UseSerilogRequestLogging();
 
         app.UseEndpoints(
             s =>

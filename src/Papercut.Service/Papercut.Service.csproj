@@ -1,57 +1,53 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <OutputType>exe</OutputType>
-    <OutputTypeEx>exe</OutputTypeEx>
-    <DebugType>portable</DebugType>
-    <StartupObject />
-  </PropertyGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Web\Assets\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="electron.manifest.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="electron.manifest.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Autofac" Version="8.0.0" />
-    <PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
-    <PackageReference Include="ElectronNET.API" Version="23.6.2" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
-    <PackageReference Include="Serilog" Version="3.1.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-    <PackageReference Include="Serilog.ExceptionalLogContext" Version="1.1.0" />
-    <PackageReference Include="SmtpServer" Version="10.0.1" />
-    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="9.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
-    <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
-    <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
-    <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' != 'Release'">
-    <None Include="Papercut.Service.json" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <None Link="Papercut.Service.json" Include="Papercut.Service.Release.json" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="icons\Papercut-icon.icns">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="icons\Papercut-icon.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="icons\Papercut-icon.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="https://json.schemastore.org/appsscript.json" /></VisualStudio></ProjectExtensions>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<OutputType>exe</OutputType>
+		<OutputTypeEx>exe</OutputTypeEx>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Web\Assets\**" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Remove="electron.manifest.json" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="electron.manifest.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="9.0.0" />
+		<PackageReference Include="ElectronNET.API" Version="23.6.2" />
+		<PackageReference Include="Serilog" Version="3.1.1" />
+		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+		<PackageReference Include="Serilog.ExceptionalLogContext" Version="1.1.0" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="7.0.0" />
+		<PackageReference Include="Serilog.Expressions" Version="4.0.0" />
+		<PackageReference Include="SmtpServer" Version="10.0.1" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
+		<ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
+		<ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
+		<ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="appsettings.Development.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="icons\Papercut-icon.icns">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="icons\Papercut-icon.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="icons\Papercut-icon.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>

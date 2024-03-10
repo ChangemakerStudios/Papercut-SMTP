@@ -20,6 +20,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Autofac.Extensions.DependencyInjection;
+
 using ElectronNET.API;
 
 using Microsoft.AspNetCore.Hosting;
@@ -28,7 +30,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
 
+using Papercut.Core.Domain.Application;
+
 using Serilog;
+using Serilog.Debugging;
 using Serilog.ExceptionalLogContext;
 
 namespace Papercut.Service;
@@ -40,6 +45,9 @@ public class Program
     public static async Task Main(string[] args)
     {
         Console.Title = "Papercut.Service";
+
+        TaskScheduler.UnobservedTaskException += (sender, e) => Log.Error(e.Exception, "Unobserved Task Exception");
+        AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) => Log.Error(eventArgs.ExceptionObject as Exception, "Unhandled Exception");
 
         Log.Logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
@@ -77,13 +85,8 @@ public class Program
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
             .UseContentRoot(PlatformServices.Default.Application.ApplicationBasePath)
-            .UseSerilog(
-                (context, services, configuration) => configuration
-                    .Enrich.FromLogContext()
-                    .Enrich.WithExceptionalLogContext()
-                    .WriteTo.Console()
-                    .ReadFrom.Configuration(context.Configuration)
-                    .ReadFrom.Services(services))
+            .UseSerilog(CreateDefaultLogger)
+            .UseServiceProviderFactory(new AutofacServiceProviderFactory())
             .ConfigureServices(
                 (context, sp) =>
                 {
@@ -100,6 +103,22 @@ public class Program
                 (context, sp) =>
                 {
                     if (HybridSupport.IsElectronActive)
-                        sp.AddHostedService<PapercutHybridSupport>();
+                        sp.AddHostedService<ElectronService>();
                 });
+
+    private static void CreateDefaultLogger(HostBuilderContext context, IServiceProvider services, LoggerConfiguration configuration)
+    {
+        var appMeta = services.GetRequiredService<IAppMeta>();
+
+        configuration
+            .Enrich.FromLogContext()
+            .Enrich.WithExceptionalLogContext()
+            .Enrich.WithProperty("AppName", appMeta.AppName)
+            .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
+            .WriteTo.Console()
+            .ReadFrom.Configuration(context.Configuration)
+            .ReadFrom.Services(services);
+
+        SelfLog.Enable(s => Console.Error.WriteLine(s));
+    }
 }

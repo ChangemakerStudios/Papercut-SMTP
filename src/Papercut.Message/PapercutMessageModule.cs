@@ -16,20 +16,19 @@
 // limitations under the License.
 
 
-using Microsoft.Extensions.DependencyInjection;
+using Autofac;
 
 using Papercut.Core.Domain.Message;
 
 namespace Papercut.Message
 {
-    public class PapercutMessageModule
+    public class PapercutMessageModule : Module
     {
-        public void Register(IServiceCollection services)
+        protected override void Load(ContainerBuilder builder)
         {
-            services.AddScoped<MessageRepository>();
-            services.AddScoped<MimeMessageLoader>();
-
-            services.AddScoped<IReceivedDataHandler,ReceivedDataMessageHandler>();
+            builder.RegisterType<MessageRepository>().AsSelf();
+            builder.RegisterType<MimeMessageLoader>().AsSelf();
+            //builder.RegisterType<ReceivedDataMessageHandler>().As<IReceivedDataHandler>();
         }
     }
 }

@@ -17,14 +17,10 @@
 
 
 using Autofac;
-using Autofac.Core;
 
 using Papercut.Common.Domain;
-using Papercut.Core.Domain.Application;
 using Papercut.Core.Domain.Message;
 using Papercut.Core.Domain.Paths;
-using Papercut.Core.Infrastructure.Lifecycle;
-using Papercut.Core.Infrastructure.Plugins;
 using Papercut.Service.Infrastructure.Paths;
 using Papercut.Service.Infrastructure.SmtpServer;
 using Papercut.Service.Web.Notification;
@@ -33,24 +29,16 @@ using SmtpServer.Storage;
 
 namespace Papercut.Service;
 
-using Module = Autofac.Module;
-
-public class PapercutServiceModule : Module, IDiscoverableModule
+public class PapercutServiceModule : Module
 {
-    public IModule Module => this;
-
     protected override void Load(ContainerBuilder builder)
     {
+        builder.RegisterType<MessagePathConfigurator>().As<IMessagePathConfigurator>();
+
         builder.RegisterType<NewMessageEventHandler>().As<IEventHandler<NewMessageEvent>>();
 
         builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().InstancePerLifetimeScope();
 
-        builder.Register(c => new ApplicationMeta("Papercut.Service"))
-            .As<IAppMeta>()
-            .SingleInstance();
-
-        builder.RegisterType<SmtpMessageStore>().As<MessageStore>().AsSelf();
-
-        //builder.RegisterType<SerilogSmtpServerLoggingBridge>().As<global::SmtpServer.ILogger>();
+        builder.RegisterType<SmtpMessageStore>().As<IMessageStore>().AsSelf();
     }
 }

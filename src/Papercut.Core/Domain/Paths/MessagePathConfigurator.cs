@@ -63,7 +63,7 @@ namespace Papercut.Core.Domain.Paths
             if (pathTemplateProvider == null) throw new ArgumentNullException(nameof(pathTemplateProvider));
             if (logger == null) throw new ArgumentNullException(nameof(logger));
 
-            this._logger = logger;
+            this._logger = logger.ForContext<MessagePathConfigurator>();
             this._pathTemplateProvider = pathTemplateProvider;
             this._pathTemplateProvider.PathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
 

@@ -31,7 +31,7 @@ using Serilog;
 
 namespace Papercut.Service;
 
-public class PapercutHybridSupport : IHostedService
+public class ElectronService : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {

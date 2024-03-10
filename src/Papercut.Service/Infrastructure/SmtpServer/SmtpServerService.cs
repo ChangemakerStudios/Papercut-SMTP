@@ -57,7 +57,7 @@ public class SmtpServerService : IHostedService
         this._serviceProvider = serviceProvider;
         this._smtpServerOptions = smtpServerOptions;
         this._applicationMetaData = applicationMetaData;
-        this._logger = logger;
+        this._logger = logger.ForContext<SmtpServerService>();
     }
 
     private string ListenIpAddress
@@ -74,7 +74,7 @@ public class SmtpServerService : IHostedService
         }
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         ServicePointManager.ServerCertificateValidationCallback =
             this.IgnoreCertificateValidationFailureForTestingOnly;
@@ -99,8 +99,20 @@ public class SmtpServerService : IHostedService
             this._smtpServerOptions.Port);
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        Task.Run(async () => await this._server.StartAsync(cancellationToken), cancellationToken);
+        Task.Run(async () =>
+        {
+            try
+            {
+                await this._server.StartAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                this._logger.Error(ex, "Failure Starting SMTP Server");
+            }
+        }, cancellationToken);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -129,9 +141,9 @@ public class SmtpServerService : IHostedService
 
     private void OnSessionCompleted(object sender, SessionEventArgs e)
     {
-        this._logger.Information(
-            "Completed SMTP connection from {@EndpointDefinition}",
-            e.Context.EndpointDefinition);
+        this._logger.Verbose(
+            "Completed SMTP connection from {Endpoint}",
+            e.Context.EndpointDefinition.Endpoint);
     }
 
     private void OnSessionCreated(object sender, SessionEventArgs e)
@@ -141,9 +153,9 @@ public class SmtpServerService : IHostedService
             this._logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
         };
 
-        this._logger.Information(
-            "New SMTP connection from {@EndpointDefinition}",
-            e.Context.EndpointDefinition);
+        this._logger.Verbose(
+            "New SMTP connection from {Endpoint}",
+            e.Context.EndpointDefinition.Endpoint);
     }
 
     private bool IgnoreCertificateValidationFailureForTestingOnly(
