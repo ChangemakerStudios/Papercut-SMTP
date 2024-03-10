@@ -1,117 +1,108 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Message
+
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+
+using Microsoft.Extensions.Caching.Memory;
+
+namespace Papercut.Message;
+
+public class MimeMessageLoader
 {
-    using System;
-    using System.IO;
-    using System.Reactive;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Disposables;
-    using System.Reactive.Linq;
+    public static MemoryCache _mimeMessageCache;
 
-    using MimeKit;
-    using Papercut.Core.Domain.Message;
+    readonly ILogger _logger;
 
-    using Serilog;
-    using Microsoft.Extensions.Caching.Memory;
+    readonly MessageRepository _messageRepository;
 
-    public class MimeMessageLoader
+    static MimeMessageLoader()
     {
-        public static MemoryCache MimeMessageCache;
+        _mimeMessageCache = new MemoryCache(new MemoryCacheOptions());
+    }
 
-        readonly ILogger _logger;
+    public MimeMessageLoader(MessageRepository messageRepository, ILogger logger)
+    {
+        this._messageRepository = messageRepository;
+        this._logger = logger.ForContext<MimeMessageLoader>();
+    }
 
-        readonly MessageRepository _messageRepository;
+    public IObservable<MimeMessage> Get(MessageEntry messageEntry)
+    {
+        this._logger.Verbose("Loading Message Entry {@MessageEntry}", messageEntry);
 
-        static MimeMessageLoader()
-        {
-            MimeMessageCache = new MemoryCache(new MemoryCacheOptions());
-        }
+        return Observable.Create<MimeMessage>(
+            o =>
+            {
+                // in case of multiple subscriptions...
+                var observer = Observer.Synchronize(o, true);
+                var disposable = new CancellationDisposable();
 
-        public MimeMessageLoader(MessageRepository messageRepository, ILogger logger)
-        {
-            _messageRepository = messageRepository;
-            _logger = logger.ForContext<MimeMessageLoader>();
-        }
+                MimeMessage? message = null;
 
-        public IObservable<MimeMessage> Get(MessageEntry messageEntry)
-        {
-            _logger.Verbose("Loading Message Entry {@MessageEntry}", messageEntry);
-
-            return Observable.Create<MimeMessage>(
-                o =>
+                try
                 {
-                    // in case of multiple subscriptions...
-                    var observer = Observer.Synchronize(o, true);
-                    var disposable = new CancellationDisposable();
-
-                    MimeMessage message = null;
-
-                    try
-                    {
-                        message = this.GetMimeMessageFromCache(messageEntry);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // no need to respond...
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(ex, "Exception Loading {@MessageEntry}", messageEntry);
-                        observer.OnError(ex);
-                    }
-
-                    if (message != null)
-                    {
-                        observer.OnNext(message);
-                        observer.OnCompleted();
-                    }
-
-                    return disposable;
-                }).SubscribeOn(TaskPoolScheduler.Default);
-        }
-
-        private MimeMessage GetMimeMessageFromCache(MessageEntry messageEntry)
-        {
-            return MimeMessageCache.GetOrCreate(
-                messageEntry.File,
-                (cacheEntry) =>
+                    message = this.GetMimeMessageFromCache(messageEntry);
+                }
+                catch (OperationCanceledException)
                 {
-                    cacheEntry.SlidingExpiration = TimeSpan.FromMinutes(3);
-                    this._logger.Verbose(
-                        "Getting Message Data from Message Repository",
-                        messageEntry);
+                    // no need to respond...
+                }
+                catch (Exception ex)
+                {
+                    this._logger.Error(ex, "Exception Loading {@MessageEntry}", messageEntry);
+                    observer.OnError(ex);
+                }
 
-                    var messageData = this._messageRepository.GetMessage(messageEntry);
-                    MimeMessage mimeMessage;
+                if (message != null)
+                {
+                    observer.OnNext(message);
+                    observer.OnCompleted();
+                }
 
-                    // wrap in a memorystream...
-                    using (var ms = new MemoryStream(messageData))
-                    {
-                        this._logger.Verbose(
-                            "MimeMessage Load for {@MessageEntry}",
-                            messageEntry);
+                return disposable;
+            }).SubscribeOn(TaskPoolScheduler.Default);
+    }
 
-                        mimeMessage = MimeMessage.Load(ParserOptions.Default, ms);
-                    }
+    private MimeMessage GetMimeMessageFromCache(MessageEntry messageEntry)
+    {
+        return _mimeMessageCache.GetOrCreate(
+            messageEntry.File,
+            (cacheEntry) =>
+            {
+                cacheEntry.SlidingExpiration = TimeSpan.FromMinutes(3);
+                this._logger.Verbose(
+                    "Getting Message Data from Message Repository",
+                    messageEntry);
 
-                    return mimeMessage;
-                });
-        }
+                var messageData = this._messageRepository.GetMessage(messageEntry);
+                MimeMessage mimeMessage;
+
+                // wrap in a memorystream...
+                using var ms = new MemoryStream(messageData);
+                this._logger.Verbose(
+                    "MimeMessage Load for {@MessageEntry}",
+                    messageEntry);
+
+                mimeMessage = MimeMessage.Load(ParserOptions.Default, ms);
+
+                return mimeMessage;
+            });
     }
 }

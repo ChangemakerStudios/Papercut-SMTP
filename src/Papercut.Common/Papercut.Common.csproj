@@ -9,11 +9,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
 		<PackageReference Include="MimeKit" Version="4.4.0" />
 		<PackageReference Include="Serilog" Version="3.1.1" />
-		<PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
-		<PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
-		<PackageReference Include="System.Runtime" Version="4.3.1" />
 	</ItemGroup>
 
 </Project>

@@ -68,19 +68,17 @@ public class MessagesController : ControllerBase
     [HttpDelete]
     public void DeleteAll()
     {
-        _messageRepository.LoadMessages()
-            .ForEach(
-                msg =>
-                {
-                    try
-                    {
-                        _messageRepository.DeleteMessage(msg);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Warning(ex, "Failure Deleting Message File {MessageFile}", msg.File);
-                    }
-                });
+        foreach (var msg in _messageRepository.LoadMessages())
+        {
+            try
+            {
+                _messageRepository.DeleteMessage(msg);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Failure Deleting Message File {MessageFile}", msg.File);
+            }
+        }
     }
 
     [HttpGet("{id}")]
@@ -105,8 +103,11 @@ public class MessagesController : ControllerBase
             return NotFound();
         }
 
-        var response = new FileStreamResult(System.IO.File.OpenRead(messageEntry.File), "message/rfc822");
-        response.FileDownloadName = Uri.EscapeDataString(messageId);
+        var response = new FileStreamResult(System.IO.File.OpenRead(messageEntry.File), "message/rfc822")
+                       {
+                           FileDownloadName = Uri.EscapeDataString(messageId)
+                       };
+
         return response;
     }
 
@@ -122,7 +123,7 @@ public class MessagesController : ControllerBase
         return DownloadSection(messageId, sections => sections.FirstOrDefault(s => s.ContentId == contentId));
     }
 
-    IActionResult DownloadSection(string messageId, Func<List<MimePart>, MimePart> findSection)
+    IActionResult DownloadSection(string messageId, Func<List<MimePart>, MimePart?> findSection)
     {
         var messageEntry = _messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
         if (messageEntry == null)

@@ -16,10 +16,6 @@
 // limitations under the License.
 
 
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace Papercut.Service.Application.Controllers;
@@ -84,7 +80,7 @@ public class StaticContentController : ControllerBase
         return filename;
     }
 
-    static Stream GetResourceStream(string relativePath)
+    static Stream? GetResourceStream(string relativePath)
     {
         var currentAssembly = typeof(StaticContentController).GetTypeInfo().Assembly;
         var resource = string.Format(ResourcePath, currentAssembly.GetName().Name, relativePath);
@@ -95,8 +91,7 @@ public class StaticContentController : ControllerBase
     static string GetMimeType(string filename)
     {
         var extension = Path.GetExtension(filename)?.TrimStart('.');
-        string mimeType;
-        if (extension == null || !MimeMapping.TryGetValue(extension, out mimeType))
+        if (extension == null || !MimeMapping.TryGetValue(extension, out var mimeType))
         {
             mimeType = "application/octet-stream";
         }

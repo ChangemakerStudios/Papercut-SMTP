@@ -1,14 +1,14 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,100 +16,92 @@
 // limitations under the License.
 
 
-namespace Papercut.Rules.Implementations
+namespace Papercut.Rules.Implementations;
+
+[Serializable]
+public class RelayRule : RuleBase
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
+    string _smtpPassword;
 
-    using Papercut.Common.Extensions;
+    int _smtpPort = 25;
 
-    [Serializable]
-    public class RelayRule : RuleBase
+    string _smtpServer = "10.0.0.1";
+
+    string _smtpUsername;
+
+    bool _smtpUseSsl;
+
+    [Category("Settings")]
+    [DisplayName("SMTP Password")]
+    // [PasswordPropertyText] .NET Core does not provide this attribute
+    public string SmtpPassword
     {
-        string _smtpPassword;
-
-        int _smtpPort = 25;
-
-        string _smtpServer = "10.0.0.1";
-
-        bool _smtpUseSsl;
-
-        string _smtpUsername;
-
-        [Category("Settings")]
-        [DisplayName("SMTP Password")]
-        // [PasswordPropertyText] .NET Core does not provide this attribute
-        public string SmtpPassword
+        get { return this._smtpPassword; }
+        set
         {
-            get { return _smtpPassword; }
-            set
-            {
-                if (value == _smtpPassword) return;
-                _smtpPassword = value;
-                OnPropertyChanged(nameof(SmtpPassword));
-            }
+            if (value == this._smtpPassword) return;
+            this._smtpPassword = value;
+            this.OnPropertyChanged(nameof(this.SmtpPassword));
         }
+    }
 
-        [Category("Settings")]
-        [DisplayName("SMTP Username")]
-        public string SmtpUsername
+    [Category("Settings")]
+    [DisplayName("SMTP Username")]
+    public string SmtpUsername
+    {
+        get { return this._smtpUsername; }
+        set
         {
-            get { return _smtpUsername; }
-            set
-            {
-                if (value == _smtpUsername) return;
-                _smtpUsername = value;
-                OnPropertyChanged(nameof(SmtpUsername));
-            }
+            if (value == this._smtpUsername) return;
+            this._smtpUsername = value;
+            this.OnPropertyChanged(nameof(this.SmtpUsername));
         }
+    }
 
-        [Category("Settings")]
-        [DisplayName("SMTP Port")]
-        public int SmtpPort
+    [Category("Settings")]
+    [DisplayName("SMTP Port")]
+    public int SmtpPort
+    {
+        get { return this._smtpPort; }
+        set
         {
-            get { return _smtpPort; }
-            set
-            {
-                if (value == _smtpPort) return;
-                _smtpPort = value;
-                OnPropertyChanged(nameof(SmtpPort));
-            }
+            if (value == this._smtpPort) return;
+            this._smtpPort = value;
+            this.OnPropertyChanged(nameof(this.SmtpPort));
         }
+    }
 
-        [Category("Settings")]
-        [DisplayName("SMTP Use SSL")]
-        public bool SmtpUseSSL
+    [Category("Settings")]
+    [DisplayName("SMTP Use SSL")]
+    public bool SmtpUseSSL
+    {
+        get { return this._smtpUseSsl; }
+        set
         {
-            get { return _smtpUseSsl; }
-            set
-            {
-                if (value.Equals(_smtpUseSsl)) return;
-                _smtpUseSsl = value;
-                OnPropertyChanged(nameof(SmtpUseSSL));
-            }
+            if (value.Equals(this._smtpUseSsl)) return;
+            this._smtpUseSsl = value;
+            this.OnPropertyChanged(nameof(this.SmtpUseSSL));
         }
+    }
 
-        [Category("Information")]
-        public override string Type => "Relay";
+    [Category("Information")]
+    public override string Type => "Relay";
 
-        [Category("Settings")]
-        [DisplayName("SMTP Server")]
-        public string SmtpServer
+    [Category("Settings")]
+    [DisplayName("SMTP Server")]
+    public string SmtpServer
+    {
+        get { return this._smtpServer; }
+        set
         {
-            get { return _smtpServer; }
-            set
-            {
-                if (value == _smtpServer) return;
-                _smtpServer = value;
-                OnPropertyChanged(nameof(SmtpServer));
-            }
+            if (value == this._smtpServer) return;
+            this._smtpServer = value;
+            this.OnPropertyChanged(nameof(this.SmtpServer));
         }
+    }
 
-        protected override IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
-        {
-            return base.GetPropertiesForDescription().Concat(this.GetProperties());
-        }
+    protected override IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
+    {
+        return base.GetPropertiesForDescription().Concat(this.GetProperties());
     }
 }

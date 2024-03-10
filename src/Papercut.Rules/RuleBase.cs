@@ -1,93 +1,83 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Rules
+
+using JetBrains.Annotations;
+
+namespace Papercut.Rules;
+
+[Serializable]
+public abstract class RuleBase : IRule
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
+    bool _isEnabled;
 
-    using Newtonsoft.Json;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-
-    [Serializable]
-    public abstract class RuleBase : IRule
+    protected RuleBase()
     {
-        bool _isEnabled;
+        this.Id = Guid.NewGuid();
+    }
 
-        protected RuleBase()
+    [Category("Information")]
+    public Guid Id { get; protected set; }
+
+    [Category("State")]
+    [Browsable(true)]
+    [DisplayName("Is Enabled")]
+    [Description("Is the Rule Enabled for Processing?")]
+    public virtual bool IsEnabled
+    {
+        get { return this._isEnabled; }
+        set
         {
-            Id = Guid.NewGuid();
+            if (value.Equals(this._isEnabled)) return;
+            this._isEnabled = value;
+            this.OnPropertyChanged(nameof(this.IsEnabled));
         }
+    }
 
-        [Category("Information")]
-        public Guid Id { get; protected set; }
+    [Category("Information")]
+    [Browsable(false)]
+    public virtual string Type => this.GetType().Name;
 
-        [Category("State")]
-        [Browsable(true)]
-        [DisplayName("Is Enabled")]
-        [Description("Is the Rule Enabled for Processing?")]
-        public virtual bool IsEnabled
+    [Category("Information")]
+    [Browsable(false)]
+    [JsonIgnore]
+    public virtual string Description
+        =>
+            this.GetPropertiesForDescription()
+                .Where(s => !new[] { "Id", "Type", "Description" }.Contains(s.Key))
+                .OrderBy(s => s.Key)
+                .ToFormattedPairs()
+                .Join("\r\n");
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
+    {
+        return this.GetProperties();
+    }
+
+    [NotifyPropertyChangedInvocator]
+    protected virtual void OnPropertyChanged(string propertyName)
+    {
+        PropertyChangedEventHandler handler = this.PropertyChanged;
+        if (handler != null)
         {
-            get { return _isEnabled; }
-            set
-            {
-                if (value.Equals(_isEnabled)) return;
-                _isEnabled = value;
-                OnPropertyChanged(nameof(IsEnabled));
-            }
-        }
-
-        [Category("Information")]
-        [Browsable(false)]
-        public virtual string Type => GetType().Name;
-
-        [Category("Information")]
-        [Browsable(false)]
-        [JsonIgnore]
-        public virtual string Description
-            =>
-                GetPropertiesForDescription()
-                    .Where(s => !s.Key.IsAny("Id", "Type", "Description"))
-                    .OrderBy(s => s.Key)
-                    .ToFormattedPairs()
-                    .Join("\r\n");
-
-        protected virtual IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
-        {
-            return this.GetProperties();
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-                handler(this, new PropertyChangedEventArgs("Description"));
-            }
+            handler(this, new PropertyChangedEventArgs(propertyName));
+            handler(this, new PropertyChangedEventArgs("Description"));
         }
     }
 }

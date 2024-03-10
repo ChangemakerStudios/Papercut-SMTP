@@ -16,21 +16,13 @@
 // limitations under the License.
 
 
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using System.Threading.Tasks;
 
-using Microsoft.Extensions.Hosting;
-
-using Papercut.Common.Helper;
 using Papercut.Core.Domain.Application;
 using Papercut.Service.Domain.SmtpServer;
-
-using Serilog;
 
 using SmtpServer;
 

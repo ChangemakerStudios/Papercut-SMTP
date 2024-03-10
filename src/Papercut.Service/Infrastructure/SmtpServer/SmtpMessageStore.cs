@@ -16,13 +16,8 @@
 // limitations under the License.
 
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 using MimeKit;
 
@@ -30,8 +25,6 @@ using Papercut.Common.Domain;
 using Papercut.Common.Extensions;
 using Papercut.Core.Domain.Message;
 using Papercut.Message;
-
-using Serilog;
 
 using SmtpServer;
 using SmtpServer.Mail;

@@ -16,18 +16,7 @@
 // limitations under the License.
 
 
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
-
-using ElectronNET.API;
-using ElectronNET.API.Entities;
-
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.PlatformAbstractions;
-
-using Serilog;
 
 namespace Papercut.Service;
 

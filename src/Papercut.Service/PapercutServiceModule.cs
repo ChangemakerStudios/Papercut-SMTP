@@ -42,10 +42,8 @@ public class PapercutServiceModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterType<MessagePathConfigurator>().As<IMessagePathConfigurator>();
-
-        builder.RegisterType<NewMessageEventHandler>().As<IEventHandler<NewMessageEvent>>();
-
+        builder.RegisterType<NewMessageEventHandler>().As<IEventHandler<NewMessageEvent>>().InstancePerLifetimeScope();
+        builder.RegisterType<MessagePathConfigurator>().As<IMessagePathConfigurator>().InstancePerLifetimeScope();
         builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().InstancePerLifetimeScope();
 
         builder.RegisterType<SmtpMessageStore>().As<IMessageStore>().AsSelf();

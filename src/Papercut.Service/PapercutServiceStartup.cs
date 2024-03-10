@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Papercut.Core.Annotations;
 using Papercut.Message;
 using Papercut.Service.Domain.SmtpServer;
 using Papercut.Service.Infrastructure.SmtpServer;
@@ -33,7 +32,6 @@ namespace Papercut.Service;
 
 internal class PapercutServiceStartup
 {
-    [UsedImplicitly]
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddLogging();
@@ -59,14 +57,12 @@ internal class PapercutServiceStartup
         services.AddHostedService<SmtpServerService>();
     }
 
-    [UsedImplicitly]
     public void ConfigureContainer(ContainerBuilder builder)
     {
         builder.RegisterModule<PapercutServiceModule>();
         builder.RegisterModule<PapercutMessageModule>();
     }
 
-    [UsedImplicitly]
     public void Configure(IApplicationBuilder app)
     {
         app.UseRouting();

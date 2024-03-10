@@ -1,65 +1,61 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
 
-namespace Papercut.Common.Extensions
+
+namespace Papercut.Common.Extensions;
+
+public static class FileInfoExtensions
 {
-    using System;
-    using System.IO;
-
-    public static class FileInfoExtensions
+    public static bool CanReadFile(this FileInfo file)
     {
-        public static bool CanReadFile(this FileInfo file)
+        if (file == null) throw new ArgumentNullException(nameof(file));
+
+        try
         {
-            if (file == null) throw new ArgumentNullException(nameof(file));
-
-            try
-            {
-                using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) { }
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-
-            return true;
+            using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) { }
+        }
+        catch (IOException)
+        {
+            return false;
         }
 
-        public static bool TryReadFile(this FileInfo file, out byte[] fileBytes)
+        return true;
+    }
+
+    public static bool TryReadFile(this FileInfo file, out byte[]? fileBytes)
+    {
+        if (file == null) throw new ArgumentNullException(nameof(file));
+
+        fileBytes = null;
+
+        try
         {
-            if (file == null) throw new ArgumentNullException(nameof(file));
+            using var ms = new MemoryStream();
+            using var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            fileBytes = null;
-
-            try
-            {
-                using (var ms = new MemoryStream())
-                using (var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    fileStream.CopyTo(ms);
-                    fileBytes = ms.ToArray();
-                }
-            }
-            catch (IOException)
-            {
-                // the file is unavailable because it is still being written by another thread or process
-                return false;
-            }
-
-            return true;
+            fileStream.CopyTo(ms);
+            fileBytes = ms.ToArray();
         }
+        catch (IOException)
+        {
+            // the file is unavailable because it is still being written by another thread or process
+            return false;
+        }
+
+        return true;
     }
 }

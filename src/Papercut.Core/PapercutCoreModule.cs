@@ -1,36 +1,34 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2018 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
 
 
-namespace Papercut.Desktop
+using Papercut.Core.Domain.Paths;
+
+namespace Papercut.Core
 {
-    using Autofac;
-    using Autofac.Core;
-
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Core.Infrastructure.Plugins;
-
-    public class PapercutDesktopModule : Module, IDiscoverableModule
+    public class PapercutCoreModule : Module
     {
-        public IModule Module => this;
-
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<PapercutHybridSupport>().As<IStartupService>().AsSelf().SingleInstance();
+
+            builder.RegisterType<MessagePathConfigurator>()
+                .As<IMessagePathConfigurator>()
+                .AsSelf()
+                .SingleInstance();
         }
     }
 }

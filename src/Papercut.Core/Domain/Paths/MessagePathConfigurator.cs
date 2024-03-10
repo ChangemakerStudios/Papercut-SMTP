@@ -1,46 +1,41 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+
+using Microsoft.Extensions.PlatformAbstractions;
+
 namespace Papercut.Core.Domain.Paths
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.IO;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-
-    using Serilog;
-    using Microsoft.Extensions.PlatformAbstractions;
-    using System.Runtime.InteropServices;
-
     public class MessagePathConfigurator : IMessagePathConfigurator
     {
         static readonly IDictionary<string, string> _templateDictionary;
 
-        static readonly Regex _templateRegex = new Regex(
+        static readonly Regex _templateRegex = new(
             @"\%(?<name>.+?)\%",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
+
+        readonly string _defaultSavePath;
 
         readonly ILogger _logger;
 
         readonly IPathTemplatesProvider _pathTemplateProvider;
-
-        string _defaultSavePath;
 
         static MessagePathConfigurator()
         {
@@ -50,25 +45,31 @@ namespace Papercut.Core.Domain.Paths
             };
 
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
             foreach (var specialFolder in SpecialFolder.BuiltinSpecialFolders)
             {
                 string specialPathName = specialFolder.Name.ToString();
                 if (!_templateDictionary.ContainsKey(specialPathName))
-                    _templateDictionary.Add(specialPathName, isWindows ? specialFolder.WindowsPath : specialFolder.NonWindowsPath);
+                {
+                    var specialFolderNonWindowsPath = isWindows ? specialFolder.WindowsPath : specialFolder.NonWindowsPath;
+                    if (specialFolderNonWindowsPath.IsSet())
+                    {
+                        _templateDictionary.Add(specialPathName, specialFolderNonWindowsPath);
+                    }
+                }
             }
         }
 
         public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
         {
-            if (pathTemplateProvider == null) throw new ArgumentNullException(nameof(pathTemplateProvider));
             if (logger == null) throw new ArgumentNullException(nameof(logger));
 
             this._logger = logger.ForContext<MessagePathConfigurator>();
-            this._pathTemplateProvider = pathTemplateProvider;
+            this._pathTemplateProvider = pathTemplateProvider ?? throw new ArgumentNullException(nameof(pathTemplateProvider));
             this._pathTemplateProvider.PathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
 
             this.DefaultSavePath = PlatformServices.Default.Application.ApplicationBasePath;
-            this.RenderLoadPaths();
+            this.LoadPaths = this.GenerateLoadPaths();
 
             if (this.LoadPaths.Any()) this.DefaultSavePath = this.LoadPaths.First();
 
@@ -92,27 +93,29 @@ namespace Papercut.Core.Domain.Paths
 
                 return this._defaultSavePath;
             }
-            private set { this._defaultSavePath = value; }
+            private init => this._defaultSavePath = value;
         }
 
-        public IEnumerable<string> LoadPaths { get; private set; }
+        public string[] LoadPaths { get; private set; }
 
         public event EventHandler RefreshLoadPath;
 
-        void PathTemplatesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        void PathTemplatesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            this.RenderLoadPaths();
+            this.LoadPaths = this.GenerateLoadPaths();
             this.OnRefreshLoadPath();
         }
 
-        void RenderLoadPaths()
+        string[] GenerateLoadPaths()
         {
-            this.LoadPaths =
+            var paths =
                 this._pathTemplateProvider.PathTemplates.Select(this.RenderPathTemplate)
                     .Where(this.ValidatePathExists)
-                    .ToList();
+                    .ToArray();
 
             this._logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", this.LoadPaths);
+
+            return paths;
         }
 
         protected virtual void OnRefreshLoadPath()
@@ -123,25 +126,23 @@ namespace Papercut.Core.Domain.Paths
 
         string RenderPathTemplate(string pathTemplate)
         {
-            IEnumerable<string> pathKeys =
+            var pathKeys =
                 _templateRegex.Matches(pathTemplate)
-                    .OfType<Match>()
                     .Select(s => s.Groups["name"].Value);
+
             string renderedPath = pathTemplate;
 
             foreach (string pathKeyName in pathKeys)
             {
-                string path;
-                if (_templateDictionary.TryGetValue(pathKeyName, out path))
-                {
-                    var separatorChar = new String(new[] {Path.DirectorySeparatorChar});
-                    renderedPath = renderedPath
-                                    .Replace($"%{pathKeyName}%", path)
-                                    .Replace(@"\\", separatorChar)
-                                    .Replace("//", separatorChar)
-                                    .Replace("/", separatorChar)
-                                    .Replace(@"\", separatorChar);
-                }
+                if (!_templateDictionary.TryGetValue(pathKeyName, out var path)) continue;
+
+                var separatorChar = new string(new[] {Path.DirectorySeparatorChar});
+                renderedPath = renderedPath
+                    .Replace($"%{pathKeyName}%", path)
+                    .Replace(@"\\", separatorChar)
+                    .Replace("//", separatorChar)
+                    .Replace("/", separatorChar)
+                    .Replace(@"\", separatorChar);
             }
 
             return renderedPath;
@@ -149,8 +150,6 @@ namespace Papercut.Core.Domain.Paths
 
         bool ValidatePathExists(string path)
         {
-            
-
 
             if (path == null) throw new ArgumentNullException(nameof(path));
 
@@ -168,39 +167,8 @@ namespace Papercut.Core.Domain.Paths
             return false;
         }
 
-
         class SpecialFolder
         {
-            public static SpecialFolder[] BuiltinSpecialFolders = new[]
-            {
-                new SpecialFolder{
-                    Name = FolderName.UserProfile,
-                    WindowsPath =  Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%"),
-                    NonWindowsPath = Environment.GetEnvironmentVariable("HOME")
-                },
-                new SpecialFolder{
-                    Name = FolderName.ApplicationData,
-                    WindowsPath =  Environment.GetEnvironmentVariable("APPDATA"),
-                    NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/.config")
-                },
-                new SpecialFolder{
-                    Name = FolderName.CommonApplicationData,
-                    WindowsPath =  Environment.GetEnvironmentVariable("PROGRAMDATA"),
-                    NonWindowsPath = "/usr/share"
-                },
-                new SpecialFolder{
-                    Name = FolderName.Desktop,
-                    WindowsPath =  Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%\\Desktop"),
-                    NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/Desktop")
-                },
-            };
-
-
-            public string WindowsPath { get; set; }
-            public string NonWindowsPath { get; set; }
-            public FolderName Name { get; set; }
-
-
             public enum FolderName
             {
                 UserProfile,
@@ -208,6 +176,40 @@ namespace Papercut.Core.Domain.Paths
                 CommonApplicationData,
                 Desktop
             }
+
+            public static readonly SpecialFolder[] BuiltinSpecialFolders =
+            [
+                new SpecialFolder
+                {
+                    Name = FolderName.UserProfile,
+                    WindowsPath = Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%"),
+                    NonWindowsPath = Environment.GetEnvironmentVariable("HOME")
+                },
+                new SpecialFolder
+                {
+                    Name = FolderName.ApplicationData,
+                    WindowsPath = Environment.GetEnvironmentVariable("APPDATA"),
+                    NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/.config")
+                },
+                new SpecialFolder
+                {
+                    Name = FolderName.CommonApplicationData,
+                    WindowsPath = Environment.GetEnvironmentVariable("PROGRAMDATA"),
+                    NonWindowsPath = "/usr/share"
+                },
+                new SpecialFolder
+                {
+                    Name = FolderName.Desktop,
+                    WindowsPath = Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%\\Desktop"),
+                    NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/Desktop")
+                }
+            ];
+
+            public string? WindowsPath { get; private init; }
+
+            public string? NonWindowsPath { get; private init; }
+
+            public FolderName Name { get; private init; }
         }
     }
 }

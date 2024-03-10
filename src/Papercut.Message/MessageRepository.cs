@@ -16,123 +16,110 @@
 // limitations under the License.
 
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Papercut.Common.Extensions;
-using Papercut.Common.Helper;
-using Papercut.Core.Domain.Message;
 using Papercut.Core.Domain.Paths;
 
-using Serilog;
+namespace Papercut.Message;
 
-namespace Papercut.Message
+public class MessageRepository
 {
-    public class MessageRepository
+    public const string MessageFileSearchPattern = "*.eml";
+
+    readonly ILogger _logger;
+
+    readonly IMessagePathConfigurator _messagePathConfigurator;
+
+    public MessageRepository(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
     {
-        public const string MessageFileSearchPattern = "*.eml";
+        this._logger = logger;
+        this._messagePathConfigurator = messagePathConfigurator;
+    }
 
-        readonly ILogger _logger;
+    public bool DeleteMessage(MessageEntry entry)
+    {
+        // Delete the file and remove the entry
+        if (!File.Exists(entry.File))
+            return false;
 
-        readonly IMessagePathConfigurator _messagePathConfigurator;
+        var attributes = File.GetAttributes(entry.File);
 
-        public MessageRepository(ILogger logger, IMessagePathConfigurator messagePathConfigurator)
+        try
         {
-            this._logger = logger;
-            this._messagePathConfigurator = messagePathConfigurator;
-        }
-
-        public bool DeleteMessage(MessageEntry entry)
-        {
-            // Delete the file and remove the entry
-            if (!File.Exists(entry.File))
-                return false;
-
-            var attributes = File.GetAttributes(entry.File);
-
-            try
+            if (attributes.HasFlag(FileAttributes.ReadOnly))
             {
-                if (attributes.HasFlag(FileAttributes.ReadOnly))
-                {
-                    // remove read only attribute
-                    File.SetAttributes(entry.File, attributes ^ FileAttributes.ReadOnly);
-                }
-
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                throw new UnauthorizedAccessException(
-                    $"Unable to remove read-only attribute on file '{entry.File}'",
-                    ex);
+                // remove read only attribute
+                File.SetAttributes(entry.File, attributes ^ FileAttributes.ReadOnly);
             }
 
-            File.Delete(entry.File);
-            return true;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new UnauthorizedAccessException(
+                $"Unable to remove read-only attribute on file '{entry.File}'",
+                ex);
         }
 
-        public byte[] GetMessage(string file)
+        File.Delete(entry.File);
+        return true;
+    }
+
+    public byte[]? GetMessage(string? file)
+    {
+        if (!File.Exists(file))
+            throw new IOException($"File {file} Does Not Exist");
+
+        var info = new FileInfo(file);
+        byte[]? data;
+        int retryCount = 0;
+
+        while (!info.TryReadFile(out data))
         {
-            if (!File.Exists(file))
-                throw new IOException($"File {file} Does Not Exist");
+            Thread.Sleep(500);
 
-            var info = new FileInfo(file);
-            byte[] data;
-            int retryCount = 0;
-
-            while (!info.TryReadFile(out data))
+            if (++retryCount > 10)
             {
-                Thread.Sleep(500);
+                throw new IOException(
+                    $"Cannot Load File {file} After 5 Seconds");
+            }
+        }
 
-                if (++retryCount > 10)
-                {
-                    throw new IOException(
-                        $"Cannot Load File {file} After 5 Seconds");
-                }
+        return data;
+    }
+
+    public IList<MessageEntry> LoadMessages()
+    {
+        IEnumerable<string?> files = this._messagePathConfigurator.LoadPaths.SelectMany(
+            p => Directory.GetFiles(p, MessageFileSearchPattern));
+
+        return
+            files.Select(file => new MessageEntry(file))
+                .OrderByDescending(m => m.ModifiedDate)
+                .ThenBy(m => m.Name)
+                .ToList();
+    }
+
+    public async Task<string?> SaveMessageAsync(Func<FileStream, Task> writeTo)
+    {
+        string? fileName = null;
+
+        try
+        {
+            // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
+            fileName = Path.Combine(
+                this._messagePathConfigurator.DefaultSavePath,
+                $"{DateTime.Now:yyyyMMddHHmmssfff}-{StringHelpers.SmallRandomString()}.eml");
+
+            await using (var fileStream = File.Create(fileName))
+            {
+                await writeTo(fileStream);
             }
 
-            return data;
+            this._logger.Information("Successfully Saved email message: {EmailMessageFile}", fileName);
         }
-
-        public IList<MessageEntry> LoadMessages()
+        catch (Exception ex)
         {
-            IEnumerable<string> files = this._messagePathConfigurator.LoadPaths.SelectMany(
-                    p => Directory.GetFiles(p, MessageFileSearchPattern));
-
-            return
-                files.Select(file => new MessageEntry(file))
-                    .OrderByDescending(m => m.ModifiedDate)
-                    .ThenBy(m => m.Name)
-                    .ToList();
+            this._logger.Error(ex, "Failure saving email message: {EmailMessageFile}", fileName);
         }
 
-        public async Task<string> SaveMessageAsync(Func<FileStream, Task> writeTo)
-        {
-            string fileName = null;
-
-            try
-            {
-                // the file must not exists.  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
-                fileName = Path.Combine(
-                    this._messagePathConfigurator.DefaultSavePath,
-                    $"{DateTime.Now:yyyyMMddHHmmssfff}-{StringHelpers.SmallRandomString()}.eml");
-
-                using (var fileStream = File.Create(fileName))
-                {
-                    await writeTo(fileStream);
-                }
-
-                this._logger.Information("Successfully Saved email message: {EmailMessageFile}", fileName);
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(ex, "Failure saving email message: {EmailMessageFile}", fileName);
-            }
-
-            return fileName;
-        }
+        return fileName;
     }
 }

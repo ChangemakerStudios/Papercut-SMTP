@@ -16,15 +16,7 @@
 // limitations under the License.
 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Autofac;
-
 using Papercut.Common.Domain;
-
-using Serilog;
 
 namespace Papercut.Service.Infrastructure
 {

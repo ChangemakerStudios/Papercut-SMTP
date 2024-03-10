@@ -19,6 +19,6 @@ namespace Papercut.Core.Domain.Message
 {
     public interface IFile
     {
-        string File { get; }
+        string? File { get; }
     }
 }

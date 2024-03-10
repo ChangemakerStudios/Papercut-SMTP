@@ -17,7 +17,6 @@
 
 
 using System.Collections.ObjectModel;
-using System.Linq;
 
 using Papercut.Core.Domain.Paths;
 using Papercut.Service.Domain.SmtpServer;

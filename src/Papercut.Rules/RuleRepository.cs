@@ -16,19 +16,24 @@
 // limitations under the License.
 
 
-using Microsoft.AspNetCore.Mvc;
+using Papercut.Core.Infrastructure.Json;
 
-namespace Papercut.Service.Application.Controllers;
+namespace Papercut.Rules;
 
-public class HealthController : ControllerBase
+public class RuleRepository
 {
-    [HttpGet("health")]
-    public IActionResult Check()
+    public void SaveRules([NotNull] IList<IRule> rules, string path)
     {
-        return new ContentResult
-        {
-            Content = "Papercut WebUI server started successfully.",
-            ContentType = "text/plain"
-        };
+        if (rules == null) throw new ArgumentNullException(nameof(rules));
+        if (path == null) throw new ArgumentNullException(nameof(path));
+
+        JsonHelpers.SaveJson(rules, path);
+    }
+
+    public IList<IRule> LoadRules([NotNull] string path)
+    {
+        if (path == null) throw new ArgumentNullException(nameof(path));
+
+        return JsonHelpers.LoadJson<IList<IRule>>(path, () => new List<IRule>(0));
     }
 }
