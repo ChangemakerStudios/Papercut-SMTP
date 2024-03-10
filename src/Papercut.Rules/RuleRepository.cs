@@ -22,7 +22,7 @@ namespace Papercut.Rules;
 
 public class RuleRepository
 {
-    public void SaveRules([NotNull] IList<IRule> rules, string path)
+    public void SaveRules(IList<IRule> rules, string path)
     {
         if (rules == null) throw new ArgumentNullException(nameof(rules));
         if (path == null) throw new ArgumentNullException(nameof(path));
@@ -30,7 +30,7 @@ public class RuleRepository
         JsonHelpers.SaveJson(rules, path);
     }
 
-    public IList<IRule> LoadRules([NotNull] string path)
+    public IList<IRule> LoadRules(string path)
     {
         if (path == null) throw new ArgumentNullException(nameof(path));
 

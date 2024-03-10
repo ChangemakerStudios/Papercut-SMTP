@@ -15,16 +15,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Domain.Rules
-{
-    using System;
-    using System.ComponentModel;
+namespace Papercut.Core.Domain.Rules;
 
-    public interface IRule : INotifyPropertyChanged
-    {
-        Guid Id { get; }
-        bool IsEnabled { get; set; }
-        string Type { get; }
-        string Description { get; }
-    }
+using System;
+using System.ComponentModel;
+
+public interface IRule : INotifyPropertyChanged
+{
+    Guid Id { get; }
+    bool IsEnabled { get; set; }
+    string Type { get; }
+    string Description { get; }
 }

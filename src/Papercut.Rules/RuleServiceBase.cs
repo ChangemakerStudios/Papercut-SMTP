@@ -18,8 +18,6 @@
 
 using System.Collections.ObjectModel;
 
-using Microsoft.Extensions.PlatformAbstractions;
-
 namespace Papercut.Rules;
 
 public class RuleServiceBase
@@ -34,7 +32,7 @@ public class RuleServiceBase
     {
         this._ruleRepository = ruleRepository;
         this._logger = logger;
-        this.RuleFileName = Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "rules.json");
+        this.RuleFileName = Path.Combine(AppContext.BaseDirectory, "rules.json");
         this._rules = new Lazy<ObservableCollection<IRule>>(this.GetRulesCollection);
     }
 
@@ -44,7 +42,7 @@ public class RuleServiceBase
 
     protected virtual ObservableCollection<IRule> GetRulesCollection()
     {
-        IList<IRule> loadRules = null;
+        IList<IRule>? loadRules = null;
 
         try
         {

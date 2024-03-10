@@ -15,19 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Infrastructure.Logging
+namespace Papercut.Core.Infrastructure.Logging;
+
+using Papercut.Common.Domain;
+
+using Serilog;
+
+public class ConfigureLoggerEvent : IEvent
 {
-    using Papercut.Common.Domain;
-
-    using Serilog;
-
-    public class ConfigureLoggerEvent : IEvent
+    public ConfigureLoggerEvent(LoggerConfiguration logConfiguration)
     {
-        public ConfigureLoggerEvent(LoggerConfiguration logConfiguration)
-        {
-            this.LogConfiguration = logConfiguration;
-        }
-
-        public LoggerConfiguration LogConfiguration { get; set; }
+        this.LogConfiguration = logConfiguration;
     }
+
+    public LoggerConfiguration LogConfiguration { get; set; }
 }

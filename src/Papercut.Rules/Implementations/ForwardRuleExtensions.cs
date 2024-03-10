@@ -21,8 +21,8 @@ namespace Papercut.Rules.Implementations;
 public static class ForwardRuleExtensions
 {
     public static void PopulateFromRule(
-        [NotNull] this MimeMessage mimeMessage,
-        [NotNull] ForwardRule forwardRule)
+        this MimeMessage mimeMessage,
+        ForwardRule forwardRule)
     {
         if (forwardRule == null) throw new ArgumentNullException(nameof(forwardRule));
         if (mimeMessage == null) throw new ArgumentNullException(nameof(mimeMessage));

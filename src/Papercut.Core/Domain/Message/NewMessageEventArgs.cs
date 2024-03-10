@@ -15,17 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Domain.Message
-{
-    using System;
+namespace Papercut.Core.Domain.Message;
 
-    public class NewMessageEventArgs : EventArgs
+using System;
+
+public class NewMessageEventArgs : EventArgs
+{
+    public NewMessageEventArgs(MessageEntry newMessage)
     {
-        public NewMessageEventArgs(MessageEntry newMessage)
-        {
             this.NewMessage = newMessage;
         }
 
-        public MessageEntry NewMessage { get; set; }
-    }
+    public MessageEntry NewMessage { get; set; }
 }

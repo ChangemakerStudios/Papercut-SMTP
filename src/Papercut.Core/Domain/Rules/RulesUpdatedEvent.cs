@@ -15,17 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Domain.Rules
-{
-    using Papercut.Common.Domain;
+namespace Papercut.Core.Domain.Rules;
 
-    public class RulesUpdatedEvent : IEvent
+using Papercut.Common.Domain;
+
+public class RulesUpdatedEvent : IEvent
+{
+    public RulesUpdatedEvent(IRule[] rules)
     {
-        public RulesUpdatedEvent(IRule[] rules)
-        {
             this.Rules = rules;
         }
 
-        public IRule[] Rules { get; set; }
-    }
+    public IRule[] Rules { get; set; }
 }

@@ -15,13 +15,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Infrastructure.Lifecycle
-{
-    using Papercut.Common.Domain;
-    using Papercut.Core.Domain.Application;
+namespace Papercut.Core.Infrastructure.Lifecycle;
 
-    public class PapercutClientExitEvent : IEvent
-    {
-        public IAppMeta AppMeta { get; set; }
-    }
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Application;
+
+public class PapercutClientExitEvent : IEvent
+{
+    public IAppMeta AppMeta { get; set; }
 }

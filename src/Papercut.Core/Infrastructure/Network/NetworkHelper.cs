@@ -21,50 +21,49 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 
-namespace Papercut.Core.Infrastructure.Network
+namespace Papercut.Core.Infrastructure.Network;
+
+public static class NetworkHelper
 {
-    public static class NetworkHelper
+    static readonly Regex _ipv4 = new Regex(
+        @"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
+        RegexOptions.Compiled);
+
+    public static string GetLocalDnsHostName()
     {
-        static readonly Regex _ipv4 = new Regex(
-            @"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
-            RegexOptions.Compiled);
-
-        public static string GetLocalDnsHostName()
+        string hostName = "localhost";
+        try
         {
-            string hostName = "localhost";
-            try
-            {
-                hostName = Dns.GetHostName().ToLower();
-            }
-            catch (SocketException socketException)
-            {
-                Log.Logger.Warning(socketException, "Failure Getting the Local Hostname");
-            }
-
-            return hostName;
+            hostName = Dns.GetHostName().ToLower();
+        }
+        catch (SocketException socketException)
+        {
+            Log.Logger.Warning(socketException, "Failure Getting the Local Hostname");
         }
 
-        public static IEnumerable<string> GetIPAddresses()
-        {
+        return hostName;
+    }
 
-            try
-            {
-                return NetworkInterface.GetAllNetworkInterfaces()
-                    .SelectMany(netInterface => netInterface.GetIPProperties().UnicastAddresses)
-                    .Where(addr => addr.IsDnsEligible)
-                    .Select(addr => addr.Address.ToString());
-            }
-            catch(Exception ex)
-            {
-                Log.Logger.Warning(ex, "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
-                return new[] { "127.0.0.1" };
-            }
-        }
+    public static IEnumerable<string> GetIPAddresses()
+    {
 
-        public static bool IsValidIP(this string ip)
+        try
         {
-            if (ip == null) return false;
-            return _ipv4.IsMatch(ip);
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .SelectMany(netInterface => netInterface.GetIPProperties().UnicastAddresses)
+                .Where(addr => addr.IsDnsEligible)
+                .Select(addr => addr.Address.ToString());
         }
+        catch(Exception ex)
+        {
+            Log.Logger.Warning(ex, "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
+            return new[] { "127.0.0.1" };
+        }
+    }
+
+    public static bool IsValidIP(this string ip)
+    {
+        if (ip == null) return false;
+        return _ipv4.IsMatch(ip);
     }
 }

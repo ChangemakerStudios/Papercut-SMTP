@@ -22,7 +22,7 @@ namespace Papercut.Rules.Implementations;
 
 public static class RelayRuleExtensions
 {
-    public static SmtpClient CreateConnectedSmtpClient([NotNull] this RelayRule forwardRule)
+    public static SmtpClient CreateConnectedSmtpClient(this RelayRule forwardRule)
     {
         if (forwardRule == null) throw new ArgumentNullException(nameof(forwardRule));
 

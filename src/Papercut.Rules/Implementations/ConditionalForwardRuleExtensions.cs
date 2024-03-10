@@ -22,7 +22,7 @@ namespace Papercut.Rules.Implementations;
 
 public static class ConditionalForwardRuleExtensions
 {
-    public static bool IsConditionalForwardRuleMatch([NotNull] this ConditionalForwardRule rule, [NotNull] MimeMessage mimeMessage)
+    public static bool IsConditionalForwardRuleMatch(this ConditionalForwardRule rule, MimeMessage mimeMessage)
     {
         if (rule == null) throw new ArgumentNullException(nameof(rule));
         if (mimeMessage == null) throw new ArgumentNullException(nameof(mimeMessage));

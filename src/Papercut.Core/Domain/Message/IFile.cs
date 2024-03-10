@@ -15,10 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Domain.Message
+namespace Papercut.Core.Domain.Message;
+
+public interface IFile
 {
-    public interface IFile
-    {
-        string? File { get; }
-    }
+    string? File { get; }
 }

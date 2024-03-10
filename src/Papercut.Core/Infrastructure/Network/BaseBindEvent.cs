@@ -18,12 +18,11 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Core.Infrastructure.Network
-{
-    public class BaseBindEvent : IEvent
-    {
-        public string IP { get; set; }
+namespace Papercut.Core.Infrastructure.Network;
 
-        public int Port { get; set; }
-    }
+public class BaseBindEvent : IEvent
+{
+    public string IP { get; set; }
+
+    public int Port { get; set; }
 }

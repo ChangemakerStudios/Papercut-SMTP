@@ -18,17 +18,16 @@
 
 using Papercut.Core.Domain.Paths;
 
-namespace Papercut.Core
-{
-    public class PapercutCoreModule : Module
-    {
-        protected override void Load(ContainerBuilder builder)
-        {
+namespace Papercut.Core;
 
-            builder.RegisterType<MessagePathConfigurator>()
-                .As<IMessagePathConfigurator>()
-                .AsSelf()
-                .SingleInstance();
-        }
+public class PapercutCoreModule : Module
+{
+    protected override void Load(ContainerBuilder builder)
+    {
+
+        builder.RegisterType<MessagePathConfigurator>()
+            .As<IMessagePathConfigurator>()
+            .AsSelf()
+            .SingleInstance();
     }
 }

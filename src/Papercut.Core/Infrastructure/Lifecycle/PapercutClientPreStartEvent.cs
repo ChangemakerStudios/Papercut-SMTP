@@ -15,17 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Infrastructure.Lifecycle
-{
-    using Papercut.Common.Domain;
+namespace Papercut.Core.Infrastructure.Lifecycle;
 
-    public class PapercutClientPreStartEvent : IEvent
+using Papercut.Common.Domain;
+
+public class PapercutClientPreStartEvent : IEvent
+{
+    public PapercutClientPreStartEvent(bool cancelStart = false)
     {
-        public PapercutClientPreStartEvent(bool cancelStart = false)
-        {
             this.CancelStart = cancelStart;
         }
 
-        public bool CancelStart { get; set; }
-    }
+    public bool CancelStart { get; set; }
 }

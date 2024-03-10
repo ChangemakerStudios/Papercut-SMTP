@@ -15,17 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 ﻿
-﻿namespace Papercut.Core.Domain.Application
-{
-    public class ApplicationMeta : IAppMeta
-    {
-        public ApplicationMeta(string appName, string? appVersion = null)
-        {
-            this.AppName = appName;
-            this.AppVersion = appVersion;
-        }
+﻿namespace Papercut.Core.Domain.Application;
 
-        public string AppName { get; private set; }
-        public string AppVersion { get; private set; }
+public class ApplicationMeta : IAppMeta
+{
+    public ApplicationMeta(string appName, string? appVersion = null)
+    {
+        this.AppName = appName;
+        this.AppVersion = appVersion;
     }
+
+    public string AppName { get; private set; }
+    public string AppVersion { get; private set; }
 }

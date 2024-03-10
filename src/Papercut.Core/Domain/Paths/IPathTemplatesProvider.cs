@@ -15,12 +15,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Core.Domain.Paths
-{
-    using System.Collections.ObjectModel;
+namespace Papercut.Core.Domain.Paths;
 
-    public interface IPathTemplatesProvider
-    {
-        ObservableCollection<string> PathTemplates { get; }
-    }
+using System.Collections.ObjectModel;
+
+public interface IPathTemplatesProvider
+{
+    ObservableCollection<string> PathTemplates { get; }
 }

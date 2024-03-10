@@ -36,7 +36,7 @@ public class RulesRunner : IRulesRunner
             .GetMethod("DispatchRule", BindingFlags.NonPublic | BindingFlags.Instance);
     }
 
-    public void Run([NotNull] IRule[] rules, [NotNull] MessageEntry messageEntry)
+    public void Run(IRule[] rules, MessageEntry messageEntry)
     {
         if (rules == null) throw new ArgumentNullException(nameof(rules));
         if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));

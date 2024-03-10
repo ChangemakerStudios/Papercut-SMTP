@@ -31,7 +31,7 @@ public abstract class BaseRelayRuleDispatch<T> : IRuleDispatcher<T>
 
     protected ILogger Logger { get; }
 
-    public virtual void Dispatch([NotNull] T rule, [NotNull] MessageEntry messageEntry)
+    public virtual void Dispatch([NotNull] T rule, MessageEntry messageEntry)
     {
         if (rule == null) throw new ArgumentNullException(nameof(rule));
         if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));

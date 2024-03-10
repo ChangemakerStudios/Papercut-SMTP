@@ -20,21 +20,20 @@ using System.Reflection;
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Core.Infrastructure.MessageBus
+namespace Papercut.Core.Infrastructure.MessageBus;
+
+public static class PublishEventExtensions
 {
-    public static class PublishEventExtensions
+    static readonly MethodInfo _publishMethodInfo = typeof(IMessageBus).GetMethod("Publish")!;
+
+    public static void PublishObject(
+        this IMessageBus messageBus,
+        object @event,
+        Type eventType)
     {
-        static readonly MethodInfo _publishMethodInfo = typeof(IMessageBus).GetMethod("Publish")!;
+        if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
 
-        public static void PublishObject(
-            this IMessageBus messageBus,
-            object @event,
-            Type eventType)
-        {
-            if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
-
-            MethodInfo publishMethod = _publishMethodInfo.MakeGenericMethod(eventType);
-            publishMethod.Invoke(messageBus, [@event]);
-        }
+        MethodInfo publishMethod = _publishMethodInfo.MakeGenericMethod(eventType);
+        publishMethod.Invoke(messageBus, [@event]);
     }
 }

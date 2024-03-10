@@ -18,10 +18,9 @@
 
 using Papercut.Core.Domain.Message;
 
-namespace Papercut.Core.Domain.Rules
+namespace Papercut.Core.Domain.Rules;
+
+public interface IRulesRunner
 {
-    public interface IRulesRunner
-    {
-        void Run(IRule[] rules, MessageEntry messageEntry);
-    }
+    void Run(IRule[] rules, MessageEntry messageEntry);
 }

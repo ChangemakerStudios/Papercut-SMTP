@@ -19,198 +19,195 @@
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-using Microsoft.Extensions.PlatformAbstractions;
+namespace Papercut.Core.Domain.Paths;
 
-namespace Papercut.Core.Domain.Paths
+public class MessagePathConfigurator : IMessagePathConfigurator
 {
-    public class MessagePathConfigurator : IMessagePathConfigurator
+    static readonly IDictionary<string, string> _templateDictionary;
+
+    static readonly Regex _templateRegex = new(
+        @"\%(?<name>.+?)\%",
+        RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
+
+    protected static readonly ILogger Logger = Log.Logger.ForContext<MessagePathConfigurator>();
+
+    readonly string _defaultSavePath;
+
+    readonly IPathTemplatesProvider _pathTemplateProvider;
+
+    static MessagePathConfigurator()
     {
-        static readonly IDictionary<string, string> _templateDictionary;
+        _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                              {
+                                  { "BaseDirectory", AppContext.BaseDirectory }
+                              };
 
-        static readonly Regex _templateRegex = new(
-            @"\%(?<name>.+?)\%",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        protected static readonly ILogger Logger = Log.Logger.ForContext<MessagePathConfigurator>();
-
-        readonly string _defaultSavePath;
-
-        readonly IPathTemplatesProvider _pathTemplateProvider;
-
-        static MessagePathConfigurator()
+        foreach (var specialFolder in SpecialFolder.BuiltinSpecialFolders)
         {
-            _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            string specialPathName = specialFolder.Name.ToString();
+            if (!_templateDictionary.ContainsKey(specialPathName))
             {
-                { "BaseDirectory", PlatformServices.Default.Application.ApplicationBasePath }
-            };
-
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
-            foreach (var specialFolder in SpecialFolder.BuiltinSpecialFolders)
-            {
-                string specialPathName = specialFolder.Name.ToString();
-                if (!_templateDictionary.ContainsKey(specialPathName))
+                var specialFolderNonWindowsPath = isWindows ? specialFolder.WindowsPath : specialFolder.NonWindowsPath;
+                if (specialFolderNonWindowsPath.IsSet())
                 {
-                    var specialFolderNonWindowsPath = isWindows ? specialFolder.WindowsPath : specialFolder.NonWindowsPath;
-                    if (specialFolderNonWindowsPath.IsSet())
-                    {
-                        _templateDictionary.Add(specialPathName, specialFolderNonWindowsPath);
-                    }
+                    _templateDictionary.Add(specialPathName, specialFolderNonWindowsPath);
                 }
             }
         }
+    }
 
-        public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider)
+    public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider)
+    {
+        this._pathTemplateProvider = pathTemplateProvider ?? throw new ArgumentNullException(nameof(pathTemplateProvider));
+        this._pathTemplateProvider.PathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
+
+        this.DefaultSavePath = AppContext.BaseDirectory;
+        this.LoadPaths = GenerateLoadPaths(this._pathTemplateProvider.PathTemplates);
+
+        Logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", this.LoadPaths);
+
+        if (this.LoadPaths.Any()) this.DefaultSavePath = this.LoadPaths.First();
+
+        Logger.Information(
+            "Default Message Save Path is Set to {DefaultSavePath}",
+            this.DefaultSavePath);
+    }
+
+    public string DefaultSavePath
+    {
+        get
         {
-            this._pathTemplateProvider = pathTemplateProvider ?? throw new ArgumentNullException(nameof(pathTemplateProvider));
-            this._pathTemplateProvider.PathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
-
-            this.DefaultSavePath = PlatformServices.Default.Application.ApplicationBasePath;
-            this.LoadPaths = GenerateLoadPaths(this._pathTemplateProvider.PathTemplates);
-
-            Logger.Information("Loading Messages from the Following Path(s) {@LoadPaths}", this.LoadPaths);
-
-            if (this.LoadPaths.Any()) this.DefaultSavePath = this.LoadPaths.First();
-
-            Logger.Information(
-                "Default Message Save Path is Set to {DefaultSavePath}",
-                this.DefaultSavePath);
-        }
-
-        public string DefaultSavePath
-        {
-            get
+            if (Directory.Exists(this._defaultSavePath))
             {
-                if (Directory.Exists(this._defaultSavePath))
-                {
-                    return this._defaultSavePath;
-                }
-
-                Logger.Information(
-                    "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
-                    this._defaultSavePath);
-
-                Directory.CreateDirectory(this._defaultSavePath);
-
                 return this._defaultSavePath;
             }
-            private init => this._defaultSavePath = value;
+
+            Logger.Information(
+                "Creating Default Message Save Path {DefaultSavePath} because it does not exist",
+                this._defaultSavePath);
+
+            Directory.CreateDirectory(this._defaultSavePath);
+
+            return this._defaultSavePath;
         }
+        private init => this._defaultSavePath = value;
+    }
 
-        public string[] LoadPaths { get; private set; }
+    public string[] LoadPaths { get; private set; }
 
-        public event EventHandler RefreshLoadPath;
+    public event EventHandler RefreshLoadPath;
 
-        void PathTemplatesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    void PathTemplatesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        this.LoadPaths = GenerateLoadPaths(this._pathTemplateProvider.PathTemplates);
+        this.OnRefreshLoadPath();
+    }
+
+    static string[] GenerateLoadPaths(IEnumerable<string> pathTemplates)
+    {
+        var paths =
+            pathTemplates.Select(RenderPathTemplate)
+                .Where(ValidatePathExists)
+                .ToArray();
+
+        return paths;
+    }
+
+    protected virtual void OnRefreshLoadPath()
+    {
+        EventHandler handler = this.RefreshLoadPath;
+        handler?.Invoke(this, EventArgs.Empty);
+    }
+
+    static string RenderPathTemplate(string pathTemplate)
+    {
+        var pathKeys =
+            _templateRegex.Matches(pathTemplate)
+                .Select(s => s.Groups["name"].Value);
+
+        string renderedPath = pathTemplate;
+
+        foreach (string pathKeyName in pathKeys)
         {
-            this.LoadPaths = GenerateLoadPaths(this._pathTemplateProvider.PathTemplates);
-            this.OnRefreshLoadPath();
-        }
-
-        static string[] GenerateLoadPaths(IEnumerable<string> pathTemplates)
-        {
-            var paths =
-                pathTemplates.Select(RenderPathTemplate)
-                    .Where(ValidatePathExists)
-                    .ToArray();
-
-            return paths;
-        }
-
-        protected virtual void OnRefreshLoadPath()
-        {
-            EventHandler handler = this.RefreshLoadPath;
-            handler?.Invoke(this, EventArgs.Empty);
-        }
-
-        static string RenderPathTemplate(string pathTemplate)
-        {
-            var pathKeys =
-                _templateRegex.Matches(pathTemplate)
-                    .Select(s => s.Groups["name"].Value);
-
-            string renderedPath = pathTemplate;
-
-            foreach (string pathKeyName in pathKeys)
-            {
-                if (!_templateDictionary.TryGetValue(pathKeyName, out var path)) continue;
-                renderedPath = renderedPath
-                    .Replace($"%{pathKeyName}%", path);
-            }
-            
-            var separatorChar = new string(new[] {Path.DirectorySeparatorChar});
-            
+            if (!_templateDictionary.TryGetValue(pathKeyName, out var path)) continue;
             renderedPath = renderedPath
-                .Replace(@"\\", separatorChar)
-                .Replace("//", separatorChar)
-                .Replace("/", separatorChar)
-                .Replace(@"\", separatorChar);
-
-            return renderedPath;
+                .Replace($"%{pathKeyName}%", path);
         }
+            
+        var separatorChar = new string(new[] {Path.DirectorySeparatorChar});
+            
+        renderedPath = renderedPath
+            .Replace(@"\\", separatorChar)
+            .Replace("//", separatorChar)
+            .Replace("/", separatorChar)
+            .Replace(@"\", separatorChar);
 
-        static bool ValidatePathExists(string path)
+        return renderedPath;
+    }
+
+    static bool ValidatePathExists(string path)
+    {
+
+        if (path == null) throw new ArgumentNullException(nameof(path));
+
+        try
         {
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-            if (path == null) throw new ArgumentNullException(nameof(path));
-
-            try
-            {
-                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
-            }
-
-            return false;
+            return true;
         }
-
-        class SpecialFolder
+        catch (Exception ex)
         {
-            public enum FolderName
-            {
-                UserProfile,
-                ApplicationData,
-                CommonApplicationData,
-                Desktop
-            }
-
-            public static readonly SpecialFolder[] BuiltinSpecialFolders =
-            [
-                new SpecialFolder
-                {
-                    Name = FolderName.UserProfile,
-                    WindowsPath = Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%"),
-                    NonWindowsPath = Environment.GetEnvironmentVariable("HOME")
-                },
-                new SpecialFolder
-                {
-                    Name = FolderName.ApplicationData,
-                    WindowsPath = Environment.GetEnvironmentVariable("APPDATA"),
-                    NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/.config")
-                },
-                new SpecialFolder
-                {
-                    Name = FolderName.CommonApplicationData,
-                    WindowsPath = Environment.GetEnvironmentVariable("PROGRAMDATA"),
-                    NonWindowsPath = "/usr/share"
-                },
-                new SpecialFolder
-                {
-                    Name = FolderName.Desktop,
-                    WindowsPath = Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%\\Desktop"),
-                    NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/Desktop")
-                }
-            ];
-
-            public string? WindowsPath { get; private init; }
-
-            public string? NonWindowsPath { get; private init; }
-
-            public FolderName Name { get; private init; }
+            Logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
         }
+
+        return false;
+    }
+
+    class SpecialFolder
+    {
+        public enum FolderName
+        {
+            UserProfile,
+            ApplicationData,
+            CommonApplicationData,
+            Desktop
+        }
+
+        public static readonly SpecialFolder[] BuiltinSpecialFolders =
+        [
+            new SpecialFolder
+            {
+                Name = FolderName.UserProfile,
+                WindowsPath = Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%"),
+                NonWindowsPath = Environment.GetEnvironmentVariable("HOME")
+            },
+            new SpecialFolder
+            {
+                Name = FolderName.ApplicationData,
+                WindowsPath = Environment.GetEnvironmentVariable("APPDATA"),
+                NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/.config")
+            },
+            new SpecialFolder
+            {
+                Name = FolderName.CommonApplicationData,
+                WindowsPath = Environment.GetEnvironmentVariable("PROGRAMDATA"),
+                NonWindowsPath = "/usr/share"
+            },
+            new SpecialFolder
+            {
+                Name = FolderName.Desktop,
+                WindowsPath = Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%\\Desktop"),
+                NonWindowsPath = Environment.ExpandEnvironmentVariables("%HOME%/Desktop")
+            }
+        ];
+
+        public string? WindowsPath { get; private init; }
+
+        public string? NonWindowsPath { get; private init; }
+
+        public FolderName Name { get; private init; }
     }
 }
