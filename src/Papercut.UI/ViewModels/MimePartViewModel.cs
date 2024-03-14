@@ -45,9 +45,9 @@ namespace Papercut.ViewModels
             }
         }
 
-        public void Close()
+        public async Task Close()
         {
-            TryClose(false);
+            await this.TryCloseAsync(false);
         }
     }
 }

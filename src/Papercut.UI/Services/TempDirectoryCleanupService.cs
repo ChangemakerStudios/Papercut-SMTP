@@ -52,7 +52,7 @@ namespace Papercut.Services
             // try cleanup...
             try
             {
-                string[] tmpDirs = Directory.GetDirectories(tempPath, string.Format("{0}-*", _appMeta.AppName));
+                string[] tmpDirs = Directory.GetDirectories(tempPath, $"{this._appMeta.AppName}-*");
 
                 foreach (string tmpDir in tmpDirs)
                 {
@@ -76,7 +76,7 @@ namespace Papercut.Services
             }
 
             if (deleteCount > 0)
-                _logger.Information("Deleted {DeleteCount} temp directories", deleteCount);
+                _logger.Information("Deleted {DeleteCount} temporary directories", deleteCount);
         }
     }
 }

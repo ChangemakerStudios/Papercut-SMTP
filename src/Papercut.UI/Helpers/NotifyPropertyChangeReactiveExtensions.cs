@@ -31,7 +31,7 @@ namespace Papercut.Helpers
         public static IObservable<TValue> GetPropertyValues<TSource, TValue>(
             this TSource source,
             Expression<Func<TSource, TValue>> property,
-            IScheduler scheduler = null)
+            IScheduler? scheduler = null)
             where TSource : INotifyPropertyChanged
         {
             var memberExpression = property.Body as MemberExpression;
@@ -55,7 +55,7 @@ namespace Papercut.Helpers
         // This is a wrapper around FromEvent(PropertyChanged)
         public static IObservable<EventPattern<PropertyChangedEventArgs>> GetPropertyChangedEvents(
             this INotifyPropertyChanged source,
-            IScheduler scheduler = null)
+            IScheduler? scheduler = null)
         {
             return
                 Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
@@ -70,7 +70,7 @@ namespace Papercut.Helpers
             this TSource source,
             Expression<Func<TSource, TValue>> property,
             Action<TValue> observer,
-            IScheduler scheduler = null)
+            IScheduler? scheduler = null)
             where TSource : INotifyPropertyChanged
         {
             return source

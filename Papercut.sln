@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30413.136
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Core", "src\Papercut.Core\Papercut.Core.csproj", "{EEDD1016-6442-48CE-8F8E-1D350829FBDE}"
 EndProject
@@ -41,6 +41,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{A4802A
 		Docker\Linux.Dockerfile = Docker\Linux.Dockerfile
 		Docker\Windows.Dockerfile = Docker\Windows.Dockerfile
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut", "src\Papercut.UI\Papercut.csproj", "{781F8D35-5314-4F36-856B-51789CF27258}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -106,6 +108,14 @@ Global
 		{792AC833-C1F4-4516-BE3E-BBF47F61E4D0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{792AC833-C1F4-4516-BE3E-BBF47F61E4D0}.Release|x86.ActiveCfg = Release|Any CPU
 		{792AC833-C1F4-4516-BE3E-BBF47F61E4D0}.Release|x86.Build.0 = Release|Any CPU
+		{781F8D35-5314-4F36-856B-51789CF27258}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{781F8D35-5314-4F36-856B-51789CF27258}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{781F8D35-5314-4F36-856B-51789CF27258}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{781F8D35-5314-4F36-856B-51789CF27258}.Debug|x86.Build.0 = Debug|Any CPU
+		{781F8D35-5314-4F36-856B-51789CF27258}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{781F8D35-5314-4F36-856B-51789CF27258}.Release|Any CPU.Build.0 = Release|Any CPU
+		{781F8D35-5314-4F36-856B-51789CF27258}.Release|x86.ActiveCfg = Release|Any CPU
+		{781F8D35-5314-4F36-856B-51789CF27258}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -120,6 +130,7 @@ Global
 		{4BBCCCC7-D548-4007-8B3F-71EB4449A03C} = {9151C63C-CA88-44E4-9E4E-936624B4EEE6}
 		{38AD77C5-5DEB-4797-B966-4BB6115BABA9} = {9151C63C-CA88-44E4-9E4E-936624B4EEE6}
 		{792AC833-C1F4-4516-BE3E-BBF47F61E4D0} = {4BBCCCC7-D548-4007-8B3F-71EB4449A03C}
+		{781F8D35-5314-4F36-856B-51789CF27258} = {4BBCCCC7-D548-4007-8B3F-71EB4449A03C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {437095E2-5973-4D07-849D-267DF2341A59}

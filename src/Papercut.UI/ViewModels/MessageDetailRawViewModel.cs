@@ -1,40 +1,39 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+
+using Caliburn.Micro;
+
+using ICSharpCode.AvalonEdit.Document;
+
+using MimeKit;
+
+using Papercut.Helpers;
+using Papercut.Message.Helpers;
+using Papercut.Views;
 
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-
-    using Caliburn.Micro;
-
-    using ICSharpCode.AvalonEdit.Document;
-
-    using MimeKit;
-
-    using Papercut.Helpers;
-    using Papercut.Message.Helpers;
-    using Papercut.Views;
-
-    using Serilog;
-
     public class MessageDetailRawViewModel : Screen, IMessageDetailItem
     {
+        readonly ILogger _logger;
+
         bool _isLoading;
 
         bool _messageLoaded;
@@ -45,79 +44,77 @@ namespace Papercut.ViewModels
 
         string _raw;
 
-        readonly ILogger _logger;
-
         public MessageDetailRawViewModel(ILogger logger)
         {
-            DisplayName = "Raw";
-            _logger = logger;
+            this.DisplayName = "Raw";
+            this._logger = logger;
         }
 
         public string Raw
         {
-            get { return _raw; }
+            get { return this._raw; }
             set
             {
-                _raw = value;
-                NotifyOfPropertyChange(() => Raw);
+                this._raw = value;
+                this.NotifyOfPropertyChange(() => this.Raw);
             }
         }
 
         public MimeMessage MimeMessage
         {
-            get { return _mimeMessage; }
+            get { return this._mimeMessage; }
             set
             {
-                _mimeMessage = value;
-                NotifyOfPropertyChange(() => MimeMessage);
-                MessageLoaded = false;
+                this._mimeMessage = value;
+                this.NotifyOfPropertyChange(() => this.MimeMessage);
+                this.MessageLoaded = false;
             }
         }
 
         public bool MessageLoaded
         {
-            get { return _messageLoaded; }
+            get { return this._messageLoaded; }
             set
             {
-                _messageLoaded = value;
-                if (!_messageLoaded)
+                this._messageLoaded = value;
+                if (!this._messageLoaded)
                 {
-                    Raw = null;
+                    this.Raw = null;
                 }
             }
         }
 
         public bool IsLoading
         {
-            get { return _isLoading; }
+            get { return this._isLoading; }
             set
             {
-                _isLoading = value;
-                NotifyOfPropertyChange(() => IsLoading);
+                this._isLoading = value;
+                this.NotifyOfPropertyChange(() => this.IsLoading);
             }
         }
 
         void RefreshDump()
         {
-            if (MessageLoaded)
+            if (this.MessageLoaded)
                 return;
 
-            IsLoading = true;
+            this.IsLoading = true;
 
-            if (_messageLoader != null)
+            if (this._messageLoader != null)
             {
-                _messageLoader.Dispose();
-                _messageLoader = null;
+                this._messageLoader.Dispose();
+                this._messageLoader = null;
             }
 
-            _messageLoader =
-                Observable.Start(() => _mimeMessage.GetStringDump())
+            this._messageLoader =
+                Observable.Start(() => this._mimeMessage.GetStringDump())
                     .SubscribeOn(TaskPoolScheduler.Default)
                     .ObserveOnDispatcher()
                     .Subscribe(h =>
                     {
-                        Raw = h;
-                        MessageLoaded = true;
+                        this.Raw = h;
+                        this.MessageLoaded = true;
                     });
         }
 
@@ -129,7 +126,7 @@ namespace Papercut.ViewModels
 
             if (typedView == null)
             {
-                _logger.Error("Unable to locate the MessageDetailRawView to hook the Text Control");
+                this._logger.Error("Unable to locate the MessageDetailRawView to hook the Text Control");
                 return;
             }
 
@@ -138,14 +135,15 @@ namespace Papercut.ViewModels
                 .Subscribe(s =>
                 {
                     typedView.rawEdit.Document = new TextDocument(new StringTextSource(s ?? string.Empty));
-                    IsLoading = false;
+                    this.IsLoading = false;
                 });
         }
 
-        protected override void OnActivate()
+        protected override Task OnActivateAsync(CancellationToken cancellationToken)
         {
-            RefreshDump();
-            base.OnActivate();
+            this.RefreshDump();
+
+            return base.OnActivateAsync(cancellationToken);
         }
     }
 }

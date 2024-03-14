@@ -19,7 +19,7 @@ namespace Papercut.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class UIStrings {
@@ -70,11 +70,11 @@ namespace Papercut.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;html&gt;&lt;head&gt;&lt;style&gt;body {{ padding: 0; margin: 0.5em; }} pre {{ font-family:Consolas,&quot;Courier New&quot;,monospace; line-height: 1.5em; font-size: 9pt; }}&lt;/style&gt;&lt;/head&gt;&lt;body oncontextmenu=&quot;return false;&quot;&gt;&lt;pre&gt;{0}&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;.
+        ///   Looks up a localized string similar to &lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body oncontextmenu=&quot;return false;&quot;&gt;{0}&lt;/body&gt;&lt;/html&gt;.
         /// </summary>
-        public static string HtmlFormatWrapper {
+        public static string HtmlToHtmlFormatWrapper {
             get {
-                return ResourceManager.GetString("HtmlFormatWrapper", resourceCulture);
+                return ResourceManager.GetString("HtmlToHtmlFormatWrapper", resourceCulture);
             }
         }
         
@@ -84,6 +84,15 @@ namespace Papercut.Properties {
         public static string MarkOfTheWeb {
             get {
                 return ResourceManager.GetString("MarkOfTheWeb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;html&gt;&lt;head&gt;&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=Edge&quot;/&gt;&lt;style&gt;body {{ padding: 0; margin: 0.5em; }} pre {{ font-family:Consolas,&quot;Courier New&quot;,monospace; line-height: 1.5em; font-size: 9pt; }}&lt;/style&gt;&lt;/head&gt;&lt;body oncontextmenu=&quot;return false;&quot;&gt;&lt;pre&gt;{0}&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;.
+        /// </summary>
+        public static string TextToHtmlFormatWrapper {
+            get {
+                return ResourceManager.GetString("TextToHtmlFormatWrapper", resourceCulture);
             }
         }
     }

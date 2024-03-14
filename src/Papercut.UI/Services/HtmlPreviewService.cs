@@ -63,7 +63,7 @@ namespace Papercut.Services
             do
             {
                 // find unique temp directory
-                tempDir = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}", _appMeta.AppName, Guid.NewGuid()));
+                tempDir = Path.Combine(Path.GetTempPath(), $"{this._appMeta.AppName}-{Guid.NewGuid()}");
             }
             while (Directory.Exists(tempDir));
 

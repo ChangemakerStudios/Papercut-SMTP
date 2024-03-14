@@ -1,26 +1,28 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Windows;
+using System.Windows.Media.Effects;
+
+using Microsoft.Xaml.Behaviors;
+
 namespace Papercut.Behaviors
 {
-    using System.Windows;
-    using System.Windows.Interactivity;
-    using System.Windows.Media.Effects;
-
     public class InteractivityBlurBase<T> : Behavior<T>
         where T : DependencyObject
     {
@@ -34,13 +36,14 @@ namespace Papercut.Behaviors
 
         public int BlurRadius
         {
-            get { return (int) GetValue(BlurRadiusProperty); }
-            set { SetValue(BlurRadiusProperty, value); }
+            get { return (int)this.GetValue(BlurRadiusProperty); }
+            set {
+                this.SetValue(BlurRadiusProperty, value); }
         }
 
         protected virtual BlurEffect GetBlurEffect()
         {
-            return new BlurEffect { Radius = BlurRadius };
+            return new BlurEffect { Radius = this.BlurRadius };
         }
     }
 }

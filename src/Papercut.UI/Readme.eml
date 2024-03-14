@@ -1,851 +1,253 @@
-From: "Papercut" <Papercut@Papercut.com>
-To: <Papercut@user.com>
-References: <004201ce6647$9b6b1340$d24139c0$@yetanotherforum.net> <000a01cf3cc3$b89d9ca0$29d8d5e0$@test.com> <01a901cf3f29$39dfc8d0$ad9f5a70$@test.me> <024901cfa7bf$29f99b90$7decd2b0$@papercut.us> <000b01cfbf4e$103bc2e0$30b348a0$@Papercut.us> <048301cfe5c6$4d112bd0$e7338370$@User.us> <022501cff974$db7eda40$927c8ec0$@papercut.us> <017d01d0af94$ab0c3930$0124ab90$@test.me>
-In-Reply-To: <017d01d0af94$ab0c3930$0124ab90$@test.me>
+From: Papercut <Papercut@papercut.com>
+Date: Fri, 08 Mar 2019 01:04:40 -0500
 Subject: Welcome to Papercut!
-Date: Wed, 27 Jan 2016 20:41:27 -0500
-Message-ID: <007601d1596d$00fc5820$02f50860$@Papercut.com>
+Message-Id: <FOK1N5PPX6U4.6S8O9F5BH7PB2@JabenHome-PC>
+To: Papercut@user.com
 MIME-Version: 1.0
-Content-Type: multipart/related;
-	boundary="----=_NextPart_000_0077_01D15943.182788A0"
-X-Mailer: Microsoft Outlook 16.0
-Thread-Index: AQKWxFgnpeV9lQNKoqAGQnerQpXHogFmC3YJAeoq2WkChtkdlADunV07AIqJFaEC/HIbVQIio65mnSBd8SA=
-Content-Language: en-us
+Content-Type: text/html; charset=utf-8
+Content-Id: <UPK4N5PPX6U4.JFJF0YW8MILJ@JabenHome-PC>
+
+<!DOCTYPE HTML>
+<html><head><meta http-equiv="content-Type" content="text/html; charset=UTF-8">
+<style>.subHeader { color: #A6A6A6; font-style: italic; font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1em; }
+h1 { color: #0070C0; font-style: normal; font-weight: bold; font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 2em; }
+body { font-style: normal; font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1em; }
+li { margin-bottom: 5px; } </style></head><body><div><p><img width="232" height="50" 
+src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOgAAAAyCAMAAABh0mcDAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RUU1MUVEQTk5MUQ2MTFFMjlGMDZGODZFMzUxN0Y1QzgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RUU1MUVEQUE5MUQ2MTFFMjlGMDZGODZFMzUxN0Y1QzgiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFRTUxRURBNzkxRDYxMUUyOUYwNkY4NkUzNTE3RjVDOCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFRTUxRURBODkxRDYxMUUyOUYwNkY4NkUzNTE3RjVDOCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Ph8nKXQAAAMAUExURZOTk1JSU4WWoS93qff39zSCuTRXca2tre3t7fLy8vT09Pz8/ANWk42Njvj4+JGjsM3R1Glpa7G6wnR0dLGxsWxsbjB6ruTt9Nra2lNod93d3V1dXr6+vnmLl6WlpRV2u0qGsGVlZsfa6Lm5uvr6+uvy+NHR0S1zpLnAxTJ+tVqSutbW1uvr64WFhXajw9Pi7G2FlsXFxZiYmGpqbEOCrzo6O1CKtERERkhISoqKinl5e25ubzJ9s1h2jDs7PBBgmTxmhXx8fHl5fEl4ms7OzrPN3yxtnLfQ4efn5+Hh4d3o8MrKyikpKqChojw8Pae0vSxwn3BwcaioqTAwMT19q2BgYra2tujo6J6eni94q4+PkNnk7MHBwYuVnVhYWqbE2e/v8DmPzJu81GNjZCdhi6DA1rG4vYuyztTU1LG1uMfR2D09PvL3+jQ0NYGBgdbZ2yRtofb5+zJ/tixPaD8/QDZ6qkxMTnZ2eHmlxfn7/IatyC1/uzB0pEJCRHmUpzw8PgBGiWacw66vr3SFkEZGSOPj4zJ3qEpKSz4+P2GVuq/J3Imvy5O2z1paXF5eXzWJxTWGwChlkWWZvejr7UFBQkRtizZ/s21/jEJCQoqz0VZWV4Orx8/T1pWbn2B4iHyox2Z7iWZmZk9PUTmKxPv8/Shafd/f36WqrjF7sKrG2h5pnzc3OMLL0T91mz6CsoKCg2hoarKyszeGvipql4aGh256gjl3pBhlnW2Ajn5+f+Xn6GpqajlgfG2dvzB4rC10pipypGFzgDMzNC50pv///y50py51p+Tk5C5zpf7+/v39/bvQ37/T4YKv0OPg3idwo7u7vIuqwG+QqH+px/Pz83es0OXl5lyDnvP09GJ/lD+Arz95onGculpwgFN6lfn5+XNzcxpAXB9PcCNFXW6jyABBhqOkpfHx8cjMzzeMyOnp6enq6+rq6sPFx77HzKfC1OPl57/K0pubm8C/v/7+//7//9vn7zB2p0BXZkNfc9HPzdDU12SSszV8sGiSsP///yn8YwgAAAEAdFJOU////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wBT9wclAAAMUElEQVR42uyaC1xb1R3HyZIIJIBGSKTQKhRKyqMPQmMCwdRaWkHgjld4tVJYqq3e0tJ4G+xs1NUU4gPEDq0ydSXais20oGitj6rkkmLmNpzMfdR1OKcwGc7Z2uEe7noeN8kluYHW+vm0Vf/9fNpzzz339Hzv/3/+53fOTQjzPbGQ7wRFspth3KIo6XccdHSUGc/LTB+NChNJZwGtz4upbe6O7+qKf2lzWfr5hekWMUzxyh3K59+dK5qsT54ZtLSoUa0nbRRF2W5zDNhCos4jdyYzKX9u6MjtMTV8dcf+8QmJdCbQaFJDkSRJEARJ2jotNiLvPMGUipioa7/6xDXkdDqVpoaVoeEZYaMzgTpseo7ZNI655wrK9thr57mD3QTp59OVDSalE9mQ8pMH9qSPVPE6lRdUr+8k484Fyk8fefSmD5+9PLg7JfPE9zqHnB5TpjY8NVafERY1GyhlJQkSk35wDnA+/GGJQiw2BQEFNEkrG3qUTo4NKe99Zm/KSNWIdEZQHSOVhFKIlCDOgeT7cEnHEZdz8PIg7sxY+sy9yiHndFP2NDz1yGRYRpQ7OCixApYL1YjUVnwOgN6XC4bOCwrWlBveb1AonQE2pOx47NE8SVW4dBZQppmCoGTz2Qf9LwJ1BoJKo5j8pc90KP3sVdapCh6n8oAOq9FFna/bkfBg67AonCcjukdGgjQPl0ybZOOi2Tya6nS+6krjkQhPvN/wVVPE8unWtK2paYp16hWZIxPj0hlBYweQS7VoPYpTxWvUjQNqTe9a7zP9htJSXftGhjlOlQ+oDSnTh1EmUA8MEPFJnuuNBl1paXs2KGUPFDkyPC/vhmMXXLBv38tzHmaYea/v2bNn796fw/rr57wALuZczzBbjt1x7NkeMGzh00ufe+H1eY9zZmfBu4917Dhw4O43r17Fsflph5YdONSCnFrT8Hzki1yn8oAeLe/0gFZaixy2TmSUo7WAfUZgAeKCGmYebOy0gD+OSA5mZvkAZekEtWpBPa5Z6+gE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" alt=""></p>
+<p class="subHeader">The Simple Desktop Email Receiver.</p></div><h1>Release Notes</h1>
+
+<h2>Papercut v5.5.0 [2019-03-08]</h2>
+
+<ul>
+<li>NOTE: Web UI is now only available in PapercutService.</li>
+<li>Switched to using <a href="https://github.com/cosullivan/SmtpServer">SmtpServer</a> project for Papercut's SMTP Server.</li>
+<li>Added http:// link in log for Web UI improving discoverablity for the UI. Hopefully fixed the issues with the web ui binding.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/137">#137</a> - Removed plugin architecture.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/96">#96</a>, <a href="https://github.com/ChangemakerStudios/Papercut/issues/132">#132</a> - Fixed issue with receiving email as UTF-8 by default.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/105">#105</a> - Fixed: Clicking target="blank" links in emails will now use the default browser.</li>
+</ul>
 
-This is a multipart message in MIME format.
+<h2>Papercut v5.2.16 [2019-02-01]</h2>
 
-------=_NextPart_000_0077_01D15943.182788A0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_001_0078_01D15943.182788A0"
+<ul>
+<li>Added http:// link in log for Web UI improving discoverablity for the UI. Hopefully fixed the issues with the web ui binding.</li>
+<li>StartHttpServer for the Web UI needs to be called in another thread -- it was causing hangs on loading.</li>
+</ul>
+
+<h2>Papercut v5.1.88 [2018-12-02]</h2>
 
+<ul>
+<li>Converted build to use Cake -- PR thanks to <a href="https://github.com/tdue21">tdue21</a>.</li>
+<li>Fix: Papercut Protocol failing during serialization due to incorrect JSON.NET settings PR thanks to <a href="https://github.com/jennings">jennings</a>.</li>
+</ul>
+
+<h2>Papercut v5.1.76 [2018-08-16]</h2>
+
+<ul>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/122">#122</a>: Add "Papercut" to SMTP banner.</li>
+</ul>
+
+<h2>Papercut v5.1.70 [2018-07-12]</h2>
+
+<ul>
+<li>Hacky way to get a sort of "comment" into the settings file and keep them there. :)</li>
+</ul>
 
-------=_NextPart_001_0078_01D15943.182788A0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+<h2>Papercut v5.1.23 [2018-03-18]</h2>
+
+<ul>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/50">#50</a>: When Message Sort Order is 'Descending' the 'current' message always moves to bottom.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/110">#110</a>: Support for AUTH LOGIN and AUTH PLAIN.</li>
+<li>Added authentication parameters to SmtpSession</li>
+</ul>
 
+<h2>Papercut v5.1.19 [2018-03-04]</h2>
+
+<ul>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/94">#94</a>: Removed manifest/deployment for oneclick.</li>
+</ul>
+
+<h2>Papercut v5.1.3 [2017-12-06]</h2>
 
-
-The Simple Desktop Email Receiver.
-
-
-Papercut v4.5.0.0 [2016-01-26] Release Notes
-
-
- 
-
-*       Added Bcc support to message saving. Before the value was just
-getting thrown away.
-
-*       Fixes issue clicking some urls.
-
-*       Added conditional forward rule with retry.
-
-*       Fix for minor issue when saving and the window height/width is saved
-incorrectly.
-
-
-Papercut v4.4.0.0 [2015-06-25] Release Notes
-
-
- 
-
-Improvement: #9864 "Log View" added to show all internal logging information
-for that session.
-
-Fixed: #9874 Message loading exception was not properly handled causing an
-unhandled exception and failure.
-
-Fixed: #9872 On some systems there were permissions issues accessing the IP
-addresses for the local system causing an unhandled exception and failure.
-
-Thanks to Jstedfast (author of MimeKit
-<https://github.com/jstedfast/mailkit> ) for his contribution:
-
-.         Rewrote and improved the logic that renders the email HTML.
-
-Thanks to MikeWill34 for his contributions:
-
-.         Fixed: #9870 When Aero is disabled (on servers, for example), the
-windows didn't have a drop shadow. Now they have a solid border
-
-.         Fixed: Mark of the Web "ActiveX" security warning on email
-display.
-
-.         Improvement: Upgraded to Calburn Micro v2.0
-
-
-Papercut v4.3.0.0 [2014-11-05] Release Notes
-
-
- 
-
-Improvement: "Raw" message view re-added back as a view of the message data
-using AvalonEdit control for speed.
-
-
-Papercut v4.2.1.0 [2014-10-11] Release Notes
-
-
- 
-
-Fixed: #9861 Exception if the specified file name for a mime part was
-duplicate.
-
-Added: Web links in emails are launched in default browser. (Thanks Jamie
-Humphries!)
-
-Added: Conditional Forward (RegEx) Rule based on body or headers.
-
-Fixed: Added the "Mark-of-web" for the email viewer to remove IE security
-warnings.
-
-Fixed: #9863 Papercut.Service was not correctly reporting it's incoming mail
-directory to Papercut.Client.
-
-
-Papercut v4.2.0.0 [2014-8-23] Release Notes
-
-
- 
-
-Fixed: #9859 Now using <pre> tag when displaying the text email so that
-carriage returns/linefeeds are displayed.
-
-Fixed: #9858 Now won't close the app when failing to delete a message.
-Displays the reason for the failure as well.
-
-Improvement: Increased the robustness and error handling of the SMTP FIle
-Receiving.
-
-Improvement: Now validates the existence of and creates (if necessary) the
-Default Message Save Path directory.
-
-Improvement: Improved the loading so that it catches all assembly loading
-errors and attempts to write them to the Event Log in case app load is
-failing.
-
-Changed: Set the protocol logging to "Verbose".
-
-Changed: Papercut.Service default save location now defaults to
-%BaseDirectory%\Incoming.
-
-Added: Remove the "read-only" flag from the message file when attempting to
-delete.
-
-Added: Example Papercut.Service.json file with comments to explain the
-settings.
-
-
-Papercut v4.1.0.0 [2014-8-13] Release Notes
-
-
- 
-
-Fixed: #9851 Exception on TCP/IP port binding failure.
-
-
-Papercut v4.0.0.0 [2014-7-24] Release Notes
-
-
- 
-
-Added: Automatic "rules" system and configuration. Currently only supports a
-forward rule. But unlimited forwards can be specified.
-
-Added: "Loading" UI
-
-Added: Save window height/width.
-
-Added support for rules to the backend service. Rules are configured by the
-front-end and pushed to the backend service automatically.
-
-Switched to using MailKit instead of custom Smtp Client for additional
-options it offers.
-
-Added authentication support to the forward rule.
-
-Issue #9852: Converted Papercut.Service to use a json settings file.
-Papercut Client/UI will continue to use the .NET settings system do it it's
-complex system of overrides based on the current user account.
-
-Improvement: Now properly disables the Message View if it's disabled.
-
-Improvement:  UI consistency -- added one place for Option and Exit links on
-the main UI.
-
-Improvement: Added "Delete (count)" to the delete button.
-
-Fixed: Issue #9849 - Null Reference in the Attachment/Mime Section
-
-Improvement: SMTP Server failure handling and added additional logging to
-help with issue #9851.
-
-
-Papercut v3.0.0.0 [2014-6-8] Release Notes
-
-
-
-Papercut has switched to semantic versioning! That means you will have to
-uninstall old "clickonce" versions to get the latest as it will see it as an
-older version.
-Modern UI
-
-MVVM Architecture
-
-Watch Directories for New Messages
-
-Optional Backend Papercut Service
-
-Load on Windows Startup
-
-Attachments/Mime Sections
-
-
-Papercut 2014-5-1 Release Notes
-
-
-
-Fixed: Message list box scrolling caused unhandled exception.
-
-
-Papercut v2014-3-13 Release Notes
-
-
-
-Fixed: Converted back to .NET v4 so that XP users are supported.
-
-Fixed: Running papercut under SYSTEM account will now store messages in the
-application base directory instead of the \User\AppData\Papercut directory.
-
-Change: Using MimeKitLite instead of full MimeKit.
-
-
-Papercut v2014-3-8 Release Notes
-
-
- 
-
-Change: Application now using the excellent
-<https://github.com/jstedfast/MimeKit> MimeKit library. Faster and better
-support for mime types. 
-Change: Removed the the slow and annoying "raw view" and added "header
-view."
-Change: Removed the Redundant "Html" view and added the "Text" view.
-Change: Changed "Close" to "Exit" as the close or minimize window button has
-the close functionality. It's nice to be able to exit Papercut from the main
-app window.
-Feature: Thanks to a little assistance from this answer on stack overflow (
-<http://stackoverflow.com/questions/14103159/previewmouseleftbuttondown-inte
-rferes-with-clic-selection>
-http://stackoverflow.com/questions/14103159/previewmouseleftbuttondown-inter
-feres-with-clic-selection) finally implemented that drag&drop message file
-feature. Now you can drag and drop a message file.
-Change: Saves and loads message in AppData\Papercut.
-Feature: Now you can delete a Message with the Delete Key (#9835) - message
-Content from last message is now correctly cleared (#9840)
-Feature: Changed Processing to Buffered File output for speed, etc. 
-Fixed: Issue #6026 -- Supports "Minimize on Close" option.
-Feature: Added CC and BCC to field list aka issue #9836.
-Feature: Added support for "dot stuffing", per RFC 2821, section 4.5.2.
-Fixed: FormatException on empty ReplyTo
-Fixed: fixed crash on start when there is an email with 0 byte.
-
-Fixed: Issue with email address parsing.
-
-
-------=_NextPart_001_0078_01D15943.182788A0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40"><head><meta =
-http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii"><meta name=3DGenerator content=3D"Microsoft Word 15 =
-(filtered medium)"><!--[if !mso]><style>v\:* =
-{behavior:url(#default#VML);}
-o\:* {behavior:url(#default#VML);}
-w\:* {behavior:url(#default#VML);}
-.shape {behavior:url(#default#VML);}
-</style><![endif]--><style><!--
-/* Font Definitions */
-@font-face
-	{font-family:Wingdings;
-	panose-1:5 0 0 0 0 0 0 0 0 0;}
-@font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:"Calibri Light";
-	panose-1:2 15 3 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:"Segoe UI";
-	panose-1:2 11 5 2 4 2 4 2 2 3;}
-/* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
-h1
-	{mso-style-priority:9;
-	mso-style-link:"Heading 1 Char";
-	margin-top:12.0pt;
-	margin-right:0in;
-	margin-bottom:0in;
-	margin-left:0in;
-	margin-bottom:.0001pt;
-	page-break-after:avoid;
-	font-size:16.0pt;
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;
-	font-weight:normal;}
-h2
-	{mso-style-priority:9;
-	mso-style-link:"Heading 2 Char";
-	margin-top:2.0pt;
-	margin-right:0in;
-	margin-bottom:0in;
-	margin-left:0in;
-	margin-bottom:.0001pt;
-	page-break-after:avoid;
-	font-size:13.0pt;
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;
-	font-weight:normal;}
-h3
-	{mso-style-priority:9;
-	mso-style-link:"Heading 3 Char";
-	margin-top:2.0pt;
-	margin-right:0in;
-	margin-bottom:0in;
-	margin-left:0in;
-	margin-bottom:.0001pt;
-	page-break-after:avoid;
-	font-size:12.0pt;
-	font-family:"Calibri Light",sans-serif;
-	color:#1F4D78;
-	font-weight:normal;}
-h4
-	{mso-style-priority:9;
-	mso-style-link:"Heading 4 Char";
-	margin-top:2.0pt;
-	margin-right:0in;
-	margin-bottom:0in;
-	margin-left:0in;
-	margin-bottom:.0001pt;
-	page-break-after:avoid;
-	font-size:11.0pt;
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;
-	font-weight:normal;
-	font-style:italic;}
-h5
-	{mso-style-priority:9;
-	mso-style-link:"Heading 5 Char";
-	margin-top:2.0pt;
-	margin-right:0in;
-	margin-bottom:0in;
-	margin-left:0in;
-	margin-bottom:.0001pt;
-	page-break-after:avoid;
-	font-size:11.0pt;
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;
-	font-weight:normal;}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:#0563C1;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:#954F72;
-	text-decoration:underline;}
-p.MsoNoSpacing, li.MsoNoSpacing, div.MsoNoSpacing
-	{mso-style-priority:1;
-	margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
-p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
-	{mso-style-priority:34;
-	margin-top:0in;
-	margin-right:0in;
-	margin-bottom:0in;
-	margin-left:.5in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
-span.Heading1Char
-	{mso-style-name:"Heading 1 Char";
-	mso-style-priority:9;
-	mso-style-link:"Heading 1";
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;}
-span.Heading2Char
-	{mso-style-name:"Heading 2 Char";
-	mso-style-priority:9;
-	mso-style-link:"Heading 2";
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;}
-span.Heading3Char
-	{mso-style-name:"Heading 3 Char";
-	mso-style-priority:9;
-	mso-style-link:"Heading 3";
-	font-family:"Calibri Light",sans-serif;
-	color:#1F4D78;}
-span.Heading4Char
-	{mso-style-name:"Heading 4 Char";
-	mso-style-priority:9;
-	mso-style-link:"Heading 4";
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;
-	font-style:italic;}
-span.Heading5Char
-	{mso-style-name:"Heading 5 Char";
-	mso-style-priority:9;
-	mso-style-link:"Heading 5";
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;}
-p.msonormal0, li.msonormal0, div.msonormal0
-	{mso-style-name:msonormal;
-	mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	font-size:12.0pt;
-	font-family:"Times New Roman",serif;}
-span.EmailStyle25
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:windowtext;}
-span.EmailStyle26
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle27
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle28
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle29
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle30
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:windowtext;}
-span.apple-converted-space
-	{mso-style-name:apple-converted-space;}
-span.EmailStyle32
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle33
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle34
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle35
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle36
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle37
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle38
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle39
-	{mso-style-type:personal;
-	font-family:"Calibri",sans-serif;
-	color:#1F497D;}
-span.EmailStyle40
-	{mso-style-type:personal-compose;
-	font-family:"Calibri",sans-serif;
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;
-	font-size:10.0pt;}
-@page WordSection1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.WordSection1
-	{page:WordSection1;}
-/* List Definitions */
-@list l0
-	{mso-list-id:1920481726;
-	mso-list-type:hybrid;
-	mso-list-template-ids:-1019302494 67698689 67698691 67698693 67698689 =
-67698691 67698693 67698689 67698691 67698693;}
-@list l0:level1
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0B7;
-	mso-level-tab-stop:none;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	font-family:Symbol;}
-@list l0:level2
-	{mso-level-number-format:bullet;
-	mso-level-text:o;
-	mso-level-tab-stop:none;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	font-family:"Courier New";}
-@list l0:level3
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:none;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	font-family:Wingdings;}
-@list l0:level4
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0B7;
-	mso-level-tab-stop:none;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	font-family:Symbol;}
-@list l0:level5
-	{mso-level-number-format:bullet;
-	mso-level-text:o;
-	mso-level-tab-stop:none;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	font-family:"Courier New";}
-@list l0:level6
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:none;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	font-family:Wingdings;}
-@list l0:level7
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0B7;
-	mso-level-tab-stop:none;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	font-family:Symbol;}
-@list l0:level8
-	{mso-level-number-format:bullet;
-	mso-level-text:o;
-	mso-level-tab-stop:none;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	font-family:"Courier New";}
-@list l0:level9
-	{mso-level-number-format:bullet;
-	mso-level-text:\F0A7;
-	mso-level-tab-stop:none;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	font-family:Wingdings;}
-ol
-	{margin-bottom:0in;}
-ul
-	{margin-bottom:0in;}
---></style><!--[if gte mso 9]><xml>
-<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
-<o:shapelayout v:ext=3D"edit">
-<o:idmap v:ext=3D"edit" data=3D"1" />
-</o:shapelayout></xml><![endif]--></head><body lang=3DEN-US =
-link=3D"#0563C1" vlink=3D"#954F72"><div class=3DWordSection1><p =
-class=3DMsoNormal><img width=3D232 height=3D50 id=3D"Picture_x0020_1" =
-src=3D"cid:image001.png@01CE6622.AACEBDC0" =
-alt=3D"cid:image001.png@01CE6622.AACEBDC0"><i><o:p></o:p></i></p><p =
-class=3DMsoNormal><i><span style=3D'font-size:10.0pt;font-family:"Segoe =
-UI",sans-serif;color:#A6A6A6'>The Simple Desktop Email =
-Receiver.<o:p></o:p></span></i></p><h1><span =
-style=3D'color:#0070C0'>Papercut v4.5.0.0 [2016-01-26] Release =
-Notes<o:p></o:p></span></h1><p class=3DMsoNormal><o:p>&nbsp;</o:p></p><p =
-class=3DMsoListParagraph style=3D'text-indent:-.25in;mso-list:l0 level1 =
-lfo2'><![if !supportLists]><span style=3D'font-family:Symbol'><span =
-style=3D'mso-list:Ignore'>&middot;<span style=3D'font:7.0pt "Times New =
-Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</span></span></span><![endif]>Added Bcc support to message saving. =
-Before the value was just getting thrown away.<o:p></o:p></p><p =
-class=3DMsoListParagraph style=3D'text-indent:-.25in;mso-list:l0 level1 =
-lfo2'><![if !supportLists]><span style=3D'font-family:Symbol'><span =
-style=3D'mso-list:Ignore'>&middot;<span style=3D'font:7.0pt "Times New =
-Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</span></span></span><![endif]>Fixes issue clicking some =
-urls.<o:p></o:p></p><p class=3DMsoListParagraph =
-style=3D'text-indent:-.25in;mso-list:l0 level1 lfo2'><![if =
-!supportLists]><span style=3D'font-family:Symbol'><span =
-style=3D'mso-list:Ignore'>&middot;<span style=3D'font:7.0pt "Times New =
-Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</span></span></span><![endif]>Added conditional forward rule with =
-retry.<o:p></o:p></p><p class=3DMsoListParagraph =
-style=3D'text-indent:-.25in;mso-list:l0 level1 lfo2'><![if =
-!supportLists]><span style=3D'font-family:Symbol'><span =
-style=3D'mso-list:Ignore'>&middot;<span style=3D'font:7.0pt "Times New =
-Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</span></span></span><![endif]>Fix for minor issue when saving and the =
-window height/width is saved incorrectly.<o:p></o:p></p><h1>Papercut =
-v4.4.0.0 [2015-06-25] Release Notes<o:p></o:p></h1><p =
-class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Improvement: =
-#9864 &#8220;Log View&#8221; added to show all internal logging =
-information for that session.<o:p></o:p></p><p class=3DMsoNormal>Fixed: =
-#9874 Message loading exception was not properly handled causing an =
-unhandled exception and failure.<o:p></o:p></p><p =
-class=3DMsoNormal>Fixed: #9872 On some systems there were permissions =
-issues accessing the IP addresses for the local system causing an =
-unhandled exception and failure.<o:p></o:p></p><p =
-class=3DMsoNormal>Thanks to Jstedfast (author of <a =
-href=3D"https://github.com/jstedfast/mailkit">MimeKit</a>) for his =
-contribution:<o:p></o:p></p><p =
-class=3DMsoNormal>&middot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; Rewrote and improved the logic that renders the email =
-HTML.<o:p></o:p></p><p class=3DMsoNormal>Thanks to MikeWill34 for his =
-contributions:<o:p></o:p></p><p =
-class=3DMsoNormal>&middot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; Fixed: #9870 When Aero is disabled (on servers, for example), the =
-windows didn&#8217;t have a drop shadow. Now they have a solid =
-border<o:p></o:p></p><p =
-class=3DMsoNormal>&middot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; Fixed: Mark of the Web &#8220;ActiveX&#8221; security warning on email =
-display.<o:p></o:p></p><p =
-class=3DMsoNormal>&middot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; Improvement: Upgraded to Calburn Micro v2.0<o:p></o:p></p><h1>Papercut =
-v4.3.0.0 [2014-11-05] Release Notes<o:p></o:p></h1><p =
-class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Improvement: =
-&#8220;Raw&#8221; message view re-added back as a view of the message =
-data using AvalonEdit control for speed.<o:p></o:p></p><h1>Papercut =
-v4.2.1.0 [2014-10-11] Release Notes<o:p></o:p></h1><p =
-class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Fixed: #9861 =
-Exception if the specified file name for a mime part was =
-duplicate.<o:p></o:p></p><p class=3DMsoNormal>Added: Web links in emails =
-are launched in default browser. (Thanks Jamie =
-Humphries!)<o:p></o:p></p><p class=3DMsoNormal>Added: Conditional =
-Forward (RegEx) Rule based on body or headers.<o:p></o:p></p><p =
-class=3DMsoNormal>Fixed: Added the &quot;Mark-of-web&quot; for the email =
-viewer to remove IE security warnings.<o:p></o:p></p><p =
-class=3DMsoNormal>Fixed: #9863 Papercut.Service was not correctly =
-reporting it&#8217;s incoming mail directory to =
-Papercut.Client.<o:p></o:p></p><h1>Papercut v4.2.0.0 [2014-8-23] Release =
-Notes<o:p></o:p></h1><p class=3DMsoNormal><o:p>&nbsp;</o:p></p><p =
-class=3DMsoNormal>Fixed: #9859 Now using &lt;pre&gt; tag when displaying =
-the text email so that carriage returns/linefeeds are =
-displayed.<o:p></o:p></p><p class=3DMsoNormal>Fixed: #9858 Now =
-won&#8217;t close the app when failing to delete a message. Displays the =
-reason for the failure as well.<o:p></o:p></p><p =
-class=3DMsoNormal>Improvement: Increased the robustness and error =
-handling of the SMTP FIle Receiving.<o:p></o:p></p><p =
-class=3DMsoNormal>Improvement: Now validates the existence of and =
-creates (if necessary) the Default Message Save Path =
-directory.<o:p></o:p></p><p class=3DMsoNormal>Improvement: Improved the =
-loading so that it catches all assembly loading errors and attempts to =
-write them to the Event Log in case app load is =
-failing.<o:p></o:p></p><p class=3DMsoNormal>Changed: Set the protocol =
-logging to &quot;Verbose&quot;.<o:p></o:p></p><p =
-class=3DMsoNormal>Changed: Papercut.Service default save location now =
-defaults to %BaseDirectory%\Incoming.<o:p></o:p></p><p =
-class=3DMsoNormal>Added: Remove the &quot;read-only&quot; flag from the =
-message file when attempting to delete.<o:p></o:p></p><p =
-class=3DMsoNormal>Added: Example Papercut.Service.json file with =
-comments to explain the settings.<o:p></o:p></p><h1>Papercut v4.1.0.0 =
-[2014-8-13] Release Notes<o:p></o:p></h1><p =
-class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Fixed: #9851 =
-Exception on TCP/IP port binding failure.<o:p></o:p></p><h1>Papercut =
-v4.0.0.0 [2014-7-24] Release Notes<o:p></o:p></h1><p =
-class=3DMsoNormal><o:p>&nbsp;</o:p></p><p class=3DMsoNormal>Added: =
-Automatic &#8220;rules&#8221; system and configuration. Currently only =
-supports a forward rule. But unlimited forwards can be =
-specified.<o:p></o:p></p><p class=3DMsoNormal>Added: =
-&#8220;Loading&#8221; UI<o:p></o:p></p><p class=3DMsoNormal>Added: Save =
-window height/width.<o:p></o:p></p><p class=3DMsoNormal>Added support =
-for rules to the backend service. Rules are configured by the front-end =
-and pushed to the backend service automatically.<o:p></o:p></p><p =
-class=3DMsoNormal>Switched to using MailKit instead of custom Smtp =
-Client for additional options it offers.<o:p></o:p></p><p =
-class=3DMsoNormal>Added authentication support to the forward =
-rule.<o:p></o:p></p><p class=3DMsoNormal>Issue #9852: Converted =
-Papercut.Service to use a json settings file. Papercut Client/UI will =
-continue to use the .NET settings system do it it's complex system of =
-overrides based on the current user account.<o:p></o:p></p><p =
-class=3DMsoNormal>Improvement: Now properly disables the Message View if =
-it&#8217;s disabled.<o:p></o:p></p><p class=3DMsoNormal>Improvement: =
-&nbsp;UI consistency -- added one place for Option and Exit links on the =
-main UI.<o:p></o:p></p><p class=3DMsoNormal>Improvement: Added =
-&quot;Delete (count)&quot; to the delete button.<o:p></o:p></p><p =
-class=3DMsoNormal>Fixed: Issue #9849 &#8211; Null Reference in the =
-Attachment/Mime Section<o:p></o:p></p><p class=3DMsoNormal>Improvement: =
-SMTP Server failure handling and added additional logging to help with =
-issue #9851.<o:p></o:p></p><h1>Papercut v3.0.0.0 [2014-6-8] Release =
-Notes<o:p></o:p></h1><p class=3DMsoNormal><span style=3D'border:none =
-windowtext 1.0pt;padding:0in'><br>Papercut has switched to semantic =
-versioning! That means you will have to uninstall old =
-&quot;clickonce&quot; versions to get the latest as it will see it as an =
-older version.</span><br>Modern UI<o:p></o:p></p><p =
-class=3DMsoNormal>MVVM Architecture<o:p></o:p></p><p =
-class=3DMsoNormal>Watch Directories for New Messages<o:p></o:p></p><p =
-class=3DMsoNormal>Optional Backend Papercut Service<o:p></o:p></p><p =
-class=3DMsoNormal>Load on Windows Startup<o:p></o:p></p><p =
-class=3DMsoNormal>Attachments/Mime Sections<o:p></o:p></p><h1>Papercut =
-2014-5-1 Release Notes<o:p></o:p></h1><p class=3DMsoNormal><br>Fixed: =
-Message list box scrolling caused unhandled =
-exception.<o:p></o:p></p><h1>Papercut v2014-3-13 Release =
-Notes<o:p></o:p></h1><p class=3DMsoNormal><br>Fixed: Converted back to =
-.NET v4 so that XP users are supported.<o:p></o:p></p><p =
-class=3DMsoNormal>Fixed: Running papercut under SYSTEM account will now =
-store messages in the application base directory instead of the =
-\User\AppData\Papercut directory.<o:p></o:p></p><p =
-class=3DMsoNormal>Change: Using MimeKitLite instead of full =
-MimeKit.<o:p></o:p></p><h1>Papercut v2014-3-8 Release =
-Notes<o:p></o:p></h1><p class=3DMsoNormal><span =
-style=3D'color:#1F497D'><o:p>&nbsp;</o:p></span></p><p =
-class=3DMsoNormal>Change: Application now using the excellent <a =
-href=3D"https://github.com/jstedfast/MimeKit"><span =
-style=3D'font-size:10.0pt;font-family:"Segoe =
-UI",sans-serif'>MimeKit</span></a> library. Faster and better support =
-for mime types.<span class=3Dapple-converted-space><span =
-style=3D'font-size:10.0pt;font-family:"Segoe =
-UI",sans-serif;color:#253340'>&nbsp;</span></span><br>Change: Removed =
-the the slow and annoying &quot;raw view&quot; and added &quot;header =
-view.&#8221;<br>Change: Removed the Redundant &quot;Html&quot; view and =
-added the &quot;Text&quot; view.<br>Change: Changed &quot;Close&quot; to =
-&quot;Exit&quot; as the close or minimize window button has the close =
-functionality. It's nice to be able to exit Papercut from the main app =
-window.<br>Feature: Thanks to a little assistance from this answer on =
-stack overflow (<a =
-href=3D"http://stackoverflow.com/questions/14103159/previewmouseleftbutto=
-ndown-interferes-with-clic-selection"><span =
-style=3D'font-size:10.0pt;font-family:"Segoe =
-UI",sans-serif'>http://stackoverflow.com/questions/14103159/previewmousel=
-eftbuttondown-interferes-with-clic-selection</span></a>) finally =
-implemented that drag&amp;drop message file feature. Now you can drag =
-and drop a message file.<br>Change: Saves and loads message in =
-AppData\Papercut.<br>Feature: Now you can delete a Message with the =
-Delete Key (#9835) - message Content from last message is now correctly =
-cleared (#9840)<br>Feature: Changed Processing to Buffered File output =
-for speed, etc.<span class=3Dapple-converted-space><span =
-style=3D'font-size:10.0pt;font-family:"Segoe =
-UI",sans-serif;color:#253340'>&nbsp;</span></span><br>Fixed: Issue #6026 =
--- Supports &quot;Minimize on Close&quot; option.<br>Feature: Added CC =
-and BCC to field list aka issue #9836.<br>Feature: Added support for =
-&quot;dot stuffing&quot;, per RFC 2821, section 4.5.2.<br>Fixed: =
-FormatException on empty ReplyTo<br>Fixed: fixed crash on start when =
-there is an email with 0 byte.<o:p></o:p></p><p class=3DMsoNormal>Fixed: =
-Issue with email address parsing.<o:p></o:p></p></div></body></html>
-------=_NextPart_001_0078_01D15943.182788A0--
-
-------=_NextPart_000_0077_01D15943.182788A0
-Content-Type: image/png;
-	name="image001.png"
-Content-Transfer-Encoding: base64
-Content-ID: <image001.png@01CE6622.AACEBDC0>
-
-iVBORw0KGgoAAAANSUhEUgAAAOgAAAAyCAMAAABh0mcDAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJ
-bWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdp
-bj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6
-eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0
-NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJo
-dHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlw
-dGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAv
-IiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RS
-ZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpD
-cmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNl
-SUQ9InhtcC5paWQ6RUU1MUVEQTk5MUQ2MTFFMjlGMDZGODZFMzUxN0Y1QzgiIHhtcE1NOkRvY3Vt
-ZW50SUQ9InhtcC5kaWQ6RUU1MUVEQUE5MUQ2MTFFMjlGMDZGODZFMzUxN0Y1QzgiPiA8eG1wTU06
-RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFRTUxRURBNzkxRDYxMUUyOUYw
-NkY4NkUzNTE3RjVDOCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFRTUxRURBODkxRDYxMUUy
-OUYwNkY4NkUzNTE3RjVDOCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1w
-bWV0YT4gPD94cGFja2V0IGVuZD0iciI/Ph8nKXQAAAMAUExURZOTk1JSU4WWoS93qff39zSCuTRX
-ca2tre3t7fLy8vT09Pz8/ANWk42Njvj4+JGjsM3R1Glpa7G6wnR0dLGxsWxsbjB6ruTt9Nra2lNo
-d93d3V1dXr6+vnmLl6WlpRV2u0qGsGVlZsfa6Lm5uvr6+uvy+NHR0S1zpLnAxTJ+tVqSutbW1uvr
-64WFhXajw9Pi7G2FlsXFxZiYmGpqbEOCrzo6O1CKtERERkhISoqKinl5e25ubzJ9s1h2jDs7PBBg
-mTxmhXx8fHl5fEl4ms7OzrPN3yxtnLfQ4efn5+Hh4d3o8MrKyikpKqChojw8Pae0vSxwn3Bwcaio
-qTAwMT19q2BgYra2tujo6J6eni94q4+PkNnk7MHBwYuVnVhYWqbE2e/v8DmPzJu81GNjZCdhi6DA
-1rG4vYuyztTU1LG1uMfR2D09PvL3+jQ0NYGBgdbZ2yRtofb5+zJ/tixPaD8/QDZ6qkxMTnZ2eHml
-xfn7/IatyC1/uzB0pEJCRHmUpzw8PgBGiWacw66vr3SFkEZGSOPj4zJ3qEpKSz4+P2GVuq/J3Imv
-y5O2z1paXF5eXzWJxTWGwChlkWWZvejr7UFBQkRtizZ/s21/jEJCQoqz0VZWV4Orx8/T1pWbn2B4
-iHyox2Z7iWZmZk9PUTmKxPv8/Shafd/f36WqrjF7sKrG2h5pnzc3OMLL0T91mz6CsoKCg2hoarKy
-szeGvipql4aGh256gjl3pBhlnW2Ajn5+f+Xn6GpqajlgfG2dvzB4rC10pipypGFzgDMzNC50pv//
-/y50py51p+Tk5C5zpf7+/v39/bvQ37/T4YKv0OPg3idwo7u7vIuqwG+QqH+px/Pz83es0OXl5lyD
-nvP09GJ/lD+Arz95onGculpwgFN6lfn5+XNzcxpAXB9PcCNFXW6jyABBhqOkpfHx8cjMzzeMyOnp
-6enq6+rq6sPFx77HzKfC1OPl57/K0pubm8C/v/7+//7//9vn7zB2p0BXZkNfc9HPzdDU12SSszV8
-sGiSsP///yn8YwgAAAEAdFJOU///////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////wBT9wclAAAMUElE
-QVR42uyaC1xb1R3HyZIIJIBGSKTQKhRKyqMPQmMCwdRaWkHgjld4tVJYqq3e0tJ4G+xs1NUU4gPE
-Dq0ydSXais20oGitj6rkkmLmNpzMfdR1OKcwGc7Z2uEe7noeN8kluYHW+vm0Vf/9fNpzzz339Hzv
-/3/+53fOTQjzPbGQ7wRFspth3KIo6XccdHSUGc/LTB+NChNJZwGtz4upbe6O7+qKf2lzWfr5hekW
-MUzxyh3K59+dK5qsT54ZtLSoUa0nbRRF2W5zDNhCos4jdyYzKX9u6MjtMTV8dcf+8QmJdCbQaFJD
-kSRJEARJ2jotNiLvPMGUipioa7/6xDXkdDqVpoaVoeEZYaMzgTpseo7ZNI655wrK9thr57mD3QTp
-59OVDSalE9mQ8pMH9qSPVPE6lRdUr+8k484Fyk8fefSmD5+9PLg7JfPE9zqHnB5TpjY8NVafERY1
-GyhlJQkSk35wDnA+/GGJQiw2BQEFNEkrG3qUTo4NKe99Zm/KSNWIdEZQHSOVhFKIlCDOgeT7cEnH
-EZdz8PIg7sxY+sy9yiHndFP2NDz1yGRYRpQ7OCixApYL1YjUVnwOgN6XC4bOCwrWlBveb1AonQE2
-pOx47NE8SVW4dBZQppmCoGTz2Qf9LwJ1BoJKo5j8pc90KP3sVdapCh6n8oAOq9FFna/bkfBg67Ao
-nCcjukdGgjQPl0ybZOOi2Tya6nS+6krjkQhPvN/wVVPE8unWtK2paYp16hWZIxPj0hlBYweQS7Vo
-PYpTxWvUjQNqTe9a7zP9htJSXftGhjlOlQ+oDSnTh1EmUA8MEPFJnuuNBl1paXs2KGUPFDkyPC/v
-hmMXXLBv38tzHmaYea/v2bNn796fw/rr57wALuZczzBbjt1x7NkeMGzh00ufe+H1eY9zZmfBu491
-7Dhw4O43r17Fsflph5YdONSCnFrT8Hzki1yn8oAeLe/0gFZaixy2TmSUo7WAfUZgAeKCGmYebOy0
-gD+OSA5mZvkAZekEtWpBPa5Z6+gEKkTAMJTDYrFM4son/rq+BeRTsTh1HcNcKa4RArsG3viRogcU
-ax5imIWrTUIXnnWuGmHNe9t9nCcqLutRvnboatrPfnn7hkuaIqbgU0M7brls3n8mq0Tu4KBx5cij
-YGiM3WKhSAKtNwSlIdi1tQuCWqo3qzW3wRudlMrLqSp60EKyzbVhqCrFAZubpXJCQ+gJDDpnvVis
-cLkGB13CJQC04wg0DNqTC4oKCFpiOoJBnTWg6unt3jS0ll6giHAuv9Ofk7759sX0goSI10D4thyI
-+A392xMFXp3EA5qJQ7cXFDdbuCrC0oafaaMAu41SszfVFOmJ3rIijU3NtiYsclSXDrsjBbVFGliJ
-QL8s6RCyy8K2TQDUNAiLGFRYA4quDQAUxa3HBitYUClTWEjTj6dFRLzNC3ry5OKIAy0ty5ffBSqy
-0/dLgoMe1qNFtRYUK9VYSBAE9tJO1KAdgqpJyvsGqGjcWUGRBssNpDoIEN3eKQ/4CQ/o6yXiQXb8
-LphReUAfQqC57OsY5IAmM9XG44Bhw8e7eUGBrQN56XdrTtIFzYaYjWFSHsGAQN8px56Co6xvpPqH
-82LTQ2wkdJQN+8hA4WjWmwXkNHUhJynQjExiMi2wvU3GmQm4Bwi6c18HGv6O9z5a7NzNBPPoi5/N
-v2e1EN5YtmrVXU+ucnsit7ZZe1hEn7xncQDoYgzqXnKgYhP9RaHAIDtemJ/M49HNoDhpIxF0K0z9
-o2O7cLNK7A/NOLwwsqCLGGYM1bPqIhZFpx66PRTObIKIhW4u97qearWDrPtvcQ0CXQcl+wJ+0Lvx
-8rI+UDBIoiJz5ObEAvqLTScDQbGXT16ygKbLtPE5xpC1u0YDQW3tlWPdRcgrer1q+qLRhTIx3r4l
-YlABDAo5VhfI1ZFqeGGGPY/bYJGsBMVdXtBFEsbtZq5fL0YBucrbd1DQi3iUkUSUnZMl7xIU0oF2
-XcShdTS94BLo1X5NorzZWHuiIIpP1DscYN+CONv8FukcBEdUckDRo3P1aDpqof/tnbB+M2pvhC+G
-iESrFQtahnu6Q3EEjv4VZnZQPgkokQBQmTy+tYyHNOH25cuaWv5F05O61qwsWbMxci4/KEV5tmux
-nL7TVSs2a20IFA22G4OGwvJEI8YogBMaTm41TliHYRuilAOqY3t7WYzyy/wzApXJE63Z7gDQTWkR
-HzctoemUOrtcJsOgopn2o1Yf59HmgfJGNcGmn0s5oDHovhXFtB7opEzETGFJ1G8DnibiOaCsVNq/
-TwwlaQJzZqCyLFmrbiLQp/OvA9MzxlwHOWcH7fdtXHOK1J0WymbjAe1DDeIxaCZYRB0IVKsBplWj
-bNTFAc3HHf4ND/7OMwUFThXU5fGEL/1GrcaIOGcGJRLHJnyyW+PQeNaSIKDsBfBXCFp01SRQgODd
-6D3qigW1siv3xauhDnAtPnNQmbytNTSQM6xUK2MbBAXVvbMxNpzbq5nEa6rabg8GqvOCLtKzagGa
-3h+0lf0Pf1yiAIOfevtbAJXJjdZI/4ma3maXs7eDgrLKyGcHHYjToopjxvB2PBBU5gNlT2E4VhcU
-9OZvA1SW1astDZvG2cdOz9MCrW9EAkADRYMKi0GeOYovwBytxcKPO9t7A0EXQtDBqYA5OnjKoJE+
-j/YK2gRtKRzOEK1B0HbaHi1zdHqBjgcD9WXdS3GTSibfY7vqA0EvwnvMhEDQNacLKm/XVq6Nr2vt
-82DWN2sNzemHZ52j/qDZWMnm84MSaMEMY5XxUbC8oKxL9PnFvx/oP9enQpKhNf6gO+ZjUCQnuKCu
-IKBygT2F7uvKMlpDMGdsu11u7K6iVRaD/LRAP0BAlvEgoNV4o408agbSOQOBkjkzgzL3o3VUwUm7
-95vgvnPqM1h+QSH096irQuoH6pmeo3S/OQuU7Lqk9Ng8lR0ErdxgH6YL7QL56YDihKpGur5f75+M
-SCN6GTgD5eANOaz2Pyf1B70VYR2ZutHb4gpUo/gTPFS6QAzLwp+iG1swqGtNIKjcoKmm89vNQOjJ
-suRt5q46u6BbjjKxJpIeLdX2Zp066CIEZINwUWqkY6d5lALSaG0RjlwUxipUT2n3s1vkDDcf6D+U
-MO0O5ZZcDC5G/g7+mpcK4WoUnzPMc6tzX/WBvojC3Jn7/wBQELZ5dJLWl2F7u3s9mTjLbJigqzXt
-clmz4dRAi9EctYE9SGwr2pjoiTFOMqIc0dFF+LibQmde+XoK179UFhNafLCc4gVl/oh2L0O5rpf3
-PvqXW+GKgxKQs2f1sS/vS0U7m6lfoJZvXGmCV8KaK4/dtNC7e4m8Sg7CNpnO9gggf5PXaZPoPBC+
-pwoa68BbZnV5EYH3bkQxB1Rto8hOQu3dyIDOsNupTnXjgAP8U8AL+rmrB5EqxLk94o9ghD6bi49j
-TbfksgcPrJ5YigJ5yGUymVZ5QWsPo7A1oLDlJ03UZH/xRrQ1OpF/mxYgGKItGMhiIQk02ttUHFBC
-T7AHZ2bPOW4iXmsI9KWVIDJ5QZkLU2uQ31xCoTAN+5jlEyqPPIAKrJ74lbMHH6YIhXd5T5KLe3HY
-6mRBLUtuNrxDF7clqk7wbbwDQMPYRRLeKkX/1HKSkdmrggu9R65GrjLG/g8EZd5S1LBnRlNoPb1x
-B8vjFG54ywmcKPTk5N+bpth38KRHfldlLqLpbEuQsPWFr7WPzjCWZfIepfiDMnFWdtuiY1agDWaO
-D9TWd5ClyuQ8cVxPeFHR0QwfKPNmhRCf2Q5WbEW6UMGebP6BuRBOWJd3W/4/BW7oWuf5XUZVXGj+
-wfgVV81iK5rrYiojQ1OmH46pBKU6na6uOvDTXK0W+K6tEmSmOtAkPpvj0SQmBIS2tr9+2hMjZVkC
-q8Vqb9MdT0FsGd1ZoG9jzvSvGr9+JaFiW8WytJ/gyyW7tw05W9KAZliY8LPduy+/x9fwzmXbtlUk
-JHg26u5wsGLWGdvb49tntPh2Q1f22IkCySn/KiU/zv9Lik8CSvcf5fsaHTUicp/Ct+xNWzlXj19z
-zdYgDbdu2s7tPCMls1KV3b9oNqutvnR4S1jyGfz8ZprWPQu/QpmMLRzu27kzdEbbubNvuDAuzO+T
-xDcCjTlbv7eJqs/fH5s+m22JLZgIH3Uz561HYXIfFUnCZzWJKFl6Zr8cO+ug38R+AP0B9HsEmvh9
-AdVRVo3Goq88r0C/FmAAgaQssR9aes8AAAAASUVORK5CYII=
-
-------=_NextPart_000_0077_01D15943.182788A0--
+<ul>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/73">#73</a>: Feature enhancements for the WebUI plugin.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/81">#81</a>: Removed Click-Once.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/85">#85</a>: Forwaring rule to server with STARTTLS not supported.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/89">#89</a>: Forwarding messages to an SMTP server on a port other than 25.</li>
+<li>Added a check for the MessagePath configuration loader which will now soft fail if it cannot load the configuration.</li>
+</ul>
+
+<h2>Papercut v5.0.9 [2017-09-13]</h2>
+
+<ul>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/4">#4</a>: URLs are decoded when clicking on link.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/46">#46</a>: Added support for SeqApiKey for issue #46 fixed.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/60">#60</a>: Simple bootstrapped MSI installer, thanks to <a href="https://github.com/tdue21">tdue21</a>.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/63">#63</a>: Basic web ui features, thanks to <a href="https://github.com/jijiechen">jijiechen</a>.</li>
+<li>Fixed the mispelling for Papercut.Module. </li>
+<li>Upgrade to .NET v4.5 - Leaving the past behind. WebAPI layer is properly loading now.</li>
+<li>Plugin directory no longer needs to be copied.</li>
+</ul>
+
+<h2>Papercut v4.8.0.3 [2017-03-29]</h2>
+
+<ul>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/46">#46</a>: Papercut.Service.json Options.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/52">#52</a>: ConnectionManager check for idle connections is incorrect.</li>
+<li><a href="https://github.com/ChangemakerStudios/Papercut/issues/54">#54</a>: Border Color Doesn't Change with Theme Changes.</li>
+</ul>
+
+<h2>Papercut v4.8.0.1 [2017-02-12]</h2>
+
+<ul>
+<li>Removed "Always on disk logging"</li>
+<li>Theme Switcher</li>
+<li>Improved Option Handling</li>
+<li>Minimize to Tray Option</li>
+</ul>
+
+<h2>Papercut v4.7.0.1 [2017-02-08]</h2>
+
+<ul>
+<li>Bug fixes for Message Encoding</li>
+</ul>
+
+<h2>Papercut v4.6.1.12 [2016-04-08]</h2>
+
+<ul>
+<li>Merge branch 'master' into develop</li>
+</ul>
+
+<h2>Papercut v4.6.1.8 [2016-04-07]</h2>
+
+<ul>
+<li>Trying multiple artifacts.</li>
+</ul>
+
+<h2>Papercut v4.5.0.0 [2016-01-26]</h2>
+
+<ul>
+<li>Added Bcc support to message saving. Before the value was just getting thrown away.</li>
+<li>Fixes issue clicking some urls.</li>
+<li>Added conditional forward rule with retry.</li>
+<li>Fix for minor issue when saving and the window height/width is saved incorrectly.</li>
+</ul>
+
+<h2>Papercut v4.4.0.0 [2015-06-25]</h2>
+
+<ul>
+<li>Improvement: #9864 “Log View” added to show all internal logging information for that session.</li>
+<li>Fixed: #9874 Message loading exception was not properly handled causing an unhandled exception and failure.</li>
+<li>Fixed: #9872 On some systems there were permissions issues accessing the IP addresses for the local system causing an unhandled exception and failure.</li>
+</ul>
+
+<p>Thanks to <a href="https://github.com/jstedfast">Jstedfast</a> (author of <a href="https://github.com/jstedfast/mailkit">MimeKit</a>) for his contribution:
+- Rewrote and improved the logic that renders the email HTML.</p>
+
+<p>Thanks to MikeWill34 for his contributions:
+- Fixed: #9870 When Aero is disabled (on servers, for example), the windows didn’t have a drop shadow. Now they have a solid border.
+  - Fixed: Mark of the Web “ActiveX” security warning on email display.
+  - Improvement: Upgraded to Calburn Micro v2.0.</p>
+
+<h2>Papercut v4.3.0.0 [2014-11-05]</h2>
+
+<ul>
+<li>Improvement: “Raw” message view re-added back as a view of the message data using AvalonEdit control for speed.</li>
+</ul>
+
+<h2>Papercut v4.2.1.0 [2014-10-11]</h2>
+
+<ul>
+<li>Fixed: #9861 Exception if the specified file name for a mime part was duplicate.</li>
+<li>Added: Web links in emails are launched in default browser. (Thanks Jamie Humphries!)</li>
+<li>Added: Conditional Forward (RegEx) Rule based on body or headers.</li>
+<li>Fixed: Added the "Mark-of-web" for the email viewer to remove IE security warnings.</li>
+<li>Fixed: #9863 Papercut.Service was not correctly reporting it’s incoming mail directory to Papercut.Client.</li>
+</ul>
+
+<h2>Papercut v4.2.0.0 [2014-8-23]</h2>
+
+<ul>
+<li>Fixed: #9859 Now using <pre> tag when displaying the text email so that carriage returns/linefeeds are displayed.</li>
+<li>Fixed: #9858 Now won’t close the app when failing to delete a message. Displays the reason for the failure as well.</li>
+<li>Improvement: Increased the robustness and error handling of the SMTP FIle Receiving.</li>
+<li>Improvement: Now validates the existence of and creates (if necessary) the Default Message Save Path directory.</li>
+<li>Improvement: Improved the loading so that it catches all assembly loading errors and attempts to write them to the Event Log in case app load is failing.</li>
+<li>Changed: Set the protocol logging to "Verbose".</li>
+<li>Changed: Papercut.Service default save location now defaults to %BaseDirectory%\Incoming.</li>
+<li>Added: Remove the "read-only" flag from the message file when attempting to delete.</li>
+<li>Added: Example Papercut.Service.json file with comments to explain the settings.</li>
+</ul>
+
+<h2>Papercut v4.1.0.0 [2014-8-13]</h2>
+
+<ul>
+<li>Fixed: #9851 Exception on TCP/IP port binding failure.</li>
+</ul>
+
+<h2>Papercut v4.0.0.0 [2014-7-24]</h2>
+
+<ul>
+<li>Added: Automatic “rules” system and configuration. Currently only supports a forward rule. But unlimited forwards can be specified.</li>
+<li>Added: “Loading” UI</li>
+<li>Added: Save window height/width.</li>
+<li>Added support for rules to the backend service. Rules are configured by the front-end and pushed to the backend service automatically.</li>
+<li>Switched to using MailKit instead of custom Smtp Client for additional options it offers.</li>
+<li>Added authentication support to the forward rule.</li>
+<li>Issue #9852: Converted Papercut.Service to use a json settings file. Papercut Client/UI will continue to use the .NET settings system do it it's complex system of overrides based on the current user account.</li>
+<li>Improvement: Now properly disables the Message View if it’s disabled.</li>
+<li>Improvement:  UI consistency -- added one place for Option and Exit links on the main UI.</li>
+<li>Improvement: Added "Delete (count)" to the delete button.</li>
+<li>Fixed: Issue #9849 – Null Reference in the Attachment/Mime Section</li>
+<li>Improvement: SMTP Server failure handling and added additional logging to help with issue #9851.</li>
+</ul>
+
+<h2>Papercut v3.0.0.0 [2014-6-8]</h2>
+
+<p style="border: #000 1px solid; margin:4px; padding: 4px; width:50%;background-color: #A6A6A6">
+<b>Papercut</b> has switched to semantic versioning! That means you will have to uninstall old "clickonce" versions to get the latest as it will see it as an older version.
+</p>
+
+<ul>
+<li>Modern UI</li>
+<li>MVVM Architecture</li>
+<li>Watch Directories for New Messages</li>
+<li>Optional Backend Papercut Service</li>
+<li>Load on Windows Startup</li>
+<li>Attachments/Mime Sections</li>
+</ul>
+
+<h2>Papercut 2014-5-1</h2>
+
+<ul>
+<li>Fixed: Message list box scrolling caused unhandled exception.</li>
+</ul>
+
+<h2>Papercut v2014-3-13</h2>
+
+<ul>
+<li>Fixed: Converted back to .NET v4 so that XP users are supported.</li>
+<li>Fixed: Running papercut under SYSTEM account will now store messages in the application base directory instead of the \User\AppData\Papercut directory.</li>
+<li>Change: Using MimeKitLite instead of full MimeKit.</li>
+</ul>
+
+<h2>Papercut v2014-3-8</h2>
+
+<ul>
+<li>Change: Application now using the excellent <a href="https://github.com/jstedfast/mimekit">MimeKit</a> library. Faster and better support for mime types.</li>
+<li>Change: Removed the the slow and annoying "raw view" and added "header view.”</li>
+<li>Change: Removed the Redundant "Html" view and added the "Text" view.</li>
+<li>Change: Changed "Close" to "Exit" as the close or minimize window button has the close functionality. It's nice to be able to exit Papercut from the main app window.</li>
+<li>Feature: Thanks to a little assistance from this answer on stack overflow (http://stackoverflow.com/questions/14103159/previewmouseleftbuttondown-interferes-with-clic-selection).</li>
+<li>Finally implemented that drag&amp;drop message file feature. Now you can drag and drop a message file.</li>
+<li>Change: Saves and loads message in AppData\Papercut.</li>
+<li>Feature: Now you can delete a Message with the Delete Key (#9835) - message content from last message is now correctly cleared (#9840)</li>
+<li>Feature: Changed Processing to Buffered File output for speed, etc.</li>
+<li>Fixed: Issue #6026 -- Supports "Minimize on Close" option.</li>
+<li>Feature: Added CC and BCC to field list aka issue #9836.</li>
+<li>Feature: Added support for "dot stuffing", per RFC 2821, section 4.5.2.</li>
+<li>Fixed: FormatException on empty ReplyTo</li>
+<li>Fixed: fixed crash on start when there is an email with 0 byte.</li>
+<li>Fixed: Issue with email address parsing.</li>
+</ul>
+</body></html>

@@ -1,106 +1,121 @@
-﻿// Papercut
+﻿// Papercut SMTP
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2017 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut
+using Autofac.Core;
+
+using AutofacSerilogIntegration;
+
+using Caliburn.Micro;
+
+using Papercut.Common.Domain;
+using Papercut.Core;
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Infrastructure.Container;
+using Papercut.Core.Infrastructure.MessageBus;
+using Papercut.Events;
+using Papercut.Helpers;
+using Papercut.Message;
+using Papercut.Rules;
+
+using Module = Autofac.Module;
+
+namespace Papercut;
+
+[PublicAPI]
+public class PapercutUIModule : Module
 {
-    using System.Collections.Generic;
-    using System.Reflection;
-    using Autofac;
-    using Autofac.Core;
-
-    using Caliburn.Micro;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core;
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Infrastructure.Container;
-    using Papercut.Core.Infrastructure.Plugins;
-    using Papercut.Events;
-    using Papercut.Helpers;
-    using Papercut.Message;
-
-    using Module = Autofac.Module;
-
-    public class PapercutUIModule : Module, IDiscoverableModule
+    private IEnumerable<Module> GetPapercutServiceModules()
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            RegisterUI(builder);
+        yield return new PapercutCoreModule();
+        yield return new PapercutMessageModule();
+        yield return new PapercutRuleModule();
+        //yield return new PapercutIPCommModule();
+        //yield return new PapercutSmtpModule();
+    }
 
-            // message watcher is needed for watching
-            builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
+    protected override void Load(ContainerBuilder builder)
+    {
+        foreach (var module in this.GetPapercutServiceModules()) builder.RegisterModule(module);
 
-            builder.Register(c => new ApplicationMeta("Papercut"))
-                .As<IAppMeta>()
-                .SingleInstance();
+        this.RegisterUI(builder);
 
-            // must be single instance
-            builder.RegisterType<LogClientSinkQueue>().AsImplementedInterfaces().AsSelf().SingleInstance();
+        builder.RegisterLogger();
 
-            builder.RegisterType<ViewModelWindowManager>()
-                .As<IViewModelWindowManager>()
-                .As<IWindowManager>()
-                .InstancePerLifetimeScope();
+        // message watcher is needed for watching
+        builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
 
-            builder.RegisterType<EventAggregator>()
-                .As<IEventAggregator>()
-                .InstancePerLifetimeScope();
-            builder.RegisterType<EventPublishAll>().As<IMessageBus>().InstancePerLifetimeScope();
+        builder.RegisterType<SimpleMediatorBus>().As<IMessageBus>().InstancePerLifetimeScope();
 
-            builder.RegisterType<SettingPathTemplateProvider>()
-                .AsImplementedInterfaces()
-                .SingleInstance();
-            builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
+        builder.Register(c => new ApplicationMeta("Papercut.UI", Assembly.GetExecutingAssembly().GetVersion()))
+            .As<IAppMeta>()
+            .SingleInstance();
 
-            base.Load(builder);
-        }
+        // must be single instance
+        builder.RegisterType<LogClientSinkQueue>().AsImplementedInterfaces().AsSelf().SingleInstance();
 
-        static void RegisterUI(ContainerBuilder builder)
-        {
-            //  register view models
-            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
-                .Where(type => type.Name.EndsWith("ViewModel"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .OnActivated(SubscribeEventAggregator)
-                .InstancePerDependency();
+        builder.RegisterType<ViewModelWindowManager>()
+            .As<IViewModelWindowManager>()
+            .As<IWindowManager>()
+            .InstancePerLifetimeScope();
 
-            //  register views
-            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
-                .Where(type => type.Name.EndsWith("View"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .OnActivated(SubscribeEventAggregator)
-                .InstancePerDependency();
+        builder.RegisterType<EventAggregator>()
+            .As<IEventAggregator>()
+            .InstancePerLifetimeScope();
 
-            // register ui scope services
-            builder.RegisterAssemblyTypes(PapercutContainer.ExtensionAssemblies)
-                .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .InstancePerUIScope();
-        }
+        //builder.RegisterType<EventPublishAll>().As<IMessageBus>().InstancePerLifetimeScope();
 
-        static void SubscribeEventAggregator(IActivatedEventArgs<object> e)
-        {
-            // Automatically calls subscribe on activated Windows, Views and ViewModels
-            e.Context.Resolve<IEventAggregator>().Subscribe(e.Instance);
-        }
+        builder.RegisterType<SettingPathTemplateProvider>()
+            .AsImplementedInterfaces()
+            .SingleInstance();
 
-        public IModule Module => this;
+        builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
+
+        base.Load(builder);
+    }
+
+    private void RegisterUI(ContainerBuilder builder)
+    {
+        //  register view models
+        builder.RegisterAssemblyTypes(this.ThisAssembly)
+            .Where(type => type.Name.EndsWith("ViewModel"))
+            .AsImplementedInterfaces()
+            .AsSelf()
+            .OnActivated(SubscribeEventAggregator)
+            .InstancePerDependency();
+
+        //  register views
+        builder.RegisterAssemblyTypes(this.ThisAssembly)
+            .Where(type => type.Name.EndsWith("View"))
+            .AsImplementedInterfaces()
+            .AsSelf()
+            .OnActivated(SubscribeEventAggregator)
+            .InstancePerDependency();
+
+        // register ui scope services
+        builder.RegisterAssemblyTypes(this.ThisAssembly)
+            .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
+            .AsImplementedInterfaces()
+            .AsSelf()
+            .InstancePerUIScope();
+    }
+
+    private static void SubscribeEventAggregator(IActivatedEventArgs<object> e)
+    {
+        // Automatically calls subscribe on activated Windows, Views and ViewModels
+        e.Context.Resolve<IEventAggregator>().Subscribe(e.Instance);
     }
 }

@@ -22,6 +22,7 @@ using Papercut.Common.Domain;
 using Papercut.Core.Domain.Application;
 using Papercut.Core.Domain.Message;
 using Papercut.Core.Domain.Paths;
+using Papercut.Core.Infrastructure.MessageBus;
 using Papercut.Service.Infrastructure;
 using Papercut.Service.Infrastructure.Paths;
 using Papercut.Service.Infrastructure.SmtpServer;
@@ -38,7 +39,6 @@ public class PapercutServiceModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         builder.RegisterType<NewMessageEventHandler>().As<IEventHandler<NewMessageEvent>>().InstancePerLifetimeScope();
-        builder.RegisterType<MessagePathConfigurator>().As<IMessagePathConfigurator>().SingleInstance();
         builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().InstancePerLifetimeScope();
 
         builder.RegisterType<SmtpMessageStore>().As<IMessageStore>().AsSelf();

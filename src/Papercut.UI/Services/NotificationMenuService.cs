@@ -31,7 +31,8 @@ namespace Papercut.Services
     using Disposable = Autofac.Util.Disposable;
 
     public class NotificationMenuService : Disposable,
-        IEventHandler<PapercutClientReadyEvent>,
+        IUIThreadEventHandler<PapercutClientReadyEvent>,
+        IUIThreadEventHandler<PapercutClientExitEvent>,
         IEventHandler<ShowBallonTip>
     {
         readonly IMessageBus _messageBus;
@@ -73,11 +74,23 @@ namespace Papercut.Services
         {
             if (disposing)
             {
-                _notificationSubject?.Dispose();
-                _notificationSubject = null;
-                _notification?.Dispose();
-                _notification = null;
+                this.Reset();
             }
+        }
+
+        private void Reset()
+        {
+            this._notificationSubject?.Dispose();
+            this._notificationSubject = null;
+            this._notification?.Dispose();
+            this._notification = null;
+        }
+
+        public void Handle(PapercutClientExitEvent message)
+        {
+            if (_notification == null) return;
+
+            this.Reset();
         }
 
         public void Handle(PapercutClientReadyEvent message)
@@ -104,28 +117,28 @@ namespace Papercut.Services
                 (sender, args) =>
                 this._messageBus.Publish(new ShowMainWindowEvent { SelectMostRecentMessage = true });
 
-            var options = new MenuItem(
-                "Options",
-                (sender, args) => this._messageBus.Publish(new ShowOptionWindowEvent()))
-            {
-                DefaultItem = false,
-            };
+            //var options = new MenuItem(
+            //    "Options",
+            //    (sender, args) => this._messageBus.Publish(new ShowOptionWindowEvent()))
+            //{
+            //    DefaultItem = false,
+            //};
 
-            var menuItems = new[]
-            {
-                new MenuItem(
-                    "Show",
-                    (sender, args) => this._messageBus.Publish(new ShowMainWindowEvent()))
-                {
-                    DefaultItem = true
-                },
-                options,
-                new MenuItem(
-                    "Exit",
-                    (sender, args) => this._messageBus.Publish(new AppForceShutdownEvent()))
-            };
+            //var menuItems = new[]
+            //{
+            //    new MenuItem(
+            //        "Show",
+            //        (sender, args) => this._messageBus.Publish(new ShowMainWindowEvent()))
+            //    {
+            //        DefaultItem = true
+            //    },
+            //    options,
+            //    new MenuItem(
+            //        "Exit",
+            //        (sender, args) => this._messageBus.Publish(new AppForceShutdownEvent()))
+            //};
 
-            _notification.ContextMenu = new ContextMenu(menuItems);
+            //_notification.ContextMenu = new ContextMenu(menuItems);
         }
 
         public void Handle(ShowBallonTip @event)

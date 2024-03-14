@@ -15,17 +15,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Papercut.Core.Domain.Paths;
+global using Autofac;
 
-namespace Papercut.Core;
+global using Papercut.Common.Helper;
 
-public class PapercutCoreModule : Module
-{
-    protected override void Load(ContainerBuilder builder)
-    {
-        builder.RegisterType<MessagePathConfigurator>()
-            .As<IMessagePathConfigurator>()
-            .AsSelf()
-            .SingleInstance();
-    }
-}
+global using System.Reflection;
+global using System.Runtime.InteropServices;
+
+global using Papercut.Common.Extensions;
+
+global using JetBrains.Annotations;
+
+global using Serilog;
+
+global using Papercut.Core.Infrastructure.Lifecycle;

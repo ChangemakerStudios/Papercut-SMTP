@@ -15,6 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
+using ControlzEx.Theming;
+
 namespace Papercut.Helpers
 {
     using System;
@@ -23,10 +25,7 @@ namespace Papercut.Helpers
     using System.Windows.Controls;
     using System.Windows.Media;
 
-    using MahApps.Metro;
     using MahApps.Metro.Controls;
-
-    using Papercut.Core.Annotations;
 
     public static class UIHelper
     {
@@ -52,16 +51,16 @@ namespace Papercut.Helpers
         {
             var brushObjectName = "HighlightBrush";
 
-            var appStyle = ThemeManager.DetectAppStyle(Application.Current);
+            var appStyle = ThemeManager.Current.DetectTheme(Application.Current);
 
             // Only add borders if above call succeded and Aero Not enabled
             var resourceDictionary = window.Resources;
 
-            SetBorder(resourceDictionary, appStyle.Item2.Resources[brushObjectName]);
+            SetBorder(resourceDictionary, appStyle.ShowcaseBrush);
 
-            ThemeManager.IsThemeChanged += (sender, args) =>
+            ThemeManager.Current.ThemeChanged += (sender, args) =>
             {
-                SetBorder(resourceDictionary, args.Accent.Resources[brushObjectName]);
+                SetBorder(resourceDictionary, args.NewTheme.ShowcaseBrush);
             };
         }
 
@@ -92,7 +91,7 @@ namespace Papercut.Helpers
             return true;
         }
 
-        public static object GetObjectDataFromPoint([NotNull] this ListBox source, Point point)
+        public static object GetObjectDataFromPoint(this ListBox source, Point point)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 

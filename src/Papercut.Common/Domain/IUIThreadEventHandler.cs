@@ -15,17 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Papercut.Core.Domain.Paths;
+namespace Papercut.Common.Domain;
 
-namespace Papercut.Core;
-
-public class PapercutCoreModule : Module
+public interface IUIThreadEventHandler<in TEvent> : IEventHandler<TEvent>
+    where TEvent : IEvent
 {
-    protected override void Load(ContainerBuilder builder)
-    {
-        builder.RegisterType<MessagePathConfigurator>()
-            .As<IMessagePathConfigurator>()
-            .AsSelf()
-            .SingleInstance();
-    }
 }

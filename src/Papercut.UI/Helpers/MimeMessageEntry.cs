@@ -17,8 +17,6 @@
 
 namespace Papercut.Helpers
 {
-    using System;
-
     using Papercut.Core.Domain.Message;
     using Papercut.Message;
 
@@ -31,11 +29,11 @@ namespace Papercut.Helpers
         {
             IsSelected = entry.IsSelected;
 
-            loader.Get(this).Subscribe(m => { Subject = m.Subject; },
-                e =>
-                {
-                    Subject = "Failure loading message: " + e.Message;
-                });
+            //loader.Get(this).Subscribe(m => { Subject = m.Subject; },
+            //    e =>
+            //    {
+            //        Subject = "Failure loading message: " + e.Message;
+            //    });
         }
 
         public string Subject

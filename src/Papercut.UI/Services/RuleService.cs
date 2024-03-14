@@ -37,7 +37,7 @@ namespace Papercut.Services
         IEventHandler<PapercutClientReadyEvent>,
         IEventHandler<PapercutClientExitEvent>
     {
-        readonly PapercutServiceBackendCoordinator _coordinator;
+        //readonly PapercutServiceBackendCoordinator _coordinator;
 
         readonly MessageWatcher _messageWatcher;
 
@@ -46,15 +46,15 @@ namespace Papercut.Services
         readonly IRulesRunner _rulesRunner;
 
         public RuleService(
-            RuleRespository ruleRespository,
+            RuleRepository ruleRepository,
             ILogger logger,
-            PapercutServiceBackendCoordinator coordinator,
+            //PapercutServiceBackendCoordinator coordinator,
             MessageWatcher messageWatcher,
             IRulesRunner rulesRunner,
             IMessageBus messageBus)
-            : base(ruleRespository, logger)
+            : base(ruleRepository, logger)
         {
-            _coordinator = coordinator;
+            //_coordinator = coordinator;
             _messageWatcher = messageWatcher;
             _rulesRunner = rulesRunner;
             this._messageBus = messageBus;
@@ -86,29 +86,29 @@ namespace Papercut.Services
             }
 
             // rules loaded/updated event
-            this._messageBus.Publish(new RulesUpdatedEvent(Rules.ToArray()));
+            this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
 
             Rules.CollectionChanged += RuleCollectionChanged;
             HookPropertyChangedForRules(Rules);
 
             // the backend service handles rules running if it's online
-            if (!_coordinator.IsBackendServiceOnline)
-            {
-                _logger.Debug("Setting up Rule Dispatcher Observable");
+            //if (!_coordinator.IsBackendServiceOnline)
+            //{
+            //    _logger.Debug("Setting up Rule Dispatcher Observable");
 
-                // observe message watcher and run rules when a new message arrives
-                Observable.FromEventPattern<NewMessageEventArgs>(
-                    e => _messageWatcher.NewMessage += e,
-                    e => _messageWatcher.NewMessage -= e,
-                    TaskPoolScheduler.Default)
-                    .DelaySubscription(TimeSpan.FromSeconds(1))
-                    .Subscribe(e => _rulesRunner.Run(Rules.ToArray(), e.EventArgs.NewMessage));
-            }
+            //    // observe message watcher and run rules when a new message arrives
+            //    Observable.FromEventPattern<NewMessageEventArgs>(
+            //        e => _messageWatcher.NewMessage += e,
+            //        e => _messageWatcher.NewMessage -= e,
+            //        TaskPoolScheduler.Default)
+            //        .DelaySubscription(TimeSpan.FromSeconds(1))
+            //        .Subscribe(e => _rulesRunner.Run(Rules.ToArray(), e.EventArgs.NewMessage));
+            //}
         }
 
-        void PublishUpdateEvent()
+        void PublishUpdateEventAsync()
         {
-            this._messageBus.Publish(new RulesUpdatedEvent(Rules.ToArray()));
+            this._messageBus.Publish(new RulesUpdatedEvent(this.Rules.ToArray()));
         }
 
         void RuleCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -118,7 +118,7 @@ namespace Papercut.Services
                 if (args.NewItems != null)
                     HookPropertyChangedForRules(args.NewItems.OfType<IRule>());
 
-                PublishUpdateEvent();
+                this.PublishUpdateEventAsync();
             }
             catch (Exception ex)
             {
@@ -130,7 +130,7 @@ namespace Papercut.Services
         {
             foreach (IRule m in rules)
             {
-                m.PropertyChanged += (o, eventArgs) => PublishUpdateEvent();
+                m.PropertyChanged += (o, eventArgs) => this.PublishUpdateEventAsync();
             }
         }
     }

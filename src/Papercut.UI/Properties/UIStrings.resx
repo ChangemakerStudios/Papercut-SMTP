@@ -120,11 +120,14 @@
   <data name="DeleteTextTemplate" xml:space="preserve">
     <value>Delete{{#if HasSelectedMessage}} ({{SelectedMessageCount}}){{/if}}</value>
   </data>
-  <data name="HtmlFormatWrapper" xml:space="preserve">
-    <value>&lt;html&gt;&lt;head&gt;&lt;style&gt;body {{ padding: 0; margin: 0.5em; }} pre {{ font-family:Consolas,"Courier New",monospace; line-height: 1.5em; font-size: 9pt; }}&lt;/style&gt;&lt;/head&gt;&lt;body oncontextmenu="return false;"&gt;&lt;pre&gt;{0}&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</value>
-    <comment>Used to create the papercut.htm file</comment>
+  <data name="HtmlToHtmlFormatWrapper" xml:space="preserve">
+    <value>&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body oncontextmenu="return false;"&gt;{0}&lt;/body&gt;&lt;/html&gt;</value>
   </data>
   <data name="MarkOfTheWeb" xml:space="preserve">
     <value>&lt;!-- saved from url=(0014)about:internet --&gt;</value>
+  </data>
+  <data name="TextToHtmlFormatWrapper" xml:space="preserve">
+    <value>&lt;html&gt;&lt;head&gt;&lt;meta http-equiv="X-UA-Compatible" content="IE=Edge"/&gt;&lt;style&gt;body {{ padding: 0; margin: 0.5em; }} pre {{ font-family:Consolas,"Courier New",monospace; line-height: 1.5em; font-size: 9pt; }}&lt;/style&gt;&lt;/head&gt;&lt;body oncontextmenu="return false;"&gt;&lt;pre&gt;{0}&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</value>
+    <comment>Used to create the papercut.htm file</comment>
   </data>
 </root>

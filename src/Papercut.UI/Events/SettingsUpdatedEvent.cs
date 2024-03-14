@@ -26,7 +26,7 @@ namespace Papercut.Events
 
         public Settings NewSettings { get; }
 
-        public SettingsUpdatedEvent(Settings previousSettings, Settings newSettings = null)
+        public SettingsUpdatedEvent(Settings previousSettings, Settings? newSettings = null)
         {
             this.PreviousSettings = previousSettings;
             this.NewSettings = newSettings ?? Settings.Default;

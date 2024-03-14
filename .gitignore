@@ -45,3 +45,4 @@ src/Papercut.Desktop/.vscode/
 build/
 out/
 *.msi
+.vscode

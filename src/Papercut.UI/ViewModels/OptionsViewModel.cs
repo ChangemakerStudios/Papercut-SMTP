@@ -27,8 +27,6 @@ namespace Papercut.ViewModels
     using Caliburn.Micro;
 
     using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
     using Papercut.Core.Infrastructure.Network;
     using Papercut.Events;
     using Papercut.Helpers;
@@ -173,7 +171,7 @@ namespace Papercut.ViewModels
 
         public void Load()
         {
-            Settings.Default.CopyTo(this);
+            //Settings.Default.CopyTo(this);
         }
 
         static IList<string> GetIPs()
@@ -190,18 +188,19 @@ namespace Papercut.ViewModels
             return ips;
         }
 
-        public void Save()
+        public async Task Save()
         {
-            var previousSettings = new Settings();
-            Settings.Default.CopyTo(previousSettings);
+            //TODO: fix settings save
 
-            this.CopyTo(Settings.Default);
+            //var previousSettings = new Settings();
+            //Settings.Default.CopyTo(previousSettings);
+
+            //this.CopyTo(Settings.Default);
 
             Settings.Default.Save();
+            //this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
 
-            this._messageBus.Publish(new SettingsUpdatedEvent(previousSettings));
-
-            TryClose(true);
+            await this.TryCloseAsync(true);
         }
     }
 }

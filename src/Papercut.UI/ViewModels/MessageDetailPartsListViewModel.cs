@@ -15,6 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
+using DynamicData;
+
 namespace Papercut.ViewModels
 {
     using System;
@@ -129,7 +131,7 @@ namespace Papercut.ViewModels
                 {
                     using (FileStream outputFile = File.Open(tempFileName, FileMode.Create))
                     {
-                        part.ContentObject.DecodeTo(outputFile);
+                        part.Content.DecodeTo(outputFile);
                     }
 
                     Process.Start(tempFileName);
@@ -176,7 +178,7 @@ namespace Papercut.ViewModels
                 // save it..
                 using (Stream outputFile = dlg.OpenFile())
                 {
-                    part.ContentObject.DecodeTo(outputFile);
+                    part.Content.DecodeTo(outputFile);
                 }
             }
         }

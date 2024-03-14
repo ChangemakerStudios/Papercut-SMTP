@@ -19,14 +19,12 @@ namespace Papercut.ViewModels
 {
     using System;
     using System.Linq;
-    using System.Reactive.Linq;
     using System.Text;
 
     using Caliburn.Micro;
 
     using MimeKit;
 
-    using Papercut.Common.Extensions;
     using Papercut.Core.Domain.Message;
     using Papercut.Helpers;
     using Papercut.Message;
@@ -236,22 +234,22 @@ namespace Papercut.ViewModels
                 if (handleLoading)
                     IsLoading = true;
 
-                // load and show it...
-                _loadingDisposable = _mimeMessageLoader.Get(messageEntry).ObserveOnDispatcher().Subscribe(m =>
-                {
-                    DisplayMimeMessage(m);
-                    if (handleLoading)
-                        IsLoading = false;
-                },
-                    e =>
-                    {
-                        var failureMessage =
-                            MimeMessage.CreateFromMailMessage(MailMessageHelper.CreateFailureMailMessage(e.Message));
+                // TODO: load and show it...
+                //_loadingDisposable = _mimeMessageLoader.Get(messageEntry).ObserveOnDispatcher().Subscribe(m =>
+                //{
+                //    DisplayMimeMessage(m);
+                //    if (handleLoading)
+                //        IsLoading = false;
+                //},
+                //    e =>
+                //    {
+                //        var failureMessage =
+                //            MimeMessage.CreateFromMailMessage(MailMessageHelper.CreateFailureMailMessage(e.Message));
 
-                        DisplayMimeMessage(failureMessage);
-                        if (handleLoading)
-                            IsLoading = false;
-                    });
+                //        DisplayMimeMessage(failureMessage);
+                //        if (handleLoading)
+                //            IsLoading = false;
+                //    });
             }
         }
 

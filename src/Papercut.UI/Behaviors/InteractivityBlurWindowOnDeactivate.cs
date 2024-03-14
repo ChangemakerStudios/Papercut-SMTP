@@ -18,7 +18,6 @@
 namespace Papercut.Behaviors
 {
     using System;
-    using System.Security.Principal;
     using System.Windows;
 
     public class InteractivityBlurWindowOnDeactivate : InteractivityBlurBase<Window>

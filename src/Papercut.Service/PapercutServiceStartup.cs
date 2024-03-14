@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+using Papercut.Core;
 using Papercut.Message;
 using Papercut.Rules;
 using Papercut.Service.Domain.SmtpServer;
@@ -60,6 +61,7 @@ internal class PapercutServiceStartup
 
     IEnumerable<Autofac.Module> GetModules()
     {
+        yield return new PapercutCoreModule();
         yield return new PapercutMessageModule();
         yield return new PapercutRuleModule();
         yield return new PapercutServiceModule();

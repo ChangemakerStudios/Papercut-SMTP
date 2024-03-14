@@ -23,7 +23,6 @@ namespace Papercut.ViewModels
 
     using Caliburn.Micro;
 
-    using Papercut.Core.Annotations;
     using Papercut.Core.Domain.Rules;
     using Papercut.Services;
 
@@ -71,7 +70,7 @@ namespace Papercut.ViewModels
 
         public ObservableCollection<IRule> RegisteredRules { get; private set; }
 
-        public void AddRule([NotNull] IRule rule)
+        public void AddRule(IRule rule)
         {
             if (rule == null) throw new ArgumentNullException(nameof(rule));
 

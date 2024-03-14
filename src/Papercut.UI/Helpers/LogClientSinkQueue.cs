@@ -51,8 +51,7 @@ namespace Papercut.Helpers
 
         public LogEvent GetLastEvent()
         {
-            LogEvent log;
-            return _logQueue.TryDequeue(out log) ? log : null;
+            return _logQueue.TryDequeue(out var log) ? log : null;
         }
 
         public IEnumerable<LogEvent> GetLastEvents()

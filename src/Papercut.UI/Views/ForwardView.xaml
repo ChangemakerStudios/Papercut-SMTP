@@ -13,7 +13,7 @@
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:ForwardViewModel}"
                       Title="{Binding WindowTitle}"
-                      ResizeMode="NoResize" Width="274" Height="171"
+                      ResizeMode="NoResize" Width="243" Height="162.333"
                       WindowStyle="ToolWindow"
                       ShowIconOnTitleBar="false"
                       WindowStartupLocation="CenterOwner" 
@@ -23,7 +23,7 @@
     <Grid>
         <DockPanel>
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="2"
-                        FrameworkElement.FlowDirection="RightToLeft">
+                        FrameworkElement.FlowDirection="RightToLeft" Height="30">
                 <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
                 <Button Width="75" Margin="2" Name="Send" IsDefault="True">
                     Send
@@ -39,15 +39,15 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0">SMTP Server:</Label>
-                <Label Grid.Column="0" Grid.Row="1">From:</Label>
-                <Label Grid.Column="0" Grid.Row="2">To:</Label>
-                <TextBox Grid.Column="1" Grid.Row="0" Margin="2" Width="150" TabIndex="0" HorizontalAlignment="Left"
-                         Name="Server" />
+                <Label Grid.Column="0" Grid.Row="0" Content="SMTP Server:" Height="24"/>
+                <Label Grid.Column="0" Grid.Row="1" Content="From:" Margin="0,2,0,0"/>
+                <Label Grid.Column="0" Grid.Row="2" Content="To:"/>
+                <TextBox Grid.Column="1" Grid.Row="0" Margin="2,2,0,3" Width="150" TabIndex="0" HorizontalAlignment="Left"
+                         x:Name="Server" />
                 <TextBox Grid.Column="1" Grid.Row="1" Margin="2" Width="150" TabIndex="1" HorizontalAlignment="Left"
-                         Name="From" />
+                         x:Name="From" />
                 <TextBox Grid.Column="1" Grid.Row="2" Margin="2" Width="150" TabIndex="2" HorizontalAlignment="Left"
-                         Name="To" />
+                         x:Name="To" />
             </Grid>
         </DockPanel>
     </Grid>

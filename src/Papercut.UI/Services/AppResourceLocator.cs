@@ -25,8 +25,6 @@ namespace Papercut.Services
     using System.Windows;
     using System.Windows.Resources;
 
-    using Papercut.Core.Annotations;
-
     using Serilog;
 
     public class AppResourceLocator
@@ -42,7 +40,7 @@ namespace Papercut.Services
                 Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
         }
 
-        public string GetResourceString([NotNull] string resourceName)
+        public string GetResourceString(string resourceName)
         {
             if (resourceName == null)
                 throw new ArgumentNullException(nameof(resourceName));
