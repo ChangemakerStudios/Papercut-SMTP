@@ -28,7 +28,6 @@ using ElectronNET.API;
 using ElectronNET.API.Entities;
 
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Papercut.Desktop
 {
@@ -110,7 +109,7 @@ namespace Papercut.Desktop
         static string WindowIcon()
         {
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            return Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "icons",
+            return Path.Combine(AppContext.BaseDirectory, "icons",
                 isWindows ? "Papercut-icon.ico" : "Papercut-icon.png");
         }
 
