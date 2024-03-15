@@ -21,3 +21,4 @@ out/
 /.vscode
 *.msi
 src/Papercut.Smtp.Service/webapp
+src/Papercut.Desktop/node_modules
