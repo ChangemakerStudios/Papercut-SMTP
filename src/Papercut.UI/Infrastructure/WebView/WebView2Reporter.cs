@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2022 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,28 +16,15 @@
 // limitations under the License.
 
 
-using System;
-
 using Autofac;
-
-using Papercut.Core.Annotations;
-using Serilog;
 
 namespace Papercut.Infrastructure.WebView
 {
-    using System.IO;
-
-    using Microsoft.Web.WebView2.Core;
-    using Papercut.Helpers;
-    using System.Reflection;
-
     public class WebView2Reporter : IStartable
     {
         private readonly Lazy<ILogger> _logger;
 
         private readonly WebView2Information _webView2Information;
-
-        protected ILogger Logger => this._logger.Value;
 
         public WebView2Reporter(Lazy<ILogger> logger, WebView2Information webView2Information)
         {
@@ -45,19 +32,22 @@ namespace Papercut.Infrastructure.WebView
             this._webView2Information = webView2Information;
         }
 
+        protected ILogger Logger => this._logger.Value;
+
         public void Start()
         {
-            if (!_webView2Information.IsInstalled)
+            if (!this._webView2Information.IsInstalled)
             {
-                this.Logger.Error(_webView2Information.WebView2LoadException,
+                this.Logger.Error(
+                    this._webView2Information.WebView2LoadException,
                     "Failure Loading 'WebView2' or Required Component 'WebView2' is not installed. Visit this URL to download: https://go.microsoft.com/fwlink/p/?LinkId=2124703");
             }
             else
             {
                 this.Logger.Information(
                     "WebView2 Installed Version {WebView2:l} {WebView2InstallType}",
-                    _webView2Information.Version,
-                    _webView2Information.InstallType);
+                    this._webView2Information.Version,
+                    this._webView2Information.InstallType);
             }
         }
 

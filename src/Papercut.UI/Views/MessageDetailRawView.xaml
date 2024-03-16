@@ -11,7 +11,7 @@
           ShowGridLines="False" Width="Auto">
         <Grid x:Name="Overlay" Panel.ZIndex="1000"
               Visibility="{Binding IsLoading,Converter={StaticResource CollapsedIfFalse}}">
-            <TextBlock Text="Loading Raw..." FontSize="30" Foreground="DarkGray" Opacity="0.75" TextAlignment="Center" VerticalAlignment="Center"></TextBlock>
+            <TextBlock Text="Loading Raw..." FontSize="30" Foreground="DarkGray" Opacity="0.75" TextAlignment="Center" VerticalAlignment="Center" />
         </Grid>
         <Grid>
             <Border BorderBrush="LightGray" BorderThickness="1">

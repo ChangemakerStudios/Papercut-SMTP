@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,44 +16,37 @@
 // limitations under the License.
 
 
+using System.Diagnostics;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reflection;
+using System.Windows;
+
+using Caliburn.Micro;
+
+using ICSharpCode.AvalonEdit.Utils;
+
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+
+using Papercut.AppLayer.LogSinks;
+using Papercut.Core;
+using Papercut.Core.Domain.Network.Smtp;
+using Papercut.Domain.AppCommands;
+using Papercut.Domain.UiCommands;
+using Papercut.Domain.UiCommands.Commands;
+using Papercut.Helpers;
+using Papercut.Infrastructure.Resources;
 using Papercut.Infrastructure.WebView;
+using Papercut.Properties;
+using Papercut.Rules.Domain.Forwarding;
+using Papercut.Rules.Domain.Relaying;
+using Papercut.Views;
+
+using Serilog.Events;
 
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-    using System.Reflection;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Windows;
-
-    using Caliburn.Micro;
-
-    using ICSharpCode.AvalonEdit.Utils;
-
-    using MahApps.Metro.Controls;
-    using MahApps.Metro.Controls.Dialogs;
-
-    using Papercut.AppLayer.LogSinks;
-    using Papercut.Common.Domain;
-    using Papercut.Core;
-    using Papercut.Core.Domain.Network.Smtp;
-    using Papercut.Domain.AppCommands;
-    using Papercut.Domain.UiCommands;
-    using Papercut.Domain.UiCommands.Commands;
-    using Papercut.Helpers;
-    using Papercut.Infrastructure.Resources;
-    using Papercut.Properties;
-    using Papercut.Rules.Domain.Forwarding;
-    using Papercut.Rules.Domain.Relaying;
-    using Papercut.Views;
-
-    using Serilog.Events;
-
     public class MainViewModel : Conductor<object>,
         IHandle<SmtpServerBindFailedEvent>
     {
@@ -67,19 +60,19 @@ namespace Papercut.ViewModels
 
         private readonly IUiCommandHub _uiCommandHub;
 
-        private readonly WebView2Information _webView2Information;
-
         readonly UiLogSinkQueue _uiLogSinkQueue;
 
         readonly IViewModelWindowManager _viewModelWindowManager;
 
-        public Deque<string> CurrentLogHistory = new Deque<string>();
+        private readonly WebView2Information _webView2Information;
 
         bool _isDeactivated;
 
         private bool _isDeleteAllConfirmOpen;
 
         bool _isLogOpen;
+
+        private bool _isWebViewInstalled;
 
         string _logText;
 
@@ -91,7 +84,7 @@ namespace Papercut.ViewModels
 
         string _windowTitle = WindowTitleDefault;
 
-        private bool _isWebViewInstalled;
+        public Deque<string> CurrentLogHistory = new Deque<string>();
 
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
@@ -313,7 +306,7 @@ namespace Papercut.ViewModels
         private void SetupWebView(WebView2Base logPanel)
         {
             logPanel.CoreWebView2.DisableEdgeFeatures();
-            logPanel.NavigateToString(GetLogSinkHtml());
+            logPanel.NavigateToString(this.GetLogSinkHtml());
 
             this.GetPropertyValues(m => m.LogText)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
@@ -527,7 +520,7 @@ namespace Papercut.ViewModels
             bool? result = await this._viewModelWindowManager.ShowDialogAsync(forwardViewModel);
             if (result == null || !result.Value) return;
 
-            var progressDialog = await ShowForwardingEmailProgress();
+            var progressDialog = await this.ShowForwardingEmailProgress();
 
             Observable.Start(
                     async () =>

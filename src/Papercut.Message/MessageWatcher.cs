@@ -150,28 +150,30 @@ namespace Papercut.Message
         void OnChanged(object sender, FileSystemEventArgs e)
         {
             Task.Factory.StartNew(
-                () =>
+                async () =>
                 {
                     var info = new FileInfo(e.FullPath);
-                    int retryCount = 0;
+                    var retryCount = 0;
 
                     do
                     {
                         var timeout = 500 + retryCount * 100;
-                        Thread.Sleep(timeout);
+                        await Task.Delay(timeout);
                         if (++retryCount > 30)
                         {
-                            _logger.Error(
+                            this._logger.Error(
                                 "Failed after {RetryCount} retries to Open File {FileInfo}",
                                 retryCount,
                                 info);
                             break;
                         }
                     }
-                    while (!info.CanReadFile());
+                    while (!await info.CanReadFile());
+
+                    this.OnNewMessage(new NewMessageEventArgs(new MessageEntry(info)));
 
                     return info;
-                }).ContinueWith(r => OnNewMessage(new NewMessageEventArgs(new MessageEntry(r.Result))));
+                });
         }
 
         public event EventHandler<NewMessageEventArgs> NewMessage;

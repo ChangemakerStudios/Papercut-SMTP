@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,21 +16,16 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using MimeKit;
+
+using Papercut.Core.Domain.Rules;
+using Papercut.Message;
+using Papercut.Rules.Domain.Relaying;
+
 namespace Papercut.Rules.Domain.Conditional.Relaying
 {
-    using System;
-
-    using Autofac;
-
-    using MimeKit;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Message;
-    using Papercut.Rules.Domain.Relaying;
-
-    using Serilog;
-
     public class ConditionalRelayRuleDispatch : BaseRelayRuleDispatch<ConditionalRelayRule>
     {
         public ConditionalRelayRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)

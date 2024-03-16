@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,11 @@
 // limitations under the License.
 
 
+using Papercut.Core.Domain.Network;
+using Papercut.Core.Domain.Settings;
+
 namespace Papercut.Infrastructure.IPComm.Network
 {
-    using System;
-
-    using Core.Annotations;
-    using Core.Domain.Network;
-    using Core.Domain.Settings;
-
     public class PapercutIPCommEndpoints
     {
         public PapercutIPCommEndpoints([NotNull] ISettingStore settingStore)
@@ -48,6 +45,7 @@ namespace Papercut.Infrastructure.IPComm.Network
         }
 
         public EndpointDefinition UI { get; }
+
         public EndpointDefinition Service { get; }
     }
 }

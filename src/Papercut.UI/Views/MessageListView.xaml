@@ -92,8 +92,7 @@
                         <Image
                             Stretch="None"
                             Source="{StaticResource AttachmentIconImageSource}"
-                            Visibility="{Binding Path=HasAttachments, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        ></Image>
+                            Visibility="{Binding Path=HasAttachments, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
                 </Grid>
             </DataTemplate>

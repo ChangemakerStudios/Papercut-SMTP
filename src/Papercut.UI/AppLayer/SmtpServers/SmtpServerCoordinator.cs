@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,17 @@
 // limitations under the License.
 
 
+using Autofac;
+using Autofac.Util;
+
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Network;
+using Papercut.Core.Domain.Network.Smtp;
+using Papercut.Domain.Events;
+using Papercut.Infrastructure.Smtp;
+
 namespace Papercut.AppLayer.SmtpServers
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac;
-    using Autofac.Util;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Network;
-    using Papercut.Core.Domain.Network.Smtp;
-    using Papercut.Domain.Events;
-    using Papercut.Infrastructure.Smtp;
-    using Papercut.Properties;
-
-    using Serilog;
-
     public class SmtpServerCoordinator : Disposable,
         IEventHandler<SettingsUpdatedEvent>, IEventHandler<PapercutServiceStatusEvent>
     {
@@ -108,16 +100,16 @@ namespace Papercut.AppLayer.SmtpServers
             try
             {
                 await this._smtpServer.StopAsync();
-                await this._smtpServer.StartAsync(new EndpointDefinition(Settings.Default.IP, Settings.Default.Port));
-                await this._messageBus.PublishAsync(new SmtpServerBindEvent(Settings.Default.IP, Settings.Default.Port));
+                await this._smtpServer.StartAsync(new EndpointDefinition(Properties.Settings.Default.IP, Properties.Settings.Default.Port));
+                await this._messageBus.PublishAsync(new SmtpServerBindEvent(Properties.Settings.Default.IP, Properties.Settings.Default.Port));
             }
             catch (Exception ex)
             {
                 this._logger.Warning(
                     ex,
                     "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
-                    Settings.Default.IP,
-                    Settings.Default.Port);
+                    Properties.Settings.Default.IP,
+                    Properties.Settings.Default.Port);
 
                 await this._messageBus.PublishAsync(new SmtpServerBindFailedEvent());
             }

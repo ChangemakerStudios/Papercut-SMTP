@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2022 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,13 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using Papercut.Common.Domain;
+using Papercut.Common.Extensions;
+
 namespace Papercut.Core.Infrastructure.MessageBus
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-
-    using Serilog;
-
     public class AutofacMessageBus : IMessageBus
     {
         #region Fields
@@ -43,6 +36,16 @@ namespace Papercut.Core.Infrastructure.MessageBus
         public AutofacMessageBus(ILifetimeScope lifetimeScope)
         {
             this._lifetimeScope = lifetimeScope;
+        }
+
+        #endregion
+
+        #region Methods
+
+        protected virtual async Task HandleAsync<T>(T eventObject, IEventHandler<T> handler, CancellationToken token)
+            where T : IEvent
+        {
+            await handler.HandleAsync(eventObject, token);
         }
 
         #endregion
@@ -78,16 +81,6 @@ namespace Papercut.Core.Infrastructure.MessageBus
                         @event.GetType());
                 }
             }
-        }
-
-        #endregion
-
-        #region Methods
-
-        protected virtual async Task HandleAsync<T>(T eventObject, IEventHandler<T> handler, CancellationToken token)
-            where T : IEvent
-        {
-            await handler.HandleAsync(eventObject, token);
         }
 
         #endregion

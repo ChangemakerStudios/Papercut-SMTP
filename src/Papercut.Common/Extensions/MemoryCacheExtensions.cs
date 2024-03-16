@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,10 @@
 // limitations under the License.
 
 
+using System.Runtime.Caching;
+
 namespace Papercut.Common.Extensions
 {
-    using System;
-    using System.Runtime.Caching;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Papercut.Core.Annotations;
-
     public static class MemoryCacheExtensions
     {
         #region Constants

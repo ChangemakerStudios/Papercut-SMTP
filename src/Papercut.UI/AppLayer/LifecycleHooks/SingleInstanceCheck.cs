@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,21 +16,14 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using Papercut.Domain.LifecycleHooks;
+using Papercut.Domain.UiCommands.Commands;
+using Papercut.Infrastructure.IPComm;
+
 namespace Papercut.AppLayer.LifecycleHooks
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Domain.UiCommands.Commands;
-    using Papercut.Infrastructure.IPComm;
-
-    using Serilog;
-
     public class SingleInstanceCheck : IDisposable, IAppLifecyclePreStart
     {
         readonly Mutex _appMutex = new Mutex(false, App.GlobalName);
@@ -46,12 +39,6 @@ namespace Papercut.AppLayer.LifecycleHooks
 
         public ILogger Logger { get; set; }
 
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
         public async Task<AppLifecycleActionResultType> OnPreStart()
         {
             // papercut is not already running...
@@ -65,6 +52,12 @@ namespace Papercut.AppLayer.LifecycleHooks
 
             // no need to go further
             return AppLifecycleActionResultType.Cancel;
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)

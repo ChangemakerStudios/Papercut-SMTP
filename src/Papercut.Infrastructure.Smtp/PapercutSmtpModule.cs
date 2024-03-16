@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,18 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using SmtpServer;
+using SmtpServer.Authentication;
+using SmtpServer.Net;
+using SmtpServer.Protocol;
+using SmtpServer.Storage;
+
+using ILogger = SmtpServer.ILogger;
+
 namespace Papercut.Infrastructure.Smtp
 {
-    using System;
-
-    using Autofac;
-
-    using Papercut.Core.Annotations;
-
-    using SmtpServer;
-    using SmtpServer.Authentication;
-    using SmtpServer.Net;
-    using SmtpServer.Protocol;
-    using SmtpServer.Storage;
-
     [PublicAPI]
     public class PapercutSmtpModule : Module
     {
@@ -68,7 +66,7 @@ namespace Papercut.Infrastructure.Smtp
 
                     try
                     {
-                        return new SmtpServer(
+                        return new SmtpServer.SmtpServer(
                             p.TypedAs<ISmtpServerOptions>(),
                             (IServiceProvider)c);
                     }
@@ -79,7 +77,7 @@ namespace Papercut.Infrastructure.Smtp
                     }
 
                     return null;
-                }).As<SmtpServer>();
+                }).As<SmtpServer.SmtpServer>();
         }
     }
 }

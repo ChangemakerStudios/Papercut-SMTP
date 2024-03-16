@@ -1,40 +1,34 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Security;
+
+using Autofac;
+
+using Microsoft.Win32;
+
+using Papercut.Common.Domain;
+using Papercut.Common.Extensions;
+using Papercut.Domain.Events;
+using Papercut.Domain.UiCommands;
+
 namespace Papercut.AppLayer.Settings
 {
-    using System;
-    using System.Security;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Microsoft.Win32;
-
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-    using Papercut.Domain.Events;
-    using Papercut.Domain.UiCommands;
-    using Papercut.Properties;
-
-    using Serilog;
-
     public class AppRunOnStartupService : IEventHandler<SettingsUpdatedEvent>
     {
         const string AppStartupKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
@@ -69,7 +63,7 @@ namespace Papercut.AppLayer.Settings
                 bool runOnStartup = registryKey.GetValue(App.GlobalName, null)
                                         .ToType<string>() == App.ExecutablePath;
 
-                if (Settings.Default.RunOnStartup && !runOnStartup)
+                if (Properties.Settings.Default.RunOnStartup && !runOnStartup)
                 {
                     // turn on..
                     this._logger.Information(
@@ -79,7 +73,7 @@ namespace Papercut.AppLayer.Settings
 
                     registryKey.SetValue(App.GlobalName, App.ExecutablePath);
                 }
-                else if (!Settings.Default.RunOnStartup && runOnStartup)
+                else if (!Properties.Settings.Default.RunOnStartup && runOnStartup)
                 {
                     // turn off...
                     this._logger.Information(

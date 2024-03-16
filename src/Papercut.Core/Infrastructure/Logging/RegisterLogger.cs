@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,26 +16,20 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using AutofacSerilogIntegration;
+
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Domain.Paths;
+using Papercut.Core.Infrastructure.CommandLine;
+
+using Serilog.Configuration;
+using Serilog.Debugging;
+using Serilog.Events;
+
 namespace Papercut.Core.Infrastructure.Logging
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-
-    using Autofac;
-
-    using AutofacSerilogIntegration;
-
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Domain.Paths;
-    using Papercut.Core.Infrastructure.CommandLine;
-
-    using Serilog;
-    using Serilog.Configuration;
-    using Serilog.Debugging;
-    using Serilog.Events;
-
     /// <summary>
     /// Logging module is pulled into Core
     /// </summary>

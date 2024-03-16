@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,21 +15,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Net;
+using System.Net.Sockets;
+
+using Autofac.Util;
+
+using Papercut.Core.Domain.Network;
+using Papercut.Infrastructure.IPComm.Protocols;
+
 namespace Papercut.Infrastructure.IPComm.Network
 {
-    using System;
-    using System.Net;
-    using System.Net.Sockets;
-    using System.Threading.Tasks;
-
-    using Autofac.Util;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Network;
-    using Papercut.Infrastructure.IPComm.Protocols;
-
-    using Serilog;
-
     public class PapercutIPCommServer : Disposable, IServer
     {
         private readonly Func<IProtocol> _protocolFactory;
@@ -101,27 +97,6 @@ namespace Papercut.Infrastructure.IPComm.Network
             }
         }
 
-        protected override async ValueTask DisposeAsync(bool disposing)
-        {
-            if (disposing)
-            {
-                try
-                {
-                    await this.StopAsync();
-                    this.CleanupListener();
-                    if (this.ConnectionManager != null)
-                    {
-                        this.ConnectionManager.Dispose();
-                        this.ConnectionManager = null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
-                }
-            }
-        }
-
         public async Task StartAsync(EndpointDefinition endpoint)
         {
             await Task.CompletedTask;
@@ -145,6 +120,27 @@ namespace Papercut.Infrastructure.IPComm.Network
             {
                 this.IsActive = false;
                 throw;
+            }
+        }
+
+        protected override async ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+                try
+                {
+                    await this.StopAsync();
+                    this.CleanupListener();
+                    if (this.ConnectionManager != null)
+                    {
+                        this.ConnectionManager.Dispose();
+                        this.ConnectionManager = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
+                }
             }
         }
 

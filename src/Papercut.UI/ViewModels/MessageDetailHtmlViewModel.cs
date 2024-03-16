@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,43 +16,33 @@
 // limitations under the License.
 
 
+using System.Diagnostics;
+using System.Reactive.Linq;
+using System.Windows;
+
+using Caliburn.Micro;
+
+using Microsoft.Web.WebView2.Core;
+
+using MimeKit;
+
+using Papercut.Common.Extensions;
+using Papercut.Common.Helper;
+using Papercut.Core.Infrastructure.Async;
+using Papercut.Domain.HtmlPreviews;
+using Papercut.Helpers;
 using Papercut.Infrastructure.WebView;
+using Papercut.Views;
 
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Threading.Tasks;
-    using System.Windows;
-
-    using Caliburn.Micro;
-
-    using Microsoft.Web.WebView2.Core;
-    using Microsoft.Web.WebView2.Wpf;
-
-    using MimeKit;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Paths;
-    using Papercut.Core.Infrastructure.Async;
-    using Papercut.Domain.HtmlPreviews;
-    using Papercut.Helpers;
-    using Papercut.Properties;
-    using Papercut.Views;
-
-    using Serilog;
-
     public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
 
-        private readonly WebView2Information _webView2Information;
-
         readonly IHtmlPreviewGenerator _previewGenerator;
+
+        private readonly WebView2Information _webView2Information;
 
         private string _htmlFile;
 

@@ -16,8 +16,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\src\Papercut.Message\Papercut.Message.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Papercut.App.WebApi\Papercut.App.WebApi.csproj">
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

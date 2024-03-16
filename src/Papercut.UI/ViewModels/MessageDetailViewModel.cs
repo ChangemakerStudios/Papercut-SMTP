@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,26 +16,19 @@
 // limitations under the License.
 
 
+using System.Reactive.Linq;
+
+using Caliburn.Micro;
+
+using MimeKit;
+
+using Papercut.Core.Domain.Message;
+using Papercut.Helpers;
+using Papercut.Message;
+using Papercut.Message.Helpers;
+
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Text;
-
-    using Caliburn.Micro;
-
-    using Core.Annotations;
-    using Core.Domain.Message;
-
-    using Helpers;
-
-    using Message;
-    using Message.Helpers;
-
-    using MimeKit;
-
     public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
     {
         readonly MimeMessageLoader _mimeMessageLoader;
@@ -57,7 +50,10 @@ namespace Papercut.ViewModels
         bool _isLoading;
 
         IDisposable _loadingDisposable;
+
         private string _priority;
+
+        private string _priorityColor;
 
         int _selectedTabIndex;
 
@@ -66,7 +62,6 @@ namespace Papercut.ViewModels
         string _textBody;
 
         string _to;
-        private string _priorityColor;
 
         public MessageDetailViewModel(
             Func<MessageDetailPartsListViewModel> partsListViewModelFactory,
@@ -76,161 +71,161 @@ namespace Papercut.ViewModels
             Func<MessageDetailBodyViewModel> bodyViewModelFactory,
             MimeMessageLoader mimeMessageLoader)
         {
-            _mimeMessageLoader = mimeMessageLoader;
+            this._mimeMessageLoader = mimeMessageLoader;
 
-            PartsListViewModel = partsListViewModelFactory();
-            HtmlViewModel = htmlViewModelFactory();
-            RawViewModel = rawViewModelFactory();
-            HeaderViewModel = headerViewModelFactory();
-            BodyViewModel = bodyViewModelFactory();
+            this.PartsListViewModel = partsListViewModelFactory();
+            this.HtmlViewModel = htmlViewModelFactory();
+            this.RawViewModel = rawViewModelFactory();
+            this.HeaderViewModel = headerViewModelFactory();
+            this.BodyViewModel = bodyViewModelFactory();
 
-            Items.Add(HtmlViewModel);
-            Items.Add(HeaderViewModel);
-            Items.Add(BodyViewModel);
-            Items.Add(PartsListViewModel);
-            Items.Add(RawViewModel);
+            this.Items.Add(this.HtmlViewModel);
+            this.Items.Add(this.HeaderViewModel);
+            this.Items.Add(this.BodyViewModel);
+            this.Items.Add(this.PartsListViewModel);
+            this.Items.Add(this.RawViewModel);
         }
 
         public string Subject
         {
-            get => _subject;
+            get => this._subject;
             set
             {
-                _subject = value;
-                NotifyOfPropertyChange(() => Subject);
+                this._subject = value;
+                this.NotifyOfPropertyChange(() => this.Subject);
             }
         }
 
         public string To
         {
-            get => _to;
+            get => this._to;
             set
             {
-                _to = value;
-                NotifyOfPropertyChange(() => To);
+                this._to = value;
+                this.NotifyOfPropertyChange(() => this.To);
             }
         }
 
         public string Bcc
         {
-            get => _bcc;
+            get => this._bcc;
             set
             {
-                _bcc = value;
-                NotifyOfPropertyChange(() => Bcc);
+                this._bcc = value;
+                this.NotifyOfPropertyChange(() => this.Bcc);
             }
         }
 
         public string Priority
         {
-            get => _priority;
+            get => this._priority;
             set
             {
-                _priority = value;
-                NotifyOfPropertyChange(() => Priority);
+                this._priority = value;
+                this.NotifyOfPropertyChange(() => this.Priority);
             }
         }
 
         public string PriorityColor
         {
-            get => _priorityColor;
+            get => this._priorityColor;
             set
             {
-                _priorityColor = value;
-                NotifyOfPropertyChange(() => PriorityColor);
+                this._priorityColor = value;
+                this.NotifyOfPropertyChange(() => this.PriorityColor);
             }
         }
 
         public string Date
         {
-            get => _date;
+            get => this._date;
             set
             {
-                _date = value;
-                NotifyOfPropertyChange(() => Date);
+                this._date = value;
+                this.NotifyOfPropertyChange(() => this.Date);
             }
         }
 
         public string From
         {
-            get => _from;
+            get => this._from;
             set
             {
-                _from = value;
-                NotifyOfPropertyChange(() => From);
+                this._from = value;
+                this.NotifyOfPropertyChange(() => this.From);
             }
         }
 
         public string CC
         {
-            get => _cc;
+            get => this._cc;
             set
             {
-                _cc = value;
-                NotifyOfPropertyChange(() => CC);
+                this._cc = value;
+                this.NotifyOfPropertyChange(() => this.CC);
             }
         }
 
         public string TextBody
         {
-            get => _textBody;
+            get => this._textBody;
             set
             {
-                _textBody = value;
-                NotifyOfPropertyChange(() => TextBody);
+                this._textBody = value;
+                this.NotifyOfPropertyChange(() => this.TextBody);
             }
         }
 
         public bool IsLoading
         {
-            get => _isLoading;
+            get => this._isLoading;
             set
             {
-                _isLoading = value;
-                NotifyOfPropertyChange(() => IsLoading);
+                this._isLoading = value;
+                this.NotifyOfPropertyChange(() => this.IsLoading);
             }
         }
 
         public bool IsHtml
         {
-            get => _isHtml;
+            get => this._isHtml;
             set
             {
-                _isHtml = value;
-                NotifyOfPropertyChange(() => IsHtml);
+                this._isHtml = value;
+                this.NotifyOfPropertyChange(() => this.IsHtml);
             }
         }
 
         public int SelectedTabIndex
         {
-            get => _selectedTabIndex;
+            get => this._selectedTabIndex;
             set
             {
-                _selectedTabIndex = value;
-                NotifyOfPropertyChange(() => SelectedTabIndex);
+                this._selectedTabIndex = value;
+                this.NotifyOfPropertyChange(() => this.SelectedTabIndex);
             }
         }
 
         public int AttachmentCount
         {
-            get => _attachmentCount;
+            get => this._attachmentCount;
             set
             {
-                _attachmentCount = value;
-                NotifyOfPropertyChange(() => AttachmentCount);
-                NotifyOfPropertyChange(() => HasAttachments);
+                this._attachmentCount = value;
+                this.NotifyOfPropertyChange(() => this.AttachmentCount);
+                this.NotifyOfPropertyChange(() => this.HasAttachments);
             }
         }
 
-        public bool HasAttachments => AttachmentCount > 0;
+        public bool HasAttachments => this.AttachmentCount > 0;
 
         public string HtmlFile
         {
-            get => _htmlFile;
+            get => this._htmlFile;
             set
             {
-                _htmlFile = value;
-                NotifyOfPropertyChange(() => HtmlFile);
+                this._htmlFile = value;
+                this.NotifyOfPropertyChange(() => this.HtmlFile);
             }
         }
 
@@ -246,37 +241,33 @@ namespace Papercut.ViewModels
 
         public void LoadMessageEntry(MessageEntry messageEntry)
         {
-            _loadingDisposable?.Dispose();
+            this._loadingDisposable?.Dispose();
 
-            var handleLoading = !IsLoading;
+            var handleLoading = !this.IsLoading;
 
             if (messageEntry == null)
             {
                 // show empty...
-                DisplayMimeMessage(null);
-                if (handleLoading)
-                    IsLoading = false;
+                this.DisplayMimeMessage(null);
+                if (handleLoading) this.IsLoading = false;
             }
             else
             {
-                if (handleLoading)
-                    IsLoading = true;
+                if (handleLoading) this.IsLoading = true;
 
                 // load and show it...
-                _loadingDisposable = _mimeMessageLoader.GetObservable(messageEntry).ObserveOnDispatcher().Subscribe(m =>
+                this._loadingDisposable = this._mimeMessageLoader.GetObservable(messageEntry).ObserveOnDispatcher().Subscribe(m =>
                 {
-                    DisplayMimeMessage(m);
-                    if (handleLoading)
-                        IsLoading = false;
+                    this.DisplayMimeMessage(m);
+                    if (handleLoading) this.IsLoading = false;
                 },
                     e =>
                     {
                         var failureMessage =
                             MimeMessage.CreateFromMailMessage(MailMessageHelper.CreateFailureMailMessage(e.Message));
 
-                        DisplayMimeMessage(failureMessage);
-                        if (handleLoading)
-                            IsLoading = false;
+                        this.DisplayMimeMessage(failureMessage);
+                        if (handleLoading) this.IsLoading = false;
                     });
             }
         }
@@ -298,59 +289,58 @@ namespace Papercut.ViewModels
                 return default;
             }
 
-            ResetMessage();
+            this.ResetMessage();
 
             if (mailMessageEx != null)
             {
-                HeaderViewModel.Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
+                this.HeaderViewModel.Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
 
                 var parts = mailMessageEx.BodyParts.OfType<MimePart>().ToList();
                 var mainBody = parts.GetMainBodyTextPart();
 
-                From = mailMessageEx.From?.ToString() ?? string.Empty;
-                To = mailMessageEx.To?.ToString() ?? string.Empty;
-                CC = mailMessageEx.Cc?.ToString() ?? string.Empty;
-                Bcc = mailMessageEx.Bcc?.ToString() ?? string.Empty;
+                this.From = mailMessageEx.From?.ToString() ?? string.Empty;
+                this.To = mailMessageEx.To?.ToString() ?? string.Empty;
+                this.CC = mailMessageEx.Cc?.ToString() ?? string.Empty;
+                this.Bcc = mailMessageEx.Bcc?.ToString() ?? string.Empty;
                 var priority = GetPriorityText(mailMessageEx);
-                Priority = priority.Name;
-                PriorityColor = priority.Color ?? "Black";
-                Date = mailMessageEx.Date.ToString();
-                Subject = mailMessageEx.Subject ?? string.Empty;
-                
-                AttachmentCount = parts.GetAttachments().Count();
+                this.Priority = priority.Name;
+                this.PriorityColor = priority.Color ?? "Black";
+                this.Date = mailMessageEx.Date.ToString();
+                this.Subject = mailMessageEx.Subject ?? string.Empty;
 
-                RawViewModel.MimeMessage = mailMessageEx;
-                PartsListViewModel.MimeMessage = mailMessageEx;
+                this.AttachmentCount = parts.GetAttachments().Count();
 
-                BodyViewModel.Body = mainBody != null ? mainBody.GetText(Encoding.UTF8) : string.Empty;
+                this.RawViewModel.MimeMessage = mailMessageEx;
+                this.PartsListViewModel.MimeMessage = mailMessageEx;
+
+                this.BodyViewModel.Body = mainBody != null ? mainBody.GetText(Encoding.UTF8) : string.Empty;
 
                 if (mainBody != null) {
-                    IsHtml = mainBody.IsContentHtml();
-                    HtmlViewModel.ShowMessage(mailMessageEx);
+                    this.IsHtml = mainBody.IsContentHtml();
+                    this.HtmlViewModel.ShowMessage(mailMessageEx);
 
-                    if (IsHtml)
+                    if (this.IsHtml)
                     {
                         var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
-                        if (textPartNotHtml != null)
-                            TextBody = textPartNotHtml.GetText(Encoding.UTF8);
+                        if (textPartNotHtml != null) this.TextBody = textPartNotHtml.GetText(Encoding.UTF8);
                     }
                 }
             }
 
-            SelectedTabIndex = 0;
+            this.SelectedTabIndex = 0;
         }
 
         void ResetMessage()
         {
-            AttachmentCount = 0;
-            IsHtml = false;
-            HtmlFile = null;
-            TextBody = null;
+            this.AttachmentCount = 0;
+            this.IsHtml = false;
+            this.HtmlFile = null;
+            this.TextBody = null;
 
-            HtmlViewModel.HtmlFile = null;
-            HeaderViewModel.Headers = null;
-            BodyViewModel.Body = null;
-            PartsListViewModel.MimeMessage = null;
+            this.HtmlViewModel.HtmlFile = null;
+            this.HeaderViewModel.Headers = null;
+            this.BodyViewModel.Body = null;
+            this.PartsListViewModel.MimeMessage = null;
         }
     }
 }

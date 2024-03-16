@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,36 +16,30 @@
 // limitations under the License.
 
 
+using System.Drawing;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Windows.Forms;
+
+using Autofac;
+using Autofac.Util;
+
+using Papercut.Common.Domain;
+using Papercut.Core;
+using Papercut.Core.Infrastructure.Lifecycle;
+using Papercut.Domain.AppCommands;
+using Papercut.Domain.LifecycleHooks;
+using Papercut.Domain.UiCommands;
+using Papercut.Infrastructure.Resources;
+
 namespace Papercut.AppLayer.Notifications
 {
-    using System;
-    using System.Drawing;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Windows.Forms;
-
-    using Autofac;
-    using Autofac.Util;
-
-    using Caliburn.Micro;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Domain.AppCommands;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Domain.UiCommands;
-    using Papercut.Infrastructure.Resources;
-
     [UsedImplicitly]
     public class NotificationMenuCoordinator : Disposable, IAppLifecyclePreExit, IEventHandler<PapercutClientReadyEvent>
     {
-        readonly AppResourceLocator _resourceLocator;
-
         private readonly IAppCommandHub _appCommandHub;
+
+        readonly AppResourceLocator _resourceLocator;
 
         private readonly IUiCommandHub _uiCommandHub;
 
@@ -70,6 +64,13 @@ namespace Papercut.AppLayer.Notifications
             return Task.FromResult(AppLifecycleActionResultType.Continue);
         }
 
+        public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token)
+        {
+            if (this._notification == null) this.SetupNotification();
+
+            return Task.CompletedTask;
+        }
+
         void InitObservables()
         {
             this._uiCommandHub.OnShowBalloonTip
@@ -84,13 +85,6 @@ namespace Papercut.AppLayer.Notifications
                             @event.TipText,
                             @event.ToolTipIcon);
                     });
-        }
-
-        public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token)
-        {
-            if (this._notification == null) this.SetupNotification();
-
-            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)

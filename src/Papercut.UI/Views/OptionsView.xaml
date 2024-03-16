@@ -52,8 +52,7 @@
             <CheckBox Grid.Row="5" Margin="5,0,5,-139" Name="ShowNotifications" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Grid.Column="1">Show Notifications</CheckBox>
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-93" Name="MinimizeOnClose" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18">Minimize on close</CheckBox>
             <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,2.6,0,7.4"
-                x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2">
-            </ComboBox>
+                x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2" />
             <Label Grid.Column="0" Grid.Row="4" Content="Message Sort Order:" Margin="0,3,3,4"/>
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-70" Name="MinimizeToTray" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Content="Minimize to tray"/>
             <Label Grid.Column="0" Grid.Row="4" Content="Theme:" Margin="0,33,3,-26"/>

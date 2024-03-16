@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,23 +16,15 @@
 // limitations under the License.
 
 
+using System.Reflection;
+
+using Autofac;
+
+using Papercut.Core.Domain.Message;
+using Papercut.Core.Domain.Rules;
+
 namespace Papercut.Rules.App
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Message;
-    using Papercut.Core.Domain.Rules;
-
-    using Serilog;
-
     public class RulesRunner : IRulesRunner
     {
         readonly MethodInfo _dispatchRuleMethod;

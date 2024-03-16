@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,35 +16,25 @@
 // limitations under the License.
 
 
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+
+using Autofac;
+
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Network.Smtp;
+using Papercut.Core.Domain.Rules;
+using Papercut.Core.Infrastructure.Lifecycle;
+using Papercut.Core.Infrastructure.Network;
+using Papercut.Domain.BackendService;
+using Papercut.Domain.Events;
+using Papercut.Domain.LifecycleHooks;
+using Papercut.Infrastructure.IPComm;
+using Papercut.Infrastructure.IPComm.Network;
+
 namespace Papercut.AppLayer.IpComm
 {
-    using System;
-    using System.Linq;
-    using System.Net.Sockets;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Disposables;
-    using System.Reactive.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.AppLayer.SmtpServers;
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Network.Smtp;
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Core.Infrastructure.Network;
-    using Papercut.Domain.BackendService;
-    using Papercut.Domain.Events;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Infrastructure.IPComm;
-    using Papercut.Infrastructure.IPComm.Network;
-    using Papercut.Properties;
-
-    using Serilog;
-
     public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleStarted,
         IEventHandler<SettingsUpdatedEvent>,
         IEventHandler<RulesUpdatedEvent>,
@@ -61,9 +51,9 @@ namespace Papercut.AppLayer.IpComm
 
         readonly IMessageBus _messageBus;
 
-        Action<RulesUpdatedEvent> _nextUpdateEvent;
-
         private bool? _isOnline = null;
+
+        Action<RulesUpdatedEvent> _nextUpdateEvent;
 
         public BackendServiceCoordinator(
             ILogger logger,
@@ -93,21 +83,6 @@ namespace Papercut.AppLayer.IpComm
             await this.AttemptExchangeAsync();
         }
 
-        private async Task SetOnlineStatus(bool newStatus, CancellationToken token = default)
-        {
-            if (this._isOnline != newStatus)
-            {
-                this.IsOnline = newStatus;
-
-                await this._messageBus.PublishAsync(
-                    new PapercutServiceStatusEvent(
-                        this.IsOnline
-                            ? PapercutServiceStatusType.Online
-                            : PapercutServiceStatusType.Offline),
-                    token);
-            }
-        }
-
         public bool IsOnline
         {
             get => this._isOnline ?? false;
@@ -116,17 +91,17 @@ namespace Papercut.AppLayer.IpComm
 
         public async Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token)
         {
-            await SetOnlineStatus(false, token);
+            await this.SetOnlineStatus(false, token);
         }
 
         public async Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token)
         {
-            await SetOnlineStatus(true, token);
+            await this.SetOnlineStatus(true, token);
         }
 
         public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token)
         {
-            await SetOnlineStatus(true, token);
+            await this.SetOnlineStatus(true, token);
         }
 
         public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token)
@@ -146,6 +121,21 @@ namespace Papercut.AppLayer.IpComm
 
         public int Order => 10;
 
+        private async Task SetOnlineStatus(bool newStatus, CancellationToken token = default)
+        {
+            if (this._isOnline != newStatus)
+            {
+                this.IsOnline = newStatus;
+
+                await this._messageBus.PublishAsync(
+                    new PapercutServiceStatusEvent(
+                        this.IsOnline
+                            ? PapercutServiceStatusType.Online
+                            : PapercutServiceStatusType.Offline),
+                    token);
+            }
+        }
+
         public async Task PublishSmtpUpdatedAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             if (!this.IsOnline) return;
@@ -159,8 +149,8 @@ namespace Papercut.AppLayer.IpComm
 
                 // update the backend service with the new ip/port settings...
                 var smtpServerBindEvent = new SmtpServerBindEvent(
-                    Settings.Default.IP,
-                    Settings.Default.Port);
+                    Properties.Settings.Default.IP,
+                    Properties.Settings.Default.Port);
 
                 bool successfulPublish = await messenger.PublishEventServer(
                                              smtpServerBindEvent,

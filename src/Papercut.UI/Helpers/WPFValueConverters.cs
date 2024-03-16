@@ -1,27 +1,27 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
+
 namespace Papercut.Helpers
 {
-    using System;
-    using System.Globalization;
-    using System.Windows;
-    using System.Windows.Data;
-
     /// <summary>
     ///     Source: http://stackoverflow.com/a/1039681
     /// </summary>
@@ -67,7 +67,7 @@ namespace Papercut.Helpers
 
         public BooleanToVisibilityConverter()
         {
-            TriggerValue = false;
+            this.TriggerValue = false;
         }
 
         public bool TriggerValue { get; set; }
@@ -81,7 +81,7 @@ namespace Papercut.Helpers
             if (value is string) booleanValue = !string.IsNullOrEmpty(value as string);
             else if (value is bool) booleanValue = (bool)value;
 
-            return GetVisibility(booleanValue);
+            return this.GetVisibility(booleanValue);
         }
 
         public object ConvertBack(
@@ -95,10 +95,10 @@ namespace Papercut.Helpers
 
         object GetVisibility(bool toggleValue)
         {
-            if ((toggleValue && TriggerValue && IsHidden)
-                || (!toggleValue && !TriggerValue && IsHidden)) return Visibility.Hidden;
-            if ((toggleValue && TriggerValue && !IsHidden)
-                || (!toggleValue && !TriggerValue && !IsHidden)) return Visibility.Collapsed;
+            if ((toggleValue && this.TriggerValue && this.IsHidden)
+                || (!toggleValue && !this.TriggerValue && this.IsHidden)) return Visibility.Hidden;
+            if ((toggleValue && this.TriggerValue && !this.IsHidden)
+                || (!toggleValue && !this.TriggerValue && !this.IsHidden)) return Visibility.Collapsed;
             return Visibility.Visible;
         }
     }

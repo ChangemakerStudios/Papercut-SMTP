@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,19 +16,12 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using Papercut.Domain.LifecycleHooks;
+
 namespace Papercut.AppLayer.Settings
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Properties;
-
-    using Serilog;
-
     public class SaveSettingsOnExitService : IAppLifecyclePreExit
     {
         readonly ILogger _logger;
@@ -42,17 +35,17 @@ namespace Papercut.AppLayer.Settings
         {
             try
             {
-                if (Settings.Default.MainWindowHeight < 300)
+                if (Properties.Settings.Default.MainWindowHeight < 300)
                 {
-                    Settings.Default.MainWindowHeight = 300;
+                    Properties.Settings.Default.MainWindowHeight = 300;
                 }
-                if (Settings.Default.MainWindowWidth < 400)
+                if (Properties.Settings.Default.MainWindowWidth < 400)
                 {
-                    Settings.Default.MainWindowWidth = 400;
+                    Properties.Settings.Default.MainWindowWidth = 400;
                 }
 
                 this._logger.Debug("Saving Updated Settings...");
-                Settings.Default.Save();
+                Properties.Settings.Default.Save();
             }
             catch (Exception ex)
             {

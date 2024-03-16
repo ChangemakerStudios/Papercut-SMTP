@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,29 +15,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+
+using Autofac;
+
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Rules;
+using Papercut.Domain.BackendService;
+using Papercut.Domain.LifecycleHooks;
+using Papercut.Helpers;
+using Papercut.Message;
+using Papercut.Rules.App;
+using Papercut.Rules.Domain.Rules;
+
 namespace Papercut.AppLayer.Rules
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Domain.BackendService;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Helpers;
-    using Papercut.Message;
-    using Papercut.Rules.App;
-    using Papercut.Rules.Domain.Rules;
-
-    using Serilog;
-
     public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecyclePreExit
     {
         readonly IBackendServiceStatus _backendServiceStatus;
@@ -63,14 +57,6 @@ namespace Papercut.AppLayer.Rules
             this._messageWatcher = messageWatcher;
             this._rulesRunner = rulesRunner;
             this._messageBus = messageBus;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this._rulesObservable?.Dispose();
-            }
         }
 
         public Task<AppLifecycleActionResultType> OnPreExit()
@@ -132,6 +118,14 @@ namespace Papercut.AppLayer.Rules
                                        this.Rules.ToArray(),
                                        e.EventArgs.NewMessage),
                         ex => this.Logger.Error(ex, "Error Running Rules on New Message"));
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this._rulesObservable?.Dispose();
             }
         }
 

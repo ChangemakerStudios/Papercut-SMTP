@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,24 +16,20 @@
 // limitations under the License.
 
 
+using System.Reactive.Linq;
+using System.Windows;
+using System.Windows.Threading;
+
+using Autofac;
+using Autofac.Util;
+
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Infrastructure.Lifecycle;
+using Papercut.Domain.AppCommands;
+
 namespace Papercut.AppLayer.AppCommands
 {
-    using System;
-    using System.Reactive.Linq;
-    using System.Windows;
-    using System.Windows.Threading;
-
-    using Autofac;
-    using Autofac.Util;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Domain.AppCommands;
-
-    using Serilog;
-
     public class ShutdownCommandHandler : Disposable, IStartable
     {
         private readonly IAppCommandHub _appCommandHub;

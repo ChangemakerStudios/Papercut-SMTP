@@ -1,53 +1,43 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
+
+using MimeKit;
+
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Message;
 
 namespace Papercut.Message
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-
-    using MimeKit;
-
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Message;
-
-    using Serilog;
-
     public class ReceivedDataMessageHandler : IReceivedDataHandler
     {
         readonly ILogger _logger;
 
-        readonly MessageRepository _messageRepository;
-
         readonly IMessageBus _messageBus;
+
+        readonly MessageRepository _messageRepository;
 
         public ReceivedDataMessageHandler(MessageRepository messageRepository,
             IMessageBus messageBus,
             ILogger logger)
         {
-            _messageRepository = messageRepository;
+            this._messageRepository = messageRepository;
             this._messageBus = messageBus;
-            _logger = logger;
+            this._logger = logger;
         }
 
         public async Task HandleReceivedAsync(
@@ -80,7 +70,7 @@ namespace Papercut.Message
                     }
                 }
 
-                file = _messageRepository.SaveMessage(message.Subject, fs => message.WriteTo(fs));
+                file = this._messageRepository.SaveMessage(message.Subject, fs => message.WriteTo(fs));
             }
 
             try
@@ -90,7 +80,7 @@ namespace Papercut.Message
             }
             catch (Exception ex)
             {
-                _logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
+                this._logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
             }
         }
     }

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,38 +16,33 @@
 // limitations under the License.
 
 
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Windows;
+
+using Caliburn.Micro;
+
+using Microsoft.Win32;
+
+using MimeKit;
+
+using Papercut.Common.Extensions;
+using Papercut.Common.Helper;
+using Papercut.Helpers;
+using Papercut.Message;
+using Papercut.Message.Helpers;
+
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Threading;
-    using System.Windows;
-
-    using Caliburn.Micro;
-
-    using Common.Extensions;
-    using Common.Helper;
-
-    using Helpers;
-
-    using Message;
-    using Message.Helpers;
-
-    using Microsoft.Win32;
-
-    using MimeKit;
-
-    using Serilog;
-
     public class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
 
         private readonly MessageRepository _messageRepository;
+
         readonly IViewModelWindowManager _viewModelWindowManager;
+
         bool _hasSelectedPart;
 
         MimeMessage _mimeMessage;
@@ -56,52 +51,51 @@ namespace Papercut.ViewModels
 
         public MessageDetailPartsListViewModel(MessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
         {
-            DisplayName = "Sections";
-            _messageRepository = messageRepository;
-            _viewModelWindowManager = viewModelWindowManager;
-            _logger = logger;
-            Parts = new ObservableCollection<MimeEntity>();
+            this.DisplayName = "Sections";
+            this._messageRepository = messageRepository;
+            this._viewModelWindowManager = viewModelWindowManager;
+            this._logger = logger;
+            this.Parts = new ObservableCollection<MimeEntity>();
         }
 
         public ObservableCollection<MimeEntity> Parts { get; }
 
         public MimeMessage MimeMessage
         {
-            get => _mimeMessage;
+            get => this._mimeMessage;
             set
             {
-                _mimeMessage = value;
-                NotifyOfPropertyChange(() => MimeMessage);
+                this._mimeMessage = value;
+                this.NotifyOfPropertyChange(() => this.MimeMessage);
 
-                if (_mimeMessage != null)
-                    RefreshParts();
+                if (this._mimeMessage != null) this.RefreshParts();
             }
         }
 
         public MimeEntity SelectedPart
         {
-            get => _selectedPart;
+            get => this._selectedPart;
             set
             {
-                _selectedPart = value;
-                HasSelectedPart = _selectedPart != null;
-                NotifyOfPropertyChange(() => SelectedPart);
+                this._selectedPart = value;
+                this.HasSelectedPart = this._selectedPart != null;
+                this.NotifyOfPropertyChange(() => this.SelectedPart);
             }
         }
 
         public bool HasSelectedPart
         {
-            get => _hasSelectedPart;
+            get => this._hasSelectedPart;
             set
             {
-                _hasSelectedPart = value;
-                NotifyOfPropertyChange(() => HasSelectedPart);
+                this._hasSelectedPart = value;
+                this.NotifyOfPropertyChange(() => this.HasSelectedPart);
             }
         }
 
         public void ViewSection()
         {
-            MimeEntity part = SelectedPart;
+            MimeEntity part = this.SelectedPart;
 
             if (part == null)
             {
@@ -111,11 +105,11 @@ namespace Papercut.ViewModels
             if (part is TextPart textPart)
             {
                 // show in the viewer...
-                _viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = textPart.Text);
+                this._viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = textPart.Text);
             }
             else if (part is MessagePart messagePart)
             {
-                _viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = messagePart.Message.ToString());
+                this._viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = messagePart.Message.ToString());
             }
             else if (part is MimePart mimePart)
             {
@@ -143,7 +137,7 @@ namespace Papercut.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Failure Creating and Opening Up Attachment File: {TempFileName}", tempFileName);
+                    this._logger.Error(ex, "Failure Creating and Opening Up Attachment File: {TempFileName}", tempFileName);
                     MessageBox.Show($"Failed to Open Attachment File: {ex.Message}",
                         "Unable to Open Attachment");
                 }
@@ -152,7 +146,7 @@ namespace Papercut.ViewModels
 
         public void SaveAs()
         {
-            if (SelectedPart is MimePart mimePart)
+            if (this.SelectedPart is MimePart mimePart)
             {
                 var dlg = new SaveFileDialog();
                 if (!string.IsNullOrWhiteSpace(mimePart.FileName))
@@ -178,7 +172,7 @@ namespace Papercut.ViewModels
 
                 if (result.HasValue && result.Value)
                 {
-                    _logger.Debug("Saving File {File} as Output for MimePart {PartFileName}", dlg.FileName,
+                    this._logger.Debug("Saving File {File} as Output for MimePart {PartFileName}", dlg.FileName,
                         mimePart.FileName);
 
                     // save it..
@@ -188,11 +182,11 @@ namespace Papercut.ViewModels
                     }
                 }
             }
-            else if (SelectedPart is MessagePart messagePart)
+            else if (this.SelectedPart is MessagePart messagePart)
             {
                 var dlg = new SaveFileDialog();
 
-                var fileName = _messageRepository.GetFullMailFilename(messagePart.Message.Subject);
+                var fileName = this._messageRepository.GetFullMailFilename(messagePart.Message.Subject);
 
                 dlg.FileName = Path.GetFileName(fileName);
                 dlg.InitialDirectory = Path.GetDirectoryName(fileName);
@@ -205,7 +199,7 @@ namespace Papercut.ViewModels
 
                 if (result.HasValue && result.Value)
                 {
-                    _logger.Debug("Saved Embedded Message as {MessageFile}", dlg.FileName);
+                    this._logger.Debug("Saved Embedded Message as {MessageFile}", dlg.FileName);
 
                     // save it..
                     using (Stream outputFile = dlg.OpenFile())
@@ -218,8 +212,8 @@ namespace Papercut.ViewModels
 
         void RefreshParts()
         {
-            Parts.Clear();
-            Parts.AddRange(MimeMessage.BodyParts);
+            this.Parts.Clear();
+            this.Parts.AddRange(this.MimeMessage.BodyParts);
         }
     }
 }

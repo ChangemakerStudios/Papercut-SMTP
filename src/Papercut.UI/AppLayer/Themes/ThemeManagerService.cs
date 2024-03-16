@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,26 +16,19 @@
 // limitations under the License.
 
 
+using System.Windows;
+
+using Autofac;
+
+using ControlzEx.Theming;
+
+using Papercut.Common.Domain;
+using Papercut.Domain.Events;
+using Papercut.Domain.LifecycleHooks;
+using Papercut.Infrastructure.Themes;
+
 namespace Papercut.AppLayer.Themes
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Windows;
-
-    using Autofac;
-
-    using ControlzEx.Theming;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Domain.Events;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Infrastructure.Themes;
-    using Papercut.Properties;
-
-    using Serilog;
-
     public class ThemeManagerService : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
     {
         private readonly ILogger _logger;
@@ -50,6 +43,12 @@ namespace Papercut.AppLayer.Themes
 
         private static ThemeManager CurrentTheme => ThemeManager.Current;
 
+        public Task<AppLifecycleActionResultType> OnPreStart()
+        {
+            this.SetTheme();
+            return Task.FromResult(AppLifecycleActionResultType.Continue);
+        }
+
         public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
             if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) this.SetTheme();
@@ -57,20 +56,14 @@ namespace Papercut.AppLayer.Themes
             return Task.CompletedTask;
         }
 
-        public Task<AppLifecycleActionResultType> OnPreStart()
-        {
-            this.SetTheme();
-            return Task.FromResult(AppLifecycleActionResultType.Continue);
-        }
-
         private void SetTheme()
         {
-            var colorTheme = this._themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme);
+            var colorTheme = this._themeColorRepository.FirstOrDefaultByName(Properties.Settings.Default.Theme);
 
             if (colorTheme == null)
             {
-                this._logger.Warning("Unable to find theme color {ThemeColor}. Setting to default: LightBlue.", Settings.Default.Theme);
-                Settings.Default.Theme = "LightBlue";
+                this._logger.Warning("Unable to find theme color {ThemeColor}. Setting to default: LightBlue.", Properties.Settings.Default.Theme);
+                Properties.Settings.Default.Theme = "LightBlue";
                 return;
             }
 

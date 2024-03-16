@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,19 @@
 // limitations under the License.
 
 
+using System.Diagnostics;
+using System.Reflection;
+using System.Windows;
+
+using Autofac;
+
+using Papercut.Core.Infrastructure.Container;
+using Papercut.Core.Infrastructure.Logging;
+using Papercut.Domain.LifecycleHooks;
+using Papercut.Infrastructure.LifecycleHooks;
+
 namespace Papercut
 {
-    using System;
-    using System.Diagnostics;
-    using System.Reflection;
-    using System.Threading.Tasks;
-    using System.Windows;
-
-    using Autofac;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Infrastructure.Container;
-    using Papercut.Core.Infrastructure.Logging;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Infrastructure;
-    using Papercut.Infrastructure.LifecycleHooks;
-
-    using Serilog;
-
     public partial class App : Application
     {
         public const string GlobalName = "Papercut.App";

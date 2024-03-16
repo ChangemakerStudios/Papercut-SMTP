@@ -6,29 +6,7 @@
 		<SignManifests>false</SignManifests>
 		<UseWPF>true</UseWPF>
 		<StartupObject>Papercut.App</StartupObject>
-		<Description>Standalone SMTP server designed for viewing received messages</Description>
-		<Copyright>Copyright © 2008 - 2024 Ken Robertson &amp; Jaben Cargman</Copyright>
 		<NoWin32Manifest>true</NoWin32Manifest>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-	  <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-	  <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-	  <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-	  <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 	</PropertyGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Resources\LogClientSink.html" />

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,22 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Resources;
+
+using Autofac;
+
 namespace Papercut.Infrastructure.Resources
 {
-    using System;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
-    using System.Text;
-    using System.Windows;
-    using System.Windows.Resources;
-
-    using Autofac;
-
-    using Papercut.Core.Annotations;
-
-    using Serilog;
-
     public class AppResourceLocator
     {
         readonly string _appExecutableName;
@@ -86,7 +80,7 @@ namespace Papercut.Infrastructure.Resources
         }
 
         #region Begin Static Container Registrations
-        
+
         /// <summary>
         /// Called dynamically from the RegisterStaticMethods() call in the container module.
         /// </summary>

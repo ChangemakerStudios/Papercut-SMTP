@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,20 @@
 // limitations under the License.
 
 
+using System.Collections.Concurrent;
+using System.Runtime.Caching;
+
+using Autofac.Util;
+
+using MimeKit;
+
+using Papercut.Common.Extensions;
+using Papercut.Core.Domain.Message;
+
+using Serilog.Events;
+
 namespace Papercut.Message
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Runtime.Caching;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac.Util;
-
-    using MimeKit;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Domain.Message;
-
-    using Serilog;
-    using Serilog.Events;
-
     public class MimeMessageLoader : Disposable
     {
         public static MemoryCache MimeMessageCache;
@@ -47,8 +42,8 @@ namespace Papercut.Message
 
         readonly MessageRepository _messageRepository;
 
-        private readonly ConcurrentQueue<MessageLoadRequest> _queue =
-            new ConcurrentQueue<MessageLoadRequest>();
+        private readonly ConcurrentQueue<MessageLoadRequest?> _queue =
+            new ConcurrentQueue<MessageLoadRequest?>();
 
         static MimeMessageLoader()
         {
@@ -91,7 +86,7 @@ namespace Papercut.Message
                             return;
                         }
 
-                        if (this._queue.TryDequeue(out MessageLoadRequest request))
+                        if (this._queue.TryDequeue(out MessageLoadRequest? request) && request is not null)
                         {
                             tasks.Add(
                                 this.GetMimeMessageFromCacheAsync(
@@ -112,7 +107,7 @@ namespace Papercut.Message
                     await Task.WhenAll(tasks);
                 }
             }
-            catch (Exception e) when (e is ObjectDisposedException || e is TaskCanceledException)
+            catch (Exception e) when (e is ObjectDisposedException or TaskCanceledException)
             {
                 // no need
             }
@@ -122,7 +117,7 @@ namespace Papercut.Message
         {
             if (disposing)
             {
-                this._cancellationSource.Cancel();
+                await this._cancellationSource.CancelAsync();
 
                 try
                 {
@@ -160,10 +155,11 @@ namespace Papercut.Message
                             messageEntry.File);
                     }
 
-                    using (var message = this._messageRepository.GetMessage(messageEntry))
-                    {
-                        return await MimeMessage.LoadAsync(ParserOptions.Default, message, token);
-                    }
+                    var message = await this._messageRepository.GetMessage(messageEntry);
+
+                    using var ms = new MemoryStream(message);
+
+                    return await MimeMessage.LoadAsync(ParserOptions.Default, ms, token);
                 },
                 m =>
                 {
@@ -176,17 +172,11 @@ namespace Papercut.Message
                 });
         }
 
-        protected class MessageLoadRequest
+        protected class MessageLoadRequest(MessageEntry messageEntry, Action<MimeMessage> callback)
         {
-            public MessageLoadRequest(MessageEntry messageEntry, Action<MimeMessage> callback)
-            {
-                this.MessageEntry = messageEntry;
-                this.Callback = callback;
-            }
+            public MessageEntry MessageEntry { get; } = messageEntry;
 
-            public MessageEntry MessageEntry { get; }
-
-            private Action<MimeMessage> Callback { get; }
+            private Action<MimeMessage> Callback { get; } = callback;
 
             public void InvokeCallback(MimeMessage mimeMessage)
             {

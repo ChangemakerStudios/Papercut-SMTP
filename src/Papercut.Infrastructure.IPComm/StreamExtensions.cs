@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,12 @@
 // limitations under the License.
 
 
+using System.Net.Sockets;
+
+using Papercut.Infrastructure.IPComm.Network;
+
 namespace Papercut.Infrastructure.IPComm
 {
-    using System;
-    using System.IO;
-    using System.Net.Sockets;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Papercut.Infrastructure.IPComm.Network;
-
     public static class StreamExtensions
     {
         public static async Task<byte[]> ReadBufferedAsync(

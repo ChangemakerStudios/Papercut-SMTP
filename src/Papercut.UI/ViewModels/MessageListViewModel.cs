@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,42 +16,32 @@
 // limitations under the License.
 
 
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Windows.Data;
+using System.Windows.Forms;
+using System.Windows.Input;
+
+using Caliburn.Micro;
+
+using Papercut.Common.Domain;
+using Papercut.Common.Extensions;
+using Papercut.Common.Helper;
+using Papercut.Core.Domain.Message;
+using Papercut.Domain.Events;
+using Papercut.Domain.UiCommands;
+using Papercut.Helpers;
+using Papercut.Message;
+using Papercut.Message.Helpers;
+using Papercut.Properties;
+
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Collections.Specialized;
-    using System.ComponentModel;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Windows.Data;
-    using System.Windows.Forms;
-    using System.Windows.Input;
-    using System.Windows.Threading;
-
-    using Caliburn.Micro;
-
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Message;
-    using Papercut.Domain.Events;
-    using Papercut.Domain.UiCommands;
-    using Papercut.Domain.UiCommands.Commands;
-    using Papercut.Helpers;
-    using Papercut.Message;
-    using Papercut.Message.Helpers;
-    using Papercut.Properties;
-
-    using Serilog;
-
     using Action = System.Action;
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
     using Screen = Caliburn.Micro.Screen;
@@ -60,13 +50,13 @@ namespace Papercut.ViewModels
     {
         readonly ILogger _logger;
 
-        private readonly IUiCommandHub _uiCommandHub;
-
         readonly MessageRepository _messageRepository;
 
         readonly MessageWatcher _messageWatcher;
 
         readonly MimeMessageLoader _mimeMessageLoader;
+
+        private readonly IUiCommandHub _uiCommandHub;
 
         bool _isLoading;
 

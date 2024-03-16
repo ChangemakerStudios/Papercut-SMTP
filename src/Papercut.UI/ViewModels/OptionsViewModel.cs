@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,27 +16,23 @@
 // limitations under the License.
 
 
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Net;
+
+using Caliburn.Micro;
+
+using Papercut.Common.Domain;
+using Papercut.Common.Extensions;
+using Papercut.Common.Helper;
+using Papercut.Core.Infrastructure.Network;
+using Papercut.Domain.Events;
+using Papercut.Domain.Themes;
+using Papercut.Infrastructure.Themes;
+using Papercut.Properties;
+
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Net;
-    using System.Threading.Tasks;
-
-    using Caliburn.Micro;
-
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
-    using Papercut.Core.Infrastructure.Network;
-    using Papercut.Domain.Events;
-    using Papercut.Domain.Themes;
-    using Papercut.Infrastructure.Themes;
-    using Papercut.Properties;
-
     public class OptionsViewModel : Screen
     {
         const string WindowTitleDefault = "Options";
@@ -59,13 +55,13 @@ namespace Papercut.ViewModels
 
         bool _runOnStartup;
 
+        private bool _showNotifications;
+
         bool _startMinimized;
 
         private ThemeColor _themeColor;
 
         string _windowTitle = WindowTitleDefault;
-        
-        private bool _showNotifications;
 
         public OptionsViewModel(IMessageBus messageBus, ThemeColorRepository themeColorRepository)
         {

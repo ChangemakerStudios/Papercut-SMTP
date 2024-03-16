@@ -78,8 +78,7 @@
                     />
                     <RichTextBox x:Name="LogPanelNoWebView" BorderBrush="LightGray" BorderThickness="1" MaxHeight="300" FontSize="9pt" FontFamily="Consolas, Courier New"
                                  Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfTrue}}">
-                        <FlowDocument>
-                        </FlowDocument>
+                        <FlowDocument />
                     </RichTextBox>
                 </Grid>
             </controls:Flyout>

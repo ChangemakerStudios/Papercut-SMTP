@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,19 @@
 // limitations under the License.
 
 
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+
+using Autofac.Util;
+
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Domain.Network;
+
+using SmtpServer;
+
 namespace Papercut.Infrastructure.Smtp
 {
-    using System;
-    using System.Net;
-    using System.Net.Security;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac.Util;
-
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Domain.Network;
-
-    using SmtpServer;
-
     using ILogger = Serilog.ILogger;
 
     public class PapercutSmtpServer : Disposable, IServer
@@ -40,18 +37,18 @@ namespace Papercut.Infrastructure.Smtp
 
         readonly ILogger _logger;
 
-        private readonly Func<ISmtpServerOptions, SmtpServer> _smtpServerFactory;
+        private readonly Func<ISmtpServerOptions, SmtpServer.SmtpServer> _smtpServerFactory;
 
         private EndpointDefinition _currentEndpoint;
 
-        private SmtpServer _server;
+        private SmtpServer.SmtpServer _server;
 
         private CancellationTokenSource _tokenSource;
 
         public PapercutSmtpServer(
             IAppMeta applicationMetaData,
             ILogger logger,
-            Func<ISmtpServerOptions, SmtpServer> smtpServerFactory)
+            Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory)
         {
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;

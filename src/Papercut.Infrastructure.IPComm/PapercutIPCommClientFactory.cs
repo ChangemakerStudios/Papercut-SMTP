@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,10 @@
 // limitations under the License.
 
 
+using Papercut.Infrastructure.IPComm.Network;
+
 namespace Papercut.Infrastructure.IPComm
 {
-    using System;
-
-    using Network;
-
-    using Serilog;
-
     public enum PapercutIPCommClientConnectTo
     {
         UI,
@@ -33,12 +29,13 @@ namespace Papercut.Infrastructure.IPComm
     public class PapercutIPCommClientFactory
     {
         private readonly PapercutIPCommEndpoints _endpoints;
+
         private readonly ILogger _logger;
 
         public PapercutIPCommClientFactory(PapercutIPCommEndpoints endpoints, ILogger logger)
         {
-            _endpoints = endpoints;
-            _logger = logger;
+            this._endpoints = endpoints;
+            this._logger = logger;
         }
 
         public PapercutIPCommClient GetClient(PapercutIPCommClientConnectTo connectTo)
@@ -46,9 +43,9 @@ namespace Papercut.Infrastructure.IPComm
             switch (connectTo)
             {
                 case PapercutIPCommClientConnectTo.Service:
-                    return new PapercutIPCommClient(_endpoints.Service, _logger.ForContext<PapercutIPCommClient>());
+                    return new PapercutIPCommClient(this._endpoints.Service, this._logger.ForContext<PapercutIPCommClient>());
                 case PapercutIPCommClientConnectTo.UI:
-                    return new PapercutIPCommClient(_endpoints.UI, _logger.ForContext<PapercutIPCommClient>());
+                    return new PapercutIPCommClient(this._endpoints.UI, this._logger.ForContext<PapercutIPCommClient>());
             }
 
             throw new ArgumentOutOfRangeException($"Connect to is unknown: {connectTo}");

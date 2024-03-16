@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,19 +16,15 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Infrastructure.Lifecycle;
+using Papercut.Domain.LifecycleHooks;
+
 namespace Papercut.AppLayer.LifecycleHooks
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Domain.LifecycleHooks;
-
     public class ReadyEventTrigger : IAppLifecycleStarted, IOrderable
     {
         private readonly IAppMeta _appMeta;

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,19 @@
 // limitations under the License.
 
 
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+
+using Autofac.Util;
+
+using Papercut.Core.Domain.Rules;
+using Papercut.Rules.Domain.Rules;
+
 namespace Papercut.Rules.App
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Collections.Specialized;
-    using System.IO;
-    using System.Reactive;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-
-    using Autofac.Util;
-
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Rules.Domain.Rules;
-    using Papercut.Rules.Infrastructure;
-
-    using Serilog;
-
     public class RuleServiceBase : Disposable
     {
         readonly Lazy<ObservableCollection<IRule>> _rules;
