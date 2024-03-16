@@ -38,7 +38,7 @@ namespace Papercut.AppLayer.Settings
             this._messageBus = messageBus;
         }
 
-        public async Task HandleAsync([NotNull] AppProcessExchangeEvent @event, CancellationToken token)
+        public async Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token)
         {
             if (@event == null) throw new ArgumentNullException(nameof(@event));
 
@@ -70,7 +70,7 @@ namespace Papercut.AppLayer.Settings
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

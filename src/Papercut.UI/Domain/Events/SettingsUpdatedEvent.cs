@@ -21,16 +21,10 @@ using Papercut.Properties;
 
 namespace Papercut.Domain.Events
 {
-    public class SettingsUpdatedEvent : IEvent
+    public class SettingsUpdatedEvent(Settings previousSettings, Settings? newSettings = null) : IEvent
     {
-        public SettingsUpdatedEvent(Settings previousSettings, Settings newSettings = null)
-        {
-            this.PreviousSettings = previousSettings;
-            this.NewSettings = newSettings ?? Settings.Default;
-        }
+        public Settings PreviousSettings { get; } = previousSettings;
 
-        public Settings PreviousSettings { get; }
-
-        public Settings NewSettings { get; }
+        public Settings NewSettings { get; } = newSettings ?? Settings.Default;
     }
 }

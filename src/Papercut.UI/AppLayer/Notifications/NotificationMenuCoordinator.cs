@@ -112,16 +112,16 @@ namespace Papercut.AppLayer.Notifications
                                  };
 
             this._notification.Click +=
-                (sender, args) => this._uiCommandHub.ShowMainWindow();
+                (_, _) => this._uiCommandHub.ShowMainWindow();
 
             this._notification.BalloonTipClicked +=
-                (sender, args) => this._uiCommandHub.ShowMainWindow(true);
+                (_, _) => this._uiCommandHub.ShowMainWindow(true);
 
             this._notification.ContextMenuStrip = new ContextMenuStrip();
 
-            this._notification.ContextMenuStrip.Items.Add("Show", null, (sender, args) => this._uiCommandHub.ShowMainWindow());
-            this._notification.ContextMenuStrip.Items.Add("Options", null, (sender, args) => this._uiCommandHub.ShowOptionWindow());
-            this._notification.ContextMenuStrip.Items.Add("Exit", null, (sender, args) => this._appCommandHub.Shutdown());
+            this._notification.ContextMenuStrip.Items.Add("Show", null, (_, _) => this._uiCommandHub.ShowMainWindow());
+            this._notification.ContextMenuStrip.Items.Add("Options", null, (_, _) => this._uiCommandHub.ShowOptionWindow());
+            this._notification.ContextMenuStrip.Items.Add("Exit", null, (_, _) => this._appCommandHub.Shutdown());
         }
 
         #region Begin Static Container Registrations
@@ -131,7 +131,7 @@ namespace Papercut.AppLayer.Notifications
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

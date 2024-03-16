@@ -27,19 +27,19 @@ namespace Papercut.Message.Helpers
 {
     public static class MimeMessageLoaderExtensions
     {
-        public static async Task<MimeMessage> GetClonedAsync([NotNull] this MimeMessageLoader loader, [NotNull] MessageEntry entry, CancellationToken token = default)
+        public static async Task<MimeMessage> GetClonedAsync(this MimeMessageLoader loader, MessageEntry entry, CancellationToken token = default)
         {
-            if (loader == null) throw new ArgumentNullException(nameof(loader));
-            if (entry == null) throw new ArgumentNullException(nameof(entry));
+            ArgumentNullException.ThrowIfNull(loader);
+            ArgumentNullException.ThrowIfNull(entry);
 
             var message = await loader.GetAsync(entry, token);
             return await message.CloneMessageAsync(token);
         }
 
-        public static IObservable<MimeMessage> GetObservable([NotNull] this MimeMessageLoader loader, [NotNull] MessageEntry entry, CancellationToken token = default)
+        public static IObservable<MimeMessage?> GetObservable(this MimeMessageLoader loader, MessageEntry entry, CancellationToken token = default)
         {
-            if (loader == null) throw new ArgumentNullException(nameof(loader));
-            if (entry == null) throw new ArgumentNullException(nameof(entry));
+            ArgumentNullException.ThrowIfNull(loader);
+            ArgumentNullException.ThrowIfNull(entry);
 
             return loader.GetAsync(entry, token).ToObservable(TaskPoolScheduler.Default);
         }

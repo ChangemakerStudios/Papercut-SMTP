@@ -18,6 +18,7 @@
 
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Windows.Threading;
 
 using Caliburn.Micro;
 
@@ -39,11 +40,11 @@ namespace Papercut.ViewModels
 
         bool _messageLoaded;
 
-        IDisposable _messageLoader;
+        IDisposable? _messageLoader;
 
-        MimeMessage _mimeMessage;
+        MimeMessage? _mimeMessage;
 
-        string _raw;
+        string? _raw;
 
         public MessageDetailRawViewModel(ILogger logger)
         {
@@ -51,9 +52,9 @@ namespace Papercut.ViewModels
             this._logger = logger;
         }
 
-        public string Raw
+        public string? Raw
         {
-            get { return this._raw; }
+            get => this._raw;
             set
             {
                 this._raw = value;
@@ -61,9 +62,9 @@ namespace Papercut.ViewModels
             }
         }
 
-        public MimeMessage MimeMessage
+        public MimeMessage? MimeMessage
         {
-            get { return this._mimeMessage; }
+            get => this._mimeMessage;
             set
             {
                 this._mimeMessage = value;
@@ -74,7 +75,7 @@ namespace Papercut.ViewModels
 
         public bool MessageLoaded
         {
-            get { return this._messageLoaded; }
+            get => this._messageLoaded;
             set
             {
                 this._messageLoaded = value;
@@ -87,7 +88,7 @@ namespace Papercut.ViewModels
 
         public bool IsLoading
         {
-            get { return this._isLoading; }
+            get => this._isLoading;
             set
             {
                 this._isLoading = value;
@@ -111,7 +112,7 @@ namespace Papercut.ViewModels
             this._messageLoader =
                 Observable.Start(() => this._mimeMessage.GetStringDump())
                     .SubscribeOn(TaskPoolScheduler.Default)
-                    .ObserveOnDispatcher()
+                    .ObserveOn(Dispatcher.CurrentDispatcher)
                     .Subscribe(h =>
                     {
                         this.Raw = h;
@@ -123,16 +124,14 @@ namespace Papercut.ViewModels
         {
             base.OnViewLoaded(view);
 
-            var typedView = view as MessageDetailRawView;
-
-            if (typedView == null)
+            if (view is not MessageDetailRawView typedView)
             {
                 this._logger.Error("Unable to locate the MessageDetailRawView to hook the Text Control");
                 return;
             }
 
             this.GetPropertyValues(p => p.Raw)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(s =>
                 {
                     typedView.rawEdit.Document = new TextDocument(new StringTextSource(s ?? string.Empty));

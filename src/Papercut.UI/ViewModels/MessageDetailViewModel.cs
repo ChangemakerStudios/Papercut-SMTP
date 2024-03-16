@@ -17,6 +17,7 @@
 
 
 using System.Reactive.Linq;
+using System.Windows.Threading;
 
 using Caliburn.Micro;
 
@@ -43,7 +44,7 @@ namespace Papercut.ViewModels
 
         string _from;
 
-        string _htmlFile;
+        string? _htmlFile;
 
         bool _isHtml;
 
@@ -59,7 +60,7 @@ namespace Papercut.ViewModels
 
         string _subject;
 
-        string _textBody;
+        string? _textBody;
 
         string _to;
 
@@ -166,7 +167,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string TextBody
+        public string? TextBody
         {
             get => this._textBody;
             set
@@ -219,7 +220,7 @@ namespace Papercut.ViewModels
 
         public bool HasAttachments => this.AttachmentCount > 0;
 
-        public string HtmlFile
+        public string? HtmlFile
         {
             get => this._htmlFile;
             set
@@ -239,7 +240,7 @@ namespace Papercut.ViewModels
 
         public MessageDetailBodyViewModel BodyViewModel { get; }
 
-        public void LoadMessageEntry(MessageEntry messageEntry)
+        public void LoadMessageEntry(MessageEntry? messageEntry)
         {
             this._loadingDisposable?.Dispose();
 
@@ -256,7 +257,7 @@ namespace Papercut.ViewModels
                 if (handleLoading) this.IsLoading = true;
 
                 // load and show it...
-                this._loadingDisposable = this._mimeMessageLoader.GetObservable(messageEntry).ObserveOnDispatcher().Subscribe(m =>
+                this._loadingDisposable = this._mimeMessageLoader.GetObservable(messageEntry).ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(m =>
                 {
                     this.DisplayMimeMessage(m);
                     if (handleLoading) this.IsLoading = false;
@@ -272,9 +273,9 @@ namespace Papercut.ViewModels
             }
         }
 
-        void DisplayMimeMessage(MimeMessage mailMessageEx)
+        void DisplayMimeMessage(MimeMessage? mailMessageEx)
         {
-            (string Name, string Color) GetPriorityText(MimeMessage message)
+            (string Name, string Color) GetPriorityText(MimeMessage? message)
             {
                 if (message == null) throw new ArgumentNullException(nameof(message));
 

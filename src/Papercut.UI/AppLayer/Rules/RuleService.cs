@@ -135,7 +135,7 @@ namespace Papercut.AppLayer.Rules
             {
                 m.GetPropertyChangedEvents(TaskPoolScheduler.Default)
                     .Subscribe(
-                        async (args) =>
+                        async (_) =>
                             await this._messageBus.PublishAsync(
                                 new RulesUpdatedEvent(this.Rules.ToArray())),
                         ex => this.Logger.Error(ex, "Error Publishing Rules Updated Event"));
@@ -149,7 +149,7 @@ namespace Papercut.AppLayer.Rules
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

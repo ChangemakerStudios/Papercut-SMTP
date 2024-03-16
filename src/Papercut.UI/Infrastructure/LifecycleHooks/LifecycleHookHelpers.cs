@@ -25,7 +25,7 @@ namespace Papercut.Infrastructure.LifecycleHooks
 {
     public static class LifecycleHookHelpers
     {
-        public static async Task<AppLifecycleActionResultType> RunLifecycleHooks<TLifecycle>([NotNull] this IComponentContext container, Func<TLifecycle, Task<AppLifecycleActionResultType>> runHook)
+        public static async Task<AppLifecycleActionResultType> RunLifecycleHooks<TLifecycle>(this IComponentContext container, Func<TLifecycle, Task<AppLifecycleActionResultType>> runHook)
             where TLifecycle : IAppLifecycleHook
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
@@ -52,21 +52,21 @@ namespace Papercut.Infrastructure.LifecycleHooks
             return AppLifecycleActionResultType.Continue;
         }
 
-        public static async Task<AppLifecycleActionResultType> RunPreExit([NotNull] this IComponentContext container)
+        public static async Task<AppLifecycleActionResultType> RunPreExit(this IComponentContext container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
 
             return await container.RunLifecycleHooks<IAppLifecyclePreExit>(hook => hook.OnPreExit());
         }
 
-        public static async Task<AppLifecycleActionResultType> RunPreStart([NotNull] this IComponentContext container)
+        public static async Task<AppLifecycleActionResultType> RunPreStart(this IComponentContext container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
 
             return await container.RunLifecycleHooks<IAppLifecyclePreStart>(hook => hook.OnPreStart());
         }
 
-        public static async Task RunStarted([NotNull] this IComponentContext container)
+        public static async Task RunStarted(this IComponentContext container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
 

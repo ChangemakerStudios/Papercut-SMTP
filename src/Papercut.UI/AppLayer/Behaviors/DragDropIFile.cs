@@ -44,17 +44,14 @@ namespace Papercut.AppLayer.Behaviors
 
         void ListBoxPreviewLeftMouseDown(object sender, MouseButtonEventArgs e)
         {
-            var parent = sender as ListBox;
-
-            if (parent == null) return;
+            if (sender is not ListBox parent) return;
 
             if (this._dragStartPoint == null) this._dragStartPoint = e.GetPosition(parent);
         }
 
         void ListBoxPreviewMouseMove(object sender, MouseEventArgs e)
         {
-            var parent = sender as ListBox;
-            if (parent == null || this._dragStartPoint == null) return;
+            if (sender is not ListBox parent || this._dragStartPoint == null) return;
 
             if (((DependencyObject)e.OriginalSource).FindAncestor<ScrollBar>() != null) return;
 
@@ -65,10 +62,9 @@ namespace Papercut.AppLayer.Behaviors
             if (potentialDragLength.Length > 10)
             {
                 // Get the object source for the selected item
-                var entry = parent.GetObjectDataFromPoint(this._dragStartPoint.Value) as IFile;
 
                 // If the data is not null then start the drag drop operation
-                if (entry != null && !string.IsNullOrWhiteSpace(entry.File))
+                if (parent.GetObjectDataFromPoint(this._dragStartPoint.Value) is IFile entry && !string.IsNullOrWhiteSpace(entry.File))
                 {
                     var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
                     DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);

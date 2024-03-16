@@ -41,9 +41,9 @@ namespace Papercut.Infrastructure.Smtp
 
         private EndpointDefinition _currentEndpoint;
 
-        private SmtpServer.SmtpServer _server;
+        private SmtpServer.SmtpServer? _server;
 
-        private CancellationTokenSource _tokenSource;
+        private CancellationTokenSource? _tokenSource;
 
         public PapercutSmtpServer(
             IAppMeta applicationMetaData,
@@ -57,7 +57,7 @@ namespace Papercut.Infrastructure.Smtp
 
         public bool IsActive => this._server != null;
 
-        public IPAddress ListenIpAddress => this._currentEndpoint?.Address;
+        public IPAddress? ListenIpAddress => this._currentEndpoint?.Address;
 
         public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
@@ -65,16 +65,19 @@ namespace Papercut.Infrastructure.Smtp
         {
             try
             {
-                this._tokenSource?.Cancel();
+                if (this._tokenSource != null)
+                    await this._tokenSource.CancelAsync();
+
                 if (this._server != null)
                 {
                     this._logger.Information("Stopping Smtp Server");
 
                     await this._server.ShutdownTask;
                 }
+
                 this._tokenSource?.Dispose();
             }
-            catch (Exception ex) when (ex is AggregateException || ex is TaskCanceledException || ex is OperationCanceledException)
+            catch (Exception ex) when (ex is AggregateException or TaskCanceledException or OperationCanceledException)
             {
             }
             finally
@@ -114,7 +117,7 @@ namespace Papercut.Infrastructure.Smtp
 
 #pragma warning disable 4014
             // server will block -- just let it run
-            Task.Run(
+            Task.Factory.StartNew(
                 async () =>
                 {
                     try
@@ -126,7 +129,7 @@ namespace Papercut.Infrastructure.Smtp
                         this._logger.Error(ex, "Smtp Server Error");
                     }
                 },
-                this._tokenSource.Token);
+                this._tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 #pragma warning restore 4014
 
             return Task.CompletedTask;
@@ -140,12 +143,12 @@ namespace Papercut.Infrastructure.Smtp
             }
         }
 
-        private void OnSessionCompleted(object sender, SessionEventArgs e)
+        private void OnSessionCompleted(object? sender, SessionEventArgs e)
         {
             this._logger.Information("Completed SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
         }
 
-        private void OnSessionCreated(object sender, SessionEventArgs e)
+        private void OnSessionCreated(object? sender, SessionEventArgs e)
         {
             e.Context.CommandExecuting += (o, args) =>
             {

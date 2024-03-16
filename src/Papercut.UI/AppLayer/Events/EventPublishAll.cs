@@ -37,7 +37,7 @@ namespace Papercut.AppLayer.Events
             this._eventAggregator = eventAggregator;
         }
 
-        public override async Task PublishAsync<T>([NotNull] T eventObject, CancellationToken token)
+        public override async Task PublishAsync<T>(T eventObject, CancellationToken token)
         {
             if (eventObject == null) throw new ArgumentNullException(nameof(eventObject));
 
@@ -79,7 +79,7 @@ namespace Papercut.AppLayer.Events
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

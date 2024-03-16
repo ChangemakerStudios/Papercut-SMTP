@@ -123,15 +123,15 @@ namespace Papercut.Message
                 $"{dateTimeFormatted} {validPart} {StringHelpers.SmallRandomString()}.eml");
         }
 
-        public string SaveMessage(string mailSubject, Action<FileStream> writeTo)
+        public async Task<string> SaveMessage(string mailSubject, Func<FileStream, Task> writeTo)
         {
             var fileName = this.GetFullMailFilename(mailSubject);
 
             try
             {
-                using (var fileStream = File.Create(fileName))
+                await using (var fileStream = File.Create(fileName))
                 {
-                    writeTo(fileStream);
+                    await writeTo(fileStream);
                 }
 
                 this._logger.Information("Successfully Saved email message: {EmailMessageFile}", fileName);

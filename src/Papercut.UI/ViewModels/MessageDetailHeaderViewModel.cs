@@ -29,7 +29,7 @@ namespace Papercut.ViewModels
     {
         readonly ILogger _logger;
 
-        string _headers;
+        string? _headers;
 
         public MessageDetailHeaderViewModel(ILogger logger)
         {
@@ -37,9 +37,9 @@ namespace Papercut.ViewModels
             this.DisplayName = "Headers";
         }
 
-        public string Headers
+        public string? Headers
         {
-            get { return this._headers; }
+            get => this._headers;
             set
             {
                 this._headers = value;
@@ -51,9 +51,7 @@ namespace Papercut.ViewModels
         {
             base.OnViewLoaded(view);
 
-            var typedView = view as MessageDetailHeaderView;
-
-            if (typedView == null)
+            if (view is not MessageDetailHeaderView typedView)
             {
                 this._logger.Error("Unable to locate the MessageDetailHeaderView to hook the Text Control");
                 return;

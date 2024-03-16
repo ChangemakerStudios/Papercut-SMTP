@@ -32,8 +32,8 @@ namespace Papercut.Helpers
         }
 
         public async Task<bool?> ShowDialogWithViewModel<TViewModel>(
-            Action<TViewModel> setViewModel = null,
-            object context = null)
+            Action<TViewModel>? setViewModel = null,
+            object? context = null)
             where TViewModel : PropertyChangedBase
         {
             var viewModel = this._lifetimeScope.Resolve<TViewModel>();
@@ -42,8 +42,8 @@ namespace Papercut.Helpers
         }
 
         public async Task ShowWindowWithViewModelAsync<TViewModel>(
-            Action<TViewModel> setViewModel = null,
-            object context = null)
+            Action<TViewModel>? setViewModel = null,
+            object? context = null)
             where TViewModel : PropertyChangedBase
         {
             var viewModel = this._lifetimeScope.Resolve<TViewModel>();
@@ -52,8 +52,8 @@ namespace Papercut.Helpers
         }
 
         public async Task ShowPopupWithViewModel<TViewModel>(
-            Action<TViewModel> setViewModel = null,
-            object context = null)
+            Action<TViewModel>? setViewModel = null,
+            object? context = null)
             where TViewModel : PropertyChangedBase
         {
             var viewModel = this._lifetimeScope.Resolve<TViewModel>();

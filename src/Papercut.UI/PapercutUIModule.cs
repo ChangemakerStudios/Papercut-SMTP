@@ -55,7 +55,7 @@ namespace Papercut
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
 
-            builder.Register(c => new ApplicationMeta(AppConstants.ApplicationName))
+            builder.Register(_ => new ApplicationMeta(AppConstants.ApplicationName))
                 .As<IAppMeta>()
                 .SingleInstance();
 

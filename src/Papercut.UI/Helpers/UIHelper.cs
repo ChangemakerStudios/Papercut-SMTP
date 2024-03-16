@@ -57,7 +57,7 @@ namespace Papercut.Helpers
             if (appStyle != null)
                 SetBorder(resourceDictionary, appStyle.ShowcaseBrush);
 
-            ThemeManager.Current.ThemeChanged += (sender, args) =>
+            ThemeManager.Current.ThemeChanged += (_, args) =>
             {
                 SetBorder(resourceDictionary, args.NewTheme.ShowcaseBrush);
             };
@@ -90,7 +90,7 @@ namespace Papercut.Helpers
             return true;
         }
 
-        public static object GetObjectDataFromPoint([NotNull] this ListBox source, Point point)
+        public static object GetObjectDataFromPoint(this ListBox source, Point point)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 

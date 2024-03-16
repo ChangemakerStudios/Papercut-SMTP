@@ -23,29 +23,18 @@ using Papercut.Core.Domain.Message;
 
 namespace Papercut.Message
 {
-    public class ReceivedDataMessageHandler : IReceivedDataHandler
+    public class ReceivedDataMessageHandler(
+        MessageRepository messageRepository,
+        IMessageBus messageBus,
+        ILogger logger)
+        : IReceivedDataHandler
     {
-        readonly ILogger _logger;
-
-        readonly IMessageBus _messageBus;
-
-        readonly MessageRepository _messageRepository;
-
-        public ReceivedDataMessageHandler(MessageRepository messageRepository,
-            IMessageBus messageBus,
-            ILogger logger)
-        {
-            this._messageRepository = messageRepository;
-            this._messageBus = messageBus;
-            this._logger = logger;
-        }
-
         public async Task HandleReceivedAsync(
-            [NotNull] byte[] messageData,
-            [NotNull] string[] recipients)
+            byte[] messageData,
+            string[] recipients)
         {
-            if (messageData == null) throw new ArgumentNullException(nameof(messageData));
-            if (recipients == null) throw new ArgumentNullException(nameof(recipients));
+            ArgumentNullException.ThrowIfNull(messageData);
+            ArgumentNullException.ThrowIfNull(recipients);
 
             string file;
 
@@ -70,17 +59,17 @@ namespace Papercut.Message
                     }
                 }
 
-                file = this._messageRepository.SaveMessage(message.Subject, fs => message.WriteTo(fs));
+                file = await messageRepository.SaveMessage(message.Subject, async fs => await message.WriteToAsync(fs));
             }
 
             try
             {
                 if (!string.IsNullOrWhiteSpace(file))
-                    await this._messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
+                    await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
             }
             catch (Exception ex)
             {
-                this._logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
+                logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
             }
         }
     }

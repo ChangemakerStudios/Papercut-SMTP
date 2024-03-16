@@ -31,7 +31,7 @@ namespace Papercut.Helpers
         }
 
         public static async Task<T> ActivateViewModelOf<T>(
-            [NotNull] this Conductor<IMessageDetailItem>.Collection.OneActive conductor)
+            this Conductor<IMessageDetailItem>.Collection.OneActive conductor)
         {
             if (conductor == null) throw new ArgumentNullException(nameof(conductor));
 

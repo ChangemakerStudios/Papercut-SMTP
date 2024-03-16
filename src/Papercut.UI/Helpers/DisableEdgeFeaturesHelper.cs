@@ -22,7 +22,7 @@ namespace Papercut.Helpers
 {
     public static class DisableEdgeFeaturesHelper
     {
-        public static void DisableEdgeFeatures([NotNull] this CoreWebView2 coreWeb)
+        public static void DisableEdgeFeatures(this CoreWebView2 coreWeb)
         {
             if (coreWeb == null) throw new ArgumentNullException(nameof(coreWeb));
 

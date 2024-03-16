@@ -74,10 +74,7 @@ namespace Papercut.Helpers
             }
         }
 
-        public bool HasAttachments
-        {
-            get => this.AttachmentsCount > 0;
-        }
+        public bool HasAttachments => this.AttachmentsCount > 0;
 
         private void LoadMessageDetails(MimeMessage message)
         {

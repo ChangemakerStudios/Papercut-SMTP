@@ -43,7 +43,7 @@ namespace Papercut.Helpers
 
         string _body;
 
-        public HtmlPreviewVisitor(string tempDirectory = null)
+        public HtmlPreviewVisitor(string? tempDirectory = null)
         {
             this.TempDirectory = tempDirectory;
         }
@@ -71,7 +71,7 @@ namespace Papercut.Helpers
             this._stack.RemoveAt(this._stack.Count - 1);
         }
 
-        bool TryGetImage(string url, out MimePart image)
+        bool TryGetImage(string url, out MimePart? image)
         {
             image = null;
 

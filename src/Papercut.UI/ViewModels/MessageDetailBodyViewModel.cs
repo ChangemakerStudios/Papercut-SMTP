@@ -29,7 +29,7 @@ namespace Papercut.ViewModels
     {
         readonly ILogger _logger;
 
-        string _body;
+        string? _body;
 
         public MessageDetailBodyViewModel(ILogger logger)
         {
@@ -37,7 +37,7 @@ namespace Papercut.ViewModels
             this.DisplayName = "Body";
         }
 
-        public string Body
+        public string? Body
         {
             get => this._body;
             set

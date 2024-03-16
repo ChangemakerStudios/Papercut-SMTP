@@ -80,6 +80,8 @@ namespace Papercut.Core.Domain.Message
 
         public DateTime ModifiedDate => this._info.LastWriteTime;
 
+        public long ModifiedTicks => this.ModifiedDate.Ticks;
+
         public string Name => this._info.Name;
 
         public string FileSize => this._info.Length.ToFileSizeFormat();
@@ -111,7 +113,7 @@ namespace Papercut.Core.Domain.Message
 			}
 		}
 
-        public bool Equals(MessageEntry other)
+        public bool Equals(MessageEntry? other)
         {
             return Equals(this.File, other?.File);
         }

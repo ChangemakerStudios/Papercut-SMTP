@@ -24,8 +24,6 @@ using SmtpServer.Net;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
 
-using ILogger = SmtpServer.ILogger;
-
 namespace Papercut.Infrastructure.Smtp
 {
     [PublicAPI]
@@ -37,7 +35,6 @@ namespace Papercut.Infrastructure.Smtp
 
             // smtp
             builder.RegisterType<SmtpMessageStore>().As<IMessageStore>();
-            builder.RegisterType<SerilogSmtpServerLoggingBridge>().As<ILogger>();
 
             // factories
             builder.RegisterType<SimpleAuthentication>().As<IUserAuthenticatorFactory>();
@@ -56,7 +53,7 @@ namespace Papercut.Infrastructure.Smtp
                 ctx =>
                 {
                     return new DelegatingMailboxFilterFactory(
-                        context => new DelegatingMailboxFilter(mailbox => MailboxFilterResult.Yes));
+                        context => new DelegatingMailboxFilter(mailbox => true));
                 }).As<IMailboxFilterFactory>();
 
             builder.Register(

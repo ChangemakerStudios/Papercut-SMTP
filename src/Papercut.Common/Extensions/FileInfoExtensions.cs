@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-using FluentResults;
+using Papercut.Common.Domain;
 
 namespace Papercut.Common.Extensions
 {
@@ -38,7 +38,7 @@ namespace Papercut.Common.Extensions
             return true;
         }
 
-        public static async Task<Result<byte[]>> TryReadFile(this FileInfo file)
+        public static async Task<ExecutionResult<byte[]>> TryReadFile(this FileInfo file)
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
@@ -49,12 +49,12 @@ namespace Papercut.Common.Extensions
 
                 await fileStream.CopyToAsync(ms);
 
-                return Result.Ok(ms.ToArray());
+                return ExecutionResult.Success(ms.ToArray());
             }
             catch (IOException)
             {
                 // the file is unavailable because it is still being written by another thread or process
-                return Result.Fail<byte[]>("File is unavailable");
+                return ExecutionResult.Failure<byte[]>("File is unavailable");
             }
         }
     }

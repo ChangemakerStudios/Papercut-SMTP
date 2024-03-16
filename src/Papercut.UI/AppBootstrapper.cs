@@ -105,7 +105,7 @@ namespace Papercut
                     .MakeGenericType(service)) as IEnumerable<object>;
         }
 
-        protected override object GetInstance([NotNull] Type service, string? named)
+        protected override object GetInstance(Type service, string? named)
         {
             if (service == null) throw new ArgumentNullException(nameof(service));
 

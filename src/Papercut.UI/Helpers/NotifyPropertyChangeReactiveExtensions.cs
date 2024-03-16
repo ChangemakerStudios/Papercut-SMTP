@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Windows.Threading;
 
 namespace Papercut.Helpers
 {
@@ -31,12 +32,10 @@ namespace Papercut.Helpers
         public static IObservable<TValue> GetPropertyValues<TSource, TValue>(
             this TSource source,
             Expression<Func<TSource, TValue>> property,
-            IScheduler scheduler = null)
+            IScheduler? scheduler = null)
             where TSource : INotifyPropertyChanged
         {
-            var memberExpression = property.Body as MemberExpression;
-
-            if (memberExpression == null)
+            if (property.Body is not MemberExpression memberExpression)
             {
                 throw new ArgumentException(
                     "property must directly access a property of the source");
@@ -48,14 +47,14 @@ namespace Papercut.Helpers
 
             return source.GetPropertyChangedEvents(scheduler)
                 .Where(x => x.EventArgs.PropertyName == propertyName)
-                .Select(x => accessor(source))
+                .Select(_ => accessor(source))
                 .StartWith(accessor(source));
         }
 
         // This is a wrapper around FromEvent(PropertyChanged)
         public static IObservable<EventPattern<PropertyChangedEventArgs>> GetPropertyChangedEvents(
             this INotifyPropertyChanged source,
-            IScheduler scheduler = null)
+            IScheduler? scheduler = null)
         {
             return
                 Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
@@ -70,12 +69,12 @@ namespace Papercut.Helpers
             this TSource source,
             Expression<Func<TSource, TValue>> property,
             Action<TValue> observer,
-            IScheduler scheduler = null)
+            IScheduler? scheduler = null)
             where TSource : INotifyPropertyChanged
         {
             return source
                 .GetPropertyValues(property, scheduler)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(observer);
         }
     }

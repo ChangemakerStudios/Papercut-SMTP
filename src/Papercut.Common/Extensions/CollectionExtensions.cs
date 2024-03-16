@@ -24,32 +24,29 @@ namespace Papercut.Common.Extensions
     public static class CollectionExtensions
     {
         public static IDictionary<TKey, TValue> ToDictionary<TKey, TValue>(
-            [NotNull] this IEnumerable<KeyValuePair<TKey, TValue>> keyValuePairs)
+            this IEnumerable<KeyValuePair<TKey, TValue>> keyValuePairs)
         {
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
             return keyValuePairs.ToDictionary(s => s.Key, s => s.Value);
         }
 
-        [NotNull]
         public static ReadOnlyCollection<T> ToReadOnlyCollection<T>([CanBeNull] this IEnumerable<T> items)
         {
             return new ReadOnlyCollection<T>(items.IfNullEmpty().ToList());
         }
 
-        [NotNull]
         public static IReadOnlyList<T> ToReadOnlyList<T>([CanBeNull] this IEnumerable<T> items)
         {
             return items.ToReadOnlyCollection();
         }
 
-        [NotNull]
         public static HashSet<T> ToHashSet<T>([CanBeNull] this IEnumerable<T> items, IEqualityComparer<T> comparer = null)
         {
             return new HashSet<T>(items.IfNullEmpty(), comparer ?? EqualityComparer<T>.Default);
         }
 
-        public static int RemoveRange<TKey, TValue>([NotNull] this IDictionary<TKey, TValue> dictionary, IEnumerable<KeyValuePair<TKey, TValue>> keyValuePairs)
+        public static int RemoveRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IEnumerable<KeyValuePair<TKey, TValue>> keyValuePairs)
         {
             if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
@@ -57,7 +54,7 @@ namespace Papercut.Common.Extensions
             return dictionary.RemoveRange(keyValuePairs.Select(s => s.Key));
         }
 
-        public static int RemoveRange<TKey, TValue>([NotNull] this IDictionary<TKey, TValue> dictionary, IEnumerable<TKey> keys)
+        public static int RemoveRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IEnumerable<TKey> keys)
         {
             if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
             if (keys == null) throw new ArgumentNullException(nameof(keys));
@@ -73,7 +70,7 @@ namespace Papercut.Common.Extensions
         }
 
         public static IDictionary<TKey, TValue> FlattenToDictionary<TKey, TValue>(
-            [NotNull] this ILookup<TKey, TValue> lookup,
+            this ILookup<TKey, TValue> lookup,
             Func<IEnumerable<TValue>, TValue> flattenFunc = null)
         {
             if (lookup == null) throw new ArgumentNullException("nameValueCollection");
@@ -110,8 +107,8 @@ namespace Papercut.Common.Extensions
         }
 
         public static int FindIndex<T>(
-            [NotNull] this IEnumerable<T> items,
-            [NotNull] Predicate<T> predicate)
+            this IEnumerable<T> items,
+            Predicate<T> predicate)
         {
             if (items == null) throw new ArgumentNullException(nameof(items));
             if (predicate == null) throw new ArgumentNullException(nameof(predicate));

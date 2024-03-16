@@ -55,10 +55,10 @@ namespace Papercut.Common.Extensions
         #region Public Methods and Operators
 
         public static async Task<T> GetOrSetAsync<T>(
-            [NotNull] this MemoryCache cache,
-            [NotNull] string key,
-            [NotNull] Func<Task<T>> getValue,
-            [NotNull] Action<T> addToCacheFunction)
+            this MemoryCache cache,
+            string key,
+            Func<Task<T>> getValue,
+            Action<T> addToCacheFunction)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (getValue == null) throw new ArgumentNullException(nameof(getValue));
@@ -108,8 +108,7 @@ namespace Papercut.Common.Extensions
         /// <returns>
         ///     The get.
         /// </returns>
-        [NotNull]
-        static SemaphoreSlim GetLockObject([NotNull] string originalKey)
+        static SemaphoreSlim GetLockObject(string originalKey)
         {
             if (originalKey == null) throw new ArgumentNullException(nameof(originalKey));
 

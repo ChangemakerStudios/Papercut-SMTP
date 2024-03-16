@@ -21,6 +21,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Threading;
 
 using Caliburn.Micro;
 
@@ -288,7 +289,7 @@ namespace Papercut.ViewModels
             {
                 this.GetPropertyValues(m => m.LogText)
                     .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
-                    .ObserveOnDispatcher()
+                    .ObserveOn(Dispatcher.CurrentDispatcher)
                     .Subscribe(m =>
                     {
                         typedView.LogPanelNoWebView.AppendText(m);
@@ -296,7 +297,7 @@ namespace Papercut.ViewModels
             }
             else
             {
-                typedView.LogPanel.CoreWebView2InitializationCompleted += (sender, args) =>
+                typedView.LogPanel.CoreWebView2InitializationCompleted += (_, _) =>
                 {
                     this.SetupWebView(typedView.LogPanel);
                 };
@@ -310,7 +311,7 @@ namespace Papercut.ViewModels
 
             this.GetPropertyValues(m => m.LogText)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(m =>
                 {
                     logPanel.NavigateToString(m);
@@ -352,9 +353,9 @@ namespace Papercut.ViewModels
         {
             this.MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(
-                    m => this.MessageDetailViewModel.LoadMessageEntry(this.MessageListViewModel.SelectedMessage));
+                    _ => this.MessageDetailViewModel.LoadMessageEntry(this.MessageListViewModel.SelectedMessage));
 
             Observable.FromEventPattern<EventHandler, EventArgs>(
                     h => new EventHandler(h),
@@ -363,14 +364,14 @@ namespace Papercut.ViewModels
                     TaskPoolScheduler.Default)
                 .Buffer(TimeSpan.FromSeconds(1))
                 .Select(
-                    s =>
+                    _ =>
                     {
                         return
                             this._uiLogSinkQueue.GetLastEvents()
                                 .Select(e => string.Join(" ", this.RenderLogEventParts(e)))
                                 .ToList();
                     })
-                .ObserveOnDispatcher().Subscribe(
+                .ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(
                     o =>
                     {
                         foreach (var s in o) this.CurrentLogHistory.PushFront(s);
@@ -416,20 +417,20 @@ namespace Papercut.ViewModels
                     });
 
             this.GetPropertyValues(m => m.IsLogOpen)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(this.SetIsLoading);
 
             this.GetPropertyValues(m => m.IsDeleteAllConfirmOpen)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(this.SetIsLoading);
 
-            this._uiCommandHub.OnShowMainWindow.ObserveOnDispatcher()
+            this._uiCommandHub.OnShowMainWindow.ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(async c => await this.ExecuteAsync(c));
 
-            this._uiCommandHub.OnShowMessage.ObserveOnDispatcher()
+            this._uiCommandHub.OnShowMessage.ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(async c => await this.ExecuteAsync(c));
 
-            this._uiCommandHub.OnShowOptionWindow.ObserveOnDispatcher()
+            this._uiCommandHub.OnShowOptionWindow.ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(async c => await this.ExecuteAsync(c));
         }
 
@@ -507,7 +508,7 @@ namespace Papercut.ViewModels
             progressDialog.SetCancelable(false);
             progressDialog.SetIndeterminate();
 
-            progressDialog.Closed += (sender, args) => this.SetIsLoading(false);
+            progressDialog.Closed += (_, _) => this.SetIsLoading(false);
 
             return progressDialog;
         }
@@ -541,8 +542,8 @@ namespace Papercut.ViewModels
                         return true;
                     },
                     TaskPoolScheduler.Default)
-                .ObserveOnDispatcher()
-                .Subscribe(async b => await progressDialog.CloseAsync());
+                .ObserveOn(Dispatcher.CurrentDispatcher)
+                .Subscribe(async _ => await progressDialog.CloseAsync());
         }
 
         protected override void OnViewAttached(object view, object context)
@@ -555,7 +556,7 @@ namespace Papercut.ViewModels
 
             //_window.Flyouts.FindChild<FlyoutsControl>("LogFlyouts")
 
-            this._window.StateChanged += (sender, args) =>
+            this._window.StateChanged += (_, _) =>
             {
                 if (this._window.WindowState == WindowState.Minimized && Settings.Default.MinimizeToTray)
                 {
@@ -564,7 +565,7 @@ namespace Papercut.ViewModels
                 }
             };
 
-            this._window.Closing += (sender, args) =>
+            this._window.Closing += (_, args) =>
             {
                 if (Application.Current.ShutdownMode == ShutdownMode.OnExplicitShutdown) return;
 
@@ -576,14 +577,14 @@ namespace Papercut.ViewModels
                 }
             };
 
-            this._window.Activated += (sender, args) => this.IsDeactivated = false;
-            this._window.Deactivated += (sender, args) => this.IsDeactivated = true;
+            this._window.Activated += (_, _) => this.IsDeactivated = false;
+            this._window.Deactivated += (_, _) => this.IsDeactivated = true;
 
             // Minimize if set to
             if (Settings.Default.StartMinimized)
             {
                 bool initialWindowActivate = true;
-                this._window.Activated += (sender, args) =>
+                this._window.Activated += (_, _) =>
                 {
                     if (initialWindowActivate)
                     {

@@ -22,11 +22,11 @@ namespace Papercut.Common.Helper
 {
     public static class AssemblyHelper
     {
-        public static string GetVersion([NotNull] this Assembly assembly)
+        public static string? GetVersion(this Assembly assembly)
         {
-            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            ArgumentNullException.ThrowIfNull(assembly);
 
-            return assembly.GetName().Version.ToString(4);
+            return assembly.GetName()?.Version?.ToString(4);
         }
     }
 }

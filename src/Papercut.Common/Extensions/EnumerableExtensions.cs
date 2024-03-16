@@ -22,7 +22,7 @@ namespace Papercut.Common.Extensions
 {
     public static class EnumerableExtensions
     {
-        public static IEnumerable<T> IfNullEmpty<T>(this IEnumerable<T> enumerable)
+        public static IEnumerable<T> IfNullEmpty<T>(this IEnumerable<T>? enumerable)
         {
             if (enumerable == null)
                 return Enumerable.Empty<T>();

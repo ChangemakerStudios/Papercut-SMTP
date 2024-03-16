@@ -62,7 +62,7 @@ namespace Papercut.Common.Extensions
             return roundedNumber.ToString(CultureInfo.InvariantCulture) + suffixes[place];
         }
 
-        public static string GetOriginalFileName([NotNull] string path, [NotNull] string fileName)
+        public static string GetOriginalFileName(string path, string fileName)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
@@ -76,7 +76,7 @@ namespace Papercut.Common.Extensions
                     .FirstOrDefault(f => !File.Exists(f));
         }
 
-        static IEnumerable<string> GenerateFormattedFileNames([NotNull] string fileName)
+        static IEnumerable<string> GenerateFormattedFileNames(string fileName)
         {
             if (fileName == null)
                 throw new ArgumentNullException(nameof(fileName));

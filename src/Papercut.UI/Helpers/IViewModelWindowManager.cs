@@ -23,18 +23,18 @@ namespace Papercut.Helpers
     public interface IViewModelWindowManager : IWindowManager
     {
         Task<bool?> ShowDialogWithViewModel<TViewModel>(
-            Action<TViewModel> setViewModel = null,
-            object context = null)
+            Action<TViewModel>? setViewModel = null,
+            object? context = null)
             where TViewModel : PropertyChangedBase;
 
         Task ShowWindowWithViewModelAsync<TViewModel>(
-            Action<TViewModel> setViewModel = null,
-            object context = null)
+            Action<TViewModel>? setViewModel = null,
+            object? context = null)
             where TViewModel : PropertyChangedBase;
 
         Task ShowPopupWithViewModel<TViewModel>(
-            Action<TViewModel> setViewModel = null,
-            object context = null)
+            Action<TViewModel>? setViewModel = null,
+            object? context = null)
             where TViewModel : PropertyChangedBase;
     }
 }

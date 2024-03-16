@@ -45,7 +45,7 @@ namespace Papercut.ViewModels
 
         bool _hasSelectedPart;
 
-        MimeMessage _mimeMessage;
+        MimeMessage? _mimeMessage;
 
         MimeEntity _selectedPart;
 
@@ -60,7 +60,7 @@ namespace Papercut.ViewModels
 
         public ObservableCollection<MimeEntity> Parts { get; }
 
-        public MimeMessage MimeMessage
+        public MimeMessage? MimeMessage
         {
             get => this._mimeMessage;
             set
@@ -175,11 +175,10 @@ namespace Papercut.ViewModels
                     this._logger.Debug("Saving File {File} as Output for MimePart {PartFileName}", dlg.FileName,
                         mimePart.FileName);
 
-                    // save it..
-                    using (Stream outputFile = dlg.OpenFile())
-                    {
-                        mimePart.Content.DecodeTo(outputFile);
-                    }
+                    // save it…
+                    using Stream outputFile = dlg.OpenFile();
+
+                    mimePart.Content.DecodeTo(outputFile);
                 }
             }
             else if (this.SelectedPart is MessagePart messagePart)
@@ -193,7 +192,7 @@ namespace Papercut.ViewModels
 
                 var extensions = new List<string> {"Email (*.eml)|*.eml", "All (*.*)|*.*"};
 
-                dlg.Filter = string.Join("|", extensions.ToArray());
+                dlg.Filter = string.Join("|", extensions);
 
                 bool? result = dlg.ShowDialog();
 
@@ -201,11 +200,10 @@ namespace Papercut.ViewModels
                 {
                     this._logger.Debug("Saved Embedded Message as {MessageFile}", dlg.FileName);
 
-                    // save it..
-                    using (Stream outputFile = dlg.OpenFile())
-                    {
-                        messagePart.Message.WriteTo(outputFile);
-                    }
+                    // save it…
+                    using Stream outputFile = dlg.OpenFile();
+
+                    messagePart.Message.WriteTo(outputFile);
                 }
             }
         }

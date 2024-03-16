@@ -38,7 +38,7 @@ namespace Papercut.Infrastructure.Resources
                 Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
         }
 
-        public string GetResourceString([NotNull] string resourceName)
+        public string GetResourceString(string resourceName)
         {
             if (resourceName == null)
                 throw new ArgumentNullException(nameof(resourceName));
@@ -86,7 +86,7 @@ namespace Papercut.Infrastructure.Resources
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

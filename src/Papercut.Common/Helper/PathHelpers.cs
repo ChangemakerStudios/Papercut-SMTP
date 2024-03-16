@@ -22,7 +22,7 @@ namespace Papercut.Common.Helper
 {
     public static class PathHelpers
     {
-        public static string GetPath([NotNull] this Assembly assembly)
+        public static string GetPath(this Assembly assembly)
         {
             if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 

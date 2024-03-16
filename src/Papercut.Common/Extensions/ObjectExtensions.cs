@@ -55,7 +55,7 @@ namespace Papercut.Common.Extensions
             return (T) Convert.ChangeType(instance, conversionType);
         }
 
-        public static void CopyTo<TFrom, TTo>([NotNull] this TFrom obj, TTo other)
+        public static void CopyTo<TFrom, TTo>(this TFrom obj, TTo other)
             where TFrom : class
             where TTo : class
         {
@@ -113,7 +113,7 @@ namespace Papercut.Common.Extensions
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static IEnumerable<KeyValuePair<string, Lazy<object>>> GetProperties<T>([NotNull] this T obj)
+        public static IEnumerable<KeyValuePair<string, Lazy<object>>> GetProperties<T>(this T obj)
             where T : class
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));

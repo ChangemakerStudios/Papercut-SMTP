@@ -34,8 +34,7 @@ namespace Papercut.Infrastructure.Themes
 
         public IReadOnlyCollection<ThemeColor> GetAll() => ThemeColors;
 
-        [CanBeNull]
-        public ThemeColor FirstOrDefaultByName(string name)
+        public ThemeColor? FirstOrDefaultByName(string name)
         {
             return this.GetAll().FirstOrDefault(
                 s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
@@ -49,7 +48,7 @@ namespace Papercut.Infrastructure.Themes
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

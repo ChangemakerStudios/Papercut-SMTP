@@ -20,11 +20,24 @@ using Papercut.Common.Extensions;
 
 namespace Papercut.Common.Domain
 {
+    public class ExecutionResult<T> : ExecutionResult
+    {
+        public ExecutionResult(bool isSuccess, T? value, IEnumerable<string>? errors = null)
+            : base(isSuccess, errors)
+        {
+            if (isSuccess)
+            {
+                ArgumentNullException.ThrowIfNull(value, nameof(value));
+                this.Value = value!;
+            }
+        }
+
+        public T Value { get; }
+    }
+
     public class ExecutionResult
     {
-        #region Constructors and Destructors
-
-        private ExecutionResult(bool isSuccess, IEnumerable<string> errors)
+        protected ExecutionResult(bool isSuccess, IEnumerable<string>? errors)
         {
             this.IsSuccess = isSuccess;
 
@@ -34,17 +47,11 @@ namespace Papercut.Common.Domain
             }
         }
 
-        #endregion
-
-        #region Public Properties
-
         public IReadOnlyCollection<string> Errors { get; }
 
         public bool IsSuccess { get; }
 
-        #endregion
-
-        #region Public Methods and Operators
+        public bool IsFailed => !IsSuccess;
 
         public static ExecutionResult Failure(params string[] errors)
         {
@@ -56,6 +63,14 @@ namespace Papercut.Common.Domain
             return new ExecutionResult(true, null);
         }
 
-        #endregion
+        public static ExecutionResult<T> Failure<T>(params string[] errors)
+        {
+            return new ExecutionResult<T>(false, default, errors);
+        }
+
+        public static ExecutionResult<T> Success<T>(T result)
+        {
+            return new ExecutionResult<T>(true, result);
+        }
     }
 }

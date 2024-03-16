@@ -41,7 +41,7 @@ namespace Papercut.AppLayer.HtmlPreviews
             this._appMeta = appMeta;
         }
 
-        public string GetHtmlPreview(MimeMessage mailMessageEx, string tempDir = null)
+        public string GetHtmlPreview(MimeMessage? mailMessageEx, string? tempDir = null)
         {
             if (mailMessageEx == null) throw new ArgumentNullException(nameof(mailMessageEx));
 
@@ -52,13 +52,13 @@ namespace Papercut.AppLayer.HtmlPreviews
             return visitor.HtmlBody;
         }
 
-        public string GetHtmlPreviewFile(MimeMessage mailMessageEx, string tempDir = null)
+        public string? GetHtmlPreviewFile(MimeMessage? mailMessageEx, string? tempDir = null)
         {
             tempDir = tempDir ?? this.CreateUniqueTempDirectory();
 
             var htmlPreview = this.GetHtmlPreview(mailMessageEx, tempDir);
 
-            string htmlFile = Path.Combine(tempDir, "index.html");
+            string? htmlFile = Path.Combine(tempDir, "index.html");
 
             this._logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
 
@@ -89,7 +89,7 @@ namespace Papercut.AppLayer.HtmlPreviews
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

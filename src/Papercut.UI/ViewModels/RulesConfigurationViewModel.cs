@@ -35,7 +35,7 @@ namespace Papercut.ViewModels
         {
             this.RegisteredRules = new ObservableCollection<IRule>(registeredRules);
             this.Rules = ruleService.Rules;
-            this.Rules.CollectionChanged += (sender, args) =>
+            this.Rules.CollectionChanged += (_, _) =>
             {
                 if (!this.Rules.Contains(this.SelectedRule))
                 {
@@ -71,7 +71,7 @@ namespace Papercut.ViewModels
 
         public ObservableCollection<IRule> Rules { get; }
 
-        public void AddRule([NotNull] IRule rule)
+        public void AddRule(IRule rule)
         {
             if (rule == null) throw new ArgumentNullException(nameof(rule));
 

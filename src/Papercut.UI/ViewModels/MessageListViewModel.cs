@@ -26,8 +26,11 @@ using System.Reactive.Linq;
 using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 using Caliburn.Micro;
+
+using MimeKit;
 
 using Papercut.Common.Domain;
 using Papercut.Common.Extensions;
@@ -65,16 +68,13 @@ namespace Papercut.ViewModels
         public MessageListViewModel(
             IUiCommandHub uiCommandHub,
             MessageRepository messageRepository,
-            [NotNull] MessageWatcher messageWatcher,
+            MessageWatcher messageWatcher,
             MimeMessageLoader mimeMessageLoader,
             ILogger logger)
         {
-            if (messageRepository == null)
-                throw new ArgumentNullException(nameof(messageRepository));
-            if (messageWatcher == null)
-                throw new ArgumentNullException(nameof(messageWatcher));
-            if (mimeMessageLoader == null)
-                throw new ArgumentNullException(nameof(mimeMessageLoader));
+            ArgumentNullException.ThrowIfNull(messageRepository);
+            ArgumentNullException.ThrowIfNull(messageWatcher);
+            ArgumentNullException.ThrowIfNull(mimeMessageLoader);
 
             this._uiCommandHub = uiCommandHub;
             this._messageRepository = messageRepository;
@@ -90,7 +90,7 @@ namespace Papercut.ViewModels
 
         public ICollectionView MessagesSorted { get; private set; }
 
-        public MimeMessageEntry SelectedMessage => this.GetSelected().FirstOrDefault();
+        public MimeMessageEntry? SelectedMessage => this.GetSelected().FirstOrDefault();
 
         public string DeleteText => UIStrings.DeleteTextTemplate.RenderTemplate(this);
 
@@ -133,28 +133,26 @@ namespace Papercut.ViewModels
 
         public Task HandleAsync(SettingsUpdatedEvent message, CancellationToken token)
         {
-            this.MessagesSorted.SortDescriptions.Clear();
-            this.MessagesSorted.SortDescriptions.Add(
-                new SortDescription("ModifiedDate", this.SortOrder));
+            this._logger.Information("Sort Settings Updated -- Updating Message Sort {SortOrder}", this.SortOrder);
 
-            this.MessagesSorted.Refresh();
+            this.SetupMessageView();
 
             return Task.CompletedTask;
         }
 
-        MimeMessageEntry GetMessageByIndex(int index)
+        MimeMessageEntry? GetMessageByIndex(int index)
         {
             return this.MessagesSorted.OfType<MimeMessageEntry>().Skip(index).FirstOrDefault();
         }
 
-        int? GetIndexOfMessage([CanBeNull] MessageEntry entry)
+        int? GetIndexOfMessage(MessageEntry? entry)
         {
             if (entry == null)
                 return null;
 
             int index = this.MessagesSorted.OfType<MessageEntry>().FindIndex(m => Equals(entry, m));
 
-            return index == -1 ? null : (int?)index;
+            return index == -1 ? null : index;
         }
 
         void PushSelectedIndex()
@@ -180,8 +178,8 @@ namespace Papercut.ViewModels
         void SetupMessages()
         {
             this.Messages = new ObservableCollection<MimeMessageEntry>();
-            this.MessagesSorted = CollectionViewSource.GetDefaultView(this.Messages);
-            this.MessagesSorted.SortDescriptions.Add(new SortDescription("ModifiedDate", this.SortOrder));
+
+            this.SetupMessageView();
 
             // Begin listening for new messages
             this._messageWatcher.NewMessage += this.NewMessage;
@@ -191,10 +189,19 @@ namespace Papercut.ViewModels
                 e => this._messageWatcher.RefreshNeeded -= e,
                 TaskPoolScheduler.Default)
                 .Throttle(TimeSpan.FromMilliseconds(100))
-                .ObserveOnDispatcher()
-                .Subscribe(e => this.RefreshMessageList());
+                .ObserveOn(Dispatcher.CurrentDispatcher)
+                .Subscribe(_ => this.RefreshMessageList());
 
             this.Messages.CollectionChanged += this.CollectionChanged;
+        }
+
+        void SetupMessageView()
+        {
+            var view = CollectionViewSource.GetDefaultView(this.Messages);
+            view.SortDescriptions.Add(new SortDescription(nameof(MessageEntry.ModifiedTicks), this.SortOrder));
+            this.MessagesSorted = view;
+
+            this.MessagesSorted.Refresh();
         }
 
         void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -214,7 +221,7 @@ namespace Papercut.ViewModels
                 {
                     foreach (MimeMessageEntry m in args.NewItems.OfType<MimeMessageEntry>())
                     {
-                        m.PropertyChanged += (o, eventArgs) => notifyOfSelectionChange();
+                        m.PropertyChanged += (_, _) => notifyOfSelectionChange();
                     }
                 }
 
@@ -230,7 +237,7 @@ namespace Papercut.ViewModels
         {
             var observable = this._mimeMessageLoader.GetObservable(entry);
 
-            observable.ObserveOnDispatcher().Subscribe(
+            observable.ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(
                 message =>
                 {
                     this._uiCommandHub.ShowBalloonTip(
@@ -244,7 +251,7 @@ namespace Papercut.ViewModels
                     // handle selection if nothing is selected
                     this.ValidateSelected();
                 },
-                e =>
+                _ =>
                 {
                     // NOOP
                 });
@@ -372,7 +379,7 @@ namespace Papercut.ViewModels
 
                             return ex.Message;
                         }
-                    }).Where(f => f != null).ToList();
+                    }).Where(f => f != null).ToList()!;
 
             if (failedEntries.Any())
             {
@@ -405,7 +412,7 @@ namespace Papercut.ViewModels
             {
                 toAdd =
                     messageEntries.Except(this.Messages)
-                        .OrderBy(s => s.ModifiedDate)
+                        .OrderBy(s => s.ModifiedTicks)
                         .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
                         .ToList();
             }
@@ -414,7 +421,7 @@ namespace Papercut.ViewModels
                 // descending -- load messages in that order too
                 toAdd =
                     messageEntries.Except(this.Messages)
-                        .OrderByDescending(s => s.ModifiedDate)
+                        .OrderByDescending(s => s.ModifiedTicks)
                         .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
                         .ToList();
             }

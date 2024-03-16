@@ -23,7 +23,7 @@ namespace Papercut.Common.Helper
     public static class NameValueCollectionExtensions
     {
         public static ILookup<string, string> ToLookup(
-            [NotNull] this NameValueCollection nameValueCollection)
+            this NameValueCollection nameValueCollection)
         {
             if (nameValueCollection == null) throw new ArgumentNullException(nameof(nameValueCollection));
 
@@ -31,7 +31,7 @@ namespace Papercut.Common.Helper
         }
 
         public static IEnumerable<KeyValuePair<string, string>> ToKeyValuePairs(
-            [NotNull] this NameValueCollection nameValueCollection)
+            this NameValueCollection nameValueCollection)
         {
             if (nameValueCollection == null) throw new ArgumentNullException(nameof(nameValueCollection));
 

@@ -1,38 +1,31 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
+
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+
+using Papercut.Common.Extensions;
+using Papercut.Core.Domain.Message;
+using Papercut.Core.Domain.Paths;
 
 namespace Papercut.Message
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Reactive;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Domain.Message;
-    using Papercut.Core.Domain.Paths;
-
-    using Serilog;
-
     public class MessageWatcher : IDisposable
     {
         readonly ILogger _logger;
@@ -43,10 +36,16 @@ namespace Papercut.Message
 
         public MessageWatcher(ILogger logger, MessagePathConfigurator messagePathConfigurator)
         {
-            _logger = logger;
-            _messagePathConfigurator = messagePathConfigurator;
-            _messagePathConfigurator.RefreshLoadPath += OnRefreshLoadPaths;
-            SetupMessageWatchers();
+            this._logger = logger;
+            this._messagePathConfigurator = messagePathConfigurator;
+            this._messagePathConfigurator.RefreshLoadPath += this.OnRefreshLoadPaths;
+            this.SetupMessageWatchers();
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public IObservable<EventPattern<NewMessageEventArgs>> GetNewMessageObservable(IScheduler scheduler = null)
@@ -57,17 +56,11 @@ namespace Papercut.Message
                     scheduler?? Scheduler.Default);
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposing) return;
 
-            foreach (FileSystemWatcher watch in _watchers)
+            foreach (FileSystemWatcher watch in this._watchers)
             {
                 if (watch != null)
                     DisposeWatch(watch);
@@ -76,20 +69,20 @@ namespace Papercut.Message
 
         void OnRefreshLoadPaths(object sender, EventArgs eventArgs)
         {
-            List<string> existingPaths = _watchers.Select(s => s.Path).ToList();
-            List<string> removePaths = existingPaths.Except(_messagePathConfigurator.LoadPaths).ToList();
-            List<string> addPaths = _messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
+            List<string> existingPaths = this._watchers.Select(s => s.Path).ToList();
+            List<string> removePaths = existingPaths.Except(this._messagePathConfigurator.LoadPaths).ToList();
+            List<string> addPaths = this._messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
 
-            foreach (FileSystemWatcher watch in _watchers.Where(s => removePaths.Contains(s.Path)).ToList())
+            foreach (FileSystemWatcher watch in this._watchers.Where(s => removePaths.Contains(s.Path)).ToList())
             {
                 DisposeWatch(watch);
-                _watchers.Remove(watch);
+                this._watchers.Remove(watch);
             }
 
             // setup new ones...
             foreach (string newPath in addPaths)
             {
-                AddWatcher(newPath);
+                this.AddWatcher(newPath);
             }
         }
 
@@ -107,18 +100,18 @@ namespace Papercut.Message
 
         void SetupMessageWatchers()
         {
-            _watchers = new List<FileSystemWatcher>();
+            this._watchers = new List<FileSystemWatcher>();
 
             // setup watcher for each path...
-            foreach (string path in _messagePathConfigurator.LoadPaths)
+            foreach (string path in this._messagePathConfigurator.LoadPaths)
             {
-                AddWatcher(path);
+                this.AddWatcher(path);
             }
         }
 
         void AddWatcher(string path)
         {
-            _logger.Debug("Adding FileSystemWatcher for {Path}", path);
+            this._logger.Debug("Adding FileSystemWatcher for {Path}", path);
 
             var watcher = new FileSystemWatcher(path, MessageRepository.MessageFileSearchPattern)
             {
@@ -127,24 +120,24 @@ namespace Papercut.Message
             };
 
             // Add event handlers.
-            watcher.Created += OnChanged;
-            watcher.Deleted += OnDeleted;
-            watcher.Renamed += OnRenamed;
+            watcher.Created += this.OnChanged;
+            watcher.Deleted += this.OnDeleted;
+            watcher.Renamed += this.OnRenamed;
 
             // Begin watching.
             watcher.EnableRaisingEvents = true;
 
-            _watchers.Add(watcher);
+            this._watchers.Add(watcher);
         }
 
         void OnDeleted(object sender, FileSystemEventArgs e)
         {
-            OnRefreshNeeded();
+            this.OnRefreshNeeded();
         }
 
         void OnRenamed(object sender, RenamedEventArgs e)
         {
-            OnRefreshNeeded();
+            this.OnRefreshNeeded();
         }
 
         void OnChanged(object sender, FileSystemEventArgs e)
@@ -182,13 +175,13 @@ namespace Papercut.Message
 
         protected virtual void OnRefreshNeeded()
         {
-            EventHandler handler = RefreshNeeded;
+            EventHandler handler = this.RefreshNeeded;
             handler?.Invoke(this, EventArgs.Empty);
         }
 
         protected virtual void OnNewMessage(NewMessageEventArgs e)
         {
-            EventHandler<NewMessageEventArgs> handler = NewMessage;
+            EventHandler<NewMessageEventArgs> handler = this.NewMessage;
             handler?.Invoke(this, e);
         }
     }
