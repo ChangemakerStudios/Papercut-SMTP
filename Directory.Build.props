@@ -1,0 +1,8 @@
+<Project>
+	<PropertyGroup>
+		<Company>Changemaker Studios</Company>
+		<Description>Standalone SMTP server designed for viewing received messages</Description>
+		<Copyright>Copyright © 2008 - 2024 Ken Robertson &amp; Jaben Cargman</Copyright>
+		<Platforms>AnyCPU;x86;x64</Platforms>
+	</PropertyGroup>
+</Project>

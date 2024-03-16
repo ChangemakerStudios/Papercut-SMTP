@@ -123,28 +123,11 @@ namespace Papercut.AppLayer.Notifications
             this._notification.BalloonTipClicked +=
                 (sender, args) => this._uiCommandHub.ShowMainWindow(true);
 
-            var options = new MenuItem(
-                "Options",
-                (sender, args) => this._uiCommandHub.ShowOptionWindow())
-            {
-                DefaultItem = false,
-            };
+            this._notification.ContextMenuStrip = new ContextMenuStrip();
 
-            var menuItems = new[]
-            {
-                new MenuItem(
-                    "Show",
-                    (sender, args) => this._uiCommandHub.ShowMainWindow())
-                {
-                    DefaultItem = true
-                },
-                options,
-                new MenuItem(
-                    "Exit",
-                    (sender, args) => this._appCommandHub.Shutdown())
-            };
-
-            this._notification.ContextMenu = new ContextMenu(menuItems);
+            this._notification.ContextMenuStrip.Items.Add("Show", null, (sender, args) => this._uiCommandHub.ShowMainWindow());
+            this._notification.ContextMenuStrip.Items.Add("Options", null, (sender, args) => this._uiCommandHub.ShowOptionWindow());
+            this._notification.ContextMenuStrip.Items.Add("Exit", null, (sender, args) => this._appCommandHub.Shutdown());
         }
 
         #region Begin Static Container Registrations

@@ -1,46 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-	 xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
-     xmlns:net="http://schemas.microsoft.com/wix/NetFxExtension"
-     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
 
 	<?include PapercutVars.wxi ?>
 
-	<Bundle Name="$(var.ProductName)"
-			Version="!(bind.packageVersion.PapercutMsi)"
-			Manufacturer="!(bind.packageManufacturer.PapercutMsi)"
-			UpgradeCode="$(var.UpgradeCode)"
-			AboutUrl="https://github.com/ChangemakerStudios/Papercut"
-			Copyright="Copyright (c) 2021 by Changemaker Studios"
-			HelpUrl="https://github.com/ChangemakerStudios/Papercut"
-			IconSourceFile="Resources\App.ico">
-		<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkSidebarLicense">
-			<bal:WixStandardBootstrapperApplication LicenseUrl=""
-                                                    ShowVersion="yes"
-                                                    LogoFile="Resources\Papercut-Logo.png"
-                                                    LogoSideFile="Resources\Papercut-Sidelogo.png" />
-		</BootstrapperApplicationRef>
+	<Bundle Name="$(var.ProductName)" Version="!(bind.packageVersion.PapercutMsi)" Manufacturer="!(bind.packageManufacturer.PapercutMsi)" UpgradeCode="$(var.UpgradeCode)" AboutUrl="https://github.com/ChangemakerStudios/Papercut" Copyright="Copyright (c) 2021 by Changemaker Studios" HelpUrl="https://github.com/ChangemakerStudios/Papercut" IconSourceFile="Resources\App.ico">
+		<BootstrapperApplication>
+			<bal:WixStandardBootstrapperApplication LicenseUrl="" ShowVersion="yes" LogoFile="Resources\Papercut-Logo.png" LogoSideFile="Resources\Papercut-Sidelogo.png" Theme="hyperlinkSidebarLicense" />
+		</BootstrapperApplication>
 
-		<Variable Name="InstallFolder" Type="string" Value="[ProgramFiles6432Folder]!(bind.packageManufacturer.PapercutMsi)\Papercut SMTP"/>
-		<Variable Name="CommonDataFolder" Type="string" Value="[CommonAppDataFolder]!(bind.packageManufacturer.PapercutMsi)\Papercut SMTP"/>
+		<Variable Name="InstallFolder" Type="formatted" Value="[ProgramFiles6432Folder]!(bind.packageManufacturer.PapercutMsi)\Papercut SMTP" />
+		<Variable Name="CommonDataFolder" Type="formatted" Value="[CommonAppDataFolder]!(bind.packageManufacturer.PapercutMsi)\Papercut SMTP" />
 		<util:RegistrySearch Root="HKLM" Key="$(var.EdgeRegistryKeyOne)" Variable="WVRTInstalledCheckOne" Result="exists" />
 		<util:RegistrySearch Root="HKCU" Key="$(var.EdgeRegistryKeyTwo)" Variable="WVRTInstalledCheckTwo" Result="exists" />
 
 		<Chain>
 			<PackageGroupRef Id="NetFx48Web" />
 
-			<ExePackage Id="DownloadAndInvokeBootstrapper" Name="Install WebView2 Runtime" Cache="no" Compressed="no" PerMachine="yes" Vital="yes" DownloadUrl="https://go.microsoft.com/fwlink/p/?LinkId=2124703" InstallCommand=" /install" InstallCondition="NOT (REMOVE OR WVRTInstalledCheckOne OR WVRTInstalledCheckTwo)">
-				<RemotePayload CertificatePublicKey="236F73B837007769A26657E02FEB5869EB09D01A" CertificateThumbprint="C9CAEDC2CECF953E812C6446D41927B9864BB880" Description="Microsoft Edge Update Setup" Hash="AD5692106BD6DA50BEECA1908504AE90FC36CE93" ProductName="Microsoft Edge Update" Size="1812256" Version="1.3.153.55" />
+			<ExePackage Id="DownloadAndInvokeBootstrapper" Cache="remove" PerMachine="yes" Vital="yes" InstallCondition="NOT (REMOVE OR WVRTInstalledCheckOne OR WVRTInstalledCheckTwo)" InstallArguments=" /install">
+				<ExePackagePayload CertificatePublicKey="236F73B837007769A26657E02FEB5869EB09D01A" CertificateThumbprint="C9CAEDC2CECF953E812C6446D41927B9864BB880" Description="Microsoft Edge Update Setup" Hash="AD5692106BD6DA50BEECA1908504AE90FC36CE93" ProductName="Microsoft Edge Update" Size="1812256" Version="1.3.153.55" Name="Install WebView2 Runtime" DownloadUrl="https://go.microsoft.com/fwlink/p/?LinkId=2124703" />
 			</ExePackage>
 
 			<RollbackBoundary />
 
-			<MsiPackage Id="PapercutMsi"
-                        SourceFile="$(var.Papercut.Installer.TargetPath)"
-                        Compressed="yes"
-                        DisplayInternalUI="yes"
-                        Vital="yes">
+			<MsiPackage Id="PapercutMsi" SourceFile="$(var.Papercut.Installer.TargetPath)" Compressed="yes" DisplayInternalUI="yes" Vital="yes">
 				<MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
 				<MsiProperty Name="COMMONDATAFOLDER" Value="[CommonDataFolder]" />
 			</MsiPackage>

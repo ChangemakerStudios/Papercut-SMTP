@@ -22,7 +22,6 @@ namespace Papercut
 {
     using System;
     using System.Collections.Generic;
-    using System.Management.Instrumentation;
     using System.Windows;
 
     using Autofac;
@@ -93,7 +92,7 @@ namespace Papercut
                     .MakeGenericType(service)) as IEnumerable<object>;
         }
 
-        protected override object GetInstance([NotNull] Type service, string named)
+        protected override object GetInstance([NotNull] Type service, string? named)
         {
             if (service == null) throw new ArgumentNullException(nameof(service));
 
@@ -106,7 +105,7 @@ namespace Papercut
                 if (Container.TryResolveNamed(named, service, out var result)) return result;
             }
 
-            throw new InstanceNotFoundException($"Could not locate any instances of contract {named ?? service.Name}.");
+            throw new Exception($"Could not locate any instances of contract {named ?? service.Name}.");
         }
 
         protected override void BuildUp(object instance)

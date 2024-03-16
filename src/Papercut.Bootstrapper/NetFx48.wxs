@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+﻿<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
 	<!--
       .NET Framework installation state properties
@@ -17,13 +16,11 @@
 	<Fragment>
 		<PropertyRef Id="WIXNETFX4RELEASEINSTALLED" />
 		<Property Id="WIX_IS_NETFRAMEWORK_48_OR_LATER_INSTALLED" Secure="yes" />
-		<SetProperty Id="WIX_IS_NETFRAMEWORK_48_OR_LATER_INSTALLED" Value="1" After="AppSearch">
-			WIXNETFX4RELEASEINSTALLED >= "#$(var.NetFx48MinRelease)"
-		</SetProperty>
+		<SetProperty Id="WIX_IS_NETFRAMEWORK_48_OR_LATER_INSTALLED" Value="1" After="AppSearch" Condition="WIXNETFX4RELEASEINSTALLED &gt;= &quot;#$(var.NetFx48MinRelease)&quot;" />
 	</Fragment>
 
 	<Fragment>
-		<util:RegistrySearchRef Id="NETFRAMEWORK45"/>
+		<util:RegistrySearchRef Id="NETFRAMEWORK45" />
 
 		<WixVariable Id="WixMbaPrereqPackageId" Value="NetFx48Web" />
 		<WixVariable Id="WixMbaPrereqLicenseUrl" Value="$(var.NetFx48EulaLink)" Overridable="yes" />
@@ -32,35 +29,14 @@
 		<WixVariable Id="NetFx48WebPackageDirectory" Value="redist\" Overridable="yes" />
 
 		<PackageGroup Id="NetFx48Web">
-			<ExePackage
-				InstallCommand="/q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;"
-				RepairCommand="/q /norestart /repair /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;"
-				UninstallCommand="/uninstall /q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;"
-				PerMachine="yes"
-				DetectCondition="!(wix.NetFx48WebDetectCondition)"
-				InstallCondition="!(wix.NetFx48WebInstallCondition)"
-				Id="NetFx48Web"
-				Vital="yes"
-				Permanent="yes"
-				Protocol="netfx4"
-				DownloadUrl="$(var.NetFx48WebLink)"
-				LogPathVariable="NetFx48FullLog"
-				Compressed="no"
-				Name="!(wix.NetFx48WebPackageDirectory)ndp48-web.exe">
-				<RemotePayload
-					CertificatePublicKey="F49F9B33E25E33CCA0BFB15A62B7C29FFAB3880B"
-					CertificateThumbprint="ABDCA79AF9DD48A0EA702AD45260B3C03093FB4B"
-					Description="Microsoft .NET Framework 4.8 Setup"
-					Hash="4181398AA1FD5190155AC3A388434E5F7EA0B667"
-					ProductName="Microsoft .NET Framework 4.8"
-					Size="1439328"
-					Version="4.8.4115.0" />
+			<ExePackage PerMachine="yes" DetectCondition="!(wix.NetFx48WebDetectCondition)" InstallCondition="!(wix.NetFx48WebInstallCondition)" Id="NetFx48Web" Vital="yes" Permanent="yes" Protocol="netfx4" LogPathVariable="NetFx48FullLog" InstallArguments="/q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;" RepairArguments="/q /norestart /repair /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;" UninstallArguments="/uninstall /q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;">
+				<ExePackagePayload CertificatePublicKey="F49F9B33E25E33CCA0BFB15A62B7C29FFAB3880B" CertificateThumbprint="ABDCA79AF9DD48A0EA702AD45260B3C03093FB4B" Description="Microsoft .NET Framework 4.8 Setup" Hash="4181398AA1FD5190155AC3A388434E5F7EA0B667" ProductName="Microsoft .NET Framework 4.8" Size="1439328" Version="4.8.4115.0" Name="!(wix.NetFx48WebPackageDirectory)ndp48-web.exe" DownloadUrl="$(var.NetFx48WebLink)" />
 			</ExePackage>
 		</PackageGroup>
 	</Fragment>
 
 	<Fragment>
-		<util:RegistrySearchRef Id="NETFRAMEWORK45"/>
+		<util:RegistrySearchRef Id="NETFRAMEWORK45" />
 
 		<WixVariable Id="WixMbaPrereqPackageId" Value="NetFx48Redist" />
 		<WixVariable Id="WixMbaPrereqLicenseUrl" Value="$(var.NetFx48EulaLink)" Overridable="yes" />
@@ -69,29 +45,8 @@
 		<WixVariable Id="NetFx48RedistPackageDirectory" Value="redist\" Overridable="yes" />
 
 		<PackageGroup Id="NetFx48Redist">
-			<ExePackage
-				InstallCommand="/q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;"
-				RepairCommand="/q /norestart /repair /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;"
-				UninstallCommand="/uninstall /q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;"
-				PerMachine="yes"
-				DetectCondition="!(wix.NetFx48RedistDetectCondition)"
-				InstallCondition="!(wix.NetFx48RedistInstallCondition)"
-				Id="NetFx48Redist"
-				Vital="yes"
-				Permanent="yes"
-				Protocol="netfx4"
-				DownloadUrl="$(var.NetFx48RedistLink)"
-				LogPathVariable="NetFx48FullLog"
-				Compressed="no"
-				Name="!(wix.NetFx48RedistPackageDirectory)ndp48-x86-x64-allos-enu.exe">
-				<RemotePayload
-					CertificatePublicKey="F49F9B33E25E33CCA0BFB15A62B7C29FFAB3880B"
-					CertificateThumbprint="ABDCA79AF9DD48A0EA702AD45260B3C03093FB4B"
-					Description="Microsoft .NET Framework 4.8 Setup"
-					Hash="E322E2E0FB4C86172C38A97DC6C71982134F0570"
-					ProductName="Microsoft .NET Framework 4.8"
-					Size="121307088"
-					Version="4.8.4115.0" />
+			<ExePackage PerMachine="yes" DetectCondition="!(wix.NetFx48RedistDetectCondition)" InstallCondition="!(wix.NetFx48RedistInstallCondition)" Id="NetFx48Redist" Vital="yes" Permanent="yes" Protocol="netfx4" LogPathVariable="NetFx48FullLog" InstallArguments="/q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;" RepairArguments="/q /norestart /repair /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;" UninstallArguments="/uninstall /q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx48FullLog].html&quot;">
+				<ExePackagePayload CertificatePublicKey="F49F9B33E25E33CCA0BFB15A62B7C29FFAB3880B" CertificateThumbprint="ABDCA79AF9DD48A0EA702AD45260B3C03093FB4B" Description="Microsoft .NET Framework 4.8 Setup" Hash="E322E2E0FB4C86172C38A97DC6C71982134F0570" ProductName="Microsoft .NET Framework 4.8" Size="121307088" Version="4.8.4115.0" Name="!(wix.NetFx48RedistPackageDirectory)ndp48-x86-x64-allos-enu.exe" DownloadUrl="$(var.NetFx48RedistLink)" />
 			</ExePackage>
 		</PackageGroup>
 	</Fragment>
