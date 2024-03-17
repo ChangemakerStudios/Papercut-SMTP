@@ -27,7 +27,7 @@ namespace Papercut.Common.Extensions
     /// </summary>
     public static class GeneralExtensions
     {
-        public static string AsString(this byte[] bytes, Encoding byteEncoding = null)
+        public static string AsString(this byte[] bytes, Encoding? byteEncoding = null)
         {
             if (bytes == null) throw new ArgumentNullException(nameof(bytes));
 
@@ -35,7 +35,7 @@ namespace Papercut.Common.Extensions
             return byteEncoding.GetString(bytes);
         }
 
-        public static string ToBase64String(this string value, Encoding encoding = null)
+        public static string ToBase64String(this string value, Encoding? encoding = null)
         {
             if (string.IsNullOrEmpty(value)) return string.Empty;
             
@@ -62,7 +62,7 @@ namespace Papercut.Common.Extensions
             return roundedNumber.ToString(CultureInfo.InvariantCulture) + suffixes[place];
         }
 
-        public static string GetOriginalFileName(string path, string fileName)
+        public static string? GetOriginalFileName(string path, string fileName)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path));

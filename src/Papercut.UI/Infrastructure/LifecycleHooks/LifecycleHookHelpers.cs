@@ -28,7 +28,7 @@ namespace Papercut.Infrastructure.LifecycleHooks
         public static async Task<AppLifecycleActionResultType> RunLifecycleHooks<TLifecycle>(this IComponentContext container, Func<TLifecycle, Task<AppLifecycleActionResultType>> runHook)
             where TLifecycle : IAppLifecycleHook
         {
-            if (container == null) throw new ArgumentNullException(nameof(container));
+            ArgumentNullException.ThrowIfNull(container);
 
             var logger = container.Resolve<ILogger>();
 
@@ -54,21 +54,21 @@ namespace Papercut.Infrastructure.LifecycleHooks
 
         public static async Task<AppLifecycleActionResultType> RunPreExit(this IComponentContext container)
         {
-            if (container == null) throw new ArgumentNullException(nameof(container));
+            ArgumentNullException.ThrowIfNull(container);
 
             return await container.RunLifecycleHooks<IAppLifecyclePreExit>(hook => hook.OnPreExit());
         }
 
         public static async Task<AppLifecycleActionResultType> RunPreStart(this IComponentContext container)
         {
-            if (container == null) throw new ArgumentNullException(nameof(container));
+            ArgumentNullException.ThrowIfNull(container);
 
             return await container.RunLifecycleHooks<IAppLifecyclePreStart>(hook => hook.OnPreStart());
         }
 
         public static async Task RunStarted(this IComponentContext container)
         {
-            if (container == null) throw new ArgumentNullException(nameof(container));
+            ArgumentNullException.ThrowIfNull(container);
 
             var logger = container.Resolve<ILogger>();
 

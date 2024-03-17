@@ -73,7 +73,7 @@ namespace Papercut.ViewModels
 
         public void AddRule(IRule rule)
         {
-            if (rule == null) throw new ArgumentNullException(nameof(rule));
+            ArgumentNullException.ThrowIfNull(rule);
 
             var newRule = Activator.CreateInstance(rule.GetType()) as IRule;
             this.Rules.Add(newRule);

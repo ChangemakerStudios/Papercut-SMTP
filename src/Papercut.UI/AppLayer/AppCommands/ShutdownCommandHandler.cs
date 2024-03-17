@@ -90,7 +90,7 @@ namespace Papercut.AppLayer.AppCommands
         [UsedImplicitly]
         static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<ShutdownCommandHandler>().AsImplementedInterfaces().SingleInstance();
         }

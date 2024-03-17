@@ -88,8 +88,7 @@ namespace Papercut.ViewModels
 
         public void ShowMessage(MimeMessage? mailMessageEx)
         {
-            if (mailMessageEx == null)
-                throw new ArgumentNullException(nameof(mailMessageEx));
+            ArgumentNullException.ThrowIfNull(mailMessageEx);
 
             try
             {

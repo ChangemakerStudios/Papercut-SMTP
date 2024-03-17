@@ -33,7 +33,7 @@ namespace Papercut.Helpers
         public static async Task<T> ActivateViewModelOf<T>(
             this Conductor<IMessageDetailItem>.Collection.OneActive conductor)
         {
-            if (conductor == null) throw new ArgumentNullException(nameof(conductor));
+            ArgumentNullException.ThrowIfNull(conductor);
 
             var item = conductor?.Items.FirstOrDefault(s => s.GetType() == typeof(T));
 

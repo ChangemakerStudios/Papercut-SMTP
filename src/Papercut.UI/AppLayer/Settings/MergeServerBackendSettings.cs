@@ -40,7 +40,7 @@ namespace Papercut.AppLayer.Settings
 
         public async Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token)
         {
-            if (@event == null) throw new ArgumentNullException(nameof(@event));
+            ArgumentNullException.ThrowIfNull(@event);
 
             if (string.IsNullOrWhiteSpace(@event.MessageWritePath))
                 return;
@@ -72,7 +72,7 @@ namespace Papercut.AppLayer.Settings
         [UsedImplicitly]
         static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<MergeServerBackendSettings>().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();

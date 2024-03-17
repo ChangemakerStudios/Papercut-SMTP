@@ -115,7 +115,7 @@ namespace Papercut.AppLayer.UiCommands
         [UsedImplicitly]
         static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<UiCommandHub>().As<IUiCommandHub>().As<IEventHandler<ShowMainWindowCommand>>().SingleInstance();
         }

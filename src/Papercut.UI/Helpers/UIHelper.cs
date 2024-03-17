@@ -90,9 +90,9 @@ namespace Papercut.Helpers
             return true;
         }
 
-        public static object GetObjectDataFromPoint(this ListBox source, Point point)
+        public static object? GetObjectDataFromPoint(this ListBox source, Point point)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
+            ArgumentNullException.ThrowIfNull(source, nameof(source));
 
             if (source.InputHitTest(point) is UIElement element)
             {
@@ -118,12 +118,12 @@ namespace Papercut.Helpers
             return null;
         }
 
-        public static T FindAncestor<T>(this DependencyObject dependencyObject)
+        public static T? FindAncestor<T>(this DependencyObject dependencyObject)
             where T : DependencyObject
         {
-            if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+            ArgumentNullException.ThrowIfNull(dependencyObject);
 
-            DependencyObject parent = VisualTreeHelper.GetParent(dependencyObject);
+            var parent = VisualTreeHelper.GetParent(dependencyObject);
             if (parent == null) return null;
             var parentT = parent as T;
             return parentT ?? FindAncestor<T>(parent);

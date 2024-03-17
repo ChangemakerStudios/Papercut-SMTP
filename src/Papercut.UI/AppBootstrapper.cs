@@ -107,7 +107,7 @@ namespace Papercut
 
         protected override object GetInstance(Type service, string? named)
         {
-            if (service == null) throw new ArgumentNullException(nameof(service));
+            ArgumentNullException.ThrowIfNull(service);
 
             if (string.IsNullOrWhiteSpace(named))
             {

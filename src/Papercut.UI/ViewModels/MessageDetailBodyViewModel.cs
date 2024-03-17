@@ -25,7 +25,7 @@ using Papercut.Views;
 
 namespace Papercut.ViewModels
 {
-    public class MessageDetailBodyViewModel : Screen, IMessageDetailItem
+    public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
 

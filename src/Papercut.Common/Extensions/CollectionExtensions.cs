@@ -41,7 +41,7 @@ namespace Papercut.Common.Extensions
             return items.ToReadOnlyCollection();
         }
 
-        public static HashSet<T> ToHashSet<T>([CanBeNull] this IEnumerable<T> items, IEqualityComparer<T> comparer = null)
+        public static HashSet<T> ToHashSet<T>([CanBeNull] this IEnumerable<T> items, IEqualityComparer<T>? comparer = null)
         {
             return new HashSet<T>(items.IfNullEmpty(), comparer ?? EqualityComparer<T>.Default);
         }
@@ -71,7 +71,7 @@ namespace Papercut.Common.Extensions
 
         public static IDictionary<TKey, TValue> FlattenToDictionary<TKey, TValue>(
             this ILookup<TKey, TValue> lookup,
-            Func<IEnumerable<TValue>, TValue> flattenFunc = null)
+            Func<IEnumerable<TValue>, TValue>? flattenFunc = null)
         {
             if (lookup == null) throw new ArgumentNullException("nameValueCollection");
 

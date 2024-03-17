@@ -35,7 +35,7 @@ using Papercut.Message.Helpers;
 
 namespace Papercut.ViewModels
 {
-    public class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
+    public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
 
@@ -47,7 +47,7 @@ namespace Papercut.ViewModels
 
         MimeMessage? _mimeMessage;
 
-        MimeEntity _selectedPart;
+        MimeEntity? _selectedPart;
 
         public MessageDetailPartsListViewModel(MessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
         {
@@ -72,7 +72,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public MimeEntity SelectedPart
+        public MimeEntity? SelectedPart
         {
             get => this._selectedPart;
             set
@@ -116,7 +116,9 @@ namespace Papercut.ViewModels
                 string tempFileName;
 
                 if (mimePart.FileName.IsSet())
+                {
                     tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), mimePart.FileName);
+                }
                 else
                 {
                     tempFileName = Path.GetTempFileName();

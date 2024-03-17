@@ -277,7 +277,7 @@ namespace Papercut.ViewModels
         {
             (string Name, string Color) GetPriorityText(MimeMessage? message)
             {
-                if (message == null) throw new ArgumentNullException(nameof(message));
+                ArgumentNullException.ThrowIfNull(message);
 
                 switch (message.Priority)
                 {

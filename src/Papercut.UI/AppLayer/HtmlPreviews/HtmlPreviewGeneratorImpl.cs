@@ -43,7 +43,7 @@ namespace Papercut.AppLayer.HtmlPreviews
 
         public string GetHtmlPreview(MimeMessage? mailMessageEx, string? tempDir = null)
         {
-            if (mailMessageEx == null) throw new ArgumentNullException(nameof(mailMessageEx));
+            ArgumentNullException.ThrowIfNull(mailMessageEx);
 
             tempDir = tempDir ?? this.CreateUniqueTempDirectory();
             var visitor = new HtmlPreviewVisitor(tempDir);
@@ -91,7 +91,7 @@ namespace Papercut.AppLayer.HtmlPreviews
         [UsedImplicitly]
         static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<HtmlPreviewGeneratorImpl>().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();

@@ -86,7 +86,7 @@ namespace Papercut.Infrastructure.WebView
         [UsedImplicitly]
         static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<WebView2Information>().AsSelf().SingleInstance();
         }

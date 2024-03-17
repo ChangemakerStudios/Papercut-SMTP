@@ -40,8 +40,7 @@ namespace Papercut.Infrastructure.Resources
 
         public string GetResourceString(string resourceName)
         {
-            if (resourceName == null)
-                throw new ArgumentNullException(nameof(resourceName));
+            ArgumentNullException.ThrowIfNull(resourceName);
 
             var resource =
                 Assembly.GetExecutingAssembly()
@@ -88,7 +87,7 @@ namespace Papercut.Infrastructure.Resources
         [UsedImplicitly]
         static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<AppResourceLocator>().AsSelf().InstancePerLifetimeScope();
         }

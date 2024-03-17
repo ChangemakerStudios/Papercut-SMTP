@@ -24,8 +24,8 @@ namespace Papercut.Helpers
     {
         public static string RenderTemplate(this string template, object model)
         {
-            if (template == null) throw new ArgumentNullException(nameof(template));
-            if (model == null) throw new ArgumentNullException(nameof(model));
+            ArgumentNullException.ThrowIfNull(template);
+            ArgumentNullException.ThrowIfNull(model);
 
             var hbt = Handlebars.Compile(template);
 

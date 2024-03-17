@@ -248,7 +248,7 @@ namespace Papercut.AppLayer.IpComm
         [UsedImplicitly]
         static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<BackendServiceCoordinator>().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();

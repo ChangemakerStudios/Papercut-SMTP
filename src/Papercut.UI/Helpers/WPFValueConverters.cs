@@ -74,7 +74,7 @@ namespace Papercut.Helpers
 
         public bool IsHidden { get; set; }
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             bool booleanValue = value != null;
 
@@ -85,9 +85,9 @@ namespace Papercut.Helpers
         }
 
         public object ConvertBack(
-            object value,
+            object? value,
             Type targetType,
-            object parameter,
+            object? parameter,
             CultureInfo culture)
         {
             throw new NotImplementedException();

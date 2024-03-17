@@ -48,7 +48,7 @@ namespace Papercut.Helpers
             this.TempDirectory = tempDirectory;
         }
 
-        public string TempDirectory { get; }
+        public string? TempDirectory { get; }
 
         public IList<MimeEntity> Attachments => this._attachments;
 
@@ -56,7 +56,7 @@ namespace Papercut.Helpers
 
         protected override void VisitMultipartAlternative(MultipartAlternative alternative)
         {
-            // walk the multipart/alternative children backwards from greatest level of faithfulness to the least faithful
+            // walk the multipart/alternative children backwards from the greatest level of faithfulness to the least faithful
             for (int i = alternative.Count - 1; i >= 0 && this._body == null; i--)
             {
                 alternative[i].Accept(this);
@@ -118,8 +118,8 @@ namespace Papercut.Helpers
 
             if (!File.Exists(path))
             {
-                using (var output = File.Create(path))
-                    image.Content.DecodeTo(output);
+                using var output = File.Create(path);
+                image.Content.DecodeTo(output);
             }
 
             return $"file://{path.Replace('\\', '/')}";

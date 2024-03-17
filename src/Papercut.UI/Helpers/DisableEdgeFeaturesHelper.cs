@@ -24,7 +24,7 @@ namespace Papercut.Helpers
     {
         public static void DisableEdgeFeatures(this CoreWebView2 coreWeb)
         {
-            if (coreWeb == null) throw new ArgumentNullException(nameof(coreWeb));
+            ArgumentNullException.ThrowIfNull(coreWeb);
 
             coreWeb.Settings.AreDefaultContextMenusEnabled = false;
             coreWeb.Settings.IsZoomControlEnabled = false;

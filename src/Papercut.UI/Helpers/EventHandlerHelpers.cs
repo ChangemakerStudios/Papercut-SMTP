@@ -25,7 +25,7 @@ namespace Papercut.Helpers
     {
         public static IObservable<EventPattern<object>> ToObservable(this EventHandler eventHandler)
         {
-            if (eventHandler == null) throw new ArgumentNullException(nameof(eventHandler));
+            ArgumentNullException.ThrowIfNull(eventHandler);
 
             return Observable.FromEventPattern(
                 a => eventHandler += a,
@@ -35,7 +35,7 @@ namespace Papercut.Helpers
         public static IObservable<EventPattern<TArgs>> ToObservable<TArgs>(this EventHandler<TArgs> eventHandler)
             where TArgs : EventArgs
         {
-            if (eventHandler == null) throw new ArgumentNullException(nameof(eventHandler));
+            ArgumentNullException.ThrowIfNull(eventHandler);
 
             return Observable.FromEventPattern<EventHandler<TArgs>, TArgs>(
                 a => eventHandler += a,

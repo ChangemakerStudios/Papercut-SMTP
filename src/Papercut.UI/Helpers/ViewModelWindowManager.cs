@@ -22,21 +22,14 @@ using Caliburn.Micro;
 
 namespace Papercut.Helpers
 {
-    public class ViewModelWindowManager : WindowManager, IViewModelWindowManager
+    public class ViewModelWindowManager(ILifetimeScope lifetimeScope) : WindowManager, IViewModelWindowManager
     {
-        readonly ILifetimeScope _lifetimeScope;
-
-        public ViewModelWindowManager(ILifetimeScope lifetimeScope)
-        {
-            this._lifetimeScope = lifetimeScope;
-        }
-
         public async Task<bool?> ShowDialogWithViewModel<TViewModel>(
             Action<TViewModel>? setViewModel = null,
             object? context = null)
             where TViewModel : PropertyChangedBase
         {
-            var viewModel = this._lifetimeScope.Resolve<TViewModel>();
+            var viewModel = lifetimeScope.Resolve<TViewModel>();
             setViewModel?.Invoke(viewModel);
             return await this.ShowDialogAsync(viewModel, context);
         }
@@ -46,7 +39,7 @@ namespace Papercut.Helpers
             object? context = null)
             where TViewModel : PropertyChangedBase
         {
-            var viewModel = this._lifetimeScope.Resolve<TViewModel>();
+            var viewModel = lifetimeScope.Resolve<TViewModel>();
             setViewModel?.Invoke(viewModel);
             await this.ShowWindowAsync(viewModel, context);
         }
@@ -56,7 +49,7 @@ namespace Papercut.Helpers
             object? context = null)
             where TViewModel : PropertyChangedBase
         {
-            var viewModel = this._lifetimeScope.Resolve<TViewModel>();
+            var viewModel = lifetimeScope.Resolve<TViewModel>();
             setViewModel?.Invoke(viewModel);
             await this.ShowPopupAsync(viewModel, context);
         }
