@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,19 +16,10 @@
 // limitations under the License.
 
 
+using Serilog.Configuration;
+
 namespace Papercut.Service.Logging
 {
-    using System;
-
-    using Autofac;
-
-    using Papercut.Common.Helper;
-    using Papercut.Core.Annotations;
-    using Papercut.Service.Helpers;
-
-    using Serilog;
-    using Serilog.Configuration;
-
     public class ConfigureSeqLogging : ILoggerSettings
     {
         private readonly PapercutServiceSettings _settings;
@@ -53,7 +44,7 @@ namespace Papercut.Service.Logging
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

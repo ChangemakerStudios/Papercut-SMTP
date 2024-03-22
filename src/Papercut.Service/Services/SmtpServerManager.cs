@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,25 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using Papercut.Core.Domain.Network;
+using Papercut.Core.Domain.Network.Smtp;
+using Papercut.Infrastructure.Smtp;
+
 namespace Papercut.Service.Services
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Network;
-    using Papercut.Core.Domain.Network.Smtp;
-    using Papercut.Core.Domain.Settings;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Infrastructure.Smtp;
-    using Papercut.Service.Helpers;
-
-    using Serilog;
-
     public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandler<PapercutServiceReadyEvent>
     {
         private readonly ILogger _logger;
@@ -51,6 +39,12 @@ namespace Papercut.Service.Services
             this._logger = logger;
         }
 
+        public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(500), token);
+            await this.BindSMTPServer();
+        }
+
         public async Task HandleAsync(SmtpServerBindEvent @event, CancellationToken token = default)
         {
             this._logger.Information(
@@ -64,12 +58,6 @@ namespace Papercut.Service.Services
 
             // rebind the server...
             await this.BindSMTPServer();
-        }
-
-        public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(500), token);
-            await BindSMTPServer();
         }
 
         async Task BindSMTPServer()

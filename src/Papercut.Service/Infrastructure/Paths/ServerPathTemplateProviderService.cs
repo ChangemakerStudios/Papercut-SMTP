@@ -15,14 +15,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Service.Services
+namespace Papercut.Service.Infrastructure.Paths
 {
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Linq;
 
     using Papercut.Core.Domain.Paths;
-    using Papercut.Service.Helpers;
 
     public class ServerPathTemplateProviderService : IPathTemplatesProvider
     {

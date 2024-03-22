@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,13 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Services
+using Papercut.Common.Extensions;
+using Papercut.Core.Domain.Rules;
+using Papercut.Rules.App;
+using Papercut.Rules.Domain.Rules;
+
+namespace Papercut.Service.Infrastructure.Rules
 {
-    using System;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Domain.Message;
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Rules;
-    using Papercut.Rules.App;
-    using Papercut.Rules.Domain.Rules;
-    using Papercut.Rules.Infrastructure;
-
-    using Serilog;
-
     public class RuleService : RuleServiceBase,
         IEventHandler<RulesUpdatedEvent>,
         IEventHandler<PapercutClientReadyEvent>,
@@ -51,12 +39,12 @@ namespace Papercut.Service.Services
             IRulesRunner rulesRunner)
             : base(ruleRepository, logger)
         {
-            this._rulesRunner = rulesRunner;
+            _rulesRunner = rulesRunner;
         }
 
         public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
         {
-            this.Logger.Information(
+            Logger.Information(
                 "New Message {MessageFile} Arrived -- Running Rules",
                 @event.NewMessage);
 
@@ -65,11 +53,11 @@ namespace Papercut.Service.Services
                 {
                     try
                     {
-                        await Task.Delay(2000, this._cancellationTokenSource.Token);
-                        await this._rulesRunner.RunAsync(
-                            this.Rules.ToArray(),
+                        await Task.Delay(2000, _cancellationTokenSource.Token);
+                        await _rulesRunner.RunAsync(
+                            Rules.ToArray(),
                             @event.NewMessage,
-                            this._cancellationTokenSource.Token);
+                            _cancellationTokenSource.Token);
                     }
                     catch (ObjectDisposedException)
                     {
@@ -82,29 +70,29 @@ namespace Papercut.Service.Services
                         Log.Error(ex, "Failure Running Rules");
                     }
                 },
-                this._cancellationTokenSource.Token);
+                _cancellationTokenSource.Token);
 
             return Task.CompletedTask;
         }
 
         public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
         {
-            this.Logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
+            Logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
 
             try
             {
                 // accessing "Rules" forces the collection to be loaded
-                if (this.Rules.Any())
+                if (Rules.Any())
                 {
-                    this.Logger.Information(
+                    Logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
-                        this.Rules.Count,
-                        this.RuleFileName);
+                        Rules.Count,
+                        RuleFileName);
                 }
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
+                Logger.Error(ex, "Error loading rules from file {RuleFileName}", RuleFileName);
             }
 
             return Task.CompletedTask;
@@ -112,9 +100,9 @@ namespace Papercut.Service.Services
 
         public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token = default)
         {
-            this.Rules.Clear();
-            this.Rules.AddRange(@event.Rules);
-            this.Save();
+            Rules.Clear();
+            Rules.AddRange(@event.Rules);
+            Save();
 
             return Task.CompletedTask;
         }
@@ -123,7 +111,7 @@ namespace Papercut.Service.Services
         {
             if (disposing)
             {
-                this._cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Cancel();
             }
         }
     }

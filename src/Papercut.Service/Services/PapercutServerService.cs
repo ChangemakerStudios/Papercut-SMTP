@@ -18,13 +18,7 @@
 
 namespace Papercut.Service.Services
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Domain.Application;
     using Papercut.Core.Domain.WebServer;
-    using Papercut.Core.Infrastructure.Lifecycle;
     using Papercut.Infrastructure.IPComm.Network;
     using Papercut.Infrastructure.Smtp;
 
