@@ -396,34 +396,20 @@ namespace Papercut.ViewModels
         {
             this.PushSelectedIndex();
 
-            var existingMessages = this.Messages.ToList();
-
             List<MessageEntry> messageEntries = this._messageRepository.LoadMessages()
                     .ToList();
 
             List<MimeMessageEntry> toAdd =
-                messageEntries.Except(existingMessages)
+                messageEntries.Except(this.Messages)
                     .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
                     .ToList();
 
-            var toDelete = existingMessages.Except(messageEntries)
+            var toDelete = this.Messages.Except(messageEntries)
                 .OfType<MimeMessageEntry>().ToList();
 
-            toDelete.ForEach(m => existingMessages.Remove(m));
+            toDelete.ForEach(m => this.Messages.Remove(m));
 
-            existingMessages.AddRange(toAdd);
-
-            if (this.SortOrder == ListSortDirection.Ascending)
-            {
-                this.Messages.Clear();
-                this.Messages.AddRange(existingMessages.OrderBy(s => s.SortTicks));
-            }
-            else
-            {
-                // descending -- load messages in that order too
-                this.Messages.Clear();
-                this.Messages.AddRange(existingMessages.OrderByDescending(s => s.SortTicks));
-            }
+            this.Messages.AddRange(toAdd);
 
             this.MessagesSorted.Refresh();
             this.ValidateSelected();
