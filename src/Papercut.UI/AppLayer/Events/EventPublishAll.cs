@@ -45,31 +45,9 @@ namespace Papercut.AppLayer.Events
             await this._eventAggregator.PublishOnUIThreadAsync(eventObject, token);
         }
 
-        protected override Task HandleAsync<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
+        protected override async Task HandleAsync<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
         {
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-
-            async void InnerHandle()
-            {
-                try
-                {
-                    await base.HandleAsync(eventObject, @event, token);
-
-                    taskCompletionSource.SetResult(true);
-                }
-                catch (OperationCanceledException)
-                {
-                    taskCompletionSource.SetCanceled();
-                }
-                catch (Exception ex)
-                {
-                    taskCompletionSource.SetException(ex);
-                }
-            }
-
-            Execute.BeginOnUIThread(InnerHandle);
-
-            return taskCompletionSource.Task;
+            await Execute.OnUIThreadAsync(async () => await base.HandleAsync(eventObject, @event, token));
         }
 
         #region Begin Static Container Registrations

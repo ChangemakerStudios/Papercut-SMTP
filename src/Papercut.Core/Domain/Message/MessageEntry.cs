@@ -80,7 +80,7 @@ namespace Papercut.Core.Domain.Message
 
         public DateTime ModifiedDate => this._info.LastWriteTime;
 
-        public long ModifiedTicks => this.ModifiedDate.Ticks;
+        public long SortTicks => (this._created ?? this.ModifiedDate).Ticks;
 
         public string Name => this._info.Name;
 

@@ -49,7 +49,7 @@ namespace Papercut.ViewModels
     using KeyEventArgs = System.Windows.Input.KeyEventArgs;
     using Screen = Caliburn.Micro.Screen;
 
-    public class MessageListViewModel : Screen, IEventHandler<SettingsUpdatedEvent>
+    public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
     {
         readonly ILogger _logger;
 
@@ -133,9 +133,11 @@ namespace Papercut.ViewModels
 
         public Task HandleAsync(SettingsUpdatedEvent message, CancellationToken token)
         {
-            this._logger.Information("Sort Settings Updated -- Updating Message Sort {SortOrder}", this.SortOrder);
-
-            this.SetupMessageView();
+            using (this.MessagesSorted.DeferRefresh())
+            {
+                this.MessagesSorted.SortDescriptions.Clear();
+                this.MessagesSorted.SortDescriptions.Add(new SortDescription(nameof(MessageEntry.SortTicks), this.SortOrder));
+            }
 
             return Task.CompletedTask;
         }
@@ -178,8 +180,8 @@ namespace Papercut.ViewModels
         void SetupMessages()
         {
             this.Messages = new ObservableCollection<MimeMessageEntry>();
-
-            this.SetupMessageView();
+            this.MessagesSorted = CollectionViewSource.GetDefaultView(this.Messages);
+            this.MessagesSorted.SortDescriptions.Add(new SortDescription(nameof(MessageEntry.SortTicks), this.SortOrder));
 
             // Begin listening for new messages
             this._messageWatcher.NewMessage += this.NewMessage;
@@ -193,15 +195,6 @@ namespace Papercut.ViewModels
                 .Subscribe(_ => this.RefreshMessageList());
 
             this.Messages.CollectionChanged += this.CollectionChanged;
-        }
-
-        void SetupMessageView()
-        {
-            var view = CollectionViewSource.GetDefaultView(this.Messages);
-            view.SortDescriptions.Add(new SortDescription(nameof(MessageEntry.ModifiedTicks), this.SortOrder));
-            this.MessagesSorted = view;
-
-            this.MessagesSorted.Refresh();
         }
 
         void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -403,40 +396,37 @@ namespace Papercut.ViewModels
         {
             this.PushSelectedIndex();
 
+            var existingMessages = this.Messages.ToList();
+
             List<MessageEntry> messageEntries = this._messageRepository.LoadMessages()
                     .ToList();
 
-            List<MimeMessageEntry> toAdd = null;
+            List<MimeMessageEntry> toAdd =
+                messageEntries.Except(existingMessages)
+                    .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
+                    .ToList();
+
+            var toDelete = existingMessages.Except(messageEntries)
+                .OfType<MimeMessageEntry>().ToList();
+
+            toDelete.ForEach(m => existingMessages.Remove(m));
+
+            existingMessages.AddRange(toAdd);
 
             if (this.SortOrder == ListSortDirection.Ascending)
             {
-                toAdd =
-                    messageEntries.Except(this.Messages)
-                        .OrderBy(s => s.ModifiedTicks)
-                        .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
-                        .ToList();
+                this.Messages.Clear();
+                this.Messages.AddRange(existingMessages.OrderBy(s => s.SortTicks));
             }
             else
             {
                 // descending -- load messages in that order too
-                toAdd =
-                    messageEntries.Except(this.Messages)
-                        .OrderByDescending(s => s.ModifiedTicks)
-                        .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
-                        .ToList();
+                this.Messages.Clear();
+                this.Messages.AddRange(existingMessages.OrderByDescending(s => s.SortTicks));
             }
 
-            var toDelete = this.Messages.Except(messageEntries)
-                .OfType<MimeMessageEntry>().ToList();
-
-            toDelete.ForEach(m => this.Messages.Remove(m));
-
-            this.Messages.AddRange(toAdd);
-
             this.MessagesSorted.Refresh();
-
             this.ValidateSelected();
-
             this.PopSelectedIndex();
         }
     }

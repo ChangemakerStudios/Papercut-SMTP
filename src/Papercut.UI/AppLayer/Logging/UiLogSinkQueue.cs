@@ -80,8 +80,7 @@ namespace Papercut.AppLayer.LogSinks
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            builder.RegisterType<UiLogSinkQueue>().As<ILoggerSettings>().AsSelf()
-                .SingleInstance();
+            builder.RegisterType<UiLogSinkQueue>().As<ILoggerSettings>().AsSelf();
         }
 
         #endregion

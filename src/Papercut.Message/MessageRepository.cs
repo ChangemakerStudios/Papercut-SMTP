@@ -25,23 +25,13 @@ using Serilog;
 
 namespace Papercut.Message
 {
-    public class MessageRepository
+    public class MessageRepository(ILogger logger, MessagePathConfigurator messagePathConfigurator)
     {
         public const string MessageFileSearchPattern = "*.eml";
 
         private const string EmptyStringReplacement = "_";
 
         static char[] _invalidFileNameChars;
-
-        readonly ILogger _logger;
-
-        readonly MessagePathConfigurator _messagePathConfigurator;
-
-        public MessageRepository(ILogger logger, MessagePathConfigurator messagePathConfigurator)
-        {
-            this._logger = logger;
-            this._messagePathConfigurator = messagePathConfigurator;
-        }
 
         public bool DeleteMessage(MessageEntry entry)
         {
@@ -99,27 +89,21 @@ namespace Papercut.Message
         /// <summary>
         /// Loads all messages
         /// </summary>
-        public IList<MessageEntry> LoadMessages()
+        public IEnumerable<MessageEntry> LoadMessages()
         {
-            IEnumerable<string> files = this._messagePathConfigurator.LoadPaths.SelectMany(
-                    p => Directory.GetFiles(p, MessageFileSearchPattern));
-
-            return
-                files.Select(file => new MessageEntry(file))
-                    .OrderByDescending(m => m.ModifiedDate)
-                    .ThenBy(m => m.Name)
-                    .ToList();
+            return messagePathConfigurator.LoadPaths.SelectMany(
+                p => Directory.GetFiles(p, MessageFileSearchPattern)).Select(file => new MessageEntry(file));
         }
 
         public string GetFullMailFilename(string mailSubject)
         {
-            var validPart = MakeValidFileName(mailSubject.Truncate(40), "subject unknown");
+            var validPart = MakeValidFileName(mailSubject.Truncate(40)!, "subject unknown");
 
             var dateTimeFormatted = DateTime.Now.ToString(MessageEntry.DateTimeFormat);
 
             // the file must not exist:  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
             return Path.Combine(
-                this._messagePathConfigurator.DefaultSavePath,
+                messagePathConfigurator.DefaultSavePath,
                 $"{dateTimeFormatted} {validPart} {StringHelpers.SmallRandomString()}.eml");
         }
 
@@ -134,11 +118,11 @@ namespace Papercut.Message
                     await writeTo(fileStream);
                 }
 
-                this._logger.Information("Successfully Saved email message: {EmailMessageFile}", fileName);
+                logger.Information("Successfully Saved email message: {EmailMessageFile}", fileName);
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, "Failure saving email message: {EmailMessageFile}", fileName);
+                logger.Error(ex, "Failure saving email message: {EmailMessageFile}", fileName);
             }
 
             return fileName;
