@@ -29,7 +29,7 @@ namespace Papercut.Infrastructure.Themes
         private static List<ThemeColor> ThemeColors { get; } = typeof(Colors)
             .GetProperties()
             .Where(s => !s.Name.Equals("Transparent"))
-            .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)))            
+            .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)!))
             .ToList();
 
         public IReadOnlyCollection<ThemeColor> GetAll() => ThemeColors;

@@ -30,8 +30,6 @@ namespace Papercut.AppLayer.UiCommands
 {
     public class UiCommandHub : Disposable, IUiCommandHub, IEventHandler<ShowMainWindowCommand>
     {
-        #region Fields
-
         private readonly Subject<ShowBalloonTipCommand> _onShowBalloonTip = new Subject<ShowBalloonTipCommand>();
 
         private readonly Subject<ShowMainWindowCommand> _onShowMainWindow = new Subject<ShowMainWindowCommand>();
@@ -40,10 +38,6 @@ namespace Papercut.AppLayer.UiCommands
 
         private readonly Subject<ShowOptionWindowCommand> _onShowOptionWindow = new Subject<ShowOptionWindowCommand>();
 
-        #endregion
-
-        #region Public Properties
-
         public IObservable<ShowBalloonTipCommand> OnShowBalloonTip => this._onShowBalloonTip;
 
         public IObservable<ShowMainWindowCommand> OnShowMainWindow => this._onShowMainWindow;
@@ -51,10 +45,6 @@ namespace Papercut.AppLayer.UiCommands
         public IObservable<ShowMessageCommand> OnShowMessage => this._onShowMessage;
 
         public IObservable<ShowOptionWindowCommand> OnShowOptionWindow => this._onShowOptionWindow;
-
-        #endregion
-
-        #region Public Methods and Operators
 
         public Task HandleAsync(ShowMainWindowCommand @event, CancellationToken token = default)
         {
@@ -91,10 +81,6 @@ namespace Papercut.AppLayer.UiCommands
             this._onShowOptionWindow.OnNext(command);
         }
 
-        #endregion
-
-        #region Methods
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -119,8 +105,6 @@ namespace Papercut.AppLayer.UiCommands
 
             builder.RegisterType<UiCommandHub>().As<IUiCommandHub>().As<IEventHandler<ShowMainWindowCommand>>().SingleInstance();
         }
-
-        #endregion
 
         #endregion
     }

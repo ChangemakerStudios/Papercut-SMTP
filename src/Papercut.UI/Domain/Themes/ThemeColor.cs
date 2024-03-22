@@ -20,49 +20,14 @@ using System.Windows.Media;
 
 using Papercut.Common.Helper;
 
-namespace Papercut.Domain.Themes
+namespace Papercut.Domain.Themes;
+
+public record ThemeColor(string Name, Color Color)
 {
-    public class ThemeColor
+    public string Description { get; } = Name.CamelCaseToSeparated();
+
+    public override int GetHashCode()
     {
-        public ThemeColor(string name, Color color)
-        {
-            this.Name = name;
-            this.Color = color;
-            this.Description = name.CamelCaseToSeparated();
-        }
-
-        public string Name { get; }
-
-        public string Description { get; }
-
-        public Color Color { get; }
-
-        protected bool Equals(ThemeColor other)
-        {
-            return this.Name == other.Name;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return this.Equals((ThemeColor)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.Name != null ? this.Name.GetHashCode() : 0;
-        }
-
-        public static bool operator ==(ThemeColor left, ThemeColor right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(ThemeColor left, ThemeColor right)
-        {
-            return !Equals(left, right);
-        }
+        return this.Name.GetHashCode();
     }
 }

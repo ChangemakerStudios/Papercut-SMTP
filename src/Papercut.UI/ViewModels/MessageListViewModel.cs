@@ -401,6 +401,7 @@ namespace Papercut.ViewModels
 
             List<MimeMessageEntry> toAdd =
                 messageEntries.Except(this.Messages)
+                    .OrderBy(s => s.FileSize)
                     .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
                     .ToList();
 
@@ -408,7 +409,6 @@ namespace Papercut.ViewModels
                 .OfType<MimeMessageEntry>().ToList();
 
             toDelete.ForEach(m => this.Messages.Remove(m));
-
             this.Messages.AddRange(toAdd);
 
             this.MessagesSorted.Refresh();
