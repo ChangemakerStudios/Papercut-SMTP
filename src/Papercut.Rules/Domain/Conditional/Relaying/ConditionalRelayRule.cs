@@ -30,9 +30,9 @@ namespace Papercut.Rules.Domain.Conditional.Relaying
     [Serializable]
     public class ConditionalRelayRule : RelayRule, IConditionalRule
     {
-        string _regexBodyMatch;
+        string? _regexBodyMatch;
 
-        string _regexHeaderMatch;
+        string? _regexHeaderMatch;
 
         [Category("Information")]
         public override string Type => "Conditional Relay";

@@ -43,7 +43,7 @@ namespace Papercut.Service.Infrastructure.Rules
 
         public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
         {
-            this.Logger.Information(
+            this._logger.Information(
                 "New Message {MessageFile} Arrived -- Running Rules",
                 @event.NewMessage);
 
@@ -76,14 +76,14 @@ namespace Papercut.Service.Infrastructure.Rules
 
         public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
         {
-            this.Logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
+            this._logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
 
             try
             {
                 // accessing "Rules" forces the collection to be loaded
                 if (this.Rules.Any())
                 {
-                    this.Logger.Information(
+                    this._logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
                         this.Rules.Count,
                         this.RuleFileName);
@@ -91,7 +91,7 @@ namespace Papercut.Service.Infrastructure.Rules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
+                this._logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
             }
 
             return Task.CompletedTask;

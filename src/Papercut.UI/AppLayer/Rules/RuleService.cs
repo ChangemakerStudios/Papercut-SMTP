@@ -68,14 +68,14 @@ namespace Papercut.AppLayer.Rules
 
         public async Task OnStartedAsync()
         {
-            this.Logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
+            this._logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
 
             try
             {
                 // accessing "Rules" forces the collection to be loaded
                 if (this.Rules.Any())
                 {
-                    this.Logger.Information(
+                    this._logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
                         this.Rules.Count,
                         this.RuleFileName);
@@ -83,7 +83,7 @@ namespace Papercut.AppLayer.Rules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
+                this._logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
             }
 
             // rules loaded/updated event
@@ -101,14 +101,14 @@ namespace Papercut.AppLayer.Rules
                         await this._messageBus.PublishAsync(
                             new RulesUpdatedEvent(this.Rules.ToArray()));
                     },
-                    ex => this.Logger.Error(ex, "Failure Publishing Rules"));
+                    ex => this._logger.Error(ex, "Failure Publishing Rules"));
 
             this.HookPropertyChangedForRules(this.Rules);
 
             // the backend service handles rules running if it's online
             if (!this._backendServiceStatus.IsOnline)
             {
-                this.Logger.Debug("Setting up Rule Dispatcher Observable");
+                this._logger.Debug("Setting up Rule Dispatcher Observable");
 
                 // observe message watcher and run rules when a new message arrives
                 this._messageWatcher.GetNewMessageObservable(TaskPoolScheduler.Default)
@@ -117,7 +117,7 @@ namespace Papercut.AppLayer.Rules
                         async e => await this._rulesRunner.RunAsync(
                                        this.Rules.ToArray(),
                                        e.EventArgs.NewMessage),
-                        ex => this.Logger.Error(ex, "Error Running Rules on New Message"));
+                        ex => this._logger.Error(ex, "Error Running Rules on New Message"));
             }
         }
 
@@ -138,7 +138,7 @@ namespace Papercut.AppLayer.Rules
                         async (_) =>
                             await this._messageBus.PublishAsync(
                                 new RulesUpdatedEvent(this.Rules.ToArray())),
-                        ex => this.Logger.Error(ex, "Error Publishing Rules Updated Event"));
+                        ex => this._logger.Error(ex, "Error Publishing Rules Updated Event"));
             }
         }
 
