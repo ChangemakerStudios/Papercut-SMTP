@@ -23,6 +23,7 @@ using Autofac;
 
 using Papercut.Common.Domain;
 using Papercut.Core.Domain.Rules;
+using Papercut.Core.Infrastructure.Async;
 using Papercut.Domain.BackendService;
 using Papercut.Domain.LifecycleHooks;
 using Papercut.Helpers;
@@ -90,7 +91,7 @@ namespace Papercut.AppLayer.Rules
             await this._messageBus.PublishAsync(new RulesUpdatedEvent(this.Rules.ToArray()));
 
             this._rulesObservable = this.GetRuleChangedObservable(TaskPoolScheduler.Default)
-                .Subscribe(
+                .SubscribeAsync(
                     async args =>
                     {
                         // TODO: here be bugs
@@ -113,7 +114,7 @@ namespace Papercut.AppLayer.Rules
                 // observe message watcher and run rules when a new message arrives
                 this._messageWatcher.GetNewMessageObservable(TaskPoolScheduler.Default)
                     .DelaySubscription(TimeSpan.FromSeconds(1))
-                    .Subscribe(
+                    .SubscribeAsync(
                         async e => await this._rulesRunner.RunAsync(
                                        this.Rules.ToArray(),
                                        e.EventArgs.NewMessage),

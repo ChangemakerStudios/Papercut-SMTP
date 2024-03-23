@@ -16,10 +16,35 @@
 // limitations under the License.
 
 
+using System.Reactive.Linq;
+
 namespace Papercut.Core.Infrastructure.Async
 {
     public static class AsyncHelpers
     {
+        public static IDisposable SubscribeAsync<TResult>(
+            this IObservable<TResult> source,
+            Func<TResult,Task> action,
+            Action<Exception>? onError = null,
+            Action? onCompleted = null)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (action == null) throw new ArgumentNullException(nameof(action));
+
+            return source.Select(x => Observable.FromAsync(async () => await action(x)))
+                .Concat()
+                .Subscribe(
+                    s => { },
+                    e =>
+                    {
+                        onError?.Invoke(e);
+                    },
+                    () =>
+                    {
+                        onCompleted?.Invoke();
+                    });
+        }
+
         /// <summary>
         /// Avoid the 'classic deadlock problem' when blocking on async work from non-async
         /// code by disabling any synchronization context while the async work takes place
