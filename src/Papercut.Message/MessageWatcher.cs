@@ -48,7 +48,7 @@ namespace Papercut.Message
             GC.SuppressFinalize(this);
         }
 
-        public IObservable<EventPattern<NewMessageEventArgs>> GetNewMessageObservable(IScheduler scheduler = null)
+        public IObservable<EventPattern<NewMessageEventArgs>> GetNewMessageObservable(IScheduler? scheduler = null)
         {
             return Observable.FromEventPattern<NewMessageEventArgs>(
                     e => this.NewMessage += e,

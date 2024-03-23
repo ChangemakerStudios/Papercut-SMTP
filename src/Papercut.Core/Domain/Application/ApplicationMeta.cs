@@ -22,7 +22,7 @@ namespace Papercut.Core.Domain.Application
 {
     public class ApplicationMeta : IAppMeta
     {
-        public ApplicationMeta(string appName, string appVersion = null)
+        public ApplicationMeta(string appName, string? appVersion = null)
         {
             this.AppName = appName;
             this.AppVersion = appVersion ?? Assembly.GetCallingAssembly().GetName().Version.ToString(3);

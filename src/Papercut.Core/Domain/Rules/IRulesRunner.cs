@@ -22,6 +22,6 @@ namespace Papercut.Core.Domain.Rules
 {
     public interface IRulesRunner
     {
-        Task RunAsync([NotNull] IRule[] rules, [NotNull] MessageEntry messageEntry, CancellationToken token = default);
+        Task RunAsync(IRule[] rules, MessageEntry messageEntry, CancellationToken token = default);
     }
 }

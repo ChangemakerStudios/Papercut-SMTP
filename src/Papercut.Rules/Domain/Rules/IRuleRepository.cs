@@ -22,8 +22,8 @@ namespace Papercut.Rules.Domain.Rules
 {
     public interface IRuleRepository
     {
-        void SaveRules([NotNull] IList<IRule> rules, string path);
+        void SaveRules(IList<IRule> rules, string path);
 
-        IList<IRule> LoadRules([NotNull] string path);
+        IList<IRule> LoadRules(string path);
     }
 }

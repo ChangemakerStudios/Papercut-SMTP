@@ -24,8 +24,8 @@ namespace Papercut.Core.Domain.Settings
     public static class ReadWriteValueExtensions
     {
         public static void Set(
-            [NotNull] this IWriteValue<string> writeValue,
-            [NotNull] string key, object value)
+            this IWriteValue<string> writeValue,
+            string key, object value)
         {
             if (writeValue == null) throw new ArgumentNullException(nameof(writeValue));
             if (key == null) throw new ArgumentNullException(nameof(key));
@@ -67,9 +67,9 @@ namespace Papercut.Core.Domain.Settings
         }
 
         public static T Get<T>(
-            [NotNull] this IReadValue<string> readValue,
-            [NotNull] string key,
-            [NotNull] Func<T> getDefaultValue)
+            this IReadValue<string> readValue,
+            string key,
+            Func<T> getDefaultValue)
         {
             if (readValue == null) throw new ArgumentNullException(nameof(readValue));
             if (key == null) throw new ArgumentNullException(nameof(key));
@@ -80,8 +80,8 @@ namespace Papercut.Core.Domain.Settings
         }
 
         public static T Get<T>(
-            [NotNull] this IReadValue<string> readValue,
-            [NotNull] string key,
+            this IReadValue<string> readValue,
+            string key,
             [CanBeNull] T defaultValue = default(T))
         {
             if (readValue == null) throw new ArgumentNullException(nameof(readValue));

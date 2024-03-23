@@ -22,7 +22,7 @@ namespace Papercut.Core.Infrastructure.MessageBus
 {
     public static class MessageBusExtensions
     {
-        public static void PublishFireAndForget<T>([NotNull] this IMessageBus messageBus, T @event)
+        public static void PublishFireAndForget<T>(this IMessageBus messageBus, T @event)
             where T : IEvent
         {
             if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));

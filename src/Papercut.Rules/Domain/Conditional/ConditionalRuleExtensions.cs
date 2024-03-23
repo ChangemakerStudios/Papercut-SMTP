@@ -26,7 +26,7 @@ namespace Papercut.Rules.Domain.Conditional
 {
     public static class ConditionalRuleExtensions
     {
-        public static bool IsConditionalForwardRuleMatch([NotNull] this IConditionalRule rule, [NotNull] MimeMessage mimeMessage)
+        public static bool IsConditionalForwardRuleMatch(this IConditionalRule rule, MimeMessage mimeMessage)
         {
             if (rule == null) throw new ArgumentNullException(nameof(rule));
             if (mimeMessage == null) throw new ArgumentNullException(nameof(mimeMessage));

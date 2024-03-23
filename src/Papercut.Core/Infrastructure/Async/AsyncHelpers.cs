@@ -24,7 +24,7 @@ namespace Papercut.Core.Infrastructure.Async
         /// Avoid the 'classic deadlock problem' when blocking on async work from non-async
         /// code by disabling any synchronization context while the async work takes place
         /// </summary>
-        public static T RunAsync<T>([NotNull] this Task<T> task)
+        public static T RunAsync<T>(this Task<T> task)
         {
             if (task == null) throw new ArgumentNullException(nameof(task));
 
@@ -45,7 +45,7 @@ namespace Papercut.Core.Infrastructure.Async
         /// Avoid the 'classic deadlock problem' when blocking on async work from non-async
         /// code by disabling any synchronization context while the async work takes place
         /// </summary>
-        public static void RunAsync([NotNull] this Task task)
+        public static void RunAsync(this Task task)
         {
             if (task == null) throw new ArgumentNullException(nameof(task));
 

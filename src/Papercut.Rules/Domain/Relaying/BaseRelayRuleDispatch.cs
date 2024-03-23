@@ -38,7 +38,7 @@ namespace Papercut.Rules.Domain.Relaying
 
         protected ILogger Logger { get; }
 
-        public virtual async Task DispatchAsync([NotNull] T rule, [NotNull] MessageEntry messageEntry, CancellationToken token = default)
+        public virtual async Task DispatchAsync(T rule, MessageEntry messageEntry, CancellationToken token = default)
         {
             if (rule == null) throw new ArgumentNullException(nameof(rule));
             if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));

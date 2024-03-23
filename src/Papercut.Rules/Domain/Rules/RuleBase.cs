@@ -26,6 +26,8 @@ using Papercut.Common.Extensions;
 using Papercut.Common.Helper;
 using Papercut.Core.Domain.Rules;
 
+using YamlDotNet.Serialization;
+
 namespace Papercut.Rules.Domain.Rules
 {
     [Serializable]
@@ -63,6 +65,7 @@ namespace Papercut.Rules.Domain.Rules
         [Category("Information")]
         [Browsable(false)]
         [JsonIgnore]
+        [YamlIgnore]
         public virtual string Description
             =>
                 this.GetPropertiesForDescription()

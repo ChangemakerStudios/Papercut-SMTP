@@ -28,7 +28,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
 
         readonly Lazy<ILogger> _logger;
 
-        public AssemblyScanner(Lazy<ILogger> logger, Func<Assembly> getEntryAssembly = null)
+        public AssemblyScanner(Lazy<ILogger> logger, Func<Assembly>? getEntryAssembly = null)
         {
             this._logger = logger;
             this._getEntryAssembly = getEntryAssembly;
@@ -111,7 +111,6 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
             }
         }
 
-        [NotNull]
         public IEnumerable<Assembly> GetAll()
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -126,7 +125,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
             return this.GetAssembliesList(directories.Where(Directory.Exists));
         }
 
-        IEnumerable<Assembly> TryLoadAssemblies([NotNull] IEnumerable<string> filenames)
+        IEnumerable<Assembly> TryLoadAssemblies(IEnumerable<string> filenames)
         {
             foreach (string assemblyFile in filenames.Where(File.Exists))
             {
@@ -158,7 +157,7 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
         }
 
         IEnumerable<Assembly> TryLoadResourceAssemblies(
-            [NotNull] IEnumerable<string> assemblyNames)
+            IEnumerable<string> assemblyNames)
         {
             foreach (string assemblyName in assemblyNames)
             {
@@ -183,7 +182,6 @@ namespace Papercut.Core.Infrastructure.AssemblyScanning
             }
         }
 
-        [NotNull]
         IEnumerable<string> GetAllFilesIn(string directory)
         {
             var lookFor = new[] { "*.dll" };

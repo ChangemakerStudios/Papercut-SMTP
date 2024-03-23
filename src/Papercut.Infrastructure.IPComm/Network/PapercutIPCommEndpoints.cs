@@ -23,7 +23,7 @@ namespace Papercut.Infrastructure.IPComm.Network
 {
     public class PapercutIPCommEndpoints
     {
-        public PapercutIPCommEndpoints([NotNull] ISettingStore settingStore)
+        public PapercutIPCommEndpoints(ISettingStore settingStore)
         {
             if (settingStore == null) throw new ArgumentNullException(nameof(settingStore));
 

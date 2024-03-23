@@ -28,18 +28,18 @@ namespace Papercut.Core.Infrastructure.Server
     public static class ServerExtensions
     {
         public static IObservable<bool> ObserveStartServer(
-            [NotNull] this IServer server,
+            this IServer server,
             string ip,
             int port,
-            IScheduler scheduler = null)
+            IScheduler? scheduler = null)
         {
             return server.ObserveStartServer(new EndpointDefinition(ip, port), scheduler);
         }
 
         public static IObservable<bool> ObserveStartServer(
-            [NotNull] this IServer server,
+            this IServer server,
             EndpointDefinition endpoint,
-            IScheduler scheduler = null)
+            IScheduler? scheduler = null)
         {
             if (server == null) throw new ArgumentNullException(nameof(server));
 

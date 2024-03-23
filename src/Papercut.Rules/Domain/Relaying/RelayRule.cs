@@ -126,7 +126,7 @@ namespace Papercut.Rules.Domain.Relaying
             }
         }
 
-        public override void PopulateFromRule([NotNull] MimeMessage message)
+        public override void PopulateFromRule(MimeMessage message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
@@ -153,7 +153,7 @@ namespace Papercut.Rules.Domain.Relaying
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

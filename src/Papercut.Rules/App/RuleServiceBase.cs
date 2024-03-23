@@ -41,15 +41,15 @@ namespace Papercut.Rules.App
         {
             this.RuleRepository = ruleRepository;
             this.Logger = logger;
-            this.RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
+            this.RulesPath = AppDomain.CurrentDomain.BaseDirectory;
             this._rules = new Lazy<ObservableCollection<IRule>>(this.GetRulesCollection);
         }
 
-        public string RuleFileName { get; set; }
+        public string RulesPath { get; set; }
 
         public ObservableCollection<IRule> Rules => this._rules.Value;
 
-        public IObservable<EventPattern<NotifyCollectionChangedEventArgs>> GetRuleChangedObservable(IScheduler scheduler = null)
+        public IObservable<EventPattern<NotifyCollectionChangedEventArgs>> GetRuleChangedObservable(IScheduler? scheduler = null)
         {
             return Observable
                 .FromEventPattern<NotifyCollectionChangedEventHandler,
@@ -62,15 +62,15 @@ namespace Papercut.Rules.App
 
         protected virtual ObservableCollection<IRule> GetRulesCollection()
         {
-            IList<IRule> loadRules = null;
+            IList<IRule>? loadRules = null;
 
             try
             {
-                loadRules = this.RuleRepository.LoadRules(this.RuleFileName);
+                loadRules = this.RuleRepository.LoadRules(this.RulesPath);
             }
             catch (Exception ex)
             {
-                this.Logger.Warning(ex, "Failed to load rules in file {RuleFileName}", this.RuleFileName);
+                this.Logger.Warning(ex, "Failed to load rules in file {RuleFileName}", this.RulesPath);
             }
 
             return new ObservableCollection<IRule>(loadRules ?? new List<IRule>(0));
@@ -80,15 +80,15 @@ namespace Papercut.Rules.App
         {
             try
             {
-                this.RuleRepository.SaveRules(this.Rules, this.RuleFileName);
+                this.RuleRepository.SaveRules(this.Rules, this.RulesPath);
                 this.Logger.Information(
                     "Saved {RuleCount} to {RuleFileName}",
                     this.Rules.Count,
-                    this.RuleFileName);
+                    this.RulesPath);
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, "Error saving rules to file {RuleFileName}", this.RuleFileName);
+                this.Logger.Error(ex, "Error saving rules to file {RuleFileName}", this.RulesPath);
             }
         }
     }

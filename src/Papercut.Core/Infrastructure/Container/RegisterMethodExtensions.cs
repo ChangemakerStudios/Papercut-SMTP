@@ -34,7 +34,7 @@ namespace Papercut.Core.Infrastructure.Container
         /// </summary>
         /// <param name="assembly">The assembly.</param>
         /// <returns></returns>
-        public static IReadOnlyList<Action<ContainerBuilder>> GetStaticRegisterMethods([NotNull] this Assembly assembly)
+        public static IReadOnlyList<Action<ContainerBuilder>> GetStaticRegisterMethods(this Assembly assembly)
         {
             if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 
@@ -75,8 +75,8 @@ namespace Papercut.Core.Infrastructure.Container
         /// <param name="assembly"></param>
         /// <param name="additionalAssemblies"></param>
         public static void RegisterStaticMethods(
-            [NotNull] this ContainerBuilder builder,
-            [NotNull] Assembly assembly,
+            this ContainerBuilder builder,
+            Assembly assembly,
             params Assembly[] additionalAssemblies)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));

@@ -29,7 +29,7 @@ namespace Papercut.Core.Domain.Settings
 
         protected ConcurrentDictionary<string, string> CurrentSettings { get; set; }
 
-        public string this[[NotNull] string key]
+        public string this[string key]
         {
             get
             {
@@ -64,7 +64,7 @@ namespace Papercut.Core.Domain.Settings
             return new Dictionary<string, string>(this.CurrentSettings);
         }
 
-        protected void LoadSettings(IEnumerable<KeyValuePair<string, string>> settings = null)
+        protected void LoadSettings(IEnumerable<KeyValuePair<string, string>>? settings = null)
         {
             if (settings != null) this.CurrentSettings = new ConcurrentDictionary<string, string>(settings);
             else this.CurrentSettings.Clear();

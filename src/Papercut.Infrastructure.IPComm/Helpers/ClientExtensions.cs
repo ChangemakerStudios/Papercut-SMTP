@@ -53,7 +53,7 @@ namespace Papercut.Infrastructure.IPComm.Helpers
     public static class ClientExtensions
     {
         public static ISubject<ArraySegment<byte>, ArraySegment<byte>> ToClientSubject(
-            [NotNull] this Socket socket, int size, SocketFlags socketFlags = SocketFlags.None)
+            this Socket socket, int size, SocketFlags socketFlags = SocketFlags.None)
         {
             if (socket == null) throw new ArgumentNullException(nameof(socket));
 
@@ -62,7 +62,7 @@ namespace Papercut.Infrastructure.IPComm.Helpers
                 socket.ToClientObservable(size, socketFlags));
         }
 
-        public static IObservable<ArraySegment<byte>> ToClientObservable([NotNull] this Socket socket, int size, SocketFlags socketFlags = SocketFlags.None)
+        public static IObservable<ArraySegment<byte>> ToClientObservable(this Socket socket, int size, SocketFlags socketFlags = SocketFlags.None)
         {
             if (socket == null) throw new ArgumentNullException(nameof(socket));
 

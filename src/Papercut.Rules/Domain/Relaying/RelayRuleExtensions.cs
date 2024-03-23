@@ -23,7 +23,7 @@ namespace Papercut.Rules.Domain.Relaying
 {
     public static class RelayRuleExtensions
     {
-        public static void PopulateServerFromUri([NotNull] this RelayRule rule, string smtpServer)
+        public static void PopulateServerFromUri(this RelayRule rule, string smtpServer)
         {
             if (rule == null) throw new ArgumentNullException(nameof(rule));
 
@@ -33,7 +33,7 @@ namespace Papercut.Rules.Domain.Relaying
             rule.SmtpPort = uri.IsDefaultPort ? 25 : uri.Port;
         }
 
-        public static async Task<SmtpClient> CreateConnectedSmtpClientAsync([NotNull] this RelayRule forwardRule, CancellationToken token)
+        public static async Task<SmtpClient> CreateConnectedSmtpClientAsync(this RelayRule forwardRule, CancellationToken token)
         {
             if (forwardRule == null) throw new ArgumentNullException(nameof(forwardRule));
 

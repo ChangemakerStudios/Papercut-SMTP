@@ -43,7 +43,7 @@ namespace Papercut.Rules.App
                     BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        public async Task RunAsync([NotNull] IRule[] rules, [NotNull] MessageEntry messageEntry, CancellationToken token)
+        public async Task RunAsync(IRule[] rules, MessageEntry messageEntry, CancellationToken token)
         {
             if (rules == null) throw new ArgumentNullException(nameof(rules));
             if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
@@ -94,7 +94,7 @@ namespace Papercut.Rules.App
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

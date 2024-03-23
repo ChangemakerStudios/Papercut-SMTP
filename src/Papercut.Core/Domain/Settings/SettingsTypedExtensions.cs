@@ -20,7 +20,7 @@ namespace Papercut.Core.Domain.Settings
 {
     public static class SettingsTypedExtensions
     {
-        public static T UseTyped<T>([NotNull] this ISettingStore settingStore)
+        public static T UseTyped<T>(this ISettingStore settingStore)
             where T : ISettingsTyped, new()
         {
             if (settingStore == null) throw new ArgumentNullException(nameof(settingStore));
@@ -28,14 +28,14 @@ namespace Papercut.Core.Domain.Settings
             return new T { Settings = settingStore };
         }
 
-        public static void Save([NotNull] this ISettingsTyped typedSettings)
+        public static void Save(this ISettingsTyped typedSettings)
         {
             if (typedSettings == null) throw new ArgumentNullException(nameof(typedSettings));
 
             typedSettings.Settings.Save();
         }
 
-        public static void Load([NotNull] this ISettingsTyped typedSettings)
+        public static void Load(this ISettingsTyped typedSettings)
         {
             if (typedSettings == null) throw new ArgumentNullException(nameof(typedSettings));
 
