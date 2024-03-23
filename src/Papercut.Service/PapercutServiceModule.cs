@@ -16,11 +16,13 @@
 // limitations under the License.
 
 
+using System.Reflection;
+
+using Autofac;
+
 using AutofacSerilogIntegration;
 
-using Papercut.Core.Infrastructure.Container;
-
-using Module = Autofac.Module;
+using Papercut.Common.Helper;
 
 namespace Papercut.Service;
 
@@ -28,24 +30,7 @@ public class PapercutServiceModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        //builder.RegisterType<NewMessageEventHandler>().As<IEventHandler<NewMessageEvent>>().InstancePerLifetimeScope();
-        //builder.RegisterType<ServerPathTemplateProviderService>().As<IPathTemplatesProvider>().InstancePerLifetimeScope();
-
-        //builder.RegisterType<SmtpMessageStore>().As<IMessageStore>().AsSelf();
-        //builder.RegisterType<SimpleMediatorBus>().As<IMessageBus>();
-
         builder.Register(_ => new ApplicationMeta("Papercut.Service", Assembly.GetExecutingAssembly().GetVersion())).As<IAppMeta>().SingleInstance();
-
-        builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-            .Where(type => type.Namespace != null && type.Namespace.EndsWith("Services"))
-            .AsImplementedInterfaces()
-            .AsSelf()
-            .InstancePerLifetimeScope();
-
-        builder.Register(
-                ctx => ctx.Resolve<ISettingStore>().UseTyped<PapercutServiceSettings>())
-            .AsSelf()
-            .SingleInstance();
 
         builder.RegisterLogger();
 

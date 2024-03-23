@@ -18,11 +18,14 @@
 
 using Autofac.Extensions.DependencyInjection;
 
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using ElectronNET.API;
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+
+using Serilog.Core;
 using Serilog.Debugging;
+using Serilog.Events;
 using Serilog.ExceptionalLogContext;
 
 namespace Papercut.Service;
@@ -79,6 +82,7 @@ public class Program
                 {
                     sp.AddSingleton<IConfiguration>(context.Configuration);
                     sp.AddSingleton<IHostEnvironment>(context.HostingEnvironment);
+                    sp.AddSingleton<LoggingLevelSwitch>(new LoggingLevelSwitch(LogEventLevel.Information));
                 })
             .ConfigureWebHostDefaults(
                 webBuilder =>

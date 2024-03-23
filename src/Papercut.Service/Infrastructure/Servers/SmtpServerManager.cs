@@ -18,24 +18,23 @@
 
 using Papercut.Core.Domain.Network;
 using Papercut.Core.Domain.Network.Smtp;
-using Papercut.Infrastructure.Smtp;
 
-namespace Papercut.Service.Services
+namespace Papercut.Service.Infrastructure.Servers
 {
     public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandler<PapercutServiceReadyEvent>
     {
         private readonly ILogger _logger;
 
-        private readonly PapercutServiceSettings _serviceSettings;
-
         private readonly PapercutSmtpServer _smtpServer;
 
+        private readonly SmtpServerOptions _smtpServerOptions;
+
         public SmtpServerManager(PapercutSmtpServer smtpServer,
-            PapercutServiceSettings serviceSettings,
+            SmtpServerOptions smtpServerOptions,
             ILogger logger)
         {
             this._smtpServer = smtpServer;
-            this._serviceSettings = serviceSettings;
+            this._smtpServerOptions = smtpServerOptions;
             this._logger = logger;
         }
 
@@ -52,9 +51,9 @@ namespace Papercut.Service.Services
                 @event);
 
             // update settings...
-            this._serviceSettings.IP = @event.IP;
-            this._serviceSettings.Port = @event.Port;
-            this._serviceSettings.Save();
+            this._smtpServerOptions.IP = @event.IP;
+            this._smtpServerOptions.Port = @event.Port;
+            //this._smtpServerOptions.Save();
 
             // rebind the server...
             await this.BindSMTPServer();
@@ -66,16 +65,26 @@ namespace Papercut.Service.Services
             {
                 await this._smtpServer.StopAsync();
                 await this._smtpServer.StartAsync(
-                    new EndpointDefinition(this._serviceSettings.IP, this._serviceSettings.Port));
+                    new EndpointDefinition(this._smtpServerOptions.IP, this._smtpServerOptions.Port));
             }
             catch (Exception ex)
             {
                 this._logger.Warning(
                     ex,
                     "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                    this._serviceSettings.IP,
-                    this._serviceSettings.Port);
+                    this._smtpServerOptions.IP,
+                    this._smtpServerOptions.Port);
             }
         }
+
+        #region Begin Static Container Registrations
+
+        static void Register(ContainerBuilder builder)
+        {
+            builder.RegisterType<SmtpServerManager>().AsImplementedInterfaces().AsSelf()
+                .InstancePerLifetimeScope();
+        }
+
+        #endregion
     }
 }

@@ -34,9 +34,9 @@ namespace Papercut.Core.Infrastructure.Container
         {
             RegisterLogging.Register(builder);
 
-            builder.RegisterType<AutofacServiceProvider>()
-                .As<IServiceProvider>()
-                .InstancePerLifetimeScope();
+            //builder.RegisterType<AutofacServiceProvider>()
+            //    .As<IServiceProvider>()
+            //    .InstancePerLifetimeScope();
 
             // events
             builder.RegisterType<AutofacMessageBus>()

@@ -16,6 +16,13 @@
 // limitations under the License.
 
 
+using System.Runtime.InteropServices;
+
+using ElectronNET.API;
+using ElectronNET.API.Entities;
+
+using Microsoft.Extensions.Hosting;
+
 namespace Papercut.Service;
 
 public class ElectronService : IHostedService

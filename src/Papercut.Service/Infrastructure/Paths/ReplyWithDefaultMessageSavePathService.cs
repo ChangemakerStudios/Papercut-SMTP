@@ -16,7 +16,6 @@
 // limitations under the License.
 
 
-using Papercut.Core.Domain.Paths;
 using Papercut.Core.Infrastructure.Network;
 
 namespace Papercut.Service.Infrastructure.Paths
@@ -25,24 +24,34 @@ namespace Papercut.Service.Infrastructure.Paths
     {
         readonly MessagePathConfigurator _messagePathConfigurator;
 
-        readonly PapercutServiceSettings _serviceSettings;
+        readonly SmtpServerOptions _smtpServerOptions;
 
-        public ReplyWithDefaultMessageSavePathService(MessagePathConfigurator messagePathConfigurator, PapercutServiceSettings serviceSettings)
+        public ReplyWithDefaultMessageSavePathService(MessagePathConfigurator messagePathConfigurator, SmtpServerOptions smtpServerOptions)
         {
-            _messagePathConfigurator = messagePathConfigurator;
-            _serviceSettings = serviceSettings;
+            this._messagePathConfigurator = messagePathConfigurator;
+            this._smtpServerOptions = smtpServerOptions;
         }
 
         public Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token = default)
         {
             // respond with the current save path...
-            @event.MessageWritePath = _messagePathConfigurator.DefaultSavePath;
+            @event.MessageWritePath = this._messagePathConfigurator.DefaultSavePath;
 
             // share our current ip and port binding for the SMTP server.
-            @event.IP = _serviceSettings.IP;
-            @event.Port = _serviceSettings.Port;
+            @event.IP = this._smtpServerOptions.IP;
+            @event.Port = this._smtpServerOptions.Port;
 
             return Task.CompletedTask;
         }
+
+        #region Begin Static Container Registrations
+
+        static void Register(ContainerBuilder builder)
+        {
+            builder.RegisterType<ReplyWithDefaultMessageSavePathService>().AsImplementedInterfaces().AsSelf()
+                .InstancePerLifetimeScope();
+        }
+
+        #endregion
     }
 }

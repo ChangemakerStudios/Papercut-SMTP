@@ -16,7 +16,6 @@
 // limitations under the License.
 
 
-using Papercut.Common.Extensions;
 using Papercut.Core.Domain.Rules;
 using Papercut.Rules.App;
 using Papercut.Rules.Domain.Rules;
@@ -39,12 +38,12 @@ namespace Papercut.Service.Infrastructure.Rules
             IRulesRunner rulesRunner)
             : base(ruleRepository, logger)
         {
-            _rulesRunner = rulesRunner;
+            this._rulesRunner = rulesRunner;
         }
 
         public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
         {
-            Logger.Information(
+            this.Logger.Information(
                 "New Message {MessageFile} Arrived -- Running Rules",
                 @event.NewMessage);
 
@@ -53,11 +52,11 @@ namespace Papercut.Service.Infrastructure.Rules
                 {
                     try
                     {
-                        await Task.Delay(2000, _cancellationTokenSource.Token);
-                        await _rulesRunner.RunAsync(
-                            Rules.ToArray(),
+                        await Task.Delay(2000, this._cancellationTokenSource.Token);
+                        await this._rulesRunner.RunAsync(
+                            this.Rules.ToArray(),
                             @event.NewMessage,
-                            _cancellationTokenSource.Token);
+                            this._cancellationTokenSource.Token);
                     }
                     catch (ObjectDisposedException)
                     {
@@ -70,29 +69,29 @@ namespace Papercut.Service.Infrastructure.Rules
                         Log.Error(ex, "Failure Running Rules");
                     }
                 },
-                _cancellationTokenSource.Token);
+                this._cancellationTokenSource.Token);
 
             return Task.CompletedTask;
         }
 
         public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
         {
-            Logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+            this.Logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
 
             try
             {
                 // accessing "Rules" forces the collection to be loaded
-                if (Rules.Any())
+                if (this.Rules.Any())
                 {
-                    Logger.Information(
+                    this.Logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
-                        Rules.Count,
-                        RuleFileName);
+                        this.Rules.Count,
+                        this.RuleFileName);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error loading rules from file {RuleFileName}", RuleFileName);
+                this.Logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
             }
 
             return Task.CompletedTask;
@@ -100,9 +99,9 @@ namespace Papercut.Service.Infrastructure.Rules
 
         public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token = default)
         {
-            Rules.Clear();
-            Rules.AddRange(@event.Rules);
-            Save();
+            this.Rules.Clear();
+            this.Rules.AddRange(@event.Rules);
+            this.Save();
 
             return Task.CompletedTask;
         }
@@ -111,8 +110,18 @@ namespace Papercut.Service.Infrastructure.Rules
         {
             if (disposing)
             {
-                _cancellationTokenSource.Cancel();
+                this._cancellationTokenSource.Cancel();
             }
         }
+
+        #region Begin Static Container Registrations
+
+        static void Register(ContainerBuilder builder)
+        {
+            builder.RegisterType<RuleService>().AsImplementedInterfaces().AsSelf()
+                .InstancePerLifetimeScope();
+        }
+
+        #endregion
     }
 }

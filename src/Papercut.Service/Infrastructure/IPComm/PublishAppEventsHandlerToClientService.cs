@@ -15,10 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-using Papercut.Infrastructure.IPComm;
-
-namespace Papercut.Service.Services
+namespace Papercut.Service.Infrastructure.IPComm
 {
     public class PublishAppEventsHandlerToClientService : IEventHandler<PapercutServiceExitEvent>,
         IEventHandler<PapercutServiceReadyEvent>,
@@ -75,5 +72,15 @@ namespace Papercut.Service.Services
                     ipCommClient.Endpoint);
             }
         }
+
+        #region Begin Static Container Registrations
+
+        static void Register(ContainerBuilder builder)
+        {
+            builder.RegisterType<PublishAppEventsHandlerToClientService>().AsImplementedInterfaces().AsSelf()
+                .InstancePerLifetimeScope();
+        }
+
+        #endregion
     }
 }

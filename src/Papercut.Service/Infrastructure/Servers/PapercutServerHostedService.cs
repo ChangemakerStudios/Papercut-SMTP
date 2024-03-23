@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,21 +16,17 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Services
+using Microsoft.Extensions.Hosting;
+
+using Papercut.Infrastructure.IPComm.Network;
+
+namespace Papercut.Service.Infrastructure.Servers
 {
-    using Papercut.Core.Domain.WebServer;
-    using Papercut.Infrastructure.IPComm.Network;
-    using Papercut.Infrastructure.Smtp;
-
-    using Serilog;
-
-    public class PapercutServerService
+    public class PapercutServerHostedService : IHostedService
     {
         readonly IAppMeta _applicationMetaData;
 
         readonly PapercutIPCommServer _ipCommServer;
-
-        private readonly PapercutSmtpServer _smtpServer;
 
         readonly ILogger _logger;
 
@@ -38,19 +34,17 @@ namespace Papercut.Service.Services
 
         private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
 
-        private readonly IPapercutWebServer _papercutWebServer;
+        private readonly PapercutSmtpServer _smtpServer;
 
-        public PapercutServerService(
+        public PapercutServerHostedService(
             PapercutIPCommServer ipCommServer,
             PapercutSmtpServer smtpServer,
             PapercutIPCommEndpoints papercutIpCommEndpoints,
-            IPapercutWebServer papercutWebServer,
             IAppMeta applicationMetaData,
             ILogger logger,
             IMessageBus messageBus)
         {
             this._papercutIpCommEndpoints = papercutIpCommEndpoints;
-            this._papercutWebServer = papercutWebServer;
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;
             this._messageBus = messageBus;
@@ -58,10 +52,11 @@ namespace Papercut.Service.Services
             this._smtpServer = smtpServer;
         }
 
-        public async Task Start()
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             await this._messageBus.PublishAsync(
-                new PapercutServicePreStartEvent { AppMeta = this._applicationMetaData });
+                new PapercutServicePreStartEvent { AppMeta = this._applicationMetaData },
+                cancellationToken);
 
             try
             {
@@ -77,17 +72,16 @@ namespace Papercut.Service.Services
                     this._ipCommServer.ListenPort);
             }
 
-            await this._papercutWebServer.StartAsync();
-
             await this._messageBus.PublishAsync(
-                new PapercutServiceReadyEvent { AppMeta = this._applicationMetaData });
+                new PapercutServiceReadyEvent { AppMeta = this._applicationMetaData },
+                cancellationToken);
         }
 
-        public async Task Stop()
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
-            await Task.WhenAll(this._smtpServer.StopAsync(), this._ipCommServer.StopAsync());
+            await Task.WhenAll(this._smtpServer.StopAsync(), this._ipCommServer.StopAsync()).WaitAsync(cancellationToken);
 
-            await this._messageBus.PublishAsync(new PapercutServiceExitEvent { AppMeta = this._applicationMetaData });
+            await this._messageBus.PublishAsync(new PapercutServiceExitEvent { AppMeta = this._applicationMetaData }, cancellationToken);
         }
     }
 }

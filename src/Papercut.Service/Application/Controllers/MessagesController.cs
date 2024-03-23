@@ -16,9 +16,7 @@
 // limitations under the License.
 
 
-using Papercut.Message;
 using Papercut.Service.Web;
-using Papercut.Service.Web.Models;
 
 namespace Papercut.Service.Application.Controllers;
 

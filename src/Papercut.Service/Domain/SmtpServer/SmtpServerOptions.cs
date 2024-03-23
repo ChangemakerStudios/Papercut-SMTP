@@ -24,5 +24,13 @@ public class SmtpServerOptions
 
     public int Port { get; set; } = 25;
 
+    /// <summary>
+    /// Base path where messages are written
+    /// </summary>
     public string MessagePath { get; set; } = "%BaseDirectory%\\Incoming";
+
+    /// <summary>
+    /// Base path where logs are written.
+    /// </summary>
+    public string LoggingPath { get; set; } = @"%DataDirectory%\Logs;%BaseDirectory%\Logs";
 }

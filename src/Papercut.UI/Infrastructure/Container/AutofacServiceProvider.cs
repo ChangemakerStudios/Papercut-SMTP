@@ -18,7 +18,7 @@
 
 using Autofac;
 
-namespace Papercut.Core.Infrastructure.Container
+namespace Papercut.Infrastructure.Container
 {
     public class AutofacServiceProvider : IServiceProvider
     {
@@ -33,5 +33,14 @@ namespace Papercut.Core.Infrastructure.Container
         {
             return this._lifetimeScope.Resolve(serviceType);
         }
+
+        #region Begin Static Container Registrations
+
+        static void Register(ContainerBuilder builder)
+        {
+            builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
+        }
+
+        #endregion
     }
 }

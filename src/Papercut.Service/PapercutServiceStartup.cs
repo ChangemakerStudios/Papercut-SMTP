@@ -17,15 +17,10 @@
 
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Papercut.Core.Infrastructure.Container;
-using Papercut.Infrastructure.IPComm;
-using Papercut.Infrastructure.Smtp;
-using Papercut.Message;
 using Papercut.Rules;
-using Papercut.Service.Domain.SmtpServer;
+using Papercut.Service.Infrastructure.Servers;
 
 namespace Papercut.Service;
 
@@ -37,6 +32,8 @@ internal class PapercutServiceStartup
         services.AddMemoryCache();
 
         services.AddMvc().AddControllersAsServices();
+
+        services.AddHttpContextAccessor();
 
         services.AddCors(
             s =>
@@ -50,10 +47,11 @@ internal class PapercutServiceStartup
             });
 
         services.AddOptions<SmtpServerOptions>("SmtpServer");
+
         services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
 
         // hosted services
-        //services.AddHostedService<SmtpServerService>();
+        services.AddHostedService<PapercutServerHostedService>();
     }
 
     IEnumerable<Autofac.Module> GetModules()
@@ -68,6 +66,7 @@ internal class PapercutServiceStartup
         yield return new PapercutServiceModule();
     }
 
+    [UsedImplicitly]
     public void ConfigureContainer(ContainerBuilder builder)
     {
         foreach (var module in this.GetModules())

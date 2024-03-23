@@ -16,21 +16,30 @@
 // limitations under the License.
 
 
-global using System;
-global using System.IO;
-global using System.Linq;
-global using System.Threading;
-global using System.Threading.Tasks;
+global using System.Net.Http;
 
+global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Http.Features;
 global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.Extensions.DependencyInjection;
 
 global using MimeKit;
 
 global using Papercut.Common.Domain;
+global using Papercut.Common.Extensions;
 global using Papercut.Core.Domain.Application;
 global using Papercut.Core.Domain.Message;
+global using Papercut.Core.Domain.Paths;
 global using Papercut.Core.Domain.Settings;
+global using Papercut.Core.Infrastructure.Container;
 global using Papercut.Core.Infrastructure.Lifecycle;
-global using Papercut.Service.Helpers;
+global using Papercut.Infrastructure.IPComm;
+global using Papercut.Infrastructure.Smtp;
+global using Papercut.Message;
+global using Papercut.Service.Domain.SmtpServer;
+global using Papercut.Service.Web.Models;
+
+global using Autofac;
+
+global using Module = Autofac.Module;

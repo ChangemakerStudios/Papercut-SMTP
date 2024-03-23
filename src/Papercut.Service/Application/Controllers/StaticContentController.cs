@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Reflection;
+
 namespace Papercut.Service.Application.Controllers;
 
 public class StaticContentController : ControllerBase
