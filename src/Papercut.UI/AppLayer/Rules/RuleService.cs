@@ -135,7 +135,7 @@ namespace Papercut.AppLayer.Rules
             foreach (IRule m in rules)
             {
                 m.GetPropertyChangedEvents(TaskPoolScheduler.Default)
-                    .Subscribe(
+                    .SubscribeAsync(
                         async (_) =>
                             await this._messageBus.PublishAsync(
                                 new RulesUpdatedEvent(this.Rules.ToArray())),

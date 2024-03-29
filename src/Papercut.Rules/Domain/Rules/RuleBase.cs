@@ -71,7 +71,7 @@ namespace Papercut.Rules.Domain.Rules
                     .ToFormattedPairs()
                     .Join("\r\n");
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public abstract void PopulateFromRule(MimeMessage message);
 
@@ -83,7 +83,7 @@ namespace Papercut.Rules.Domain.Rules
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = this.PropertyChanged;
+            PropertyChangedEventHandler? handler = this.PropertyChanged;
             if (handler != null)
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));

@@ -33,6 +33,7 @@ using MahApps.Metro.Controls.Dialogs;
 using Papercut.AppLayer.LogSinks;
 using Papercut.Core;
 using Papercut.Core.Domain.Network.Smtp;
+using Papercut.Core.Infrastructure.Async;
 using Papercut.Domain.AppCommands;
 using Papercut.Domain.UiCommands;
 using Papercut.Domain.UiCommands.Commands;
@@ -81,7 +82,7 @@ namespace Papercut.ViewModels
 
         private int _mainWindowWidth;
 
-        MetroWindow _window;
+        MetroWindow? _window;
 
         string _windowTitle = WindowTitleDefault;
 
@@ -219,7 +220,7 @@ namespace Papercut.ViewModels
                 if (value == this._mainWindowWidth) return;
 
                 // ignore non-normal window sizes
-                if (this._window.WindowState != WindowState.Normal) return;
+                if (this._window?.WindowState != WindowState.Normal) return;
 
                 this._mainWindowWidth = value;
                 this.NotifyOfPropertyChange(() => this.MainWindowWidth);
@@ -237,16 +238,18 @@ namespace Papercut.ViewModels
             return Task.CompletedTask;
         }
 
-        string GetVersion()
+        string? GetVersion()
         {
             var productVersion =
                 FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
 
-            return productVersion.Split('+').FirstOrDefault();
+            return productVersion?.Split('+').FirstOrDefault();
         }
 
         public Task ExecuteAsync(ShowMainWindowCommand command, CancellationToken cancellationToken = default)
         {
+            if (this._window == null) return Task.CompletedTask;
+
             if (!this._window.IsVisible) this._window.Show();
 
             if (this._window.WindowState == WindowState.Minimized) this._window.WindowState = WindowState.Normal;
@@ -284,6 +287,8 @@ namespace Papercut.ViewModels
             base.OnViewLoaded(view);
 
             var typedView = view as MainView;
+
+            Debug.Assert(typedView != null, nameof(typedView) + " != null");
 
             if (!this._webView2Information.IsInstalled)
             {
@@ -425,13 +430,13 @@ namespace Papercut.ViewModels
                 .Subscribe(this.SetIsLoading);
 
             this._uiCommandHub.OnShowMainWindow.ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(async c => await this.ExecuteAsync(c));
+                .SubscribeAsync(async c => await this.ExecuteAsync(c));
 
             this._uiCommandHub.OnShowMessage.ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(async c => await this.ExecuteAsync(c));
+                .SubscribeAsync(async c => await this.ExecuteAsync(c));
 
             this._uiCommandHub.OnShowOptionWindow.ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(async c => await this.ExecuteAsync(c));
+                .SubscribeAsync(async c => await this.ExecuteAsync(c));
         }
 
         public void GoToSite()
@@ -543,7 +548,7 @@ namespace Papercut.ViewModels
                     },
                     TaskPoolScheduler.Default)
                 .ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(async _ => await progressDialog.CloseAsync());
+                .SubscribeAsync(async _ => await progressDialog.CloseAsync());
         }
 
         protected override void OnViewAttached(object view, object context)

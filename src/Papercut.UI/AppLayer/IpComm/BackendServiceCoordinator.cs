@@ -25,6 +25,7 @@ using Autofac;
 using Papercut.Common.Domain;
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Domain.Rules;
+using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Lifecycle;
 using Papercut.Core.Infrastructure.Network;
 using Papercut.Domain.BackendService;
@@ -75,7 +76,7 @@ namespace Papercut.AppLayer.IpComm
             // flush rules every 10 seconds
             rulesUpdateObservable.Buffer(TimeSpan.FromSeconds(10))
                 .Where(e => e.Any())
-                .Subscribe(async events => await this.PublishUpdateEvent(events.Last()));
+                .SubscribeAsync(async events => await this.PublishUpdateEvent(events.Last()));
         }
 
         public async Task OnStartedAsync()

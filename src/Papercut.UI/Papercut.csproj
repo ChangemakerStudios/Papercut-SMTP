@@ -61,7 +61,6 @@
 		<PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.3" />
 		<PackageReference Include="MimeKit" Version="4.4.0" />
 		<PackageReference Include="ReactiveUI.WPF" Version="19.5.72" />
-		<PackageReference Include="Serilog" Version="3.1.1" />
 		<PackageReference Include="Serilog.Sinks.Observable" Version="2.0.2" />
 		<PackageReference Include="Handlebars.Net" Version="2.1.4" />
 		<PackageReference Include="Microsoft.Web.WebView2" Verson="1.0.1462.37" Version="1.0.2365.46" />

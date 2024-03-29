@@ -25,6 +25,7 @@ using Autofac.Util;
 
 using Papercut.Common.Domain;
 using Papercut.Core.Domain.Application;
+using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Lifecycle;
 using Papercut.Domain.AppCommands;
 
@@ -59,7 +60,7 @@ namespace Papercut.AppLayer.AppCommands
         {
             this._shutdownObservable = this._appCommandHub.OnShutdown
                 .ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(
+                .SubscribeAsync(
                     async @event =>
                     {
                         this._logger.Information("Shutdown Executed {ExitCode}", @event.ExitCode);

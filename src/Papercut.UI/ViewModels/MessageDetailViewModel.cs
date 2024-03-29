@@ -36,13 +36,13 @@ namespace Papercut.ViewModels
 
         int _attachmentCount;
 
-        string _bcc;
+        string? _bcc;
 
-        string _cc;
+        string? _cc;
 
-        string _date;
+        string? _date;
 
-        string _from;
+        string? _from;
 
         string? _htmlFile;
 
@@ -50,19 +50,19 @@ namespace Papercut.ViewModels
 
         bool _isLoading;
 
-        IDisposable _loadingDisposable;
+        IDisposable? _loadingDisposable;
 
-        private string _priority;
+        private string? _priority;
 
-        private string _priorityColor;
+        private string? _priorityColor;
 
         int _selectedTabIndex;
 
-        string _subject;
+        string? _subject;
 
         string? _textBody;
 
-        string _to;
+        string? _to;
 
         public MessageDetailViewModel(
             Func<MessageDetailPartsListViewModel> partsListViewModelFactory,
@@ -87,7 +87,7 @@ namespace Papercut.ViewModels
             this.Items.Add(this.RawViewModel);
         }
 
-        public string Subject
+        public string? Subject
         {
             get => this._subject;
             set
@@ -97,7 +97,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string To
+        public string? To
         {
             get => this._to;
             set
@@ -107,7 +107,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string Bcc
+        public string? Bcc
         {
             get => this._bcc;
             set
@@ -117,7 +117,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string Priority
+        public string? Priority
         {
             get => this._priority;
             set
@@ -127,7 +127,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string PriorityColor
+        public string? PriorityColor
         {
             get => this._priorityColor;
             set
@@ -137,7 +137,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string Date
+        public string? Date
         {
             get => this._date;
             set
@@ -147,7 +147,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string From
+        public string? From
         {
             get => this._from;
             set
@@ -157,7 +157,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string CC
+        public string? CC
         {
             get => this._cc;
             set
@@ -275,7 +275,7 @@ namespace Papercut.ViewModels
 
         void DisplayMimeMessage(MimeMessage? mailMessageEx)
         {
-            (string Name, string Color) GetPriorityText(MimeMessage? message)
+            (string? Name, string Color) GetPriorityText(MimeMessage? message)
             {
                 ArgumentNullException.ThrowIfNull(message);
 
