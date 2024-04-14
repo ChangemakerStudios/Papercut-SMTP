@@ -29,7 +29,7 @@ namespace Papercut.Common.Extensions
         /// <typeparam name="T"></typeparam>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static T ToType<T>([CanBeNull] this object instance)
+        public static T ToType<T>(this object? instance)
         {
             if (instance == null) return default;
 

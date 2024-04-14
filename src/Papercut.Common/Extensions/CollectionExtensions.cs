@@ -31,19 +31,24 @@ namespace Papercut.Common.Extensions
             return keyValuePairs.ToDictionary(s => s.Key, s => s.Value);
         }
 
-        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>([CanBeNull] this IEnumerable<T> items)
+        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T>? items)
         {
             return new ReadOnlyCollection<T>(items.IfNullEmpty().ToList());
         }
 
-        public static IReadOnlyList<T> ToReadOnlyList<T>([CanBeNull] this IEnumerable<T> items)
+        public static IReadOnlyList<T> ToReadOnlyList<T>(this IEnumerable<T>? items)
         {
             return items.ToReadOnlyCollection();
         }
 
-        public static HashSet<T> ToHashSet<T>([CanBeNull] this IEnumerable<T> items, IEqualityComparer<T>? comparer = null)
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T>? items, IEqualityComparer<T>? comparer = null)
         {
             return new HashSet<T>(items.IfNullEmpty(), comparer ?? EqualityComparer<T>.Default);
+        }
+
+        public static int RemoveRange<TValue>(this ICollection<TValue> collection, IEnumerable<TValue> toRemove)
+        {
+            return toRemove.IfNullEmpty().Count(collection.Remove);
         }
 
         public static int RemoveRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IEnumerable<KeyValuePair<TKey, TValue>> keyValuePairs)

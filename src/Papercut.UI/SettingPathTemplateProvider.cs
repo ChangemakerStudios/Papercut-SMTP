@@ -38,34 +38,14 @@ namespace Papercut
             this.LoggingPathTemplates = new ObservableCollection<string>(this.LoggingPaths);
         }
 
-        private IEnumerable<string> LoggingPaths
-        {
-            get
-            {
-                return this.GetLoggingPath()
-                    .Split(';', ',')
-                    .Select(s => s.Trim())
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                    .Distinct();
-            }
-        }
+        private IEnumerable<string> LoggingPaths => this.SplitPaths(this.GetLoggingPath());
 
-        private IEnumerable<string> MessagePaths
-        {
-            get
-            {
-                return this.GetMessagePath()
-                    .Split(';', ',')
-                    .Select(s => s.Trim())
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                    .Distinct();
-            }
-        }
+        private IEnumerable<string> MessagePaths => this.SplitPaths(this.GetMessagePath());
 
         public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
-            this.UpdateMessagePathTemplates();
-            this.UpdateLoggingPathTemplates();
+            this.UpdatePathTemplate(this.MessagePathTemplates, this.MessagePaths, "Message");
+            this.UpdatePathTemplate(this.LoggingPathTemplates, this.LoggingPaths, "Logging");
 
             return Task.CompletedTask;
         }
@@ -73,6 +53,15 @@ namespace Papercut
         public ObservableCollection<string> MessagePathTemplates { get; }
 
         public ObservableCollection<string> LoggingPathTemplates { get; }
+
+        private IEnumerable<string> SplitPaths(string paths)
+        {
+            return paths
+                .Split(';', ',')
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct();
+        }
 
         private string GetLoggingPath()
         {
@@ -106,34 +95,22 @@ namespace Papercut
             }
         }
 
-        void UpdateMessagePathTemplates()
+        void UpdatePathTemplate(ICollection<string> pathTemplate, IEnumerable<string> changedPaths, string name)
         {
-            string[] paths = this.MessagePaths.ToArray();
-            List<string> toRemove = this.MessagePathTemplates.Except(paths).ToList();
-            List<string> toAdd = paths.Except(this.MessagePathTemplates).ToList();
+            string[] paths = changedPaths.ToArray();
+            var (toAdd, toRemove) = (paths.Except(pathTemplate).ToArray(), pathTemplate.Except(paths).ToArray());
 
-            if (toRemove.Any()) this._logger.Information("Removing message Path(s) {Paths} to message Path Templates", toRemove);
+            if (toRemove.Any())
+            {
+                this._logger.Information("Removing {Type:l} Path Templates: {Paths}", name, toRemove);
+                pathTemplate.RemoveRange(toRemove);
+            }
 
-            toRemove.ForEach(s => this.MessagePathTemplates.Remove(s));
-
-            if (toAdd.Any()) this._logger.Information("Added message Path(s) {Paths} to message Path Templates", toAdd);
-
-            this.MessagePathTemplates.AddRange(toAdd);
-        }
-
-        void UpdateLoggingPathTemplates()
-        {
-            string[] paths = this.LoggingPaths.ToArray();
-            List<string> toRemove = this.LoggingPathTemplates.Except(paths).ToList();
-            List<string> toAdd = paths.Except(this.LoggingPathTemplates).ToList();
-
-            if (toRemove.Any()) this._logger.Information("Removing logging Path(s) {Paths} to logging Path Templates", toRemove);
-
-            toRemove.ForEach(s => this.LoggingPathTemplates.Remove(s));
-
-            if (toAdd.Any()) this._logger.Information("Added logging Path(s) {Paths} to logging Path Templates", toAdd);
-
-            this.LoggingPathTemplates.AddRange(toAdd);
+            if (toAdd.Any())
+            {
+                this._logger.Information("Added {Type:l} Path Templates: {Paths}", name, toAdd);
+                pathTemplate.AddRange(toAdd);
+            }
         }
     }
 }
