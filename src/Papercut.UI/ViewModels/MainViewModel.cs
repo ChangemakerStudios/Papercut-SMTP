@@ -368,7 +368,7 @@ namespace Papercut.ViewModels
                     h => this._uiLogSinkQueue.LogEvent += h,
                     h => this._uiLogSinkQueue.LogEvent -= h,
                     TaskPoolScheduler.Default)
-                .Buffer(TimeSpan.FromSeconds(1))
+                .Buffer(TimeSpan.FromSeconds(1)) // this will cause calling the Subscribe method every second.
                 .Select(
                     s =>
                     {
@@ -380,6 +380,9 @@ namespace Papercut.ViewModels
                 .ObserveOnDispatcher().Subscribe(
                     o =>
                     {
+                        // If nothing added, return and don't process any data. And don't change LogText which would update the logs WebView2 component.
+                        if(!o.Any()) { return; }
+
                         foreach (var s in o) this.CurrentLogHistory.PushFront(s);
 
                         if (this.CurrentLogHistory.Count > 150)
