@@ -376,12 +376,10 @@ namespace Papercut.ViewModels
                                 .Select(e => string.Join(" ", this.RenderLogEventParts(e)))
                                 .ToList();
                     })
+                .Where(s => s.Any())
                 .ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(
                     o =>
                     {
-                        // If nothing added, return and don't process any data. And don't change LogText which would update the logs WebView2 component.
-                        if(!o.Any()) { return; }
-
                         foreach (var s in o) this.CurrentLogHistory.PushFront(s);
 
                         if (this.CurrentLogHistory.Count > 150)

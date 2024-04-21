@@ -47,16 +47,14 @@ namespace Papercut.AppLayer.LogSinks
                 showDebug ? LogEventLevel.Debug : LogEventLevel.Information);
         }
 
-        public LogEvent GetLastEvent()
+        public LogEvent? GetLastEvent()
         {
             return _logQueue.TryDequeue(out var log) ? log : null;
         }
 
         public IEnumerable<LogEvent> GetLastEvents()
         {
-            LogEvent logEvent;
-
-            while ((logEvent = this.GetLastEvent()) != null)
+            while (this.GetLastEvent() is { } logEvent)
             {
                yield return logEvent;
             }
