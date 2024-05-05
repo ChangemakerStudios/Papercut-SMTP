@@ -24,24 +24,15 @@ using Microsoft.Win32;
 
 using Papercut.Common.Domain;
 using Papercut.Common.Extensions;
+using Papercut.Domain.Application;
 using Papercut.Domain.Events;
 using Papercut.Domain.UiCommands;
 
 namespace Papercut.AppLayer.Settings
 {
-    public class AppRunOnStartupService : IEventHandler<SettingsUpdatedEvent>
+    public class AppRunOnStartupService(ILogger logger, IUiCommandHub uiCommandHub) : IEventHandler<SettingsUpdatedEvent>
     {
         const string AppStartupKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
-
-        readonly ILogger _logger;
-
-        private readonly IUiCommandHub _uiCommandHub;
-
-        public AppRunOnStartupService(ILogger logger, IUiCommandHub uiCommandHub)
-        {
-            this._logger = logger;
-            this._uiCommandHub = uiCommandHub;
-        }
 
         public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
         {
@@ -51,43 +42,46 @@ namespace Papercut.AppLayer.Settings
 
             try
             {
-                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(AppStartupKey, true);
+                var registryKey = Registry.CurrentUser.OpenSubKey(AppStartupKey, true);
 
                 if (registryKey == null)
                 {
-                    this._logger.Error("Failure opening registry key {AppStartupKey}", AppStartupKey);
+                    logger.Error("Failure opening registry key {AppStartupKey}", AppStartupKey);
                     return Task.CompletedTask;
                 }
 
+                var applicationName = PapercutAppConstants.Name;
+                var executablePath = PapercutAppConstants.ExecutablePath;
+
                 // is key currently set to this app executable?
-                bool runOnStartup = registryKey.GetValue(App.GlobalName, null)
-                                        .ToType<string>() == App.ExecutablePath;
+                bool runOnStartup = registryKey.GetValue(applicationName, null)
+                                        .ToType<string>() == executablePath;
 
                 if (Properties.Settings.Default.RunOnStartup && !runOnStartup)
                 {
-                    // turn on..
-                    this._logger.Information(
+                    // turn on...
+                    logger.Information(
                         "Setting AppStartup Registry {Key} to Run Papercut at {ExecutablePath}",
-                        $"{AppStartupKey}\\{App.GlobalName}",
-                        App.ExecutablePath);
+                        $"{AppStartupKey}\\{applicationName}",
+                        executablePath);
 
-                    registryKey.SetValue(App.GlobalName, App.ExecutablePath);
+                    registryKey.SetValue(applicationName, executablePath);
                 }
                 else if (!Properties.Settings.Default.RunOnStartup && runOnStartup)
                 {
                     // turn off...
-                    this._logger.Information(
+                    logger.Information(
                         "Attempting to Delete AppStartup Registry {Key}",
-                        $"{AppStartupKey}\\{App.GlobalName}");
+                        $"{AppStartupKey}\\{applicationName}");
 
-                    registryKey.DeleteValue(App.GlobalName, false);
+                    registryKey.DeleteValue(applicationName, false);
                 }
             }
             catch (SecurityException ex)
             {
-                this._logger.Error(ex, "Error Opening Registry for App Startup Service");
+                logger.Error(ex, "Error Opening Registry for App Startup Service");
 
-                this._uiCommandHub.ShowMessage(
+                uiCommandHub.ShowMessage(
                     "Failed to set Papercut to load at startup due to lack of permission. To fix, exit and run Papercut again with elevated (Admin) permissions.",
                     "Failed");
             }

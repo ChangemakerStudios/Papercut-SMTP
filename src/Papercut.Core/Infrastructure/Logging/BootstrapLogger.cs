@@ -16,67 +16,57 @@
 // limitations under the License.
 
 
+using Papercut.Core.Infrastructure.CommandLine;
+
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 
-namespace Papercut.Core.Infrastructure.Logging
+namespace Papercut.Core.Infrastructure.Logging;
+
+public static class BootstrapLogger
 {
-    public static class BootstrapLogger
+    static BootstrapLogger()
     {
-        static readonly Lazy<ILogger> _rootLogger;
+        AppDomain.CurrentDomain.UnhandledException += OnCurrentDomainOnUnhandledException;
+        TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
+    }
 
-        static BootstrapLogger()
-        {
-            _rootLogger = new Lazy<ILogger>(() =>
-            {
-                string logFilePath = Path.Combine(AppConstants.AppDataDirectory,
-                    "Logs",
-                    "PapercutCoreFailure.json");
+    static void TaskSchedulerOnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs args)
+    {
+        if (!args.Observed) Log.Warning(args.Exception, "Unobserved Task Exception");
 
-                return
-                    new LoggerConfiguration().MinimumLevel.Information()
-                        .Enrich.With<EnvironmentEnricher>()
-                        .WriteTo.Console()
-                        .WriteTo.File(new CompactJsonFormatter(), logFilePath, LogEventLevel.Information).CreateLogger();
-            });
+        args.SetObserved();
+    }
 
-            AppDomain.CurrentDomain.UnhandledException += OnCurrentDomainOnUnhandledException;
-            TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
+    public static ILogger CreateBootstrapLogger(string[] args)
+    {
+        string logFilePath = Path.Combine(AppConstants.AppDataDirectory,
+            "Logs",
+            "PapercutSmtpFailure.json");
 
-            //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
-            //{
-            //    var logger = (IsLoggerConfigured() ? Log.Logger : Logger);
-            //    logger.Information(eventArgs.Exception, "First Change Exception Caught");
-            //};
-        }
+        var logger =
+            new LoggerConfiguration()
+#if DEBUG
+                .MinimumLevel.Verbose()
+#else
+                .MinimumLevel.Information()
+#endif
+                .Enrich.With<EnvironmentEnricher>()
+                .WriteTo.Console()
+                .WriteTo.File(new CompactJsonFormatter(), logFilePath, LogEventLevel.Information)
+                .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(args))
+                .CreateLogger();
 
-        public static ILogger Logger => _rootLogger.Value;
+        logger.Debug("JSON Bootstrap Log File: {LogFilePathName}", logFilePath);
 
-        static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
-        {
-            var logInstance = IsLoggerConfigured() ? Log.Logger : Logger;
+        Log.Logger = logger;
 
-            if (!args.Observed) logInstance.Warning(args.Exception, "Unobserved Task Exception");
+        return logger;
+    }
 
-            args.SetObserved();
-        }
-
-        public static void SetRootGlobal()
-        {
-            Log.Logger = Logger;
-        }
-
-        static bool IsLoggerConfigured()
-        {
-            return !Log.Logger?.GetType().Name.EndsWith("SilentLogger") ?? false;
-        }
-
-        static void OnCurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs args)
-        {
-            var logInstance = IsLoggerConfigured() ? Log.Logger : Logger;
-
-            if (args.IsTerminating) logInstance.Fatal(args.ExceptionObject as Exception, "Unhandled Exception");
-            else logInstance.Information(args.ExceptionObject as Exception, "Non-Fatal Unhandled Exception");
-        }
+    static void OnCurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs args)
+    {
+        if (args.IsTerminating) Log.Fatal(args.ExceptionObject as Exception, "Unhandled Exception");
+        else Log.Information(args.ExceptionObject as Exception, "Non-Fatal Unhandled Exception");
     }
 }

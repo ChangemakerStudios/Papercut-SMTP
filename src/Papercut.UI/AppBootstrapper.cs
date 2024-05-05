@@ -51,14 +51,12 @@ namespace Papercut
 {
     public class AppBootstrapper : BootstrapperBase
     {
-        readonly Lazy<ILifetimeScope> _lifetimeScope = new Lazy<ILifetimeScope>(() => ((App)Application.Current).Container);
-
         public AppBootstrapper()
         {
             this.Initialize();
         }
 
-        protected ILifetimeScope Container => this._lifetimeScope.Value;
+        protected ILifetimeScope Container => ((App)Application.Current).Container;
 
         protected override async void OnStartup(object sender, StartupEventArgs e)
         {
