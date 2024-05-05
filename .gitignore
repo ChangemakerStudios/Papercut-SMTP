@@ -20,3 +20,4 @@ out/
 .idea/
 *.msi
 node_modules/
+src/Papercut.UI/publish
