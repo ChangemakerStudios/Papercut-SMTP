@@ -21,3 +21,4 @@ out/
 *.msi
 node_modules/
 src/Papercut.UI/publish
+src/Papercut.UI/Releases
