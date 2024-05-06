@@ -71,7 +71,6 @@
 		<Resource Include="Resources\attachment-icon.png" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="AppLayer\Processes\" />
 	  <Folder Include="Domain\Application\" />
 	</ItemGroup>
 </Project>

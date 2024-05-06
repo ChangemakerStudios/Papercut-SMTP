@@ -60,7 +60,7 @@ namespace Papercut.ViewModels
 
         readonly MimeMessageLoader _mimeMessageLoader;
 
-        private readonly ProcessService _processService;
+        private readonly ExplorerProcessService _explorerProcessService;
 
         private readonly IUiCommandHub _uiCommandHub;
 
@@ -73,7 +73,7 @@ namespace Papercut.ViewModels
             MessageRepository messageRepository,
             MessageWatcher messageWatcher,
             MimeMessageLoader mimeMessageLoader,
-            ProcessService processService,
+            ExplorerProcessService explorerProcessService,
             ILogger logger)
         {
             ArgumentNullException.ThrowIfNull(messageRepository);
@@ -84,7 +84,7 @@ namespace Papercut.ViewModels
             this._messageRepository = messageRepository;
             this._messageWatcher = messageWatcher;
             this._mimeMessageLoader = mimeMessageLoader;
-            this._processService = processService;
+            this._explorerProcessService = explorerProcessService;
             this._logger = logger;
 
             this.SetupMessages();
@@ -308,13 +308,13 @@ namespace Papercut.ViewModels
 
         public void OpenMessageFolder()
         {
-            string[] folders = this.GetSelected().IfNullEmpty().Select(s => Path.GetDirectoryName(s.File)).WhereNotNull()
-                .Distinct()
-                .ToArray();
+            var folders = this.GetSelected().IfNullEmpty().Select(s => Path.GetDirectoryName(s.File))
+                .WhereNotNull()
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             foreach (var folder in folders)
             {
-                this._processService.Start(folder);
+                this._explorerProcessService.OpenFolder(folder);
             }
         }
 

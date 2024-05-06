@@ -17,32 +17,27 @@
 
 
 using System.Diagnostics;
-using System.Windows;
 
 using Autofac;
 
 namespace Papercut.AppLayer.Processes;
 
-public class ProcessService
+public class ExplorerProcessService
 {
-    private readonly ILogger _logger;
-
-    public ProcessService(ILogger logger)
-    {
-        this._logger = logger;
-    }
-
-    public void Start(string pathOrFileName)
+    public void OpenFolder(string folder)
     {
         try
         {
-            Process.Start(pathOrFileName);
+            Process.Start(new ProcessStartInfo("explorer.exe", folder));
         }
         catch (System.ComponentModel.Win32Exception ex) when (ex.Message.Contains("Access is denied"))
         {
-            this._logger.Warning(ex, "Access denied to folder: {Folder}", pathOrFileName);
-
-            MessageBox.Show($"Failed to open path '{pathOrFileName}' due to permissions", "Access denied to path");
+            // access denied -- run elevated
+            Process.Start(new ProcessStartInfo("explorer.exe", folder)
+                          {
+                              Verb = "runas",
+                              UseShellExecute = true
+                          });
         }
     }
 
@@ -50,7 +45,7 @@ public class ProcessService
 
     static void Register(ContainerBuilder builder)
     {
-        builder.RegisterType<ProcessService>().AsSelf();
+        builder.RegisterType<ExplorerProcessService>().AsSelf();
     }
 
     #endregion
