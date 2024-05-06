@@ -67,6 +67,13 @@ namespace Papercut
             MessageBox.Show($"Error: {e.Exception?.Message}", "Unhandled Exception");
         }
 
+        protected override void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            Container.Resolve<ILogger>().Error(e.Exception, "Caught Unhandled Exception");
+            MessageBox.Show($"Error: {e.Exception?.Message}", "Unhandled Exception");
+        }
+
         protected override async void OnStartup(object sender, StartupEventArgs e)
         {
             try

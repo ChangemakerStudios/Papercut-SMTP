@@ -32,6 +32,7 @@ using Caliburn.Micro;
 
 using MimeKit;
 
+using Papercut.AppLayer.Processes;
 using Papercut.Common.Domain;
 using Papercut.Common.Extensions;
 using Papercut.Common.Helper;
@@ -59,6 +60,8 @@ namespace Papercut.ViewModels
 
         readonly MimeMessageLoader _mimeMessageLoader;
 
+        private readonly ProcessService _processService;
+
         private readonly IUiCommandHub _uiCommandHub;
 
         bool _isLoading;
@@ -70,6 +73,7 @@ namespace Papercut.ViewModels
             MessageRepository messageRepository,
             MessageWatcher messageWatcher,
             MimeMessageLoader mimeMessageLoader,
+            ProcessService processService,
             ILogger logger)
         {
             ArgumentNullException.ThrowIfNull(messageRepository);
@@ -80,6 +84,7 @@ namespace Papercut.ViewModels
             this._messageRepository = messageRepository;
             this._messageWatcher = messageWatcher;
             this._mimeMessageLoader = mimeMessageLoader;
+            this._processService = processService;
             this._logger = logger;
 
             this.SetupMessages();
@@ -303,8 +308,14 @@ namespace Papercut.ViewModels
 
         public void OpenMessageFolder()
         {
-            string[] folders = this.GetSelected().Select(s => Path.GetDirectoryName(s.File)).Distinct().ToArray();
-            folders.ForEach(f => Process.Start(f));
+            string[] folders = this.GetSelected().IfNullEmpty().Select(s => Path.GetDirectoryName(s.File)).WhereNotNull()
+                .Distinct()
+                .ToArray();
+
+            foreach (var folder in folders)
+            {
+                this._processService.Start(folder);
+            }
         }
 
         public void ValidateSelected()
