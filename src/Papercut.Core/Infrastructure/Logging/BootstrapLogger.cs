@@ -59,8 +59,6 @@ public static class BootstrapLogger
 
         logger.Debug("JSON Bootstrap Log File: {LogFilePathName}", logFilePath);
 
-        Log.Logger = logger;
-
         return logger;
     }
 

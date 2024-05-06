@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Diagnostics;
+
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
@@ -66,9 +68,19 @@ internal sealed class RegisterLogging
                         .Enrich.WithProperty("AppName", appMeta.AppName)
                         .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
                         .Filter.ByExcluding(ExcludeTcpClientDisposeBugException)
-                        .WriteTo.Console(theme: AnsiConsoleTheme.Literate)
+
                         .WriteTo.File(logFilePath)
                         .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(Environment.GetCommandLineArgs().ToArray()));
+
+                if (Debugger.IsAttached)
+                {
+                    logConfiguration.WriteTo.Trace();
+                }
+
+                if (Environment.UserInteractive)
+                {
+                    logConfiguration.WriteTo.Console(theme: AnsiConsoleTheme.Literate);
+                }
 
                 foreach (var configureInstance in c.Resolve<IEnumerable<ILoggerSettings>>().ToList())
                 {
@@ -83,15 +95,12 @@ internal sealed class RegisterLogging
         builder.Register(
                 c =>
                 {
+                    Log.CloseAndFlush();
                     Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
                     return Log.Logger;
                 })
+            .ExternallyOwned()
             .AutoActivate()
-            .OnRelease(
-                async s =>
-                {
-                    await Log.CloseAndFlushAsync();
-                })
             .SingleInstance();
 
         builder.RegisterLogger();

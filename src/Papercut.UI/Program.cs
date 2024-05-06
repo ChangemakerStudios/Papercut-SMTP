@@ -34,13 +34,13 @@ public class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        var bootstrapLogger = BootstrapLogger.CreateBootstrapLogger(args);
+        Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
 
         try
         {
             Log.Information("Running Velopack...");
 
-            var microsoftLogger = new SerilogLoggerFactory(bootstrapLogger, dispose: false).CreateLogger(nameof(VelopackApp));
+            var microsoftLogger = new SerilogLoggerFactory().CreateLogger(nameof(VelopackApp));
 
             // It's important to Run() the VelopackApp as early as possible in app startup.
             VelopackApp.Build()
@@ -59,9 +59,6 @@ public class Program
                 app.InitializeComponent();
                 app.Run();
             }
-
-            // back to the bootstrap logger
-            Log.Logger = bootstrapLogger;
 
             Log.Information("Shutting down...");
         }

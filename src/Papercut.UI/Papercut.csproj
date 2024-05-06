@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<Title>Papercut SMTP</Title>
-		<OutputType>Exe</OutputType>
+		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<ApplicationIcon>App.ico</ApplicationIcon>
 		<SignManifests>false</SignManifests>
@@ -71,6 +71,7 @@
 		<Resource Include="Resources\attachment-icon.png" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Folder Include="AppLayer\Processes\" />
 	  <Folder Include="Domain\Application\" />
 	</ItemGroup>
 </Project>
