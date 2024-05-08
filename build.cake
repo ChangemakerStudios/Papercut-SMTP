@@ -44,6 +44,7 @@ Teardown(ctx => Information("Finished running tasks."));
 var papercutDir = Directory("./src/Papercut.UI");
 var papercutServiceDir = Directory("./src/Papercut.Service");
 var publishDirectory = Directory("./publish");
+var releasesDirectory = Directory("./releases");
 
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
@@ -51,7 +52,7 @@ var publishDirectory = Directory("./publish");
 Task("Clean")
     .Does(() =>
 {
-    var cleanDirectories = new List<string>() { publishDirectory };
+    var cleanDirectories = new List<string>() { publishDirectory, releasesDirectory };
 
     foreach (var directory in cleanDirectories)
     {
@@ -158,6 +159,7 @@ Task("PackageUI64")
             .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
             .Append("-v").AppendQuoted(versionInfo.FullSemVer)
             .Append("-p").AppendQuoted(publishDirectory + Directory("x64"))
+            .Append("-o").AppendQuoted(releasesDirectory + Directory("x64"))
             .Append("-e").AppendQuoted("Papercut.exe")
             .Append("--framework").AppendQuoted("net8.0-x64-desktop,webview2");
 

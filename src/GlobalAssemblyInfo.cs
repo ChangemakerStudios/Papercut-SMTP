@@ -5,7 +5,6 @@
 //------------------------------------------------------------------------------
 using System.Reflection;
 
-[assembly: AssemblyVersion("6.2.1.0")]
-[assembly: AssemblyFileVersion("6.2.1.0")]
-[assembly: AssemblyInformationalVersion("6.2.1-velopack.50+Branch.feature-velopack.Sha.7b5235d1b5381f7767f3778de6c46fd791690356")]
-
+[assembly: AssemblyVersion("6.0.0.0")]
+[assembly: AssemblyFileVersion("6.0.0.0")]
+[assembly: AssemblyInformationalVersion("6.0.0.0")]
