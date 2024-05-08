@@ -164,9 +164,7 @@ Task("PackageUI64")
             .Append("--framework").AppendQuoted("net8.0-x64-desktop,webview2");
 
     Information("Running Velopack with arguments: " + arguments.Render());
-
-    FilePath velopackPath = Context.Tools.Resolve("vpk.exe");
-    StartProcess(velopackPath, new ProcessSettings
+    StartProcess("vpk", new ProcessSettings
     {
         Arguments = arguments
     });
