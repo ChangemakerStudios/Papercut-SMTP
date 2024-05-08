@@ -9,7 +9,7 @@ public static class ReleaseNotes
 
         context.Information("Transforming release notes");
 
-        var notes = context.FileReadText("..\\ReleaseNotes.md");
+        var notes = context.FileReadText(".\\ReleaseNotes.md");
         var markdown = new MarkdownSharp.Markdown();
         var html = markdown.Transform(notes);
 
@@ -31,6 +31,6 @@ src=""data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRF
         };
         message.From.Add(new MimeKit.MailboxAddress("Papercut SMTP", "Papercut@papercut.com"));
         message.To.Add(new MimeKit.MailboxAddress("", "Papercut@user.com"));
-        message.WriteTo(System.IO.Path.GetFullPath("..\\src\\Papercut.UI\\Readme.eml"));    
+        message.WriteTo(System.IO.Path.GetFullPath("..\\src\\Papercut.UI\\Readme.eml"));
     }
 }

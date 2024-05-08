@@ -9,8 +9,8 @@ if "%~1"=="" (
 
 set "version=%~1"
 
-echo Y | del .\publish\*.* -r
-echo Y | del .\Releases\*.* -r 
+del /s /q .\publish\*.*
+del /s /q .\Releases\*.*
 
 dotnet publish -c Release -r win-x64 -o .\publish\x64
 dotnet publish -c Release -r win-x86 -o .\publish\x86
