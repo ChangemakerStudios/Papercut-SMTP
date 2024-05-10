@@ -173,7 +173,7 @@ Task("PackageUI64")
 
     if (AppVeyor.IsRunningOnAppVeyor)
     {
-        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*"))
+        foreach (var file in GetFiles(releasesDirectory.ToString() + "/*.Portable.zip"))
         {
             Information($"Uploading Artifact to AppVeyor: {file}");
             AppVeyor.UploadArtifact(file);

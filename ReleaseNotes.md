@@ -1,5 +1,14 @@
 # Release Notes
 
+## Papercut SMTP v7.0.0 [2024-05-10]
+
+_NOTE: Uninstall any existing Papercut SMTP installations BEFORE installing this new version._
+
+- Upgraded to .NET 8
+- Upgraded to latest dependencies (Caliburn Micro, Autofac, MahApps) and associated systems to support .NET 8.
+- Switched to [Velopack](https://github.com/velopack/velopack) auto-upgradable installation system. Great project! (Thanks, [caesay](https://github.com/caesay)!)
+- Fix for log updating constantly causing unnecessary WebView2 loading. (PR thanks to [arthurzaczek](https://github.com/arthurzaczek))
+
 ## Papercut SMTP v6.2.0 [2022-04-24]
 
 - Upgraded to .NET Framework v4.8 (PR thanks to [1Jesper1](https://github.com/1Jesper1))
