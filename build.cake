@@ -57,26 +57,28 @@ var papercutServiceDir = Directory("./src/Papercut.Service");
 var publishDirectory = Directory("./publish");
 var releasesDirectory = Directory("./releases");
 
-///////////////////////////////////////////////////////////////////////////////
-// TASKS
-///////////////////////////////////////////////////////////////////////////////
-Task("Clean")
-    .Does(() =>
+void CleanDirectories()
 {
     var cleanDirectories = new List<string>() { publishDirectory, releasesDirectory };
-
     foreach (var directory in cleanDirectories)
     {
         CleanDirectory(directory);
     }
-});
+}
 
 ///////////////////////////////////////////////////////////////////////////////
-Task("Restore")
-    .IsDependentOn("Clean")
+// TASKS
+///////////////////////////////////////////////////////////////////////////////
+Task("Clean1st")
     .Does(() =>
 {
-    DotNetRestore("./Papercut.sln");
+    CleanDirectories();
+});
+
+Task("Clean2nd")
+    .Does(() =>
+{
+    CleanDirectories();
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,6 +102,14 @@ Task("CreateReleaseNotes")
     .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
+Task("Restore")
+    .IsDependentOn("Clean1st")
+    .Does(() =>
+{
+    DotNetRestore("./Papercut.sln");
+});
+
+///////////////////////////////////////////////////////////////////////////////
 // BUILD
 Task("BuildUI64")
     .IsDependentOn("Restore")
@@ -109,21 +119,6 @@ Task("BuildUI64")
     {
         Configuration = configuration,
         Runtime = "win-x64",
-        OutputDirectory = publishDirectory
-    };
-
-    DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-})
-.OnError(exception => Error(exception));
-
-Task("BuildUI32")
-    .IsDependentOn("Restore")
-    .Does(() =>
-{
-    var settings = new DotNetPublishSettings
-    {
-        Configuration = configuration,
-        Runtime = "win-x86",
         OutputDirectory = publishDirectory
     };
 
@@ -159,6 +154,7 @@ Task("PackageUI64")
             .Append("--packTitle").AppendQuoted("Papercut SMTP")
             .Append("--runtime").Append("win7-x64")
             .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
+            .Append("--releaseNotes").Append("ReleaseNotes.md")
             .Append("-v").AppendQuoted(versionInfo.FullSemVer)
             .Append("-p").AppendQuoted(publishDirectory)
             .Append("-o").AppendQuoted(releasesDirectory)
@@ -173,7 +169,7 @@ Task("PackageUI64")
 
     if (AppVeyor.IsRunningOnAppVeyor)
     {
-        foreach (var file in GetFiles(releasesDirectory.ToString() + "/*.Portable.zip"))
+        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
         {
             Information($"Uploading Artifact to AppVeyor: {file}");
             AppVeyor.UploadArtifact(file);
@@ -198,6 +194,57 @@ Task("DeployUI64")
     {
         Arguments = arguments
     });
+})
+.OnError(exception => Error(exception));
+
+Task("BuildUI32")
+    .IsDependentOn("Clean2nd")
+    .Does(() =>
+{
+    CleanDirectories();
+
+    var settings = new DotNetPublishSettings
+    {
+        Configuration = configuration,
+        Runtime = "win-x86",
+        OutputDirectory = publishDirectory
+    };
+
+    DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
+})
+.OnError(exception => Error(exception));
+
+Task("PackageUI32")
+    .IsDependentOn("BuildUI32")
+    .Does(() =>
+{
+    var arguments = new ProcessArgumentBuilder()
+            .Append("pack")
+            .Append("-u").Append("PapercutSMTP-32bit")
+            .Append("--packTitle").AppendQuoted("Papercut SMTP 32-bit")
+            .Append("--runtime").Append("win7-x86")
+            .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
+            .Append("--releaseNotes").Append("ReleaseNotes.md")
+            .Append("-v").AppendQuoted(versionInfo.FullSemVer)
+            .Append("-p").AppendQuoted(publishDirectory)
+            .Append("-o").AppendQuoted(releasesDirectory)
+            .Append("-e").AppendQuoted("Papercut.exe")
+            .Append("--framework").AppendQuoted("net8.0-x86-desktop,webview2");
+
+    Information("Running Velopack with arguments: " + arguments.Render());
+    StartProcess("vpk", new ProcessSettings
+    {
+        Arguments = arguments
+    });
+
+    if (AppVeyor.IsRunningOnAppVeyor)
+    {
+        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
+        {
+            Information($"Uploading Artifact to AppVeyor: {file}");
+            AppVeyor.UploadArtifact(file);
+        }
+    }
 })
 .OnError(exception => Error(exception));
 
@@ -247,13 +294,15 @@ Task("DeployUI64")
 
 ///////////////////////////////////////////////////////////////////////////////
 Task("All")
+    .IsDependentOn("Clean1st")
     .IsDependentOn("PatchAssemblyInfo")
-    .IsDependentOn("Clean")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("BuildUI64")
     .IsDependentOn("PackageUI64")
     .IsDependentOn("DeployUI64")
+    .IsDependentOn("Clean2nd")
+    .IsDependentOn("BuildUI32")
     // .IsDependentOn("PackagePapercut32")
     // .IsDependentOn("PackagePapercutService")
     // .IsDependentOn("PackageSetup")
