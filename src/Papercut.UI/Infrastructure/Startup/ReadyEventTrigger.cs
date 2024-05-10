@@ -18,18 +18,35 @@
 
 using Autofac;
 
-using Serilog.Configuration;
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Infrastructure.Lifecycle;
+using Papercut.Domain.LifecycleHooks;
 
-namespace Papercut.AppLayer.Logging;
+namespace Papercut.Smtp.Desktop.Infrastructure.Startup;
 
-public class SeqLogging : ILoggerSettings
+public class ReadyEventTrigger : IAppLifecycleStarted, IOrderable
 {
-    public void Configure(LoggerConfiguration loggerConfiguration)
-    {
-        ArgumentNullException.ThrowIfNull(loggerConfiguration, nameof(loggerConfiguration));
+    private readonly IAppMeta _appMeta;
 
-        loggerConfiguration.WriteTo.Seq("http://localhost:5341");
+    private readonly IMessageBus _messageBus;
+
+    public ReadyEventTrigger(IMessageBus messageBus, IAppMeta appMeta)
+    {
+        this._messageBus = messageBus;
+        this._appMeta = appMeta;
     }
+
+    public async Task OnStartedAsync()
+    {
+        await this._messageBus.PublishAsync(
+            new PapercutClientReadyEvent() { AppMeta = this._appMeta });
+    }
+
+    /// <summary>
+    /// Start this last
+    /// </summary>
+    public int Order => 999999;
 
     #region Begin Static Container Registrations
 
@@ -40,9 +57,9 @@ public class SeqLogging : ILoggerSettings
     [UsedImplicitly]
     static void Register(ContainerBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
 
-        builder.RegisterType<SeqLogging>().As<ILoggerSettings>();
+        builder.RegisterType<ReadyEventTrigger>().AsImplementedInterfaces().SingleInstance();
     }
 
     #endregion

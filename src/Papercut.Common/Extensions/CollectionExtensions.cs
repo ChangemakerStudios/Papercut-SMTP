@@ -41,11 +41,6 @@ namespace Papercut.Common.Extensions
             return items.ToReadOnlyCollection();
         }
 
-        public static HashSet<T> ToHashSet<T>(this IEnumerable<T>? items, IEqualityComparer<T>? comparer = null)
-        {
-            return new HashSet<T>(items.IfNullEmpty(), comparer ?? EqualityComparer<T>.Default);
-        }
-
         public static int RemoveRange<TValue>(this ICollection<TValue> collection, IEnumerable<TValue> toRemove)
         {
             return toRemove.IfNullEmpty().Count(collection.Remove);

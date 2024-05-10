@@ -24,19 +24,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Common", "src\Pape
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2D6337D4-FD59-49E0-9209-4B06219DB29D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.App.WebApi.Tests", "test\Papercut.App.WebApi.Tests\Papercut.App.WebApi.Tests.csproj", "{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{8D2E180D-683F-4F03-A683-4DCFA3B8D564}"
-EndProject
-Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "Papercut.Installer", "src\Papercut.Installer\Papercut.Installer.wixproj", "{BE653826-1E09-4905-B03D-2A68633BE2F8}"
-EndProject
-Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "Papercut.Bootstrapper", "src\Papercut.Bootstrapper\Papercut.Bootstrapper.wixproj", "{72719C72-122E-4313-8A57-0A0FC666BA75}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Build", ".Build", "{8661B39E-1555-4A2F-B6C2-6442E83DE73D}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
-		build\build.cake = build\build.cake
-		build\build.ps1 = build\build.ps1
+		build.cake = build.cake
+		build.ps1 = build.ps1
 		build\BuildInformation.cake = build\BuildInformation.cake
 		Directory.Build.props = Directory.Build.props
 		build\ReleaseNotes.cake = build\ReleaseNotes.cake
@@ -129,30 +121,6 @@ Global
 		{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}.Release|x64.Build.0 = Release|AnyCPU
 		{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}.Release|x86.ActiveCfg = Release|x86
 		{5FA0E4AA-27AF-4801-B6CA-8C97DADD6DA6}.Release|x86.Build.0 = Release|x86
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Debug|x64.ActiveCfg = Debug|AnyCPU
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Debug|x64.Build.0 = Debug|AnyCPU
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Debug|x86.ActiveCfg = Debug|x86
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Debug|x86.Build.0 = Debug|x86
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|AnyCPU.Build.0 = Release|AnyCPU
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x64.ActiveCfg = Release|AnyCPU
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x64.Build.0 = Release|AnyCPU
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x86.ActiveCfg = Release|x86
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA}.Release|x86.Build.0 = Release|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|AnyCPU.ActiveCfg = Debug|x64
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|x64.ActiveCfg = Debug|x64
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Debug|x86.ActiveCfg = Debug|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|AnyCPU.ActiveCfg = Release|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|x64.ActiveCfg = Release|x86
-		{BE653826-1E09-4905-B03D-2A68633BE2F8}.Release|x86.ActiveCfg = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|AnyCPU.ActiveCfg = Debug|x64
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|x64.ActiveCfg = Debug|x64
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Debug|x86.ActiveCfg = Debug|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|AnyCPU.ActiveCfg = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|x64.ActiveCfg = Release|x86
-		{72719C72-122E-4313-8A57-0A0FC666BA75}.Release|x86.ActiveCfg = Release|x86
 		{873EC485-8E94-4877-8EA7-A7DFE7612E0A}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{873EC485-8E94-4877-8EA7-A7DFE7612E0A}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{873EC485-8E94-4877-8EA7-A7DFE7612E0A}.Debug|x64.ActiveCfg = Debug|AnyCPU
@@ -180,11 +148,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{9EA3D96F-4B03-404D-BD2D-EBE12C1C1FFA} = {2D6337D4-FD59-49E0-9209-4B06219DB29D}
-		{BE653826-1E09-4905-B03D-2A68633BE2F8} = {8D2E180D-683F-4F03-A683-4DCFA3B8D564}
-		{72719C72-122E-4313-8A57-0A0FC666BA75} = {8D2E180D-683F-4F03-A683-4DCFA3B8D564}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {437095E2-5973-4D07-849D-267DF2341A59}

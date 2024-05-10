@@ -16,74 +16,56 @@
 // limitations under the License.
 
 
-using System.Diagnostics;
-using System.Reflection;
 using System.Windows;
 
 using Autofac;
 
 using Papercut.Core.Infrastructure.Container;
-using Papercut.Core.Infrastructure.Logging;
 using Papercut.Domain.LifecycleHooks;
 using Papercut.Infrastructure.LifecycleHooks;
 
-namespace Papercut
+namespace Papercut;
+
+public partial class App : Application
 {
-    public partial class App : Application
+    internal ILifetimeScope Container { get; private set; }
+
+    protected override void OnStartup(StartupEventArgs e)
     {
-        public const string GlobalName = "Papercut.App";
+        Log.Debug("App.OnStartup");
 
-        Lazy<ILifetimeScope> _lifetimeScope =
-            new Lazy<ILifetimeScope>(
-                () => RootContainer.BeginLifetimeScope(ContainerScope.UIScopeTag));
+        this.Container = Program.Container.BeginLifetimeScope(ContainerScope.UIScopeTag);
 
-        static App()
-        {
-            BootstrapLogger.SetRootGlobal();
+        base.OnStartup(e);
+    }
 
-            ExecutablePath = Assembly.GetExecutingAssembly().Location;
-            RootContainer = new SimpleContainer<PapercutUIModule>().Build();
-        }
+    protected override void OnExit(ExitEventArgs e)
+    {
+        Log.Debug("App.OnExit");
 
-        public static string ExecutablePath { get; }
-
-        public static IContainer RootContainer { get; }
-
-        public ILifetimeScope Container => this._lifetimeScope.Value;
-
-        protected override void OnExit(ExitEventArgs e)
-        {
-            Debug.WriteLine("App.OnExit()");
-
-            // run pre-exit
-            AppLifecycleActionResultType runPreExit = AppLifecycleActionResultType.Continue;
+        // run pre-exit
+        AppLifecycleActionResultType runPreExit = AppLifecycleActionResultType.Continue;
             
-            Task.Run(async () =>
-            {
-                runPreExit = await this.Container.RunPreExit();
-            }).Wait();
+        Task.Run(async () =>
+        {
+            runPreExit = await this.Container.RunPreExit();
+        }).Wait();
 
-            if (runPreExit == AppLifecycleActionResultType.Cancel)
-            {
-                // cancel exit
-                return;
-            }
-
-            try
-            {
-                this.Container.Dispose();
-
-                this._lifetimeScope = null;
-
-                RootContainer.Dispose();
-            }
-            catch (ObjectDisposedException)
-            {
-                // no bother
-            }
-
-
-            base.OnExit(e);
+        if (runPreExit == AppLifecycleActionResultType.Cancel)
+        {
+            // cancel exit
+            return;
         }
+
+        try
+        {
+            this.Container.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            // no bother
+        }
+
+        base.OnExit(e);
     }
 }
