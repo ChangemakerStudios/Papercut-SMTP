@@ -140,15 +140,6 @@ Task("BuildUI32")
 ///////////////////////////////////////////////////////////////////////////////
 // PACKAGE STEPS
 
-void MaybeUploadArtifact(FilePath fileName)
-{
-    if (AppVeyor.IsRunningOnAppVeyor)
-    {
-        Information("Uploading Artifact to AppVeyor: " + fileName);
-        AppVeyor.UploadArtifact(fileName);
-    }
-}
-
 Task("PackageUI64")
     .IsDependentOn("BuildUI64")
     .Does(() =>
@@ -171,9 +162,13 @@ Task("PackageUI64")
         Arguments = arguments
     });
 
-    foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*"))
+    if (AppVeyor.IsRunningOnAppVeyor)
     {
-        MaybeUploadArtifact(file);
+        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*"))
+        {
+            Information($"Uploading Artifact to AppVeyor: {file}");
+            AppVeyor.UploadArtifact(file);
+        }
     }
 })
 .OnError(exception => Error(exception));
@@ -187,8 +182,8 @@ Task("DeployUI64")
 
     var arguments = new ProcessArgumentBuilder()
         .Append("upload").Append("github")
-        .Append("--repoUrl").Append("https://github.com/ChangemakerStudios/Papercut-SMTP");
-            .Append("--token").Append(EnvironmentVariable<string>("github-token", ''));
+        .Append("--repoUrl").Append("https://github.com/ChangemakerStudios/Papercut-SMTP")
+        .Append("--token").Append(EnvironmentVariable<string>("github-token", ''));
 
     StartProcess("vpk", new ProcessSettings
     {
