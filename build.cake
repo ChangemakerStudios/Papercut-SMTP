@@ -23,7 +23,7 @@ var configuration = Argument("configuration", "Release");
 //var buildInformation = BuildInformation.GetBuildInformation(Context, BuildSystem);
 GitVersion versionInfo = GitVersion(new GitVersionSettings { OutputType = GitVersionOutput.Json });
 
-var isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch));
+var isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch);
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
@@ -183,7 +183,7 @@ Task("DeployUI64")
     var arguments = new ProcessArgumentBuilder()
         .Append("upload").Append("github")
         .Append("--repoUrl").Append("https://github.com/ChangemakerStudios/Papercut-SMTP")
-        .Append("--token").Append(EnvironmentVariable<string>("github-token", ''));
+        .Append("--token").Append(EnvironmentVariable<string>("github-token", ""));
 
     StartProcess("vpk", new ProcessSettings
     {
