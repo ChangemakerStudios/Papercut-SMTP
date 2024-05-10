@@ -23,6 +23,8 @@ var configuration = Argument("configuration", "Release");
 //var buildInformation = BuildInformation.GetBuildInformation(Context, BuildSystem);
 GitVersion versionInfo = GitVersion(new GitVersionSettings { OutputType = GitVersionOutput.Json });
 
+var isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch));
+
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,7 +100,7 @@ Task("BuildUI64")
     {
         Configuration = configuration,
         Runtime = "win-x64",
-        OutputDirectory = publishDirectory + Directory("x64")
+        OutputDirectory = publishDirectory
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
@@ -113,7 +115,7 @@ Task("BuildUI32")
     {
         Configuration = configuration,
         Runtime = "win-x86",
-        OutputDirectory = publishDirectory + Directory("x86")
+        OutputDirectory = publishDirectory
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
@@ -158,8 +160,8 @@ Task("PackageUI64")
             .Append("--runtime").Append("win7-x64")
             .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
             .Append("-v").AppendQuoted(versionInfo.FullSemVer)
-            .Append("-p").AppendQuoted(publishDirectory + Directory("x64"))
-            .Append("-o").AppendQuoted(releasesDirectory + Directory("x64"))
+            .Append("-p").AppendQuoted(publishDirectory)
+            .Append("-o").AppendQuoted(releasesDirectory)
             .Append("-e").AppendQuoted("Papercut.exe")
             .Append("--framework").AppendQuoted("net8.0-x64-desktop,webview2");
 
@@ -169,26 +171,44 @@ Task("PackageUI64")
         Arguments = arguments
     });
 
-    // // remove the apppublish directory
-    // var publishDir = appBuildDir64 + Directory("./app.publish");
-    // DeleteDirectory(publishDir, new DeleteDirectorySettings { Recursive = true, Force = true });
-
-    // var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.Smtp.x64.{0}.zip", versionInfo.FullSemVer));
-    // Zip(appBuildDir64, appFileName, GetFiles(appBuildDir64.ToString() + "/**/*"));
-    // MaybeUploadArtifact(appFileName);
-
-    // var chocolateyFileName = outputDirectory.CombineWithFilePath(string.Format("papercut.{0}.nupkg", versionInfo.NuGetVersion));
-    // ChocolateyPack(
-    //     File("./chocolatey/Papercut.nuspec"),
-    //     new ChocolateyPackSettings
-    //     {
-    //         Version = versionInfo.NuGetVersion,
-    //         OutputDirectory = outputDirectory
-    //     });
-
-    //MaybeUploadArtifact(chocolateyFileName);
+    foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*"))
+    {
+        MaybeUploadArtifact(file);
+    }
 })
 .OnError(exception => Error(exception));
+
+Task("DeployUI64")
+    .WithCriteria(isMasterBranch)
+    .IsDependentOn("PackageUI64")
+    .Does(() =>
+{
+    Information($"Deploying Papercut SMTP Desktop Release {GitVersionOutput.BuildServer}");
+
+    var arguments = new ProcessArgumentBuilder()
+        .Append("upload").Append("github")
+        .Append("--repoUrl").Append("https://github.com/ChangemakerStudios/Papercut-SMTP");
+            .Append("--token").Append(EnvironmentVariable<string>("github-token", ''));
+
+    StartProcess("vpk", new ProcessSettings
+    {
+        Arguments = arguments
+    });
+})
+.OnError(exception => Error(exception));
+
+// var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.Smtp.x64.{0}.zip", versionInfo.FullSemVer));
+// Zip(appBuildDir64, appFileName, GetFiles(appBuildDir64.ToString() + "/**/*"));
+// MaybeUploadArtifact(appFileName);
+
+// var chocolateyFileName = outputDirectory.CombineWithFilePath(string.Format("papercut.{0}.nupkg", versionInfo.NuGetVersion));
+// ChocolateyPack(
+//     File("./chocolatey/Papercut.nuspec"),
+//     new ChocolateyPackSettings
+//     {
+//         Version = versionInfo.NuGetVersion,
+//         OutputDirectory = outputDirectory
+//     });
 
 // Task("PackagePapercut32")
 //     .Does(() =>
@@ -228,8 +248,8 @@ Task("All")
     //.IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("BuildUI64")
-    .IsDependentOn("BuildUI32")
     .IsDependentOn("PackageUI64")
+    .IsDependentOn("DeployUI64")
     // .IsDependentOn("PackagePapercut32")
     // .IsDependentOn("PackagePapercutService")
     // .IsDependentOn("PackageSetup")
