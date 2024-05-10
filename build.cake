@@ -1,3 +1,5 @@
+
+#tool "nuget:?package=System.Configuration.ConfigurationManager&version=4.5.0"
 #tool "nuget:?package=MarkdownSharp&version=2.0.5"
 #tool "nuget:?package=MimekitLite&version=4.5.0"
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.17.0"
@@ -8,7 +10,8 @@
 #addin "nuget:?package=Cake.FileHelpers&version=6.1.3"
 #addin "nuget:?package=Cake.Incubator&version=8.0.0"
 
-#reference "tools/MarkdownSharp.2.0.5/lib/net40/MarkdownSharp.dll"
+#reference "tools/System.Configuration.ConfigurationManager.4.5.0/lib/netstandard2.0/System.Configuration.ConfigurationManager.dll"
+#reference "tools/MarkdownSharp.2.0.5/lib/netstandard2.0/MarkdownSharp.dll"
 #reference "tools/MimeKitLite.4.5.0/lib/netstandard2.0/MimeKitLite.dll"
 
 #load "./build/BuildInformation.cake"
@@ -23,7 +26,13 @@ var configuration = Argument("configuration", "Release");
 //var buildInformation = BuildInformation.GetBuildInformation(Context, BuildSystem);
 GitVersion versionInfo = GitVersion(new GitVersionSettings { OutputType = GitVersionOutput.Json });
 
-var isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch);
+var isMasterBranch = false;
+
+if (AppVeyor.IsRunningOnAppVeyor)
+{
+    Information($"Building Branch '{BuildSystem.AppVeyor.Environment.Repository.Branch}'...");
+    isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
@@ -240,7 +249,7 @@ Task("DeployUI64")
 Task("All")
     .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("Clean")
-    //.IsDependentOn("CreateReleaseNotes")
+    .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("BuildUI64")
     .IsDependentOn("PackageUI64")

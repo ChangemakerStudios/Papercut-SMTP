@@ -43,7 +43,7 @@ namespace Papercut.AppLayer.Notifications
 
         private readonly IUiCommandHub _uiCommandHub;
 
-        NotifyIcon _notification;
+        NotifyIcon? _notification;
 
         public NotificationMenuCoordinator(
             IAppCommandHub appCommandHub,
@@ -79,7 +79,7 @@ namespace Papercut.AppLayer.Notifications
                 .Subscribe(
                     @event =>
                     {
-                        this._notification.ShowBalloonTip(
+                        this._notification?.ShowBalloonTip(
                             @event.Timeout,
                             @event.TipTitle,
                             @event.TipText,
@@ -112,7 +112,10 @@ namespace Papercut.AppLayer.Notifications
                                  };
 
             this._notification.Click +=
-                (_, _) => this._uiCommandHub.ShowMainWindow();
+                (_, _) =>
+                {
+                    this._uiCommandHub.ShowMainWindow();
+                };
 
             this._notification.BalloonTipClicked +=
                 (_, _) => this._uiCommandHub.ShowMainWindow(true);
