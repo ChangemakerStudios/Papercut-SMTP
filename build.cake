@@ -59,28 +59,17 @@ var papercutServiceDir = Directory("./src/Papercut.Service");
 var publishDirectory = Directory("./publish");
 var releasesDirectory = Directory("./releases");
 
-void CleanDirectories()
+///////////////////////////////////////////////////////////////////////////////
+// TASKS
+///////////////////////////////////////////////////////////////////////////////
+Task("Clean")
+    .Does(() =>
 {
     var cleanDirectories = new List<string>() { publishDirectory, releasesDirectory };
     foreach (var directory in cleanDirectories)
     {
         CleanDirectory(directory);
     }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// TASKS
-///////////////////////////////////////////////////////////////////////////////
-Task("Clean1st")
-    .Does(() =>
-{
-    CleanDirectories();
-});
-
-Task("Clean2nd")
-    .Does(() =>
-{
-    CleanDirectories();
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -217,7 +206,7 @@ Task("DeployUI64")
 .OnError(exception => Error(exception));
 
 Task("BuildUI32")
-    .IsDependentOn("Clean2nd")
+    .IsDependentOn("DeployUI64")
     .Does(() =>
 {
     var settings = new DotNetPublishSettings
@@ -268,7 +257,7 @@ Task("PackageUI32")
 
 ///////////////////////////////////////////////////////////////////////////////
 Task("All")
-    .IsDependentOn("Clean1st")
+    .IsDependentOn("Clean")
     .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
@@ -276,7 +265,6 @@ Task("All")
     .IsDependentOn("BuildUI64")
     .IsDependentOn("PackageUI64")
     .IsDependentOn("DeployUI64")
-    .IsDependentOn("Clean2nd")
     .IsDependentOn("BuildUI32")
     // .IsDependentOn("PackagePapercut32")
     // .IsDependentOn("PackagePapercutService")
