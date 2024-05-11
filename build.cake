@@ -124,7 +124,8 @@ Task("DownloadReleases")
     {
         Arguments = arguments
     });
-}
+})
+.OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
