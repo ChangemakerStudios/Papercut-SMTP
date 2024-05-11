@@ -220,8 +220,6 @@ Task("BuildUI32")
     .IsDependentOn("Clean2nd")
     .Does(() =>
 {
-    CleanDirectories();
-
     var settings = new DotNetPublishSettings
     {
         Configuration = configuration,
