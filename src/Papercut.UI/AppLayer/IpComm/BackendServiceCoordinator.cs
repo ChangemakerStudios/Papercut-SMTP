@@ -199,7 +199,7 @@ namespace Papercut.AppLayer.IpComm
                     return;
                 }
             }
-            catch (Exception ex) when (ex is TaskCanceledException || ex is ObjectDisposedException)
+            catch (Exception ex) when (ex is TaskCanceledException or ObjectDisposedException)
             {
                 // do nothing
             }

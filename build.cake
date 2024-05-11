@@ -94,7 +94,7 @@ Task("CreateReleaseNotes")
 
 ///////////////////////////////////////////////////////////////////////////////
 Task("Restore")
-    .IsDependentOn("Clean1st")
+    .IsDependentOn("Clean")
     .Does(() =>
 {
     DotNetRestore("./Papercut.sln");
@@ -119,7 +119,7 @@ Task("DownloadReleases")
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
 Task("BuildUI64")
-    .IsDependentOn("Restore")
+    .IsDependentOn("DownloadReleases")
     .Does(() =>
 {
     var settings = new DotNetPublishSettings
@@ -266,9 +266,6 @@ Task("All")
     .IsDependentOn("PackageUI64")
     .IsDependentOn("DeployUI64")
     .IsDependentOn("BuildUI32")
-    // .IsDependentOn("PackagePapercut32")
-    // .IsDependentOn("PackagePapercutService")
-    // .IsDependentOn("PackageSetup")
     .OnError(exception => Error(exception));
 
 RunTarget(target);
