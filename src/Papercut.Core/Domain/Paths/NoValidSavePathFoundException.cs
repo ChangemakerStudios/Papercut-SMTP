@@ -16,14 +16,6 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Paths
-{
-    public interface IPathConfigurator
-    {
-        string DefaultSavePath { get; }
+namespace Papercut.Core.Domain.Paths;
 
-        IReadOnlyCollection<string> LoadPaths { get; }
-
-        event EventHandler RefreshLoadPath;
-    }
-}
+public class NoValidSavePathFoundException(string message) : Exception(message);
