@@ -34,6 +34,8 @@ if (AppVeyor.IsRunningOnAppVeyor)
     isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch);
 }
 
+var channelPostfix = isMasterBranch ? "-stable" : "-dev";
+
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
 ///////////////////////////////////////////////////////////////////////////////
@@ -109,6 +111,21 @@ Task("Restore")
     DotNetRestore("./Papercut.sln");
 });
 
+Task("DownloadReleases")
+    .IsDependentOn("Restore")
+    .Does(() =>
+{
+    var arguments = new ProcessArgumentBuilder()
+        .Append("download").Append("github")
+        .Append("--repoUrl").Append("https://github.com/ChangemakerStudios/Papercut-SMTP")
+        .Append("--token").Append(EnvironmentVariable<string>("github-token", ""));
+
+    StartProcess("vpk", new ProcessSettings
+    {
+        Arguments = arguments
+    });
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
 Task("BuildUI64")
@@ -145,7 +162,7 @@ Task("BuildUI64")
 // PACKAGE STEPS
 
 Task("PackageUI64")
-    .IsDependentOn("BuildUI64")
+    .IsDependentOn("DownloadReleases")
     .Does(() =>
 {
     var arguments = new ProcessArgumentBuilder()
@@ -155,6 +172,7 @@ Task("PackageUI64")
             .Append("--runtime").Append("win7-x64")
             .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
             .Append("--releaseNotes").Append("ReleaseNotes.md")
+            .Append("--channel").Append("win-x64" + channelPostfix)
             .Append("-v").AppendQuoted(versionInfo.FullSemVer)
             .Append("-p").AppendQuoted(publishDirectory)
             .Append("-o").AppendQuoted(releasesDirectory)
@@ -220,11 +238,12 @@ Task("PackageUI32")
 {
     var arguments = new ProcessArgumentBuilder()
             .Append("pack")
-            .Append("-u").Append("PapercutSMTP-32bit")
-            .Append("--packTitle").AppendQuoted("Papercut SMTP 32-bit")
+            .Append("-u").Append("PapercutSMTP")
+            .Append("--packTitle").AppendQuoted("Papercut SMTP")
             .Append("--runtime").Append("win7-x86")
             .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
             .Append("--releaseNotes").Append("ReleaseNotes.md")
+            .Append("--channel").Append("win-x84" + channelPostfix)
             .Append("-v").AppendQuoted(versionInfo.FullSemVer)
             .Append("-p").AppendQuoted(publishDirectory)
             .Append("-o").AppendQuoted(releasesDirectory)
@@ -248,56 +267,13 @@ Task("PackageUI32")
 })
 .OnError(exception => Error(exception));
 
-// var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.Smtp.x64.{0}.zip", versionInfo.FullSemVer));
-// Zip(appBuildDir64, appFileName, GetFiles(appBuildDir64.ToString() + "/**/*"));
-// MaybeUploadArtifact(appFileName);
-
-// var chocolateyFileName = outputDirectory.CombineWithFilePath(string.Format("papercut.{0}.nupkg", versionInfo.NuGetVersion));
-// ChocolateyPack(
-//     File("./chocolatey/Papercut.nuspec"),
-//     new ChocolateyPackSettings
-//     {
-//         Version = versionInfo.NuGetVersion,
-//         OutputDirectory = outputDirectory
-//     });
-
-// Task("PackagePapercut32")
-//     .Does(() =>
-// {
-//     // remove the apppublish directory
-//     var publishDir = appBuildDir32 + Directory("./app.publish");
-//     DeleteDirectory(publishDir, new DeleteDirectorySettings { Recursive = true, Force = true });
-
-//     var appFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.Smtp.x86.{0}.zip", versionInfo.FullSemVer));
-//     Zip(appBuildDir32, appFileName, GetFiles(appBuildDir32.ToString() + "/**/*"));
-//     MaybeUploadArtifact(appFileName);
-// })
-// .OnError(exception => Error(exception));
-
-// Task("PackagePapercutService")
-//     .Does(() =>
-// {
-//     var svcFileName = outputDirectory.CombineWithFilePath(string.Format("Papercut.Smtp.Service.{0}.zip", versionInfo.FullSemVer));
-//     Zip(svcBuildDir, svcFileName, GetFiles(svcBuildDir.ToString() + "/**/*"));
-//     MaybeUploadArtifact(svcFileName);
-
-// })
-// .OnError(exception => Error(exception));
-
-// Task("PackageSetup")
-//     .Does(() =>
-// {
-//     MaybeUploadArtifact("./src/Papercut.Bootstrapper/bin/x64/" + configuration + "/Papercut.Smtp.Setup.exe");
-//     MaybeUploadArtifact("./src/Papercut.Bootstrapper/bin/x86/" + configuration + "/Papercut.Smtp.Setup.exe");
-// })
-// .OnError(exception => Error(exception));
-
 ///////////////////////////////////////////////////////////////////////////////
 Task("All")
     .IsDependentOn("Clean1st")
     .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
+    .IsDependentOn("DownloadReleases")
     .IsDependentOn("BuildUI64")
     .IsDependentOn("PackageUI64")
     .IsDependentOn("DeployUI64")
