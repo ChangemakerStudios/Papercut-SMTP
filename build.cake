@@ -27,11 +27,19 @@ var configuration = Argument("configuration", "Release");
 GitVersion versionInfo = GitVersion(new GitVersionSettings { OutputType = GitVersionOutput.Json });
 
 var isMasterBranch = false;
+var hasGithubToken = false;
+string githubToken = null;
 
 if (AppVeyor.IsRunningOnAppVeyor)
 {
     Information($"Building Branch '{BuildSystem.AppVeyor.Environment.Repository.Branch}'...");
     isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch);
+    githubToken = EnvironmentVariable<string>("github-token", null);
+}
+
+if (!string.IsNullOrEmpty(githubToken))
+{
+    hasGithubToken = true;
 }
 
 var channelPostfix = isMasterBranch ? "-stable" : "-dev";
@@ -101,6 +109,7 @@ Task("Restore")
 });
 
 Task("DownloadReleases")
+    .WithCriteria(hasGithubToken)
     .IsDependentOn("Restore")
     .Does(() =>
 {
@@ -187,7 +196,7 @@ Task("PackageUI64")
 .OnError(exception => Error(exception));
 
 Task("DeployUI64")
-    .WithCriteria(isMasterBranch)
+    .WithCriteria(isMasterBranch && hasGithubToken)
     .IsDependentOn("PackageUI64")
     .Does(() =>
 {
@@ -266,6 +275,7 @@ Task("All")
     .IsDependentOn("PackageUI64")
     .IsDependentOn("DeployUI64")
     .IsDependentOn("BuildUI32")
+    .IsDependentOn("PackageUI32")
     .OnError(exception => Error(exception));
 
 RunTarget(target);

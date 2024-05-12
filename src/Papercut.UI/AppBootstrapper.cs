@@ -88,7 +88,7 @@ namespace Papercut
         {
             return this.Container.Resolve(
                     typeof(IEnumerable<>)
-                    .MakeGenericType(service)) as IEnumerable<object>;
+                    .MakeGenericType(service)) as IEnumerable<object> ?? [];
         }
 
         protected override object GetInstance(Type service, string? named)
