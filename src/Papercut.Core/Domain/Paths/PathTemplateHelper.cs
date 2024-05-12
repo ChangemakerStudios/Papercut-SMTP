@@ -32,11 +32,19 @@ namespace Papercut.Core.Domain.Paths
 
         static PathTemplateHelper()
         {
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            if (baseDirectory.EndsWith("current", StringComparison.OrdinalIgnoreCase))
+            {
+                // Velo installation -- nothing should go in the "current" directory
+                baseDirectory = Path.GetDirectoryName(baseDirectory)!;
+            }
+
             _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 {
                     nameof(AppDomain.CurrentDomain.BaseDirectory),
-                    AppDomain.CurrentDomain.BaseDirectory
+                    baseDirectory
                 },
                 { "DataDirectory", AppConstants.AppDataDirectory },
                 { nameof(AppConstants.AppDataDirectory), AppConstants.AppDataDirectory },
@@ -55,7 +63,6 @@ namespace Papercut.Core.Domain.Paths
         {
             var pathKeys =
                 TemplateRegex.Matches(pathTemplate)
-                    .OfType<Match>()
                     .Select(s => s.Groups["name"].Value);
 
             string renderedPath = pathTemplate.Trim();

@@ -87,15 +87,7 @@ public abstract class PathConfiguratorBase : IPathConfigurator
 
     static string GetDefaultSavePath()
     {
-        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
-        if (baseDirectory.EndsWith("current", StringComparison.OrdinalIgnoreCase))
-        {
-            // Velo installation -- nothing should go in the "current" directory
-            return Path.GetDirectoryName(baseDirectory)!;
-        }
-
-        return baseDirectory;
+        return RenderPathTemplate("%BaseDirectory%");
     }
 
     bool IsSavePathIsValid(string defaultSavePath)
@@ -129,7 +121,7 @@ public abstract class PathConfiguratorBase : IPathConfigurator
     IEnumerable<string> RenderLoadPaths()
     {
         return
-            this._pathTemplateProvider.MessagePathTemplates.Select(this.RenderPathTemplate)
+            this._pathTemplateProvider.MessagePathTemplates.Select(RenderPathTemplate)
                 .ToList();
     }
 
@@ -139,7 +131,7 @@ public abstract class PathConfiguratorBase : IPathConfigurator
         handler?.Invoke(this, EventArgs.Empty);
     }
 
-    string RenderPathTemplate(string pathTemplate)
+    static string RenderPathTemplate(string pathTemplate)
     {
         return PathTemplateHelper.RenderPathTemplate(pathTemplate);
     }

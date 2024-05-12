@@ -18,18 +18,17 @@
 
 using HandlebarsDotNet;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public static class HandlebarHelpers
 {
-    public static class HandlebarHelpers
+    public static string RenderTemplate(this string template, object model)
     {
-        public static string RenderTemplate(this string template, object model)
-        {
-            ArgumentNullException.ThrowIfNull(template);
-            ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(template);
+        ArgumentNullException.ThrowIfNull(model);
 
-            var hbt = Handlebars.Compile(template);
+        var hbt = Handlebars.Compile(template);
 
-            return hbt(model);
-        }
+        return hbt(model);
     }
 }

@@ -16,13 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Paths
-{
-    public class LoggingPathConfigurator : PathConfiguratorBase
-    {
-        public LoggingPathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
-            : base(pathTemplateProvider, logger)
-        {
-        }
-    }
-}
+namespace Papercut.Core.Domain.Paths;
+
+public class LoggingPathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
+    : PathConfiguratorBase(pathTemplateProvider, logger);

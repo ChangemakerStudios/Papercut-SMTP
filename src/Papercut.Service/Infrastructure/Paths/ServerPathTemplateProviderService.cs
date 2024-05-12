@@ -18,37 +18,36 @@
 
 using System.Collections.ObjectModel;
 
-namespace Papercut.Service.Infrastructure.Paths
+namespace Papercut.Service.Infrastructure.Paths;
+
+public class ServerPathTemplateProviderService : IPathTemplatesProvider
 {
-    public class ServerPathTemplateProviderService : IPathTemplatesProvider
+    public ServerPathTemplateProviderService(SmtpServerOptions smtpServerOptions)
     {
-        public ServerPathTemplateProviderService(SmtpServerOptions smtpServerOptions)
-        {
-            var messagePaths = smtpServerOptions.MessagePath.Split(';')
-                .Select(s => s.Trim())
-                .Where(s => !string.IsNullOrWhiteSpace(s));
+        var messagePaths = smtpServerOptions.MessagePath.Split(';')
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrWhiteSpace(s));
 
-            this.MessagePathTemplates = new ObservableCollection<string>(messagePaths);
+        this.MessagePathTemplates = new ObservableCollection<string>(messagePaths);
 
-            var loggingPaths = smtpServerOptions.LoggingPath.Split(';')
-                .Select(s => s.Trim())
-                .Where(s => !string.IsNullOrWhiteSpace(s));
+        var loggingPaths = smtpServerOptions.LoggingPath.Split(';')
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrWhiteSpace(s));
 
-            this.LoggingPathTemplates = new ObservableCollection<string>(loggingPaths);
-        }
-
-        public ObservableCollection<string> MessagePathTemplates { get; }
-
-        public ObservableCollection<string> LoggingPathTemplates { get; }
-
-        #region Begin Static Container Registrations
-
-        static void Register(ContainerBuilder builder)
-        {
-            builder.RegisterType<ServerPathTemplateProviderService>().AsImplementedInterfaces().AsSelf()
-                .InstancePerLifetimeScope();
-        }
-
-        #endregion
+        this.LoggingPathTemplates = new ObservableCollection<string>(loggingPaths);
     }
+
+    public ObservableCollection<string> MessagePathTemplates { get; }
+
+    public ObservableCollection<string> LoggingPathTemplates { get; }
+
+    #region Begin Static Container Registrations
+
+    static void Register(ContainerBuilder builder)
+    {
+        builder.RegisterType<ServerPathTemplateProviderService>().AsImplementedInterfaces().AsSelf()
+            .InstancePerLifetimeScope();
+    }
+
+    #endregion
 }
