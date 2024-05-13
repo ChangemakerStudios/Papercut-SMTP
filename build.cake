@@ -4,7 +4,8 @@
 #tool "nuget:?package=MimekitLite&version=4.5.0"
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.17.0"
 #tool "nuget:?package=OpenCover&version=4.7.1221"
-#tool "nuget:?package=GitVersion.Tool&version=5.12.0"
+
+#tool "dotnet:?package=GitVersion.Tool&version=5.12.0"
 #tool "dotnet:?package=vpk&version=0.0.359"
 
 #addin "nuget:?package=Cake.FileHelpers&version=6.1.3"
@@ -275,8 +276,7 @@ Task("BuildService")
     var settings = new DotNetPublishSettings
     {
         Configuration = configuration,
-        OutputDirectory = publishDirectory,
-        Self
+        OutputDirectory = publishDirectory
     };
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
@@ -329,8 +329,8 @@ Task("All")
     .IsDependentOn("DeployUI64")
     .IsDependentOn("BuildUI32")
     .IsDependentOn("PackageUI32")
+    .IsDependentOn("BuildService")
     .IsDependentOn("PackageService")
-    .IsDependentOn("DeployService")
     .OnError(exception => Error(exception));
 
 RunTarget(target);
