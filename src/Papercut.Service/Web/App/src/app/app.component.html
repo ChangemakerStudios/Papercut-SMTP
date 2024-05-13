@@ -1,0 +1,12 @@
+<main class="flex flex-col overflow-hidden">
+    
+    <div *ngFor="let i of (messages$ | async)?.messages">
+        {{i.subject}}
+    </div>
+  <div class="flex flex-auto"></div>
+  <div class="flex flex-row">
+    <mat-slide-toggle>Toggle me!</mat-slide-toggle>
+  </div>
+</main>
+
+<router-outlet />

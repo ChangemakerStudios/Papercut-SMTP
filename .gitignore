@@ -24,3 +24,4 @@ src/Papercut.UI/publish
 src/Papercut.UI/Releases
 publish
 Releases
+src/Papercut.Service/Web/App/.angular
