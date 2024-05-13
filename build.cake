@@ -4,8 +4,8 @@
 #tool "nuget:?package=MimekitLite&version=4.5.0"
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.17.0"
 #tool "nuget:?package=OpenCover&version=4.7.1221"
-#tool "nuget:?package=GitVersion.CommandLine&version=5.12.0"
-#tool "nuget:?package=vpk&version=0.0.359"
+#tool "nuget:?package=GitVersion.Tool&version=5.12.0"
+#tool "dotnet:?package=vpk&version=0.0.359"
 
 #addin "nuget:?package=Cake.FileHelpers&version=6.1.3"
 #addin "nuget:?package=Cake.Incubator&version=8.0.0"
@@ -215,9 +215,11 @@ Task("DeployUI64")
 .OnError(exception => Error(exception));
 
 Task("BuildUI32")
-    .IsDependentOn("DeployUI64")
+    .IsDependentOn("Restore")
     .Does(() =>
 {
+    CleanDirectory(publishDirectory);
+
     var settings = new DotNetPublishSettings
     {
         Configuration = configuration,
@@ -264,6 +266,57 @@ Task("PackageUI32")
 })
 .OnError(exception => Error(exception));
 
+Task("BuildService")
+    .IsDependentOn("BuildUI32")
+    .Does(() =>
+{
+    CleanDirectory(publishDirectory);
+
+    var settings = new DotNetPublishSettings
+    {
+        Configuration = configuration,
+        OutputDirectory = publishDirectory,
+        Self
+    };
+
+    DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
+})
+.OnError(exception => Error(exception));
+
+Task("PackageService")
+    .IsDependentOn("BuildService")
+    .Does(() =>
+{
+    var arguments = new ProcessArgumentBuilder()
+            .Append("pack")
+            .Append("-u").Append("PapercutSMTPService")
+            .Append("--packTitle").AppendQuoted("Papercut SMTP Service")
+            .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
+            .Append("--releaseNotes").Append("ReleaseNotes.md")
+            .Append("--channel").Append("any" + channelPostfix)
+            .Append("-v").AppendQuoted(versionInfo.FullSemVer)
+            .Append("-p").AppendQuoted(publishDirectory)
+            .Append("-o").AppendQuoted(releasesDirectory)
+            .Append("-e").AppendQuoted("Papercut.Service.exe")
+            .Append("--framework").AppendQuoted("net8.0");
+
+    Information("Running Velopack with arguments: " + arguments.Render());
+    StartProcess("vpk", new ProcessSettings
+    {
+        Arguments = arguments
+    });
+
+    if (AppVeyor.IsRunningOnAppVeyor)
+    {
+        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
+        {
+            Information($"Uploading Artifact to AppVeyor: {file}");
+            AppVeyor.UploadArtifact(file);
+        }
+    }
+})
+.OnError(exception => Error(exception));
+
 ///////////////////////////////////////////////////////////////////////////////
 Task("All")
     .IsDependentOn("Clean")
@@ -276,6 +329,8 @@ Task("All")
     .IsDependentOn("DeployUI64")
     .IsDependentOn("BuildUI32")
     .IsDependentOn("PackageUI32")
+    .IsDependentOn("PackageService")
+    .IsDependentOn("DeployService")
     .OnError(exception => Error(exception));
 
 RunTarget(target);
