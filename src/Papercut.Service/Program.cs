@@ -23,10 +23,15 @@ using ElectronNET.API;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
+using Papercut.Core.Infrastructure.Logging;
+
 using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.ExceptionalLogContext;
+using Serilog.Extensions.Logging;
+
+using Velopack;
 
 namespace Papercut.Service;
 
@@ -38,14 +43,20 @@ public class Program
     {
         Console.Title = "Papercut.Service";
 
-        TaskScheduler.UnobservedTaskException += (sender, e) => Log.Error(e.Exception, "Unobserved Task Exception");
-        AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) => Log.Error(eventArgs.ExceptionObject as Exception, "Unhandled Exception");
+        Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
 
-        Log.Logger = new LoggerConfiguration()
-            .Enrich.FromLogContext()
-            .Enrich.WithExceptionalLogContext()
-            .WriteTo.Console()
-            .CreateBootstrapLogger(); // <-- 😎
+        Log.Information("Running Velopack...");
+
+        var microsoftLogger = new SerilogLoggerFactory().CreateLogger(nameof(VelopackApp));
+
+        // It's important to Run() the VelopackApp as early as possible in app startup.
+        VelopackApp.Build()
+            .WithFirstRun(
+                (v) =>
+                {
+                    /* Your first run code here */
+                })
+            .Run(microsoftLogger);
 
         await RunAsync(args);
     }

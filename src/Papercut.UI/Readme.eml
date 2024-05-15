@@ -1,7 +1,7 @@
 From: Papercut SMTP <PapercutSMTP@papercut-smtp.com>
-Date: Thu, 09 May 2024 22:05:45 -0400
+Date: Wed, 15 May 2024 01:12:03 -0400
 Subject: Welcome to Papercut SMTP!
-Message-Id: <VW0UKG9K0NU4.1DTVTILP9COU2@jabenslaptop>
+Message-Id: <EIUQ8ET42NU4.IMVDM8DRCRIS2@jabenslaptop>
 To: Papercut User <PapercutUser@papercut-smtp.com>
 MIME-Version: 1.0
 Content-Type: text/html; charset=utf-8
@@ -31,7 +31,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRFW
 <ul>
 <li>Upgraded to .NET Framework v4.8 (PR thanks to <a href="https://github.com/1Jesper1">1Jesper1</a>)</li>
 <li>Service doesn't overwrite settings on exit anymore.</li>
-<li>Simplified HTTP binding setting for Service. Basically, "http://0.0.0.0" for "all" binding works again.</li>
+<li>Simplified HTTP binding setting for Service. Basically, "<a href="http://0.0.0.0">http://0.0.0.0</a>" for "all" binding works again.</li>
 <li>Added Attachment Icon (PR thanks to <a href="https://github.com/Cload">Cload</a></li>
 <li>Added graceful fall-back support and error message if WebView2 isn't properly installed.</li>
 <li>Fix for checking registry key for installing edge webview2 &amp; version fixes (PR thanks to <a href="https://github.com/1Jesper1">1Jesper1</a>)</li>
@@ -54,7 +54,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRFW
 <li>Fixed: Multiple issues with the forwarding dialog.</li>
 <li>[#193] Add logging path to settings.json (PR thanks to <a href="https://github.com/1Jesper1">1Jesper1</a>)</li>
 <li>[#192] Adds an option (defaulting to true) to enable popup notifications when a new message is received. (PR thanks to <a href="https://github.com/richardlawley">richardlawley</a>)</li>
-<li>[#189] Use first capital character in text in "proceed" and "cancel" buttons (PR thanks to <a href="https://github.com/1Jesper1">1Jesper1</a>) </li>
+<li>[#189] Use first capital character in text in "proceed" and "cancel" buttons (PR thanks to <a href="https://github.com/1Jesper1">1Jesper1</a>)</li>
 </ul>
 
 <h2>Papercut SMTP v5.8.0 [2021-06-16]</h2>
@@ -62,7 +62,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRFW
 <ul>
 <li>Moved to .NET Framework 4.7.2</li>
 <li>Upgraded to latest dependencies (Caliburn Micro, Autofac, MahApps)</li>
-<li>Fixed: Window sizes weren't binding properly. </li>
+<li>Fixed: Window sizes weren't binding properly.</li>
 <li>Converted system to Async.</li>
 <li>Added additional theme colors.</li>
 <li>Updated the logo.</li>
@@ -70,7 +70,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRFW
 <li>Fixed: Don't show passwords in rules logging output.</li>
 <li>[#175] Added font weight changing when message has been seen (PR thanks to <a href="https://github.com/LewisJohnson">LewisJohnson</a>)</li>
 <li>[#180] Fixed message not displaying in Web UI when id includes '#' symbol (PR thanks to <a href="https://github.com/ryan-warrener">ryan-warrener</a>)</li>
-<li>[#185] Responsive Delete button (PR thanks to <a href="https://github.com/rfverbruggen">rfverbruggen</a>) </li>
+<li>[#185] Responsive Delete button (PR thanks to <a href="https://github.com/rfverbruggen">rfverbruggen</a>)</li>
 </ul>
 
 <h2>Papercut SMTP v5.7.0 [2020-04-05]</h2>
@@ -81,7 +81,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRFW
 <li>Changed default save directory for Papercut UI to <em>\%ApplicationData%\Changemaker Studios\Papercut SMTP</em>. Mail in legacy paths are still supported.</li>
 <li>Added support for embedded message mime types and the ability to save the embedded eml.</li>
 <li>Performance improvements loading messages.</li>
-<li>Misc bug fixes. </li>
+<li>Misc bug fixes.</li>
 </ul>
 
 <h2>Papercut v5.6.0 [2020-04-02]</h2>
@@ -162,7 +162,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRFW
 <li><a href="https://github.com/ChangemakerStudios/Papercut/issues/46">#46</a>: Added support for SeqApiKey for issue #46 fixed.</li>
 <li><a href="https://github.com/ChangemakerStudios/Papercut/issues/60">#60</a>: Simple bootstrapped MSI installer, thanks to <a href="https://github.com/tdue21">tdue21</a>.</li>
 <li><a href="https://github.com/ChangemakerStudios/Papercut/issues/63">#63</a>: Basic web ui features, thanks to <a href="https://github.com/jijiechen">jijiechen</a>.</li>
-<li>Fixed the mispelling for Papercut.Module. </li>
+<li>Fixed the mispelling for Papercut.Module.</li>
 <li>Upgrade to .NET v4.5 - Leaving the past behind. WebAPI layer is properly loading now.</li>
 <li>Plugin directory no longer needs to be copied.</li>
 </ul>
@@ -219,13 +219,22 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRFW
 <li>Fixed: #9872 On some systems there were permissions issues accessing the IP addresses for the local system causing an unhandled exception and failure.</li>
 </ul>
 
-<p>Thanks to <a href="https://github.com/jstedfast">Jstedfast</a> (author of <a href="https://github.com/jstedfast/mailkit">MimeKit</a>) for his contribution:
-- Rewrote and improved the logic that renders the email HTML.</p>
+<p>Thanks to <a href="https://github.com/jstedfast">Jstedfast</a> (author of <a href="https://github.com/jstedfast/mailkit">MimeKit</a>) for his contribution:</p>
 
-<p>Thanks to MikeWill34 for his contributions:
-- Fixed: #9870 When Aero is disabled (on servers, for example), the windows didn’t have a drop shadow. Now they have a solid border.
-  - Fixed: Mark of the Web “ActiveX” security warning on email display.
-  - Improvement: Upgraded to Calburn Micro v2.0.</p>
+<ul>
+<li>Rewrote and improved the logic that renders the email HTML.</li>
+</ul>
+
+<p>Thanks to MikeWill34 for his contributions:</p>
+
+<ul>
+<li>Fixed: #9870 When Aero is disabled (on servers, for example), the windows didn’t have a drop shadow. Now they have a solid border.
+
+<ul>
+<li>Fixed: Mark of the Web “ActiveX” security warning on email display.</li>
+<li>Improvement: Upgraded to Calburn Micro v2.0.</li>
+</ul></li>
+</ul>
 
 <h2>Papercut v4.3.0.0 [2014-11-05]</h2>
 
@@ -316,7 +325,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAABBCAYAAAD44bmLAAAAGXRFW
 <li>Change: Removed the the slow and annoying "raw view" and added "header view.”</li>
 <li>Change: Removed the Redundant "Html" view and added the "Text" view.</li>
 <li>Change: Changed "Close" to "Exit" as the close or minimize window button has the close functionality. It's nice to be able to exit Papercut from the main app window.</li>
-<li>Feature: Thanks to a little assistance from this answer on stack overflow (http://stackoverflow.com/questions/14103159/previewmouseleftbuttondown-interferes-with-clic-selection).</li>
+<li>Feature: Thanks to a little assistance from this answer on stack overflow (<a href="http://stackoverflow.com/questions/14103159/previewmouseleftbuttondown-interferes-with-clic-selection">http://stackoverflow.com/questions/14103159/previewmouseleftbuttondown-interferes-with-clic-selection</a>).</li>
 <li>Finally implemented that drag&amp;drop message file feature. Now you can drag and drop a message file.</li>
 <li>Change: Saves and loads message in AppData\Papercut.</li>
 <li>Feature: Now you can delete a Message with the Delete Key (#9835) - message content from last message is now correctly cleared (#9840)</li>

@@ -17,14 +17,14 @@
 
 #load "./build/BuildInformation.cake"
 #load "./build/ReleaseNotes.cake"
+#load "./build/Velopack.cake"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-var target = Argument("target", "All");
 var configuration = Argument("configuration", "Release");
-//var buildInformation = BuildInformation.GetBuildInformation(Context, BuildSystem);
+var target = Argument("target", "All");
 GitVersion versionInfo = GitVersion(new GitVersionSettings { OutputType = GitVersionOutput.Json });
 
 var isMasterBranch = false;
@@ -129,14 +129,15 @@ Task("DownloadReleases")
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
 Task("BuildUI64")
-    .IsDependentOn("DownloadReleases")
+    .IsDependentOn("Restore")
     .Does(() =>
 {
     var settings = new DotNetPublishSettings
     {
         Configuration = configuration,
         Runtime = "win-x64",
-        OutputDirectory = publishDirectory
+        OutputDirectory = publishDirectory,
+        EnableCompressionInSingleFile = true
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
@@ -162,56 +163,24 @@ Task("BuildUI64")
 // PACKAGE STEPS
 
 Task("PackageUI64")
-    .IsDependentOn("DownloadReleases")
+    .IsDependentOn("BuildUI64")
     .Does(() =>
 {
-    var arguments = new ProcessArgumentBuilder()
-            .Append("pack")
-            .Append("-u").Append("PapercutSMTP")
-            .Append("--packTitle").AppendQuoted("Papercut SMTP")
-            .Append("--runtime").Append("win7-x64")
-            .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
-            .Append("--releaseNotes").Append("ReleaseNotes.md")
-            .Append("--channel").Append("win-x64" + channelPostfix)
-            .Append("-v").AppendQuoted(versionInfo.FullSemVer)
-            .Append("-p").AppendQuoted(publishDirectory)
-            .Append("-o").AppendQuoted(releasesDirectory)
-            .Append("-e").AppendQuoted("Papercut.exe")
-            .Append("--framework").AppendQuoted("net8.0-x64-desktop,webview2");
-
-    Information("Running Velopack with arguments: " + arguments.Render());
-    StartProcess("vpk", new ProcessSettings
+    var packParams = new VpkPackParams
     {
-        Arguments = arguments
-    });
+        Id = "PapercutSMTP",
+        Title = "Papercut SMTP",
+        Icon = papercutDir + File("App.ico"),
+        ReleaseNotes = "ReleaseNotes.md",
+        Channel = "win-x64" + channelPostfix,
+        Version = versionInfo.FullSemVer,
+        PublishDirectory = publishDirectory,
+        ReleaseDirectory = releasesDirectory,
+        ExeName = "Papercut.exe",
+        Framework = "net8.0-x64-desktop,webview2"
+    };
 
-    if (AppVeyor.IsRunningOnAppVeyor)
-    {
-        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
-        {
-            Information($"Uploading Artifact to AppVeyor: {file}");
-            AppVeyor.UploadArtifact(file);
-        }
-    }
-})
-.OnError(exception => Error(exception));
-
-Task("DeployUI64")
-    .WithCriteria(isMasterBranch && hasGithubToken)
-    .IsDependentOn("PackageUI64")
-    .Does(() =>
-{
-    Information($"Deploying Papercut SMTP Desktop Release {GitVersionOutput.BuildServer}");
-
-    var arguments = new ProcessArgumentBuilder()
-        .Append("upload").Append("github")
-        .Append("--repoUrl").Append("https://github.com/ChangemakerStudios/Papercut-SMTP")
-        .Append("--token").Append(EnvironmentVariable<string>("github-token", ""));
-
-    StartProcess("vpk", new ProcessSettings
-    {
-        Arguments = arguments
-    });
+    Velopack.Pack(Context, packParams);
 })
 .OnError(exception => Error(exception));
 
@@ -225,7 +194,8 @@ Task("BuildUI32")
     {
         Configuration = configuration,
         Runtime = "win-x86",
-        OutputDirectory = publishDirectory
+        OutputDirectory = publishDirectory,
+        EnableCompressionInSingleFile = true
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
@@ -236,39 +206,27 @@ Task("PackageUI32")
     .IsDependentOn("BuildUI32")
     .Does(() =>
 {
-    var arguments = new ProcessArgumentBuilder()
-            .Append("pack")
-            .Append("-u").Append("PapercutSMTP")
-            .Append("--packTitle").AppendQuoted("Papercut SMTP")
-            .Append("--runtime").Append("win7-x86")
-            .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
-            .Append("--releaseNotes").Append("ReleaseNotes.md")
-            .Append("--channel").Append("win-x84" + channelPostfix)
-            .Append("-v").AppendQuoted(versionInfo.FullSemVer)
-            .Append("-p").AppendQuoted(publishDirectory)
-            .Append("-o").AppendQuoted(releasesDirectory)
-            .Append("-e").AppendQuoted("Papercut.exe")
-            .Append("--framework").AppendQuoted("net8.0-x86-desktop,webview2");
-
-    Information("Running Velopack with arguments: " + arguments.Render());
-    StartProcess("vpk", new ProcessSettings
+    // Create a new instance of VpkPackParams with the necessary properties
+    var packParams = new VpkPackParams
     {
-        Arguments = arguments
-    });
+        Id = "PapercutSMTP",
+        Title = "Papercut SMTP",
+        Icon = papercutDir + File("App.ico"),
+        ReleaseNotes = "ReleaseNotes.md",
+        Channel = "win-x86" + channelPostfix,
+        Version = versionInfo.FullSemVer,
+        PublishDirectory = publishDirectory,
+        ReleaseDirectory = releasesDirectory,
+        ExeName = "Papercut.exe",
+        Framework = "net8.0-x86-desktop,webview2"
+    };
 
-    if (AppVeyor.IsRunningOnAppVeyor)
-    {
-        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
-        {
-            Information($"Uploading Artifact to AppVeyor: {file}");
-            AppVeyor.UploadArtifact(file);
-        }
-    }
+    Velopack.Pack(Context, packParams);
 })
 .OnError(exception => Error(exception));
 
-Task("BuildService")
-    .IsDependentOn("BuildUI32")
+Task("BuildServiceWin64")
+    .IsDependentOn("Restore")
     .Does(() =>
 {
     CleanDirectory(publishDirectory);
@@ -276,44 +234,113 @@ Task("BuildService")
     var settings = new DotNetPublishSettings
     {
         Configuration = configuration,
-        OutputDirectory = publishDirectory
+        OutputDirectory = publishDirectory,
+        Runtime = "win-x64",
+        EnableCompressionInSingleFile = true,
+        PublishSingleFile = true,
+        SelfContained = true,
     };
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 })
 .OnError(exception => Error(exception));
 
-Task("PackageService")
-    .IsDependentOn("BuildService")
+Task("PackageServiceWin64")
+    .IsDependentOn("BuildServiceWin64")
     .Does(() =>
 {
-    var arguments = new ProcessArgumentBuilder()
-            .Append("pack")
-            .Append("-u").Append("PapercutSMTPService")
-            .Append("--packTitle").AppendQuoted("Papercut SMTP Service")
-            .Append("--icon").AppendQuoted(papercutDir + File("App.ico"))
-            .Append("--releaseNotes").Append("ReleaseNotes.md")
-            .Append("--channel").Append("any" + channelPostfix)
-            .Append("-v").AppendQuoted(versionInfo.FullSemVer)
-            .Append("-p").AppendQuoted(publishDirectory)
-            .Append("-o").AppendQuoted(releasesDirectory)
-            .Append("-e").AppendQuoted("Papercut.Service.exe")
-            .Append("--framework").AppendQuoted("net8.0");
+    var iconPath = Directory(papercutServiceDir.ToString() + "/icons");
 
-    Information("Running Velopack with arguments: " + arguments.Render());
-    StartProcess("vpk", new ProcessSettings
+    // Create a new instance of VpkPackParams with the necessary properties
+    var packParams = new VpkPackParams
     {
-        Arguments = arguments
-    });
+        Id = "PapercutSMTPService",
+        Title = "Papercut SMTP Service",
+        Icon = iconPath + File("Papercut-icon.ico"),
+        ReleaseNotes = "ReleaseNotes.md",
+        Channel = "win-x64" + channelPostfix,
+        Version = versionInfo.FullSemVer,
+        PublishDirectory = publishDirectory,
+        ReleaseDirectory = releasesDirectory,
+        ExeName = "Papercut.Service.exe"
+    };
 
-    if (AppVeyor.IsRunningOnAppVeyor)
+    Velopack.Pack(Context, packParams);
+})
+.OnError(exception => Error(exception));
+
+Task("BuildServiceWin32")
+    .IsDependentOn("Restore")
+    .Does(() =>
+{
+    CleanDirectory(publishDirectory);
+
+    var settings = new DotNetPublishSettings
+    {
+        Configuration = configuration,
+        OutputDirectory = publishDirectory,
+        Runtime = "win-x86",
+        EnableCompressionInSingleFile = true,
+        PublishSingleFile = true,
+        SelfContained = true,
+    };
+
+    DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
+})
+.OnError(exception => Error(exception));
+
+Task("PackageServiceWin32")
+    .IsDependentOn("BuildServiceWin32")
+    .Does(() =>
+{
+    var iconPath = Directory(papercutServiceDir.ToString() + "/icons");
+
+    // Create a new instance of VpkPackParams with the necessary properties
+    var packParams = new VpkPackParams
+    {
+        Id = "PapercutSMTPService",
+        Title = "Papercut SMTP Service",
+        Icon = iconPath + File("Papercut-icon.ico"),
+        ReleaseNotes = "ReleaseNotes.md",
+        Channel = "win-x86" + channelPostfix,
+        Version = versionInfo.FullSemVer,
+        PublishDirectory = publishDirectory,
+        ReleaseDirectory = releasesDirectory,
+        ExeName = "Papercut.Service.exe"
+    };
+
+    Velopack.Pack(Context, packParams);
+})
+.OnError(exception => Error(exception));
+
+Task("UploadArtifacts")
+    .WithCriteria(AppVeyor.IsRunningOnAppVeyor)
+    .IsDependentOn("PackageUI32")
+    .Does(() =>
     {
         foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
         {
             Information($"Uploading Artifact to AppVeyor: {file}");
             AppVeyor.UploadArtifact(file);
         }
-    }
+    });
+
+Task("DeployReleases")
+    .WithCriteria(isMasterBranch && hasGithubToken)
+    .IsDependentOn("PackageUI32")
+    .Does(() =>
+{
+    Information($"Deploying Papercut SMTP Releases {GitVersionOutput.BuildServer}");
+
+    var arguments = new ProcessArgumentBuilder()
+        .Append("upload").Append("github")
+        .Append("--repoUrl").Append("https://github.com/ChangemakerStudios/Papercut-SMTP")
+        .Append("--token").Append(EnvironmentVariable<string>("github-token", ""));
+
+    StartProcess("vpk", new ProcessSettings
+    {
+        Arguments = arguments
+    });
 })
 .OnError(exception => Error(exception));
 
@@ -324,13 +351,15 @@ Task("All")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("DownloadReleases")
-    .IsDependentOn("BuildUI64")
-    .IsDependentOn("PackageUI64")
-    .IsDependentOn("DeployUI64")
-    .IsDependentOn("BuildUI32")
-    .IsDependentOn("PackageUI32")
-    .IsDependentOn("BuildService")
-    .IsDependentOn("PackageService")
+    // .IsDependentOn("BuildUI64")
+    // .IsDependentOn("PackageUI64")
+    // .IsDependentOn("BuildUI32")
+    // .IsDependentOn("PackageUI32")
+    .IsDependentOn("BuildServiceWin64")
+    .IsDependentOn("PackageServiceWin64")
+    // .IsDependentOn("BuildServiceWin32")
+    // .IsDependentOn("PackageServiceWin32")
+    .IsDependentOn("DeployReleases")
     .OnError(exception => Error(exception));
 
 RunTarget(target);

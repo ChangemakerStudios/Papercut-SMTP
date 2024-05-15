@@ -7,6 +7,7 @@
 		<DebugType>portable</DebugType>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<ApplicationIcon>icons\Papercut-icon.ico</ApplicationIcon>
 	</PropertyGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Web\Assets\**" />
@@ -28,6 +29,7 @@
 		<PackageReference Include="Serilog.Sinks.Seq" Version="7.0.0" />
 		<PackageReference Include="Serilog.Expressions" Version="4.0.0" />
 		<PackageReference Include="SmtpServer" Version="10.0.1" />
+		<PackageReference Include="Velopack" Version="0.0.359" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
