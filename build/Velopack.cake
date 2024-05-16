@@ -17,7 +17,7 @@ public static class Velopack
             .Append("-v").AppendQuoted(@params.Version)
             .Append("-p").AppendQuoted(@params.PublishDirectory)
             .Append("-o").AppendQuoted(@params.ReleaseDirectory)
-            .Append("-e").AppendQuoted("Papercut.Service.exe");
+            .Append("-e").AppendQuoted(@params.ExeName);
 
         if (!string.IsNullOrEmpty(@params.Framework))
         {

@@ -144,24 +144,6 @@ Task("BuildUI64")
 })
 .OnError(exception => Error(exception));
 
-///////////////////////////////////////////////////////////////////////////////
-// TESTS
-// Task("Test")
-//     .IsDependentOn("Build64")
-//     .Does(() =>
-// {
-//     NUnit3("./test/**/bin/x64/" + configuration + "/*.Test.dll", new NUnit3Settings()); // { NoResults = true });
-
-//     if (AppVeyor.IsRunningOnAppVeyor)
-//     {
-//         AppVeyor.UploadTestResults("TestResult.xml", AppVeyorTestResultsType.NUnit3);
-//     }
-// })
-// .OnError(exception => Error(exception));
-
-///////////////////////////////////////////////////////////////////////////////
-// PACKAGE STEPS
-
 Task("PackageUI64")
     .IsDependentOn("BuildUI64")
     .Does(() =>
@@ -349,16 +331,12 @@ Task("All")
     .IsDependentOn("Clean")
     .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("CreateReleaseNotes")
-    .IsDependentOn("Restore")
     .IsDependentOn("DownloadReleases")
-    // .IsDependentOn("BuildUI64")
-    // .IsDependentOn("PackageUI64")
-    // .IsDependentOn("BuildUI32")
-    // .IsDependentOn("PackageUI32")
-    .IsDependentOn("BuildServiceWin64")
-    .IsDependentOn("PackageServiceWin64")
-    // .IsDependentOn("BuildServiceWin32")
-    // .IsDependentOn("PackageServiceWin32")
+    .IsDependentOn("Restore")
+    .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
+    .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
+    .IsDependentOn("BuildServiceWin64").IsDependentOn("PackageServiceWin64")
+    .IsDependentOn("BuildServiceWin32").IsDependentOn("PackageServiceWin32")
     .IsDependentOn("DeployReleases")
     .OnError(exception => Error(exception));
 
