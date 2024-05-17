@@ -111,20 +111,37 @@ namespace Papercut.AppLayer.Notifications
                                      Visible = true
                                  };
 
-            this._notification.Click +=
+            this._notification.Click += Notification_OnClick;
+            this._notification.BalloonTipClicked +=
                 (_, _) =>
                 {
-                    this._uiCommandHub.ShowMainWindow();
+                    this._uiCommandHub.ShowMainWindow(true);
                 };
-
-            this._notification.BalloonTipClicked +=
-                (_, _) => this._uiCommandHub.ShowMainWindow(true);
 
             this._notification.ContextMenuStrip = new ContextMenuStrip();
 
-            this._notification.ContextMenuStrip.Items.Add("Show", null, (_, _) => this._uiCommandHub.ShowMainWindow());
-            this._notification.ContextMenuStrip.Items.Add("Options", null, (_, _) => this._uiCommandHub.ShowOptionWindow());
-            this._notification.ContextMenuStrip.Items.Add("Exit", null, (_, _) => this._appCommandHub.Shutdown());
+            this._notification.ContextMenuStrip.Items.Add("Show", null, (_, _) =>
+            {
+                this._uiCommandHub.ShowMainWindow();
+            });
+            this._notification.ContextMenuStrip.Items.Add("Options", null, (_, _) =>
+            {
+                this._uiCommandHub.ShowOptionWindow();
+            });
+            this._notification.ContextMenuStrip.Items.Add("Exit", null, (_, _) =>
+            {
+                this._appCommandHub.Shutdown();
+            });
+        }
+
+        private void Notification_OnClick(object? sender, EventArgs e)
+        {
+            if (e is MouseEventArgs { Button: MouseButtons.Left })
+            {
+                this._uiCommandHub.ShowMainWindow();
+            }
+
+            this._notification?.ContextMenuStrip?.Show();
         }
 
         #region Begin Static Container Registrations
