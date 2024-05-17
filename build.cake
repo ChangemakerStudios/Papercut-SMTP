@@ -28,6 +28,7 @@ var target = Argument("target", "All");
 GitVersion versionInfo = GitVersion(new GitVersionSettings { OutputType = GitVersionOutput.Json });
 
 var isMasterBranch = false;
+var isDevelopBranch = false;
 var hasGithubToken = false;
 string githubToken = null;
 
@@ -35,6 +36,7 @@ if (AppVeyor.IsRunningOnAppVeyor)
 {
     Information($"Building Branch '{BuildSystem.AppVeyor.Environment.Repository.Branch}'...");
     isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch);
+    isDevelopBranch = StringComparer.OrdinalIgnoreCase.Equals("develop", BuildSystem.AppVeyor.Environment.Repository.Branch);
     githubToken = EnvironmentVariable<string>("github-token", null);
 }
 
@@ -43,7 +45,7 @@ if (!string.IsNullOrEmpty(githubToken))
     hasGithubToken = true;
 }
 
-var channelPostfix = isMasterBranch ? "-stable" : "-dev";
+var channelPostfix = isMasterBranch ? "-stable" : isDevelopBranch ? "-dev" : "-alpha";
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
@@ -153,7 +155,7 @@ Task("PackageUI64")
         Id = "PapercutSMTP",
         Title = "Papercut SMTP",
         Icon = papercutDir + File("App.ico"),
-        ReleaseNotes = "ReleaseNotes.md",
+        ReleaseNotes = "ReleaseNotesCurrent.md",
         Channel = "win-x64" + channelPostfix,
         Version = versionInfo.FullSemVer,
         PublishDirectory = publishDirectory,
@@ -194,7 +196,7 @@ Task("PackageUI32")
         Id = "PapercutSMTP",
         Title = "Papercut SMTP",
         Icon = papercutDir + File("App.ico"),
-        ReleaseNotes = "ReleaseNotes.md",
+        ReleaseNotes = "ReleaseNotesCurrent.md",
         Channel = "win-x86" + channelPostfix,
         Version = versionInfo.FullSemVer,
         PublishDirectory = publishDirectory,
@@ -239,7 +241,7 @@ Task("PackageServiceWin64")
         Id = "PapercutSMTPService",
         Title = "Papercut SMTP Service",
         Icon = iconPath + File("Papercut-icon.ico"),
-        ReleaseNotes = "ReleaseNotes.md",
+        ReleaseNotes = "ReleaseNotesCurrent.md",
         Channel = "win-x64" + channelPostfix,
         Version = versionInfo.FullSemVer,
         PublishDirectory = publishDirectory,
@@ -283,7 +285,7 @@ Task("PackageServiceWin32")
         Id = "PapercutSMTPService",
         Title = "Papercut SMTP Service",
         Icon = iconPath + File("Papercut-icon.ico"),
-        ReleaseNotes = "ReleaseNotes.md",
+        ReleaseNotes = "ReleaseNotesCurrent.md",
         Channel = "win-x86" + channelPostfix,
         Version = versionInfo.FullSemVer,
         PublishDirectory = publishDirectory,
@@ -308,8 +310,8 @@ Task("UploadArtifacts")
     });
 
 Task("DeployReleases")
-    .WithCriteria(isMasterBranch && hasGithubToken)
-    .IsDependentOn("PackageUI32")
+    .WithCriteria((isMasterBranch || isDevelopBranch) && hasGithubToken)
+    .IsDependentOn("UploadArtifacts")
     .Does(() =>
 {
     Information($"Deploying Papercut SMTP Releases {GitVersionOutput.BuildServer}");
@@ -335,8 +337,7 @@ Task("All")
     .IsDependentOn("Restore")
     .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
     .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
-    .IsDependentOn("BuildServiceWin64").IsDependentOn("PackageServiceWin64")
-    .IsDependentOn("BuildServiceWin32").IsDependentOn("PackageServiceWin32")
+    .IsDependentOn("UploadArtifacts")
     .IsDependentOn("DeployReleases")
     .OnError(exception => Error(exception));
 

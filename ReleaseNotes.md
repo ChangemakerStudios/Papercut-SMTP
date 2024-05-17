@@ -1,6 +1,6 @@
 # Release Notes
 
-## Papercut SMTP v7.0.0 [2024-05-10]
+## Papercut SMTP v7.0.0 [2024-05-17]
 
 _NOTE: Uninstall any existing Papercut SMTP installations BEFORE installing this new version._
 
