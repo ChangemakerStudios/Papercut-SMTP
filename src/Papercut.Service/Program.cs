@@ -20,43 +20,28 @@ using Autofac.Extensions.DependencyInjection;
 
 using ElectronNET.API;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using Papercut.Core.Infrastructure.Logging;
 
 using Serilog.Core;
 using Serilog.Debugging;
-using Serilog.Events;
 using Serilog.ExceptionalLogContext;
-using Serilog.Extensions.Logging;
-
-using Velopack;
 
 namespace Papercut.Service;
 
 public class Program
 {
+    const string AppName= "Papercut.SMTP.Service";
+
     private static readonly CancellationTokenSource _cancellationTokenSource = new();
 
     public static async Task Main(string[] args)
     {
-        Console.Title = "Papercut.Service";
+        Console.Title = AppName;
 
         Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
-
-        Log.Information("Running Velopack...");
-
-        var microsoftLogger = new SerilogLoggerFactory().CreateLogger(nameof(VelopackApp));
-
-        // It's important to Run() the VelopackApp as early as possible in app startup.
-        VelopackApp.Build()
-            .WithFirstRun(
-                (v) =>
-                {
-                    /* Your first run code here */
-                })
-            .Run(microsoftLogger);
 
         await RunAsync(args);
     }
@@ -85,22 +70,30 @@ public class Program
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
+            .UseWindowsService(options => {
+                options.ServiceName = AppName;
+            })
             .UseContentRoot(AppContext.BaseDirectory)
-            .UseSerilog(CreateDefaultLogger)
             .UseServiceProviderFactory(new AutofacServiceProviderFactory())
             .ConfigureServices(
                 (context, sp) =>
                 {
-                    sp.AddSingleton<IConfiguration>(context.Configuration);
-                    sp.AddSingleton<IHostEnvironment>(context.HostingEnvironment);
-                    sp.AddSingleton<LoggingLevelSwitch>(new LoggingLevelSwitch(LogEventLevel.Information));
+                    sp.AddSingleton(context.Configuration);
+                    sp.AddSingleton(context.HostingEnvironment);
+                    sp.AddSingleton(new LoggingLevelSwitch());
                 })
             .ConfigureWebHostDefaults(
                 webBuilder =>
                 {
+                    webBuilder.ConfigureLogging(
+                        s =>
+                        {
+                            s.ClearProviders();
+                        });
                     webBuilder.UseElectron(args);
                     webBuilder.UseStartup<PapercutServiceStartup>();
                 })
+            .UseSerilog(CreateDefaultLogger)
             .ConfigureServices(
                 (context, sp) =>
                 {

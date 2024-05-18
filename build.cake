@@ -11,11 +11,12 @@
 #addin "nuget:?package=Cake.FileHelpers&version=6.1.3"
 #addin "nuget:?package=Cake.Incubator&version=8.0.0"
 
+#nullable enable
+
 #reference "tools/System.Configuration.ConfigurationManager.4.5.0/lib/netstandard2.0/System.Configuration.ConfigurationManager.dll"
 #reference "tools/MarkdownSharp.2.0.5/lib/netstandard2.0/MarkdownSharp.dll"
 #reference "tools/MimeKitLite.4.5.0/lib/netstandard2.0/MimeKitLite.dll"
 
-#load "./build/BuildInformation.cake"
 #load "./build/ReleaseNotes.cake"
 #load "./build/Velopack.cake"
 
@@ -30,14 +31,14 @@ GitVersion versionInfo = GitVersion(new GitVersionSettings { OutputType = GitVer
 var isMasterBranch = false;
 var isDevelopBranch = false;
 var hasGithubToken = false;
-string githubToken = null;
+string? githubToken = null;
 
 if (AppVeyor.IsRunningOnAppVeyor)
 {
     Information($"Building Branch '{BuildSystem.AppVeyor.Environment.Repository.Branch}'...");
     isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch);
     isDevelopBranch = StringComparer.OrdinalIgnoreCase.Equals("develop", BuildSystem.AppVeyor.Environment.Repository.Branch);
-    githubToken = EnvironmentVariable<string>("github-token", null);
+    githubToken = EnvironmentVariable<string?>("github-token", null);
 }
 
 if (!string.IsNullOrEmpty(githubToken))
@@ -256,91 +257,55 @@ Task("DeployReleases")
 .OnError(exception => Error(exception));
 
 
-Task("BuildServiceWin64")
+Task("BuildAndPackServiceWin64")
     .IsDependentOn("Restore")
     .Does(() =>
 {
     CleanDirectory(publishDirectory);
+    CleanDirectory(releasesDirectory);
+
+    var runtime = "win-x64";
 
     var settings = new DotNetPublishSettings
     {
         Configuration = configuration,
         OutputDirectory = publishDirectory,
-        Runtime = "win-x64",
+        Runtime = runtime,
         EnableCompressionInSingleFile = true,
         PublishSingleFile = true,
         SelfContained = true,
     };
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
+
+    var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
+    Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
 })
 .OnError(exception => Error(exception));
 
-Task("PackageServiceWin64")
-    .IsDependentOn("BuildServiceWin64")
-    .Does(() =>
-{
-    var iconPath = Directory(papercutServiceDir.ToString() + "/icons");
-
-    // Create a new instance of VpkPackParams with the necessary properties
-    var packParams = new VpkPackParams
-    {
-        Id = "PapercutSMTPService",
-        Title = "Papercut SMTP Service",
-        Icon = iconPath + File("Papercut-icon.ico"),
-        ReleaseNotes = "ReleaseNotesCurrent.md",
-        Channel = "win-x64" + channelPostfix,
-        Version = versionInfo.FullSemVer,
-        PublishDirectory = publishDirectory,
-        ReleaseDirectory = releasesDirectory,
-        ExeName = "Papercut.Service.exe"
-    };
-
-    Velopack.Pack(Context, packParams);
-})
-.OnError(exception => Error(exception));
-
-Task("BuildServiceWin32")
+Task("BuildAndPackServiceWin32")
     .IsDependentOn("Restore")
     .Does(() =>
 {
     CleanDirectory(publishDirectory);
+    CleanDirectory(releasesDirectory);
+
+    var runtime = "win-x86";
 
     var settings = new DotNetPublishSettings
     {
         Configuration = configuration,
         OutputDirectory = publishDirectory,
-        Runtime = "win-x86",
+        Runtime = runtime,
         EnableCompressionInSingleFile = true,
         PublishSingleFile = true,
         SelfContained = true,
     };
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
-})
-.OnError(exception => Error(exception));
 
-Task("PackageServiceWin32")
-    .IsDependentOn("BuildServiceWin32")
-    .Does(() =>
-{
-    var iconPath = Directory(papercutServiceDir.ToString() + "/icons");
-
-    // Create a new instance of VpkPackParams with the necessary properties
-    var packParams = new VpkPackParams
-    {
-        Id = "PapercutSMTPService",
-        Title = "Papercut SMTP Service",
-        Icon = iconPath + File("Papercut-icon.ico"),
-        ReleaseNotes = "ReleaseNotesCurrent.md",
-        Channel = "win-x86" + channelPostfix,
-        Version = versionInfo.FullSemVer,
-        PublishDirectory = publishDirectory,
-        ReleaseDirectory = releasesDirectory,
-        ExeName = "Papercut.Service.exe"
-    };
-
-    Velopack.Pack(Context, packParams);
+    var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
+    Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
 })
 .OnError(exception => Error(exception));
 
@@ -351,10 +316,12 @@ Task("All")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("DownloadReleases")
     .IsDependentOn("Restore")
-    .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
     .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
-    .IsDependentOn("UploadArtifacts")
+    .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
     .IsDependentOn("DeployReleases")
+    .IsDependentOn("BuildAndPackServiceWin32")
+    .IsDependentOn("BuildAndPackServiceWin64")
+    .IsDependentOn("UploadArtifacts")
     .OnError(exception => Error(exception));
 
 RunTarget(target);

@@ -64,32 +64,24 @@ public static class Velopack
 
 public class VpkUploadParams
 {
-    public string ReleaseDirectory { get; set; }
-    public string Channel { get; set; }
-    public string Token { get; set; }
-    public string Repository { get; set; }
+    public string? ReleaseDirectory { get; set; }
+    public string? Channel { get; set; }
+    public string? Token { get; set; }
+    public string? Repository { get; set; }
     public bool IsPrelease { get; set; } = false;
-
     public bool Merge { get; set; } = true;
 }
 
 public class VpkPackParams
 {
-    public string Id { get; set; }
-    public string Title { get; set; }
-
-    public string Icon { get; set; }
-    public string ReleaseNotes { get; set; }
-
-    public string Channel { get; set; }
-
-    public string Version { get; set; }
-
-    public string PublishDirectory { get; set; }
-
-    public string ReleaseDirectory { get; set; }
-
-    public string ExeName { get; set; }
-
+    public string? Id { get; set; }
+    public string? Title { get; set; }
+    public string? Icon { get; set; }
+    public string? ReleaseNotes { get; set; }
+    public string? Channel { get; set; }
+    public string? Version { get; set; }
+    public string? PublishDirectory { get; set; }
+    public string? ReleaseDirectory { get; set; }
+    public string? ExeName { get; set; }
     public string? Framework { get; set; }
 }
