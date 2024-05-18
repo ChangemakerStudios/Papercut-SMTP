@@ -50,6 +50,11 @@ public static class Velopack
             arguments.Append("--pre");
         }
 
+        if (@params.Merge)
+        {
+            arguments.Append("--merge");
+        }
+
         context.StartProcess("vpk", new ProcessSettings
         {
             Arguments = arguments
@@ -64,6 +69,8 @@ public class VpkUploadParams
     public string Token { get; set; }
     public string Repository { get; set; }
     public bool IsPrelease { get; set; } = false;
+
+    public bool Merge { get; set; } = true;
 }
 
 public class VpkPackParams
