@@ -15,7 +15,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 using System.Net.Sockets;
 
 using Papercut.Common.Domain;
@@ -28,7 +27,7 @@ namespace Papercut.Infrastructure.IPComm.Network
     {
         public EndpointDefinition Endpoint { get; } = endpointDefinition;
 
-        private async Task<T> TryConnect<T>(Func<TcpClient, Task<T>> doOperation, TimeSpan connectTimeout)
+        private async Task<T?> TryConnect<T>(Func<TcpClient, Task<T>> doOperation, TimeSpan connectTimeout)
         {
             using var source = new CancellationTokenSource(connectTimeout);
             using var client = new TcpClient();
