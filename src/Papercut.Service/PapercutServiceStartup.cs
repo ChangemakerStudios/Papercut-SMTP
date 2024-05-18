@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 
 using Papercut.Rules;
+using Papercut.Service.Infrastructure.NewVersionCheck;
 using Papercut.Service.Infrastructure.Servers;
 
 namespace Papercut.Service;
@@ -52,6 +53,7 @@ internal class PapercutServiceStartup
 
         // hosted services
         services.AddHostedService<PapercutServerHostedService>();
+        services.AddHostedService<NewVersionCheckHost>();
     }
 
     IEnumerable<Autofac.Module> GetModules()

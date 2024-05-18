@@ -41,9 +41,22 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        Console.Title = "Papercut.Service"; 
-        
+        Console.Title = "Papercut.Service";
+
         Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
+
+        Log.Information("Running Velopack...");
+
+        var microsoftLogger = new SerilogLoggerFactory().CreateLogger(nameof(VelopackApp));
+
+        // It's important to Run() the VelopackApp as early as possible in app startup.
+        VelopackApp.Build()
+            .WithFirstRun(
+                (v) =>
+                {
+                    /* Your first run code here */
+                })
+            .Run(microsoftLogger);
 
         await RunAsync(args);
     }

@@ -24,65 +24,47 @@ using Papercut.Core.Domain.Network;
 
 namespace Papercut.Infrastructure.IPComm.Network
 {
-    public class PapercutIPCommClient
+    public class PapercutIPCommClient(EndpointDefinition endpointDefinition, ILogger logger)
     {
-        readonly ILogger _logger;
-
-        public PapercutIPCommClient(EndpointDefinition endpointDefinition, ILogger logger)
-        {
-            this.Endpoint = endpointDefinition;
-            this._logger = logger;
-        }
-
-        public EndpointDefinition Endpoint { get; }
+        public EndpointDefinition Endpoint { get; } = endpointDefinition;
 
         private async Task<T> TryConnect<T>(Func<TcpClient, Task<T>> doOperation, TimeSpan connectTimeout)
         {
+            using var source = new CancellationTokenSource(connectTimeout);
             using var client = new TcpClient();
+
             try
             {
-                var cancelTask = Task.Delay(connectTimeout);
-                var connectTask = client.ConnectAsync(
+                await client.ConnectAsync(
                     this.Endpoint.Address,
-                    this.Endpoint.Port);
-
-                await await Task.WhenAny(connectTask, cancelTask);
-
-                if (cancelTask.IsCanceled)
-                {
-                    //If cancelTask and connectTask both finish at the same time,
-                    //we'll consider it to be a timeout. 
-                    throw new TaskCanceledException("Socket Operation Timed Out");
-                }
+                    this.Endpoint.Port,
+                    source.Token);
 
                 if (client.Connected)
                 {
                     return await doOperation(client);
                 }
-
-
             }
-            catch (Exception e) when (e is TaskCanceledException || e is ObjectDisposedException
-                                                                 || e is SocketException)
+            catch (Exception e) when (e is OperationCanceledException or ObjectDisposedException or SocketException)
             {
                 // already disposed or no listener
             }
             catch (Exception e)
             {
-                this._logger.Information(e, "Caught IP Comm Client Exception");
+                logger.Information(e, "Caught IP Comm Client Exception");
             }
 
             return default;
         }
 
-        public async Task<TEvent> ExchangeEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout) where TEvent : IEvent
+        public async Task<TEvent?> ExchangeEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout) where TEvent : IEvent
         {
-            async Task<TEvent> DoOperation(TcpClient client)
+            async Task<TEvent?> DoOperation(TcpClient client)
             {
-                TEvent returnEvent = default(TEvent);
+                TEvent? returnEvent = default;
 
                 await using var stream = client.GetStream();
-                this._logger.Debug("Exchanging {@Event} with Remote", @event);
+                logger.Debug("Exchanging {@Event} with Remote", @event);
 
                 var isSuccessful = await this.HandlePublishEvent(
                                        stream,
@@ -107,7 +89,7 @@ namespace Papercut.Infrastructure.IPComm.Network
             async Task<bool> DoOperation(TcpClient client)
             {
                 await using var stream = client.GetStream();
-                this._logger.Debug("Publishing {@Event} to Remote", @event);
+                logger.Debug("Publishing {@Event} to Remote", @event);
 
                 var isSuccessful = await this.HandlePublishEvent(
                                        stream,
