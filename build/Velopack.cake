@@ -30,6 +30,40 @@ public static class Velopack
             Arguments = arguments
         });
     }
+
+    public static void UploadGithub(ICakeContext context, VpkUploadParams @params)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        var arguments = new ProcessArgumentBuilder()
+            .Append("upload").Append("github")
+            .Append("--outputDir").AppendQuoted(@params.ReleaseDirectory)
+            .Append("--channel").AppendQuoted(@params.Channel)
+            .Append("--repoUrl").AppendQuoted(@params.Repository)
+            .Append("--token").AppendQuoted(@params.Token);
+
+        if (@params.IsPrelease)
+        {
+            arguments.Append("--pre");
+        }
+
+        context.StartProcess("vpk", new ProcessSettings
+        {
+            Arguments = arguments
+        });
+    }
+}
+
+public class VpkUploadParams
+{
+    public string ReleaseDirectory { get; set; }
+    public string Channel { get; set; }
+    public string Token { get; set; }
+    public string Repository { get; set; }
+    public bool IsPrelease { get; set; } = false;
 }
 
 public class VpkPackParams
