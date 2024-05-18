@@ -209,6 +209,53 @@ Task("PackageUI32")
 })
 .OnError(exception => Error(exception));
 
+Task("UploadArtifacts")
+    .WithCriteria(AppVeyor.IsRunningOnAppVeyor)
+    .IsDependentOn("PackageUI32")
+    .Does(() =>
+    {
+        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
+        {
+            Information($"Uploading Artifact to AppVeyor: {file}");
+            AppVeyor.UploadArtifact(file);
+        }
+    })
+.OnError(exception => Error(exception));
+
+Task("DeployReleases")
+    .WithCriteria((isMasterBranch || isDevelopBranch) && hasGithubToken)
+    .IsDependentOn("UploadArtifacts")
+    .Does(() =>
+    {
+        Information($"Uploading Papercut SMTP 64-bit Release {GitVersionOutput.BuildServer}");
+
+        var uploadParams = new VpkUploadParams
+        {
+            Channel = "win-x64" + channelPostfix,
+            ReleaseDirectory = releasesDirectory,
+            Token = EnvironmentVariable<string>("github-token", ""),
+            Repository = "https://github.com/ChangemakerStudios/Papercut-SMTP",
+            IsPrelease = !isMasterBranch
+        };
+
+        Velopack.UploadGithub(Context, uploadParams);
+
+        Information($"Uploading Papercut SMTP 32-bit Release {GitVersionOutput.BuildServer}");
+
+        uploadParams = new VpkUploadParams
+        {
+            Channel = "win-x86" + channelPostfix,
+            ReleaseDirectory = releasesDirectory,
+            Token = EnvironmentVariable<string>("github-token", ""),
+            Repository = "https://github.com/ChangemakerStudios/Papercut-SMTP",
+            IsPrelease = !isMasterBranch
+        };
+
+        Velopack.UploadGithub(Context, uploadParams);
+    })
+.OnError(exception => Error(exception));
+
+
 Task("BuildServiceWin64")
     .IsDependentOn("Restore")
     .Does(() =>
@@ -295,52 +342,6 @@ Task("PackageServiceWin32")
 
     Velopack.Pack(Context, packParams);
 })
-.OnError(exception => Error(exception));
-
-Task("UploadArtifacts")
-    .WithCriteria(AppVeyor.IsRunningOnAppVeyor)
-    .IsDependentOn("PackageUI32")
-    .Does(() =>
-    {
-        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
-        {
-            Information($"Uploading Artifact to AppVeyor: {file}");
-            AppVeyor.UploadArtifact(file);
-        }
-    })
-.OnError(exception => Error(exception));
-
-Task("DeployReleases")
-    .WithCriteria((isMasterBranch || isDevelopBranch) && hasGithubToken)
-    .IsDependentOn("UploadArtifacts")
-    .Does(() =>
-    {
-        Information($"Uploading Papercut SMTP 64-bit Release {GitVersionOutput.BuildServer}");
-
-        var uploadParams = new VpkUploadParams
-        {
-            Channel = "win-x64" + channelPostfix,
-            ReleaseDirectory = releasesDirectory,
-            Token = EnvironmentVariable<string>("github-token", ""),
-            Repository = "https://github.com/ChangemakerStudios/Papercut-SMTP",
-            IsPrelease = !isMasterBranch
-        };
-
-        Velopack.UploadGithub(Context, uploadParams);
-
-        Information($"Uploading Papercut SMTP 32-bit Release {GitVersionOutput.BuildServer}");
-
-        uploadParams = new VpkUploadParams
-        {
-            Channel = "win-x86" + channelPostfix,
-            ReleaseDirectory = releasesDirectory,
-            Token = EnvironmentVariable<string>("github-token", ""),
-            Repository = "https://github.com/ChangemakerStudios/Papercut-SMTP",
-            IsPrelease = !isMasterBranch
-        };
-
-        Velopack.UploadGithub(Context, uploadParams);
-    })
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////

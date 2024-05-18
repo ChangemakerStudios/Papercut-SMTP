@@ -23,20 +23,13 @@ using Autofac;
 
 namespace Papercut.AppLayer.Diagnostics
 {
-    public class ReportVersionService : IStartable
+    public class ReportVersionService(ILogger logger) : IStartable
     {
-        private readonly ILogger _logger;
-
-        public ReportVersionService(ILogger logger)
-        {
-            this._logger = logger;
-        }
-
         public void Start()
         {
             var productVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
 
-            this._logger.Information("Papercut Version {PapercutVersion:l}", productVersion);
+            logger.Information("Papercut Version {PapercutVersion:l}", productVersion);
         }
 
         #region Begin Static Container Registrations

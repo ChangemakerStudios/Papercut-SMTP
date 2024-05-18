@@ -31,6 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Build", ".Build", "{8661B3
 		build.ps1 = build.ps1
 		build\BuildInformation.cake = build\BuildInformation.cake
 		Directory.Build.props = Directory.Build.props
+		GitVersion.yml = GitVersion.yml
 		build\ReleaseNotes.cake = build\ReleaseNotes.cake
 		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection

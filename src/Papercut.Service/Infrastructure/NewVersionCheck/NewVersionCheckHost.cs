@@ -23,18 +23,11 @@ using Velopack;
 
 namespace Papercut.Service.Infrastructure.NewVersionCheck;
 
-public class NewVersionCheckHost : BackgroundService
+public class NewVersionCheckHost(ILogger<NewVersionCheckHost> logger) : BackgroundService
 {
-    private readonly ILogger<NewVersionCheckHost> _logger;
-
-    public NewVersionCheckHost(ILogger<NewVersionCheckHost> logger)
-    {
-        this._logger = logger;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var mgr = new UpdateManager("https://github.com/ChangemakerStudios/Papercut-SMTP", logger: _logger);
+        var mgr = new UpdateManager("https://github.com/ChangemakerStudios/Papercut-SMTP", logger: logger);
 
         if (mgr.IsInstalled)
         {
@@ -42,7 +35,7 @@ public class NewVersionCheckHost : BackgroundService
             var newVersion = await mgr.CheckForUpdatesAsync();
             if (newVersion != null)
             {
-                this._logger.LogInformation("New Version of Papercut SMTP Service is Available: {Version}", newVersion.TargetFullRelease.Version);
+                logger.LogInformation("New Version of Papercut SMTP Service is Available: {Version}", newVersion.TargetFullRelease.Version);
             }
         }
     }

@@ -25,18 +25,8 @@ using Papercut.Domain.LifecycleHooks;
 
 namespace Papercut.AppLayer.Cleanup
 {
-    public class TempDirectoryCleanupService : IAppLifecyclePreExit
+    public class TempDirectoryCleanupService(IAppMeta appMeta, ILogger logger) : IAppLifecyclePreExit
     {
-        readonly IAppMeta _appMeta;
-
-        readonly ILogger _logger;
-
-        public TempDirectoryCleanupService(IAppMeta appMeta, ILogger logger)
-        {
-            this._appMeta = appMeta;
-            this._logger = logger;
-        }
-
         public Task<AppLifecycleActionResultType> OnPreExit()
         {
             // time for temp file cleanup
@@ -53,7 +43,7 @@ namespace Papercut.AppLayer.Cleanup
             // try cleanup...
             try
             {
-                string[] tmpDirs = Directory.GetDirectories(tempPath, $"{this._appMeta.AppName}-*");
+                string[] tmpDirs = Directory.GetDirectories(tempPath, $"{appMeta.AppName}-*");
 
                 foreach (string tmpDir in tmpDirs)
                 {
@@ -64,20 +54,20 @@ namespace Papercut.AppLayer.Cleanup
                     }
                     catch (Exception ex)
                     {
-                        this._logger.Warning(ex, @"Unable to delete {TempDirectory}", tmpDir);
+                        logger.Warning(ex, @"Unable to delete {TempDirectory}", tmpDir);
                     }
                 }
             }
             catch (Exception ex)
             {
-                this._logger.Warning(
+                logger.Warning(
                     ex,
                     @"Failure running temp directory cleanup on temp path {TempPath}",
                     tempPath);
             }
 
             if (deleteCount > 0)
-                this._logger.Information("Deleted {DeleteCount} temporary directories", deleteCount);
+                logger.Information("Deleted {DeleteCount} temporary directories", deleteCount);
         }
 
         #region Begin Static Container Registrations
