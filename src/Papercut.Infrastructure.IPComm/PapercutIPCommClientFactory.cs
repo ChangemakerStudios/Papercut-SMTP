@@ -26,26 +26,16 @@ namespace Papercut.Infrastructure.IPComm
         Service
     }
 
-    public class PapercutIPCommClientFactory
+    public class PapercutIPCommClientFactory(PapercutIPCommEndpoints endpoints, ILogger logger)
     {
-        private readonly PapercutIPCommEndpoints _endpoints;
-
-        private readonly ILogger _logger;
-
-        public PapercutIPCommClientFactory(PapercutIPCommEndpoints endpoints, ILogger logger)
-        {
-            this._endpoints = endpoints;
-            this._logger = logger;
-        }
-
         public PapercutIPCommClient GetClient(PapercutIPCommClientConnectTo connectTo)
         {
             switch (connectTo)
             {
                 case PapercutIPCommClientConnectTo.Service:
-                    return new PapercutIPCommClient(this._endpoints.Service, this._logger.ForContext<PapercutIPCommClient>());
+                    return new PapercutIPCommClient(endpoints.Service, logger.ForContext<PapercutIPCommClient>());
                 case PapercutIPCommClientConnectTo.UI:
-                    return new PapercutIPCommClient(this._endpoints.UI, this._logger.ForContext<PapercutIPCommClient>());
+                    return new PapercutIPCommClient(endpoints.UI, logger.ForContext<PapercutIPCommClient>());
             }
 
             throw new ArgumentOutOfRangeException($"Connect to is unknown: {connectTo}");

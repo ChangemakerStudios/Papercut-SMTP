@@ -22,66 +22,45 @@ using Papercut.Infrastructure.IPComm.Network;
 
 namespace Papercut.Service.Infrastructure.Servers
 {
-    public class PapercutServerHostedService : IHostedService
+    public class PapercutServerHostedService(
+        PapercutIPCommServer ipCommServer,
+        PapercutSmtpServer smtpServer,
+        PapercutIPCommEndpoints papercutIpCommEndpoints,
+        IAppMeta applicationMetaData,
+        ILogger logger,
+        IMessageBus messageBus)
+        : IHostedService
     {
-        readonly IAppMeta _applicationMetaData;
-
-        readonly PapercutIPCommServer _ipCommServer;
-
-        readonly ILogger _logger;
-
-        readonly IMessageBus _messageBus;
-
-        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
-
-        private readonly PapercutSmtpServer _smtpServer;
-
-        public PapercutServerHostedService(
-            PapercutIPCommServer ipCommServer,
-            PapercutSmtpServer smtpServer,
-            PapercutIPCommEndpoints papercutIpCommEndpoints,
-            IAppMeta applicationMetaData,
-            ILogger logger,
-            IMessageBus messageBus)
-        {
-            this._papercutIpCommEndpoints = papercutIpCommEndpoints;
-            this._applicationMetaData = applicationMetaData;
-            this._logger = logger;
-            this._messageBus = messageBus;
-            this._ipCommServer = ipCommServer;
-            this._smtpServer = smtpServer;
-        }
-
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await this._messageBus.PublishAsync(
-                new PapercutServicePreStartEvent { AppMeta = this._applicationMetaData },
+            await messageBus.PublishAsync(
+                new PapercutServicePreStartEvent { AppMeta = applicationMetaData },
                 cancellationToken);
 
             try
             {
-                await this._ipCommServer.StopAsync();
-                await this._ipCommServer.StartAsync(this._papercutIpCommEndpoints.Service);
+                await ipCommServer.StopAsync();
+                await ipCommServer.StartAsync(papercutIpCommEndpoints.Service);
             }
             catch (Exception ex)
             {
-                this._logger.Warning(
+                logger.Warning(
                     ex,
                     "Unable to Create Papercut IPComm Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                    this._ipCommServer.ListenIpAddress,
-                    this._ipCommServer.ListenPort);
+                    ipCommServer.ListenIpAddress,
+                    ipCommServer.ListenPort);
             }
 
-            await this._messageBus.PublishAsync(
-                new PapercutServiceReadyEvent { AppMeta = this._applicationMetaData },
+            await messageBus.PublishAsync(
+                new PapercutServiceReadyEvent { AppMeta = applicationMetaData },
                 cancellationToken);
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            await Task.WhenAll(this._smtpServer.StopAsync(), this._ipCommServer.StopAsync()).WaitAsync(cancellationToken);
+            await Task.WhenAll(smtpServer.StopAsync(), ipCommServer.StopAsync()).WaitAsync(cancellationToken);
 
-            await this._messageBus.PublishAsync(new PapercutServiceExitEvent { AppMeta = this._applicationMetaData }, cancellationToken);
+            await messageBus.PublishAsync(new PapercutServiceExitEvent { AppMeta = applicationMetaData }, cancellationToken);
         }
     }
 }

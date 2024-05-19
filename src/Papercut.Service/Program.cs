@@ -20,6 +20,7 @@ using Autofac.Extensions.DependencyInjection;
 
 using ElectronNET.API;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -68,11 +69,14 @@ public class Program
         _cancellationTokenSource.Cancel();
     }
 
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .UseWindowsService(options => {
-                options.ServiceName = AppName;
-            })
+    public static IHostBuilder CreateHostBuilder(string[] args)
+    {
+        return Host.CreateDefaultBuilder(args)
+            .UseWindowsService(
+                options =>
+                {
+                    options.ServiceName = AppName;
+                })
             .UseContentRoot(AppContext.BaseDirectory)
             .UseServiceProviderFactory(new AutofacServiceProviderFactory())
             .ConfigureServices(
@@ -83,7 +87,7 @@ public class Program
                     sp.AddSingleton(new LoggingLevelSwitch());
                 })
             .ConfigureWebHostDefaults(
-                webBuilder =>
+                (webBuilder) =>
                 {
                     webBuilder.ConfigureLogging(
                         s =>
@@ -100,6 +104,7 @@ public class Program
                     if (HybridSupport.IsElectronActive)
                         sp.AddHostedService<ElectronService>();
                 });
+    }
 
     private static void CreateDefaultLogger(HostBuilderContext context, IServiceProvider services, LoggerConfiguration configuration)
     {

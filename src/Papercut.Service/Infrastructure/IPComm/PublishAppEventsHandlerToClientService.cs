@@ -17,22 +17,12 @@
 
 namespace Papercut.Service.Infrastructure.IPComm
 {
-    public class PublishAppEventsHandlerToClientService : IEventHandler<PapercutServiceExitEvent>,
+    public class PublishAppEventsHandlerToClientService(
+        PapercutIPCommClientFactory ipCommClientFactory,
+        ILogger logger) : IEventHandler<PapercutServiceExitEvent>,
         IEventHandler<PapercutServiceReadyEvent>,
         IEventHandler<PapercutServicePreStartEvent>
     {
-        readonly PapercutIPCommClientFactory _ipCommClientFactory;
-
-        readonly ILogger _logger;
-
-        public PublishAppEventsHandlerToClientService(
-            PapercutIPCommClientFactory ipCommClientFactory,
-            ILogger logger)
-        {
-            this._ipCommClientFactory = ipCommClientFactory;
-            this._logger = logger;
-        }
-
         public Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token = default)
         {
             return this.PublishAsync(@event);
@@ -51,11 +41,11 @@ namespace Papercut.Service.Infrastructure.IPComm
         public async Task PublishAsync<T>(T @event)
             where T : IEvent
         {
-            var ipCommClient = this._ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI);
+            var ipCommClient = ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI);
 
             try
             {
-                this._logger.Information(
+                logger.Information(
                     $"Publishing {{@{@event.GetType().Name}}} to the Papercut Client",
                     @event);
 
@@ -66,7 +56,7 @@ namespace Papercut.Service.Infrastructure.IPComm
             }
             catch (Exception ex)
             {
-                this._logger.Warning(
+                logger.Warning(
                     ex,
                     "Failed to publish {Endpoint} specified. Papercut UI is most likely not running.",
                     ipCommClient.Endpoint);
