@@ -135,7 +135,7 @@ namespace Papercut.ViewModels
                         mimePart.Content.DecodeTo(outputFile);
                     }
 
-                    Process.Start(tempFileName);
+                    Process.Start(new ProcessStartInfo(tempFileName));
                 }
                 catch (Exception ex)
                 {

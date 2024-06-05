@@ -22,6 +22,14 @@ namespace Papercut.Core.Infrastructure.Container
 {
     public static class AutofacRegistrationExtensions
     {
+        /// <summary>
+        /// Single instance per UI scope
+        /// </summary>
+        /// <typeparam name="TLimit"></typeparam>
+        /// <typeparam name="TActivatorData"></typeparam>
+        /// <typeparam name="TRegistrationStyle"></typeparam>
+        /// <param name="builder"></param>
+        /// <returns></returns>
         public static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle>
             InstancePerUIScope
             <TLimit, TActivatorData, TRegistrationStyle>(

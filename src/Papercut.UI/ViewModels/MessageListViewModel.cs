@@ -43,6 +43,9 @@ using Papercut.Helpers;
 using Papercut.Message;
 using Papercut.Message.Helpers;
 using Papercut.Properties;
+using Papercut.Views;
+
+using ListBox = System.Windows.Controls.ListBox;
 
 namespace Papercut.ViewModels
 {
@@ -67,6 +70,8 @@ namespace Papercut.ViewModels
         bool _isLoading;
 
         private int? _previousIndex;
+
+        private ListBox _messageListBox;
 
         public MessageListViewModel(
             IUiCommandHub uiCommandHub,
@@ -297,13 +302,9 @@ namespace Papercut.ViewModels
             return index;
         }
 
-        private void SetMessageByIndex(int index)
+        private void SelectMessageByIndex(int index)
         {
-            MimeMessageEntry m = this.GetMessageByIndex(index);
-            if (m != null)
-            {
-                m.IsSelected = true;
-            }
+            this.TrySelectMessage(this.GetMessageByIndex(index));
         }
 
         public void OpenMessageFolder()
@@ -325,7 +326,7 @@ namespace Papercut.ViewModels
             var index = this.TryGetValidSelectedIndex(this._previousIndex);
             if (index.HasValue)
             {
-                this.SetMessageByIndex(index.Value);
+                this.SelectMessageByIndex(index.Value);
             }
         }
 
@@ -361,6 +362,15 @@ namespace Papercut.ViewModels
             var selectedMessageEntries = this.GetSelected().ToList();
 
             this.DeleteMessages(selectedMessageEntries);
+        }
+
+        private void TrySelectMessage(MimeMessageEntry? message)
+        {
+            if (message != null)
+            {
+                message.IsSelected = true;
+                this._messageListBox?.ScrollIntoView(message);
+            }
         }
 
         private List<string> DeleteMessages(List<MimeMessageEntry> selectedMessageEntries)
@@ -425,6 +435,27 @@ namespace Papercut.ViewModels
             this.MessagesSorted.Refresh();
             this.ValidateSelected();
             this.PopSelectedIndex();
+        }
+
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewLoaded(view);
+
+            if (view is MessageListView typedView)
+            {
+                this._messageListBox = typedView.MessagesList;
+    
+                // maybe scroll to selected
+                var mimeMessageEntry = this.SelectedMessage;
+                if (mimeMessageEntry != null) 
+                    this._messageListBox.ScrollIntoView(mimeMessageEntry);
+            }
+        }
+
+        public void SelectMostRecentMessage()
+        {
+            this.ClearSelected();
+            this.TrySelectMessage(this.Messages.MaxBy(s => s.SortTicks));
         }
     }
 }

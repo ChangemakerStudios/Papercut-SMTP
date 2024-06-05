@@ -27,6 +27,7 @@ using Microsoft.Web.WebView2.Core;
 
 using MimeKit;
 
+using Papercut.AppLayer.Uris;
 using Papercut.Common.Extensions;
 using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Async;
@@ -206,7 +207,7 @@ namespace Papercut.ViewModels
         {
             if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
             {
-                Process.Start(navigateToUri.AbsoluteUri);
+                navigateToUri.OpenUri();
             }
             else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
             {

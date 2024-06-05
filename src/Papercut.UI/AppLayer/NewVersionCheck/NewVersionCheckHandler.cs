@@ -21,23 +21,33 @@ using Autofac.Util;
 
 using Microsoft.Extensions.Logging;
 
+using NuGet.Versioning;
+
+using Papercut.Core.Infrastructure.Container;
 using Papercut.Domain.LifecycleHooks;
 
 using Velopack;
 
 namespace Papercut.AppLayer.NewVersionCheck;
 
-public class NewVersionCheckHandler(ILogger<NewVersionCheckHandler> logger) : Disposable, IAppLifecycleStarted
+public class NewVersionCheckHandler(ILogger<NewVersionCheckHandler> logger) : Disposable, IAppLifecycleStarted, INewVersionProvider
 {
-    private Task? _backgroundTask;
-
     private readonly CancellationTokenSource _cancellationTokenSource = new();
+
+    private readonly TaskCompletionSource<UpdateInfo?> _updateTask = new();
+
+    private Task? _backgroundTask;
 
     public Task OnStartedAsync()
     {
         this._backgroundTask = Task.Run(this.RunNewVersionCheck, this._cancellationTokenSource.Token);
 
         return this._backgroundTask.IsCompleted ? this._backgroundTask : Task.CompletedTask;
+    }
+
+    public async Task<UpdateInfo?> GetLatestVersionAsync(CancellationToken token = default)
+    {
+        return await this._updateTask.Task;
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
@@ -57,6 +67,17 @@ public class NewVersionCheckHandler(ILogger<NewVersionCheckHandler> logger) : Di
                     // nothing
                 }
             }
+
+            this._updateTask.SetCanceled();
+
+            try
+            {
+                await this._updateTask.Task;
+            }
+            catch (Exception)
+            {
+                // nothing
+            }
         }
     }
 
@@ -66,26 +87,39 @@ public class NewVersionCheckHandler(ILogger<NewVersionCheckHandler> logger) : Di
 
         if (mgr.IsInstalled)
         {
-            // check for new version
-            var newVersion = await mgr.CheckForUpdatesAsync();
-            if (newVersion != null)
+            try
             {
-                logger.LogInformation("New Version of Papercut SMTP is Available {@NewVersion}", newVersion);
+                // check for new version
+                var newVersion = await mgr.CheckForUpdatesAsync();
+                if (newVersion != null)
+                {
+                    logger.LogInformation("New Version of Papercut SMTP is Available {@NewVersion}", newVersion);
+
+                    this._updateTask.SetResult(newVersion);
+                }
+            }
+            catch (Exception ex)
+            {
+                this._updateTask.SetException(ex);
             }
         }
         else
         {
             logger.LogDebug("Papercut was not installed via Velopack. Cannot check for new versions.");
+
+            this._updateTask.SetResult(null);
         }
+
+        // for testing
+        //this._updateTask.SetResult(new UpdateInfo(new VelopackAsset() { Version = new SemanticVersion(10, 0, 0) }, false));
     }
 
     #region Begin Static Container Registrations
 
     static void Register(ContainerBuilder builder)
     {
-        builder.RegisterType<NewVersionCheckHandler>().As<IAppLifecycleStarted>().InstancePerLifetimeScope();
+        builder.RegisterType<NewVersionCheckHandler>().As<IAppLifecycleStarted>().As<INewVersionProvider>().InstancePerUIScope();
     }
 
     #endregion
-
 }

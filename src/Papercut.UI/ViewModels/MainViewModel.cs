@@ -16,9 +16,11 @@
 // limitations under the License.
 
 
+using System;
 using System.Diagnostics;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
@@ -31,6 +33,8 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 
 using Papercut.AppLayer.LogSinks;
+using Papercut.AppLayer.NewVersionCheck;
+using Papercut.AppLayer.Uris;
 using Papercut.Core;
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Infrastructure.Async;
@@ -62,6 +66,8 @@ namespace Papercut.ViewModels
 
         private readonly IUiCommandHub _uiCommandHub;
 
+        private readonly INewVersionProvider _newVersionProvider;
+
         readonly UiLogSinkQueue _uiLogSinkQueue;
 
         readonly IViewModelWindowManager _viewModelWindowManager;
@@ -74,24 +80,23 @@ namespace Papercut.ViewModels
 
         bool _isLogOpen;
 
+        private string? _upgradeVersion;
+
         private bool _isWebViewInstalled;
 
         string _logText;
-
-        private int _mainWindowHeight;
-
-        private int _mainWindowWidth;
 
         MetroWindow? _window;
 
         string _windowTitle = WindowTitleDefault;
 
-        public Deque<string> CurrentLogHistory = new Deque<string>();
+        public Deque<string> CurrentLogHistory = new();
 
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
             IAppCommandHub appCommandHub,
             IUiCommandHub uiCommandHub,
+            INewVersionProvider newVersionProvider,
             WebView2Information webView2Information,
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
@@ -102,6 +107,7 @@ namespace Papercut.ViewModels
             this._viewModelWindowManager = viewModelWindowManager;
             this._appCommandHub = appCommandHub;
             this._uiCommandHub = uiCommandHub;
+            this._newVersionProvider = newVersionProvider;
             this._webView2Information = webView2Information;
             this._forwardRuleDispatch = forwardRuleDispatch;
 
@@ -171,6 +177,19 @@ namespace Papercut.ViewModels
 
         public string Version => $"{AppConstants.ApplicationName} v{this.GetVersion()}";
 
+        public string? UpgradeVersion
+        {
+            get => this._upgradeVersion;
+            set
+            {
+                if (this._upgradeVersion != value)
+                {
+                    this._upgradeVersion = value;
+                    this.NotifyOfPropertyChange(() => this.UpgradeVersion);
+                }
+            }
+        }
+
         public bool IsLogOpen
         {
             get => this._isLogOpen;
@@ -197,36 +216,6 @@ namespace Papercut.ViewModels
             }
         }
 
-        public int MainWindowHeight
-        {
-            get => this._mainWindowHeight;
-            set
-            {
-                if (value == this._mainWindowHeight) return;
-
-                // ignore non-normal window sizes
-                if (this._window.WindowState != WindowState.Normal) return;
-
-                this._mainWindowHeight = value;
-                this.NotifyOfPropertyChange(() => this.MainWindowHeight);
-            }
-        }
-
-        public int MainWindowWidth
-        {
-            get => this._mainWindowWidth;
-            set
-            {
-                if (value == this._mainWindowWidth) return;
-
-                // ignore non-normal window sizes
-                if (this._window?.WindowState != WindowState.Normal) return;
-
-                this._mainWindowWidth = value;
-                this.NotifyOfPropertyChange(() => this.MainWindowWidth);
-            }
-        }
-
         public Task HandleAsync(SmtpServerBindFailedEvent message, CancellationToken cancellationToken = default)
         {
             MessageBox.Show(
@@ -246,6 +235,25 @@ namespace Papercut.ViewModels
             return productVersion?.Split('+').FirstOrDefault();
         }
 
+        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        {
+            this._newVersionProvider.GetLatestVersionAsync(cancellationToken).ToObservable()
+                .Subscribe(
+                    updateInfo =>
+                    {
+                        if (updateInfo != null)
+                        {
+                            this.UpgradeVersion = $"Upgrade available! Click here to upgrade to v{updateInfo.TargetFullRelease.Version}";
+                        }
+                        else
+                        {
+                            this.UpgradeVersion = null;
+                        }
+                    });
+
+            await base.OnActivateAsync(cancellationToken);
+        }
+
         public Task ExecuteAsync(ShowMainWindowCommand command, CancellationToken cancellationToken = default)
         {
             if (this._window == null) return Task.CompletedTask;
@@ -261,7 +269,10 @@ namespace Papercut.ViewModels
 
             this._window.Focus();
 
-            if (command.SelectMostRecentMessage) this.MessageListViewModel.TryGetValidSelectedIndex();
+            if (command.SelectMostRecentMessage)
+            {
+                this.MessageListViewModel.SelectMostRecentMessage();
+            }
 
             return Task.CompletedTask;
         }
@@ -445,7 +456,7 @@ namespace Papercut.ViewModels
 
         public void GoToSite()
         {
-            Process.Start("https://github.com/ChangemakerStudios/Papercut-SMTP");
+            new Uri("https://github.com/ChangemakerStudios/Papercut-SMTP").OpenUri();
         }
 
         public void ShowRulesConfiguration()
