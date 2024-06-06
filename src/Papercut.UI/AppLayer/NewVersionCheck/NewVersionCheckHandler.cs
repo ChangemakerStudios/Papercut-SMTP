@@ -106,9 +106,9 @@ public class NewVersionCheckHandler(ILogger<NewVersionCheckHandler> logger) : Di
         else
         {
             logger.LogDebug("Papercut was not installed via Velopack. Cannot check for new versions.");
-
-            this._updateTask.SetResult(null);
         }
+
+        this._updateTask.SetResult(null);
 
         // for testing
         //this._updateTask.SetResult(new UpdateInfo(new VelopackAsset() { Version = new SemanticVersion(10, 0, 0) }, false));
