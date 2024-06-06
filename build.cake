@@ -278,6 +278,8 @@ Task("BuildAndPackServiceWin64")
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
+    CopyFiles("./extra/*.ps1", publishDirectory);
+
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
 })
@@ -303,6 +305,8 @@ Task("BuildAndPackServiceWin32")
     };
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
+
+    CopyFiles("./extra/*.ps1", publishDirectory);
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
