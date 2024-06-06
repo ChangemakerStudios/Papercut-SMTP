@@ -276,7 +276,6 @@ Task("BuildAndPackServiceWin32")
     .Does(() =>
 {
     CleanDirectory(publishDirectory);
-    CleanDirectory(releasesDirectory);
 
     var runtime = "win-x86";
 
