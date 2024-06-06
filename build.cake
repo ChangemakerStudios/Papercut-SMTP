@@ -210,21 +210,8 @@ Task("PackageUI32")
 })
 .OnError(exception => Error(exception));
 
-Task("UploadArtifacts")
-    .WithCriteria(AppVeyor.IsRunningOnAppVeyor)
-    .IsDependentOn("PackageUI32")
-    .Does(() =>
-    {
-        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
-        {
-            Information($"Uploading Artifact to AppVeyor: {file}");
-            AppVeyor.UploadArtifact(file);
-        }
-    })
-.OnError(exception => Error(exception));
-
 Task("DeployReleases")
-    .WithCriteria((isMasterBranch || isDevelopBranch) && hasGithubToken)
+    .WithCriteria(AppVeyor.IsRunningOnAppVeyor && isMasterBranch && hasGithubToken)
     .IsDependentOn("UploadArtifacts")
     .Does(() =>
     {
@@ -311,6 +298,19 @@ Task("BuildAndPackServiceWin32")
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
 })
+.OnError(exception => Error(exception));
+
+Task("UploadArtifacts")
+    .WithCriteria(AppVeyor.IsRunningOnAppVeyor)
+    .IsDependentOn("PackageUI32")
+    .Does(() =>
+    {
+        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
+        {
+            Information($"Uploading Artifact to AppVeyor: {file}");
+            AppVeyor.UploadArtifact(file);
+        }
+    })
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
