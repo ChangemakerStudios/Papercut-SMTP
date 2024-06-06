@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,53 +15,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Domain.Themes
+
+using System.Windows.Media;
+
+using Papercut.Common.Helper;
+
+namespace Papercut.Domain.Themes;
+
+public record ThemeColor(string Name, Color Color)
 {
-    using System.Windows.Media;
+    public string Description { get; } = Name.CamelCaseToSeparated();
 
-    using Papercut.Common.Helper;
-
-    public class ThemeColor
+    public override int GetHashCode()
     {
-        public ThemeColor(string name, Color color)
-        {
-            this.Name = name;
-            this.Color = color;
-            this.Description = name.CamelCaseToSeparated();
-        }
-
-        public string Name { get; }
-
-        public string Description { get; }
-
-        public Color Color { get; }
-
-        protected bool Equals(ThemeColor other)
-        {
-            return this.Name == other.Name;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return this.Equals((ThemeColor)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.Name != null ? this.Name.GetHashCode() : 0;
-        }
-
-        public static bool operator ==(ThemeColor left, ThemeColor right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(ThemeColor left, ThemeColor right)
-        {
-            return !Equals(left, right);
-        }
+        return this.Name.GetHashCode();
     }
 }

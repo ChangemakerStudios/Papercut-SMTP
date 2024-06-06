@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,108 +16,139 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Paths
+using System.Collections.Specialized;
+
+namespace Papercut.Core.Domain.Paths;
+
+public abstract class PathConfiguratorBase : IPathConfigurator
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.IO;
-    using System.Linq;
+    readonly ILogger _logger;
 
-    using Serilog;
+    readonly IPathTemplatesProvider _pathTemplateProvider;
 
-    public abstract class PathConfiguratorBase : IPathConfigurator
+    readonly string _defaultSavePath;
+
+    protected PathConfiguratorBase(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
     {
-        readonly ILogger _logger;
+        if (pathTemplateProvider == null) throw new ArgumentNullException(nameof(pathTemplateProvider));
+        if (logger == null) throw new ArgumentNullException(nameof(logger));
 
-        readonly IPathTemplatesProvider _pathTemplateProvider;
+        this._logger = logger;
+        this._pathTemplateProvider = pathTemplateProvider;
+        this._pathTemplateProvider.MessagePathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
 
-        string _defaultSavePath;
+        var paths = this.RenderLoadPaths().ToList();
+        this.DefaultSavePath = this.GetValidDefaultSavePath(paths);
 
-        protected PathConfiguratorBase(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
+        this._logger.Information(
+            "Default Save Path is Set to {DefaultSavePath}",
+            this.DefaultSavePath);
+
+        this.LoadPaths = paths.Where(this.PathExists).ToArray();
+
+        this._logger.Information("Loading from the Following Path(s) {@LoadPaths}", this.LoadPaths);
+    }
+
+    public string DefaultSavePath
+    {
+        get
         {
-            if (pathTemplateProvider == null) throw new ArgumentNullException(nameof(pathTemplateProvider));
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-
-            this._logger = logger;
-            this._pathTemplateProvider = pathTemplateProvider;
-            this._pathTemplateProvider.MessagePathTemplates.CollectionChanged += this.PathTemplatesCollectionChanged;
-
-            this.DefaultSavePath = AppDomain.CurrentDomain.BaseDirectory;
-            this.RenderLoadPaths();
-
-            if (this.LoadPaths.Any()) this.DefaultSavePath = this.LoadPaths.First();
+            if (Directory.Exists(this._defaultSavePath)) return this._defaultSavePath;
 
             this._logger.Information(
-                "Default Save Path is Set to {DefaultSavePath}",
-                this.DefaultSavePath);
-        }
+                "Creating Default Save Path '{DefaultSavePath}' because it does not exist",
+                this._defaultSavePath);
 
-        public string DefaultSavePath
+            Directory.CreateDirectory(this._defaultSavePath);
+
+            return this._defaultSavePath;
+        }
+        private init => this._defaultSavePath = value;
+    }
+
+    public IReadOnlyCollection<string> LoadPaths { get; }
+
+    public event EventHandler RefreshLoadPath;
+
+    private string GetValidDefaultSavePath(IEnumerable<string> possiblePaths)
+    {
+        foreach (var path in possiblePaths.Append(GetDefaultSavePath()))
         {
-            get
+            if (this.IsSavePathIsValid(path))
             {
-                if (!Directory.Exists(this._defaultSavePath))
-                {
-                    this._logger.Information(
-                        "Creating Default Save Path {DefaultSavePath} because it does not exist",
-                        this._defaultSavePath);
-
-                    Directory.CreateDirectory(this._defaultSavePath);
-                }
-
-                return this._defaultSavePath;
-            }
-            private set => this._defaultSavePath = value;
-        }
-
-        public IEnumerable<string> LoadPaths { get; private set; }
-
-        public event EventHandler RefreshLoadPath;
-
-        void PathTemplatesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            this.RenderLoadPaths();
-            this.OnRefreshLoadPath();
-        }
-
-        void RenderLoadPaths()
-        {
-            this.LoadPaths =
-                this._pathTemplateProvider.MessagePathTemplates.Select(this.RenderPathTemplate)
-                    .Where(this.ValidatePathExists)
-                    .ToList();
-
-            this._logger.Information("Loading from the Following Path(s) {@LoadPaths}", this.LoadPaths);
-        }
-
-        protected virtual void OnRefreshLoadPath()
-        {
-            EventHandler handler = this.RefreshLoadPath;
-            handler?.Invoke(this, EventArgs.Empty);
-        }
-
-        string RenderPathTemplate(string pathTemplate)
-        {
-            return PathTemplateHelper.RenderPathTemplate(pathTemplate);
-        }
-
-        bool ValidatePathExists(string path)
-        {
-            if (path == null) throw new ArgumentNullException(nameof(path));
-
-            try
-            {
-                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(ex, "Failure accessing or creating directory {DirectoryPath}", path);
+                return path;
             }
 
-            return false;
+            // no permission -- moving on...
         }
+
+        throw new NoValidSavePathFoundException("Papercut SMTP does not have access to any paths to save emails!");
+    }
+
+    static string GetDefaultSavePath()
+    {
+        return RenderPathTemplate("%BaseDirectory%");
+    }
+
+    bool IsSavePathIsValid(string defaultSavePath)
+    {
+        if (Directory.Exists(defaultSavePath)) return true;
+
+        this._logger.Information(
+            "Attempting to Create Default Save Path '{DefaultSavePath}' because it does not exist",
+            defaultSavePath);
+
+        try
+        {
+            Directory.CreateDirectory(defaultSavePath);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Failure accessing path: {DirectoryPath}", defaultSavePath);
+        }
+
+        return false;
+    }
+
+    void PathTemplatesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        this.RenderLoadPaths();
+        this.OnRefreshLoadPath();
+    }
+
+    IEnumerable<string> RenderLoadPaths()
+    {
+        return
+            this._pathTemplateProvider.MessagePathTemplates.Select(RenderPathTemplate)
+                .ToList();
+    }
+
+    protected virtual void OnRefreshLoadPath()
+    {
+        EventHandler handler = this.RefreshLoadPath;
+        handler?.Invoke(this, EventArgs.Empty);
+    }
+
+    static string RenderPathTemplate(string pathTemplate)
+    {
+        return PathTemplateHelper.RenderPathTemplate(pathTemplate);
+    }
+
+    bool PathExists(string path)
+    {
+        if (path == null) throw new ArgumentNullException(nameof(path));
+
+        try
+        {
+            return Directory.Exists(path);
+        }
+        catch (Exception ex)
+        {
+            this._logger.Information(ex, "Excluding search path {DirectoryPath} since there is no access to it", path);
+        }
+
+        return false;
     }
 }

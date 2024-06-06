@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,22 @@
 // limitations under the License.
 
 
+using Autofac;
+using Autofac.Core;
+
+using Caliburn.Micro;
+
+using Papercut.Core;
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Infrastructure.Container;
+using Papercut.Helpers;
+using Papercut.Infrastructure.IPComm;
+using Papercut.Infrastructure.Smtp;
+using Papercut.Message;
+using Papercut.Rules;
+
 namespace Papercut
 {
-    using System.Collections.Generic;
-
-    using Autofac;
-    using Autofac.Core;
-
-    using Caliburn.Micro;
-
-    using Papercut.Core;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Infrastructure.Container;
-    using Papercut.Helpers;
-    using Papercut.Infrastructure.IPComm;
-    using Papercut.Infrastructure.Smtp;
-    using Papercut.Message;
-    using Papercut.Rules;
-
     [PublicAPI]
     public class PapercutUIModule : Module
     {
@@ -58,7 +55,7 @@ namespace Papercut
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
 
-            builder.Register(c => new ApplicationMeta(AppConstants.ApplicationName))
+            builder.Register(_ => new ApplicationMeta(AppConstants.ApplicationName))
                 .As<IAppMeta>()
                 .SingleInstance();
 

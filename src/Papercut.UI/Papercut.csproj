@@ -1,707 +1,91 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{AC067042-66BD-4110-ADA1-E2CEA43E7947}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Papercut</RootNamespace>
-    <AssemblyName>Papercut</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <GenerateManifests>true</GenerateManifests>
-    <ApplicationIcon>App.ico</ApplicationIcon>
-    <SignManifests>false</SignManifests>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
-  </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup />
-  <PropertyGroup />
-  <PropertyGroup>
-    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-  </PropertyGroup>
-  <PropertyGroup>
-    <TargetZone>LocalIntranet</TargetZone>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MahApps.Metro.1.5.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UIAutomationProvider">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="Veil, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Veil.0.3.1\lib\net40\Veil.dll</HintPath>
-    </Reference>
-    <Reference Include="Veil.Handlebars, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Veil.Handlebars.0.3.1\lib\net40\Veil.Handlebars.dll</HintPath>
-    </Reference>
-    <Reference Include="WindowsBase">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="PresentationCore">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="PresentationFramework">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=3.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=3.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=3.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.DataGrid, Version=3.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit, Version=3.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="AppBootstrapper.cs" />
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="AppLayer\AppCommands\AppCommandHub.cs" />
-    <Compile Include="AppLayer\LifecycleHooks\ReadyEventTrigger.cs" />
-    <Compile Include="Domain\AppCommands\IAppCommandHub.cs" />
-    <Compile Include="AppLayer\AppCommands\ShutdownCommandHandler.cs" />
-    <Compile Include="AppLayer\UiCommands\UiCommandHub.cs" />
-    <Compile Include="AppLayer\Behaviors\SettingBindingExtension.cs" />
-    <Compile Include="AppLayer\Behaviors\DragDropIFile.cs" />
-    <Compile Include="AppLayer\Behaviors\InteractivityBlurBase.cs" />
-    <Compile Include="AppLayer\Behaviors\InteractivityBlurOnDisabled.cs" />
-    <Compile Include="AppLayer\Behaviors\InteractivityBlurWindowOnDeactivate.cs" />
-    <Compile Include="Domain\AppCommands\ShutdownCommand.cs" />
-    <Compile Include="Domain\BackendService\BackendServiceStatus.cs" />
-    <Compile Include="Domain\Events\PapercutServiceStatusEvent.cs" />
-    <Compile Include="Domain\LifecycleHooks\IAppLifecycleHook.cs" />
-    <Compile Include="Domain\LifecycleHooks\IAppLifecycleStarted.cs" />
-    <Compile Include="Domain\UiCommands\Commands\ShowBalloonTipCommand.cs" />
-    <Compile Include="Domain\LifecycleHooks\IAppLifecyclePreExit.cs" />
-    <Compile Include="Domain\LifecycleHooks\AppLifecycleActionResultType.cs" />
-    <Compile Include="Domain\LifecycleHooks\IAppLifecyclePreStart.cs" />
-    <Compile Include="Domain\Events\SettingsUpdatedEvent.cs" />
-    <Compile Include="Domain\UiCommands\Commands\ShowOptionWindowCommand.cs" />
-    <Compile Include="Domain\UiCommands\IUiCommandHub.cs" />
-    <Compile Include="Domain\UiCommands\Commands\ShowMessageCommand.cs" />
-    <Compile Include="Helpers\CalburnSerilogBridge.cs" />
-    <Compile Include="Helpers\DisableEdgeFeaturesHelper.cs" />
-    <Compile Include="Helpers\EventHandlerHelpers.cs" />
-    <Compile Include="Helpers\HtmlPreviewVisitor.cs" />
-    <Compile Include="Helpers\IViewModelWindowManager.cs" />
-    <Compile Include="AppLayer\Logging\UiLogSinkQueue.cs" />
-    <Compile Include="Helpers\MailMessageHelper.cs" />
-    <Compile Include="Helpers\MimeMessageEntry.cs" />
-    <Compile Include="Helpers\NotifyPropertyChangeReactiveExtensions.cs" />
-    <Compile Include="Helpers\HtmlHelpers.cs" />
-    <Compile Include="Helpers\Themes.cs" />
-    <Compile Include="Helpers\VeilHelpers.cs" />
-    <Compile Include="Helpers\ViewModelWindowManager.cs" />
-    <Compile Include="Helpers\WebView2Base.cs" />
-    <Compile Include="Helpers\WireupLogBridge.cs" />
-    <Compile Include="Helpers\WPFValueConverters.cs" />
-    <Compile Include="Infrastructure\LifecycleHooks\LifecycleHookHelpers.cs" />
-    <Compile Include="Infrastructure\WebView\WebView2InformationReporter.cs" />
-    <Compile Include="Infrastructure\WebView\WebView2Information.cs" />
-    <Compile Include="Properties\UIStrings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>UIStrings.resx</DependentUpon>
-    </Compile>
-    <Compile Include="AppLayer\Settings\AppRunOnStartupService.cs" />
-    <Compile Include="AppLayer\HtmlPreviews\HtmlPreviewGeneratorImpl.cs" />
-    <Compile Include="Domain\HtmlPreviews\IHtmlPreviewGenerator.cs" />
-    <Compile Include="AppLayer\Settings\MergeServerBackendSettings.cs" />
-    <Compile Include="AppLayer\IpComm\BackendServiceCoordinator.cs" />
-    <Compile Include="AppLayer\IpComm\PapercutIpCommManager.cs" />
-    <Compile Include="AppLayer\Diagnostics\ReportVersionService.cs" />
-    <Compile Include="AppLayer\Rules\RuleService.cs" />
-    <Compile Include="AppLayer\Settings\SaveSettingsOnExitService.cs" />
-    <Compile Include="AppLayer\LifecycleHooks\SingleInstanceCheck.cs" />
-    <Compile Include="AppLayer\SmtpServers\SmtpServerCoordinator.cs" />
-    <Compile Include="AppLayer\Cleanup\TempDirectoryCleanupService.cs" />
-    <Compile Include="Domain\Themes\ThemeColor.cs" />
-    <Compile Include="Infrastructure\Themes\ThemeColorRepository.cs" />
-    <Compile Include="AppLayer\Themes\ThemeManagerService.cs" />
-    <Compile Include="SettingPathTemplateProvider.cs" />
-    <Compile Include="PapercutUIModule.cs" />
-    <Compile Include="Infrastructure\Resources\AppResourceLocator.cs" />
-    <Compile Include="AppLayer\Events\EventPublishAll.cs" />
-    <Compile Include="AppLayer\Notifications\NotificationMenuCoordinator.cs" />
-    <Compile Include="Helpers\UIHelper.cs" />
-    <Compile Include="ViewModels\ForwardViewModel.cs" />
-    <Compile Include="ViewModels\IMessageDetailItem.cs" />
-    <Compile Include="ViewModels\MainViewModel.cs" />
-    <Compile Include="Domain\UiCommands\Commands\ShowMainWindowCommand.cs" />
-    <Compile Include="ViewModels\MessageDetailBodyViewModel.cs" />
-    <Compile Include="ViewModels\MessageDetailHeaderViewModel.cs" />
-    <Compile Include="Helpers\MessageDetailItemHelper.cs" />
-    <Compile Include="ViewModels\MessageDetailRawViewModel.cs" />
-    <Compile Include="Views\MessageDetailBodyView.xaml.cs">
-      <DependentUpon>MessageDetailBodyView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MessageDetailRawView.xaml.cs">
-      <DependentUpon>MessageDetailRawView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MessageDetailHeaderView.xaml.cs">
-      <DependentUpon>MessageDetailHeaderView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\RulesConfigurationView.xaml.cs">
-      <DependentUpon>RulesConfigurationView.xaml</DependentUpon>
-    </Compile>
-    <Page Include="Views\MessageDetailBodyView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\MessageDetailRawView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\MessageDetailHtmlView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\MessageDetailHeaderView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\MimePartView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\MessageDetailPartsListView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ForwardView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\MainView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\MessageDetailView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\MessageListView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\OptionsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="ViewModels\MessageDetailViewModel.cs" />
-    <Compile Include="ViewModels\MessageListViewModel.cs" />
-    <Compile Include="ViewModels\MessageDetailHtmlViewModel.cs" />
-    <Compile Include="ViewModels\MimePartViewModel.cs" />
-    <Compile Include="ViewModels\OptionsViewModel.cs" />
-    <Compile Include="ViewModels\MessageDetailPartsListViewModel.cs" />
-    <Compile Include="ViewModels\RulesConfigurationViewModel.cs" />
-    <Compile Include="Views\MessageDetailHtmlView.xaml.cs">
-      <DependentUpon>MessageDetailHtmlView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MimePartView.xaml.cs">
-      <DependentUpon>MimePartView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MessageDetailPartsListView.xaml.cs">
-      <DependentUpon>MessageDetailPartsListView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MainView.xaml.cs">
-      <DependentUpon>MainView.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="Views\RulesConfigurationView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Views\ForwardView.xaml.cs">
-      <DependentUpon>ForwardView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MessageDetailView.xaml.cs">
-      <DependentUpon>MessageDetailView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MessageListView.xaml.cs">
-      <DependentUpon>MessageListView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\OptionsView.xaml.cs">
-      <DependentUpon>OptionsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Resources\LogClientSink.html" />
-    <EmbeddedResource Include="Properties\UIStrings.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>UIStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="Properties\Settings.settings">
-      <Generator>PublicSettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </None>
-    <AppDesigner Include="Properties\" />
-    <None Include="Readme.eml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config">
-    </None>
-    <None Include="Properties\app.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="App.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0,KB2468871">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29 and Update for .NET Framework 4 %28KB2468871%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 4.5</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <PublishFile Include="BouncyCastle">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="de\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="es\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="fr\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="hu\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="it\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="Papercut.Core">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="pt-BR\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="ro\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="ru\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="sv\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="Xceed.Wpf.AvalonDock">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Xceed.Wpf.AvalonDock.Themes.Aero">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Xceed.Wpf.AvalonDock.Themes.Metro">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Xceed.Wpf.AvalonDock.Themes.VS2010">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Xceed.Wpf.DataGrid">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="Xceed.Wpf.Toolkit">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
-    <PublishFile Include="zh-Hans\Xceed.Wpf.AvalonDock.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
-      <Project>{5fa0e4aa-27af-4801-b6ca-8c97dadd6da6}</Project>
-      <Name>Papercut.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj">
-      <Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
-      <Name>Papercut.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj">
-      <Project>{da92047e-b764-41b4-b2d9-1c66c5449fa9}</Project>
-      <Name>Papercut.Infrastructure.IPComm</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Papercut.Infrastructure.Smtp\Papercut.Infrastructure.Smtp.csproj">
-      <Project>{873ec485-8e94-4877-8ea7-a7dfe7612e0a}</Project>
-      <Name>Papercut.Infrastructure.Smtp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
-      <Project>{cb1f4128-be3e-42bd-ae04-fcbbe5692e14}</Project>
-      <Name>Papercut.Message</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj">
-      <Project>{5ec90c45-979d-43a5-ba1c-a286dbf4beca}</Project>
-      <Name>Papercut.Rules</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Analects.Caliburn.Micro.Autofac">
-      <Version>1.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Autofac">
-      <Version>6.2.0</Version>
-    </PackageReference>
-    <PackageReference Include="AvalonEdit">
-      <Version>6.1.2.30</Version>
-    </PackageReference>
-    <PackageReference Include="Caliburn.Micro">
-      <Version>4.0.173</Version>
-    </PackageReference>
-    <PackageReference Include="Costura.Fody">
-      <Version>5.3.0</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Extended.Wpf.Toolkit">
-      <Version>4.1.0</Version>
-    </PackageReference>
-    <PackageReference Include="MahApps.Metro">
-      <Version>2.4.7</Version>
-    </PackageReference>
-    <PackageReference Include="MahApps.Metro.IconPacks.Material">
-      <Version>4.8.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Web.WebView2">
-      <Version>1.0.864.35</Version>
-    </PackageReference>
-    <PackageReference Include="MimeKit">
-      <Version>2.13.0</Version>
-    </PackageReference>
-    <PackageReference Include="Serilog">
-      <Version>2.10.0</Version>
-    </PackageReference>
-    <PackageReference Include="Serilog.Sinks.Observable">
-      <Version>2.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="System.Reactive.PlatformServices">
-      <Version>5.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Veil.Handlebars">
-      <Version>0.3.1</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="FodyWeavers.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="SHDocVw">
-      <Guid>{EAB22AC0-30C1-11CF-A7EB-0000C05BAE0B}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>1</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\attachment-icon.png" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Title>Papercut SMTP</Title>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<ApplicationIcon>App.ico</ApplicationIcon>
+		<SignManifests>false</SignManifests>
+		<UseWPF>true</UseWPF>
+		<StartupObject>Papercut.Program</StartupObject>
+		<NoWin32Manifest>true</NoWin32Manifest>
+	</PropertyGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\LogClientSink.html" />
+		<EmbeddedResource Update="Properties\UIStrings.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>UIStrings.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<None Include="Readme.eml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<Resource Include="App.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
+			<Project>{5fa0e4aa-27af-4801-b6ca-8c97dadd6da6}</Project>
+			<Name>Papercut.Common</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj">
+			<Project>{eedd1016-6442-48ce-8f8e-1d350829fbde}</Project>
+			<Name>Papercut.Core</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj">
+			<Project>{da92047e-b764-41b4-b2d9-1c66c5449fa9}</Project>
+			<Name>Papercut.Infrastructure.IPComm</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Papercut.Infrastructure.Smtp\Papercut.Infrastructure.Smtp.csproj">
+			<Project>{873ec485-8e94-4877-8ea7-a7dfe7612e0a}</Project>
+			<Name>Papercut.Infrastructure.Smtp</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj">
+			<Project>{cb1f4128-be3e-42bd-ae04-fcbbe5692e14}</Project>
+			<Name>Papercut.Message</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj">
+			<Project>{5ec90c45-979d-43a5-ba1c-a286dbf4beca}</Project>
+			<Name>Papercut.Rules</Name>
+		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Analects.Caliburn.Micro.Autofac" Version="1.0.0" />
+		<PackageReference Include="Autofac" Version="8.0.0" />
+		<PackageReference Include="AvalonEdit" Version="6.3.0.90" />
+		<PackageReference Include="BouncyCastle.Cryptography" Version="2.3.1" />
+		<PackageReference Include="Caliburn.Micro" Version="4.0.212" />
+		<PackageReference Include="Extended.Wpf.Toolkit" Version="4.6.0" />
+		<PackageReference Include="LiteDB" Version="5.0.19" />
+		<PackageReference Include="MahApps.Metro" Version="2.4.10" />
+		<PackageReference Include="MahApps.Metro.IconPacks" Version="4.11.0" />
+		<PackageReference Include="MimeKit" Version="4.5.0" />
+		<PackageReference Include="ReactiveUI.WPF" Version="20.0.1" />
+		<PackageReference Include="Serilog.Sinks.Observable" Version="2.0.2" />
+		<PackageReference Include="Handlebars.Net" Version="2.1.6" />
+		<PackageReference Include="Microsoft.Web.WebView2" Verson="1.0.1462.37" Version="1.0.2478.35" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="7.0.1" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" />
+		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+		<PackageReference Include="Velopack" Version="0.0.359" />
+	</ItemGroup>
+	<ItemGroup>
+		<Resource Include="Resources\attachment-icon.png" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Domain\Application\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Compile Update="Properties\Settings.Designer.cs">
+	    <DesignTimeSharedInput>True</DesignTimeSharedInput>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>Settings.settings</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="Properties\Settings.settings">
+	    <Generator>PublicSettingsSingleFileGenerator</Generator>
+	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+	  </None>
+	</ItemGroup>
 </Project>

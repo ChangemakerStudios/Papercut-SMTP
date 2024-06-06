@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,18 +16,12 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using Papercut.Domain.LifecycleHooks;
+
 namespace Papercut.AppLayer.Settings
 {
-    using System;
-
-    using Autofac;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Properties;
-
-    using Serilog;
-
     public class SaveSettingsOnExitService : IAppLifecyclePreExit
     {
         readonly ILogger _logger;
@@ -37,28 +31,28 @@ namespace Papercut.AppLayer.Settings
             this._logger = logger;
         }
 
-        public AppLifecycleActionResultType OnPreExit()
+        public Task<AppLifecycleActionResultType> OnPreExit()
         {
             try
             {
-                if (Settings.Default.MainWindowHeight < 300)
+                if (Properties.Settings.Default.MainWindowHeight < 300)
                 {
-                    Settings.Default.MainWindowHeight = 300;
+                    Properties.Settings.Default.MainWindowHeight = 300;
                 }
-                if (Settings.Default.MainWindowWidth < 400)
+                if (Properties.Settings.Default.MainWindowWidth < 400)
                 {
-                    Settings.Default.MainWindowWidth = 400;
+                    Properties.Settings.Default.MainWindowWidth = 400;
                 }
 
                 this._logger.Debug("Saving Updated Settings...");
-                Settings.Default.Save();
+                Properties.Settings.Default.Save();
             }
             catch (Exception ex)
             {
                 this._logger.Error(ex, "Failure Saving Settings File");
             }
 
-            return AppLifecycleActionResultType.Continue;
+            return Task.FromResult(AppLifecycleActionResultType.Continue);
         }
 
         #region Begin Static Container Registrations
@@ -68,9 +62,9 @@ namespace Papercut.AppLayer.Settings
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<SaveSettingsOnExitService>().AsImplementedInterfaces()
                 .SingleInstance();

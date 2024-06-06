@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,23 +16,15 @@
 // limitations under the License.
 
 
+using Papercut.Common.Domain;
+using Papercut.Common.Extensions;
+using Papercut.Core;
+using Papercut.Core.Infrastructure.Json;
+using Papercut.Core.Infrastructure.MessageBus;
+using Papercut.Infrastructure.IPComm.Protocols;
+
 namespace Papercut.Infrastructure.IPComm.Network
 {
-    using System.IO;
-    using System.Net.Sockets;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Core;
-    using Papercut.Core.Infrastructure.Json;
-    using Papercut.Core.Infrastructure.MessageBus;
-    using Papercut.Infrastructure.IPComm.Protocols;
-
-    using Serilog;
-
     public class PapercutIPCommProtocol : StringCommandProtocol
     {
         readonly IMessageBus _messageBus;

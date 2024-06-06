@@ -1,33 +1,28 @@
 ﻿// Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.ComponentModel;
+using System.Globalization;
+
+using Papercut.Common.Extensions;
+
 namespace Papercut.Core.Domain.Message
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-
     /// <summary>
     ///     The message entry.
     /// </summary>
@@ -44,11 +39,11 @@ namespace Papercut.Core.Domain.Message
 
         protected DateTime? _created;
 
+        bool _hasBeenSeen;
+
         bool _isSelected;
 
-		bool _hasBeenSeen;
-
-		public MessageEntry(FileInfo fileInfo)
+        public MessageEntry(FileInfo fileInfo)
         {
             this._info = fileInfo;
 
@@ -56,14 +51,14 @@ namespace Papercut.Core.Domain.Message
 
             if (firstBit?.Length == DateTimeFormat.Length)
             {
-                _created = DateTime.ParseExact(
+                this._created = DateTime.ParseExact(
                     firstBit,
                     DateTimeFormat,
                     CultureInfo.InvariantCulture);
             }
             else
             {
-                _created = this._info.CreationTime;
+                this._created = this._info.CreationTime;
             }
 
             if (this._created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
@@ -85,11 +80,13 @@ namespace Papercut.Core.Domain.Message
 
         public DateTime ModifiedDate => this._info.LastWriteTime;
 
+        public long SortTicks => (this._created ?? this.ModifiedDate).Ticks;
+
         public string Name => this._info.Name;
 
         public string FileSize => this._info.Length.ToFileSizeFormat();
 
-        public string DisplayText => $"{this._created?.ToString("G") ?? this._info.Name} ({(FileSize)})";
+        public string DisplayText => $"{this._created?.ToString("G") ?? this._info.Name} ({this.FileSize})";
 
         public bool IsSelected
         {
@@ -106,7 +103,7 @@ namespace Papercut.Core.Domain.Message
 			}
         }
 
-		public bool HasBeenSeen
+        public bool HasBeenSeen
 		{
 			get => this._hasBeenSeen;
 			set
@@ -116,7 +113,7 @@ namespace Papercut.Core.Domain.Message
 			}
 		}
 
-		public bool Equals(MessageEntry other)
+        public bool Equals(MessageEntry? other)
         {
             return Equals(this.File, other?.File);
         }

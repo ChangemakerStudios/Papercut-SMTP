@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,45 +16,37 @@
 // limitations under the License.
 
 
+using System.Diagnostics;
+using System.Reactive.Linq;
+using System.Windows;
+using System.Windows.Threading;
+
+using Caliburn.Micro;
+
+using Microsoft.Web.WebView2.Core;
+
+using MimeKit;
+
+using Papercut.AppLayer.Uris;
+using Papercut.Common.Extensions;
+using Papercut.Common.Helper;
+using Papercut.Core.Infrastructure.Async;
+using Papercut.Domain.HtmlPreviews;
+using Papercut.Helpers;
 using Papercut.Infrastructure.WebView;
+using Papercut.Views;
 
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Threading.Tasks;
-    using System.Windows;
-
-    using Caliburn.Micro;
-
-    using Microsoft.Web.WebView2.Core;
-    using Microsoft.Web.WebView2.Wpf;
-
-    using MimeKit;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Paths;
-    using Papercut.Core.Infrastructure.Async;
-    using Papercut.Domain.HtmlPreviews;
-    using Papercut.Helpers;
-    using Papercut.Properties;
-    using Papercut.Views;
-
-    using Serilog;
-
     public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
 
-        private readonly WebView2Information _webView2Information;
-
         readonly IHtmlPreviewGenerator _previewGenerator;
 
-        private string _htmlFile;
+        private readonly WebView2Information _webView2Information;
+
+        private string? _htmlFile;
 
         private bool _isWebViewInstalled = false;
 
@@ -80,7 +72,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public string HtmlFile
+        public string? HtmlFile
         {
 
             get => this._htmlFile;
@@ -95,10 +87,9 @@ namespace Papercut.ViewModels
 
         public bool ShowHtmlView => !string.IsNullOrWhiteSpace(this.HtmlFile);
 
-        public void ShowMessage([NotNull] MimeMessage mailMessageEx)
+        public void ShowMessage(MimeMessage? mailMessageEx)
         {
-            if (mailMessageEx == null)
-                throw new ArgumentNullException(nameof(mailMessageEx));
+            ArgumentNullException.ThrowIfNull(mailMessageEx);
 
             try
             {
@@ -110,7 +101,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        private bool ShouldNavigateToUrl([NotNull] string navigateToUrl)
+        private bool ShouldNavigateToUrl(string navigateToUrl)
         {
             if (string.IsNullOrEmpty(navigateToUrl))
             {
@@ -129,13 +120,13 @@ namespace Papercut.ViewModels
         {
             base.OnViewLoaded(view);
 
-            if (!(view is MessageDetailHtmlView typedView))
+            if (view is not MessageDetailHtmlView typedView)
             {
                 this._logger.Error("Unable to locate the MessageDetailHtmlView to hook the WebBrowser Control");
                 return;
             }
 
-            typedView.htmlView.CoreWebView2InitializationCompleted += (sender, args) =>
+            typedView.htmlView.CoreWebView2InitializationCompleted += (_, args) =>
             {
                 if (!args.IsSuccess)
                 {
@@ -157,15 +148,20 @@ namespace Papercut.ViewModels
                                                     : Visibility.Collapsed;
             }
 
+            if (!typedView.IsEnabled)
+            {
+                typedView.htmlView.Visibility = Visibility.Collapsed;
+            }
+
             Observable.FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
-                    a => (s, e) => a(e),
+                    a => (_, e) => a(e),
                     h => typedView.IsEnabledChanged += h,
                     h => typedView.IsEnabledChanged -= h)
                 .Throttle(TimeSpan.FromMilliseconds(100))
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(VisibilityChanged);
 
-            typedView.htmlView.ContextMenuOpening += (sender, args) =>
+            typedView.htmlView.ContextMenuOpening += (_, args) =>
             {
                 args.Handled = true;
             };
@@ -174,7 +170,7 @@ namespace Papercut.ViewModels
 
         private void SetupWebView(CoreWebView2 coreWebView)
         {
-            coreWebView.NavigationStarting += (sender, args) =>
+            coreWebView.NavigationStarting += (_, args) =>
             {
                 var shouldNavigateToUrl = this.ShouldNavigateToUrl(args.Uri);
 
@@ -211,7 +207,7 @@ namespace Papercut.ViewModels
         {
             if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
             {
-                Process.Start(navigateToUri.AbsoluteUri);
+                navigateToUri.OpenUri();
             }
             else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
             {

@@ -78,8 +78,7 @@
                     />
                     <RichTextBox x:Name="LogPanelNoWebView" BorderBrush="LightGray" BorderThickness="1" MaxHeight="300" FontSize="9pt" FontFamily="Consolas, Courier New"
                                  Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfTrue}}">
-                        <FlowDocument>
-                        </FlowDocument>
+                        <FlowDocument />
                     </RichTextBox>
                 </Grid>
             </controls:Flyout>
@@ -168,6 +167,12 @@
             <Label Margin="53,0,0,2" VerticalAlignment="Bottom" FontSize="9" Foreground="#2e74a6" Cursor="Hand"
                    ToolTip="Click to visit the site" Grid.Column="2" Grid.Row="1"
                    Content="https://github.com/ChangemakerStudios/Papercut-SMTP"
+                   HorizontalAlignment="Left" cal:Message.Attach="[Event MouseUp] = [Action GoToSite]" />
+
+
+            <Label Margin="300,0,0,2" VerticalAlignment="Bottom" HorizontalContentAlignment="Right" FontSize="9" Foreground="#2e74a6" Cursor="Hand"
+                   ToolTip="Click to upgrade" Grid.Column="2" Grid.Row="1"
+                   Content="{Binding UpgradeVersion}"
                    HorizontalAlignment="Left" cal:Message.Attach="[Event MouseUp] = [Action GoToSite]" />
         </Grid>
     </Grid>

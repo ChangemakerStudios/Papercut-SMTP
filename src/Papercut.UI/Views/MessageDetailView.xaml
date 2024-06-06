@@ -74,7 +74,6 @@
                 <TextBox Grid.Column="1" Name="Subject" Margin="2" FontWeight="Bold" IsReadOnly="True" />
             </Grid>
         </StackPanel>
-        <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}" Name="Items">
-        </TabControl>
+        <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}" Name="Items" />
     </Grid>
 </UserControl>

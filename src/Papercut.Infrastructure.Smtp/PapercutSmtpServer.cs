@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,19 @@
 // limitations under the License.
 
 
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+
+using Autofac.Util;
+
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Domain.Network;
+
+using SmtpServer;
+
 namespace Papercut.Infrastructure.Smtp
 {
-    using System;
-    using System.Net;
-    using System.Net.Security;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac.Util;
-
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Domain.Network;
-
-    using SmtpServer;
-
     using ILogger = Serilog.ILogger;
 
     public class PapercutSmtpServer : Disposable, IServer
@@ -40,18 +37,18 @@ namespace Papercut.Infrastructure.Smtp
 
         readonly ILogger _logger;
 
-        private readonly Func<ISmtpServerOptions, SmtpServer> _smtpServerFactory;
+        private readonly Func<ISmtpServerOptions, SmtpServer.SmtpServer> _smtpServerFactory;
 
         private EndpointDefinition _currentEndpoint;
 
-        private SmtpServer _server;
+        private SmtpServer.SmtpServer? _server;
 
-        private CancellationTokenSource _tokenSource;
+        private CancellationTokenSource? _tokenSource;
 
         public PapercutSmtpServer(
             IAppMeta applicationMetaData,
             ILogger logger,
-            Func<ISmtpServerOptions, SmtpServer> smtpServerFactory)
+            Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory)
         {
             this._applicationMetaData = applicationMetaData;
             this._logger = logger;
@@ -60,7 +57,7 @@ namespace Papercut.Infrastructure.Smtp
 
         public bool IsActive => this._server != null;
 
-        public IPAddress ListenIpAddress => this._currentEndpoint?.Address;
+        public IPAddress? ListenIpAddress => this._currentEndpoint?.Address;
 
         public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
@@ -68,16 +65,19 @@ namespace Papercut.Infrastructure.Smtp
         {
             try
             {
-                this._tokenSource?.Cancel();
+                if (this._tokenSource != null)
+                    await this._tokenSource.CancelAsync();
+
                 if (this._server != null)
                 {
                     this._logger.Information("Stopping Smtp Server");
 
                     await this._server.ShutdownTask;
                 }
+
                 this._tokenSource?.Dispose();
             }
-            catch (Exception ex) when (ex is AggregateException || ex is TaskCanceledException || ex is OperationCanceledException)
+            catch (Exception ex) when (ex is AggregateException or TaskCanceledException or OperationCanceledException)
             {
             }
             finally
@@ -117,7 +117,7 @@ namespace Papercut.Infrastructure.Smtp
 
 #pragma warning disable 4014
             // server will block -- just let it run
-            Task.Run(
+            Task.Factory.StartNew(
                 async () =>
                 {
                     try
@@ -129,7 +129,7 @@ namespace Papercut.Infrastructure.Smtp
                         this._logger.Error(ex, "Smtp Server Error");
                     }
                 },
-                this._tokenSource.Token);
+                this._tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 #pragma warning restore 4014
 
             return Task.CompletedTask;
@@ -143,12 +143,12 @@ namespace Papercut.Infrastructure.Smtp
             }
         }
 
-        private void OnSessionCompleted(object sender, SessionEventArgs e)
+        private void OnSessionCompleted(object? sender, SessionEventArgs e)
         {
             this._logger.Information("Completed SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
         }
 
-        private void OnSessionCreated(object sender, SessionEventArgs e)
+        private void OnSessionCreated(object? sender, SessionEventArgs e)
         {
             e.Context.CommandExecuting += (o, args) =>
             {

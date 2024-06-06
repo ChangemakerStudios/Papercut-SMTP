@@ -1,35 +1,31 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Text.RegularExpressions;
+using System.Windows;
+
+using Caliburn.Micro;
+
+using Papercut.Core;
+using Papercut.Properties;
+
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
-    using System.Windows;
-
-    using Caliburn.Micro;
-
-    using Common;
-
-    using Core;
-
-    using Papercut.Properties;
-
     public class ForwardViewModel : Screen
     {
         static readonly Regex _emailRegex =
@@ -49,78 +45,78 @@ namespace Papercut.ViewModels
 
         public bool FromSetting
         {
-            get => _fromSetting;
+            get => this._fromSetting;
             set
             {
-                _fromSetting = value;
-                NotifyOfPropertyChange(() => FromSetting);
+                this._fromSetting = value;
+                this.NotifyOfPropertyChange(() => this.FromSetting);
             }
         }
 
         public string WindowTitle
         {
-            get => _windowTitle;
+            get => this._windowTitle;
             set
             {
-                _windowTitle = value;
-                NotifyOfPropertyChange(() => WindowTitle);
+                this._windowTitle = value;
+                this.NotifyOfPropertyChange(() => this.WindowTitle);
             }
         }
 
         public string Server
         {
-            get => _server;
+            get => this._server;
             set
             {
-                _server = value;
-                NotifyOfPropertyChange(() => Server);
+                this._server = value;
+                this.NotifyOfPropertyChange(() => this.Server);
             }
         }
 
         public string To
         {
-            get => _to;
+            get => this._to;
             set
             {
-                _to = value;
-                NotifyOfPropertyChange(() => To);
+                this._to = value;
+                this.NotifyOfPropertyChange(() => this.To);
             }
         }
 
         public string From
         {
-            get => _from;
+            get => this._from;
             set
             {
-                _from = value;
-                NotifyOfPropertyChange(() => From);
+                this._from = value;
+                this.NotifyOfPropertyChange(() => this.From);
             }
         }
 
         void Load()
         {
             // Load previous settings
-            Server = Settings.Default.ForwardServer;
-            To = Settings.Default.ForwardTo;
-            From = Settings.Default.ForwardFrom;
+            this.Server = Settings.Default.ForwardServer;
+            this.To = Settings.Default.ForwardTo;
+            this.From = Settings.Default.ForwardFrom;
         }
 
         public async Task Cancel()
         {
-            await TryCloseAsync(false);
+            await this.TryCloseAsync(false);
         }
 
         protected override void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
 
-            if (FromSetting) Load();
+            if (this.FromSetting) this.Load();
         }
 
         public async Task Send()
         {
-            if (string.IsNullOrEmpty(Server) || string.IsNullOrEmpty(From)
-                || string.IsNullOrEmpty(To))
+            if (string.IsNullOrEmpty(this.Server) || string.IsNullOrEmpty(this.From)
+                                                  || string.IsNullOrEmpty(this.To))
             {
                 MessageBox.Show(
                     "All the text boxes are required, fill them in please.",
@@ -130,7 +126,7 @@ namespace Papercut.ViewModels
                 return;
             }
 
-            if (!_emailRegex.IsMatch(From) || !_emailRegex.IsMatch(To))
+            if (!_emailRegex.IsMatch(this.From) || !_emailRegex.IsMatch(this.To))
             {
                 MessageBox.Show(
                     "You need to enter valid email addresses.",
@@ -140,16 +136,16 @@ namespace Papercut.ViewModels
                 return;
             }
 
-            if (FromSetting)
+            if (this.FromSetting)
             {
                 // Save settings for the next time
-                Settings.Default.ForwardServer = Server.Trim();
-                Settings.Default.ForwardTo = To.Trim();
-                Settings.Default.ForwardFrom = From.Trim();
+                Settings.Default.ForwardServer = this.Server.Trim();
+                Settings.Default.ForwardTo = this.To.Trim();
+                Settings.Default.ForwardFrom = this.From.Trim();
                 Settings.Default.Save();
             }
 
-            await TryCloseAsync(true);
+            await this.TryCloseAsync(true);
         }
     }
 }

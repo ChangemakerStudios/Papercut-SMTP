@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,34 +15,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Net;
+using System.Net.Sockets;
+
+using Autofac.Util;
+
+using Papercut.Core.Domain.Network;
+using Papercut.Infrastructure.IPComm.Protocols;
+
 namespace Papercut.Infrastructure.IPComm.Network
 {
-    using System;
-    using System.Net;
-    using System.Net.Sockets;
-    using System.Threading.Tasks;
-
-    using Autofac.Util;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Network;
-    using Papercut.Infrastructure.IPComm.Protocols;
-
-    using Serilog;
-
     public class PapercutIPCommServer : Disposable, IServer
     {
         private readonly Func<IProtocol> _protocolFactory;
 
-        private EndpointDefinition _currentEndpoint;
+        private EndpointDefinition? _currentEndpoint;
 
         bool _isActive;
 
-        Socket _listener;
+        Socket? _listener;
 
         public PapercutIPCommServer(
             Func<PapercutIPCommProtocol> protocolFactory,
-            ConnectionManager connectionManager,
+            ConnectionManager? connectionManager,
             ILogger logger)
         {
             this.ConnectionManager = connectionManager;
@@ -50,7 +46,7 @@ namespace Papercut.Infrastructure.IPComm.Network
             this._protocolFactory = protocolFactory;
         }
 
-        public ConnectionManager ConnectionManager { get; set; }
+        public ConnectionManager? ConnectionManager { get; set; }
 
         public ILogger Logger { get; set; }
 
@@ -72,7 +68,7 @@ namespace Papercut.Infrastructure.IPComm.Network
             }
         }
 
-        public IPAddress ListenIpAddress => this._currentEndpoint?.Address;
+        public IPAddress ListenIpAddress => this._currentEndpoint?.Address ?? IPAddress.None;
 
         public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
@@ -89,36 +85,15 @@ namespace Papercut.Infrastructure.IPComm.Network
                 // Turn off the running bool
                 this.IsActive = false;
 
-                this._listener.Close(2);
+                this._listener?.Close(2);
 
-                this.ConnectionManager.CloseAll();
+                this.ConnectionManager?.CloseAll();
 
                 this.CleanupListener();
             }
             catch (Exception ex)
             {
                 this.Logger.Error(ex, "Exception Stopping IPComm Server");
-            }
-        }
-
-        protected override async ValueTask DisposeAsync(bool disposing)
-        {
-            if (disposing)
-            {
-                try
-                {
-                    await this.StopAsync();
-                    this.CleanupListener();
-                    if (this.ConnectionManager != null)
-                    {
-                        this.ConnectionManager.Dispose();
-                        this.ConnectionManager = null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
-                }
             }
         }
 
@@ -148,6 +123,27 @@ namespace Papercut.Infrastructure.IPComm.Network
             }
         }
 
+        protected override async ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+                try
+                {
+                    await this.StopAsync();
+                    this.CleanupListener();
+                    if (this.ConnectionManager != null)
+                    {
+                        this.ConnectionManager.Dispose();
+                        this.ConnectionManager = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
+                }
+            }
+        }
+
         IProtocol GetProtocolInstance()
         {
             return this._protocolFactory();
@@ -172,24 +168,29 @@ namespace Papercut.Infrastructure.IPComm.Network
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            this._listener.Bind(this._currentEndpoint.ToIPEndPoint());
+            var endpointDefinition = this._currentEndpoint;
 
-            this._listener.Listen(20);
-            this._listener.BeginAccept(this.OnClientAccept, null);
+            if (endpointDefinition != null)
+            {
+                this._listener.Bind(endpointDefinition.ToIPEndPoint());
 
-            this.Logger.Information(
-                "IPComm Server Ready: Listening for New Connections at {Endpoint}",
-                this._currentEndpoint);
+                this._listener.Listen(20);
+                this._listener.BeginAccept(this.OnClientAccept, null);
+
+                this.Logger.Information(
+                    "IPComm Server Ready: Listening for New Connections at {Endpoint}",
+                    endpointDefinition);
+            }
         }
 
-        void OnClientAccept([NotNull] IAsyncResult asyncResult)
+        void OnClientAccept(IAsyncResult asyncResult)
         {
             if (!this.IsActive || this._listener == null) return;
 
             try
             {
                 Socket clientSocket = this._listener.EndAccept(asyncResult);
-                this.ConnectionManager.CreateConnection(clientSocket, this.GetProtocolInstance());
+                this.ConnectionManager?.CreateConnection(clientSocket, this.GetProtocolInstance());
             }
             catch (ObjectDisposedException)
             {

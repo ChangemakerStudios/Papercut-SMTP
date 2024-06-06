@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,14 @@
 // limitations under the License.
 
 
+using System.Reflection;
+
+using Autofac;
+
+using Papercut.Common.Extensions;
+
 namespace Papercut.Core.Infrastructure.Container
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
-    using Autofac;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-
-    using Serilog;
-
     public static class RegisterMethodExtensions
     {
         static IsRegisterContainerBuilderMethodSpecification MethodIsRegisterContainerBuilderSpecification =>
@@ -40,7 +34,7 @@ namespace Papercut.Core.Infrastructure.Container
         /// </summary>
         /// <param name="assembly">The assembly.</param>
         /// <returns></returns>
-        public static IReadOnlyList<Action<ContainerBuilder>> GetStaticRegisterMethods([NotNull] this Assembly assembly)
+        public static IReadOnlyList<Action<ContainerBuilder>> GetStaticRegisterMethods(this Assembly assembly)
         {
             if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 
@@ -81,8 +75,8 @@ namespace Papercut.Core.Infrastructure.Container
         /// <param name="assembly"></param>
         /// <param name="additionalAssemblies"></param>
         public static void RegisterStaticMethods(
-            [NotNull] this ContainerBuilder builder,
-            [NotNull] Assembly assembly,
+            this ContainerBuilder builder,
+            Assembly assembly,
             params Assembly[] additionalAssemblies)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));

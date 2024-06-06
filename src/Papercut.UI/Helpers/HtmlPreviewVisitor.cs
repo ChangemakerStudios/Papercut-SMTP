@@ -1,56 +1,63 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
+
+using System.IO;
+
+using MimeKit;
+using MimeKit.Text;
+using MimeKit.Tnef;
+
+using Papercut.Properties;
 
 namespace Papercut.Helpers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-
-    using MimeKit;
-    using MimeKit.Text;
-    using MimeKit.Tnef;
-
-    using Papercut.Properties;
-
-    class HtmlPreviewVisitor : MimeVisitor
+    internal class HtmlPreviewVisitor : MimeVisitor
     {
+        const int IndexNotFound = -1;
+
+        private static readonly Dictionary<string, string> _mimeLookup
+            = new Dictionary<string, string>()
+              {
+                  { "image/jpeg", "jpg" },
+                  { "image/svg+xml", "svg" }
+              };
+
         readonly List<MimeEntity> _attachments = new List<MimeEntity>();
 
         readonly List<MultipartRelated> _stack = new List<MultipartRelated>();
 
-        public string TempDirectory { get; }
-
         string _body;
 
-        public HtmlPreviewVisitor(string tempDirectory = null)
+        public HtmlPreviewVisitor(string? tempDirectory = null)
         {
             this.TempDirectory = tempDirectory;
         }
 
-        public IList<MimeEntity> Attachments => _attachments;
+        public string? TempDirectory { get; }
 
-        public string HtmlBody => _body ?? string.Empty;
+        public IList<MimeEntity> Attachments => this._attachments;
+
+        public string HtmlBody => this._body ?? string.Empty;
 
         protected override void VisitMultipartAlternative(MultipartAlternative alternative)
         {
-            // walk the multipart/alternative children backwards from greatest level of faithfulness to the least faithful
-            for (int i = alternative.Count - 1; i >= 0 && _body == null; i--)
+            // walk the multipart/alternative children backwards from the greatest level of faithfulness to the least faithful
+            for (int i = alternative.Count - 1; i >= 0 && this._body == null; i--)
             {
                 alternative[i].Accept(this);
             }
@@ -59,12 +66,12 @@ namespace Papercut.Helpers
         protected override void VisitMultipartRelated(MultipartRelated related)
         {
             var root = related.Root;
-            _stack.Add(related);
+            this._stack.Add(related);
             root.Accept(this);
-            _stack.RemoveAt(_stack.Count - 1);
+            this._stack.RemoveAt(this._stack.Count - 1);
         }
 
-        bool TryGetImage(string url, out MimePart image)
+        bool TryGetImage(string url, out MimePart? image)
         {
             image = null;
 
@@ -102,8 +109,6 @@ namespace Papercut.Helpers
             return false;
         }
 
-        const int IndexNotFound = -1;
-
         string SaveImage(MimePart image, string url)
         {
             string fileName = url.Replace(':', '_').Replace('\\', '_').Replace('/', '_');
@@ -113,19 +118,12 @@ namespace Papercut.Helpers
 
             if (!File.Exists(path))
             {
-                using (var output = File.Create(path))
-                    image.Content.DecodeTo(output);
+                using var output = File.Create(path);
+                image.Content.DecodeTo(output);
             }
 
             return $"file://{path.Replace('\\', '/')}";
         }
-
-        private static readonly Dictionary<string, string> _mimeLookup
-            = new Dictionary<string, string>()
-              {
-                  { "image/jpeg", "jpg" },
-                  { "image/svg+xml", "svg" }
-              };
 
         private static string GetExtensionFromMimeType(string mimeType)
         {
@@ -154,12 +152,12 @@ namespace Papercut.Helpers
             {
                 case HtmlTagId.Head when !ctx.IsEndTag:
                     ctx.WriteTag(htmlWriter, false);
-                    AddMetaCompatibleIEEdge(htmlWriter);
+                    this.AddMetaCompatibleIEEdge(htmlWriter);
 
                     break;
                     
                 case HtmlTagId.Image when !ctx.IsEndTag && this._stack.Count > 0:
-                    LinkImageTag(ctx, htmlWriter);
+                    this.LinkImageTag(ctx, htmlWriter);
 
                     break;
                 case HtmlTagId.Body when !ctx.IsEndTag:
@@ -232,10 +230,10 @@ namespace Papercut.Helpers
 
         protected override void VisitTextPart(TextPart entity)
         {
-            if (_body != null)
+            if (this._body != null)
             {
                 // since we've already found the body, treat this as an attachment
-                _attachments.Add(entity);
+                this._attachments.Add(entity);
                 return;
             }
 
@@ -265,7 +263,7 @@ namespace Papercut.Helpers
                             FooterFormat = HeaderFooterFormat.Html
                         };
 
-            _body = converter.Convert(entity.Text);
+            this._body = converter.Convert(entity.Text);
         }
 
         private void SetFlowedHtmlToBody(TextPart entity)
@@ -285,7 +283,7 @@ namespace Papercut.Helpers
                 convertor.DeleteSpace = delsp.ToLowerInvariant() == "yes";
             }
 
-            _body = convertor.Convert(entity.Text);
+            this._body = convertor.Convert(entity.Text);
         }
 
         private void SetHtmlToBody(TextPart entity)
@@ -303,29 +301,29 @@ namespace Papercut.Helpers
             {
                 var beforeAfter = GetBeforeAfterFormatWrapper(UIStrings.HtmlToHtmlFormatWrapper);
 
-                _body = converter.Convert(beforeAfter.Before + html + beforeAfter.After);
+                this._body = converter.Convert(beforeAfter.Before + html + beforeAfter.After);
 
             }
-            else _body = converter.Convert(html);
+            else this._body = converter.Convert(html);
         }
 
         protected override void VisitTnefPart(TnefPart entity)
         {
             // extract any attachments in the MS-TNEF part
-            _attachments.AddRange(entity.ExtractAttachments());
+            this._attachments.AddRange(entity.ExtractAttachments());
         }
 
         protected override void VisitMessagePart(MessagePart entity)
         {
             // treat message/rfc822 parts as attachments
-            _attachments.Add(entity);
+            this._attachments.Add(entity);
         }
 
         protected override void VisitMimePart(MimePart entity)
         {
             // realistically, if we've gotten this far, then we can treat this as an attachment
             // even if the IsAttachment property is false.
-            _attachments.Add(entity);
+            this._attachments.Add(entity);
         }
     }
 }

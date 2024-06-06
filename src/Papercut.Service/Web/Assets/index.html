@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html ng-app="papercutApp">
+  <head>
+    <title>Papercut</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+
+    <link rel="icon" type="image/png" href="images/papercut.ico" />
+
+    <link rel="stylesheet" href="css/jquery-ui-1.10.4-smoothness.css" />
+    <link rel="stylesheet" href="css/bootstrap-3.3.2.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body ng-controller="MailCtrl" ng-click="keepopen=false">
+    <nav class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container-fluid">
+        <div class="col-md-2 col-sm-3">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+              <img src="images/papercut-logo.png" height="20" alt="Papercut">
+            </a>
+          </div>
+        </div>
+
+        <div class="col-md-10 col-sm-9">
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a target="_blank" href="https://github.com/ChangemakerStudios/Papercut">
+                <img src="images/github.png" height="16" alt="GitHub"> GitHub
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="loading-overlay" ng-if="!requetedMessageList">
+        <img src="data:image/gif;base64,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" />
+    </div>
+    <div class="container-fluid" ng-if="!!requetedMessageList">
+      <div class="row">
+        <div class="col-md-2 col-sm-3">
+          <ul class="nav nav-pills nav-stacked">
+            <li class="inbox">
+              <a href="#" ng-click="backToInboxFirst()">
+                Inbox ({{totalMessages}})
+              </a>
+              <a title="Delete all messages" href="#" class="btn-delete-all glyphicon glyphicon-trash" ng-click="deleteAll()"></a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="col-md-10 col-sm-9 content">
+          <div class="toolbar" ng-if="!preview">
+  <button class="btn btn-default" ng-click="refresh()" title="Refresh">
+    <i class="glyphicon glyphicon-refresh"></i>
+  </button>
+
+  <span class="pull-right">
+    <span class="message-count" ng-if="(totalMessages || 0) != 0">
+      <select ng-model="itemsPerPage" ng-change="showUpdated(itemsPerPage)">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="75">75</option>
+        <option value="100">100</option>
+      </select>
+      <strong>{{ startMessages + 1 }}-{{ startMessages + countMessages }}</strong>
+      of
+      <strong>{{ totalMessages }}</strong>
+    </span>
+
+    <button class="btn btn-default" ng-click="showNewer()" title="Newer" ng-class="{'disabled':startMessages<=0}">
+      <i class="glyphicon glyphicon-chevron-left"></i>
+    </button>
+
+    <button class="btn btn-default" ng-click="showOlder()" title="Older" ng-class="{'disabled':startMessages+countMessages>=totalMessages}">
+      <i class="glyphicon glyphicon-chevron-right"></i>
+    </button>
+  </span>
+</div>
+
+<div class="messages container-fluid" ng-if="!preview">
+  <div class="msglist-message row" ng-repeat="message in messages" ng-click="selectMessage(message)">
+    <div class="col-md-5 col-sm-5">
+      <span class="subject unread">{{ message.subject }}</span>
+    </div>
+    <div class="col-md-4 col-sm-3">
+      <div class="row">
+        <div class="col-md-9 col-sm-12 text-right">
+            {{ getMoment(message.createdAt).fromNow() }}
+        </div>
+        <div class="col-md-3 col-sm-12 text-right">
+          {{ message.size }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar" ng-if="preview">
+  <button class="btn btn-default" ng-click="backToInbox()" title="Back to Inbox">
+    <i class="glyphicon glyphicon-arrow-left"></i>
+  </button>
+</div>
+
+<div class="preview" ng-if="preview">
+  <div class="row headers">
+    <div class="col-md-10">
+      <table>
+        <tbody>
+          <tr>
+            <td class="header-name">From</td>
+            <td><span ng-if="!!preview.from[0].name">{{preview.from[0].name}}(</span>{{ preview.from[0].address }}<span ng-if="!!preview.from[0].name">)</span></td>
+          </tr>
+        <tr>
+            <td class="header-name">To</td>
+            <td>
+                <label class="mail-address" ng-repeat="to in preview.to">
+                    <span ng-if="!!to.name">{{to.name}}(</span>{{ to.address }}<span ng-if="!!to.name">)</span>
+                </label>
+            </td>
+        </tr>
+        <tr ng-if="!!(preview.cc && preview.cc.length)">
+            <td class="header-name">CC</td>
+            <td>
+                <label class="mail-address" ng-repeat="c in preview.cc">
+                    <span ng-if="!!c.name">{{c.name}}(</span>   {{ c.address }}<span ng-if="!!c.name">)</span>
+                </label>
+            </td>
+        </tr>
+        <tr ng-if="!!(preview.bCc && preview.bCc.length)">
+            <td class="header-name">BCC</td>
+            <td>
+                <label class="mail-address" ng-repeat="b in preview.bCc">
+                    <span ng-if="!!b.name">{{b.name}}(</span>   {{ b.address }}<span ng-if="!!b.name">)</span>
+                </label>
+            </td>
+        </tr>
+        <tr ng-if="!!preview.date">
+            <td class="header-name">Date</td>
+            <td>
+                {{preview.date}}
+            </td>
+        </tr>
+        <tr>
+            <td class="header-name">Subject</td>
+            <td><strong>{{ preview.subject }}</strong></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="mail-content">
+  <span class="download-raw pull-right">
+    <a ng-click="downloadRawMessage(preview.id)" class="click-to-download"><span class="glyphicon glyphicon-cloud-download"></span> Save raw message</a>
+  </span>
+      <ul class="nav nav-tabs">
+        <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
+        <li ng-if="hasText(preview)" ng-class="{ active: !hasHTML(preview) }"><a href="#preview-plain" data-toggle="tab">Plain text</a></li>
+        <li><a href="#preview-headers" data-toggle="tab">Headers</a></li>
+        <li><a href="#preview-sections" data-toggle="tab">Sections</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <iframe target-blank="" ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }" class="tab-pane" id="preview-html" body-html="preview.previewHTML" content-link-message-id="preview.id" seamless frameborder="0" style="width: 100%"></iframe>
+      <div class="tab-pane" ng-class="{ active: !hasHTML(preview) }" id="preview-plain" ng-bind-html="formatMessagePlain(preview)"></div>
+        <div class="tab-pane" id="preview-headers">
+            <ul>
+                <li ng-repeat="header in preview.headers">
+                    <span class="header-name">{{header.name}}</span>: {{header.value}}
+                </li>
+            </ul>
+        </div>
+        <div class="tab-pane" id="preview-sections">
+            <table>
+                <thead>
+                    <th>MEDIA TYPE</th>
+                    <th>FILENAME</th>
+                    <th>SAVE</th>
+                </thead>
+                <tbody>
+                <tr ng-repeat="section in preview.sections">
+                    <td>{{section.mediaType}}</td>
+                    <td>{{section.fileName}}</td>
+                    <td><a title="Save section content as file" ng-click="downloadSection(preview.id, $index, section.fileName)" class="glyphicon glyphicon-download-alt click-to-download"></a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+  </div>
+</div>
+
+
+        </div>
+      </div>
+    </div>
+    <script src="js/native-features.js"></script>
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+
+    <script src="js/vendor/jquery-1.11.0.min.js"></script>
+    <script src="js/vendor/jquery-ui-1.10.4.min.js"></script>
+    <script src="js/vendor/bootstrap-3.3.2.min.js"></script>
+    <script src="js/vendor/angular-1.3.8.js"></script>
+    <script src="js/vendor/moment-2.8.4.js"></script>
+    <script src="js/vendor/signalr.min.js"></script>
+
+    <script src="js/controllers.js"></script>
+    <script src="js/message-repository.js"></script>
+    <script src="js/directives.js"></script>
+    
+
+    <script>if (window.module) module = window.module;</script>
+  </body>
+</html>

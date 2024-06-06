@@ -1,23 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <Platform>AnyCPU</Platform>
-  </PropertyGroup>
-
-  <PropertyGroup>
-     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>    
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>  
-  </ItemGroup>  
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup> 
   
   <ItemGroup>
     <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj">
@@ -28,21 +13,15 @@
   
   <ItemGroup>
     <PackageReference Include="Autofac">
-      <Version>6.2.0</Version>
+      <Version>8.0.0</Version>
     </PackageReference>
     <PackageReference Include="MailKit">
-      <Version>2.12.0</Version>
+      <Version>4.4.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="MimeKit">
-      <Version>2.12.0</Version>
+      <Version>4.4.0</Version>
     </PackageReference>
-    <PackageReference Include="Serilog">
-      <Version>2.10.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Runtime.Caching" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
   </ItemGroup>
 </Project>

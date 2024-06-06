@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,23 +16,16 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using Papercut.Common.Domain;
+using Papercut.Common.Extensions;
+using Papercut.Core.Domain.Paths;
+using Papercut.Core.Infrastructure.Network;
+using Papercut.Domain.Events;
+
 namespace Papercut.AppLayer.Settings
 {
-    using System;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Common.Domain;
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Paths;
-    using Papercut.Core.Infrastructure.Network;
-    using Papercut.Domain.Events;
-    using Papercut.Properties;
-
     public class MergeServerBackendSettings : IEventHandler<AppProcessExchangeEvent>
     {
         readonly MessagePathConfigurator _configurator;
@@ -45,9 +38,9 @@ namespace Papercut.AppLayer.Settings
             this._messageBus = messageBus;
         }
 
-        public async Task HandleAsync([NotNull] AppProcessExchangeEvent @event, CancellationToken token)
+        public async Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token)
         {
-            if (@event == null) throw new ArgumentNullException(nameof(@event));
+            ArgumentNullException.ThrowIfNull(@event);
 
             if (string.IsNullOrWhiteSpace(@event.MessageWritePath))
                 return;
@@ -55,17 +48,17 @@ namespace Papercut.AppLayer.Settings
             if (!this._configurator.LoadPaths.Any(s => s.StartsWith(@event.MessageWritePath, StringComparison.OrdinalIgnoreCase)))
             {
                 // add it for watching...
-                Settings.Default.MessagePaths = $"{Settings.Default.MessagePaths};{@event.MessageWritePath}";
+                Properties.Settings.Default.MessagePaths = $"{Properties.Settings.Default.MessagePaths};{@event.MessageWritePath}";
             }
 
-            var previousSettings = new Settings();
+            var previousSettings = new Properties.Settings();
 
-            Settings.Default.CopyTo(previousSettings);
+            Properties.Settings.Default.CopyTo(previousSettings);
 
             // save ip:port bindings as our own to keep in sync...
-            Settings.Default.IP = @event.IP;
-            Settings.Default.Port = @event.Port;
-            Settings.Default.Save();
+            Properties.Settings.Default.IP = @event.IP;
+            Properties.Settings.Default.Port = @event.Port;
+            Properties.Settings.Default.Save();
 
             await this._messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings), token);
         }
@@ -77,9 +70,9 @@ namespace Papercut.AppLayer.Settings
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<MergeServerBackendSettings>().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();

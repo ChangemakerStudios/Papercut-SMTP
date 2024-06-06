@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,105 +16,56 @@
 // limitations under the License.
 
 
-namespace Papercut
+using System.Windows;
+
+using Autofac;
+
+using Papercut.Core.Infrastructure.Container;
+using Papercut.Domain.LifecycleHooks;
+using Papercut.Infrastructure.LifecycleHooks;
+
+namespace Papercut;
+
+public partial class App : Application
 {
-    using System;
-    using System.Diagnostics;
-    using System.Reflection;
-    using System.Threading.Tasks;
-    using System.Windows;
+    internal ILifetimeScope Container { get; private set; }
 
-    using Autofac;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Infrastructure.Container;
-    using Papercut.Core.Infrastructure.Logging;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Infrastructure;
-    using Papercut.Infrastructure.LifecycleHooks;
-
-    using Serilog;
-
-    public partial class App : Application
+    protected override void OnStartup(StartupEventArgs e)
     {
-        public const string GlobalName = "Papercut.App";
+        Log.Debug("App.OnStartup");
 
-        Lazy<ILifetimeScope> _lifetimeScope =
-            new Lazy<ILifetimeScope>(
-                () => RootContainer.BeginLifetimeScope(ContainerScope.UIScopeTag));
+        this.Container = Program.Container.BeginLifetimeScope(ContainerScope.UIScopeTag);
 
-        static App()
+        base.OnStartup(e);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        Log.Debug("App.OnExit");
+
+        // run pre-exit
+        AppLifecycleActionResultType runPreExit = AppLifecycleActionResultType.Continue;
+            
+        Task.Run(async () =>
         {
-            BootstrapLogger.SetRootGlobal();
+            runPreExit = await this.Container.RunPreExit();
+        }).Wait();
 
-            ExecutablePath = Assembly.GetExecutingAssembly().Location;
-            RootContainer = new SimpleContainer<PapercutUIModule>().Build();
+        if (runPreExit == AppLifecycleActionResultType.Cancel)
+        {
+            // cancel exit
+            return;
         }
 
-        public static string ExecutablePath { get; }
-
-        public static IContainer RootContainer { get; }
-
-        public ILifetimeScope Container => this._lifetimeScope.Value;
-
-        protected override void OnStartup(StartupEventArgs e)
+        try
         {
-            try
-            {
-                // run prestart
-                if (this.Container.RunPreStart() == AppLifecycleActionResultType.Cancel)
-                {
-                    this.Shutdown();
-                    return;
-                }
-
-                base.OnStartup(e);
-
-                // startup the application
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        await this.Container.RunStartedAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error(ex, "Startup Error");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Fatal(ex, "Fatal Error Starting Papercut");
-            }
+            this.Container.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            // no bother
         }
 
-        protected override void OnExit(ExitEventArgs e)
-        {
-            Debug.WriteLine("App.OnExit()");
-
-            // run pre-exit
-            if (this.Container.RunPreExit() == AppLifecycleActionResultType.Cancel)
-            {
-                // cancel exit
-                return;
-            }
-
-            try
-            {
-                this.Container.Dispose();
-
-                this._lifetimeScope = null;
-
-                RootContainer.Dispose();
-            }
-            catch (ObjectDisposedException)
-            {
-                // no bother
-            }
-
-
-            base.OnExit(e);
-        }
+        base.OnExit(e);
     }
 }

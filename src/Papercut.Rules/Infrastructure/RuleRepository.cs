@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,26 +16,21 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
+using Papercut.Common.Extensions;
+using Papercut.Core.Domain.Rules;
+using Papercut.Core.Infrastructure.Json;
+using Papercut.Rules.Domain.Conditional.Forwarding;
+using Papercut.Rules.Domain.Forwarding;
+using Papercut.Rules.Domain.Relaying;
+using Papercut.Rules.Domain.Rules;
+
 namespace Papercut.Rules.Infrastructure
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Autofac;
-
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Core.Infrastructure.Json;
-    using Papercut.Rules.Domain.Conditional.Forwarding;
-    using Papercut.Rules.Domain.Forwarding;
-    using Papercut.Rules.Domain.Relaying;
-    using Papercut.Rules.Domain.Rules;
-
     public class RuleRepository : IRuleRepository
     {
         private readonly JsonSerializerSettings _serializationSettings;
@@ -99,6 +94,22 @@ namespace Papercut.Rules.Infrastructure
                 setting: this._serializationSettings);
         }
 
+        #region Begin Static Container Registrations
+
+        /// <summary>
+        /// Called dynamically from the RegisterStaticMethods() call in the container module.
+        /// </summary>
+        /// <param name="builder"></param>
+        [UsedImplicitly]
+        static void Register([NotNull] ContainerBuilder builder)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+            builder.RegisterType<RuleRepository>().As<IRuleRepository>().InstancePerDependency();
+        }
+
+        #endregion
+
         public interface INamespaceMigration
         {
             string FromAssembly { get; }
@@ -143,21 +154,5 @@ namespace Papercut.Rules.Infrastructure
                 return base.BindToType(assemblyName, typeName);
             }
         }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
-        {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-
-            builder.RegisterType<RuleRepository>().As<IRuleRepository>().InstancePerDependency();
-        }
-
-        #endregion
     }
 }

@@ -1,14 +1,14 @@
 ﻿// Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,26 +16,21 @@
 // limitations under the License.
 
 
+using System.Net;
+using System.Net.Mime;
+
+using Autofac;
+
+using MimeKit;
+
+using NUnit.Framework;
+
+using Papercut.App.WebApi.Tests.Base;
+using Papercut.Message;
+using Papercut.Service.Web.Models;
+
 namespace Papercut.App.WebApi.Tests.MessageFacts
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Mime;
-    using System.Text;
-
-    using Autofac;
-
-    using MimeKit;
-
-    using NUnit.Framework;
-
-    using Papercut.App.WebApi.Models;
-    using Papercut.App.WebApi.Tests.Base;
-    using Papercut.Message;
-
     using ContentType = MimeKit.ContentType;
 
     public class MessageSectionsFacts : ApiTestBase
@@ -61,7 +56,7 @@ namespace Papercut.App.WebApi.Tests.MessageFacts
                     }
                 }
             };
-            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, async fs => await existedMail.WriteToAsync(fs));
 
             var messageId = this.Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
@@ -90,7 +85,7 @@ namespace Papercut.App.WebApi.Tests.MessageFacts
                     }
                 }
             };
-            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, async fs => await existedMail.WriteToAsync(fs));
 
             var messageId = this.Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
@@ -120,7 +115,7 @@ namespace Papercut.App.WebApi.Tests.MessageFacts
                     }
                 }
             };
-            this._messageRepository.SaveMessage(existedMail.Subject, fs => existedMail.WriteTo(fs));
+            this._messageRepository.SaveMessage(existedMail.Subject, async fs => await existedMail.WriteToAsync(fs));
 
             var messageId = this.Get<MessageListResponse>("/api/messages").Messages.First().Id;
 
@@ -141,7 +136,8 @@ namespace Papercut.App.WebApi.Tests.MessageFacts
             }
 
             public int TotalMessageCount { get; set; }
-            public List<MimeMessageEntry.RefDto> Messages { get; set; }
+
+            public List<MimeMessageEntry.RefDto> Messages { get; }
         }
     }
 }

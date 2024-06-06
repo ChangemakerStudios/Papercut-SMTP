@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,29 +15,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+
+using Autofac;
+
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Rules;
+using Papercut.Core.Infrastructure.Async;
+using Papercut.Domain.BackendService;
+using Papercut.Domain.LifecycleHooks;
+using Papercut.Helpers;
+using Papercut.Message;
+using Papercut.Rules.App;
+using Papercut.Rules.Domain.Rules;
+
 namespace Papercut.AppLayer.Rules
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Domain.BackendService;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Helpers;
-    using Papercut.Message;
-    using Papercut.Rules.App;
-    using Papercut.Rules.Domain.Rules;
-
-    using Serilog;
-
     public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecyclePreExit
     {
         readonly IBackendServiceStatus _backendServiceStatus;
@@ -65,31 +60,23 @@ namespace Papercut.AppLayer.Rules
             this._messageBus = messageBus;
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this._rulesObservable?.Dispose();
-            }
-        }
-
-        public AppLifecycleActionResultType OnPreExit()
+        public Task<AppLifecycleActionResultType> OnPreExit()
         {
             this.Save();
 
-            return AppLifecycleActionResultType.Continue;
+            return Task.FromResult(AppLifecycleActionResultType.Continue);
         }
 
         public async Task OnStartedAsync()
         {
-            this.Logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
+            this._logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
 
             try
             {
                 // accessing "Rules" forces the collection to be loaded
                 if (this.Rules.Any())
                 {
-                    this.Logger.Information(
+                    this._logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
                         this.Rules.Count,
                         this.RuleFileName);
@@ -97,14 +84,14 @@ namespace Papercut.AppLayer.Rules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
+                this._logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
             }
 
             // rules loaded/updated event
             await this._messageBus.PublishAsync(new RulesUpdatedEvent(this.Rules.ToArray()));
 
             this._rulesObservable = this.GetRuleChangedObservable(TaskPoolScheduler.Default)
-                .Subscribe(
+                .SubscribeAsync(
                     async args =>
                     {
                         // TODO: here be bugs
@@ -115,23 +102,31 @@ namespace Papercut.AppLayer.Rules
                         await this._messageBus.PublishAsync(
                             new RulesUpdatedEvent(this.Rules.ToArray()));
                     },
-                    ex => this.Logger.Error(ex, "Failure Publishing Rules"));
+                    ex => this._logger.Error(ex, "Failure Publishing Rules"));
 
             this.HookPropertyChangedForRules(this.Rules);
 
             // the backend service handles rules running if it's online
             if (!this._backendServiceStatus.IsOnline)
             {
-                this.Logger.Debug("Setting up Rule Dispatcher Observable");
+                this._logger.Debug("Setting up Rule Dispatcher Observable");
 
                 // observe message watcher and run rules when a new message arrives
                 this._messageWatcher.GetNewMessageObservable(TaskPoolScheduler.Default)
                     .DelaySubscription(TimeSpan.FromSeconds(1))
-                    .Subscribe(
+                    .SubscribeAsync(
                         async e => await this._rulesRunner.RunAsync(
                                        this.Rules.ToArray(),
                                        e.EventArgs.NewMessage),
-                        ex => this.Logger.Error(ex, "Error Running Rules on New Message"));
+                        ex => this._logger.Error(ex, "Error Running Rules on New Message"));
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this._rulesObservable?.Dispose();
             }
         }
 
@@ -140,11 +135,11 @@ namespace Papercut.AppLayer.Rules
             foreach (IRule m in rules)
             {
                 m.GetPropertyChangedEvents(TaskPoolScheduler.Default)
-                    .Subscribe(
-                        async (args) =>
+                    .SubscribeAsync(
+                        async (_) =>
                             await this._messageBus.PublishAsync(
                                 new RulesUpdatedEvent(this.Rules.ToArray())),
-                        ex => this.Logger.Error(ex, "Error Publishing Rules Updated Event"));
+                        ex => this._logger.Error(ex, "Error Publishing Rules Updated Event"));
             }
         }
 
@@ -155,9 +150,9 @@ namespace Papercut.AppLayer.Rules
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<RuleService>().AsSelf().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();

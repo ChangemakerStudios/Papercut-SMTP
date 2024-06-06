@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,19 +16,13 @@
 // limitations under the License.
 
 
+using Papercut.Common.Domain;
+
 namespace Papercut.Core.Infrastructure.MessageBus
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-
-    using Serilog;
-
     public static class MessageBusExtensions
     {
-        public static void PublishFireAndForget<T>([NotNull] this IMessageBus messageBus, T @event)
+        public static void PublishFireAndForget<T>(this IMessageBus messageBus, T @event)
             where T : IEvent
         {
             if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));

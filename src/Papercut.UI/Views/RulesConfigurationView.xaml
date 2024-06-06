@@ -85,6 +85,6 @@
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" />
             </DataGrid.Columns>
         </DataGrid>
-        <xctk:PropertyGrid DockPanel.Dock="Right" Width="Auto" SelectedObject="{Binding SelectedRule}"></xctk:PropertyGrid>
+        <xctk:PropertyGrid DockPanel.Dock="Right" Width="Auto" SelectedObject="{Binding SelectedRule}" />
     </DockPanel>
 </controls:MetroWindow>

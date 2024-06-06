@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,14 @@
 // limitations under the License.
 
 
+using Papercut.Core.Domain.Rules;
+
 namespace Papercut.Rules.Domain.Rules
 {
-    using System.Collections.Generic;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-
     public interface IRuleRepository
     {
-        void SaveRules([NotNull] IList<IRule> rules, string path);
+        void SaveRules(IList<IRule> rules, string path);
 
-        IList<IRule> LoadRules([NotNull] string path);
+        IList<IRule> LoadRules(string path);
     }
 }

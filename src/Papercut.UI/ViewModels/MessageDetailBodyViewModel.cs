@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,38 +16,34 @@
 // limitations under the License.
 
 
+using Caliburn.Micro;
+
+using ICSharpCode.AvalonEdit.Document;
+
+using Papercut.Helpers;
+using Papercut.Views;
+
 namespace Papercut.ViewModels
 {
-    using System;
-
-    using Caliburn.Micro;
-
-    using Helpers;
-
-    using ICSharpCode.AvalonEdit.Document;
-
-    using Serilog;
-
-    using Views;
-
-    public class MessageDetailBodyViewModel : Screen, IMessageDetailItem
+    public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
     {
         readonly ILogger _logger;
-        string _body;
+
+        string? _body;
 
         public MessageDetailBodyViewModel(ILogger logger)
         {
-            _logger = logger;
-            DisplayName = "Body";
+            this._logger = logger;
+            this.DisplayName = "Body";
         }
 
-        public string Body
+        public string? Body
         {
-            get => _body;
+            get => this._body;
             set
             {
-                _body = value;
-                NotifyOfPropertyChange(() => Body);
+                this._body = value;
+                this.NotifyOfPropertyChange(() => this.Body);
             }
         }
 
@@ -57,7 +53,7 @@ namespace Papercut.ViewModels
 
             if (!(view is MessageDetailBodyView typedView))
             {
-                _logger.Error("Unable to locate the MessageDetailBodyView to hook the Text Control");
+                this._logger.Error("Unable to locate the MessageDetailBodyView to hook the Text Control");
                 return;
             }
 

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,17 @@
 // limitations under the License.
 
 
+using System.Collections.Concurrent;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+
+using Autofac;
+
+using Serilog.Configuration;
+using Serilog.Events;
+
 namespace Papercut.AppLayer.LogSinks
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-
-    using Autofac;
-
-    using Papercut.Core.Annotations;
-
-    using Serilog;
-    using Serilog.Configuration;
-    using Serilog.Events;
-
     public class UiLogSinkQueue : ILoggerSettings
     {
         static readonly ConcurrentQueue<LogEvent> _logQueue = new ConcurrentQueue<LogEvent>();
@@ -52,16 +47,14 @@ namespace Papercut.AppLayer.LogSinks
                 showDebug ? LogEventLevel.Debug : LogEventLevel.Information);
         }
 
-        public LogEvent GetLastEvent()
+        public LogEvent? GetLastEvent()
         {
             return _logQueue.TryDequeue(out var log) ? log : null;
         }
 
         public IEnumerable<LogEvent> GetLastEvents()
         {
-            LogEvent logEvent;
-
-            while ((logEvent = this.GetLastEvent()) != null)
+            while (this.GetLastEvent() is { } logEvent)
             {
                yield return logEvent;
             }
@@ -81,12 +74,11 @@ namespace Papercut.AppLayer.LogSinks
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
-            builder.RegisterType<UiLogSinkQueue>().As<ILoggerSettings>().AsSelf()
-                .SingleInstance();
+            builder.RegisterType<UiLogSinkQueue>().As<ILoggerSettings>().AsSelf();
         }
 
         #endregion

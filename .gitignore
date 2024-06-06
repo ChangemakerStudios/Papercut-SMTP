@@ -6,9 +6,7 @@ _ReSharper.Papercut
 Papercut.suo
 Papercut.*.suo
 Papercut.ncrunchsolution
-Papercut.ncrunchsolution.*	  
-/.hg
-/packages
+Papercut.ncrunchsolution.*
 *.hgignore
 *.ide
 deploy/
@@ -18,5 +16,11 @@ graphics/
 /build/tools
 /tools
 out/
-/.vscode
+.vscode/
+.idea/
 *.msi
+node_modules/
+src/Papercut.UI/publish
+src/Papercut.UI/Releases
+publish
+Releases

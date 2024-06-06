@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,44 +16,43 @@
 // limitations under the License.
 
 
+using System;
+using System.Diagnostics;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Threading;
+
+using Caliburn.Micro;
+
+using ICSharpCode.AvalonEdit.Utils;
+
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+
+using Papercut.AppLayer.LogSinks;
+using Papercut.AppLayer.NewVersionCheck;
+using Papercut.AppLayer.Uris;
+using Papercut.Core;
+using Papercut.Core.Domain.Network.Smtp;
+using Papercut.Core.Infrastructure.Async;
+using Papercut.Domain.AppCommands;
+using Papercut.Domain.UiCommands;
+using Papercut.Domain.UiCommands.Commands;
+using Papercut.Helpers;
+using Papercut.Infrastructure.Resources;
 using Papercut.Infrastructure.WebView;
+using Papercut.Properties;
+using Papercut.Rules.Domain.Forwarding;
+using Papercut.Rules.Domain.Relaying;
+using Papercut.Views;
+
+using Serilog.Events;
 
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Reactive.Concurrency;
-    using System.Reactive.Linq;
-    using System.Reflection;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Windows;
-
-    using Caliburn.Micro;
-
-    using ICSharpCode.AvalonEdit.Utils;
-
-    using MahApps.Metro.Controls;
-    using MahApps.Metro.Controls.Dialogs;
-
-    using Papercut.AppLayer.LogSinks;
-    using Papercut.Common.Domain;
-    using Papercut.Core;
-    using Papercut.Core.Domain.Network.Smtp;
-    using Papercut.Domain.AppCommands;
-    using Papercut.Domain.UiCommands;
-    using Papercut.Domain.UiCommands.Commands;
-    using Papercut.Helpers;
-    using Papercut.Infrastructure.Resources;
-    using Papercut.Properties;
-    using Papercut.Rules.Domain.Forwarding;
-    using Papercut.Rules.Domain.Relaying;
-    using Papercut.Views;
-
-    using Serilog.Events;
-
     public class MainViewModel : Conductor<object>,
         IHandle<SmtpServerBindFailedEvent>
     {
@@ -67,13 +66,13 @@ namespace Papercut.ViewModels
 
         private readonly IUiCommandHub _uiCommandHub;
 
-        private readonly WebView2Information _webView2Information;
+        private readonly INewVersionProvider _newVersionProvider;
 
         readonly UiLogSinkQueue _uiLogSinkQueue;
 
         readonly IViewModelWindowManager _viewModelWindowManager;
 
-        public Deque<string> CurrentLogHistory = new Deque<string>();
+        private readonly WebView2Information _webView2Information;
 
         bool _isDeactivated;
 
@@ -81,22 +80,23 @@ namespace Papercut.ViewModels
 
         bool _isLogOpen;
 
+        private string? _upgradeVersion;
+
+        private bool _isWebViewInstalled;
+
         string _logText;
 
-        private int _mainWindowHeight;
-
-        private int _mainWindowWidth;
-
-        MetroWindow _window;
+        MetroWindow? _window;
 
         string _windowTitle = WindowTitleDefault;
 
-        private bool _isWebViewInstalled;
+        public Deque<string> CurrentLogHistory = new();
 
         public MainViewModel(
             IViewModelWindowManager viewModelWindowManager,
             IAppCommandHub appCommandHub,
             IUiCommandHub uiCommandHub,
+            INewVersionProvider newVersionProvider,
             WebView2Information webView2Information,
             ForwardRuleDispatch forwardRuleDispatch,
             Func<MessageListViewModel> messageListViewModelFactory,
@@ -107,6 +107,7 @@ namespace Papercut.ViewModels
             this._viewModelWindowManager = viewModelWindowManager;
             this._appCommandHub = appCommandHub;
             this._uiCommandHub = uiCommandHub;
+            this._newVersionProvider = newVersionProvider;
             this._webView2Information = webView2Information;
             this._forwardRuleDispatch = forwardRuleDispatch;
 
@@ -176,6 +177,19 @@ namespace Papercut.ViewModels
 
         public string Version => $"{AppConstants.ApplicationName} v{this.GetVersion()}";
 
+        public string? UpgradeVersion
+        {
+            get => this._upgradeVersion;
+            set
+            {
+                if (this._upgradeVersion != value)
+                {
+                    this._upgradeVersion = value;
+                    this.NotifyOfPropertyChange(() => this.UpgradeVersion);
+                }
+            }
+        }
+
         public bool IsLogOpen
         {
             get => this._isLogOpen;
@@ -202,36 +216,6 @@ namespace Papercut.ViewModels
             }
         }
 
-        public int MainWindowHeight
-        {
-            get => this._mainWindowHeight;
-            set
-            {
-                if (value == this._mainWindowHeight) return;
-
-                // ignore non-normal window sizes
-                if (this._window.WindowState != WindowState.Normal) return;
-
-                this._mainWindowHeight = value;
-                this.NotifyOfPropertyChange(() => this.MainWindowHeight);
-            }
-        }
-
-        public int MainWindowWidth
-        {
-            get => this._mainWindowWidth;
-            set
-            {
-                if (value == this._mainWindowWidth) return;
-
-                // ignore non-normal window sizes
-                if (this._window.WindowState != WindowState.Normal) return;
-
-                this._mainWindowWidth = value;
-                this.NotifyOfPropertyChange(() => this.MainWindowWidth);
-            }
-        }
-
         public Task HandleAsync(SmtpServerBindFailedEvent message, CancellationToken cancellationToken = default)
         {
             MessageBox.Show(
@@ -243,16 +227,37 @@ namespace Papercut.ViewModels
             return Task.CompletedTask;
         }
 
-        string GetVersion()
+        string? GetVersion()
         {
             var productVersion =
                 FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
 
-            return productVersion.Split('+').FirstOrDefault();
+            return productVersion?.Split('+').FirstOrDefault();
+        }
+
+        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        {
+            this._newVersionProvider.GetLatestVersionAsync(cancellationToken).ToObservable()
+                .Subscribe(
+                    updateInfo =>
+                    {
+                        if (updateInfo != null)
+                        {
+                            this.UpgradeVersion = $"Upgrade available! Click here to upgrade to v{updateInfo.TargetFullRelease.Version}";
+                        }
+                        else
+                        {
+                            this.UpgradeVersion = null;
+                        }
+                    });
+
+            await base.OnActivateAsync(cancellationToken);
         }
 
         public Task ExecuteAsync(ShowMainWindowCommand command, CancellationToken cancellationToken = default)
         {
+            if (this._window == null) return Task.CompletedTask;
+
             if (!this._window.IsVisible) this._window.Show();
 
             if (this._window.WindowState == WindowState.Minimized) this._window.WindowState = WindowState.Normal;
@@ -264,7 +269,10 @@ namespace Papercut.ViewModels
 
             this._window.Focus();
 
-            if (command.SelectMostRecentMessage) this.MessageListViewModel.TryGetValidSelectedIndex();
+            if (command.SelectMostRecentMessage)
+            {
+                this.MessageListViewModel.SelectMostRecentMessage();
+            }
 
             return Task.CompletedTask;
         }
@@ -291,11 +299,13 @@ namespace Papercut.ViewModels
 
             var typedView = view as MainView;
 
+            Debug.Assert(typedView != null, nameof(typedView) + " != null");
+
             if (!this._webView2Information.IsInstalled)
             {
                 this.GetPropertyValues(m => m.LogText)
                     .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
-                    .ObserveOnDispatcher()
+                    .ObserveOn(Dispatcher.CurrentDispatcher)
                     .Subscribe(m =>
                     {
                         typedView.LogPanelNoWebView.AppendText(m);
@@ -303,7 +313,7 @@ namespace Papercut.ViewModels
             }
             else
             {
-                typedView.LogPanel.CoreWebView2InitializationCompleted += (sender, args) =>
+                typedView.LogPanel.CoreWebView2InitializationCompleted += (_, _) =>
                 {
                     this.SetupWebView(typedView.LogPanel);
                 };
@@ -313,11 +323,11 @@ namespace Papercut.ViewModels
         private void SetupWebView(WebView2Base logPanel)
         {
             logPanel.CoreWebView2.DisableEdgeFeatures();
-            logPanel.NavigateToString(GetLogSinkHtml());
+            logPanel.NavigateToString(this.GetLogSinkHtml());
 
             this.GetPropertyValues(m => m.LogText)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(m =>
                 {
                     logPanel.NavigateToString(m);
@@ -359,27 +369,31 @@ namespace Papercut.ViewModels
         {
             this.MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(
-                    m => this.MessageDetailViewModel.LoadMessageEntry(this.MessageListViewModel.SelectedMessage));
+                    _ => this.MessageDetailViewModel.LoadMessageEntry(this.MessageListViewModel.SelectedMessage));
 
             Observable.FromEventPattern<EventHandler, EventArgs>(
                     h => new EventHandler(h),
                     h => this._uiLogSinkQueue.LogEvent += h,
                     h => this._uiLogSinkQueue.LogEvent -= h,
                     TaskPoolScheduler.Default)
-                .Buffer(TimeSpan.FromSeconds(1))
+                .Buffer(TimeSpan.FromSeconds(1)) // this will cause calling the Subscribe method every second.
                 .Select(
-                    s =>
+                    _ =>
                     {
                         return
                             this._uiLogSinkQueue.GetLastEvents()
                                 .Select(e => string.Join(" ", this.RenderLogEventParts(e)))
                                 .ToList();
                     })
-                .ObserveOnDispatcher().Subscribe(
+                .Where(s => s.Any())
+                .ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(
                     o =>
                     {
+                        // If nothing added, return and don't process any data. And don't change LogText which would update the logs WebView2 component.
+                        if(!o.Any()) { return; }
+
                         foreach (var s in o) this.CurrentLogHistory.PushFront(s);
 
                         if (this.CurrentLogHistory.Count > 150)
@@ -423,26 +437,26 @@ namespace Papercut.ViewModels
                     });
 
             this.GetPropertyValues(m => m.IsLogOpen)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(this.SetIsLoading);
 
             this.GetPropertyValues(m => m.IsDeleteAllConfirmOpen)
-                .ObserveOnDispatcher()
+                .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(this.SetIsLoading);
 
-            this._uiCommandHub.OnShowMainWindow.ObserveOnDispatcher()
-                .Subscribe(async c => await this.ExecuteAsync(c));
+            this._uiCommandHub.OnShowMainWindow.ObserveOn(Dispatcher.CurrentDispatcher)
+                .SubscribeAsync(async c => await this.ExecuteAsync(c));
 
-            this._uiCommandHub.OnShowMessage.ObserveOnDispatcher()
-                .Subscribe(async c => await this.ExecuteAsync(c));
+            this._uiCommandHub.OnShowMessage.ObserveOn(Dispatcher.CurrentDispatcher)
+                .SubscribeAsync(async c => await this.ExecuteAsync(c));
 
-            this._uiCommandHub.OnShowOptionWindow.ObserveOnDispatcher()
-                .Subscribe(async c => await this.ExecuteAsync(c));
+            this._uiCommandHub.OnShowOptionWindow.ObserveOn(Dispatcher.CurrentDispatcher)
+                .SubscribeAsync(async c => await this.ExecuteAsync(c));
         }
 
         public void GoToSite()
         {
-            Process.Start("https://github.com/ChangemakerStudios/Papercut-SMTP");
+            new Uri("https://github.com/ChangemakerStudios/Papercut-SMTP").OpenUri();
         }
 
         public void ShowRulesConfiguration()
@@ -514,7 +528,7 @@ namespace Papercut.ViewModels
             progressDialog.SetCancelable(false);
             progressDialog.SetIndeterminate();
 
-            progressDialog.Closed += (sender, args) => this.SetIsLoading(false);
+            progressDialog.Closed += (_, _) => this.SetIsLoading(false);
 
             return progressDialog;
         }
@@ -527,7 +541,7 @@ namespace Papercut.ViewModels
             bool? result = await this._viewModelWindowManager.ShowDialogAsync(forwardViewModel);
             if (result == null || !result.Value) return;
 
-            var progressDialog = await ShowForwardingEmailProgress();
+            var progressDialog = await this.ShowForwardingEmailProgress();
 
             Observable.Start(
                     async () =>
@@ -548,8 +562,8 @@ namespace Papercut.ViewModels
                         return true;
                     },
                     TaskPoolScheduler.Default)
-                .ObserveOnDispatcher()
-                .Subscribe(async b => await progressDialog.CloseAsync());
+                .ObserveOn(Dispatcher.CurrentDispatcher)
+                .SubscribeAsync(async _ => await progressDialog.CloseAsync());
         }
 
         protected override void OnViewAttached(object view, object context)
@@ -562,7 +576,7 @@ namespace Papercut.ViewModels
 
             //_window.Flyouts.FindChild<FlyoutsControl>("LogFlyouts")
 
-            this._window.StateChanged += (sender, args) =>
+            this._window.StateChanged += (_, _) =>
             {
                 if (this._window.WindowState == WindowState.Minimized && Settings.Default.MinimizeToTray)
                 {
@@ -571,7 +585,7 @@ namespace Papercut.ViewModels
                 }
             };
 
-            this._window.Closing += (sender, args) =>
+            this._window.Closing += (_, args) =>
             {
                 if (Application.Current.ShutdownMode == ShutdownMode.OnExplicitShutdown) return;
 
@@ -583,14 +597,14 @@ namespace Papercut.ViewModels
                 }
             };
 
-            this._window.Activated += (sender, args) => this.IsDeactivated = false;
-            this._window.Deactivated += (sender, args) => this.IsDeactivated = true;
+            this._window.Activated += (_, _) => this.IsDeactivated = false;
+            this._window.Deactivated += (_, _) => this.IsDeactivated = true;
 
             // Minimize if set to
             if (Settings.Default.StartMinimized)
             {
                 bool initialWindowActivate = true;
-                this._window.Activated += (sender, args) =>
+                this._window.Activated += (_, _) =>
                 {
                     if (initialWindowActivate)
                     {

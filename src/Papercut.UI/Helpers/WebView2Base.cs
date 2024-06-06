@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,29 +16,27 @@
 // limitations under the License.
 
 
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
+
+using Papercut.Core.Domain.Paths;
+using Papercut.Properties;
+
 namespace Papercut.Helpers
 {
-    using System.Reflection;
-    using System.Runtime.InteropServices;
-
-    using Microsoft.Web.WebView2.Core;
-    using Microsoft.Web.WebView2.Wpf;
-
-    using Papercut.Core.Domain.Paths;
-    using Papercut.Properties;
-
-    using Serilog;
-
     public class WebView2Base : WebView2
     {
         public WebView2Base()
         {
             var webViewUserDataFolder = PathTemplateHelper.RenderPathTemplate(Settings.Default.WebView2UserFolder);
 
-            Log.Information("Setting WebView2 User Data Folder: {UserDataFolder}", webViewUserDataFolder);
-
             this.CreationProperties = new CoreWebView2CreationProperties()
                 { UserDataFolder = webViewUserDataFolder };
+
+            Log.Information("Setting WebView2 User Data Folder: {UserDataFolder}", webViewUserDataFolder);
         }
 
         protected override void DestroyWindowCore(HandleRef hwnd)

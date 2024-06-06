@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,20 @@
 // limitations under the License.
 
 
+using System.Net;
+
 namespace Papercut.Core.Domain.Network
 {
-    using System;
-    using System.Net;
-
     public class EndpointDefinition
     {
         public EndpointDefinition(string address, int port)
         {
-            Address = ParseIpAddress(address);
-            Port = port;
+            this.Address = this.ParseIpAddress(address);
+            this.Port = port;
         }
 
         public IPAddress Address { get; }
+
         public int Port { get; }
 
         public IPEndPoint ToIPEndPoint()
@@ -49,7 +49,7 @@ namespace Papercut.Core.Domain.Network
 
         public override string ToString()
         {
-            return $"{Address}:{Port}";
+            return $"{this.Address}:{this.Port}";
         }
     }
 }

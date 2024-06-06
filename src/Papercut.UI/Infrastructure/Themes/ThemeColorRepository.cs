@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,30 +16,25 @@
 // limitations under the License.
 
 
+using System.Windows.Media;
+
+using Autofac;
+
+using Papercut.Domain.Themes;
+
 namespace Papercut.Infrastructure.Themes
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Windows.Media;
-
-    using Autofac;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Domain.Themes;
-
     public class ThemeColorRepository
     {
         private static List<ThemeColor> ThemeColors { get; } = typeof(Colors)
             .GetProperties()
             .Where(s => !s.Name.Equals("Transparent"))
-            .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)))            
+            .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)!))
             .ToList();
 
         public IReadOnlyCollection<ThemeColor> GetAll() => ThemeColors;
 
-        [CanBeNull]
-        public ThemeColor FirstOrDefaultByName(string name)
+        public ThemeColor? FirstOrDefaultByName(string name)
         {
             return this.GetAll().FirstOrDefault(
                 s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
@@ -53,9 +48,9 @@ namespace Papercut.Infrastructure.Themes
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<ThemeColorRepository>().AsSelf().InstancePerLifetimeScope();
         }

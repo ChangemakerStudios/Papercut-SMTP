@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,15 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using Caliburn.Micro;
+
+using Papercut.Common.Domain;
+using Papercut.Core.Infrastructure.MessageBus;
+
 namespace Papercut.AppLayer.Events
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Caliburn.Micro;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Infrastructure.MessageBus;
-
     public class EventPublishAll : AutofacMessageBus
     {
         private readonly IEventAggregator _eventAggregator;
@@ -42,7 +37,7 @@ namespace Papercut.AppLayer.Events
             this._eventAggregator = eventAggregator;
         }
 
-        public override async Task PublishAsync<T>([NotNull] T eventObject, CancellationToken token)
+        public override async Task PublishAsync<T>(T eventObject, CancellationToken token)
         {
             if (eventObject == null) throw new ArgumentNullException(nameof(eventObject));
 
@@ -50,29 +45,9 @@ namespace Papercut.AppLayer.Events
             await this._eventAggregator.PublishOnUIThreadAsync(eventObject, token);
         }
 
-        protected override Task ExecuteEvent<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
+        protected override async Task HandleAsync<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
         {
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-
-            Execute.BeginOnUIThread(async () =>
-            {
-                try
-                {
-                    await base.ExecuteEvent(eventObject, @event, token);
-
-                    taskCompletionSource.SetResult(true);
-                }
-                catch (OperationCanceledException)
-                {
-                    taskCompletionSource.SetCanceled();
-                }
-                catch (Exception ex)
-                {
-                    taskCompletionSource.SetException(ex);
-                }
-            });
-
-            return taskCompletionSource.Task;
+            await Execute.OnUIThreadAsync(async () => await base.HandleAsync(eventObject, @event, token));
         }
 
         #region Begin Static Container Registrations
@@ -82,9 +57,9 @@ namespace Papercut.AppLayer.Events
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<EventPublishAll>().As<IMessageBus>().InstancePerLifetimeScope();
         }

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,14 @@
 // limitations under the License.
 
 
+using Autofac;
+using Autofac.Util;
+
+using Papercut.Domain.LifecycleHooks;
+using Papercut.Infrastructure.IPComm.Network;
+
 namespace Papercut.AppLayer.IpComm
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using Autofac;
-    using Autofac.Util;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Domain.LifecycleHooks;
-    using Papercut.Infrastructure.IPComm.Network;
-
-    using Serilog;
-
     public class PapercutIpCommManager : Disposable, IAppLifecycleStarted
     {
         readonly ILogger _logger;
@@ -81,9 +75,9 @@ namespace Papercut.AppLayer.IpComm
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<PapercutIpCommManager>().AsImplementedInterfaces()
                 .SingleInstance();

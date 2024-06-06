@@ -8,7 +8,10 @@
              xmlns:cal="http://www.caliburnproject.org"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:Behaviors="clr-namespace:Papercut.AppLayer.Behaviors"
+             xmlns:Behaviors="clr-namespace:Papercut.AppLayer.Behaviors" xmlns:viewmodels="clr-namespace:Papercut.ViewModels"
+             xmlns:Message="clr-namespace:Papercut.Core.Domain.Message;assembly=Papercut.Core"
+             xmlns:Helpers="clr-namespace:Papercut.Helpers"
+             d:DataContext="{d:DesignInstance Type=viewmodels:MessageListViewModel}"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="200"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
@@ -18,6 +21,7 @@
     <b:Interaction.Behaviors>
         <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />
     </b:Interaction.Behaviors>
+
     <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended"
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
@@ -33,7 +37,7 @@
             <Behaviors:DragDropIFile />
         </b:Interaction.Behaviors>
         <ListBox.ItemTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="{x:Type Helpers:MimeMessageEntry}">
                 <Grid ToolTip="{Binding File}" Margin="2"
                       Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}">
                     <Grid.ColumnDefinitions>
@@ -92,8 +96,7 @@
                         <Image
                             Stretch="None"
                             Source="{StaticResource AttachmentIconImageSource}"
-                            Visibility="{Binding Path=HasAttachments, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        ></Image>
+                            Visibility="{Binding Path=HasAttachments, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
                 </Grid>
             </DataTemplate>

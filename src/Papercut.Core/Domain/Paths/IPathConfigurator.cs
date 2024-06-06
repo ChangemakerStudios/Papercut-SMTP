@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,14 +18,11 @@
 
 namespace Papercut.Core.Domain.Paths
 {
-    using System;
-    using System.Collections.Generic;
-
     public interface IPathConfigurator
     {
         string DefaultSavePath { get; }
 
-        IEnumerable<string> LoadPaths { get; }
+        IReadOnlyCollection<string> LoadPaths { get; }
 
         event EventHandler RefreshLoadPath;
     }

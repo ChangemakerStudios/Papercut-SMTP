@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,30 +16,24 @@
 // limitations under the License.
 
 
+using System.Collections.Concurrent;
+using System.Runtime.Caching;
+using Autofac.Util;
+
+using MimeKit;
+
+using Papercut.Common.Extensions;
+using Papercut.Core.Domain.Message;
+
+using Serilog.Events;
+
 namespace Papercut.Message
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Runtime.Caching;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Autofac.Util;
-
-    using MimeKit;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Domain.Message;
-
-    using Serilog;
-    using Serilog.Events;
-
     public class MimeMessageLoader : Disposable
     {
         public static MemoryCache MimeMessageCache;
 
-        private readonly Task[] _backgroundLoaders;
+        private readonly Task _backgroundLoader;
 
         private readonly CancellationTokenSource _cancellationSource;
 
@@ -47,8 +41,9 @@ namespace Papercut.Message
 
         readonly MessageRepository _messageRepository;
 
-        private readonly ConcurrentQueue<MessageLoadRequest> _queue =
-            new ConcurrentQueue<MessageLoadRequest>();
+        private readonly ConcurrentQueue<MessageLoadRequest?> _queue = new();
+
+        private readonly SemaphoreSlim _signal = new(0);
 
         static MimeMessageLoader()
         {
@@ -61,13 +56,13 @@ namespace Papercut.Message
             this._logger = logger.ForContext<MimeMessageLoader>();
             this._cancellationSource = new CancellationTokenSource();
 
-            // run two background loaders
-            this._backgroundLoaders = new[]
-                                      {
-                                          Task.Run(
-                                              this.LoopAsync,
-                                              this._cancellationSource.Token)
-                                      };
+            // run background loader
+            this._backgroundLoader = Task.Factory.StartNew(
+                this.LoopAsync,
+                this._cancellationSource.Token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
+
         }
 
         private async Task LoopAsync()
@@ -76,43 +71,27 @@ namespace Papercut.Message
             {
                 while (!this._cancellationSource.IsCancellationRequested)
                 {
-                    if (this._queue.IsEmpty)
+                    await _signal.WaitAsync(this._cancellationSource.Token);
+
+                    if (this._queue.TryDequeue(out MessageLoadRequest? request) && request is not null)
                     {
-                        await Task.Delay(50, this._cancellationSource.Token);
-                        continue;
-                    }
-
-                    var tasks = new List<Task>();
-
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (this._cancellationSource.IsCancellationRequested)
+                        try
                         {
-                            return;
+                            var message = await this.GetMimeMessageFromCacheAsync(
+                                              request.MessageEntry,
+                                              this._cancellationSource.Token);
+
+                            request.InvokeCallback(message);
                         }
-
-                        if (this._queue.TryDequeue(out MessageLoadRequest request))
+                        catch (Exception e) when (e is not ObjectDisposedException or TaskCanceledException)
                         {
-                            tasks.Add(
-                                this.GetMimeMessageFromCacheAsync(
-                                        request.MessageEntry,
-                                        this._cancellationSource.Token)
-                                    .ContinueWith(
-                                        t =>
-                                        {
-                                            request.InvokeCallback(t.Result);
-                                        }));
-                        }
-                        else
-                        {
-                            break;
+                            this._logger.Warning(e, "Failure loading message information {@MessageEntry}", request.MessageEntry);
                         }
                     }
 
-                    await Task.WhenAll(tasks);
                 }
             }
-            catch (Exception e) when (e is ObjectDisposedException || e is TaskCanceledException)
+            catch (Exception e) when (e is ObjectDisposedException or TaskCanceledException)
             {
                 // no need
             }
@@ -122,11 +101,11 @@ namespace Papercut.Message
         {
             if (disposing)
             {
-                this._cancellationSource.Cancel();
+                await this._cancellationSource.CancelAsync();
 
                 try
                 {
-                    await Task.WhenAll(this._backgroundLoaders);
+                    await this._backgroundLoader;
                 }
                 catch (Exception)
                 {
@@ -137,17 +116,18 @@ namespace Papercut.Message
 
         public void GetMessageCallback(
             MessageEntry messageEntry,
-            Action<MimeMessage> callback)
+            Action<MimeMessage?> callback)
         {
-            this._queue.Enqueue(new MessageLoadRequest(messageEntry, callback));
+            _queue.Enqueue(new MessageLoadRequest(messageEntry, callback));
+            _signal.Release();
         }
 
-        public Task<MimeMessage> GetAsync(MessageEntry messageEntry, CancellationToken token = default)
+        public Task<MimeMessage?> GetAsync(MessageEntry messageEntry, CancellationToken token = default)
         {
             return this.GetMimeMessageFromCacheAsync(messageEntry, token);
         }
 
-        private async Task<MimeMessage> GetMimeMessageFromCacheAsync(MessageEntry messageEntry, CancellationToken token = default)
+        private async Task<MimeMessage?> GetMimeMessageFromCacheAsync(MessageEntry messageEntry, CancellationToken token = default)
         {
             return await MimeMessageCache.GetOrSetAsync(
                 messageEntry.File,
@@ -160,35 +140,30 @@ namespace Papercut.Message
                             messageEntry.File);
                     }
 
-                    using (var message = this._messageRepository.GetMessage(messageEntry))
-                    {
-                        return await MimeMessage.LoadAsync(ParserOptions.Default, message, token);
-                    }
+                    var message = await _messageRepository.GetMessage(messageEntry.File);
+
+                    using var ms = new MemoryStream(message);
+
+                    return await MimeMessage.LoadAsync(ParserOptions.Default, ms, token);
                 },
                 m =>
                 {
                     var policy = new CacheItemPolicy
                                  {
-                                     SlidingExpiration = TimeSpan.FromSeconds(10)
+                                     SlidingExpiration = TimeSpan.FromSeconds(60)
                                  };
 
                     MimeMessageCache.Add(messageEntry.File, m, policy);
                 });
         }
 
-        protected class MessageLoadRequest
+        protected class MessageLoadRequest(MessageEntry messageEntry, Action<MimeMessage?> callback)
         {
-            public MessageLoadRequest(MessageEntry messageEntry, Action<MimeMessage> callback)
-            {
-                this.MessageEntry = messageEntry;
-                this.Callback = callback;
-            }
+            public MessageEntry MessageEntry { get; } = messageEntry;
 
-            public MessageEntry MessageEntry { get; }
+            private Action<MimeMessage?> Callback { get; } = callback;
 
-            private Action<MimeMessage> Callback { get; }
-
-            public void InvokeCallback(MimeMessage mimeMessage)
+            public void InvokeCallback(MimeMessage? mimeMessage)
             {
                 this.Callback.Invoke(mimeMessage);
             }

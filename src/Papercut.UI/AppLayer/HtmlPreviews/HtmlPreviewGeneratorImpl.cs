@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,24 +16,19 @@
 // limitations under the License.
 
 
+using System.IO;
+
+using Autofac;
+
+using MimeKit;
+
+using Papercut.Common.Helper;
+using Papercut.Core.Domain.Application;
+using Papercut.Domain.HtmlPreviews;
+using Papercut.Helpers;
+
 namespace Papercut.AppLayer.HtmlPreviews
 {
-    using System;
-    using System.IO;
-    using System.Text;
-
-    using Autofac;
-
-    using MimeKit;
-
-    using Papercut.Common.Helper;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Application;
-    using Papercut.Domain.HtmlPreviews;
-    using Papercut.Helpers;
-
-    using Serilog;
-
     public class HtmlPreviewGeneratorImpl : IHtmlPreviewGenerator
     {
         readonly IAppMeta _appMeta;
@@ -46,9 +41,9 @@ namespace Papercut.AppLayer.HtmlPreviews
             this._appMeta = appMeta;
         }
 
-        public string GetHtmlPreview(MimeMessage mailMessageEx, string tempDir = null)
+        public string GetHtmlPreview(MimeMessage? mailMessageEx, string? tempDir = null)
         {
-            if (mailMessageEx == null) throw new ArgumentNullException(nameof(mailMessageEx));
+            ArgumentNullException.ThrowIfNull(mailMessageEx);
 
             tempDir = tempDir ?? this.CreateUniqueTempDirectory();
             var visitor = new HtmlPreviewVisitor(tempDir);
@@ -57,13 +52,13 @@ namespace Papercut.AppLayer.HtmlPreviews
             return visitor.HtmlBody;
         }
 
-        public string GetHtmlPreviewFile(MimeMessage mailMessageEx, string tempDir = null)
+        public string? GetHtmlPreviewFile(MimeMessage? mailMessageEx, string? tempDir = null)
         {
             tempDir = tempDir ?? this.CreateUniqueTempDirectory();
 
             var htmlPreview = this.GetHtmlPreview(mailMessageEx, tempDir);
 
-            string htmlFile = Path.Combine(tempDir, "index.html");
+            string? htmlFile = Path.Combine(tempDir, "index.html");
 
             this._logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
 
@@ -94,9 +89,9 @@ namespace Papercut.AppLayer.HtmlPreviews
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<HtmlPreviewGeneratorImpl>().AsImplementedInterfaces()
                 .InstancePerLifetimeScope();

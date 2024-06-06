@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,24 +16,21 @@
 // limitations under the License.
 
 
+using System.Reactive.Linq;
+using System.Windows;
+using System.Windows.Threading;
+
+using Autofac;
+using Autofac.Util;
+
+using Papercut.Common.Domain;
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Infrastructure.Async;
+using Papercut.Core.Infrastructure.Lifecycle;
+using Papercut.Domain.AppCommands;
+
 namespace Papercut.AppLayer.AppCommands
 {
-    using System;
-    using System.Reactive.Linq;
-    using System.Windows;
-    using System.Windows.Threading;
-
-    using Autofac;
-    using Autofac.Util;
-
-    using Papercut.Common.Domain;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Infrastructure.Lifecycle;
-    using Papercut.Domain.AppCommands;
-
-    using Serilog;
-
     public class ShutdownCommandHandler : Disposable, IStartable
     {
         private readonly IAppCommandHub _appCommandHub;
@@ -63,7 +60,7 @@ namespace Papercut.AppLayer.AppCommands
         {
             this._shutdownObservable = this._appCommandHub.OnShutdown
                 .ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(
+                .SubscribeAsync(
                     async @event =>
                     {
                         this._logger.Information("Shutdown Executed {ExitCode}", @event.ExitCode);
@@ -92,9 +89,9 @@ namespace Papercut.AppLayer.AppCommands
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<ShutdownCommandHandler>().AsImplementedInterfaces().SingleInstance();
         }

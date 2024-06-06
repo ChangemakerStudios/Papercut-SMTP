@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,16 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using MimeKit;
+
+using Papercut.Core.Domain.Rules;
+using Papercut.Message;
+using Papercut.Rules.Domain.Relaying;
+
 namespace Papercut.Rules.Domain.Conditional.Forwarding
 {
-    using System;
-
-    using Autofac;
-
-    using MimeKit;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Message;
-    using Papercut.Rules.Domain.Conditional;
-    using Papercut.Rules.Domain.Relaying;
-
-    using Serilog;
-
     public class ConditionalForwardRuleDispatch : BaseRelayRuleDispatch<ConditionalForwardRule>
     {
         public ConditionalForwardRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
@@ -51,7 +45,7 @@ namespace Papercut.Rules.Domain.Conditional.Forwarding
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

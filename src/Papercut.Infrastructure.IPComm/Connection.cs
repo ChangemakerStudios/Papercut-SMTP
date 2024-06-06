@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,35 @@
 // limitations under the License.
 
 
+using System.Net.Sockets;
+
+using Papercut.Infrastructure.IPComm.Protocols;
+
 namespace Papercut.Infrastructure.IPComm
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Sockets;
-    using System.Text;
-    using System.Threading.Tasks;
-
-    using Papercut.Infrastructure.IPComm.Protocols;
-
-    using Serilog;
-
     /// <summary>
     ///     A connection.
     /// </summary>
     public class Connection
     {
         private readonly int _bufferSize = 64;
+
+        #region Constructors and Destructors
+
+        public Connection(int id, Socket client, IProtocol protocol, ILogger logger)
+        {
+            // Initialize members
+            this.Id = id;
+            this.Client = client;
+            this.Protocol = protocol;
+            this.Logger = logger.ForContext("ConnectionId", id);
+            this.Connected = true;
+            this.Encoding = Encoding.UTF8;
+            this.LastActivity = DateTime.Now;
+            this.Protocol.BeginAsync(this).Wait();
+        }
+
+        #endregion
 
         #region Public Events
 
@@ -59,23 +69,6 @@ namespace Papercut.Infrastructure.IPComm
             if (triggerEvent) this.OnConnectionClosed(new EventArgs());
 
             this.Logger.Debug("Connection {ConnectionId} Closed", this.Id);
-        }
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        public Connection(int id, Socket client, IProtocol protocol, ILogger logger)
-        {
-            // Initialize members
-            this.Id = id;
-            this.Client = client;
-            this.Protocol = protocol;
-            this.Logger = logger.ForContext("ConnectionId", id);
-            this.Connected = true;
-            this.Encoding = Encoding.UTF8;
-            this.LastActivity = DateTime.Now;
-            this.Protocol.BeginAsync(this).Wait();
         }
 
         #endregion

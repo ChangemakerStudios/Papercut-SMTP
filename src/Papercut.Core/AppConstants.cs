@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@
 
 namespace Papercut.Core
 {
-    using System;
-    using System.IO;
-
     public static class AppConstants
     {
         public const string ApplicationName = "Papercut SMTP";
@@ -31,7 +28,6 @@ namespace Papercut.Core
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 CompanyName,
                 ApplicationName);
-
 
         public static string UserAppDataDirectory { get; } =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

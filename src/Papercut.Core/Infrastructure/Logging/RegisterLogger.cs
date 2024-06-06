@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,103 +16,126 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Infrastructure.Logging
+using System.Diagnostics;
+
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+
+using AutofacSerilogIntegration;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using Papercut.Core.Domain.Application;
+using Papercut.Core.Domain.Paths;
+using Papercut.Core.Infrastructure.CommandLine;
+
+using Serilog.Configuration;
+using Serilog.Debugging;
+using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
+
+namespace Papercut.Core.Infrastructure.Logging;
+
+/// <summary>
+/// Logging module is pulled into Core
+/// </summary>
+internal sealed class RegisterLogging
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
+    internal static void Register(ContainerBuilder builder)
+    {
+        builder.Register(c =>
+            {
+                var appMeta = c.Resolve<IAppMeta>();
+                var loggingPathConfigurator = c.Resolve<LoggingPathConfigurator>();
 
-    using Autofac;
+                string logFilePath = Path.Combine(
+                    loggingPathConfigurator.DefaultSavePath,
+                    $"{appMeta.AppName}.log");
 
-    using AutofacSerilogIntegration;
+                // support self-logging
+                SelfLog.Enable(s => Console.Error.WriteLine(s));
 
-    using Papercut.Core.Domain.Application;
-    using Papercut.Core.Domain.Paths;
-    using Papercut.Core.Infrastructure.CommandLine;
+                LoggerConfiguration logConfiguration =
+                    new LoggerConfiguration()
+#if DEBUG
+                        .MinimumLevel.Verbose()
+#else
+                        .MinimumLevel.Information()
+#endif
+                        .Enrich.With<EnvironmentEnricher>()
+                        .Enrich.FromLogContext()
+                        .Enrich.WithProperty("AppName", appMeta.AppName)
+                        .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
+                        .Filter.ByExcluding(ExcludeTcpClientDisposeBugException)
 
-    using Serilog;
-    using Serilog.Configuration;
-    using Serilog.Debugging;
-    using Serilog.Events;
+                        .WriteTo.File(logFilePath)
+                        .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(Environment.GetCommandLineArgs().ToArray()));
+
+                if (Debugger.IsAttached)
+                {
+                    logConfiguration.WriteTo.Trace();
+                }
+
+                if (Environment.UserInteractive)
+                {
+                    logConfiguration.WriteTo.Console(theme: AnsiConsoleTheme.Literate);
+                }
+
+                foreach (var configureInstance in c.Resolve<IEnumerable<ILoggerSettings>>().ToList())
+                {
+                    logConfiguration.ReadFrom.Settings(configureInstance);
+                }
+
+                return logConfiguration;
+            })
+            .AsSelf()
+            .SingleInstance();
+
+        builder.Register(
+                c =>
+                {
+                    Log.CloseAndFlush();
+                    Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
+                    return Log.Logger;
+                })
+            .ExternallyOwned()
+            .AutoActivate()
+            .SingleInstance();
+
+        builder.RegisterLogger();
+
+        var serviceCollection = new ServiceCollection();
+
+        serviceCollection.AddLogging(b =>
+        {
+            b.ClearProviders();
+            // lazily use Log.Logger
+            b.AddSerilog(dispose: false);
+        });
+
+        builder.Populate(serviceCollection);
+    }
 
     /// <summary>
-    /// Logging module is pulled into Core
+    /// https://stackoverflow.com/questions/59237011/how-to-avoid-objectdisposed-exception-after-closing-tcpclient
     /// </summary>
-    internal sealed class RegisterLogging
+    /// <param name="e"></param>
+    /// <returns></returns>
+    private static bool ExcludeTcpClientDisposeBugException(LogEvent e)
     {
-        internal static void Register(ContainerBuilder builder)
+        var exception = e.Exception?.InnerException;
+
+        if (exception != null)
         {
-            builder.Register(c =>
-                    {
-                        var appMeta = c.Resolve<IAppMeta>();
-                        var loggingPathConfigurator = c.Resolve<LoggingPathConfigurator>();
-
-                        string logFilePath = Path.Combine(
-                            loggingPathConfigurator.DefaultSavePath,
-                            $"{appMeta.AppName}.log");
-
-                        // support self-logging
-                        SelfLog.Enable(s => Console.Error.WriteLine(s));
-
-                        LoggerConfiguration logConfiguration =
-                            new LoggerConfiguration()
-#if DEBUG
-                                .MinimumLevel.Verbose()
-#else
-                                .MinimumLevel.Information()
-#endif
-                                .Enrich.With<EnvironmentEnricher>()
-                                .Enrich.FromLogContext()
-                                .Enrich.WithProperty("AppName", appMeta.AppName)
-                                .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-                                .Filter.ByExcluding(ExcludeTcpClientDisposeBugException)
-                                .WriteTo.Console()
-                                .WriteTo.File(logFilePath)
-                                .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(Environment.GetCommandLineArgs().ToArray()));
-
-                        foreach (var configureInstance in c.Resolve<IEnumerable<ILoggerSettings>>().ToList())
-                        {
-                            logConfiguration.ReadFrom.Settings(configureInstance);
-                        }
-
-                        return logConfiguration;
-                    })
-                .AsSelf()
-                .SingleInstance();
-
-            builder.Register(
-                    c =>
-                    {
-                        Log.Logger = c.Resolve<LoggerConfiguration>().CreateLogger();
-                        return Log.Logger;
-                    })
-                .AutoActivate()
-                .SingleInstance();
-
-            builder.RegisterLogger();
-        }
-
-        /// <summary>
-        /// https://stackoverflow.com/questions/59237011/how-to-avoid-objectdisposed-exception-after-closing-tcpclient
-        /// </summary>
-        /// <param name="e"></param>
-        /// <returns></returns>
-        private static bool ExcludeTcpClientDisposeBugException(LogEvent e)
-        {
-            var exception = e.Exception?.InnerException;
-
-            if (exception != null)
+            var exceptionText = exception.ToString();
+            if (exceptionText.Contains("System.Net.Sockets.TcpClient.EndConnect") && exceptionText.Contains("System.NullReferenceException: Object reference not set to an instance of an object"))
             {
-                var exceptionText = exception.ToString();
-                if (exceptionText.Contains("System.Net.Sockets.TcpClient.EndConnect") && exceptionText.Contains("System.NullReferenceException: Object reference not set to an instance of an object"))
-                {
-                    // exclude this issue -- it's a known bug
-                    return true;
-                }
+                // exclude this issue -- it's a known bug
+                return true;
             }
-
-            return false;
         }
+
+        return false;
     }
 }

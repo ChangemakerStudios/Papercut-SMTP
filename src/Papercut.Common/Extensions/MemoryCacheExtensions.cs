@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,10 @@
 // limitations under the License.
 
 
+using System.Runtime.Caching;
+
 namespace Papercut.Common.Extensions
 {
-    using System;
-    using System.Runtime.Caching;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Papercut.Core.Annotations;
-
     public static class MemoryCacheExtensions
     {
         #region Constants
@@ -60,10 +55,10 @@ namespace Papercut.Common.Extensions
         #region Public Methods and Operators
 
         public static async Task<T> GetOrSetAsync<T>(
-            [NotNull] this MemoryCache cache,
-            [NotNull] string key,
-            [NotNull] Func<Task<T>> getValue,
-            [NotNull] Action<T> addToCacheFunction)
+            this MemoryCache cache,
+            string key,
+            Func<Task<T>> getValue,
+            Action<T> addToCacheFunction)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (getValue == null) throw new ArgumentNullException(nameof(getValue));
@@ -113,8 +108,7 @@ namespace Papercut.Common.Extensions
         /// <returns>
         ///     The get.
         /// </returns>
-        [NotNull]
-        static SemaphoreSlim GetLockObject([NotNull] string originalKey)
+        static SemaphoreSlim GetLockObject(string originalKey)
         {
             if (originalKey == null) throw new ArgumentNullException(nameof(originalKey));
 

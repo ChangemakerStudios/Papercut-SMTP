@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,18 +16,14 @@
 // limitations under the License.
 
 
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text.RegularExpressions;
+
+using Papercut.Common.Extensions;
+
 namespace Papercut.Common.Helper
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-    using System.Threading;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-
     public static class StringHelpers
     {
         static readonly Regex _upperCaseWordRegex = new Regex("([A-Z]{1,1})[a-z]+", RegexOptions.Singleline);
@@ -43,17 +39,17 @@ namespace Papercut.Common.Helper
             return string.Format(str, args);
         }
 
-        public static bool IsSet([CanBeNull] this string str)
+        public static bool IsSet(this string? str)
         {
             return !string.IsNullOrWhiteSpace(str);
         }
 
-        public static string Join([CanBeNull] this IEnumerable<string> strings, string seperator)
+        public static string Join(this IEnumerable<string>? strings, string separator)
         {
-            return string.Join(seperator, strings.IfNullEmpty());
+            return string.Join(separator, strings.IfNullEmpty());
         }
 
-        public static string ToTitleCase([CanBeNull] this string str, CultureInfo culture = null)
+        public static string? ToTitleCase(this string? str, CultureInfo? culture = null)
         {
             if (str.IsNullOrWhiteSpace())
             {
@@ -63,7 +59,7 @@ namespace Papercut.Common.Helper
             return (culture ?? Thread.CurrentThread.CurrentCulture).TextInfo.ToTitleCase(str);
         }
 
-        public static bool IsNullOrWhiteSpace([CanBeNull] this string str)
+        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? str)
         {
             return string.IsNullOrWhiteSpace(str);
         }
@@ -78,7 +74,7 @@ namespace Papercut.Common.Helper
             var lines = new List<string>();
             var lastIndex = 0;
 	
-            foreach (var match in _upperCaseWordRegex.Matches(str).OfType<Match>().ToList())
+            foreach (var match in _upperCaseWordRegex.Matches(str).ToList())
             {
                 if (match.Index > lastIndex)
                 {
@@ -96,9 +92,9 @@ namespace Papercut.Common.Helper
             return string.Join(" ", lines);
         }
 
-        public static string Truncate([CanBeNull] this string input, int inputLimit, [CanBeNull] string cutOff = "")
+        public static string? Truncate([NotNullIfNotNull(nameof(input))] this string? input, int inputLimit, string? cutOff = "")
         {
-            cutOff = cutOff ?? string.Empty;
+            cutOff ??= string.Empty;
 
             if (string.IsNullOrWhiteSpace(input)) return null;
 

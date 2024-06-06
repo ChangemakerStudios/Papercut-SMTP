@@ -1,34 +1,32 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
+
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+
+using ControlzEx.Theming;
+
+using MahApps.Metro.Controls;
 
 namespace Papercut.Helpers
 {
-    using System;
-    using System.Runtime.InteropServices;
-    using System.Windows;
-    using System.Windows.Controls;
-    using System.Windows.Media;
-
-    using ControlzEx.Theming;
-
-    using MahApps.Metro.Controls;
-
-    using Papercut.Core.Annotations;
-
     public static class UIHelper
     {
         static readonly bool _isAeroEnabled;
@@ -59,7 +57,7 @@ namespace Papercut.Helpers
             if (appStyle != null)
                 SetBorder(resourceDictionary, appStyle.ShowcaseBrush);
 
-            ThemeManager.Current.ThemeChanged += (sender, args) =>
+            ThemeManager.Current.ThemeChanged += (_, args) =>
             {
                 SetBorder(resourceDictionary, args.NewTheme.ShowcaseBrush);
             };
@@ -92,9 +90,9 @@ namespace Papercut.Helpers
             return true;
         }
 
-        public static object GetObjectDataFromPoint([NotNull] this ListBox source, Point point)
+        public static object? GetObjectDataFromPoint(this ListBox source, Point point)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
+            ArgumentNullException.ThrowIfNull(source, nameof(source));
 
             if (source.InputHitTest(point) is UIElement element)
             {
@@ -120,12 +118,12 @@ namespace Papercut.Helpers
             return null;
         }
 
-        public static T FindAncestor<T>(this DependencyObject dependencyObject)
+        public static T? FindAncestor<T>(this DependencyObject dependencyObject)
             where T : DependencyObject
         {
-            if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+            ArgumentNullException.ThrowIfNull(dependencyObject);
 
-            DependencyObject parent = VisualTreeHelper.GetParent(dependencyObject);
+            var parent = VisualTreeHelper.GetParent(dependencyObject);
             if (parent == null) return null;
             var parentT = parent as T;
             return parentT ?? FindAncestor<T>(parent);

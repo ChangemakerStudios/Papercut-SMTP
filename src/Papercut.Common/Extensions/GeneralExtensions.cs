@@ -1,38 +1,33 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License. 
+// limitations under the License.
+
+
+using System.Globalization;
+
+using Papercut.Common.Helper;
 
 namespace Papercut.Common.Extensions
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-
-    using Papercut.Common.Helper;
-    using Papercut.Core.Annotations;
-
     /// <summary>
     ///     The util.
     /// </summary>
     public static class GeneralExtensions
     {
-        public static string AsString(this byte[] bytes, Encoding byteEncoding = null)
+        public static string AsString(this byte[] bytes, Encoding? byteEncoding = null)
         {
             if (bytes == null) throw new ArgumentNullException(nameof(bytes));
 
@@ -40,7 +35,7 @@ namespace Papercut.Common.Extensions
             return byteEncoding.GetString(bytes);
         }
 
-        public static string ToBase64String(this string value, Encoding encoding = null)
+        public static string ToBase64String(this string value, Encoding? encoding = null)
         {
             if (string.IsNullOrEmpty(value)) return string.Empty;
             
@@ -67,7 +62,7 @@ namespace Papercut.Common.Extensions
             return roundedNumber.ToString(CultureInfo.InvariantCulture) + suffixes[place];
         }
 
-        public static string GetOriginalFileName([NotNull] string path, [NotNull] string fileName)
+        public static string? GetOriginalFileName(string path, string fileName)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
@@ -81,7 +76,7 @@ namespace Papercut.Common.Extensions
                     .FirstOrDefault(f => !File.Exists(f));
         }
 
-        static IEnumerable<string> GenerateFormattedFileNames([NotNull] string fileName)
+        static IEnumerable<string> GenerateFormattedFileNames(string fileName)
         {
             if (fileName == null)
                 throw new ArgumentNullException(nameof(fileName));

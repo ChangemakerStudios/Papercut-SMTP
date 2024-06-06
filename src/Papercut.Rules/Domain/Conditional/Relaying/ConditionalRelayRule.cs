@@ -1,41 +1,41 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.ComponentModel;
+
+using Autofac;
+
+using Papercut.Common.Extensions;
+using Papercut.Common.Helper;
+using Papercut.Core.Domain.Rules;
+using Papercut.Rules.Domain.Relaying;
+
 namespace Papercut.Rules.Domain.Conditional.Relaying
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-
-    using Autofac;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Common.Helper;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Rules.Domain.Relaying;
-
     [Serializable]
     public class ConditionalRelayRule : RelayRule, IConditionalRule
     {
-        string _regexBodyMatch;
+        string? _regexBodyMatch;
 
-        string _regexHeaderMatch;
+        string? _regexHeaderMatch;
+
+        [Category("Information")]
+        public override string Type => "Conditional Relay";
 
         [DisplayName("Regex Header Match")]
         public string RegexHeaderMatch
@@ -64,9 +64,6 @@ namespace Papercut.Rules.Domain.Conditional.Relaying
             }
         }
 
-        [Category("Information")]
-        public override string Type => "Conditional Relay";
-
         protected override IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
         {
             return base.GetPropertiesForDescription().Concat(this.GetProperties());
@@ -79,7 +76,7 @@ namespace Papercut.Rules.Domain.Conditional.Relaying
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

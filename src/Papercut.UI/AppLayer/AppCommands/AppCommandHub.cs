@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,15 @@
 // limitations under the License.
 
 
+using System.Reactive.Subjects;
+
+using Autofac;
+using Autofac.Util;
+
+using Papercut.Domain.AppCommands;
+
 namespace Papercut.AppLayer.AppCommands
 {
-    using System;
-    using System.Reactive.Subjects;
-
-    using Autofac;
-    using Autofac.Util;
-
-    using Papercut.Core.Annotations;
-    using Papercut.Domain.AppCommands;
-
     public class AppCommandHub : Disposable, IAppCommandHub
     {
         private readonly Subject<ShutdownCommand> _onShutdown = new Subject<ShutdownCommand>();
@@ -54,9 +52,9 @@ namespace Papercut.AppLayer.AppCommands
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.RegisterType<AppCommandHub>().As<IAppCommandHub>().SingleInstance();
         }

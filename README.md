@@ -10,8 +10,11 @@ If you ever send emails from an application or web site during development, you'
 Papercut SMTP is a 2-in-1 quick email viewer AND built-in SMTP server (designed to receive messages only). Papercut SMTP doesn't enforce any restrictions how you prepare your email, but it allows you to view the whole email-chilada: body, html, headers, attachment down right down to the naughty raw encoded bits. Papercut can be configured to run on startup and sit quietly (minimized in the tray) only providing a notification when a new message has arrived.
 
 ## Download Now
-#### [Latest Release](https://github.com/ChangemakerStudios/Papercut-SMTP/releases)
-Download Papercut.Setup.exe installer.
+### [Download the Papercut.Setup.exe installer](https://github.com/ChangemakerStudios/Papercut-SMTP/releases)
+
+## Requirements
+Papercut SMTP UI Requires the "WebView2" Microsoft shared system component be installed on your system. If you have any problems getting it running go to this site: 
+[WebView2 Download](https://developer.microsoft.com/en-us/microsoft-edge/webview2) and install it.
 
 ## Features
 #### Instant Feedback When New Email Arrives
@@ -26,7 +29,8 @@ Download Papercut.Setup.exe installer.
 ![Logging View](https://changemakerstudios.us/content/images/2020/07/Papercut-Log.png)
 
 ## Papercut SMTP Background Service
-Papercut SMTP has an optional "always on" service to receive emails even when the client is not running. It's installed by default with [Papercut.Setup.exe](https://github.com/ChangemakerStudios/Papercut/releases) -- but can also be installed separately by downloading [Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
+Papercut SMTP has an optional "always on" service to receive emails even when the client is not running. It's installed by default with [Papercut.Setup.exe](https://github.com/ChangemakerStudios/Papercut/releases).
+Alternatively, it can be run in an almost portable way by downloading [Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
 
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

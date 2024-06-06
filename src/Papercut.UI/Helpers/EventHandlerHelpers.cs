@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,29 +16,26 @@
 // limitations under the License.
 
 
+using System.Reactive;
+using System.Reactive.Linq;
+
 namespace Papercut.Helpers
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-
-    using Papercut.Core.Annotations;
-
     public static class EventHandlerHelpers
     {
-        public static IObservable<EventPattern<object>> ToObservable([NotNull] this EventHandler eventHandler)
+        public static IObservable<EventPattern<object>> ToObservable(this EventHandler eventHandler)
         {
-            if (eventHandler == null) throw new ArgumentNullException(nameof(eventHandler));
+            ArgumentNullException.ThrowIfNull(eventHandler);
 
             return Observable.FromEventPattern(
                 a => eventHandler += a,
                 d => eventHandler += d);
         }
 
-        public static IObservable<EventPattern<TArgs>> ToObservable<TArgs>([NotNull] this EventHandler<TArgs> eventHandler)
+        public static IObservable<EventPattern<TArgs>> ToObservable<TArgs>(this EventHandler<TArgs> eventHandler)
             where TArgs : EventArgs
         {
-            if (eventHandler == null) throw new ArgumentNullException(nameof(eventHandler));
+            ArgumentNullException.ThrowIfNull(eventHandler);
 
             return Observable.FromEventPattern<EventHandler<TArgs>, TArgs>(
                 a => eventHandler += a,

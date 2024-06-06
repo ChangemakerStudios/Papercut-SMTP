@@ -1,32 +1,30 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Collections.ObjectModel;
+
+using Caliburn.Micro;
+
+using Papercut.AppLayer.Rules;
+using Papercut.Core.Domain.Rules;
+
 namespace Papercut.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-
-    using Caliburn.Micro;
-
-    using Papercut.AppLayer.Rules;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-
     public class RulesConfigurationViewModel : Screen
     {
         IRule _selectedRule;
@@ -35,56 +33,56 @@ namespace Papercut.ViewModels
 
         public RulesConfigurationViewModel(RuleService ruleService, IEnumerable<IRule> registeredRules)
         {
-            RegisteredRules = new ObservableCollection<IRule>(registeredRules);
-            Rules = ruleService.Rules;
-            Rules.CollectionChanged += (sender, args) =>
+            this.RegisteredRules = new ObservableCollection<IRule>(registeredRules);
+            this.Rules = ruleService.Rules;
+            this.Rules.CollectionChanged += (_, _) =>
             {
-                if (!Rules.Contains(SelectedRule))
+                if (!this.Rules.Contains(this.SelectedRule))
                 {
-                    SelectedRule = null;
+                    this.SelectedRule = null;
                 }
             };
         }
 
         public string WindowTitle
         {
-            get => _windowTitle;
+            get => this._windowTitle;
             set
             {
-                _windowTitle = value;
-                NotifyOfPropertyChange(() => WindowTitle);
+                this._windowTitle = value;
+                this.NotifyOfPropertyChange(() => this.WindowTitle);
             }
         }
 
         public IRule SelectedRule
         {
-            get => _selectedRule;
+            get => this._selectedRule;
             set
             {
-                _selectedRule = value;
-                NotifyOfPropertyChange(() => SelectedRule);
-                NotifyOfPropertyChange(() => HasSelectedRule);
+                this._selectedRule = value;
+                this.NotifyOfPropertyChange(() => this.SelectedRule);
+                this.NotifyOfPropertyChange(() => this.HasSelectedRule);
             }
         }
 
-        public bool HasSelectedRule => _selectedRule != null;
+        public bool HasSelectedRule => this._selectedRule != null;
 
         public ObservableCollection<IRule> RegisteredRules { get; private set; }
 
-        public void AddRule([NotNull] IRule rule)
+        public ObservableCollection<IRule> Rules { get; }
+
+        public void AddRule(IRule rule)
         {
-            if (rule == null) throw new ArgumentNullException(nameof(rule));
+            ArgumentNullException.ThrowIfNull(rule);
 
             var newRule = Activator.CreateInstance(rule.GetType()) as IRule;
-            Rules.Add(newRule);
-            SelectedRule = newRule;
+            this.Rules.Add(newRule);
+            this.SelectedRule = newRule;
         }
 
         public void DeleteRule()
         {
-            if (SelectedRule != null) Rules.Remove(SelectedRule);
+            if (this.SelectedRule != null) this.Rules.Remove(this.SelectedRule);
         }
-
-        public ObservableCollection<IRule> Rules { get; private set; }
     }
 }

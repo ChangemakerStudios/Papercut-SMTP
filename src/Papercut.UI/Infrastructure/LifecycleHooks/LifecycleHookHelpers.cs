@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,34 +16,27 @@
 // limitations under the License.
 
 
+using Autofac;
+
+using Papercut.Common.Extensions;
+using Papercut.Domain.LifecycleHooks;
+
 namespace Papercut.Infrastructure.LifecycleHooks
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using Autofac;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-    using Papercut.Domain.LifecycleHooks;
-
-    using Serilog;
-
     public static class LifecycleHookHelpers
     {
-        public static AppLifecycleActionResultType RunLifecycleHooks<TLifecycle>([NotNull] this ILifetimeScope scope, Func<TLifecycle, AppLifecycleActionResultType> runHook)
+        public static async Task<AppLifecycleActionResultType> RunLifecycleHooks<TLifecycle>(this IComponentContext container, Func<TLifecycle, Task<AppLifecycleActionResultType>> runHook)
             where TLifecycle : IAppLifecycleHook
         {
-            if (scope == null) throw new ArgumentNullException(nameof(scope));
+            ArgumentNullException.ThrowIfNull(container);
 
-            var logger = scope.Resolve<ILogger>();
+            var logger = container.Resolve<ILogger>();
 
-            foreach (var appLifecycleHook in scope.Resolve<IEnumerable<TLifecycle>>().MaybeByOrderable())
+            foreach (var appLifecycleHook in container.Resolve<IEnumerable<TLifecycle>>().MaybeByOrderable())
             {
                 logger.Debug("Running {LifecycleHookType}...", appLifecycleHook.GetType().FullName);
 
-                var result = runHook(appLifecycleHook);
+                var result = await runHook(appLifecycleHook);
 
                 if (result == AppLifecycleActionResultType.Cancel)
                 {
@@ -59,32 +52,32 @@ namespace Papercut.Infrastructure.LifecycleHooks
             return AppLifecycleActionResultType.Continue;
         }
 
-        public static AppLifecycleActionResultType RunPreStart([NotNull] this ILifetimeScope scope)
+        public static async Task<AppLifecycleActionResultType> RunPreExit(this IComponentContext container)
         {
-            if (scope == null) throw new ArgumentNullException(nameof(scope));
+            ArgumentNullException.ThrowIfNull(container);
 
-            return scope.RunLifecycleHooks<IAppLifecyclePreStart>(hook => hook.OnPreStart());
+            return await container.RunLifecycleHooks<IAppLifecyclePreExit>(hook => hook.OnPreExit());
         }
 
-        public static async Task RunStartedAsync([NotNull] this ILifetimeScope scope)
+        public static async Task<AppLifecycleActionResultType> RunPreStart(this IComponentContext container)
         {
-            if (scope == null) throw new ArgumentNullException(nameof(scope));
+            ArgumentNullException.ThrowIfNull(container);
 
-            var logger = scope.Resolve<ILogger>();
+            return await container.RunLifecycleHooks<IAppLifecyclePreStart>(hook => hook.OnPreStart());
+        }
 
-            foreach (var appLifecycleHook in scope.Resolve<IEnumerable<IAppLifecycleStarted>>().MaybeByOrderable())
+        public static async Task RunStarted(this IComponentContext container)
+        {
+            ArgumentNullException.ThrowIfNull(container);
+
+            var logger = container.Resolve<ILogger>();
+
+            foreach (var appLifecycleHook in container.Resolve<IEnumerable<IAppLifecycleStarted>>().MaybeByOrderable())
             {
                 logger.Debug("Running {LifecycleHookType}...", appLifecycleHook.GetType().FullName);
 
                 await appLifecycleHook.OnStartedAsync();
             }
-        }
-
-        public static AppLifecycleActionResultType RunPreExit([NotNull] this ILifetimeScope scope)
-        {
-            if (scope == null) throw new ArgumentNullException(nameof(scope));
-
-            return scope.RunLifecycleHooks<IAppLifecyclePreExit>(hook => hook.OnPreExit());
         }
     }
 }

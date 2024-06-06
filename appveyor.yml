@@ -1,9 +1,13 @@
-os: Visual Studio 2019
+os: Visual Studio 2022
 
 configuration: Release
 
 #before_build:
 #- nuget restore
+
+environment:
+  github-token:
+    secure: rBYTBEqPcPud5JuB2m9/HzHW1VINnL2Zaww9SsKA0LQrth/C1fEryfmbFNuryrVZx1KiSUv1KrRBNE7Oezn8IpjqbJouDK2wDXCIRBiTu+nqP9i8pc3s7+abXxf96Y6l
 
 build_script:
   - cmd: pwsh  .\build.ps1

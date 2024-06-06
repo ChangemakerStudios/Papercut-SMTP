@@ -1,14 +1,14 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2020 Jaben Cargman
-//  
+// Copyright © 2013 - 2024 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//  
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,22 +16,18 @@
 // limitations under the License.
 
 
+using System.ComponentModel;
+
+using Autofac;
+
+using MimeKit;
+
+using Papercut.Common.Extensions;
+using Papercut.Core.Domain.Rules;
+using Papercut.Rules.Domain.Relaying;
+
 namespace Papercut.Rules.Domain.Forwarding
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-
-    using Autofac;
-
-    using MimeKit;
-
-    using Papercut.Common.Extensions;
-    using Papercut.Core.Annotations;
-    using Papercut.Core.Domain.Rules;
-    using Papercut.Rules.Domain.Relaying;
-
     [Serializable]
     public class ForwardRule : RelayRule
     {
@@ -104,7 +100,7 @@ namespace Papercut.Rules.Domain.Forwarding
         /// </summary>
         /// <param name="builder"></param>
         [UsedImplicitly]
-        static void Register([NotNull] ContainerBuilder builder)
+        static void Register(ContainerBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 

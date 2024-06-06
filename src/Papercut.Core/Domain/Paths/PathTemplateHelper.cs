@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2021 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,12 @@
 // limitations under the License.
 
 
+using System.Text.RegularExpressions;
+
+using Papercut.Common.Helper;
+
 namespace Papercut.Core.Domain.Paths
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-
-    using Papercut.Common.Helper;
-
     public class PathTemplateHelper
     {
         static readonly IDictionary<string, string> _templateDictionary;
@@ -35,11 +32,19 @@ namespace Papercut.Core.Domain.Paths
 
         static PathTemplateHelper()
         {
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            if (baseDirectory.EndsWith("current", StringComparison.OrdinalIgnoreCase))
+            {
+                // Velo installation -- nothing should go in the "current" directory
+                baseDirectory = Path.GetDirectoryName(baseDirectory)!;
+            }
+
             _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 {
                     nameof(AppDomain.CurrentDomain.BaseDirectory),
-                    AppDomain.CurrentDomain.BaseDirectory
+                    baseDirectory
                 },
                 { "DataDirectory", AppConstants.AppDataDirectory },
                 { nameof(AppConstants.AppDataDirectory), AppConstants.AppDataDirectory },
@@ -58,22 +63,27 @@ namespace Papercut.Core.Domain.Paths
         {
             var pathKeys =
                 TemplateRegex.Matches(pathTemplate)
-                    .OfType<Match>()
                     .Select(s => s.Groups["name"].Value);
 
-            string renderedPath = pathTemplate;
+            string renderedPath = pathTemplate.Trim();
+
+            bool isUncPath = renderedPath.StartsWith(@"\\");
+
+            if (isUncPath)
+            {
+                // remove \\ from start of path
+                renderedPath = renderedPath.Substring(2, renderedPath.Length - 2);
+            }
 
             foreach (string pathKeyName in pathKeys)
             {
                 if (_templateDictionary.TryGetValue(pathKeyName, out var path))
                 {
-                    renderedPath =
-                        renderedPath.Replace($"%{pathKeyName}%", path)
-                            .Replace(@"\\", @"\");
+                    renderedPath = renderedPath.Replace($"%{pathKeyName}%", path).Replace(@"\\", @"\");
                 }
             }
 
-            return renderedPath;
+            return isUncPath ? $@"\\{renderedPath}" : renderedPath;
         }
     }
 }
