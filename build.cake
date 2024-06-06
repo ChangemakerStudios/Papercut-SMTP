@@ -212,7 +212,6 @@ Task("PackageUI32")
 
 Task("DeployReleases")
     .WithCriteria(AppVeyor.IsRunningOnAppVeyor && isMasterBranch && hasGithubToken)
-    .IsDependentOn("UploadArtifacts")
     .Does(() =>
     {
         Information($"Uploading Papercut SMTP 64-bit Release {GitVersionOutput.BuildServer}");
@@ -302,7 +301,7 @@ Task("BuildAndPackServiceWin32")
 
 Task("UploadArtifacts")
     .WithCriteria(AppVeyor.IsRunningOnAppVeyor)
-    .IsDependentOn("PackageUI32")
+    .IsDependentOn("BuildAndPackServiceWin32")
     .Does(() =>
     {
         foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
@@ -323,8 +322,8 @@ Task("All")
     .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
     .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
     .IsDependentOn("DeployReleases")
-    .IsDependentOn("BuildAndPackServiceWin32")
     .IsDependentOn("BuildAndPackServiceWin64")
+    .IsDependentOn("BuildAndPackServiceWin32")
     .IsDependentOn("UploadArtifacts")
     .OnError(exception => Error(exception));
 
