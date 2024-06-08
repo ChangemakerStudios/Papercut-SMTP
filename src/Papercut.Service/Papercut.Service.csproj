@@ -8,12 +8,16 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ApplicationIcon>icons\Papercut-icon.ico</ApplicationIcon>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	</PropertyGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Web\Assets\**" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Remove="electron.manifest.json" />
+		<None Update="appsettings.Production.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="electron.manifest.json">

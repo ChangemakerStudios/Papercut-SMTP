@@ -18,40 +18,30 @@
 
 using Papercut.Core.Infrastructure.Network;
 
-namespace Papercut.Service.Infrastructure.Paths
+namespace Papercut.Service.Infrastructure.Paths;
+
+public class ReplyWithDefaultMessageSavePathService(MessagePathConfigurator messagePathConfigurator, SmtpServerOptions smtpServerOptions)
+    : IEventHandler<AppProcessExchangeEvent>
 {
-    public class ReplyWithDefaultMessageSavePathService : IEventHandler<AppProcessExchangeEvent>
+    public Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token = default)
     {
-        readonly MessagePathConfigurator _messagePathConfigurator;
+        // respond with the current save path...
+        @event.MessageWritePath = messagePathConfigurator.DefaultSavePath;
 
-        readonly SmtpServerOptions _smtpServerOptions;
+        // share our current ip and port binding for the SMTP server.
+        @event.IP = smtpServerOptions.IP;
+        @event.Port = smtpServerOptions.Port;
 
-        public ReplyWithDefaultMessageSavePathService(MessagePathConfigurator messagePathConfigurator, SmtpServerOptions smtpServerOptions)
-        {
-            this._messagePathConfigurator = messagePathConfigurator;
-            this._smtpServerOptions = smtpServerOptions;
-        }
-
-        public Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token = default)
-        {
-            // respond with the current save path...
-            @event.MessageWritePath = this._messagePathConfigurator.DefaultSavePath;
-
-            // share our current ip and port binding for the SMTP server.
-            @event.IP = this._smtpServerOptions.IP;
-            @event.Port = this._smtpServerOptions.Port;
-
-            return Task.CompletedTask;
-        }
-
-        #region Begin Static Container Registrations
-
-        static void Register(ContainerBuilder builder)
-        {
-            builder.RegisterType<ReplyWithDefaultMessageSavePathService>().AsImplementedInterfaces().AsSelf()
-                .InstancePerLifetimeScope();
-        }
-
-        #endregion
+        return Task.CompletedTask;
     }
+
+    #region Begin Static Container Registrations
+
+    static void Register(ContainerBuilder builder)
+    {
+        builder.RegisterType<ReplyWithDefaultMessageSavePathService>().AsImplementedInterfaces().AsSelf()
+            .InstancePerLifetimeScope();
+    }
+
+    #endregion
 }
