@@ -44,7 +44,7 @@ Optionally you can run Papercut SMTP Service in docker: [Papercut SMTP Service i
 
 #### Run Papercut STMP Server Locally in Docker (HTTP Port :8080 and STMP port 25)
 ```powershell
-docker run --name papercutsmtp -p 8080:80 -p 25:25 changemakerstudiosus/papercut-smtp:latest
+docker run -d -p 8080:80 -p 25:25 changemakerstudiosus/papercut-smtp:latest
 ```
 
 The Papercut-SMTP Server Site will be accessible at http://localhost:8080.
