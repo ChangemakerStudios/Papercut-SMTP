@@ -28,13 +28,22 @@ RUN dotnet publish "Papercut.Service.csproj" -c $BUILD_CONFIGURATION -o /app/pub
 
 FROM base AS final
 
-ARG BUILD_VERSION=1.0.0.0
+ARG BUILD_VERSION
+ARG BUILD_DATE
+ARG VCS_REF
+
+LABEL org.opencontainers.image.title="Papercut SMTP Service" \
+      org.opencontainers.image.description="Papercut SMTP Service is a 2-in-1 quick email viewer AND built-in SMTP server" \
+      org.opencontainers.image.version=${BUILD_VERSION} \
+      org.opencontainers.image.url="https://www.papercut-smtp.com/" \
+      org.opencontainers.image.source="https://github.com/ChangemakerStudios/Papercut-SMTP" \
+      org.opencontainers.image.created=${BUILD_DATE} \
+      org.opencontainers.image.revision=${VCS_REF} \
+      org.opencontainers.image.licenses="Apache License, Version 2.0"
 
 WORKDIR /app
 
 COPY --from=publish /app/publish .
-
-
 
 ENV ASPNETCORE_HTTP_PORTS=80
 
