@@ -27,8 +27,14 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "Papercut.Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+
+ARG BUILD_VERSION=1.0.0.0
+
 WORKDIR /app
+
 COPY --from=publish /app/publish .
+
+
 
 ENV ASPNETCORE_HTTP_PORTS=80
 
