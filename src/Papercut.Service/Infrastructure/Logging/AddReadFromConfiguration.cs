@@ -16,16 +16,25 @@
 // limitations under the License.
 
 
-using AutofacSerilogIntegration;
+using Microsoft.Extensions.Configuration;
 
-namespace Papercut.Service;
+using Serilog.Configuration;
 
-public class PapercutServiceModule : Module
+namespace Papercut.Service.Infrastructure.Logging;
+
+public class AddReadFromConfiguration(IConfiguration configuration) : ILoggerSettings
 {
-    protected override void Load(ContainerBuilder builder)
+    public void Configure(LoggerConfiguration loggerConfiguration)
     {
-        builder.RegisterLogger();
-
-        builder.RegisterStaticMethods(this.ThisAssembly);
+        loggerConfiguration.ReadFrom.Configuration(configuration);
     }
+
+    #region Begin Static Container Registrations
+
+    static void Register(ContainerBuilder builder)
+    {
+        builder.RegisterType<AddReadFromConfiguration>().As<ILoggerSettings>();
+    }
+
+    #endregion
 }
