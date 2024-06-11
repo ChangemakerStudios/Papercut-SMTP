@@ -4,7 +4,7 @@
 Run directly by running `Papercut.Service.exe`.
 - Option 2: Install as a service by enering `Papercut.Service.exe install --sudo` to immediately start the service (you can easily create a shortcut for it and/or save it as `Install-Papercut-Service.bat`).
 
-A listing of all command line options are avaliable by running `Papercut.Service.exe help`.
+A listing of all command line options are available by running `Papercut.Service.exe help`.
 
 ## How to Configure Papercut.Service
 
