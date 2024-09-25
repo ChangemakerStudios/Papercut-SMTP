@@ -31,6 +31,7 @@ using Papercut.AppLayer.Uris;
 using Papercut.Common.Extensions;
 using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Async;
+using Papercut.Core.Infrastructure.Logging;
 using Papercut.Domain.HtmlPreviews;
 using Papercut.Helpers;
 using Papercut.Infrastructure.WebView;
@@ -141,36 +142,27 @@ namespace Papercut.ViewModels
                 }
             };
 
-            void VisibilityChanged(DependencyPropertyChangedEventArgs o)
-            {
-                typedView.htmlView.Visibility = o.NewValue.ToType<bool>()
-                                                    ? Visibility.Visible
-                                                    : Visibility.Collapsed;
-            }
-
             if (!typedView.IsEnabled)
             {
                 typedView.htmlView.Visibility = Visibility.Collapsed;
             }
 
-            Observable.FromEvent<DependencyPropertyChangedEventHandler, DependencyPropertyChangedEventArgs>(
-                    a => (_, e) => a(e),
-                    h => typedView.IsEnabledChanged += h,
-                    h => typedView.IsEnabledChanged -= h)
-                .Throttle(TimeSpan.FromMilliseconds(100))
-                .ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(VisibilityChanged);
+            typedView.IsEnabledChanged += (_, args) =>
+            {
+                typedView.overlay.Visibility = args.NewValue.ToType<bool>()
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            };
 
             typedView.htmlView.ContextMenuOpening += (_, args) =>
             {
                 args.Handled = true;
             };
-
         }
 
         private void SetupWebView(CoreWebView2 coreWebView)
         {
-            coreWebView.NavigationStarting += (_, args) =>
+            coreWebView.NavigationStarting += async (_, args) =>
             {
                 var shouldNavigateToUrl = this.ShouldNavigateToUrl(args.Uri);
 
@@ -182,7 +174,14 @@ namespace Papercut.ViewModels
 
                 // do internal navigation
                 args.Cancel = true;
-                this.DoInternalNavigationAsync(new Uri(args.Uri)).RunAsync();
+
+                try
+                {
+                    await this.DoInternalNavigationAsync(new Uri(args.Uri));
+                }
+                catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to Url {Url}", args.Uri))
+                {
+                }
             };
 
             coreWebView.DisableEdgeFeatures();

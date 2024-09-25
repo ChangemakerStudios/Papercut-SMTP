@@ -9,8 +9,14 @@
              d:DesignHeight="400" d:DesignWidth="400" Background="White">
     <Grid>
         <Border BorderBrush="LightGray" BorderThickness="1">
-            <wv2b:WebView2Base x:Name="htmlView" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto" Height="Auto"
-                               Source="about:blank" />
+            <Grid>
+                <wv2b:WebView2Base x:Name="htmlView" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto" Height="Auto"
+                                   Source="about:blank" />
+                <Grid x:Name="overlay"
+                      Background="White"
+                      Opacity="0.0"
+                      Visibility="Collapsed" />
+            </Grid>
         </Border>
         <RichTextBox VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto" BorderBrush="LightGray" BorderThickness="1"
                      
