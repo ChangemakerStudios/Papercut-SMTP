@@ -16,13 +16,16 @@
 // limitations under the License.
 
 
-using Papercut.Core.Domain.Rules;
+namespace Papercut.Core.Infrastructure.Logging;
 
-namespace Papercut.Rules.Domain.Rules;
-
-public interface IRuleRepository
+public static class LoggerExtensions
 {
-    void SaveRules(IList<IRule> rules, string path);
+    public static bool ErrorWithContext(this ILogger logger, Exception? exception, string message, params object?[] propertyValues)
+    {
+        if (logger == null) throw new ArgumentNullException(nameof(logger));
 
-    IList<IRule> LoadRules(string path);
+        logger.Error(exception, message, propertyValues);
+
+        return true;
+    }
 }

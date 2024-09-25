@@ -16,12 +16,11 @@
 // limitations under the License.
 
 
-namespace Papercut.Rules.Domain.Conditional
-{
-    public interface IConditionalRule
-    {
-        string RegexHeaderMatch { get; set; }
+namespace Papercut.Rules.Domain.Conditional;
 
-        string RegexBodyMatch { get; set; }
-    }
+public interface IConditionalRule
+{
+    string RegexHeaderMatch { get; set; }
+
+    string RegexBodyMatch { get; set; }
 }

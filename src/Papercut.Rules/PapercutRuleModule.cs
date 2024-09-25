@@ -20,13 +20,12 @@ using Autofac;
 
 using Papercut.Core.Infrastructure.Container;
 
-namespace Papercut.Rules
+namespace Papercut.Rules;
+
+public class PapercutRuleModule : Module
 {
-    public class PapercutRuleModule : Module
+    protected override void Load(ContainerBuilder builder)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterStaticMethods(this.ThisAssembly);
-        }
+        builder.RegisterStaticMethods(this.ThisAssembly);
     }
 }

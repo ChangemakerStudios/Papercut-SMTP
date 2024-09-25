@@ -27,69 +27,68 @@ using Autofac.Util;
 using Papercut.Core.Domain.Rules;
 using Papercut.Rules.Domain.Rules;
 
-namespace Papercut.Rules.App
+namespace Papercut.Rules.App;
+
+public class RuleServiceBase : Disposable
 {
-    public class RuleServiceBase : Disposable
+    protected readonly ILogger _logger;
+
+    protected readonly IRuleRepository _ruleRepository;
+
+    readonly Lazy<ObservableCollection<IRule>> _rules;
+
+    protected RuleServiceBase(IRuleRepository ruleRepository, ILogger logger)
     {
-        protected readonly ILogger _logger;
+        this._ruleRepository = ruleRepository;
+        this._logger = logger;
+        this.RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
+        this._rules = new Lazy<ObservableCollection<IRule>>(this.GetRulesCollection);
+    }
 
-        protected readonly IRuleRepository _ruleRepository;
+    public string RuleFileName { get; set; }
 
-        readonly Lazy<ObservableCollection<IRule>> _rules;
+    public ObservableCollection<IRule> Rules => this._rules.Value;
 
-        protected RuleServiceBase(IRuleRepository ruleRepository, ILogger logger)
+    public IObservable<EventPattern<NotifyCollectionChangedEventArgs>> GetRuleChangedObservable(IScheduler? scheduler = null)
+    {
+        return Observable
+            .FromEventPattern<NotifyCollectionChangedEventHandler,
+                NotifyCollectionChangedEventArgs>(
+                h => new NotifyCollectionChangedEventHandler(h),
+                h => this._rules.Value.CollectionChanged += h,
+                h => this._rules.Value.CollectionChanged -= h,
+                scheduler ?? Scheduler.Default);
+    }
+
+    protected virtual ObservableCollection<IRule> GetRulesCollection()
+    {
+        IList<IRule>? loadRules = null;
+
+        try
         {
-            this._ruleRepository = ruleRepository;
-            this._logger = logger;
-            this.RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
-            this._rules = new Lazy<ObservableCollection<IRule>>(this.GetRulesCollection);
+            loadRules = this._ruleRepository.LoadRules(this.RuleFileName);
+        }
+        catch (Exception ex)
+        {
+            this._logger.Warning(ex, "Failed to load rules in file {RuleFileName}", this.RuleFileName);
         }
 
-        public string RuleFileName { get; set; }
+        return new ObservableCollection<IRule>(loadRules ?? new List<IRule>(0));
+    }
 
-        public ObservableCollection<IRule> Rules => this._rules.Value;
-
-        public IObservable<EventPattern<NotifyCollectionChangedEventArgs>> GetRuleChangedObservable(IScheduler? scheduler = null)
+    public void Save()
+    {
+        try
         {
-            return Observable
-                .FromEventPattern<NotifyCollectionChangedEventHandler,
-                    NotifyCollectionChangedEventArgs>(
-                    h => new NotifyCollectionChangedEventHandler(h),
-                    h => this._rules.Value.CollectionChanged += h,
-                    h => this._rules.Value.CollectionChanged -= h,
-                    scheduler ?? Scheduler.Default);
+            this._ruleRepository.SaveRules(this.Rules, this.RuleFileName);
+            this._logger.Information(
+                "Saved {RuleCount} to {RuleFileName}",
+                this.Rules.Count,
+                this.RuleFileName);
         }
-
-        protected virtual ObservableCollection<IRule> GetRulesCollection()
+        catch (Exception ex)
         {
-            IList<IRule>? loadRules = null;
-
-            try
-            {
-                loadRules = this._ruleRepository.LoadRules(this.RuleFileName);
-            }
-            catch (Exception ex)
-            {
-                this._logger.Warning(ex, "Failed to load rules in file {RuleFileName}", this.RuleFileName);
-            }
-
-            return new ObservableCollection<IRule>(loadRules ?? new List<IRule>(0));
-        }
-
-        public void Save()
-        {
-            try
-            {
-                this._ruleRepository.SaveRules(this.Rules, this.RuleFileName);
-                this._logger.Information(
-                    "Saved {RuleCount} to {RuleFileName}",
-                    this.Rules.Count,
-                    this.RuleFileName);
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(ex, "Error saving rules to file {RuleFileName}", this.RuleFileName);
-            }
+            this._logger.Error(ex, "Error saving rules to file {RuleFileName}", this.RuleFileName);
         }
     }
 }

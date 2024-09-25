@@ -45,8 +45,9 @@ using Papercut.Helpers;
 using Papercut.Infrastructure.Resources;
 using Papercut.Infrastructure.WebView;
 using Papercut.Properties;
+using Papercut.Rules.App.Forwarding;
+using Papercut.Rules.App.Relaying;
 using Papercut.Rules.Domain.Forwarding;
-using Papercut.Rules.Domain.Relaying;
 using Papercut.Views;
 
 using Serilog.Events;

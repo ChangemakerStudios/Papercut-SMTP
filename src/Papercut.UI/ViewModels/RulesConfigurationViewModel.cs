@@ -27,7 +27,7 @@ namespace Papercut.ViewModels
 {
     public class RulesConfigurationViewModel : Screen
     {
-        IRule _selectedRule;
+        IRule? _selectedRule;
 
         string _windowTitle = "Rules Configuration";
 
@@ -54,7 +54,7 @@ namespace Papercut.ViewModels
             }
         }
 
-        public IRule SelectedRule
+        public IRule? SelectedRule
         {
             get => this._selectedRule;
             set
@@ -75,9 +75,11 @@ namespace Papercut.ViewModels
         {
             ArgumentNullException.ThrowIfNull(rule);
 
-            var newRule = Activator.CreateInstance(rule.GetType()) as IRule;
-            this.Rules.Add(newRule);
-            this.SelectedRule = newRule;
+            if (Activator.CreateInstance(rule.GetType()) is IRule newRule)
+            {
+                this.Rules.Add(newRule);
+                this.SelectedRule = newRule;
+            }
         }
 
         public void DeleteRule()

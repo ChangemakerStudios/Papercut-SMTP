@@ -19,48 +19,49 @@
 using System.ComponentModel;
 
 using Autofac;
-using Papercut.Common.Extensions;
-using Papercut.Common.Helper;
-using Papercut.Core.Domain.Rules;
-using Papercut.Rules.Domain.Conditional;
-using Papercut.Rules.Domain.Forwarding;
 
-namespace Papercut.Rules.Domain.Conditional.Forwarding;
+using MimeKit;
+
+using Papercut.Common.Extensions;
+using Papercut.Core.Domain.Rules;
+using Papercut.Rules.Domain.Rules;
+
+namespace Papercut.Rules.Domain.Invoking;
 
 [Serializable]
-public class ConditionalForwardRule : ForwardRule, IConditionalRule
+public class InvokeProcessRule : RuleBase
 {
-    string _regexBodyMatch;
-
-    string _regexHeaderMatch;
+    private string? _processToRun;
+    private string? _processCommandLine = @"""%e""";
 
     [Category("Information")]
-    public override string Type => "Conditional Forward";
+    public override string Type => "Invoke Process";
 
-    [DisplayName("Regex Header Match")]
-    public string RegexHeaderMatch
+    [Category("Settings")]
+    [DisplayName("Process to Run")]
+    [Description("Full Path and EXE of Process to Run on New Message")]
+    public string? ProcessToRun
     {
-        get => _regexHeaderMatch;
+        get => _processToRun;
         set
         {
-            if (value == _regexHeaderMatch)
-                return;
-            _regexHeaderMatch = value.IsSet() && value.IsValidRegex() ? value : null; ;
-            OnPropertyChanged(nameof(RegexHeaderMatch));
+            if (value == _processToRun) return;
+            _processToRun = value;
+            OnPropertyChanged(nameof(ProcessToRun));
         }
     }
 
-    [DisplayName("Regex Body Match")]
-    public string RegexBodyMatch
+    [Category("Settings")]
+    [DisplayName("Process Command Line")]
+    [Description(@"Command line to use when running process. Note ""%e"" will be replaced with the full path to the email that triggered the rule.")]
+    public string? ProcessCommandLine
     {
-        get => _regexBodyMatch;
+        get => this._processCommandLine;
         set
         {
-            if (value == _regexBodyMatch)
-                return;
-
-            _regexBodyMatch = value.IsSet() && value.IsValidRegex() ? value : null;
-            OnPropertyChanged(nameof(RegexBodyMatch));
+            if (value == this._processCommandLine) return;
+            this._processCommandLine = value;
+            this.OnPropertyChanged(nameof(this.ProcessCommandLine));
         }
     }
 
@@ -80,7 +81,7 @@ public class ConditionalForwardRule : ForwardRule, IConditionalRule
     {
         if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-        builder.RegisterType<ConditionalForwardRule>().AsSelf().As<IRule>().InstancePerDependency();
+        builder.RegisterType<InvokeProcessRule>().AsSelf().As<IRule>().InstancePerDependency();
     }
 
     #endregion
