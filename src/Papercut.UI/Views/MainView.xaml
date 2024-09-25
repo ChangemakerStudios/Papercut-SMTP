@@ -73,9 +73,11 @@
         <controls:FlyoutsControl>
             <controls:Flyout Header="Log" IsOpen="{Binding IsLogOpen}" Name="LogFlyout" AreAnimationsEnabled="False" Position="Bottom">
                 <Grid>
-                    <Helpers:WebView2Base x:Name="LogPanel" Width="Auto" MinHeight="300" Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfFalse}}"
-                                          Source="about:blank"
-                    />
+                    <Grid Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfFalse}}">
+                        <Helpers:WebView2Base x:Name="LogPanel" Width="Auto" MinHeight="300"
+                                              Source="about:blank"
+                        />
+                    </Grid>
                     <RichTextBox x:Name="LogPanelNoWebView" BorderBrush="LightGray" BorderThickness="1" MaxHeight="300" FontSize="9pt" FontFamily="Consolas, Courier New"
                                  Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfTrue}}">
                         <FlowDocument />

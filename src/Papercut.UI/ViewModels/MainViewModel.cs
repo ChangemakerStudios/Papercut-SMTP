@@ -35,6 +35,7 @@ using MahApps.Metro.Controls.Dialogs;
 using Papercut.AppLayer.LogSinks;
 using Papercut.AppLayer.NewVersionCheck;
 using Papercut.AppLayer.Uris;
+using Papercut.Common.Extensions;
 using Papercut.Core;
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Infrastructure.Async;
@@ -544,27 +545,25 @@ namespace Papercut.ViewModels
 
             var progressDialog = await this.ShowForwardingEmailProgress();
 
-            Observable.Start(
-                    async () =>
-                    {
-                        var forwardRule = new ForwardRule
-                                          {
-                                              FromEmail = forwardViewModel.From,
-                                              ToEmail = forwardViewModel.To
-                                          };
+            try
+            {
+                var forwardRule = new ForwardRule
+                {
+                    FromEmail = forwardViewModel.From,
+                    ToEmail = forwardViewModel.To
+                };
 
-                        forwardRule.PopulateServerFromUri(forwardViewModel.Server);
+                forwardRule.PopulateServerFromUri(forwardViewModel.Server);
 
-                        // send message using relay dispatcher...
-                        await this._forwardRuleDispatch.DispatchAsync(
-                            forwardRule,
-                            this.MessageListViewModel.SelectedMessage);
-
-                        return true;
-                    },
-                    TaskPoolScheduler.Default)
-                .ObserveOn(Dispatcher.CurrentDispatcher)
-                .SubscribeAsync(async _ => await progressDialog.CloseAsync());
+                // send message using relay dispatcher...
+                await this._forwardRuleDispatch.DispatchAsync(
+                    forwardRule,
+                    this.MessageListViewModel.SelectedMessage);
+            }
+            finally
+            {
+                await progressDialog.CloseAsync();
+            }
         }
 
         protected override void OnViewAttached(object view, object context)

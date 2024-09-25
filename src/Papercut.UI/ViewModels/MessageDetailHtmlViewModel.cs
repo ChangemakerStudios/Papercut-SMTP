@@ -147,12 +147,24 @@ namespace Papercut.ViewModels
                 typedView.htmlView.Visibility = Visibility.Collapsed;
             }
 
-            typedView.IsEnabledChanged += (_, args) =>
-            {
-                typedView.overlay.Visibility = args.NewValue.ToType<bool>()
+            Observable
+                .FromEvent<DependencyPropertyChangedEventHandler,
+                    DependencyPropertyChangedEventArgs>(
+                    a => (_, e) => a(e),
+                    h => typedView.IsEnabledChanged += h,
+                    h => typedView.IsEnabledChanged -= h)
+                .Throttle(TimeSpan.FromMilliseconds(100))
+                .Select(args => args.NewValue.ToType<bool>()
                     ? Visibility.Visible
-                    : Visibility.Collapsed;
-            };
+                    : Visibility.Collapsed)
+                .ObserveOn(Dispatcher.CurrentDispatcher)
+                .Subscribe((newState) =>
+                {
+                    if (typedView.htmlView.Visibility != newState)
+                    {
+                        typedView.htmlView.Visibility = newState;
+                    }
+                });
 
             typedView.htmlView.ContextMenuOpening += (_, args) =>
             {
