@@ -30,78 +30,77 @@ using Papercut.Infrastructure.Smtp;
 using Papercut.Message;
 using Papercut.Rules;
 
-namespace Papercut
+namespace Papercut;
+
+[PublicAPI]
+public class PapercutUIModule : Module
 {
-    [PublicAPI]
-    public class PapercutUIModule : Module
+    private IEnumerable<Module> GetPapercutServiceModules()
     {
-        private IEnumerable<Module> GetPapercutServiceModules()
+        yield return new PapercutMessageModule();
+        yield return new PapercutIPCommModule();
+        yield return new PapercutRuleModule();
+        yield return new PapercutSmtpModule();
+    }
+
+    protected override void Load(ContainerBuilder builder)
+    {
+        foreach (var module in this.GetPapercutServiceModules())
         {
-            yield return new PapercutMessageModule();
-            yield return new PapercutIPCommModule();
-            yield return new PapercutRuleModule();
-            yield return new PapercutSmtpModule();
+            builder.RegisterModule(module);
         }
 
-        protected override void Load(ContainerBuilder builder)
-        {
-            foreach (var module in this.GetPapercutServiceModules())
-            {
-                builder.RegisterModule(module);
-            }
+        this.RegisterUI(builder);
 
-            this.RegisterUI(builder);
+        // message watcher is needed for watching
+        builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
 
-            // message watcher is needed for watching
-            builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
+        builder.Register(_ => new ApplicationMeta(AppConstants.ApplicationName))
+            .As<IAppMeta>()
+            .SingleInstance();
 
-            builder.Register(_ => new ApplicationMeta(AppConstants.ApplicationName))
-                .As<IAppMeta>()
-                .SingleInstance();
+        builder.RegisterType<ViewModelWindowManager>()
+            .As<IViewModelWindowManager>()
+            .As<IWindowManager>()
+            .InstancePerLifetimeScope();
 
-            builder.RegisterType<ViewModelWindowManager>()
-                .As<IViewModelWindowManager>()
-                .As<IWindowManager>()
-                .InstancePerLifetimeScope();
+        builder.RegisterType<EventAggregator>()
+            .As<IEventAggregator>()
+            .InstancePerLifetimeScope();
 
-            builder.RegisterType<EventAggregator>()
-                .As<IEventAggregator>()
-                .InstancePerLifetimeScope();
+        builder.RegisterType<SettingPathTemplateProvider>()
+            .AsImplementedInterfaces()
+            .SingleInstance();
 
-            builder.RegisterType<SettingPathTemplateProvider>()
-                .AsImplementedInterfaces()
-                .SingleInstance();
+        builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
 
-            builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
+        builder.RegisterStaticMethods(this.ThisAssembly);
 
-            builder.RegisterStaticMethods(this.ThisAssembly);
+        base.Load(builder);
+    }
 
-            base.Load(builder);
-        }
+    void RegisterUI(ContainerBuilder builder)
+    {
+        //  register view models
+        builder.RegisterAssemblyTypes(this.ThisAssembly)
+            .Where(type => type.Name.EndsWith("ViewModel"))
+            .AsImplementedInterfaces()
+            .AsSelf()
+            .OnActivated(SubscribeEventAggregator)
+            .InstancePerDependency();
 
-        void RegisterUI(ContainerBuilder builder)
-        {
-            //  register view models
-            builder.RegisterAssemblyTypes(this.ThisAssembly)
-                .Where(type => type.Name.EndsWith("ViewModel"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .OnActivated(SubscribeEventAggregator)
-                .InstancePerDependency();
+        //  register views
+        builder.RegisterAssemblyTypes(this.ThisAssembly)
+            .Where(type => type.Name.EndsWith("View"))
+            .AsImplementedInterfaces()
+            .AsSelf()
+            .OnActivated(SubscribeEventAggregator)
+            .InstancePerDependency();
+    }
 
-            //  register views
-            builder.RegisterAssemblyTypes(this.ThisAssembly)
-                .Where(type => type.Name.EndsWith("View"))
-                .AsImplementedInterfaces()
-                .AsSelf()
-                .OnActivated(SubscribeEventAggregator)
-                .InstancePerDependency();
-        }
-
-        static void SubscribeEventAggregator(IActivatedEventArgs<object> e)
-        {
-            // Automatically calls subscribe on activated Windows, Views and ViewModels
-            e.Context.Resolve<IEventAggregator>().SubscribeOnUIThread(e.Instance);
-        }
+    static void SubscribeEventAggregator(IActivatedEventArgs<object> e)
+    {
+        // Automatically calls subscribe on activated Windows, Views and ViewModels
+        e.Context.Resolve<IEventAggregator>().SubscribeOnUIThread(e.Instance);
     }
 }

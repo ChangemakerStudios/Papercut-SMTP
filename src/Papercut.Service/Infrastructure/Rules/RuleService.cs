@@ -16,47 +16,47 @@
 // limitations under the License.
 
 
+using Papercut.Core.Domain.BackgroundTasks;
 using Papercut.Core.Domain.Rules;
+using Papercut.Core.Infrastructure.Logging;
 using Papercut.Rules.App;
 using Papercut.Rules.Domain.Rules;
 
 namespace Papercut.Service.Infrastructure.Rules
 {
     public class RuleService : RuleServiceBase,
-        IEventHandler<RulesUpdatedEvent>,
-        IEventHandler<PapercutClientReadyEvent>,
-        IEventHandler<NewMessageEvent>
+            IEventHandler<RulesUpdatedEvent>,
+            IEventHandler<PapercutClientReadyEvent>,
+            IEventHandler<NewMessageEvent>
     {
-        private readonly CancellationTokenSource _cancellationTokenSource =
-            new CancellationTokenSource();
+        private readonly IBackgroundTaskRunner _backgroundTaskRunner;
+        private readonly IRulesRunner _rulesRunner;
 
-        readonly IRulesRunner _rulesRunner;
-
-        public RuleService(
-            IRuleRepository ruleRepository,
+        public RuleService(IRuleRepository ruleRepository,
+            IBackgroundTaskRunner backgroundTaskRunner,
             ILogger logger,
-            IRulesRunner rulesRunner)
-            : base(ruleRepository, logger)
+            IRulesRunner rulesRunner) : base(ruleRepository, logger)
         {
-            this._rulesRunner = rulesRunner;
+            _backgroundTaskRunner = backgroundTaskRunner;
+            _rulesRunner = rulesRunner;
         }
 
         public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
         {
-            this._logger.Information(
+            _logger.Information(
                 "New Message {MessageFile} Arrived -- Running Rules",
                 @event.NewMessage);
 
-            Task.Run(
-                async () =>
+            _backgroundTaskRunner.QueueBackgroundTask(
+                async (t) =>
                 {
                     try
                     {
-                        await Task.Delay(2000, this._cancellationTokenSource.Token);
-                        await this._rulesRunner.RunAsync(
-                            this.Rules.ToArray(),
+                        await Task.Delay(2000, t);
+                        await _rulesRunner.RunNewMessageRules(
+                            Rules.OfType<INewMessageRule>().ToArray(),
                             @event.NewMessage,
-                            this._cancellationTokenSource.Token);
+                            t);
                     }
                     catch (ObjectDisposedException)
                     {
@@ -64,34 +64,31 @@ namespace Papercut.Service.Infrastructure.Rules
                     catch (TaskCanceledException)
                     {
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Running New Message Rules"))
                     {
-                        Log.Error(ex, "Failure Running Rules");
                     }
-                },
-                this._cancellationTokenSource.Token);
+                });
 
             return Task.CompletedTask;
         }
 
         public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
         {
-            this._logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
+            _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
 
             try
             {
                 // accessing "Rules" forces the collection to be loaded
-                if (this.Rules.Any())
+                if (Rules.Any())
                 {
-                    this._logger.Information(
+                    _logger.Information(
                         "Loaded {RuleCount} from {RuleFileName}",
-                        this.Rules.Count,
-                        this.RuleFileName);
+                        Rules.Count,
+                        RuleFileName);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (_logger.ErrorWithContext(ex, "Error loading rules from file {RuleFileName}", RuleFileName))
             {
-                this._logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
             }
 
             return Task.CompletedTask;
@@ -99,19 +96,11 @@ namespace Papercut.Service.Infrastructure.Rules
 
         public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token = default)
         {
-            this.Rules.Clear();
-            this.Rules.AddRange(@event.Rules);
-            this.Save();
+            Rules.Clear();
+            Rules.AddRange(@event.Rules);
+            Save();
 
             return Task.CompletedTask;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this._cancellationTokenSource.Cancel();
-            }
         }
 
         #region Begin Static Container Registrations

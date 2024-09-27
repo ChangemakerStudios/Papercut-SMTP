@@ -18,11 +18,10 @@
 
 using Papercut.Core.Domain.Message;
 
-namespace Papercut.Core.Domain.Rules
+namespace Papercut.Core.Domain.Rules;
+
+public interface IRuleDispatcher<in TRule>
+    where TRule : IRule
 {
-    public interface IRuleDispatcher<in TRule>
-        where TRule : IRule
-    {
-        Task DispatchAsync(TRule rule, MessageEntry messageEntry, CancellationToken token);
-    }
+    Task DispatchAsync(TRule rule, MessageEntry? messageEntry = null, CancellationToken token = default);
 }

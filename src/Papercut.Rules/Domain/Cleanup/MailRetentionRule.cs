@@ -24,42 +24,27 @@ using Papercut.Common.Extensions;
 using Papercut.Core.Domain.Rules;
 using Papercut.Rules.Domain.Rules;
 
-namespace Papercut.Rules.Domain.Invoking;
+namespace Papercut.Rules.Domain.Cleanup;
 
 [Serializable]
-public class InvokeProcessRule : NewMessageRuleBase
+public class MailRetentionRule : PeriodicBackgroundRuleBase
 {
-    private string? _processToRun;
-    private string? _processCommandLine = @"""%e""";
+    private int _mailRetentionDays = 7;
 
     [Category("Information")]
-    public override string Type => "Invoke Process";
+    public override string Type => "Cleanup Mail";
 
     [Category("Settings")]
-    [DisplayName("Process to Run")]
-    [Description("Full Path and EXE of Process to Run on New Message")]
-    public string? ProcessToRun
+    [DisplayName("Mail Retention in Days")]
+    [Description("Cleanup email thats older then X days old")]
+    public int MailRetentionDays
     {
-        get => _processToRun;
+        get => _mailRetentionDays;
         set
         {
-            if (value == _processToRun) return;
-            _processToRun = value;
-            OnPropertyChanged(nameof(ProcessToRun));
-        }
-    }
-
-    [Category("Settings")]
-    [DisplayName("Process Command Line")]
-    [Description(@"Command line to use when running process. Note ""%e"" will be replaced with the full path to the email that triggered the rule.")]
-    public string? ProcessCommandLine
-    {
-        get => this._processCommandLine;
-        set
-        {
-            if (value == this._processCommandLine) return;
-            this._processCommandLine = value;
-            this.OnPropertyChanged(nameof(this.ProcessCommandLine));
+            if (value == _mailRetentionDays) return;
+            _mailRetentionDays = value;
+            OnPropertyChanged(nameof(MailRetentionDays));
         }
     }
 
@@ -79,7 +64,7 @@ public class InvokeProcessRule : NewMessageRuleBase
     {
         if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-        builder.RegisterType<InvokeProcessRule>().AsSelf().As<IRule>().InstancePerDependency();
+        builder.RegisterType<MailRetentionRule>().AsSelf().As<IRule>().InstancePerDependency();
     }
 
     #endregion

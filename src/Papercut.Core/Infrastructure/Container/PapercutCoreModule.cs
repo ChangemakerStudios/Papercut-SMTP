@@ -19,8 +19,10 @@
 using Autofac;
 
 using Papercut.Common.Domain;
+using Papercut.Core.Domain.BackgroundTasks;
 using Papercut.Core.Domain.Paths;
 using Papercut.Core.Domain.Settings;
+using Papercut.Core.Infrastructure.BackgroundTasks;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Core.Infrastructure.MessageBus;
 
@@ -34,9 +36,7 @@ namespace Papercut.Core.Infrastructure.Container
         {
             RegisterLogging.Register(builder);
 
-            //builder.RegisterType<AutofacServiceProvider>()
-            //    .As<IServiceProvider>()
-            //    .InstancePerLifetimeScope();
+            builder.RegisterType<BackgroundTaskRunner>().As<IBackgroundTaskRunner>().SingleInstance();
 
             // events
             builder.RegisterType<AutofacMessageBus>()

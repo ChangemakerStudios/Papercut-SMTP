@@ -25,139 +25,220 @@ using Papercut.Common.Domain;
 using Papercut.Core.Domain.Rules;
 using Papercut.Core.Infrastructure.Async;
 using Papercut.Domain.BackendService;
+using Papercut.Domain.Events;
 using Papercut.Domain.LifecycleHooks;
 using Papercut.Helpers;
 using Papercut.Message;
 using Papercut.Rules.App;
 using Papercut.Rules.Domain.Rules;
 
-namespace Papercut.AppLayer.Rules
+namespace Papercut.AppLayer.Rules;
+
+public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecyclePreExit, IEventHandler<PapercutServiceStatusEvent>
 {
-    public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecyclePreExit
+    readonly IBackendServiceStatus _backendServiceStatus;
+
+    readonly IMessageBus _messageBus;
+
+    readonly MessageWatcher _messageWatcher;
+
+    readonly IRulesRunner _rulesRunner;
+
+    private IDisposable? _newMessageRuleSubscription;
+
+    private IDisposable? _periodicRuleSubscription;
+
+    private IDisposable? _ruleChangedObservable;
+
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+
+    private readonly Stack<IDisposable> _ruleDisposables = new();
+
+    public RuleService(
+        IRuleRepository ruleRepository,
+        ILogger logger,
+        IBackendServiceStatus backendServiceStatus,
+        MessageWatcher messageWatcher,
+        IRulesRunner rulesRunner,
+        IMessageBus messageBus)
+        : base(ruleRepository, logger)
     {
-        readonly IBackendServiceStatus _backendServiceStatus;
-
-        readonly IMessageBus _messageBus;
-
-        readonly MessageWatcher _messageWatcher;
-
-        readonly IRulesRunner _rulesRunner;
-
-        private IDisposable _rulesObservable;
-
-        public RuleService(
-            IRuleRepository ruleRepository,
-            ILogger logger,
-            IBackendServiceStatus backendServiceStatus,
-            MessageWatcher messageWatcher,
-            IRulesRunner rulesRunner,
-            IMessageBus messageBus)
-            : base(ruleRepository, logger)
-        {
-            this._backendServiceStatus = backendServiceStatus;
-            this._messageWatcher = messageWatcher;
-            this._rulesRunner = rulesRunner;
-            this._messageBus = messageBus;
-        }
-
-        public Task<AppLifecycleActionResultType> OnPreExit()
-        {
-            this.Save();
-
-            return Task.FromResult(AppLifecycleActionResultType.Continue);
-        }
-
-        public async Task OnStartedAsync()
-        {
-            this._logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
-
-            try
-            {
-                // accessing "Rules" forces the collection to be loaded
-                if (this.Rules.Any())
-                {
-                    this._logger.Information(
-                        "Loaded {RuleCount} from {RuleFileName}",
-                        this.Rules.Count,
-                        this.RuleFileName);
-                }
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
-            }
-
-            // rules loaded/updated event
-            await this._messageBus.PublishAsync(new RulesUpdatedEvent(this.Rules.ToArray()));
-
-            this._rulesObservable = this.GetRuleChangedObservable(TaskPoolScheduler.Default)
-                .SubscribeAsync(
-                    async args =>
-                    {
-                        // TODO: here be bugs
-                        if (args.EventArgs.NewItems != null)
-                            this.HookPropertyChangedForRules(
-                                args.EventArgs.NewItems.OfType<IRule>());
-
-                        await this._messageBus.PublishAsync(
-                            new RulesUpdatedEvent(this.Rules.ToArray()));
-                    },
-                    ex => this._logger.Error(ex, "Failure Publishing Rules"));
-
-            this.HookPropertyChangedForRules(this.Rules);
-
-            // the backend service handles rules running if it's online
-            if (!this._backendServiceStatus.IsOnline)
-            {
-                this._logger.Debug("Setting up Rule Dispatcher Observable");
-
-                // observe message watcher and run rules when a new message arrives
-                this._messageWatcher.GetNewMessageObservable(TaskPoolScheduler.Default)
-                    .DelaySubscription(TimeSpan.FromSeconds(1))
-                    .SubscribeAsync(
-                        async e => await this._rulesRunner.RunAsync(
-                                       this.Rules.ToArray(),
-                                       e.EventArgs.NewMessage),
-                        ex => this._logger.Error(ex, "Error Running Rules on New Message"));
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this._rulesObservable?.Dispose();
-            }
-        }
-
-        void HookPropertyChangedForRules(IEnumerable<IRule> rules)
-        {
-            foreach (IRule m in rules)
-            {
-                m.GetPropertyChangedEvents(TaskPoolScheduler.Default)
-                    .SubscribeAsync(
-                        async (_) =>
-                            await this._messageBus.PublishAsync(
-                                new RulesUpdatedEvent(this.Rules.ToArray())),
-                        ex => this._logger.Error(ex, "Error Publishing Rules Updated Event"));
-            }
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<RuleService>().AsSelf().AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
-        }
-
-        #endregion
+        _backendServiceStatus = backendServiceStatus;
+        _messageWatcher = messageWatcher;
+        _rulesRunner = rulesRunner;
+        _messageBus = messageBus;
     }
+
+    public Task<AppLifecycleActionResultType> OnPreExit()
+    {
+        Save();
+
+        return Task.FromResult(AppLifecycleActionResultType.Continue);
+    }
+
+    public async Task OnStartedAsync()
+    {
+        _logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+
+        try
+        {
+            // accessing "Rules" forces the collection to be loaded
+            if (Rules.Any())
+            {
+                _logger.Information(
+                    "Loaded {RuleCount} from {RuleFileName}",
+                    Rules.Count,
+                    RuleFileName);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error loading rules from file {RuleFileName}", RuleFileName);
+        }
+
+        await SetupPropertyChangeObservablesForAllRules();
+
+        // rules loaded/updated event
+        await _messageBus.PublishAsync(new RulesUpdatedEvent(Rules.ToArray()));
+
+        // the backend service handles rules running if it's online
+        if (!_backendServiceStatus.IsOnline)
+        {
+            await SetupRuleObservables();
+        }
+    }
+
+    public async Task HandleAsync(PapercutServiceStatusEvent @event, CancellationToken token = default)
+    {
+        this._logger.Information("Papercut Service is now {NewStatus}",
+            @event.PapercutServiceStatus);
+
+        await this.CleanupRuleSubscriptions();
+        await this.SetupPropertyChangeObservablesForAllRules();
+    }
+
+    private Task SetupRuleObservables()
+    {
+        if (_backendServiceStatus.IsOnline)
+        {
+            return Task.CompletedTask;
+        }
+
+        _ruleChangedObservable = GetRuleChangedObservable(TaskPoolScheduler.Default)
+            .SubscribeAsync(
+                async args =>
+                {
+                    if (args.EventArgs.NewItems != null)
+                    {
+                        await SetupPropertyChangeObservablesForAllRules();
+                    }
+
+                    await _messageBus.PublishAsync(new RulesUpdatedEvent(Rules.ToArray()), _cancellationTokenSource.Token);
+                },
+                ex => _logger.Error(ex, "Failure Publishing Rules"));
+
+        _logger.Debug("Setting up Rule Dispatcher Observable");
+
+        // observe message watcher and run rules when a new message arrives
+        _newMessageRuleSubscription = _messageWatcher.GetNewMessageObservable(TaskPoolScheduler.Default)
+            .DelaySubscription(TimeSpan.FromSeconds(1))
+            .SubscribeAsync(
+                async e => await _rulesRunner.RunNewMessageRules(
+                    Rules.OfType<INewMessageRule>().ToArray(),
+                    e.EventArgs.NewMessage, _cancellationTokenSource.Token),
+                ex => _logger.Error(ex, "Error Running Rules on New Message"));
+
+        _logger.Debug("Setting up Periodic Rule Observable");
+
+        _periodicRuleSubscription = Observable.Interval(TimeSpan.FromMinutes(1), TaskPoolScheduler.Default)
+            .SubscribeAsync(
+                async e => await _rulesRunner.RunPeriodicBackgroundRules(
+                    Rules.OfType<IPeriodicBackgroundRule>().ToArray(), _cancellationTokenSource.Token),
+                ex => _logger.Error(ex, "Error Running Period Rules"));
+
+        return Task.CompletedTask;
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (!disposing) return;
+
+        try
+        {
+            await (this.CleanupRuleSubscriptions(), this.CleanupPropertyChangeSubscriptions());
+        }
+        catch (ObjectDisposedException)
+        {
+            // ignore
+        }
+    }
+
+    private async Task CleanupRuleSubscriptions()
+    {
+        try
+        {
+            await _cancellationTokenSource.CancelAsync();
+
+            _ruleChangedObservable?.Dispose();
+            _newMessageRuleSubscription?.Dispose();
+            _periodicRuleSubscription?.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            // ignore
+        }
+        finally
+        {
+            _cancellationTokenSource.TryReset();
+        }
+    }
+
+    private Task CleanupPropertyChangeSubscriptions()
+    {
+        try
+        {
+            while (this._ruleDisposables.TryPop(out var disposable))
+            {
+                disposable.Dispose();
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // ignore
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task SetupPropertyChangeObservablesForAllRules()
+    {
+        await CleanupPropertyChangeSubscriptions();
+
+        foreach (var m in this.Rules)
+        {
+            _ruleDisposables.Push(m.GetPropertyChangedEvents(TaskPoolScheduler.Default)
+                .SubscribeAsync(
+                    async (_) =>
+                        await _messageBus.PublishAsync(
+                            new RulesUpdatedEvent(Rules.ToArray())),
+                    ex => _logger.Error(ex, "Error Publishing Rules Updated Event")));
+        }
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<RuleService>().AsSelf().AsImplementedInterfaces()
+            .InstancePerLifetimeScope();
+    }
+
+    #endregion
 }

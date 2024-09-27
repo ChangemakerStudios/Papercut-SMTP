@@ -76,7 +76,7 @@ public class RuleRepository : IRuleRepository
         }
     }
 
-    public void SaveRules([NotNull] IList<IRule> rules, string path)
+    public void SaveRules(IList<IRule> rules, string path)
     {
         if (rules == null) throw new ArgumentNullException(nameof(rules));
         if (path == null) throw new ArgumentNullException(nameof(path));
@@ -84,14 +84,14 @@ public class RuleRepository : IRuleRepository
         JsonHelpers.SaveJson(rules, path, setting: this._serializationSettings);
     }
 
-    public IList<IRule> LoadRules([NotNull] string path)
+    public IList<IRule> LoadRules(string path)
     {
         if (path == null) throw new ArgumentNullException(nameof(path));
 
         return JsonHelpers.LoadJson<IList<IRule>>(
             path,
             () => new List<IRule>(0),
-            setting: this._serializationSettings);
+            setting: this._serializationSettings) ?? [];
     }
 
     #region Begin Static Container Registrations
@@ -101,7 +101,7 @@ public class RuleRepository : IRuleRepository
     /// </summary>
     /// <param name="builder"></param>
     [UsedImplicitly]
-    static void Register([NotNull] ContainerBuilder builder)
+    static void Register(ContainerBuilder builder)
     {
         if (builder == null) throw new ArgumentNullException(nameof(builder));
 
@@ -119,32 +119,22 @@ public class RuleRepository : IRuleRepository
         Type ToType { get; }
     }
 
-    internal class NamespaceMigrationImpl : INamespaceMigration
+    internal class NamespaceMigrationImpl(string fromAssembly, string fromType, Type toType)
+        : INamespaceMigration
     {
-        public NamespaceMigrationImpl(string fromAssembly, string fromType, Type toType)
-        {
-            this.FromAssembly = fromAssembly;
-            this.FromType = fromType;
-            this.ToType = toType;
-        }
+        public string FromAssembly { get; } = fromAssembly;
 
-        public string FromAssembly { get; }
+        public string FromType { get; } = fromType;
 
-        public string FromType { get; }
-
-        public Type ToType { get; }
+        public Type ToType { get; } = toType;
     }
 
-    public class NamespaceMigrationSerializationBinder : DefaultSerializationBinder
+    public class NamespaceMigrationSerializationBinder(IEnumerable<INamespaceMigration> migrations)
+        : DefaultSerializationBinder
     {
-        private readonly INamespaceMigration[] _migrations;
+        private readonly INamespaceMigration[] _migrations = migrations.IfNullEmpty().ToArray();
 
-        public NamespaceMigrationSerializationBinder(IEnumerable<INamespaceMigration> migrations)
-        {
-            this._migrations = migrations.IfNullEmpty().ToArray();
-        }
-
-        public override Type BindToType(string assemblyName, string typeName)
+        public override Type BindToType(string? assemblyName, string typeName)
         {
             var migration = this._migrations.SingleOrDefault(p => p.FromAssembly == assemblyName && p.FromType == typeName);
             if(migration != null)

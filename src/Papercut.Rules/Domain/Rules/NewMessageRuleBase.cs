@@ -18,8 +18,6 @@
 
 using System.ComponentModel;
 
-using MimeKit;
-
 using Newtonsoft.Json;
 
 using Papercut.Common.Extensions;
@@ -29,17 +27,12 @@ using Papercut.Core.Domain.Rules;
 namespace Papercut.Rules.Domain.Rules;
 
 [Serializable]
-public abstract class RuleBase : IRule
+public abstract class NewMessageRuleBase : INewMessageRule
 {
     bool _isEnabled;
 
-    protected RuleBase()
-    {
-        this.Id = Guid.NewGuid();
-    }
-
     [Category("Information")]
-    public Guid Id { get; protected set; }
+    public Guid Id { get; protected set; } = Guid.NewGuid();
 
     [Category("State")]
     [Browsable(true)]
