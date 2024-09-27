@@ -18,21 +18,20 @@
 
 using System.Windows;
 
-namespace Papercut.AppLayer.Behaviors
-{
-    public class InteractivityBlurOnDisabled : InteractivityBlurBase<FrameworkElement>
-    {
-        protected override void OnAttached()
-        {
-            base.OnAttached();
-            this.AssociatedObject.IsEnabledChanged += this.AssociatedObjectIsEnabledChanged;
-        }
+namespace Papercut.AppLayer.Behaviors;
 
-        void AssociatedObjectIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            this.AssociatedObject.Effect = this.AssociatedObject.IsEnabled
-                                               ? null
-                                               : this.GetBlurEffect();
-        }
+public class InteractivityBlurOnDisabled : InteractivityBlurBase<FrameworkElement>
+{
+    protected override void OnAttached()
+    {
+        base.OnAttached();
+        this.AssociatedObject.IsEnabledChanged += this.AssociatedObjectIsEnabledChanged;
+    }
+
+    void AssociatedObjectIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        this.AssociatedObject.Effect = this.AssociatedObject.IsEnabled
+            ? null
+            : this.GetBlurEffect();
     }
 }

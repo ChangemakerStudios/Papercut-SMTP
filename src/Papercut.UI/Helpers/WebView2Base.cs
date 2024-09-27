@@ -25,36 +25,35 @@ using Microsoft.Web.WebView2.Wpf;
 using Papercut.Core.Domain.Paths;
 using Papercut.Properties;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public class WebView2Base : WebView2
 {
-    public class WebView2Base : WebView2
+    public WebView2Base()
     {
-        public WebView2Base()
+        var webViewUserDataFolder = PathTemplateHelper.RenderPathTemplate(Settings.Default.WebView2UserFolder);
+
+        this.CreationProperties = new CoreWebView2CreationProperties()
+            { UserDataFolder = webViewUserDataFolder };
+
+        Log.Information("Setting WebView2 User Data Folder: {UserDataFolder}", webViewUserDataFolder);
+    }
+
+    protected override void DestroyWindowCore(HandleRef hwnd)
+    {
+        this.SetVisible(false);
+
+        base.DestroyWindowCore(hwnd);
+    }
+
+    public void SetVisible(bool visible)
+    {
+        if (typeof(WebView2).GetField(
+                    "_coreWebView2Controller",
+                    BindingFlags.Instance | BindingFlags.NonPublic)?
+                .GetValue(this) is CoreWebView2Controller controller)
         {
-            var webViewUserDataFolder = PathTemplateHelper.RenderPathTemplate(Settings.Default.WebView2UserFolder);
-
-            this.CreationProperties = new CoreWebView2CreationProperties()
-                { UserDataFolder = webViewUserDataFolder };
-
-            Log.Information("Setting WebView2 User Data Folder: {UserDataFolder}", webViewUserDataFolder);
-        }
-
-        protected override void DestroyWindowCore(HandleRef hwnd)
-        {
-            this.SetVisible(false);
-
-            base.DestroyWindowCore(hwnd);
-        }
-
-        public void SetVisible(bool visible)
-        {
-            if (typeof(WebView2).GetField(
-                        "_coreWebView2Controller",
-                        BindingFlags.Instance | BindingFlags.NonPublic)?
-                    .GetValue(this) is CoreWebView2Controller controller)
-            {
-                controller.IsVisible = visible;
-            }
+            controller.IsVisible = visible;
         }
     }
 }

@@ -22,39 +22,38 @@ using Autofac;
 
 using Papercut.Domain.Themes;
 
-namespace Papercut.Infrastructure.Themes
+namespace Papercut.Infrastructure.Themes;
+
+public class ThemeColorRepository
 {
-    public class ThemeColorRepository
+    private static List<ThemeColor> ThemeColors { get; } = typeof(Colors)
+        .GetProperties()
+        .Where(s => !s.Name.Equals("Transparent"))
+        .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)!))
+        .ToList();
+
+    public IReadOnlyCollection<ThemeColor> GetAll() => ThemeColors;
+
+    public ThemeColor? FirstOrDefaultByName(string name)
     {
-        private static List<ThemeColor> ThemeColors { get; } = typeof(Colors)
-            .GetProperties()
-            .Where(s => !s.Name.Equals("Transparent"))
-            .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)!))
-            .ToList();
-
-        public IReadOnlyCollection<ThemeColor> GetAll() => ThemeColors;
-
-        public ThemeColor? FirstOrDefaultByName(string name)
-        {
-            return this.GetAll().FirstOrDefault(
-                s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
-                     || s.Description.Equals(name, StringComparison.OrdinalIgnoreCase));
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<ThemeColorRepository>().AsSelf().InstancePerLifetimeScope();
-        }
-
-        #endregion
+        return this.GetAll().FirstOrDefault(
+            s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+                 || s.Description.Equals(name, StringComparison.OrdinalIgnoreCase));
     }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<ThemeColorRepository>().AsSelf().InstancePerLifetimeScope();
+    }
+
+    #endregion
 }

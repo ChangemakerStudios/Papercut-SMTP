@@ -25,62 +25,61 @@ using Autofac;
 using Serilog.Configuration;
 using Serilog.Events;
 
-namespace Papercut.AppLayer.LogSinks
+namespace Papercut.AppLayer.LogSinks;
+
+public class UiLogSinkQueue : ILoggerSettings
 {
-    public class UiLogSinkQueue : ILoggerSettings
+    static readonly ConcurrentQueue<LogEvent> _logQueue = new ConcurrentQueue<LogEvent>();
+
+    public void Configure(LoggerConfiguration loggerConfiguration)
     {
-        static readonly ConcurrentQueue<LogEvent> _logQueue = new ConcurrentQueue<LogEvent>();
-
-        public void Configure(LoggerConfiguration loggerConfiguration)
-        {
-            bool showDebug = false;
+        bool showDebug = false;
 #if DEBUG
-            showDebug = true;
+        showDebug = true;
 #endif
-            loggerConfiguration.WriteTo.Observers(
-                b => b.ObserveOn(TaskPoolScheduler.Default).Subscribe(le =>
-                {
-                    _logQueue.Enqueue(le);
-                    this.OnLogEvent();
-                }),
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                showDebug ? LogEventLevel.Debug : LogEventLevel.Information);
-        }
-
-        public LogEvent? GetLastEvent()
-        {
-            return _logQueue.TryDequeue(out var log) ? log : null;
-        }
-
-        public IEnumerable<LogEvent> GetLastEvents()
-        {
-            while (this.GetLastEvent() is { } logEvent)
+        loggerConfiguration.WriteTo.Observers(
+            b => b.ObserveOn(TaskPoolScheduler.Default).Subscribe(le =>
             {
-               yield return logEvent;
-            }
-        }
-
-        public event EventHandler LogEvent;
-
-        protected virtual void OnLogEvent()
-        {
-            this.LogEvent?.Invoke(this, EventArgs.Empty);
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<UiLogSinkQueue>().As<ILoggerSettings>().AsSelf();
-        }
-
-        #endregion
+                _logQueue.Enqueue(le);
+                this.OnLogEvent();
+            }),
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            showDebug ? LogEventLevel.Debug : LogEventLevel.Information);
     }
+
+    public LogEvent? GetLastEvent()
+    {
+        return _logQueue.TryDequeue(out var log) ? log : null;
+    }
+
+    public IEnumerable<LogEvent> GetLastEvents()
+    {
+        while (this.GetLastEvent() is { } logEvent)
+        {
+            yield return logEvent;
+        }
+    }
+
+    public event EventHandler LogEvent;
+
+    protected virtual void OnLogEvent()
+    {
+        this.LogEvent?.Invoke(this, EventArgs.Empty);
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<UiLogSinkQueue>().As<ILoggerSettings>().AsSelf();
+    }
+
+    #endregion
 }

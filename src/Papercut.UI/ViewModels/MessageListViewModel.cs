@@ -47,415 +47,414 @@ using Papercut.Views;
 
 using ListBox = System.Windows.Controls.ListBox;
 
-namespace Papercut.ViewModels
+namespace Papercut.ViewModels;
+
+using Action = System.Action;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using Screen = Caliburn.Micro.Screen;
+
+public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
 {
-    using Action = System.Action;
-    using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-    using Screen = Caliburn.Micro.Screen;
+    readonly ILogger _logger;
 
-    public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
+    readonly MessageRepository _messageRepository;
+
+    readonly MessageWatcher _messageWatcher;
+
+    readonly MimeMessageLoader _mimeMessageLoader;
+
+    private readonly ExplorerProcessService _explorerProcessService;
+
+    private readonly IUiCommandHub _uiCommandHub;
+
+    bool _isLoading;
+
+    private int? _previousIndex;
+
+    private ListBox _messageListBox;
+
+    public MessageListViewModel(
+        IUiCommandHub uiCommandHub,
+        MessageRepository messageRepository,
+        MessageWatcher messageWatcher,
+        MimeMessageLoader mimeMessageLoader,
+        ExplorerProcessService explorerProcessService,
+        ILogger logger)
     {
-        readonly ILogger _logger;
+        ArgumentNullException.ThrowIfNull(messageRepository);
+        ArgumentNullException.ThrowIfNull(messageWatcher);
+        ArgumentNullException.ThrowIfNull(mimeMessageLoader);
 
-        readonly MessageRepository _messageRepository;
+        this._uiCommandHub = uiCommandHub;
+        this._messageRepository = messageRepository;
+        this._messageWatcher = messageWatcher;
+        this._mimeMessageLoader = mimeMessageLoader;
+        this._explorerProcessService = explorerProcessService;
+        this._logger = logger;
 
-        readonly MessageWatcher _messageWatcher;
+        this.SetupMessages();
+        this.RefreshMessageList();
+    }
 
-        readonly MimeMessageLoader _mimeMessageLoader;
+    public ObservableCollection<MimeMessageEntry> Messages { get; private set; }
 
-        private readonly ExplorerProcessService _explorerProcessService;
+    public ICollectionView MessagesSorted { get; private set; }
 
-        private readonly IUiCommandHub _uiCommandHub;
+    public MimeMessageEntry? SelectedMessage => this.GetSelected().FirstOrDefault();
 
-        bool _isLoading;
+    public string DeleteText => UIStrings.DeleteTextTemplate.RenderTemplate(this);
 
-        private int? _previousIndex;
+    public bool HasSelectedMessage => this.GetSelected().Any();
 
-        private ListBox _messageListBox;
+    public bool HasMessages => this.Messages.Any();
 
-        public MessageListViewModel(
-            IUiCommandHub uiCommandHub,
-            MessageRepository messageRepository,
-            MessageWatcher messageWatcher,
-            MimeMessageLoader mimeMessageLoader,
-            ExplorerProcessService explorerProcessService,
-            ILogger logger)
+    public int SelectedMessageCount => this.GetSelected().Count();
+
+    public string SelectedMessageCountHuman
+    {
+        get
         {
-            ArgumentNullException.ThrowIfNull(messageRepository);
-            ArgumentNullException.ThrowIfNull(messageWatcher);
-            ArgumentNullException.ThrowIfNull(mimeMessageLoader);
+            var count = this.SelectedMessageCount;
 
-            this._uiCommandHub = uiCommandHub;
-            this._messageRepository = messageRepository;
-            this._messageWatcher = messageWatcher;
-            this._mimeMessageLoader = mimeMessageLoader;
-            this._explorerProcessService = explorerProcessService;
-            this._logger = logger;
-
-            this.SetupMessages();
-            this.RefreshMessageList();
-        }
-
-        public ObservableCollection<MimeMessageEntry> Messages { get; private set; }
-
-        public ICollectionView MessagesSorted { get; private set; }
-
-        public MimeMessageEntry? SelectedMessage => this.GetSelected().FirstOrDefault();
-
-        public string DeleteText => UIStrings.DeleteTextTemplate.RenderTemplate(this);
-
-        public bool HasSelectedMessage => this.GetSelected().Any();
-
-        public bool HasMessages => this.Messages.Any();
-
-        public int SelectedMessageCount => this.GetSelected().Count();
-
-        public string SelectedMessageCountHuman
-        {
-            get
+            if (count < 1000) return count.ToString();
+            if (count < 1000000)
             {
-                var count = this.SelectedMessageCount;
-
-                if (count < 1000) return count.ToString();
-                if (count < 1000000)
-                {
-                    return $"{(double)count / 1000:##.#}K";
-                }
+                return $"{(double)count / 1000:##.#}K";
+            }
                 
-                // do I need to support millions? probably not but why not...
-                return $"{(double)count / 1000000:##.##}M";
-            }
+            // do I need to support millions? probably not but why not...
+            return $"{(double)count / 1000000:##.##}M";
         }
+    }
 
-        public bool IsLoading
+    public bool IsLoading
+    {
+        get => this._isLoading;
+        set
         {
-            get => this._isLoading;
-            set
-            {
-                this._isLoading = value;
-                this.NotifyOfPropertyChange(() => this.IsLoading);
-            }
+            this._isLoading = value;
+            this.NotifyOfPropertyChange(() => this.IsLoading);
         }
+    }
 
-        private ListSortDirection SortOrder => Enum.TryParse<ListSortDirection>(Settings.Default.MessageListSortOrder, out var sortOrder)
-                                                   ? sortOrder
-                                                   : ListSortDirection.Ascending;
+    private ListSortDirection SortOrder => Enum.TryParse<ListSortDirection>(Settings.Default.MessageListSortOrder, out var sortOrder)
+        ? sortOrder
+        : ListSortDirection.Ascending;
 
-        public Task HandleAsync(SettingsUpdatedEvent message, CancellationToken token)
+    public Task HandleAsync(SettingsUpdatedEvent message, CancellationToken token)
+    {
+        using (this.MessagesSorted.DeferRefresh())
         {
-            using (this.MessagesSorted.DeferRefresh())
-            {
-                this.MessagesSorted.SortDescriptions.Clear();
-                this.MessagesSorted.SortDescriptions.Add(new SortDescription(nameof(MessageEntry.SortTicks), this.SortOrder));
-            }
-
-            return Task.CompletedTask;
-        }
-
-        MimeMessageEntry? GetMessageByIndex(int index)
-        {
-            return this.MessagesSorted.OfType<MimeMessageEntry>().Skip(index).FirstOrDefault();
-        }
-
-        int? GetIndexOfMessage(MessageEntry? entry)
-        {
-            if (entry == null)
-                return null;
-
-            int index = this.MessagesSorted.OfType<MessageEntry>().FindIndex(m => Equals(entry, m));
-
-            return index == -1 ? null : index;
-        }
-
-        void PushSelectedIndex()
-        {
-            if (this._previousIndex.HasValue)
-            {
-                return;
-            }
-
-            var selectedMessage = this.SelectedMessage;
-
-            if (selectedMessage != null)
-            {
-                this._previousIndex = this.GetIndexOfMessage(selectedMessage);
-            }
-        }
-
-        void PopSelectedIndex()
-        {
-            this._previousIndex = null;
-        }
-
-        void SetupMessages()
-        {
-            this.Messages = new ObservableCollection<MimeMessageEntry>();
-            this.MessagesSorted = CollectionViewSource.GetDefaultView(this.Messages);
+            this.MessagesSorted.SortDescriptions.Clear();
             this.MessagesSorted.SortDescriptions.Add(new SortDescription(nameof(MessageEntry.SortTicks), this.SortOrder));
+        }
 
-            // Begin listening for new messages
-            this._messageWatcher.NewMessage += this.NewMessage;
+        return Task.CompletedTask;
+    }
 
-            Observable.FromEventPattern(
+    MimeMessageEntry? GetMessageByIndex(int index)
+    {
+        return this.MessagesSorted.OfType<MimeMessageEntry>().Skip(index).FirstOrDefault();
+    }
+
+    int? GetIndexOfMessage(MessageEntry? entry)
+    {
+        if (entry == null)
+            return null;
+
+        int index = this.MessagesSorted.OfType<MessageEntry>().FindIndex(m => Equals(entry, m));
+
+        return index == -1 ? null : index;
+    }
+
+    void PushSelectedIndex()
+    {
+        if (this._previousIndex.HasValue)
+        {
+            return;
+        }
+
+        var selectedMessage = this.SelectedMessage;
+
+        if (selectedMessage != null)
+        {
+            this._previousIndex = this.GetIndexOfMessage(selectedMessage);
+        }
+    }
+
+    void PopSelectedIndex()
+    {
+        this._previousIndex = null;
+    }
+
+    void SetupMessages()
+    {
+        this.Messages = new ObservableCollection<MimeMessageEntry>();
+        this.MessagesSorted = CollectionViewSource.GetDefaultView(this.Messages);
+        this.MessagesSorted.SortDescriptions.Add(new SortDescription(nameof(MessageEntry.SortTicks), this.SortOrder));
+
+        // Begin listening for new messages
+        this._messageWatcher.NewMessage += this.NewMessage;
+
+        Observable.FromEventPattern(
                 e => this._messageWatcher.RefreshNeeded += e,
                 e => this._messageWatcher.RefreshNeeded -= e,
                 TaskPoolScheduler.Default)
-                .Throttle(TimeSpan.FromMilliseconds(100))
-                .ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(_ => this.RefreshMessageList());
+            .Throttle(TimeSpan.FromMilliseconds(100))
+            .ObserveOn(Dispatcher.CurrentDispatcher)
+            .Subscribe(_ => this.RefreshMessageList());
 
-            this.Messages.CollectionChanged += this.CollectionChanged;
-        }
+        this.Messages.CollectionChanged += this.CollectionChanged;
+    }
 
-        void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+    void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+    {
+        try
         {
-            try
-            {
-                var notifyOfSelectionChange = new Action(
-                    () =>
-                    {
-                        this.NotifyOfPropertyChange(() => this.HasSelectedMessage);
-                        this.NotifyOfPropertyChange(() => this.SelectedMessageCount);
-                        this.NotifyOfPropertyChange(() => this.SelectedMessage);
-                        this.NotifyOfPropertyChange(() => this.DeleteText);
-                    });
-
-                if (args.NewItems != null)
+            var notifyOfSelectionChange = new Action(
+                () =>
                 {
-                    foreach (MimeMessageEntry m in args.NewItems.OfType<MimeMessageEntry>())
-                    {
-                        m.PropertyChanged += (_, _) => notifyOfSelectionChange();
-                    }
-                }
-
-                notifyOfSelectionChange();
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(ex, "Failure Handling Message Collection Change {@Args}", args);
-            }
-        }
-
-        void AddNewMessage(MessageEntry entry)
-        {
-            var observable = this._mimeMessageLoader.GetObservable(entry);
-
-            observable.ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(
-                message =>
-                {
-                    this._uiCommandHub.ShowBalloonTip(
-                        3500,
-                        "New Message Received",
-                        $"From: {message.From.ToString().Truncate(50, "...")}\r\nSubject: {message.Subject.Truncate(50)}",
-                        ToolTipIcon.Info);
-
-                    this.Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));
-
-                    // handle selection if nothing is selected
-                    this.ValidateSelected();
-                },
-                _ =>
-                {
-                    // NOOP
+                    this.NotifyOfPropertyChange(() => this.HasSelectedMessage);
+                    this.NotifyOfPropertyChange(() => this.SelectedMessageCount);
+                    this.NotifyOfPropertyChange(() => this.SelectedMessage);
+                    this.NotifyOfPropertyChange(() => this.DeleteText);
                 });
-        }
 
-        public int? TryGetValidSelectedIndex(int? previousIndex = null)
-        {
-            int messageCount = this.Messages.Count;
-
-            if (messageCount == 0)
+            if (args.NewItems != null)
             {
-                return null;
-            }
-
-            int? index = null;
-
-            if (previousIndex.HasValue)
-            {
-                index = previousIndex;
-
-                if (index >= messageCount)
+                foreach (MimeMessageEntry m in args.NewItems.OfType<MimeMessageEntry>())
                 {
-                    index = messageCount - 1;
+                    m.PropertyChanged += (_, _) => notifyOfSelectionChange();
                 }
             }
 
-            if (index <= 0 || index >= messageCount)
-            {
-                index = null;
-            }
+            notifyOfSelectionChange();
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Failure Handling Message Collection Change {@Args}", args);
+        }
+    }
 
-            // select the bottom
-            if (!index.HasValue)
+    void AddNewMessage(MessageEntry entry)
+    {
+        var observable = this._mimeMessageLoader.GetObservable(entry);
+
+        observable.ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(
+            message =>
             {
-                if (this.SortOrder == ListSortDirection.Ascending)
+                this._uiCommandHub.ShowBalloonTip(
+                    3500,
+                    "New Message Received",
+                    $"From: {message.From.ToString().Truncate(50, "...")}\r\nSubject: {message.Subject.Truncate(50)}",
+                    ToolTipIcon.Info);
+
+                this.Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));
+
+                // handle selection if nothing is selected
+                this.ValidateSelected();
+            },
+            _ =>
+            {
+                // NOOP
+            });
+    }
+
+    public int? TryGetValidSelectedIndex(int? previousIndex = null)
+    {
+        int messageCount = this.Messages.Count;
+
+        if (messageCount == 0)
+        {
+            return null;
+        }
+
+        int? index = null;
+
+        if (previousIndex.HasValue)
+        {
+            index = previousIndex;
+
+            if (index >= messageCount)
+            {
+                index = messageCount - 1;
+            }
+        }
+
+        if (index <= 0 || index >= messageCount)
+        {
+            index = null;
+        }
+
+        // select the bottom
+        if (!index.HasValue)
+        {
+            if (this.SortOrder == ListSortDirection.Ascending)
+            {
+                index = messageCount - 1;
+            }
+            else
+            {
+                index = 0;
+            }
+        }
+
+        return index;
+    }
+
+    private void SelectMessageByIndex(int index)
+    {
+        this.TrySelectMessage(this.GetMessageByIndex(index));
+    }
+
+    public void OpenMessageFolder()
+    {
+        var folders = this.GetSelected().IfNullEmpty().Select(s => Path.GetDirectoryName(s.File))
+            .WhereNotNull()
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var folder in folders)
+        {
+            this._explorerProcessService.OpenFolder(folder);
+        }
+    }
+
+    public void ValidateSelected()
+    {
+        if (this.SelectedMessageCount != 0 || this.Messages.Count == 0) return;
+
+        var index = this.TryGetValidSelectedIndex(this._previousIndex);
+        if (index.HasValue)
+        {
+            this.SelectMessageByIndex(index.Value);
+        }
+    }
+
+    void NewMessage(object sender, NewMessageEventArgs e)
+    {
+        Execute.OnUIThread(() => this.AddNewMessage(e.NewMessage));
+    }
+
+    public IEnumerable<MimeMessageEntry> GetSelected()
+    {
+        return this.Messages.Where(message => message.IsSelected);
+    }
+
+    public void ClearSelected()
+    {
+        foreach (MimeMessageEntry message in this.GetSelected().ToList())
+        {
+            message.IsSelected = false;
+        }
+    }
+
+    public void DeleteAll()
+    {
+        this.ClearSelected();
+        this.DeleteMessages(this.Messages.ToList());
+    }
+
+    public void DeleteSelected()
+    {
+        // Lock to prevent rapid clicking issues
+        this.PushSelectedIndex();
+
+        var selectedMessageEntries = this.GetSelected().ToList();
+
+        this.DeleteMessages(selectedMessageEntries);
+    }
+
+    private void TrySelectMessage(MimeMessageEntry? message)
+    {
+        if (message != null)
+        {
+            message.IsSelected = true;
+            this._messageListBox?.ScrollIntoView(message);
+        }
+    }
+
+    private List<string> DeleteMessages(List<MimeMessageEntry> selectedMessageEntries)
+    {
+        List<string> failedEntries =
+            selectedMessageEntries.Select(
+                entry =>
                 {
-                    index = messageCount - 1;
-                }
-                else
-                {
-                    index = 0;
-                }
-            }
-
-            return index;
-        }
-
-        private void SelectMessageByIndex(int index)
-        {
-            this.TrySelectMessage(this.GetMessageByIndex(index));
-        }
-
-        public void OpenMessageFolder()
-        {
-            var folders = this.GetSelected().IfNullEmpty().Select(s => Path.GetDirectoryName(s.File))
-                .WhereNotNull()
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var folder in folders)
-            {
-                this._explorerProcessService.OpenFolder(folder);
-            }
-        }
-
-        public void ValidateSelected()
-        {
-            if (this.SelectedMessageCount != 0 || this.Messages.Count == 0) return;
-
-            var index = this.TryGetValidSelectedIndex(this._previousIndex);
-            if (index.HasValue)
-            {
-                this.SelectMessageByIndex(index.Value);
-            }
-        }
-
-        void NewMessage(object sender, NewMessageEventArgs e)
-        {
-            Execute.OnUIThread(() => this.AddNewMessage(e.NewMessage));
-        }
-
-        public IEnumerable<MimeMessageEntry> GetSelected()
-        {
-            return this.Messages.Where(message => message.IsSelected);
-        }
-
-        public void ClearSelected()
-        {
-            foreach (MimeMessageEntry message in this.GetSelected().ToList())
-            {
-                message.IsSelected = false;
-            }
-        }
-
-        public void DeleteAll()
-        {
-            this.ClearSelected();
-            this.DeleteMessages(this.Messages.ToList());
-        }
-
-        public void DeleteSelected()
-        {
-            // Lock to prevent rapid clicking issues
-            this.PushSelectedIndex();
-
-            var selectedMessageEntries = this.GetSelected().ToList();
-
-            this.DeleteMessages(selectedMessageEntries);
-        }
-
-        private void TrySelectMessage(MimeMessageEntry? message)
-        {
-            if (message != null)
-            {
-                message.IsSelected = true;
-                this._messageListBox?.ScrollIntoView(message);
-            }
-        }
-
-        private List<string> DeleteMessages(List<MimeMessageEntry> selectedMessageEntries)
-        {
-            List<string> failedEntries =
-                selectedMessageEntries.Select(
-                    entry =>
+                    try
                     {
-                        try
-                        {
-                            this._messageRepository.DeleteMessage(entry);
-                            return null;
-                        }
-                        catch (Exception ex)
-                        {
-                            this._logger.Error(
-                                ex,
-                                "Failure Deleting Message {EmailMessageFile}",
-                                entry.File);
+                        this._messageRepository.DeleteMessage(entry);
+                        return null;
+                    }
+                    catch (Exception ex)
+                    {
+                        this._logger.Error(
+                            ex,
+                            "Failure Deleting Message {EmailMessageFile}",
+                            entry.File);
 
-                            return ex.Message;
-                        }
-                    }).Where(f => f != null).ToList()!;
+                        return ex.Message;
+                    }
+                }).Where(f => f != null).ToList()!;
 
-            if (failedEntries.Any())
-            {
-                this._uiCommandHub.ShowMessage(
-                    string.Join("\r\n", failedEntries),
-                    $"Failed to Delete Message{(failedEntries.Count > 1 ? "s" : string.Empty)}");
-            }
-
-            return failedEntries;
+        if (failedEntries.Any())
+        {
+            this._uiCommandHub.ShowMessage(
+                string.Join("\r\n", failedEntries),
+                $"Failed to Delete Message{(failedEntries.Count > 1 ? "s" : string.Empty)}");
         }
 
-        public void MessageListKeyDown(KeyEventArgs e)
+        return failedEntries;
+    }
+
+    public void MessageListKeyDown(KeyEventArgs e)
+    {
+        if (e.Key != Key.Delete)
+            return;
+
+        this.DeleteSelected();
+    }
+
+    public void RefreshMessageList()
+    {
+        this.PushSelectedIndex();
+
+        List<MessageEntry> messageEntries = this._messageRepository.LoadMessages()
+            .ToList();
+
+        List<MimeMessageEntry> toAdd =
+            messageEntries.Except(this.Messages)
+                .OrderBy(s => s.FileSize)
+                .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
+                .ToList();
+
+        var toDelete = this.Messages.Except(messageEntries)
+            .OfType<MimeMessageEntry>().ToList();
+
+        toDelete.ForEach(m => this.Messages.Remove(m));
+        this.Messages.AddRange(toAdd);
+
+        this.MessagesSorted.Refresh();
+        this.ValidateSelected();
+        this.PopSelectedIndex();
+    }
+
+    protected override void OnViewLoaded(object view)
+    {
+        base.OnViewLoaded(view);
+
+        if (view is MessageListView typedView)
         {
-            if (e.Key != Key.Delete)
-                return;
-
-            this.DeleteSelected();
-        }
-
-        public void RefreshMessageList()
-        {
-            this.PushSelectedIndex();
-
-            List<MessageEntry> messageEntries = this._messageRepository.LoadMessages()
-                    .ToList();
-
-            List<MimeMessageEntry> toAdd =
-                messageEntries.Except(this.Messages)
-                    .OrderBy(s => s.FileSize)
-                    .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
-                    .ToList();
-
-            var toDelete = this.Messages.Except(messageEntries)
-                .OfType<MimeMessageEntry>().ToList();
-
-            toDelete.ForEach(m => this.Messages.Remove(m));
-            this.Messages.AddRange(toAdd);
-
-            this.MessagesSorted.Refresh();
-            this.ValidateSelected();
-            this.PopSelectedIndex();
-        }
-
-        protected override void OnViewLoaded(object view)
-        {
-            base.OnViewLoaded(view);
-
-            if (view is MessageListView typedView)
-            {
-                this._messageListBox = typedView.MessagesList;
+            this._messageListBox = typedView.MessagesList;
     
-                // maybe scroll to selected
-                var mimeMessageEntry = this.SelectedMessage;
-                if (mimeMessageEntry != null) 
-                    this._messageListBox.ScrollIntoView(mimeMessageEntry);
-            }
+            // maybe scroll to selected
+            var mimeMessageEntry = this.SelectedMessage;
+            if (mimeMessageEntry != null) 
+                this._messageListBox.ScrollIntoView(mimeMessageEntry);
         }
+    }
 
-        public void SelectMostRecentMessage()
-        {
-            this.ClearSelected();
-            this.TrySelectMessage(this.Messages.MaxBy(s => s.SortTicks));
-        }
+    public void SelectMostRecentMessage()
+    {
+        this.ClearSelected();
+        this.TrySelectMessage(this.Messages.MaxBy(s => s.SortTicks));
     }
 }

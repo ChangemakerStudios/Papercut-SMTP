@@ -18,15 +18,14 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Domain.AppCommands
-{
-    public class ShutdownCommand : ICommand
-    {
-        public ShutdownCommand(int exitCode)
-        {
-            this.ExitCode = exitCode;
-        }
+namespace Papercut.Domain.AppCommands;
 
-        public int ExitCode { get; }
+public class ShutdownCommand : ICommand
+{
+    public ShutdownCommand(int exitCode)
+    {
+        this.ExitCode = exitCode;
     }
+
+    public int ExitCode { get; }
 }

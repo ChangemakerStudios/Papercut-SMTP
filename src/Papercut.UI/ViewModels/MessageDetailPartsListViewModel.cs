@@ -33,187 +33,186 @@ using Papercut.Helpers;
 using Papercut.Message;
 using Papercut.Message.Helpers;
 
-namespace Papercut.ViewModels
+namespace Papercut.ViewModels;
+
+public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
 {
-    public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
+    readonly ILogger _logger;
+
+    private readonly MessageRepository _messageRepository;
+
+    readonly IViewModelWindowManager _viewModelWindowManager;
+
+    bool _hasSelectedPart;
+
+    MimeMessage? _mimeMessage;
+
+    MimeEntity? _selectedPart;
+
+    public MessageDetailPartsListViewModel(MessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
     {
-        readonly ILogger _logger;
+        this.DisplayName = "Sections";
+        this._messageRepository = messageRepository;
+        this._viewModelWindowManager = viewModelWindowManager;
+        this._logger = logger;
+        this.Parts = new ObservableCollection<MimeEntity>();
+    }
 
-        private readonly MessageRepository _messageRepository;
+    public ObservableCollection<MimeEntity> Parts { get; }
 
-        readonly IViewModelWindowManager _viewModelWindowManager;
-
-        bool _hasSelectedPart;
-
-        MimeMessage? _mimeMessage;
-
-        MimeEntity? _selectedPart;
-
-        public MessageDetailPartsListViewModel(MessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
+    public MimeMessage? MimeMessage
+    {
+        get => this._mimeMessage;
+        set
         {
-            this.DisplayName = "Sections";
-            this._messageRepository = messageRepository;
-            this._viewModelWindowManager = viewModelWindowManager;
-            this._logger = logger;
-            this.Parts = new ObservableCollection<MimeEntity>();
+            this._mimeMessage = value;
+            this.NotifyOfPropertyChange(() => this.MimeMessage);
+
+            if (this._mimeMessage != null) this.RefreshParts();
+        }
+    }
+
+    public MimeEntity? SelectedPart
+    {
+        get => this._selectedPart;
+        set
+        {
+            this._selectedPart = value;
+            this.HasSelectedPart = this._selectedPart != null;
+            this.NotifyOfPropertyChange(() => this.SelectedPart);
+        }
+    }
+
+    public bool HasSelectedPart
+    {
+        get => this._hasSelectedPart;
+        set
+        {
+            this._hasSelectedPart = value;
+            this.NotifyOfPropertyChange(() => this.HasSelectedPart);
+        }
+    }
+
+    public void ViewSection()
+    {
+        MimeEntity part = this.SelectedPart;
+
+        if (part == null)
+        {
+            return;
         }
 
-        public ObservableCollection<MimeEntity> Parts { get; }
-
-        public MimeMessage? MimeMessage
+        if (part is TextPart textPart)
         {
-            get => this._mimeMessage;
-            set
-            {
-                this._mimeMessage = value;
-                this.NotifyOfPropertyChange(() => this.MimeMessage);
-
-                if (this._mimeMessage != null) this.RefreshParts();
-            }
+            // show in the viewer...
+            this._viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = textPart.Text);
         }
-
-        public MimeEntity? SelectedPart
+        else if (part is MessagePart messagePart)
         {
-            get => this._selectedPart;
-            set
-            {
-                this._selectedPart = value;
-                this.HasSelectedPart = this._selectedPart != null;
-                this.NotifyOfPropertyChange(() => this.SelectedPart);
-            }
+            this._viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = messagePart.Message.ToString());
         }
-
-        public bool HasSelectedPart
+        else if (part is MimePart mimePart)
         {
-            get => this._hasSelectedPart;
-            set
+            string tempFileName;
+
+            if (mimePart.FileName.IsSet())
             {
-                this._hasSelectedPart = value;
-                this.NotifyOfPropertyChange(() => this.HasSelectedPart);
+                tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), mimePart.FileName);
             }
-        }
-
-        public void ViewSection()
-        {
-            MimeEntity part = this.SelectedPart;
-
-            if (part == null)
+            else
             {
-                return;
+                tempFileName = Path.GetTempFileName();
+                string extension = part.ContentType.GetExtension();
+
+                if (extension.IsSet())
+                    tempFileName = Path.ChangeExtension(tempFileName, extension);
             }
 
-            if (part is TextPart textPart)
+            try
             {
-                // show in the viewer...
-                this._viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = textPart.Text);
-            }
-            else if (part is MessagePart messagePart)
-            {
-                this._viewModelWindowManager.ShowDialogWithViewModel<MimePartViewModel>(vm => vm.PartText = messagePart.Message.ToString());
-            }
-            else if (part is MimePart mimePart)
-            {
-                string tempFileName;
-
-                if (mimePart.FileName.IsSet())
+                using (FileStream outputFile = File.Open(tempFileName, FileMode.Create))
                 {
-                    tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), mimePart.FileName);
-                }
-                else
-                {
-                    tempFileName = Path.GetTempFileName();
-                    string extension = part.ContentType.GetExtension();
-
-                    if (extension.IsSet())
-                        tempFileName = Path.ChangeExtension(tempFileName, extension);
-                }
-
-                try
-                {
-                    using (FileStream outputFile = File.Open(tempFileName, FileMode.Create))
-                    {
-                        mimePart.Content.DecodeTo(outputFile);
-                    }
-
-                    Process.Start(new ProcessStartInfo(tempFileName));
-                }
-                catch (Exception ex)
-                {
-                    this._logger.Error(ex, "Failure Creating and Opening Up Attachment File: {TempFileName}", tempFileName);
-                    MessageBox.Show($"Failed to Open Attachment File: {ex.Message}",
-                        "Unable to Open Attachment");
-                }
-            }
-        }
-
-        public void SaveAs()
-        {
-            if (this.SelectedPart is MimePart mimePart)
-            {
-                var dlg = new SaveFileDialog();
-                if (!string.IsNullOrWhiteSpace(mimePart.FileName))
-                    dlg.FileName = mimePart.FileName;
-
-                var extensions = new List<string>();
-                if (mimePart.ContentType.MediaSubtype != "Unknown")
-                {
-                    string extension = mimePart.ContentType.GetExtension();
-
-                    if (!string.IsNullOrWhiteSpace(extension))
-                    {
-                        extensions.Add(string.Format("{0} (*{1})|*{1}",
-                            Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(mimePart.ContentType.MediaSubtype),
-                            extension));
-                    }
-                }
-
-                extensions.Add("All (*.*)|*.*");
-                dlg.Filter = string.Join("|", extensions.ToArray());
-
-                bool? result = dlg.ShowDialog();
-
-                if (result.HasValue && result.Value)
-                {
-                    this._logger.Debug("Saving File {File} as Output for MimePart {PartFileName}", dlg.FileName,
-                        mimePart.FileName);
-
-                    // save it…
-                    using Stream outputFile = dlg.OpenFile();
-
                     mimePart.Content.DecodeTo(outputFile);
                 }
+
+                Process.Start(new ProcessStartInfo(tempFileName));
             }
-            else if (this.SelectedPart is MessagePart messagePart)
+            catch (Exception ex)
             {
-                var dlg = new SaveFileDialog();
+                this._logger.Error(ex, "Failure Creating and Opening Up Attachment File: {TempFileName}", tempFileName);
+                MessageBox.Show($"Failed to Open Attachment File: {ex.Message}",
+                    "Unable to Open Attachment");
+            }
+        }
+    }
 
-                var fileName = this._messageRepository.GetFullMailFilename(messagePart.Message.Subject);
+    public void SaveAs()
+    {
+        if (this.SelectedPart is MimePart mimePart)
+        {
+            var dlg = new SaveFileDialog();
+            if (!string.IsNullOrWhiteSpace(mimePart.FileName))
+                dlg.FileName = mimePart.FileName;
 
-                dlg.FileName = Path.GetFileName(fileName);
-                dlg.InitialDirectory = Path.GetDirectoryName(fileName);
+            var extensions = new List<string>();
+            if (mimePart.ContentType.MediaSubtype != "Unknown")
+            {
+                string extension = mimePart.ContentType.GetExtension();
 
-                var extensions = new List<string> {"Email (*.eml)|*.eml", "All (*.*)|*.*"};
-
-                dlg.Filter = string.Join("|", extensions);
-
-                bool? result = dlg.ShowDialog();
-
-                if (result.HasValue && result.Value)
+                if (!string.IsNullOrWhiteSpace(extension))
                 {
-                    this._logger.Debug("Saved Embedded Message as {MessageFile}", dlg.FileName);
-
-                    // save it…
-                    using Stream outputFile = dlg.OpenFile();
-
-                    messagePart.Message.WriteTo(outputFile);
+                    extensions.Add(string.Format("{0} (*{1})|*{1}",
+                        Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(mimePart.ContentType.MediaSubtype),
+                        extension));
                 }
             }
-        }
 
-        void RefreshParts()
-        {
-            this.Parts.Clear();
-            this.Parts.AddRange(this.MimeMessage.BodyParts);
+            extensions.Add("All (*.*)|*.*");
+            dlg.Filter = string.Join("|", extensions.ToArray());
+
+            bool? result = dlg.ShowDialog();
+
+            if (result.HasValue && result.Value)
+            {
+                this._logger.Debug("Saving File {File} as Output for MimePart {PartFileName}", dlg.FileName,
+                    mimePart.FileName);
+
+                // save it…
+                using Stream outputFile = dlg.OpenFile();
+
+                mimePart.Content.DecodeTo(outputFile);
+            }
         }
+        else if (this.SelectedPart is MessagePart messagePart)
+        {
+            var dlg = new SaveFileDialog();
+
+            var fileName = this._messageRepository.GetFullMailFilename(messagePart.Message.Subject);
+
+            dlg.FileName = Path.GetFileName(fileName);
+            dlg.InitialDirectory = Path.GetDirectoryName(fileName);
+
+            var extensions = new List<string> {"Email (*.eml)|*.eml", "All (*.*)|*.*"};
+
+            dlg.Filter = string.Join("|", extensions);
+
+            bool? result = dlg.ShowDialog();
+
+            if (result.HasValue && result.Value)
+            {
+                this._logger.Debug("Saved Embedded Message as {MessageFile}", dlg.FileName);
+
+                // save it…
+                using Stream outputFile = dlg.OpenFile();
+
+                messagePart.Message.WriteTo(outputFile);
+            }
+        }
+    }
+
+    void RefreshParts()
+    {
+        this.Parts.Clear();
+        this.Parts.AddRange(this.MimeMessage.BodyParts);
     }
 }

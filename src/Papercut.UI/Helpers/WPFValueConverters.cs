@@ -20,86 +20,85 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+/// <summary>
+///     Source: http://stackoverflow.com/a/1039681
+/// </summary>
+[ValueConversion(typeof(bool), typeof(bool))]
+public class InverseBooleanConverter : IValueConverter
 {
-    /// <summary>
-    ///     Source: http://stackoverflow.com/a/1039681
-    /// </summary>
-    [ValueConversion(typeof(bool), typeof(bool))]
-    public class InverseBooleanConverter : IValueConverter
+    #region IValueConverter Members
+
+    public object Convert(
+        object value,
+        Type targetType,
+        object parameter,
+        CultureInfo culture)
     {
-        #region IValueConverter Members
+        if (targetType != typeof(bool)) throw new InvalidOperationException("The target must be a boolean");
 
-        public object Convert(
-            object value,
-            Type targetType,
-            object parameter,
-            CultureInfo culture)
-        {
-            if (targetType != typeof(bool)) throw new InvalidOperationException("The target must be a boolean");
-
-            return !(bool)value;
-        }
-
-        public object ConvertBack(
-            object value,
-            Type targetType,
-            object parameter,
-            CultureInfo culture)
-        {
-            throw new NotSupportedException();
-        }
-
-        #endregion
+        return !(bool)value;
     }
 
-    /// <summary>
-    ///     Converts Boolean Values to Control.Visibility values.
-    ///     Source: http://www.codeproject.com/Tips/285358/All-purpose-Boolean-to-Visibility-Converter
-    /// </summary>
-    public class BooleanToVisibilityConverter : IValueConverter
+    public object ConvertBack(
+        object value,
+        Type targetType,
+        object parameter,
+        CultureInfo culture)
     {
-        //Set to true if you want to show control when boolean value is true
-        //Set to false if you want to hide/collapse control when value is true
+        throw new NotSupportedException();
+    }
 
-        //Set to true if you just want to hide the control
-        //else set to false if you want to collapse the control
+    #endregion
+}
 
-        public BooleanToVisibilityConverter()
-        {
-            this.TriggerValue = false;
-        }
+/// <summary>
+///     Converts Boolean Values to Control.Visibility values.
+///     Source: http://www.codeproject.com/Tips/285358/All-purpose-Boolean-to-Visibility-Converter
+/// </summary>
+public class BooleanToVisibilityConverter : IValueConverter
+{
+    //Set to true if you want to show control when boolean value is true
+    //Set to false if you want to hide/collapse control when value is true
 
-        public bool TriggerValue { get; set; }
+    //Set to true if you just want to hide the control
+    //else set to false if you want to collapse the control
 
-        public bool IsHidden { get; set; }
+    public BooleanToVisibilityConverter()
+    {
+        this.TriggerValue = false;
+    }
 
-        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-        {
-            bool booleanValue = value != null;
+    public bool TriggerValue { get; set; }
 
-            if (value is string) booleanValue = !string.IsNullOrEmpty(value as string);
-            else if (value is bool) booleanValue = (bool)value;
+    public bool IsHidden { get; set; }
 
-            return this.GetVisibility(booleanValue);
-        }
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        bool booleanValue = value != null;
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+        if (value is string) booleanValue = !string.IsNullOrEmpty(value as string);
+        else if (value is bool) booleanValue = (bool)value;
 
-        object GetVisibility(bool toggleValue)
-        {
-            if ((toggleValue && this.TriggerValue && this.IsHidden)
-                || (!toggleValue && !this.TriggerValue && this.IsHidden)) return Visibility.Hidden;
-            if ((toggleValue && this.TriggerValue && !this.IsHidden)
-                || (!toggleValue && !this.TriggerValue && !this.IsHidden)) return Visibility.Collapsed;
-            return Visibility.Visible;
-        }
+        return this.GetVisibility(booleanValue);
+    }
+
+    public object ConvertBack(
+        object? value,
+        Type targetType,
+        object? parameter,
+        CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+
+    object GetVisibility(bool toggleValue)
+    {
+        if ((toggleValue && this.TriggerValue && this.IsHidden)
+            || (!toggleValue && !this.TriggerValue && this.IsHidden)) return Visibility.Hidden;
+        if ((toggleValue && this.TriggerValue && !this.IsHidden)
+            || (!toggleValue && !this.TriggerValue && !this.IsHidden)) return Visibility.Collapsed;
+        return Visibility.Visible;
     }
 }

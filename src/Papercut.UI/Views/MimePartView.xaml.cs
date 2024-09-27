@@ -20,17 +20,16 @@ using MahApps.Metro.Controls;
 
 using Papercut.Helpers;
 
-namespace Papercut.Views
+namespace Papercut.Views;
+
+/// <summary>
+///     Interaction logic for MimePartView.xaml
+/// </summary>
+public partial class MimePartView : MetroWindow
 {
-    /// <summary>
-    ///     Interaction logic for MimePartView.xaml
-    /// </summary>
-    public partial class MimePartView : MetroWindow
+    public MimePartView()
     {
-        public MimePartView()
-        {
-            this.AutoAdjustBorders();
-            this.InitializeComponent();
-        }
+        this.AutoAdjustBorders();
+        this.InitializeComponent();
     }
 }

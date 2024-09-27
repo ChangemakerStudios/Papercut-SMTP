@@ -21,28 +21,27 @@ using System.Windows.Media.Effects;
 
 using Microsoft.Xaml.Behaviors;
 
-namespace Papercut.AppLayer.Behaviors
+namespace Papercut.AppLayer.Behaviors;
+
+public class InteractivityBlurBase<T> : Behavior<T>
+    where T : DependencyObject
 {
-    public class InteractivityBlurBase<T> : Behavior<T>
-        where T : DependencyObject
+    // Using a DependencyProperty as the backing store for BlurRadius. This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty BlurRadiusProperty =
+        DependencyProperty.Register(
+            $"BlurRadius_{typeof(T).Name}",
+            typeof(int),
+            typeof(FrameworkElement),
+            new UIPropertyMetadata(0));
+
+    public int BlurRadius
     {
-        // Using a DependencyProperty as the backing store for BlurRadius. This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty BlurRadiusProperty =
-            DependencyProperty.Register(
-                $"BlurRadius_{typeof(T).Name}",
-                typeof(int),
-                typeof(FrameworkElement),
-                new UIPropertyMetadata(0));
+        get => (int) this.GetValue(BlurRadiusProperty);
+        set => this.SetValue(BlurRadiusProperty, value);
+    }
 
-        public int BlurRadius
-        {
-            get => (int) this.GetValue(BlurRadiusProperty);
-            set => this.SetValue(BlurRadiusProperty, value);
-        }
-
-        protected virtual BlurEffect GetBlurEffect()
-        {
-            return new BlurEffect { Radius = this.BlurRadius };
-        }
+    protected virtual BlurEffect GetBlurEffect()
+    {
+        return new BlurEffect { Radius = this.BlurRadius };
     }
 }

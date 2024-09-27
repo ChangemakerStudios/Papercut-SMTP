@@ -27,76 +27,75 @@ using Papercut.Core.Domain.Application;
 using Papercut.Domain.HtmlPreviews;
 using Papercut.Helpers;
 
-namespace Papercut.AppLayer.HtmlPreviews
+namespace Papercut.AppLayer.HtmlPreviews;
+
+public class HtmlPreviewGeneratorImpl : IHtmlPreviewGenerator
 {
-    public class HtmlPreviewGeneratorImpl : IHtmlPreviewGenerator
+    readonly IAppMeta _appMeta;
+
+    readonly ILogger _logger;
+
+    public HtmlPreviewGeneratorImpl(ILogger logger, IAppMeta appMeta)
     {
-        readonly IAppMeta _appMeta;
-
-        readonly ILogger _logger;
-
-        public HtmlPreviewGeneratorImpl(ILogger logger, IAppMeta appMeta)
-        {
-            this._logger = logger;
-            this._appMeta = appMeta;
-        }
-
-        public string GetHtmlPreview(MimeMessage? mailMessageEx, string? tempDir = null)
-        {
-            ArgumentNullException.ThrowIfNull(mailMessageEx);
-
-            tempDir = tempDir ?? this.CreateUniqueTempDirectory();
-            var visitor = new HtmlPreviewVisitor(tempDir);
-            mailMessageEx.Accept(visitor);
-
-            return visitor.HtmlBody;
-        }
-
-        public string? GetHtmlPreviewFile(MimeMessage? mailMessageEx, string? tempDir = null)
-        {
-            tempDir = tempDir ?? this.CreateUniqueTempDirectory();
-
-            var htmlPreview = this.GetHtmlPreview(mailMessageEx, tempDir);
-
-            string? htmlFile = Path.Combine(tempDir, "index.html");
-
-            this._logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
-
-            File.WriteAllText(htmlFile, htmlPreview, Encoding.Unicode);
-
-            return htmlFile;
-        }
-
-        string CreateUniqueTempDirectory()
-        {
-            string tempDir;
-            do
-            {
-                // find unique temp directory
-                tempDir = Path.Combine(Path.GetTempPath(), $"{this._appMeta.AppName}-{Guid.NewGuid().ToString().Truncate(6)}");
-            }
-            while (Directory.Exists(tempDir));
-
-            Directory.CreateDirectory(tempDir);
-
-            return tempDir;
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<HtmlPreviewGeneratorImpl>().AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
-        }
-
-        #endregion
+        this._logger = logger;
+        this._appMeta = appMeta;
     }
+
+    public string GetHtmlPreview(MimeMessage? mailMessageEx, string? tempDir = null)
+    {
+        ArgumentNullException.ThrowIfNull(mailMessageEx);
+
+        tempDir = tempDir ?? this.CreateUniqueTempDirectory();
+        var visitor = new HtmlPreviewVisitor(tempDir);
+        mailMessageEx.Accept(visitor);
+
+        return visitor.HtmlBody;
+    }
+
+    public string? GetHtmlPreviewFile(MimeMessage? mailMessageEx, string? tempDir = null)
+    {
+        tempDir = tempDir ?? this.CreateUniqueTempDirectory();
+
+        var htmlPreview = this.GetHtmlPreview(mailMessageEx, tempDir);
+
+        string? htmlFile = Path.Combine(tempDir, "index.html");
+
+        this._logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
+
+        File.WriteAllText(htmlFile, htmlPreview, Encoding.Unicode);
+
+        return htmlFile;
+    }
+
+    string CreateUniqueTempDirectory()
+    {
+        string tempDir;
+        do
+        {
+            // find unique temp directory
+            tempDir = Path.Combine(Path.GetTempPath(), $"{this._appMeta.AppName}-{Guid.NewGuid().ToString().Truncate(6)}");
+        }
+        while (Directory.Exists(tempDir));
+
+        Directory.CreateDirectory(tempDir);
+
+        return tempDir;
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<HtmlPreviewGeneratorImpl>().AsImplementedInterfaces()
+            .InstancePerLifetimeScope();
+    }
+
+    #endregion
 }

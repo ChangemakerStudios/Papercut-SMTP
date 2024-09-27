@@ -21,31 +21,30 @@ using System.Reflection;
 
 using Autofac;
 
-namespace Papercut.AppLayer.Diagnostics
+namespace Papercut.AppLayer.Diagnostics;
+
+public class ReportVersionService(ILogger logger) : IStartable
 {
-    public class ReportVersionService(ILogger logger) : IStartable
+    public void Start()
     {
-        public void Start()
-        {
-            var productVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
+        var productVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
 
-            logger.Information("Papercut Version {PapercutVersion:l}", productVersion);
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<ReportVersionService>().AsImplementedInterfaces().SingleInstance();
-        }
-
-        #endregion
+        logger.Information("Papercut Version {PapercutVersion:l}", productVersion);
     }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<ReportVersionService>().AsImplementedInterfaces().SingleInstance();
+    }
+
+    #endregion
 }

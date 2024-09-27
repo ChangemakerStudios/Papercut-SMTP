@@ -18,12 +18,11 @@
 
 using MimeKit;
 
-namespace Papercut.Domain.HtmlPreviews
-{
-    public interface IHtmlPreviewGenerator
-    {
-        string GetHtmlPreview(MimeMessage? mailMessageEx, string? tempDir = null);
+namespace Papercut.Domain.HtmlPreviews;
 
-        string? GetHtmlPreviewFile(MimeMessage? mailMessageEx, string? tempDir = null);
-    }
+public interface IHtmlPreviewGenerator
+{
+    string GetHtmlPreview(MimeMessage? mailMessageEx, string? tempDir = null);
+
+    string? GetHtmlPreviewFile(MimeMessage? mailMessageEx, string? tempDir = null);
 }

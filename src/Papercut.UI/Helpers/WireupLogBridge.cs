@@ -20,14 +20,13 @@ using Autofac;
 
 using Caliburn.Micro;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public class WireupLogBridge : IStartable
 {
-    public class WireupLogBridge : IStartable
+    public void Start()
     {
-        public void Start()
-        {
-            LogManager.GetLog =
-                type => new CalburnSerilogBridge(new Lazy<ILogger>(() => Log.ForContext(type)));
-        }
+        LogManager.GetLog =
+            type => new CalburnSerilogBridge(new Lazy<ILogger>(() => Log.ForContext(type)));
     }
 }

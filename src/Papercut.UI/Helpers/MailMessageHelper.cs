@@ -18,21 +18,20 @@
 
 using System.Net.Mail;
 
-namespace Papercut.Helpers
-{
-    public static class MailMessageHelper
-    {
-        public static MailMessage CreateFailureMailMessage(string error)
-        {
-            var errorMessage = new MailMessage
-            {
-                From = new MailAddress("fail@papercut.com", "Papercut Failure"),
-                Subject = "Failure loading message: " + error,
-                Body = "Unable to load",
-                IsBodyHtml = false
-            };
+namespace Papercut.Helpers;
 
-            return errorMessage;
-        }
+public static class MailMessageHelper
+{
+    public static MailMessage CreateFailureMailMessage(string error)
+    {
+        var errorMessage = new MailMessage
+        {
+            From = new MailAddress("fail@papercut.com", "Papercut Failure"),
+            Subject = "Failure loading message: " + error,
+            Body = "Unable to load",
+            IsBodyHtml = false
+        };
+
+        return errorMessage;
     }
 }

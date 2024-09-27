@@ -23,75 +23,74 @@ using System.Windows.Resources;
 
 using Autofac;
 
-namespace Papercut.Infrastructure.Resources
+namespace Papercut.Infrastructure.Resources;
+
+public class AppResourceLocator
 {
-    public class AppResourceLocator
+    readonly string _appExecutableName;
+
+    readonly ILogger _logger;
+
+    public AppResourceLocator(ILogger logger)
     {
-        readonly string _appExecutableName;
-
-        readonly ILogger _logger;
-
-        public AppResourceLocator(ILogger logger)
-        {
-            this._logger = logger.ForContext<AppResourceLocator>();
-            this._appExecutableName =
-                Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
-        }
-
-        public string GetResourceString(string resourceName)
-        {
-            ArgumentNullException.ThrowIfNull(resourceName);
-
-            var resource =
-                Assembly.GetExecutingAssembly()
-                    .GetManifestResourceNames()
-                    .FirstOrDefault(s => s.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));
-
-            using (
-                var streamReader = new StreamReader(
-                    Assembly.GetExecutingAssembly().GetManifestResourceStream(resource),
-                    Encoding.Default))
-            {
-                return streamReader.ReadToEnd();
-            }
-        }
-
-        public StreamResourceInfo GetResource(string resourceName)
-        {
-            try
-            {
-                return
-                    Application.GetResourceStream(
-                        new Uri(
-                            $"/{this._appExecutableName};component/{resourceName}",
-                            UriKind.Relative));
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(
-                    ex,
-                    "Failure loading application resource {ResourceName} in {ExecutableName}",
-                    resourceName,
-                    this._appExecutableName);
-
-                throw;
-            }
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<AppResourceLocator>().AsSelf().InstancePerLifetimeScope();
-        }
-
-        #endregion
+        this._logger = logger.ForContext<AppResourceLocator>();
+        this._appExecutableName =
+            Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
     }
+
+    public string GetResourceString(string resourceName)
+    {
+        ArgumentNullException.ThrowIfNull(resourceName);
+
+        var resource =
+            Assembly.GetExecutingAssembly()
+                .GetManifestResourceNames()
+                .FirstOrDefault(s => s.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));
+
+        using (
+            var streamReader = new StreamReader(
+                Assembly.GetExecutingAssembly().GetManifestResourceStream(resource),
+                Encoding.Default))
+        {
+            return streamReader.ReadToEnd();
+        }
+    }
+
+    public StreamResourceInfo GetResource(string resourceName)
+    {
+        try
+        {
+            return
+                Application.GetResourceStream(
+                    new Uri(
+                        $"/{this._appExecutableName};component/{resourceName}",
+                        UriKind.Relative));
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(
+                ex,
+                "Failure loading application resource {ResourceName} in {ExecutableName}",
+                resourceName,
+                this._appExecutableName);
+
+            throw;
+        }
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<AppResourceLocator>().AsSelf().InstancePerLifetimeScope();
+    }
+
+    #endregion
 }

@@ -18,32 +18,31 @@
 
 using System.Windows;
 
-namespace Papercut.AppLayer.Behaviors
+namespace Papercut.AppLayer.Behaviors;
+
+public class InteractivityBlurWindowOnDeactivate : InteractivityBlurBase<Window>
 {
-    public class InteractivityBlurWindowOnDeactivate : InteractivityBlurBase<Window>
+    protected override void OnAttached()
     {
-        protected override void OnAttached()
-        {
-            base.OnAttached();
-            this.AssociatedObject.Deactivated += this.AssociatedObjectOnDeactivated;
-            this.AssociatedObject.Activated += this.AssociatedObjectOnActivated;
-        }
+        base.OnAttached();
+        this.AssociatedObject.Deactivated += this.AssociatedObjectOnDeactivated;
+        this.AssociatedObject.Activated += this.AssociatedObjectOnActivated;
+    }
 
-        void AssociatedObjectOnActivated(object sender, EventArgs eventArgs)
-        {
-            this.ToggleBlurEffect(false);
-        }
+    void AssociatedObjectOnActivated(object sender, EventArgs eventArgs)
+    {
+        this.ToggleBlurEffect(false);
+    }
 
-        void AssociatedObjectOnDeactivated(object sender, EventArgs eventArgs)
-        {
-            this.ToggleBlurEffect(true);
-        }
+    void AssociatedObjectOnDeactivated(object sender, EventArgs eventArgs)
+    {
+        this.ToggleBlurEffect(true);
+    }
 
-        protected void ToggleBlurEffect(bool enable)
-        {
+    protected void ToggleBlurEffect(bool enable)
+    {
             
 
-            this.AssociatedObject.Effect = enable ? this.GetBlurEffect() : null;
-        }
+        this.AssociatedObject.Effect = enable ? this.GetBlurEffect() : null;
     }
 }

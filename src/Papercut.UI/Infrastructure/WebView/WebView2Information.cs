@@ -24,107 +24,106 @@ using Autofac;
 
 using Microsoft.Web.WebView2.Core;
 
-namespace Papercut.Infrastructure.WebView
+namespace Papercut.Infrastructure.WebView;
+
+public enum WebView2InstallType
 {
-    public enum WebView2InstallType
+    WebView2, EdgeChromiumBeta, EdgeChromiumCanary, EdgeChromiumDev, NotInstalled
+}
+
+/// <summary>
+/// Code from https://github.com/mortenbrudvik/KioskBrowser/blob/main/src/KioskBrowser/WebView2Install.cs
+/// THANK YOU
+/// </summary>
+public class WebView2Information
+{
+    #region Constructors and Destructors
+
+    static WebView2Information()
     {
-        WebView2, EdgeChromiumBeta, EdgeChromiumCanary, EdgeChromiumDev, NotInstalled
+        var loaderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "", $@"runtimes\win-{RuntimeInformation.ProcessArchitecture}\native");
+
+        Log.Information("Setting WebView2 Loader Path to {LoaderPath}", loaderPath);
+
+        try
+        {
+            CoreWebView2Environment.SetLoaderDllFolderPath(loaderPath);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failure Settings WebView2 Loader Path");
+        }
     }
+
+    public WebView2Information()
+    {
+        this.Version = this.GetWebView2Version();
+        this.InstallType = this.GetInstallType(this.Version);
+    }
+
+    #endregion
+
+    #region Public Properties
+
+    public WebView2InstallType InstallType { get; }
+
+    public bool IsInstalled => this.InstallType != WebView2InstallType.NotInstalled;
+
+    public string Version { get; }
+
+    public Exception WebView2LoadException { get; private set; }
+
+    #endregion
+
+    #region Methods
+
+    #region Begin Static Container Registrations
 
     /// <summary>
-    /// Code from https://github.com/mortenbrudvik/KioskBrowser/blob/main/src/KioskBrowser/WebView2Install.cs
-    /// THANK YOU
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
     /// </summary>
-    public class WebView2Information
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
     {
-        #region Constructors and Destructors
+        ArgumentNullException.ThrowIfNull(builder);
 
-        static WebView2Information()
-        {
-            var loaderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "", $@"runtimes\win-{RuntimeInformation.ProcessArchitecture}\native");
-
-            Log.Information("Setting WebView2 Loader Path to {LoaderPath}", loaderPath);
-
-            try
-            {
-                CoreWebView2Environment.SetLoaderDllFolderPath(loaderPath);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failure Settings WebView2 Loader Path");
-            }
-        }
-
-        public WebView2Information()
-        {
-            this.Version = this.GetWebView2Version();
-            this.InstallType = this.GetInstallType(this.Version);
-        }
-
-        #endregion
-
-        #region Public Properties
-
-        public WebView2InstallType InstallType { get; }
-
-        public bool IsInstalled => this.InstallType != WebView2InstallType.NotInstalled;
-
-        public string Version { get; }
-
-        public Exception WebView2LoadException { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<WebView2Information>().AsSelf().SingleInstance();
-        }
-
-        #endregion
-
-        private WebView2InstallType GetInstallType(string version)
-        {
-            if (string.IsNullOrWhiteSpace(version))
-            {
-                return WebView2InstallType.NotInstalled;
-            }
-
-            if (version.Contains("dev"))
-                return WebView2InstallType.EdgeChromiumDev;
-
-            if (version.Contains("beta"))
-                return WebView2InstallType.EdgeChromiumBeta;
-
-            if (version.Contains("canary"))
-                return WebView2InstallType.EdgeChromiumCanary;
-
-            return WebView2InstallType.WebView2;
-        }
-
-        private string GetWebView2Version()
-        {
-            try
-            {
-                return CoreWebView2Environment.GetAvailableBrowserVersionString();
-            }
-            catch (Exception ex)
-            {
-                this.WebView2LoadException = ex;
-                return "";
-            }
-        }
-
-        #endregion
+        builder.RegisterType<WebView2Information>().AsSelf().SingleInstance();
     }
+
+    #endregion
+
+    private WebView2InstallType GetInstallType(string version)
+    {
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            return WebView2InstallType.NotInstalled;
+        }
+
+        if (version.Contains("dev"))
+            return WebView2InstallType.EdgeChromiumDev;
+
+        if (version.Contains("beta"))
+            return WebView2InstallType.EdgeChromiumBeta;
+
+        if (version.Contains("canary"))
+            return WebView2InstallType.EdgeChromiumCanary;
+
+        return WebView2InstallType.WebView2;
+    }
+
+    private string GetWebView2Version()
+    {
+        try
+        {
+            return CoreWebView2Environment.GetAvailableBrowserVersionString();
+        }
+        catch (Exception ex)
+        {
+            this.WebView2LoadException = ex;
+            return "";
+        }
+    }
+
+    #endregion
 }

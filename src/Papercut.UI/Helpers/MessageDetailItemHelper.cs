@@ -20,30 +20,29 @@ using Caliburn.Micro;
 
 using Papercut.ViewModels;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public static class MessageDetailItemHelper
 {
-    public static class MessageDetailItemHelper
+    public static Conductor<IMessageDetailItem>.Collection.OneActive GetConductor<T>(this T messageDetailItem)
+        where T : Screen, IMessageDetailItem
     {
-        public static Conductor<IMessageDetailItem>.Collection.OneActive GetConductor<T>(this T messageDetailItem)
-            where T : Screen, IMessageDetailItem
+        return messageDetailItem.Parent as Conductor<IMessageDetailItem>.Collection.OneActive;
+    }
+
+    public static async Task<T> ActivateViewModelOf<T>(
+        this Conductor<IMessageDetailItem>.Collection.OneActive conductor)
+    {
+        ArgumentNullException.ThrowIfNull(conductor);
+
+        var item = conductor?.Items.FirstOrDefault(s => s.GetType() == typeof(T));
+
+        if (item != null)
         {
-            return messageDetailItem.Parent as Conductor<IMessageDetailItem>.Collection.OneActive;
+            await conductor.ActivateItemAsync(item);
+            return (T)item;
         }
 
-        public static async Task<T> ActivateViewModelOf<T>(
-            this Conductor<IMessageDetailItem>.Collection.OneActive conductor)
-        {
-            ArgumentNullException.ThrowIfNull(conductor);
-
-            var item = conductor?.Items.FirstOrDefault(s => s.GetType() == typeof(T));
-
-            if (item != null)
-            {
-                await conductor.ActivateItemAsync(item);
-                return (T)item;
-            }
-
-            return default(T);
-        }
+        return default(T);
     }
 }

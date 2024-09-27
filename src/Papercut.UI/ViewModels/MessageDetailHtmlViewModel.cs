@@ -37,198 +37,197 @@ using Papercut.Helpers;
 using Papercut.Infrastructure.WebView;
 using Papercut.Views;
 
-namespace Papercut.ViewModels
+namespace Papercut.ViewModels;
+
+public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 {
-    public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
+    readonly ILogger _logger;
+
+    readonly IHtmlPreviewGenerator _previewGenerator;
+
+    private readonly WebView2Information _webView2Information;
+
+    private string? _htmlFile;
+
+    private bool _isWebViewInstalled = false;
+
+    public MessageDetailHtmlViewModel(ILogger logger, WebView2Information webView2Information, IHtmlPreviewGenerator previewGenerator)
     {
-        readonly ILogger _logger;
+        this.DisplayName = "Message";
+        this._logger = logger;
+        this._webView2Information = webView2Information;
+        this._previewGenerator = previewGenerator;
+        this.IsWebViewInstalled = this._webView2Information.IsInstalled;
+    }
 
-        readonly IHtmlPreviewGenerator _previewGenerator;
+    public bool IsWebViewInstalled
+    {
 
-        private readonly WebView2Information _webView2Information;
+        get => this._isWebViewInstalled;
 
-        private string? _htmlFile;
-
-        private bool _isWebViewInstalled = false;
-
-        public MessageDetailHtmlViewModel(ILogger logger, WebView2Information webView2Information, IHtmlPreviewGenerator previewGenerator)
+        set
         {
-            this.DisplayName = "Message";
-            this._logger = logger;
-            this._webView2Information = webView2Information;
-            this._previewGenerator = previewGenerator;
-            this.IsWebViewInstalled = this._webView2Information.IsInstalled;
+            this._isWebViewInstalled = value;
+            this.NotifyOfPropertyChange(() => this.IsWebViewInstalled);
+            this.NotifyOfPropertyChange(() => this.ShowHtmlView);
+        }
+    }
+
+    public string? HtmlFile
+    {
+
+        get => this._htmlFile;
+
+        set
+        {
+            this._htmlFile = value;
+            this.NotifyOfPropertyChange(() => this.HtmlFile);
+            this.NotifyOfPropertyChange(() => this.ShowHtmlView);
+        }
+    }
+
+    public bool ShowHtmlView => !string.IsNullOrWhiteSpace(this.HtmlFile);
+
+    public void ShowMessage(MimeMessage? mailMessageEx)
+    {
+        ArgumentNullException.ThrowIfNull(mailMessageEx);
+
+        try
+        {
+            this.HtmlFile = this._previewGenerator.GetHtmlPreviewFile(mailMessageEx);
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
+        }
+    }
+
+    private bool ShouldNavigateToUrl(string navigateToUrl)
+    {
+        if (string.IsNullOrEmpty(navigateToUrl))
+        {
+            return true;
         }
 
-        public bool IsWebViewInstalled
+        if (navigateToUrl.StartsWith("file:") || navigateToUrl.StartsWith("about:") || navigateToUrl.StartsWith("data:text/html"))
         {
-
-            get => this._isWebViewInstalled;
-
-            set
-            {
-                this._isWebViewInstalled = value;
-                this.NotifyOfPropertyChange(() => this.IsWebViewInstalled);
-                this.NotifyOfPropertyChange(() => this.ShowHtmlView);
-            }
+            return true;
         }
 
-        public string? HtmlFile
+        return false;
+    }
+
+    protected override void OnViewLoaded(object view)
+    {
+        base.OnViewLoaded(view);
+
+        if (view is not MessageDetailHtmlView typedView)
         {
-
-            get => this._htmlFile;
-
-            set
-            {
-                this._htmlFile = value;
-                this.NotifyOfPropertyChange(() => this.HtmlFile);
-                this.NotifyOfPropertyChange(() => this.ShowHtmlView);
-            }
+            this._logger.Error("Unable to locate the MessageDetailHtmlView to hook the WebBrowser Control");
+            return;
         }
 
-        public bool ShowHtmlView => !string.IsNullOrWhiteSpace(this.HtmlFile);
-
-        public void ShowMessage(MimeMessage? mailMessageEx)
+        typedView.htmlView.CoreWebView2InitializationCompleted += (_, args) =>
         {
-            ArgumentNullException.ThrowIfNull(mailMessageEx);
+            if (!args.IsSuccess)
+            {
+                this._logger.Error(
+                    args.InitializationException,
+                    "Failure Initializing Edge WebView2");
 
-            try
-            {
-                this.HtmlFile = this._previewGenerator.GetHtmlPreviewFile(mailMessageEx);
             }
-            catch (Exception ex)
+            else
             {
-                this._logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
+                this.SetupWebView(typedView.htmlView.CoreWebView2);
             }
+        };
+
+        if (!typedView.IsEnabled)
+        {
+            typedView.htmlView.Visibility = Visibility.Collapsed;
         }
 
-        private bool ShouldNavigateToUrl(string navigateToUrl)
+        Observable
+            .FromEvent<DependencyPropertyChangedEventHandler,
+                DependencyPropertyChangedEventArgs>(
+                a => (_, e) => a(e),
+                h => typedView.IsEnabledChanged += h,
+                h => typedView.IsEnabledChanged -= h)
+            .Throttle(TimeSpan.FromMilliseconds(100))
+            .Select(args => args.NewValue.ToType<bool>()
+                ? Visibility.Visible
+                : Visibility.Collapsed)
+            .ObserveOn(Dispatcher.CurrentDispatcher)
+            .Subscribe((newState) =>
+            {
+                if (typedView.htmlView.Visibility != newState)
+                {
+                    typedView.htmlView.Visibility = newState;
+                }
+            });
+
+        typedView.htmlView.ContextMenuOpening += (_, args) =>
         {
-            if (string.IsNullOrEmpty(navigateToUrl))
-            {
-                return true;
-            }
+            args.Handled = true;
+        };
+    }
 
-            if (navigateToUrl.StartsWith("file:") || navigateToUrl.StartsWith("about:") || navigateToUrl.StartsWith("data:text/html"))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        protected override void OnViewLoaded(object view)
+    private void SetupWebView(CoreWebView2 coreWebView)
+    {
+        coreWebView.NavigationStarting += async (_, args) =>
         {
-            base.OnViewLoaded(view);
+            var shouldNavigateToUrl = this.ShouldNavigateToUrl(args.Uri);
 
-            if (view is not MessageDetailHtmlView typedView)
+            if (shouldNavigateToUrl)
             {
-                this._logger.Error("Unable to locate the MessageDetailHtmlView to hook the WebBrowser Control");
+                args.Cancel = false;
                 return;
             }
 
-            typedView.htmlView.CoreWebView2InitializationCompleted += (_, args) =>
-            {
-                if (!args.IsSuccess)
-                {
-                    this._logger.Error(
-                        args.InitializationException,
-                        "Failure Initializing Edge WebView2");
+            // do internal navigation
+            args.Cancel = true;
 
-                }
-                else
-                {
-                    this.SetupWebView(typedView.htmlView.CoreWebView2);
-                }
-            };
-
-            if (!typedView.IsEnabled)
+            try
             {
-                typedView.htmlView.Visibility = Visibility.Collapsed;
+                await this.DoInternalNavigationAsync(new Uri(args.Uri));
             }
-
-            Observable
-                .FromEvent<DependencyPropertyChangedEventHandler,
-                    DependencyPropertyChangedEventArgs>(
-                    a => (_, e) => a(e),
-                    h => typedView.IsEnabledChanged += h,
-                    h => typedView.IsEnabledChanged -= h)
-                .Throttle(TimeSpan.FromMilliseconds(100))
-                .Select(args => args.NewValue.ToType<bool>()
-                    ? Visibility.Visible
-                    : Visibility.Collapsed)
-                .ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe((newState) =>
-                {
-                    if (typedView.htmlView.Visibility != newState)
-                    {
-                        typedView.htmlView.Visibility = newState;
-                    }
-                });
-
-            typedView.htmlView.ContextMenuOpening += (_, args) =>
+            catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to Url {Url}", args.Uri))
             {
-                args.Handled = true;
-            };
-        }
-
-        private void SetupWebView(CoreWebView2 coreWebView)
-        {
-            coreWebView.NavigationStarting += async (_, args) =>
-            {
-                var shouldNavigateToUrl = this.ShouldNavigateToUrl(args.Uri);
-
-                if (shouldNavigateToUrl)
-                {
-                    args.Cancel = false;
-                    return;
-                }
-
-                // do internal navigation
-                args.Cancel = true;
-
-                try
-                {
-                    await this.DoInternalNavigationAsync(new Uri(args.Uri));
-                }
-                catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to Url {Url}", args.Uri))
-                {
-                }
-            };
-
-            coreWebView.DisableEdgeFeatures();
-
-            this.GetPropertyValues(p => p.HtmlFile)
-                .Subscribe(
-                    file =>
-                    {
-                        if (file.IsNullOrWhiteSpace())
-                        {
-                            coreWebView.NavigateToString(string.Empty);
-                        }
-                        else
-                        {
-                            coreWebView.Navigate($"file://{file.Replace("/", @"\")}");
-                        }
-                    }
-                );
-        }
-
-        private async Task DoInternalNavigationAsync(Uri navigateToUri)
-        {
-            if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
-            {
-                navigateToUri.OpenUri();
             }
-            else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
-            {
-                // direct to the parts area...
-                var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
-                var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
-                if (part != null)
+        };
+
+        coreWebView.DisableEdgeFeatures();
+
+        this.GetPropertyValues(p => p.HtmlFile)
+            .Subscribe(
+                file =>
                 {
-                    model.SelectedPart = part;
+                    if (file.IsNullOrWhiteSpace())
+                    {
+                        coreWebView.NavigateToString(string.Empty);
+                    }
+                    else
+                    {
+                        coreWebView.Navigate($"file://{file.Replace("/", @"\")}");
+                    }
                 }
+            );
+    }
+
+    private async Task DoInternalNavigationAsync(Uri navigateToUri)
+    {
+        if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
+        {
+            navigateToUri.OpenUri();
+        }
+        else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
+        {
+            // direct to the parts area...
+            var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
+            var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
+            if (part != null)
+            {
+                model.SelectedPart = part;
             }
         }
     }

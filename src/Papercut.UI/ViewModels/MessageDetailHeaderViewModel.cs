@@ -23,43 +23,42 @@ using ICSharpCode.AvalonEdit.Document;
 using Papercut.Helpers;
 using Papercut.Views;
 
-namespace Papercut.ViewModels
+namespace Papercut.ViewModels;
+
+public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
 {
-    public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
+    readonly ILogger _logger;
+
+    string? _headers;
+
+    public MessageDetailHeaderViewModel(ILogger logger)
     {
-        readonly ILogger _logger;
+        this._logger = logger;
+        this.DisplayName = "Headers";
+    }
 
-        string? _headers;
-
-        public MessageDetailHeaderViewModel(ILogger logger)
+    public string? Headers
+    {
+        get => this._headers;
+        set
         {
-            this._logger = logger;
-            this.DisplayName = "Headers";
+            this._headers = value;
+            this.NotifyOfPropertyChange(() => this.Headers);
+        }
+    }
+
+    protected override void OnViewLoaded(object view)
+    {
+        base.OnViewLoaded(view);
+
+        if (view is not MessageDetailHeaderView typedView)
+        {
+            this._logger.Error("Unable to locate the MessageDetailHeaderView to hook the Text Control");
+            return;
         }
 
-        public string? Headers
-        {
-            get => this._headers;
-            set
-            {
-                this._headers = value;
-                this.NotifyOfPropertyChange(() => this.Headers);
-            }
-        }
-
-        protected override void OnViewLoaded(object view)
-        {
-            base.OnViewLoaded(view);
-
-            if (view is not MessageDetailHeaderView typedView)
-            {
-                this._logger.Error("Unable to locate the MessageDetailHeaderView to hook the Text Control");
-                return;
-            }
-
-            this.GetPropertyValues(p => p.Headers)
-                .Subscribe(
-                    t => { typedView.HeaderEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
-        }
+        this.GetPropertyValues(p => p.Headers)
+            .Subscribe(
+                t => { typedView.HeaderEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
     }
 }

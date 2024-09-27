@@ -18,29 +18,28 @@
 
 using System.Windows.Data;
 
-namespace Papercut.AppLayer.Behaviors
+namespace Papercut.AppLayer.Behaviors;
+
+/// <summary>
+/// Very useful code from here:
+/// http://tomlev2.wordpress.com/2008/11/18/wpf-binding-to-application-settings-using-a-markup-extension/
+/// </summary>
+public class SettingBindingExtension : Binding
 {
-    /// <summary>
-    /// Very useful code from here:
-    /// http://tomlev2.wordpress.com/2008/11/18/wpf-binding-to-application-settings-using-a-markup-extension/
-    /// </summary>
-    public class SettingBindingExtension : Binding
+    public SettingBindingExtension()
     {
-        public SettingBindingExtension()
-        {
-            this.Initialize();
-        }
+        this.Initialize();
+    }
 
-        public SettingBindingExtension(string path)
-            : base(path)
-        {
-            this.Initialize();
-        }
+    public SettingBindingExtension(string path)
+        : base(path)
+    {
+        this.Initialize();
+    }
 
-        void Initialize()
-        {
-            this.Source = Properties.Settings.Default;
-            this.Mode = BindingMode.TwoWay;
-        }
+    void Initialize()
+    {
+        this.Source = Properties.Settings.Default;
+        this.Mode = BindingMode.TwoWay;
     }
 }

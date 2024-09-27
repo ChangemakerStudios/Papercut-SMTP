@@ -21,63 +21,62 @@ using Autofac;
 using Papercut.Common.Extensions;
 using Papercut.Domain.LifecycleHooks;
 
-namespace Papercut.Infrastructure.LifecycleHooks
+namespace Papercut.Infrastructure.LifecycleHooks;
+
+public static class LifecycleHookHelpers
 {
-    public static class LifecycleHookHelpers
+    public static async Task<AppLifecycleActionResultType> RunLifecycleHooks<TLifecycle>(this IComponentContext container, Func<TLifecycle, Task<AppLifecycleActionResultType>> runHook)
+        where TLifecycle : IAppLifecycleHook
     {
-        public static async Task<AppLifecycleActionResultType> RunLifecycleHooks<TLifecycle>(this IComponentContext container, Func<TLifecycle, Task<AppLifecycleActionResultType>> runHook)
-            where TLifecycle : IAppLifecycleHook
+        ArgumentNullException.ThrowIfNull(container);
+
+        var logger = container.Resolve<ILogger>();
+
+        foreach (var appLifecycleHook in container.Resolve<IEnumerable<TLifecycle>>().MaybeByOrderable())
         {
-            ArgumentNullException.ThrowIfNull(container);
+            logger.Debug("Running {LifecycleHookType}...", appLifecycleHook.GetType().FullName);
 
-            var logger = container.Resolve<ILogger>();
+            var result = await runHook(appLifecycleHook);
 
-            foreach (var appLifecycleHook in container.Resolve<IEnumerable<TLifecycle>>().MaybeByOrderable())
+            if (result == AppLifecycleActionResultType.Cancel)
             {
-                logger.Debug("Running {LifecycleHookType}...", appLifecycleHook.GetType().FullName);
+                logger.Debug(
+                    "{LifecycleHookType} has cancelled action {TLifecycle}",
+                    appLifecycleHook.GetType().FullName,
+                    typeof(TLifecycle));
 
-                var result = await runHook(appLifecycleHook);
-
-                if (result == AppLifecycleActionResultType.Cancel)
-                {
-                    logger.Debug(
-                        "{LifecycleHookType} has cancelled action {TLifecycle}",
-                        appLifecycleHook.GetType().FullName,
-                        typeof(TLifecycle));
-
-                    return AppLifecycleActionResultType.Cancel;
-                }
+                return AppLifecycleActionResultType.Cancel;
             }
-
-            return AppLifecycleActionResultType.Continue;
         }
 
-        public static async Task<AppLifecycleActionResultType> RunPreExit(this IComponentContext container)
+        return AppLifecycleActionResultType.Continue;
+    }
+
+    public static async Task<AppLifecycleActionResultType> RunPreExit(this IComponentContext container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+
+        return await container.RunLifecycleHooks<IAppLifecyclePreExit>(hook => hook.OnPreExit());
+    }
+
+    public static async Task<AppLifecycleActionResultType> RunPreStart(this IComponentContext container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+
+        return await container.RunLifecycleHooks<IAppLifecyclePreStart>(hook => hook.OnPreStart());
+    }
+
+    public static async Task RunStarted(this IComponentContext container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+
+        var logger = container.Resolve<ILogger>();
+
+        foreach (var appLifecycleHook in container.Resolve<IEnumerable<IAppLifecycleStarted>>().MaybeByOrderable())
         {
-            ArgumentNullException.ThrowIfNull(container);
+            logger.Debug("Running {LifecycleHookType}...", appLifecycleHook.GetType().FullName);
 
-            return await container.RunLifecycleHooks<IAppLifecyclePreExit>(hook => hook.OnPreExit());
-        }
-
-        public static async Task<AppLifecycleActionResultType> RunPreStart(this IComponentContext container)
-        {
-            ArgumentNullException.ThrowIfNull(container);
-
-            return await container.RunLifecycleHooks<IAppLifecyclePreStart>(hook => hook.OnPreStart());
-        }
-
-        public static async Task RunStarted(this IComponentContext container)
-        {
-            ArgumentNullException.ThrowIfNull(container);
-
-            var logger = container.Resolve<ILogger>();
-
-            foreach (var appLifecycleHook in container.Resolve<IEnumerable<IAppLifecycleStarted>>().MaybeByOrderable())
-            {
-                logger.Debug("Running {LifecycleHookType}...", appLifecycleHook.GetType().FullName);
-
-                await appLifecycleHook.OnStartedAsync();
-            }
+            await appLifecycleHook.OnStartedAsync();
         }
     }
 }

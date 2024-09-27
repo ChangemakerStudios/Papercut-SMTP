@@ -32,133 +32,132 @@ using Papercut.Domain.LifecycleHooks;
 using Papercut.Domain.UiCommands;
 using Papercut.Infrastructure.Resources;
 
-namespace Papercut.AppLayer.Notifications
+namespace Papercut.AppLayer.Notifications;
+
+[UsedImplicitly]
+public class NotificationMenuCoordinator : Disposable, IAppLifecyclePreExit, IEventHandler<PapercutClientReadyEvent>
 {
-    [UsedImplicitly]
-    public class NotificationMenuCoordinator : Disposable, IAppLifecyclePreExit, IEventHandler<PapercutClientReadyEvent>
+    private readonly IAppCommandHub _appCommandHub;
+
+    readonly AppResourceLocator _resourceLocator;
+
+    private readonly IUiCommandHub _uiCommandHub;
+
+    NotifyIcon? _notification;
+
+    public NotificationMenuCoordinator(
+        IAppCommandHub appCommandHub,
+        IUiCommandHub uiCommandHub,
+        AppResourceLocator resourceLocator)
     {
-        private readonly IAppCommandHub _appCommandHub;
+        this._appCommandHub = appCommandHub;
+        this._uiCommandHub = uiCommandHub;
+        this._resourceLocator = resourceLocator;
 
-        readonly AppResourceLocator _resourceLocator;
+        this.InitObservables();
+    }
 
-        private readonly IUiCommandHub _uiCommandHub;
+    public Task<AppLifecycleActionResultType> OnPreExit()
+    {
+        this.Reset();
 
-        NotifyIcon? _notification;
+        return Task.FromResult(AppLifecycleActionResultType.Continue);
+    }
 
-        public NotificationMenuCoordinator(
-            IAppCommandHub appCommandHub,
-            IUiCommandHub uiCommandHub,
-            AppResourceLocator resourceLocator)
-        {
-            this._appCommandHub = appCommandHub;
-            this._uiCommandHub = uiCommandHub;
-            this._resourceLocator = resourceLocator;
+    public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token)
+    {
+        if (this._notification == null) this.SetupNotification();
 
-            this.InitObservables();
-        }
+        return Task.CompletedTask;
+    }
 
-        public Task<AppLifecycleActionResultType> OnPreExit()
+    void InitObservables()
+    {
+        this._uiCommandHub.OnShowBalloonTip
+            .Sample(TimeSpan.FromSeconds(1), TaskPoolScheduler.Default)
+            .ObserveOn(TaskPoolScheduler.Default)
+            .Subscribe(
+                @event =>
+                {
+                    this._notification?.ShowBalloonTip(
+                        @event.Timeout,
+                        @event.TipTitle,
+                        @event.TipText,
+                        @event.ToolTipIcon);
+                });
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
         {
             this.Reset();
-
-            return Task.FromResult(AppLifecycleActionResultType.Continue);
         }
-
-        public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token)
-        {
-            if (this._notification == null) this.SetupNotification();
-
-            return Task.CompletedTask;
-        }
-
-        void InitObservables()
-        {
-            this._uiCommandHub.OnShowBalloonTip
-                .Sample(TimeSpan.FromSeconds(1), TaskPoolScheduler.Default)
-                .ObserveOn(TaskPoolScheduler.Default)
-                .Subscribe(
-                    @event =>
-                    {
-                        this._notification?.ShowBalloonTip(
-                            @event.Timeout,
-                            @event.TipTitle,
-                            @event.TipText,
-                            @event.ToolTipIcon);
-                    });
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this.Reset();
-            }
-        }
-
-        private void Reset()
-        {
-            this._notification?.Dispose();
-            this._notification = null;
-        }
-
-        void SetupNotification()
-        {
-            // Set up the notification icon
-            this._notification = new NotifyIcon
-                                 {
-                                     Icon = new Icon(this._resourceLocator.GetResource("App.ico").Stream),
-                                     Text = AppConstants.ApplicationName,
-                                     Visible = true
-                                 };
-
-            this._notification.Click += Notification_OnClick;
-            this._notification.BalloonTipClicked +=
-                (_, _) =>
-                {
-                    this._uiCommandHub.ShowMainWindow(true);
-                };
-
-            this._notification.ContextMenuStrip = new ContextMenuStrip();
-
-            this._notification.ContextMenuStrip.Items.Add("Show", null, (_, _) =>
-            {
-                this._uiCommandHub.ShowMainWindow();
-            });
-            this._notification.ContextMenuStrip.Items.Add("Options", null, (_, _) =>
-            {
-                this._uiCommandHub.ShowOptionWindow();
-            });
-            this._notification.ContextMenuStrip.Items.Add("Exit", null, (_, _) =>
-            {
-                this._appCommandHub.Shutdown();
-            });
-        }
-
-        private void Notification_OnClick(object? sender, EventArgs e)
-        {
-            if (e is MouseEventArgs { Button: MouseButtons.Left })
-            {
-                this._uiCommandHub.ShowMainWindow();
-            }
-
-            this._notification?.ContextMenuStrip?.Show();
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<NotificationMenuCoordinator>().AsImplementedInterfaces()
-                .SingleInstance();
-        }
-
-        #endregion
     }
+
+    private void Reset()
+    {
+        this._notification?.Dispose();
+        this._notification = null;
+    }
+
+    void SetupNotification()
+    {
+        // Set up the notification icon
+        this._notification = new NotifyIcon
+        {
+            Icon = new Icon(this._resourceLocator.GetResource("App.ico").Stream),
+            Text = AppConstants.ApplicationName,
+            Visible = true
+        };
+
+        this._notification.Click += Notification_OnClick;
+        this._notification.BalloonTipClicked +=
+            (_, _) =>
+            {
+                this._uiCommandHub.ShowMainWindow(true);
+            };
+
+        this._notification.ContextMenuStrip = new ContextMenuStrip();
+
+        this._notification.ContextMenuStrip.Items.Add("Show", null, (_, _) =>
+        {
+            this._uiCommandHub.ShowMainWindow();
+        });
+        this._notification.ContextMenuStrip.Items.Add("Options", null, (_, _) =>
+        {
+            this._uiCommandHub.ShowOptionWindow();
+        });
+        this._notification.ContextMenuStrip.Items.Add("Exit", null, (_, _) =>
+        {
+            this._appCommandHub.Shutdown();
+        });
+    }
+
+    private void Notification_OnClick(object? sender, EventArgs e)
+    {
+        if (e is MouseEventArgs { Button: MouseButtons.Left })
+        {
+            this._uiCommandHub.ShowMainWindow();
+        }
+
+        this._notification?.ContextMenuStrip?.Show();
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<NotificationMenuCoordinator>().AsImplementedInterfaces()
+            .SingleInstance();
+    }
+
+    #endregion
 }

@@ -20,17 +20,16 @@ using MahApps.Metro.Controls;
 
 using Papercut.Helpers;
 
-namespace Papercut.Views
+namespace Papercut.Views;
+
+/// <summary>
+///     Interaction logic for RulesConfigurationView.xaml
+/// </summary>
+public partial class RulesConfigurationView : MetroWindow
 {
-    /// <summary>
-    ///     Interaction logic for RulesConfigurationView.xaml
-    /// </summary>
-    public partial class RulesConfigurationView : MetroWindow
+    public RulesConfigurationView()
     {
-        public RulesConfigurationView()
-        {
-            this.AutoAdjustBorders();
-            this.InitializeComponent();
-        }
+        this.AutoAdjustBorders();
+        this.InitializeComponent();
     }
 }

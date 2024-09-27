@@ -23,42 +23,41 @@ using Autofac.Util;
 
 using Papercut.Domain.AppCommands;
 
-namespace Papercut.AppLayer.AppCommands
+namespace Papercut.AppLayer.AppCommands;
+
+public class AppCommandHub : Disposable, IAppCommandHub
 {
-    public class AppCommandHub : Disposable, IAppCommandHub
+    private readonly Subject<ShutdownCommand> _onShutdown = new Subject<ShutdownCommand>();
+
+    public IObservable<ShutdownCommand> OnShutdown => this._onShutdown;
+
+    public void Shutdown(int exitCode = 0)
     {
-        private readonly Subject<ShutdownCommand> _onShutdown = new Subject<ShutdownCommand>();
-
-        public IObservable<ShutdownCommand> OnShutdown => this._onShutdown;
-
-        public void Shutdown(int exitCode = 0)
-        {
-            var command = new ShutdownCommand(exitCode);
-            this._onShutdown.OnNext(command);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this._onShutdown.Dispose();
-            }
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<AppCommandHub>().As<IAppCommandHub>().SingleInstance();
-        }
-
-        #endregion
+        var command = new ShutdownCommand(exitCode);
+        this._onShutdown.OnNext(command);
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._onShutdown.Dispose();
+        }
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<AppCommandHub>().As<IAppCommandHub>().SingleInstance();
+    }
+
+    #endregion
 }

@@ -27,82 +27,81 @@ using Papercut.Domain.Events;
 using Papercut.Domain.LifecycleHooks;
 using Papercut.Infrastructure.Themes;
 
-namespace Papercut.AppLayer.Themes
+namespace Papercut.AppLayer.Themes;
+
+public class ThemeManagerService : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
 {
-    public class ThemeManagerService : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
+    private readonly ILogger _logger;
+
+    private readonly ThemeColorRepository _themeColorRepository;
+
+    public ThemeManagerService(ILogger logger, ThemeColorRepository themeColorRepository)
     {
-        private readonly ILogger _logger;
-
-        private readonly ThemeColorRepository _themeColorRepository;
-
-        public ThemeManagerService(ILogger logger, ThemeColorRepository themeColorRepository)
-        {
-            this._logger = logger;
-            this._themeColorRepository = themeColorRepository;
-        }
-
-        private static ThemeManager CurrentTheme => ThemeManager.Current;
-
-        public Task<AppLifecycleActionResultType> OnPreStart()
-        {
-            this.SetTheme();
-            return Task.FromResult(AppLifecycleActionResultType.Continue);
-        }
-
-        public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
-        {
-            if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) this.SetTheme();
-
-            return Task.CompletedTask;
-        }
-
-        private void SetTheme()
-        {
-            var colorTheme = this._themeColorRepository.FirstOrDefaultByName(Properties.Settings.Default.Theme);
-
-            if (colorTheme == null)
-            {
-                this._logger.Warning("Unable to find theme color {ThemeColor}. Setting to default: LightBlue.", Properties.Settings.Default.Theme);
-                Properties.Settings.Default.Theme = "LightBlue";
-                return;
-            }
-
-            var themeColor = colorTheme.Color;
-
-            var theme = CurrentTheme.DetectTheme(Application.Current);
-            if (theme != null)
-            {
-                var inverseTheme = CurrentTheme.GetInverseTheme(theme);
-                if (inverseTheme != null)
-                {
-                    var runtimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(inverseTheme.BaseColorScheme, themeColor);
-                    if (runtimeTheme != null) CurrentTheme.AddTheme(runtimeTheme);
-                }
-
-                var generateRuntimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(theme.BaseColorScheme, themeColor);
-                if (generateRuntimeTheme != null)
-                    CurrentTheme.ChangeTheme(
-                        Application.Current,
-                        CurrentTheme.AddTheme(generateRuntimeTheme));
-            }
-
-            Application.Current?.MainWindow?.Activate();
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<ThemeManagerService>().AsImplementedInterfaces();
-        }
-
-        #endregion
+        this._logger = logger;
+        this._themeColorRepository = themeColorRepository;
     }
+
+    private static ThemeManager CurrentTheme => ThemeManager.Current;
+
+    public Task<AppLifecycleActionResultType> OnPreStart()
+    {
+        this.SetTheme();
+        return Task.FromResult(AppLifecycleActionResultType.Continue);
+    }
+
+    public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
+    {
+        if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) this.SetTheme();
+
+        return Task.CompletedTask;
+    }
+
+    private void SetTheme()
+    {
+        var colorTheme = this._themeColorRepository.FirstOrDefaultByName(Properties.Settings.Default.Theme);
+
+        if (colorTheme == null)
+        {
+            this._logger.Warning("Unable to find theme color {ThemeColor}. Setting to default: LightBlue.", Properties.Settings.Default.Theme);
+            Properties.Settings.Default.Theme = "LightBlue";
+            return;
+        }
+
+        var themeColor = colorTheme.Color;
+
+        var theme = CurrentTheme.DetectTheme(Application.Current);
+        if (theme != null)
+        {
+            var inverseTheme = CurrentTheme.GetInverseTheme(theme);
+            if (inverseTheme != null)
+            {
+                var runtimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(inverseTheme.BaseColorScheme, themeColor);
+                if (runtimeTheme != null) CurrentTheme.AddTheme(runtimeTheme);
+            }
+
+            var generateRuntimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(theme.BaseColorScheme, themeColor);
+            if (generateRuntimeTheme != null)
+                CurrentTheme.ChangeTheme(
+                    Application.Current,
+                    CurrentTheme.AddTheme(generateRuntimeTheme));
+        }
+
+        Application.Current?.MainWindow?.Activate();
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<ThemeManagerService>().AsImplementedInterfaces();
+    }
+
+    #endregion
 }

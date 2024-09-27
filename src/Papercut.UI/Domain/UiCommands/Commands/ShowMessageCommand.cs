@@ -18,18 +18,17 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Domain.UiCommands.Commands
+namespace Papercut.Domain.UiCommands.Commands;
+
+public class ShowMessageCommand : ICommand
 {
-    public class ShowMessageCommand : ICommand
+    public ShowMessageCommand(string messageText, string caption)
     {
-        public ShowMessageCommand(string messageText, string caption)
-        {
-            this.MessageText = messageText;
-            this.Caption = caption;
-        }
-
-        public string MessageText { get; set; }
-
-        public string Caption { get; set; }
+        this.MessageText = messageText;
+        this.Caption = caption;
     }
+
+    public string MessageText { get; set; }
+
+    public string Caption { get; set; }
 }

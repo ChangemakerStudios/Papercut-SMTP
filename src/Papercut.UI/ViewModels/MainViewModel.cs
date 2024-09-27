@@ -53,566 +53,565 @@ using Papercut.Views;
 
 using Serilog.Events;
 
-namespace Papercut.ViewModels
+namespace Papercut.ViewModels;
+
+public class MainViewModel : Conductor<object>,
+    IHandle<SmtpServerBindFailedEvent>
 {
-    public class MainViewModel : Conductor<object>,
-        IHandle<SmtpServerBindFailedEvent>
+    const string WindowTitleDefault = AppConstants.ApplicationName;
+
+    private readonly IAppCommandHub _appCommandHub;
+
+    readonly ForwardRuleDispatch _forwardRuleDispatch;
+
+    readonly AppResourceLocator _resourceLocator;
+
+    private readonly IUiCommandHub _uiCommandHub;
+
+    private readonly INewVersionProvider _newVersionProvider;
+
+    readonly UiLogSinkQueue _uiLogSinkQueue;
+
+    readonly IViewModelWindowManager _viewModelWindowManager;
+
+    private readonly WebView2Information _webView2Information;
+
+    bool _isDeactivated;
+
+    private bool _isDeleteAllConfirmOpen;
+
+    bool _isLogOpen;
+
+    private string? _upgradeVersion;
+
+    private bool _isWebViewInstalled;
+
+    string _logText;
+
+    MetroWindow? _window;
+
+    string _windowTitle = WindowTitleDefault;
+
+    public Deque<string> CurrentLogHistory = new();
+
+    public MainViewModel(
+        IViewModelWindowManager viewModelWindowManager,
+        IAppCommandHub appCommandHub,
+        IUiCommandHub uiCommandHub,
+        INewVersionProvider newVersionProvider,
+        WebView2Information webView2Information,
+        ForwardRuleDispatch forwardRuleDispatch,
+        Func<MessageListViewModel> messageListViewModelFactory,
+        Func<MessageDetailViewModel> messageDetailViewModelFactory,
+        UiLogSinkQueue uiLogSinkQueue,
+        AppResourceLocator resourceLocator)
     {
-        const string WindowTitleDefault = AppConstants.ApplicationName;
+        this._viewModelWindowManager = viewModelWindowManager;
+        this._appCommandHub = appCommandHub;
+        this._uiCommandHub = uiCommandHub;
+        this._newVersionProvider = newVersionProvider;
+        this._webView2Information = webView2Information;
+        this._forwardRuleDispatch = forwardRuleDispatch;
 
-        private readonly IAppCommandHub _appCommandHub;
+        this.MessageListViewModel = messageListViewModelFactory();
+        this.MessageDetailViewModel = messageDetailViewModelFactory();
 
-        readonly ForwardRuleDispatch _forwardRuleDispatch;
+        this.MessageListViewModel.ConductWith(this);
+        this.MessageDetailViewModel.ConductWith(this);
 
-        readonly AppResourceLocator _resourceLocator;
+        this._uiLogSinkQueue = uiLogSinkQueue;
+        this._resourceLocator = resourceLocator;
 
-        private readonly IUiCommandHub _uiCommandHub;
+        this.LogText = webView2Information.IsInstalled
+            ? this._resourceLocator.GetResourceString("LogClientSink.html")
+            : "";
 
-        private readonly INewVersionProvider _newVersionProvider;
+        this.IsWebViewInstalled = this._webView2Information.IsInstalled;
 
-        readonly UiLogSinkQueue _uiLogSinkQueue;
+        this.SetupObservables();
+    }
 
-        readonly IViewModelWindowManager _viewModelWindowManager;
+    public MessageListViewModel MessageListViewModel { get; }
 
-        private readonly WebView2Information _webView2Information;
+    public MessageDetailViewModel MessageDetailViewModel { get; }
 
-        bool _isDeactivated;
+    public bool IsWebViewInstalled
+    {
 
-        private bool _isDeleteAllConfirmOpen;
+        get => this._isWebViewInstalled;
 
-        bool _isLogOpen;
-
-        private string? _upgradeVersion;
-
-        private bool _isWebViewInstalled;
-
-        string _logText;
-
-        MetroWindow? _window;
-
-        string _windowTitle = WindowTitleDefault;
-
-        public Deque<string> CurrentLogHistory = new();
-
-        public MainViewModel(
-            IViewModelWindowManager viewModelWindowManager,
-            IAppCommandHub appCommandHub,
-            IUiCommandHub uiCommandHub,
-            INewVersionProvider newVersionProvider,
-            WebView2Information webView2Information,
-            ForwardRuleDispatch forwardRuleDispatch,
-            Func<MessageListViewModel> messageListViewModelFactory,
-            Func<MessageDetailViewModel> messageDetailViewModelFactory,
-            UiLogSinkQueue uiLogSinkQueue,
-            AppResourceLocator resourceLocator)
+        set
         {
-            this._viewModelWindowManager = viewModelWindowManager;
-            this._appCommandHub = appCommandHub;
-            this._uiCommandHub = uiCommandHub;
-            this._newVersionProvider = newVersionProvider;
-            this._webView2Information = webView2Information;
-            this._forwardRuleDispatch = forwardRuleDispatch;
-
-            this.MessageListViewModel = messageListViewModelFactory();
-            this.MessageDetailViewModel = messageDetailViewModelFactory();
-
-            this.MessageListViewModel.ConductWith(this);
-            this.MessageDetailViewModel.ConductWith(this);
-
-            this._uiLogSinkQueue = uiLogSinkQueue;
-            this._resourceLocator = resourceLocator;
-
-            this.LogText = webView2Information.IsInstalled
-                ? this._resourceLocator.GetResourceString("LogClientSink.html")
-                : "";
-
-            this.IsWebViewInstalled = this._webView2Information.IsInstalled;
-
-            this.SetupObservables();
+            this._isWebViewInstalled = value;
+            this.NotifyOfPropertyChange(() => this.IsWebViewInstalled);
         }
+    }
 
-        public MessageListViewModel MessageListViewModel { get; }
-
-        public MessageDetailViewModel MessageDetailViewModel { get; }
-
-        public bool IsWebViewInstalled
+    public string LogText
+    {
+        get => this._logText;
+        set
         {
+            this._logText = value;
+            this.NotifyOfPropertyChange(() => this.LogText);
+        }
+    }
 
-            get => this._isWebViewInstalled;
+    public bool IsDeactivated
+    {
+        get => this._isDeactivated;
+        set
+        {
+            this._isDeactivated = value;
+            this.NotifyOfPropertyChange(() => this.IsDeactivated);
+        }
+    }
 
-            set
+    public string WindowTitle
+    {
+        get => this._windowTitle;
+        set
+        {
+            this._windowTitle = value;
+            this.NotifyOfPropertyChange(() => this.WindowTitle);
+        }
+    }
+
+    public string Version => $"{AppConstants.ApplicationName} v{this.GetVersion()}";
+
+    public string? UpgradeVersion
+    {
+        get => this._upgradeVersion;
+        set
+        {
+            if (this._upgradeVersion != value)
             {
-                this._isWebViewInstalled = value;
-                this.NotifyOfPropertyChange(() => this.IsWebViewInstalled);
+                this._upgradeVersion = value;
+                this.NotifyOfPropertyChange(() => this.UpgradeVersion);
             }
         }
+    }
 
-        public string LogText
+    public bool IsLogOpen
+    {
+        get => this._isLogOpen;
+        set
         {
-            get => this._logText;
-            set
+            if (this._isLogOpen != value)
             {
-                this._logText = value;
-                this.NotifyOfPropertyChange(() => this.LogText);
+                this._isLogOpen = value;
+                this.NotifyOfPropertyChange(() => this.IsLogOpen);
             }
         }
+    }
 
-        public bool IsDeactivated
+    public bool IsDeleteAllConfirmOpen
+    {
+        get => this._isDeleteAllConfirmOpen;
+        set
         {
-            get => this._isDeactivated;
-            set
+            if (this._isDeleteAllConfirmOpen != value)
             {
-                this._isDeactivated = value;
-                this.NotifyOfPropertyChange(() => this.IsDeactivated);
+                this._isDeleteAllConfirmOpen = value;
+                this.NotifyOfPropertyChange(() => this.IsDeleteAllConfirmOpen);
             }
         }
+    }
 
-        public string WindowTitle
-        {
-            get => this._windowTitle;
-            set
-            {
-                this._windowTitle = value;
-                this.NotifyOfPropertyChange(() => this.WindowTitle);
-            }
-        }
+    public Task HandleAsync(SmtpServerBindFailedEvent message, CancellationToken cancellationToken = default)
+    {
+        MessageBox.Show(
+            "Failed to start SMTP server listening. The IP and Port combination is in use by another program. To fix, change the server bindings in the options.",
+            "Failed");
 
-        public string Version => $"{AppConstants.ApplicationName} v{this.GetVersion()}";
+        this.ShowOptions();
 
-        public string? UpgradeVersion
-        {
-            get => this._upgradeVersion;
-            set
-            {
-                if (this._upgradeVersion != value)
+        return Task.CompletedTask;
+    }
+
+    string? GetVersion()
+    {
+        var productVersion =
+            FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
+
+        return productVersion?.Split('+').FirstOrDefault();
+    }
+
+    protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        this._newVersionProvider.GetLatestVersionAsync(cancellationToken).ToObservable()
+            .Subscribe(
+                updateInfo =>
                 {
-                    this._upgradeVersion = value;
-                    this.NotifyOfPropertyChange(() => this.UpgradeVersion);
-                }
-            }
-        }
-
-        public bool IsLogOpen
-        {
-            get => this._isLogOpen;
-            set
-            {
-                if (this._isLogOpen != value)
-                {
-                    this._isLogOpen = value;
-                    this.NotifyOfPropertyChange(() => this.IsLogOpen);
-                }
-            }
-        }
-
-        public bool IsDeleteAllConfirmOpen
-        {
-            get => this._isDeleteAllConfirmOpen;
-            set
-            {
-                if (this._isDeleteAllConfirmOpen != value)
-                {
-                    this._isDeleteAllConfirmOpen = value;
-                    this.NotifyOfPropertyChange(() => this.IsDeleteAllConfirmOpen);
-                }
-            }
-        }
-
-        public Task HandleAsync(SmtpServerBindFailedEvent message, CancellationToken cancellationToken = default)
-        {
-            MessageBox.Show(
-                "Failed to start SMTP server listening. The IP and Port combination is in use by another program. To fix, change the server bindings in the options.",
-                "Failed");
-
-            this.ShowOptions();
-
-            return Task.CompletedTask;
-        }
-
-        string? GetVersion()
-        {
-            var productVersion =
-                FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
-
-            return productVersion?.Split('+').FirstOrDefault();
-        }
-
-        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
-        {
-            this._newVersionProvider.GetLatestVersionAsync(cancellationToken).ToObservable()
-                .Subscribe(
-                    updateInfo =>
+                    if (updateInfo != null)
                     {
-                        if (updateInfo != null)
-                        {
-                            this.UpgradeVersion = $"Upgrade available! Click here to upgrade to v{updateInfo.TargetFullRelease.Version}";
-                        }
-                        else
-                        {
-                            this.UpgradeVersion = null;
-                        }
-                    });
-
-            await base.OnActivateAsync(cancellationToken);
-        }
-
-        public Task ExecuteAsync(ShowMainWindowCommand command, CancellationToken cancellationToken = default)
-        {
-            if (this._window == null) return Task.CompletedTask;
-
-            if (!this._window.IsVisible) this._window.Show();
-
-            if (this._window.WindowState == WindowState.Minimized) this._window.WindowState = WindowState.Normal;
-
-            this._window.Activate();
-
-            this._window.Topmost = true;
-            this._window.Topmost = false;
-
-            this._window.Focus();
-
-            if (command.SelectMostRecentMessage)
-            {
-                this.MessageListViewModel.SelectMostRecentMessage();
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public async Task ExecuteAsync(
-            ShowMessageCommand message,
-            CancellationToken cancellationToken = default)
-        {
-            this.MessageDetailViewModel.IsLoading = true;
-            await this._window.ShowMessageAsync(message.Caption, message.MessageText);
-            this.MessageDetailViewModel.IsLoading = false;
-        }
-
-        public Task ExecuteAsync(ShowOptionWindowCommand message, CancellationToken cancellationToken = default)
-        {
-            this.ShowOptions();
-
-            return Task.CompletedTask;
-        }
-
-        protected override void OnViewLoaded(object view)
-        {
-            base.OnViewLoaded(view);
-
-            var typedView = view as MainView;
-
-            Debug.Assert(typedView != null, nameof(typedView) + " != null");
-
-            if (!this._webView2Information.IsInstalled)
-            {
-                this.GetPropertyValues(m => m.LogText)
-                    .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
-                    .ObserveOn(Dispatcher.CurrentDispatcher)
-                    .Subscribe(m =>
+                        this.UpgradeVersion = $"Upgrade available! Click here to upgrade to v{updateInfo.TargetFullRelease.Version}";
+                    }
+                    else
                     {
-                        typedView.LogPanelNoWebView.AppendText(m);
-                    });
-            }
-            else
-            {
-                typedView.LogPanel.CoreWebView2InitializationCompleted += (_, _) =>
-                {
-                    this.SetupWebView(typedView.LogPanel);
-                };
-            }
+                        this.UpgradeVersion = null;
+                    }
+                });
+
+        await base.OnActivateAsync(cancellationToken);
+    }
+
+    public Task ExecuteAsync(ShowMainWindowCommand command, CancellationToken cancellationToken = default)
+    {
+        if (this._window == null) return Task.CompletedTask;
+
+        if (!this._window.IsVisible) this._window.Show();
+
+        if (this._window.WindowState == WindowState.Minimized) this._window.WindowState = WindowState.Normal;
+
+        this._window.Activate();
+
+        this._window.Topmost = true;
+        this._window.Topmost = false;
+
+        this._window.Focus();
+
+        if (command.SelectMostRecentMessage)
+        {
+            this.MessageListViewModel.SelectMostRecentMessage();
         }
 
-        private void SetupWebView(WebView2Base logPanel)
-        {
-            logPanel.CoreWebView2.DisableEdgeFeatures();
-            logPanel.NavigateToString(this.GetLogSinkHtml());
+        return Task.CompletedTask;
+    }
 
+    public async Task ExecuteAsync(
+        ShowMessageCommand message,
+        CancellationToken cancellationToken = default)
+    {
+        this.MessageDetailViewModel.IsLoading = true;
+        await this._window.ShowMessageAsync(message.Caption, message.MessageText);
+        this.MessageDetailViewModel.IsLoading = false;
+    }
+
+    public Task ExecuteAsync(ShowOptionWindowCommand message, CancellationToken cancellationToken = default)
+    {
+        this.ShowOptions();
+
+        return Task.CompletedTask;
+    }
+
+    protected override void OnViewLoaded(object view)
+    {
+        base.OnViewLoaded(view);
+
+        var typedView = view as MainView;
+
+        Debug.Assert(typedView != null, nameof(typedView) + " != null");
+
+        if (!this._webView2Information.IsInstalled)
+        {
             this.GetPropertyValues(m => m.LogText)
                 .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
                 .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(m =>
                 {
-                    logPanel.NavigateToString(m);
+                    typedView.LogPanelNoWebView.AppendText(m);
                 });
         }
-
-        private string GetLogSinkHtml()
+        else
         {
-            return this._resourceLocator.GetResourceString("LogClientSink.html");
-        }
-
-        public IEnumerable<string> RenderLogEventParts(LogEvent e)
-        {
-            if (!this._webView2Information.IsInstalled)
+            typedView.LogPanel.CoreWebView2InitializationCompleted += (_, _) =>
             {
-                yield return $"[{e.Timestamp:G}][\"{e.Level}\"] {e.RenderMessage()}\r";
-                if (e.Exception != null)
-                {
-                    yield return $"Exception:</b> {e.Exception.Message}\r";
-                }
-            }
-            else
-            {
-                yield return $@"<div class=""logEntry {e.Level}"">";
-                yield return $@"<span class=""date"">{e.Timestamp:G}</span>";
-                yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
-                yield return e.RenderMessage().Linkify();
-                if (e.Exception != null)
-                {
-                    yield return
-                        $@"<br/><span class=""fatal""><b>Exception:</b> {e.Exception.Message.Linkify()}</span>";
-                }
+                this.SetupWebView(typedView.LogPanel);
+            };
+        }
+    }
 
-                yield return @"</div>";
+    private void SetupWebView(WebView2Base logPanel)
+    {
+        logPanel.CoreWebView2.DisableEdgeFeatures();
+        logPanel.NavigateToString(this.GetLogSinkHtml());
+
+        this.GetPropertyValues(m => m.LogText)
+            .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
+            .ObserveOn(Dispatcher.CurrentDispatcher)
+            .Subscribe(m =>
+            {
+                logPanel.NavigateToString(m);
+            });
+    }
+
+    private string GetLogSinkHtml()
+    {
+        return this._resourceLocator.GetResourceString("LogClientSink.html");
+    }
+
+    public IEnumerable<string> RenderLogEventParts(LogEvent e)
+    {
+        if (!this._webView2Information.IsInstalled)
+        {
+            yield return $"[{e.Timestamp:G}][\"{e.Level}\"] {e.RenderMessage()}\r";
+            if (e.Exception != null)
+            {
+                yield return $"Exception:</b> {e.Exception.Message}\r";
             }
         }
-
-        void SetupObservables()
+        else
         {
-            this.MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
-                .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
-                .ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(
-                    _ => this.MessageDetailViewModel.LoadMessageEntry(this.MessageListViewModel.SelectedMessage));
+            yield return $@"<div class=""logEntry {e.Level}"">";
+            yield return $@"<span class=""date"">{e.Timestamp:G}</span>";
+            yield return $@"[<span class=""errorLevel"">{e.Level}</span>]";
+            yield return e.RenderMessage().Linkify();
+            if (e.Exception != null)
+            {
+                yield return
+                    $@"<br/><span class=""fatal""><b>Exception:</b> {e.Exception.Message.Linkify()}</span>";
+            }
 
-            Observable.FromEventPattern<EventHandler, EventArgs>(
-                    h => new EventHandler(h),
-                    h => this._uiLogSinkQueue.LogEvent += h,
-                    h => this._uiLogSinkQueue.LogEvent -= h,
-                    TaskPoolScheduler.Default)
-                .Buffer(TimeSpan.FromSeconds(1)) // this will cause calling the Subscribe method every second.
-                .Select(
-                    _ =>
+            yield return @"</div>";
+        }
+    }
+
+    void SetupObservables()
+    {
+        this.MessageListViewModel.GetPropertyValues(m => m.SelectedMessage)
+            .Throttle(TimeSpan.FromMilliseconds(200), TaskPoolScheduler.Default)
+            .ObserveOn(Dispatcher.CurrentDispatcher)
+            .Subscribe(
+                _ => this.MessageDetailViewModel.LoadMessageEntry(this.MessageListViewModel.SelectedMessage));
+
+        Observable.FromEventPattern<EventHandler, EventArgs>(
+                h => new EventHandler(h),
+                h => this._uiLogSinkQueue.LogEvent += h,
+                h => this._uiLogSinkQueue.LogEvent -= h,
+                TaskPoolScheduler.Default)
+            .Buffer(TimeSpan.FromSeconds(1)) // this will cause calling the Subscribe method every second.
+            .Select(
+                _ =>
+                {
+                    return
+                        this._uiLogSinkQueue.GetLastEvents()
+                            .Select(e => string.Join(" ", this.RenderLogEventParts(e)))
+                            .ToList();
+                })
+            .Where(s => s.Any())
+            .ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(
+                o =>
+                {
+                    // If nothing added, return and don't process any data. And don't change LogText which would update the logs WebView2 component.
+                    if(!o.Any()) { return; }
+
+                    foreach (var s in o) this.CurrentLogHistory.PushFront(s);
+
+                    if (this.CurrentLogHistory.Count > 150)
                     {
-                        return
-                            this._uiLogSinkQueue.GetLastEvents()
-                                .Select(e => string.Join(" ", this.RenderLogEventParts(e)))
-                                .ToList();
-                    })
-                .Where(s => s.Any())
-                .ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(
-                    o =>
-                    {
-                        // If nothing added, return and don't process any data. And don't change LogText which would update the logs WebView2 component.
-                        if(!o.Any()) { return; }
-
-                        foreach (var s in o) this.CurrentLogHistory.PushFront(s);
-
-                        if (this.CurrentLogHistory.Count > 150)
+                        // prune
+                        while (this.CurrentLogHistory.Count > 100)
                         {
-                            // prune
-                            while (this.CurrentLogHistory.Count > 100)
-                            {
-                                this.CurrentLogHistory.PopBack();
-                            }
+                            this.CurrentLogHistory.PopBack();
+                        }
 
-                            if (!this._webView2Information.IsInstalled)
-                            {
-                                var logItems = this.CurrentLogHistory.ToList();
-                                this.LogText = string.Join("", logItems);
-                            }
-                            else
-                            {
-                                // required pruning -- go ahead and replace the whole thing
-                                var html = this.GetLogSinkHtml();
-                                var logItems = this.CurrentLogHistory.ToList();
-                                this.LogText = html.Replace(
-                                    "<body>",
-                                    $"<body>{string.Join("", logItems)}");
-                            }
+                        if (!this._webView2Information.IsInstalled)
+                        {
+                            var logItems = this.CurrentLogHistory.ToList();
+                            this.LogText = string.Join("", logItems);
                         }
                         else
                         {
-                            o.Reverse();
-
-                            if (!this._webView2Information.IsInstalled)
-                            {
-                                this.LogText = string.Join("", o);
-                            }
-                            else
-                            {                                
-                                this.LogText = this.LogText.Replace(
-                                    "<body>",
-                                    $"<body>{string.Join("", o)}");
-                            }
+                            // required pruning -- go ahead and replace the whole thing
+                            var html = this.GetLogSinkHtml();
+                            var logItems = this.CurrentLogHistory.ToList();
+                            this.LogText = html.Replace(
+                                "<body>",
+                                $"<body>{string.Join("", logItems)}");
                         }
-                    });
+                    }
+                    else
+                    {
+                        o.Reverse();
 
-            this.GetPropertyValues(m => m.IsLogOpen)
-                .ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(this.SetIsLoading);
+                        if (!this._webView2Information.IsInstalled)
+                        {
+                            this.LogText = string.Join("", o);
+                        }
+                        else
+                        {                                
+                            this.LogText = this.LogText.Replace(
+                                "<body>",
+                                $"<body>{string.Join("", o)}");
+                        }
+                    }
+                });
 
-            this.GetPropertyValues(m => m.IsDeleteAllConfirmOpen)
-                .ObserveOn(Dispatcher.CurrentDispatcher)
-                .Subscribe(this.SetIsLoading);
+        this.GetPropertyValues(m => m.IsLogOpen)
+            .ObserveOn(Dispatcher.CurrentDispatcher)
+            .Subscribe(this.SetIsLoading);
 
-            this._uiCommandHub.OnShowMainWindow.ObserveOn(Dispatcher.CurrentDispatcher)
-                .SubscribeAsync(async c => await this.ExecuteAsync(c));
+        this.GetPropertyValues(m => m.IsDeleteAllConfirmOpen)
+            .ObserveOn(Dispatcher.CurrentDispatcher)
+            .Subscribe(this.SetIsLoading);
 
-            this._uiCommandHub.OnShowMessage.ObserveOn(Dispatcher.CurrentDispatcher)
-                .SubscribeAsync(async c => await this.ExecuteAsync(c));
+        this._uiCommandHub.OnShowMainWindow.ObserveOn(Dispatcher.CurrentDispatcher)
+            .SubscribeAsync(async c => await this.ExecuteAsync(c));
 
-            this._uiCommandHub.OnShowOptionWindow.ObserveOn(Dispatcher.CurrentDispatcher)
-                .SubscribeAsync(async c => await this.ExecuteAsync(c));
-        }
+        this._uiCommandHub.OnShowMessage.ObserveOn(Dispatcher.CurrentDispatcher)
+            .SubscribeAsync(async c => await this.ExecuteAsync(c));
 
-        public void GoToSite()
-        {
-            new Uri("https://github.com/ChangemakerStudios/Papercut-SMTP").OpenUri();
-        }
+        this._uiCommandHub.OnShowOptionWindow.ObserveOn(Dispatcher.CurrentDispatcher)
+            .SubscribeAsync(async c => await this.ExecuteAsync(c));
+    }
 
-        public void ShowRulesConfiguration()
+    public void GoToSite()
+    {
+        new Uri("https://github.com/ChangemakerStudios/Papercut-SMTP").OpenUri();
+    }
+
+    public void ShowRulesConfiguration()
+    {
+        this.CloseFlyouts();
+
+        this._viewModelWindowManager.ShowDialogWithViewModel<RulesConfigurationViewModel>();
+    }
+
+    public void DeleteAll()
+    {
+        this.MessageListViewModel.DeleteAll();
+        this.IsDeleteAllConfirmOpen = false;
+    }
+
+    public void CancelDeleteAll()
+    {
+        this.IsDeleteAllConfirmOpen = false;
+    }
+
+    public void ShowConfirmDeleteAll()
+    {
+        this.CloseFlyouts();
+        this.IsDeleteAllConfirmOpen = true;
+    }
+
+    public void ToggleLog()
+    {
+        if (!this.IsLogOpen)
         {
             this.CloseFlyouts();
-
-            this._viewModelWindowManager.ShowDialogWithViewModel<RulesConfigurationViewModel>();
         }
 
-        public void DeleteAll()
-        {
-            this.MessageListViewModel.DeleteAll();
-            this.IsDeleteAllConfirmOpen = false;
-        }
+        this.IsLogOpen = !this.IsLogOpen;
+    }
 
-        public void CancelDeleteAll()
-        {
-            this.IsDeleteAllConfirmOpen = false;
-        }
+    public void ShowOptions()
+    {
+        this.CloseFlyouts();
 
-        public void ShowConfirmDeleteAll()
-        {
-            this.CloseFlyouts();
-            this.IsDeleteAllConfirmOpen = true;
-        }
+        this._viewModelWindowManager.ShowDialogWithViewModel<OptionsViewModel>();
+    }
 
-        public void ToggleLog()
+    private void CloseFlyouts()
+    {
+        this.IsLogOpen = false;
+        this.IsDeleteAllConfirmOpen = false;
+    }
+
+    public void Exit()
+    {
+        this._appCommandHub.Shutdown();
+    }
+
+    private void SetIsLoading(bool isLoading)
+    {
+        this.MessageListViewModel.IsLoading = isLoading;
+        this.MessageDetailViewModel.IsLoading = isLoading;
+    }
+
+    public async Task<ProgressDialogController> ShowForwardingEmailProgress()
+    {
+        this.SetIsLoading(true);
+
+        Task<ProgressDialogController> progressController = this._window.ShowProgressAsync("Forwarding Email...", "Please wait");
+
+        ProgressDialogController progressDialog = await progressController;
+
+        progressDialog.SetCancelable(false);
+        progressDialog.SetIndeterminate();
+
+        progressDialog.Closed += (_, _) => this.SetIsLoading(false);
+
+        return progressDialog;
+    }
+
+    public async Task ForwardSelected()
+    {
+        if (this.MessageListViewModel.SelectedMessage == null) return;
+
+        var forwardViewModel = new ForwardViewModel {FromSetting = true};
+        bool? result = await this._viewModelWindowManager.ShowDialogAsync(forwardViewModel);
+        if (result == null || !result.Value) return;
+
+        var progressDialog = await this.ShowForwardingEmailProgress();
+
+        try
         {
-            if (!this.IsLogOpen)
+            var forwardRule = new ForwardRule
             {
-                this.CloseFlyouts();
-            }
-
-            this.IsLogOpen = !this.IsLogOpen;
-        }
-
-        public void ShowOptions()
-        {
-            this.CloseFlyouts();
-
-            this._viewModelWindowManager.ShowDialogWithViewModel<OptionsViewModel>();
-        }
-
-        private void CloseFlyouts()
-        {
-            this.IsLogOpen = false;
-            this.IsDeleteAllConfirmOpen = false;
-        }
-
-        public void Exit()
-        {
-            this._appCommandHub.Shutdown();
-        }
-
-        private void SetIsLoading(bool isLoading)
-        {
-            this.MessageListViewModel.IsLoading = isLoading;
-            this.MessageDetailViewModel.IsLoading = isLoading;
-        }
-
-        public async Task<ProgressDialogController> ShowForwardingEmailProgress()
-        {
-            this.SetIsLoading(true);
-
-            Task<ProgressDialogController> progressController = this._window.ShowProgressAsync("Forwarding Email...", "Please wait");
-
-            ProgressDialogController progressDialog = await progressController;
-
-            progressDialog.SetCancelable(false);
-            progressDialog.SetIndeterminate();
-
-            progressDialog.Closed += (_, _) => this.SetIsLoading(false);
-
-            return progressDialog;
-        }
-
-        public async Task ForwardSelected()
-        {
-            if (this.MessageListViewModel.SelectedMessage == null) return;
-
-            var forwardViewModel = new ForwardViewModel {FromSetting = true};
-            bool? result = await this._viewModelWindowManager.ShowDialogAsync(forwardViewModel);
-            if (result == null || !result.Value) return;
-
-            var progressDialog = await this.ShowForwardingEmailProgress();
-
-            try
-            {
-                var forwardRule = new ForwardRule
-                {
-                    FromEmail = forwardViewModel.From,
-                    ToEmail = forwardViewModel.To
-                };
-
-                forwardRule.PopulateServerFromUri(forwardViewModel.Server);
-
-                // send message using relay dispatcher...
-                await this._forwardRuleDispatch.DispatchAsync(
-                    forwardRule,
-                    this.MessageListViewModel.SelectedMessage);
-            }
-            finally
-            {
-                await progressDialog.CloseAsync();
-            }
-        }
-
-        protected override void OnViewAttached(object view, object context)
-        {
-            base.OnViewAttached(view, context);
-
-            this._window = view as MainView;
-
-            if (this._window == null) return;
-
-            //_window.Flyouts.FindChild<FlyoutsControl>("LogFlyouts")
-
-            this._window.StateChanged += (_, _) =>
-            {
-                if (this._window.WindowState == WindowState.Minimized && Settings.Default.MinimizeToTray)
-                {
-                    // Hide the window if minimized so it doesn't show up on the task bar
-                    this._window.Hide();
-                }
+                FromEmail = forwardViewModel.From,
+                ToEmail = forwardViewModel.To
             };
 
-            this._window.Closing += (_, args) =>
-            {
-                if (Application.Current.ShutdownMode == ShutdownMode.OnExplicitShutdown) return;
+            forwardRule.PopulateServerFromUri(forwardViewModel.Server);
 
-                // Cancel close and minimize if setting is set to minimize on close
-                if (Settings.Default.MinimizeOnClose)
+            // send message using relay dispatcher...
+            await this._forwardRuleDispatch.DispatchAsync(
+                forwardRule,
+                this.MessageListViewModel.SelectedMessage);
+        }
+        finally
+        {
+            await progressDialog.CloseAsync();
+        }
+    }
+
+    protected override void OnViewAttached(object view, object context)
+    {
+        base.OnViewAttached(view, context);
+
+        this._window = view as MainView;
+
+        if (this._window == null) return;
+
+        //_window.Flyouts.FindChild<FlyoutsControl>("LogFlyouts")
+
+        this._window.StateChanged += (_, _) =>
+        {
+            if (this._window.WindowState == WindowState.Minimized && Settings.Default.MinimizeToTray)
+            {
+                // Hide the window if minimized so it doesn't show up on the task bar
+                this._window.Hide();
+            }
+        };
+
+        this._window.Closing += (_, args) =>
+        {
+            if (Application.Current.ShutdownMode == ShutdownMode.OnExplicitShutdown) return;
+
+            // Cancel close and minimize if setting is set to minimize on close
+            if (Settings.Default.MinimizeOnClose)
+            {
+                args.Cancel = true;
+                this._window.WindowState = WindowState.Minimized;
+            }
+        };
+
+        this._window.Activated += (_, _) => this.IsDeactivated = false;
+        this._window.Deactivated += (_, _) => this.IsDeactivated = true;
+
+        // Minimize if set to
+        if (Settings.Default.StartMinimized)
+        {
+            bool initialWindowActivate = true;
+            this._window.Activated += (_, _) =>
+            {
+                if (initialWindowActivate)
                 {
-                    args.Cancel = true;
+                    initialWindowActivate = false;
                     this._window.WindowState = WindowState.Minimized;
                 }
             };
-
-            this._window.Activated += (_, _) => this.IsDeactivated = false;
-            this._window.Deactivated += (_, _) => this.IsDeactivated = true;
-
-            // Minimize if set to
-            if (Settings.Default.StartMinimized)
-            {
-                bool initialWindowActivate = true;
-                this._window.Activated += (_, _) =>
-                {
-                    if (initialWindowActivate)
-                    {
-                        initialWindowActivate = false;
-                        this._window.WindowState = WindowState.Minimized;
-                    }
-                };
-            }
         }
     }
 }

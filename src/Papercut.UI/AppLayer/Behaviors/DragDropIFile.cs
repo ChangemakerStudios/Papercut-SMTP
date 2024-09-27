@@ -26,57 +26,56 @@ using Microsoft.Xaml.Behaviors;
 using Papercut.Core.Domain.Message;
 using Papercut.Helpers;
 
-namespace Papercut.AppLayer.Behaviors
+namespace Papercut.AppLayer.Behaviors;
+
+public class DragDropIFile : Behavior<ListBox>
 {
-    public class DragDropIFile : Behavior<ListBox>
+    Point? _dragStartPoint;
+
+    protected override void OnAttached()
     {
-        Point? _dragStartPoint;
+        base.OnAttached();
 
-        protected override void OnAttached()
+        // bind it!
+        this.AssociatedObject.PreviewMouseMove += this.ListBoxPreviewMouseMove;
+        this.AssociatedObject.PreviewMouseLeftButtonDown += this.ListBoxPreviewLeftMouseDown;
+        this.AssociatedObject.PreviewMouseUp += this.ListBoxPreviewMouseUp;
+    }
+
+    void ListBoxPreviewLeftMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not ListBox parent) return;
+
+        if (this._dragStartPoint == null) this._dragStartPoint = e.GetPosition(parent);
+    }
+
+    void ListBoxPreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (sender is not ListBox parent || this._dragStartPoint == null) return;
+
+        if (((DependencyObject)e.OriginalSource).FindAncestor<ScrollBar>() != null) return;
+
+        Point dragPoint = e.GetPosition(parent);
+
+        Vector potentialDragLength = dragPoint - this._dragStartPoint.Value;
+
+        if (potentialDragLength.Length > 10)
         {
-            base.OnAttached();
+            // Get the object source for the selected item
 
-            // bind it!
-            this.AssociatedObject.PreviewMouseMove += this.ListBoxPreviewMouseMove;
-            this.AssociatedObject.PreviewMouseLeftButtonDown += this.ListBoxPreviewLeftMouseDown;
-            this.AssociatedObject.PreviewMouseUp += this.ListBoxPreviewMouseUp;
-        }
-
-        void ListBoxPreviewLeftMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is not ListBox parent) return;
-
-            if (this._dragStartPoint == null) this._dragStartPoint = e.GetPosition(parent);
-        }
-
-        void ListBoxPreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            if (sender is not ListBox parent || this._dragStartPoint == null) return;
-
-            if (((DependencyObject)e.OriginalSource).FindAncestor<ScrollBar>() != null) return;
-
-            Point dragPoint = e.GetPosition(parent);
-
-            Vector potentialDragLength = dragPoint - this._dragStartPoint.Value;
-
-            if (potentialDragLength.Length > 10)
+            // If the data is not null then start the drag drop operation
+            if (parent.GetObjectDataFromPoint(this._dragStartPoint.Value) is IFile entry && !string.IsNullOrWhiteSpace(entry.File))
             {
-                // Get the object source for the selected item
-
-                // If the data is not null then start the drag drop operation
-                if (parent.GetObjectDataFromPoint(this._dragStartPoint.Value) is IFile entry && !string.IsNullOrWhiteSpace(entry.File))
-                {
-                    var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
-                    DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);
-                }
-
-                this._dragStartPoint = null;
+                var dataObject = new DataObject(DataFormats.FileDrop, new[] { entry.File });
+                DragDrop.DoDragDrop(parent, dataObject, DragDropEffects.Copy);
             }
-        }
 
-        void ListBoxPreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
             this._dragStartPoint = null;
         }
+    }
+
+    void ListBoxPreviewMouseUp(object sender, MouseButtonEventArgs e)
+    {
+        this._dragStartPoint = null;
     }
 }

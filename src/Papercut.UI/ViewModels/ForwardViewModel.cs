@@ -24,128 +24,127 @@ using Caliburn.Micro;
 using Papercut.Core;
 using Papercut.Properties;
 
-namespace Papercut.ViewModels
+namespace Papercut.ViewModels;
+
+public class ForwardViewModel : Screen
 {
-    public class ForwardViewModel : Screen
+    static readonly Regex _emailRegex =
+        new Regex(
+            @"(\A(\s*)\Z)|(\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z)",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    string _from;
+
+    bool _fromSetting;
+
+    string _server;
+
+    string _to;
+
+    string _windowTitle = "Forward Message";
+
+    public bool FromSetting
     {
-        static readonly Regex _emailRegex =
-            new Regex(
-                @"(\A(\s*)\Z)|(\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z)",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-        string _from;
-
-        bool _fromSetting;
-
-        string _server;
-
-        string _to;
-
-        string _windowTitle = "Forward Message";
-
-        public bool FromSetting
+        get => this._fromSetting;
+        set
         {
-            get => this._fromSetting;
-            set
-            {
-                this._fromSetting = value;
-                this.NotifyOfPropertyChange(() => this.FromSetting);
-            }
+            this._fromSetting = value;
+            this.NotifyOfPropertyChange(() => this.FromSetting);
+        }
+    }
+
+    public string WindowTitle
+    {
+        get => this._windowTitle;
+        set
+        {
+            this._windowTitle = value;
+            this.NotifyOfPropertyChange(() => this.WindowTitle);
+        }
+    }
+
+    public string Server
+    {
+        get => this._server;
+        set
+        {
+            this._server = value;
+            this.NotifyOfPropertyChange(() => this.Server);
+        }
+    }
+
+    public string To
+    {
+        get => this._to;
+        set
+        {
+            this._to = value;
+            this.NotifyOfPropertyChange(() => this.To);
+        }
+    }
+
+    public string From
+    {
+        get => this._from;
+        set
+        {
+            this._from = value;
+            this.NotifyOfPropertyChange(() => this.From);
+        }
+    }
+
+    void Load()
+    {
+        // Load previous settings
+        this.Server = Settings.Default.ForwardServer;
+        this.To = Settings.Default.ForwardTo;
+        this.From = Settings.Default.ForwardFrom;
+    }
+
+    public async Task Cancel()
+    {
+        await this.TryCloseAsync(false);
+    }
+
+    protected override void OnViewLoaded(object view)
+    {
+        base.OnViewLoaded(view);
+
+        if (this.FromSetting) this.Load();
+    }
+
+    public async Task Send()
+    {
+        if (string.IsNullOrEmpty(this.Server) || string.IsNullOrEmpty(this.From)
+                                              || string.IsNullOrEmpty(this.To))
+        {
+            MessageBox.Show(
+                "All the text boxes are required, fill them in please.",
+                AppConstants.ApplicationName,
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
         }
 
-        public string WindowTitle
+        if (!_emailRegex.IsMatch(this.From) || !_emailRegex.IsMatch(this.To))
         {
-            get => this._windowTitle;
-            set
-            {
-                this._windowTitle = value;
-                this.NotifyOfPropertyChange(() => this.WindowTitle);
-            }
+            MessageBox.Show(
+                "You need to enter valid email addresses.",
+                AppConstants.ApplicationName,
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
         }
 
-        public string Server
+        if (this.FromSetting)
         {
-            get => this._server;
-            set
-            {
-                this._server = value;
-                this.NotifyOfPropertyChange(() => this.Server);
-            }
+            // Save settings for the next time
+            Settings.Default.ForwardServer = this.Server.Trim();
+            Settings.Default.ForwardTo = this.To.Trim();
+            Settings.Default.ForwardFrom = this.From.Trim();
+            Settings.Default.Save();
         }
 
-        public string To
-        {
-            get => this._to;
-            set
-            {
-                this._to = value;
-                this.NotifyOfPropertyChange(() => this.To);
-            }
-        }
-
-        public string From
-        {
-            get => this._from;
-            set
-            {
-                this._from = value;
-                this.NotifyOfPropertyChange(() => this.From);
-            }
-        }
-
-        void Load()
-        {
-            // Load previous settings
-            this.Server = Settings.Default.ForwardServer;
-            this.To = Settings.Default.ForwardTo;
-            this.From = Settings.Default.ForwardFrom;
-        }
-
-        public async Task Cancel()
-        {
-            await this.TryCloseAsync(false);
-        }
-
-        protected override void OnViewLoaded(object view)
-        {
-            base.OnViewLoaded(view);
-
-            if (this.FromSetting) this.Load();
-        }
-
-        public async Task Send()
-        {
-            if (string.IsNullOrEmpty(this.Server) || string.IsNullOrEmpty(this.From)
-                                                  || string.IsNullOrEmpty(this.To))
-            {
-                MessageBox.Show(
-                    "All the text boxes are required, fill them in please.",
-                    AppConstants.ApplicationName,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-                return;
-            }
-
-            if (!_emailRegex.IsMatch(this.From) || !_emailRegex.IsMatch(this.To))
-            {
-                MessageBox.Show(
-                    "You need to enter valid email addresses.",
-                    AppConstants.ApplicationName,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-                return;
-            }
-
-            if (this.FromSetting)
-            {
-                // Save settings for the next time
-                Settings.Default.ForwardServer = this.Server.Trim();
-                Settings.Default.ForwardTo = this.To.Trim();
-                Settings.Default.ForwardFrom = this.From.Trim();
-                Settings.Default.Save();
-            }
-
-            await this.TryCloseAsync(true);
-        }
+        await this.TryCloseAsync(true);
     }
 }

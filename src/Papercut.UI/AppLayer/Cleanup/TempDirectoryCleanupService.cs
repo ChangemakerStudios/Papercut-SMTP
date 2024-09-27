@@ -23,68 +23,67 @@ using Autofac;
 using Papercut.Core.Domain.Application;
 using Papercut.Domain.LifecycleHooks;
 
-namespace Papercut.AppLayer.Cleanup
+namespace Papercut.AppLayer.Cleanup;
+
+public class TempDirectoryCleanupService(IAppMeta appMeta, ILogger logger) : IAppLifecyclePreExit
 {
-    public class TempDirectoryCleanupService(IAppMeta appMeta, ILogger logger) : IAppLifecyclePreExit
+    public Task<AppLifecycleActionResultType> OnPreExit()
     {
-        public Task<AppLifecycleActionResultType> OnPreExit()
+        // time for temp file cleanup
+        this.TryCleanUpTempDirectories();
+
+        return Task.FromResult(AppLifecycleActionResultType.Continue);
+    }
+
+    private void TryCleanUpTempDirectories()
+    {
+        int deleteCount = 0;
+        string tempPath = Path.GetTempPath();
+
+        // try cleanup...
+        try
         {
-            // time for temp file cleanup
-            this.TryCleanUpTempDirectories();
+            string[] tmpDirs = Directory.GetDirectories(tempPath, $"{appMeta.AppName}-*");
 
-            return Task.FromResult(AppLifecycleActionResultType.Continue);
-        }
-
-        private void TryCleanUpTempDirectories()
-        {
-            int deleteCount = 0;
-            string tempPath = Path.GetTempPath();
-
-            // try cleanup...
-            try
+            foreach (string tmpDir in tmpDirs)
             {
-                string[] tmpDirs = Directory.GetDirectories(tempPath, $"{appMeta.AppName}-*");
-
-                foreach (string tmpDir in tmpDirs)
+                try
                 {
-                    try
-                    {
-                        Directory.Delete(tmpDir, true);
-                        deleteCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Warning(ex, @"Unable to delete {TempDirectory}", tmpDir);
-                    }
+                    Directory.Delete(tmpDir, true);
+                    deleteCount++;
+                }
+                catch (Exception ex)
+                {
+                    logger.Warning(ex, @"Unable to delete {TempDirectory}", tmpDir);
                 }
             }
-            catch (Exception ex)
-            {
-                logger.Warning(
-                    ex,
-                    @"Failure running temp directory cleanup on temp path {TempPath}",
-                    tempPath);
-            }
-
-            if (deleteCount > 0)
-                logger.Information("Deleted {DeleteCount} temporary directories", deleteCount);
         }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
+        catch (Exception ex)
         {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<TempDirectoryCleanupService>().AsImplementedInterfaces()
-                .SingleInstance();
+            logger.Warning(
+                ex,
+                @"Failure running temp directory cleanup on temp path {TempPath}",
+                tempPath);
         }
 
-        #endregion
+        if (deleteCount > 0)
+            logger.Information("Deleted {DeleteCount} temporary directories", deleteCount);
     }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<TempDirectoryCleanupService>().AsImplementedInterfaces()
+            .SingleInstance();
+    }
+
+    #endregion
 }

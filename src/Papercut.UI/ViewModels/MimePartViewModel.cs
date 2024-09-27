@@ -18,37 +18,36 @@
 
 using Caliburn.Micro;
 
-namespace Papercut.ViewModels
+namespace Papercut.ViewModels;
+
+public class MimePartViewModel : Screen
 {
-    public class MimePartViewModel : Screen
+    string _partText;
+
+    string _windowTitle = "Mime Part Viewer";
+
+    public string WindowTitle
     {
-        string _partText;
-
-        string _windowTitle = "Mime Part Viewer";
-
-        public string WindowTitle
+        get => this._windowTitle;
+        set
         {
-            get => this._windowTitle;
-            set
-            {
-                this._windowTitle = value;
-                this.NotifyOfPropertyChange(() => this.WindowTitle);
-            }
+            this._windowTitle = value;
+            this.NotifyOfPropertyChange(() => this.WindowTitle);
         }
+    }
 
-        public string PartText
+    public string PartText
+    {
+        get => this._partText;
+        set
         {
-            get => this._partText;
-            set
-            {
-                this._partText = value;
-                this.NotifyOfPropertyChange(() => this.PartText);
-            }
+            this._partText = value;
+            this.NotifyOfPropertyChange(() => this.PartText);
         }
+    }
 
-        public async Task Close()
-        {
-            await this.TryCloseAsync(false);
-        }
+    public async Task Close()
+    {
+        await this.TryCloseAsync(false);
     }
 }

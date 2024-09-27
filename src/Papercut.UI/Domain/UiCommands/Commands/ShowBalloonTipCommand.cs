@@ -20,24 +20,23 @@ using System.Windows.Forms;
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Domain.UiCommands.Commands
+namespace Papercut.Domain.UiCommands.Commands;
+
+public class ShowBalloonTipCommand : ICommand
 {
-    public class ShowBalloonTipCommand : ICommand
+    public ShowBalloonTipCommand(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon)
     {
-        public ShowBalloonTipCommand(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon)
-        {
-            this.Timeout = timeout;
-            this.TipTitle = tipTitle;
-            this.TipText = tipText;
-            this.ToolTipIcon = toolTipIcon;
-        }
-
-        public int Timeout { get; set; }
-
-        public string TipTitle { get; set; }
-
-        public string TipText { get; set; }
-
-        public ToolTipIcon ToolTipIcon { get; set; }
+        this.Timeout = timeout;
+        this.TipTitle = tipTitle;
+        this.TipText = tipText;
+        this.ToolTipIcon = toolTipIcon;
     }
+
+    public int Timeout { get; set; }
+
+    public string TipTitle { get; set; }
+
+    public string TipText { get; set; }
+
+    public ToolTipIcon ToolTipIcon { get; set; }
 }

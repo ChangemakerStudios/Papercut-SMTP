@@ -16,11 +16,10 @@
 // limitations under the License.
 
 
-namespace Papercut.Domain.LifecycleHooks
+namespace Papercut.Domain.LifecycleHooks;
+
+public enum AppLifecycleActionResultType
 {
-    public enum AppLifecycleActionResultType
-    {
-        Continue = 1,
-        Cancel = 10
-    }
+    Continue = 1,
+    Cancel = 10
 }

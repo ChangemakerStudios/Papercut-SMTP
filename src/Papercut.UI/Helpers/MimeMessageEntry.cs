@@ -21,66 +21,65 @@ using MimeKit;
 using Papercut.Core.Domain.Message;
 using Papercut.Message;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public class MimeMessageEntry : MessageEntry
 {
-    public class MimeMessageEntry : MessageEntry
+    private int _attachmentsCount;
+
+    private MessagePriority _priority;
+
+    string _subject;
+
+    public MimeMessageEntry(MessageEntry entry, MimeMessageLoader loader)
+        : base(entry.File)
     {
-        private int _attachmentsCount;
+        this.IsSelected = entry.IsSelected;
+        this.Subject = "Loading...";
 
-        private MessagePriority _priority;
+        loader.GetMessageCallback(this, this.LoadMessageDetails);
+    }
 
-        string _subject;
-
-        public MimeMessageEntry(MessageEntry entry, MimeMessageLoader loader)
-            : base(entry.File)
+    public int AttachmentsCount
+    {
+        get => this._attachmentsCount;
+        set
         {
-            this.IsSelected = entry.IsSelected;
-            this.Subject = "Loading...";
-
-            loader.GetMessageCallback(this, this.LoadMessageDetails);
+            if (value == this._attachmentsCount) return;
+            this._attachmentsCount = value;
+            this.OnPropertyChanged(nameof(this.AttachmentsCount));
+            this.OnPropertyChanged(nameof(this.HasAttachments));
         }
+    }
 
-        public int AttachmentsCount
+    public MessagePriority Priority
+    {
+        get => this._priority;
+        protected set
         {
-            get => this._attachmentsCount;
-            set
-            {
-                if (value == this._attachmentsCount) return;
-                this._attachmentsCount = value;
-                this.OnPropertyChanged(nameof(this.AttachmentsCount));
-                this.OnPropertyChanged(nameof(this.HasAttachments));
-            }
+            if (value == this._priority) return;
+            this._priority = value;
+            this.OnPropertyChanged(nameof(this.Priority));
         }
+    }
 
-        public MessagePriority Priority
+    public string Subject
+    {
+        get => this._subject;
+        protected set
         {
-            get => this._priority;
-            protected set
-            {
-                if (value == this._priority) return;
-                this._priority = value;
-                this.OnPropertyChanged(nameof(this.Priority));
-            }
+            if (value == this._subject) return;
+            this._subject = value;
+            this.OnPropertyChanged(nameof(this.Subject));
         }
+    }
 
-        public string Subject
-        {
-            get => this._subject;
-            protected set
-            {
-                if (value == this._subject) return;
-                this._subject = value;
-                this.OnPropertyChanged(nameof(this.Subject));
-            }
-        }
+    public bool HasAttachments => this.AttachmentsCount > 0;
 
-        public bool HasAttachments => this.AttachmentsCount > 0;
-
-        private void LoadMessageDetails(MimeMessage message)
-        {
-            this.Subject = message.Subject;
-            this.Priority = message.Priority;
-            this.AttachmentsCount = message.Attachments.Count();
-        }
+    private void LoadMessageDetails(MimeMessage message)
+    {
+        this.Subject = message.Subject;
+        this.Priority = message.Priority;
+        this.AttachmentsCount = message.Attachments.Count();
     }
 }

@@ -18,15 +18,14 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Domain.UiCommands.Commands
-{
-    public class ShowMainWindowCommand : IEvent
-    {
-        public ShowMainWindowCommand(bool selectMostRecentMessage = false)
-        {
-            this.SelectMostRecentMessage = selectMostRecentMessage;
-        }
+namespace Papercut.Domain.UiCommands.Commands;
 
-        public bool SelectMostRecentMessage { get; set; }
+public class ShowMainWindowCommand : IEvent
+{
+    public ShowMainWindowCommand(bool selectMostRecentMessage = false)
+    {
+        this.SelectMostRecentMessage = selectMostRecentMessage;
     }
+
+    public bool SelectMostRecentMessage { get; set; }
 }
