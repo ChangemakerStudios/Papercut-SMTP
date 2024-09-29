@@ -85,7 +85,7 @@ public abstract class RuleBase : IRule
         if (handler != null)
         {
             handler(this, new PropertyChangedEventArgs(propertyName));
-            handler(this, new PropertyChangedEventArgs("Description"));
+            handler(this, new PropertyChangedEventArgs(nameof(Description)));
         }
     }
 }
