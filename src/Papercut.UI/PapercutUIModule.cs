@@ -21,6 +21,8 @@ using Autofac.Core;
 
 using Caliburn.Micro;
 
+using Microsoft.Extensions.Logging;
+
 using Papercut.Core;
 using Papercut.Core.Domain.Application;
 using Papercut.Core.Infrastructure.Container;
@@ -29,6 +31,8 @@ using Papercut.Infrastructure.IPComm;
 using Papercut.Infrastructure.Smtp;
 using Papercut.Message;
 using Papercut.Rules;
+
+using Velopack;
 
 namespace Papercut
 {
@@ -45,12 +49,12 @@ namespace Papercut
 
         protected override void Load(ContainerBuilder builder)
         {
-            foreach (var module in this.GetPapercutServiceModules())
+            foreach (var module in GetPapercutServiceModules())
             {
                 builder.RegisterModule(module);
             }
 
-            this.RegisterUI(builder);
+            RegisterUI(builder);
 
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
@@ -58,6 +62,10 @@ namespace Papercut
             builder.Register(_ => new ApplicationMeta(AppConstants.ApplicationName))
                 .As<IAppMeta>()
                 .SingleInstance();
+
+            builder.Register(c =>
+                new UpdateManager(AppConstants.UpgradeUrl,
+                    logger: c.ResolveOptional<ILogger<UpdateManager>>())).AsSelf().SingleInstance();
 
             builder.RegisterType<ViewModelWindowManager>()
                 .As<IViewModelWindowManager>()
@@ -74,7 +82,7 @@ namespace Papercut
 
             builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
 
-            builder.RegisterStaticMethods(this.ThisAssembly);
+            builder.RegisterStaticMethods(ThisAssembly);
 
             base.Load(builder);
         }
@@ -82,7 +90,7 @@ namespace Papercut
         void RegisterUI(ContainerBuilder builder)
         {
             //  register view models
-            builder.RegisterAssemblyTypes(this.ThisAssembly)
+            builder.RegisterAssemblyTypes(ThisAssembly)
                 .Where(type => type.Name.EndsWith("ViewModel"))
                 .AsImplementedInterfaces()
                 .AsSelf()
@@ -90,7 +98,7 @@ namespace Papercut
                 .InstancePerDependency();
 
             //  register views
-            builder.RegisterAssemblyTypes(this.ThisAssembly)
+            builder.RegisterAssemblyTypes(ThisAssembly)
                 .Where(type => type.Name.EndsWith("View"))
                 .AsImplementedInterfaces()
                 .AsSelf()

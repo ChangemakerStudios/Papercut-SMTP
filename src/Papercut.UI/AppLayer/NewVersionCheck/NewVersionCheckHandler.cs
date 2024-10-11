@@ -19,8 +19,6 @@
 using Autofac;
 using Autofac.Util;
 
-using Microsoft.Extensions.Logging;
-
 using NuGet.Versioning;
 
 using Papercut.Core.Infrastructure.Container;
@@ -28,9 +26,11 @@ using Papercut.Domain.LifecycleHooks;
 
 using Velopack;
 
+using ILogger = Serilog.ILogger;
+
 namespace Papercut.AppLayer.NewVersionCheck;
 
-public class NewVersionCheckHandler(ILogger<NewVersionCheckHandler> logger) : Disposable, IAppLifecycleStarted, INewVersionProvider
+public class NewVersionCheckHandler(UpdateManager updateManager, ILogger logger) : Disposable, IAppLifecycleStarted, INewVersionProvider
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
@@ -40,27 +40,27 @@ public class NewVersionCheckHandler(ILogger<NewVersionCheckHandler> logger) : Di
 
     public Task OnStartedAsync()
     {
-        this._backgroundTask = Task.Run(this.RunNewVersionCheck, this._cancellationTokenSource.Token);
+        _backgroundTask = Task.Run(RunNewVersionCheck, _cancellationTokenSource.Token);
 
-        return this._backgroundTask.IsCompleted ? this._backgroundTask : Task.CompletedTask;
+        return _backgroundTask.IsCompleted ? _backgroundTask : Task.CompletedTask;
     }
 
     public async Task<UpdateInfo?> GetLatestVersionAsync(CancellationToken token = default)
     {
-        return await this._updateTask.Task;
+        return await _updateTask.Task;
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing)
         {
-            if (this._backgroundTask != null)
+            if (_backgroundTask != null)
             {
-                await this._cancellationTokenSource.CancelAsync();
+                await _cancellationTokenSource.CancelAsync();
 
                 try
                 {
-                    await this._backgroundTask;
+                    await _backgroundTask;
                 }
                 catch (Exception)
                 {
@@ -68,11 +68,11 @@ public class NewVersionCheckHandler(ILogger<NewVersionCheckHandler> logger) : Di
                 }
             }
 
-            this._updateTask.SetCanceled();
+            _updateTask.SetCanceled();
 
             try
             {
-                await this._updateTask.Task;
+                await _updateTask.Task;
             }
             catch (Exception)
             {
@@ -83,35 +83,33 @@ public class NewVersionCheckHandler(ILogger<NewVersionCheckHandler> logger) : Di
 
     private async Task RunNewVersionCheck()
     {
-        var mgr = new UpdateManager("https://github.com/ChangemakerStudios/Papercut-SMTP", logger: logger);
-
-        if (mgr.IsInstalled)
+        if (updateManager.IsInstalled)
         {
             try
             {
                 // check for new version
-                var newVersion = await mgr.CheckForUpdatesAsync();
+                var newVersion = await updateManager.CheckForUpdatesAsync();
                 if (newVersion != null)
                 {
-                    logger.LogInformation("New Version of Papercut SMTP is Available {@NewVersion}", newVersion);
+                    logger.Information("New Version of Papercut SMTP is Available {@NewVersion}", newVersion);
 
-                    this._updateTask.SetResult(newVersion);
+                    _updateTask.SetResult(newVersion);
                 }
             }
             catch (Exception ex)
             {
-                this._updateTask.SetException(ex);
+                _updateTask.SetException(ex);
             }
         }
         else
         {
-            logger.LogDebug("Papercut was not installed via Velopack. Cannot check for new versions.");
+            logger.Debug("Papercut was not installed via Velopack. Cannot check for new versions.");
         }
 
         this._updateTask.SetResult(null);
 
         // for testing
-        //this._updateTask.SetResult(new UpdateInfo(new VelopackAsset() { Version = new SemanticVersion(10, 0, 0) }, false));
+        //_updateTask.SetResult(new UpdateInfo(new VelopackAsset() { Version = new SemanticVersion(10, 0, 0) }, false));
     }
 
     #region Begin Static Container Registrations

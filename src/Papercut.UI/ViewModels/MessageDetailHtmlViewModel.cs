@@ -181,8 +181,6 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
         coreWebView.WebResourceRequested += async (_, args) =>
         {
-            this._logger.Debug("WebResourceRequested: {@Args}", args);
-
             if (externalNavigation.Contains(args.Request.Uri))
             {
                 // handle the response
@@ -197,8 +195,6 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
         coreWebView.NewWindowRequested += async (_, args) =>
         {
-            this._logger.Debug("NewWindowRequested: {@Args}", args);
-
             var internalUrl = !args.IsUserInitiated || this.IsLocalNavigation(args.Uri);
 
             if (internalUrl)
@@ -221,8 +217,6 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
         coreWebView.NavigationStarting += async (_, args) =>
         {
-            this._logger.Debug("NavigationStarting: {@Args}", args);
-
             var uri = args.Uri;
 
             var internalUrl = !args.IsUserInitiated || this.IsLocalNavigation(uri);

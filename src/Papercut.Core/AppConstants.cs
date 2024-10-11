@@ -24,6 +24,8 @@ namespace Papercut.Core
 
         public const string CompanyName = "Changemaker Studios";
 
+        public const string UpgradeUrl = "https://github.com/ChangemakerStudios/Papercut-SMTP";
+
         public static string AppDataDirectory { get; } =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 CompanyName,
