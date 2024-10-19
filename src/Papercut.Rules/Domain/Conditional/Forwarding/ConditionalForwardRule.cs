@@ -19,70 +19,69 @@
 using System.ComponentModel;
 
 using Autofac;
-
 using Papercut.Common.Extensions;
 using Papercut.Common.Helper;
 using Papercut.Core.Domain.Rules;
+using Papercut.Rules.Domain.Conditional;
 using Papercut.Rules.Domain.Forwarding;
 
-namespace Papercut.Rules.Domain.Conditional.Forwarding
+namespace Papercut.Rules.Domain.Conditional.Forwarding;
+
+[Serializable]
+public class ConditionalForwardRule : ForwardRule, IConditionalRule
 {
-    [Serializable]
-    public class ConditionalForwardRule : ForwardRule, IConditionalRule
+    string _regexBodyMatch;
+
+    string _regexHeaderMatch;
+
+    [Category("Information")]
+    public override string Type => "Conditional Forward";
+
+    [DisplayName("Regex Header Match")]
+    public string RegexHeaderMatch
     {
-        string _regexBodyMatch;
-
-        string _regexHeaderMatch;
-
-        [Category("Information")]
-        public override string Type => "Conditional Forward";
-
-        [DisplayName("Regex Header Match")]
-        public string RegexHeaderMatch
+        get => _regexHeaderMatch;
+        set
         {
-            get => this._regexHeaderMatch;
-            set
-            {
-                if (value == this._regexHeaderMatch)
-                    return;
-                this._regexHeaderMatch = value.IsSet() && value.IsValidRegex() ? value : null; ;
-                this.OnPropertyChanged(nameof(this.RegexHeaderMatch));
-            }
+            if (value == _regexHeaderMatch)
+                return;
+            _regexHeaderMatch = value.IsSet() && value.IsValidRegex() ? value : null; ;
+            OnPropertyChanged(nameof(RegexHeaderMatch));
         }
-
-        [DisplayName("Regex Body Match")]
-        public string RegexBodyMatch
-        {
-            get => this._regexBodyMatch;
-            set
-            {
-                if (value == this._regexBodyMatch)
-                    return;
-
-                this._regexBodyMatch = value.IsSet() && value.IsValidRegex() ? value : null;
-                this.OnPropertyChanged(nameof(this.RegexBodyMatch));
-            }
-        }
-
-        protected override IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
-        {
-            return base.GetPropertiesForDescription().Concat(this.GetProperties());
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-
-            builder.RegisterType<ConditionalForwardRule>().AsSelf().As<IRule>().InstancePerDependency();
-        }
-
-        #endregion
     }
+
+    [DisplayName("Regex Body Match")]
+    public string RegexBodyMatch
+    {
+        get => _regexBodyMatch;
+        set
+        {
+            if (value == _regexBodyMatch)
+                return;
+
+            _regexBodyMatch = value.IsSet() && value.IsValidRegex() ? value : null;
+            OnPropertyChanged(nameof(RegexBodyMatch));
+        }
+    }
+
+    protected override IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
+    {
+        return base.GetPropertiesForDescription().Concat(this.GetProperties());
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+        builder.RegisterType<ConditionalForwardRule>().AsSelf().As<IRule>().InstancePerDependency();
+    }
+
+    #endregion
 }

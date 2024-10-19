@@ -26,86 +26,85 @@ using Papercut.Common.Domain;
 using Papercut.Domain.UiCommands;
 using Papercut.Domain.UiCommands.Commands;
 
-namespace Papercut.AppLayer.UiCommands
+namespace Papercut.AppLayer.UiCommands;
+
+public class UiCommandHub : Disposable, IUiCommandHub, IEventHandler<ShowMainWindowCommand>
 {
-    public class UiCommandHub : Disposable, IUiCommandHub, IEventHandler<ShowMainWindowCommand>
+    private readonly Subject<ShowBalloonTipCommand> _onShowBalloonTip = new Subject<ShowBalloonTipCommand>();
+
+    private readonly Subject<ShowMainWindowCommand> _onShowMainWindow = new Subject<ShowMainWindowCommand>();
+
+    private readonly Subject<ShowMessageCommand> _onShowMessage = new Subject<ShowMessageCommand>();
+
+    private readonly Subject<ShowOptionWindowCommand> _onShowOptionWindow = new Subject<ShowOptionWindowCommand>();
+
+    public IObservable<ShowBalloonTipCommand> OnShowBalloonTip => this._onShowBalloonTip;
+
+    public IObservable<ShowMainWindowCommand> OnShowMainWindow => this._onShowMainWindow;
+
+    public IObservable<ShowMessageCommand> OnShowMessage => this._onShowMessage;
+
+    public IObservable<ShowOptionWindowCommand> OnShowOptionWindow => this._onShowOptionWindow;
+
+    public Task HandleAsync(ShowMainWindowCommand @event, CancellationToken token = default)
     {
-        private readonly Subject<ShowBalloonTipCommand> _onShowBalloonTip = new Subject<ShowBalloonTipCommand>();
+        this._onShowMainWindow.OnNext(@event);
 
-        private readonly Subject<ShowMainWindowCommand> _onShowMainWindow = new Subject<ShowMainWindowCommand>();
-
-        private readonly Subject<ShowMessageCommand> _onShowMessage = new Subject<ShowMessageCommand>();
-
-        private readonly Subject<ShowOptionWindowCommand> _onShowOptionWindow = new Subject<ShowOptionWindowCommand>();
-
-        public IObservable<ShowBalloonTipCommand> OnShowBalloonTip => this._onShowBalloonTip;
-
-        public IObservable<ShowMainWindowCommand> OnShowMainWindow => this._onShowMainWindow;
-
-        public IObservable<ShowMessageCommand> OnShowMessage => this._onShowMessage;
-
-        public IObservable<ShowOptionWindowCommand> OnShowOptionWindow => this._onShowOptionWindow;
-
-        public Task HandleAsync(ShowMainWindowCommand @event, CancellationToken token = default)
-        {
-            this._onShowMainWindow.OnNext(@event);
-
-            return Task.CompletedTask;
-        }
-
-        public void ShowBalloonTip(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon)
-        {
-            if (Properties.Settings.Default.ShowNotifications)
-            {
-                var command = new ShowBalloonTipCommand(timeout, tipTitle, tipText, toolTipIcon);
-                this._onShowBalloonTip.OnNext(command);
-            }
-        }
-
-        public void ShowMainWindow(bool selectMostRecentMessage = false)
-        {
-            var command = new ShowMainWindowCommand(selectMostRecentMessage);
-
-            this._onShowMainWindow.OnNext(command);
-        }
-
-        public void ShowMessage(string messageText, string caption)
-        {
-            var command = new ShowMessageCommand(messageText, caption);
-            this._onShowMessage.OnNext(command);
-        }
-
-        public void ShowOptionWindow()
-        {
-            var command = new ShowOptionWindowCommand();
-            this._onShowOptionWindow.OnNext(command);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this._onShowBalloonTip.Dispose();
-                this._onShowMainWindow.Dispose();
-                this._onShowMessage.Dispose();
-                this._onShowOptionWindow.Dispose();
-            }
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<UiCommandHub>().As<IUiCommandHub>().As<IEventHandler<ShowMainWindowCommand>>().SingleInstance();
-        }
-
-        #endregion
+        return Task.CompletedTask;
     }
+
+    public void ShowBalloonTip(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon)
+    {
+        if (Properties.Settings.Default.ShowNotifications)
+        {
+            var command = new ShowBalloonTipCommand(timeout, tipTitle, tipText, toolTipIcon);
+            this._onShowBalloonTip.OnNext(command);
+        }
+    }
+
+    public void ShowMainWindow(bool selectMostRecentMessage = false)
+    {
+        var command = new ShowMainWindowCommand(selectMostRecentMessage);
+
+        this._onShowMainWindow.OnNext(command);
+    }
+
+    public void ShowMessage(string messageText, string caption)
+    {
+        var command = new ShowMessageCommand(messageText, caption);
+        this._onShowMessage.OnNext(command);
+    }
+
+    public void ShowOptionWindow()
+    {
+        var command = new ShowOptionWindowCommand();
+        this._onShowOptionWindow.OnNext(command);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._onShowBalloonTip.Dispose();
+            this._onShowMainWindow.Dispose();
+            this._onShowMessage.Dispose();
+            this._onShowOptionWindow.Dispose();
+        }
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<UiCommandHub>().As<IUiCommandHub>().As<IEventHandler<ShowMainWindowCommand>>().SingleInstance();
+    }
+
+    #endregion
 }

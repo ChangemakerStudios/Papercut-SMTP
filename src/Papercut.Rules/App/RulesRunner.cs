@@ -17,90 +17,99 @@
 
 
 using System.Reflection;
-
 using Autofac;
 
 using Papercut.Core.Domain.Message;
 using Papercut.Core.Domain.Rules;
 
-namespace Papercut.Rules.App
+namespace Papercut.Rules.App;
+
+public class RulesRunner : IRulesRunner
 {
-    public class RulesRunner : IRulesRunner
+    readonly MethodInfo _dispatchRuleMethod;
+
+    readonly ILifetimeScope _lifetimeScope;
+
+    readonly ILogger _logger;
+
+    public RulesRunner(ILifetimeScope lifetimeScope, ILogger logger)
     {
-        readonly MethodInfo _dispatchRuleMethod;
+        this._lifetimeScope = lifetimeScope;
+        this._logger = logger;
+        var dispatchRuleMethod = this.GetType()
+            .GetMethod(
+                nameof(this.DispatchRuleAsync),
+                BindingFlags.NonPublic | BindingFlags.Instance);
 
-        readonly ILifetimeScope _lifetimeScope;
-
-        readonly ILogger _logger;
-
-        public RulesRunner(ILifetimeScope lifetimeScope, ILogger logger)
+        if (dispatchRuleMethod == null)
         {
-            this._lifetimeScope = lifetimeScope;
-            this._logger = logger;
-            this._dispatchRuleMethod = this.GetType()
-                .GetMethod(
-                    nameof(this.DispatchRuleAsync),
-                    BindingFlags.NonPublic | BindingFlags.Instance);
+            throw new ArgumentNullException(nameof(dispatchRuleMethod), "Dispatch rule method is null");
         }
 
-        public async Task RunAsync(IRule[] rules, MessageEntry messageEntry, CancellationToken token)
+        this._dispatchRuleMethod = dispatchRuleMethod;
+    }
+
+    public async Task RunAsync(IRule[] rules, MessageEntry messageEntry, CancellationToken token)
+    {
+        if (rules == null) throw new ArgumentNullException(nameof(rules));
+        if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
+
+        var ruleTasks = new List<Task>();
+
+        foreach (IRule rule in rules.Where(r => r.IsEnabled))
         {
-            if (rules == null) throw new ArgumentNullException(nameof(rules));
-            if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
+            token.ThrowIfCancellationRequested();
 
-            var ruleTasks = new List<Task>();
+            var invoke = this._dispatchRuleMethod.MakeGenericMethod(rule.GetType()).Invoke(
+                this,
+                [rule, messageEntry, token]);
 
-            foreach (IRule rule in rules.Where(_ => _.IsEnabled))
+            if (invoke is Task invokeTask)
             {
-                token.ThrowIfCancellationRequested();
-
-                ruleTasks.Add(
-                    (Task)this._dispatchRuleMethod.MakeGenericMethod(rule.GetType()).Invoke(
-                        this,
-                        new object[] { rule, messageEntry, token }));
+                ruleTasks.Add(invokeTask);
             }
-
-            await Task.WhenAll(ruleTasks);
         }
 
-        [UsedImplicitly]
-        async Task DispatchRuleAsync<TRule>(TRule rule, MessageEntry messageEntry, CancellationToken token)
-            where TRule : IRule
+        await Task.WhenAll(ruleTasks).WaitAsync(token);
+    }
+
+    [UsedImplicitly]
+    async Task DispatchRuleAsync<TRule>(TRule rule, MessageEntry messageEntry, CancellationToken token)
+        where TRule : IRule
+    {
+        this._logger.Information(
+            "Running Rule Dispatch for Rule {Rule} on Message {@MessageEntry}",
+            rule,
+            messageEntry);
+
+        try
         {
-            this._logger.Information(
-                "Running Rule Dispatch for Rule {Rule} on Message {@MessageEntry}",
+            var ruleDispatcher = this._lifetimeScope.Resolve<IRuleDispatcher<TRule>>();
+            await ruleDispatcher.DispatchAsync(rule, messageEntry, token);
+        }
+        catch (Exception ex)
+        {
+            this._logger.Warning(
+                ex,
+                "Failure Dispatching Rule {Rule} for Message {@MessageEntry}",
                 rule,
                 messageEntry);
-
-            try
-            {
-                var ruleDispatcher = this._lifetimeScope.Resolve<IRuleDispatcher<TRule>>();
-                await ruleDispatcher.DispatchAsync(rule, messageEntry, token);
-            }
-            catch (Exception ex)
-            {
-                this._logger.Warning(
-                    ex,
-                    "Failure Dispatching Rule {Rule} for Message {@MessageEntry}",
-                    rule,
-                    messageEntry);
-            }
         }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-
-            builder.RegisterType<RulesRunner>().As<IRulesRunner>().SingleInstance();
-        }
-
-        #endregion
     }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+        builder.RegisterType<RulesRunner>().As<IRulesRunner>().SingleInstance();
+    }
+
+    #endregion
 }

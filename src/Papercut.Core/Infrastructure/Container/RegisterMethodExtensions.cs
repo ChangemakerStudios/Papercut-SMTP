@@ -59,7 +59,7 @@ namespace Papercut.Core.Infrastructure.Container
                         z => new Action<ContainerBuilder>(
                             c =>
                             {
-                                Log.Debug(
+                                Log.Verbose(
                                     "Invoking Registration Method {MethodType} {MethodName}",
                                     z.DeclaringType?.ToString(),
                                     z.ToString());

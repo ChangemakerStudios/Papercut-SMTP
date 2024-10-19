@@ -16,31 +16,30 @@
 // limitations under the License.
 
 
+using System.Reflection;
+
 using Autofac.Extensions.DependencyInjection;
 
 using ElectronNET.API;
 
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Logging;
-
-using Serilog.Core;
-using Serilog.Debugging;
-using Serilog.ExceptionalLogContext;
 
 namespace Papercut.Service;
 
 public class Program
 {
-    const string AppName= "Papercut.SMTP.Service";
+    private static readonly IAppMeta AppMeta = new ApplicationMeta("Papercut.SMTP.Service", Assembly.GetExecutingAssembly().GetVersion());
 
     private static readonly CancellationTokenSource _cancellationTokenSource = new();
 
     public static async Task Main(string[] args)
     {
-        Console.Title = AppName;
+        Console.Title = AppMeta.AppName;
 
         Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
 
@@ -51,7 +50,7 @@ public class Program
     {
         try
         {
-            await CreateHostBuilder(args).Build().RunAsync(_cancellationTokenSource.Token);
+            await CreateWebApp(args).RunAsync(_cancellationTokenSource.Token);
         }
         catch (Exception ex) when (ex is not TaskCanceledException and not ObjectDisposedException)
         {
@@ -69,56 +68,49 @@ public class Program
         _cancellationTokenSource.Cancel();
     }
 
-    public static IHostBuilder CreateHostBuilder(string[] args)
+    private static WebApplication CreateWebApp(string[] args)
     {
-        return Host.CreateDefaultBuilder(args)
-            .UseWindowsService(
-                options =>
-                {
-                    options.ServiceName = AppName;
-                })
-            .UseContentRoot(AppContext.BaseDirectory)
-            .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-            .ConfigureServices(
-                (context, sp) =>
-                {
-                    sp.AddSingleton(context.Configuration);
-                    sp.AddSingleton(context.HostingEnvironment);
-                    sp.AddSingleton(new LoggingLevelSwitch());
-                })
-            .ConfigureWebHostDefaults(
-                (webBuilder) =>
-                {
-                    webBuilder.ConfigureLogging(
-                        s =>
-                        {
-                            s.ClearProviders();
-                        });
-                    webBuilder.UseElectron(args);
-                    webBuilder.UseStartup<PapercutServiceStartup>();
-                })
-            .UseSerilog(CreateDefaultLogger)
-            .ConfigureServices(
-                (context, sp) =>
-                {
-                    if (HybridSupport.IsElectronActive)
-                        sp.AddHostedService<ElectronService>();
-                });
+        var applicationOptions = new WebApplicationOptions()
+                                 { ContentRootPath = AppContext.BaseDirectory, Args = args };
+
+        var builder = WebApplication.CreateBuilder(applicationOptions);
+
+        builder.Host.UseWindowsService(
+            options =>
+            {
+                options.ServiceName = AppMeta.AppName;
+            }).ConfigureServices(
+            (context, sp) =>
+            {
+                sp.AddSingleton(context.Configuration);
+                sp.AddSingleton(context.HostingEnvironment);
+
+                if (HybridSupport.IsElectronActive)
+                    sp.AddHostedService<ElectronService>();
+            });
+
+        builder.Logging.ClearProviders();
+        builder.Host.UseSerilog();
+        builder.WebHost.UseElectron(args);
+
+        var startup = new PapercutServiceStartup();
+
+        builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory(startup.ConfigureContainer));
+        startup.ConfigureServices(builder.Services);
+
+        var webApp = builder.Build();
+
+        startup.Configure(webApp);
+
+        return webApp;
     }
 
-    private static void CreateDefaultLogger(HostBuilderContext context, IServiceProvider services, LoggerConfiguration configuration)
+    #region Begin Static Container Registrations
+
+    static void Register(ContainerBuilder builder)
     {
-        var appMeta = services.GetRequiredService<IAppMeta>();
-
-        configuration
-            .Enrich.FromLogContext()
-            .Enrich.WithExceptionalLogContext()
-            .Enrich.WithProperty("AppName", appMeta.AppName)
-            .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
-            .WriteTo.Console()
-            .ReadFrom.Configuration(context.Configuration)
-            .ReadFrom.Services(services);
-
-        SelfLog.Enable(s => Console.Error.WriteLine(s));
+        builder.RegisterInstance(AppMeta).As<IAppMeta>().SingleInstance();
     }
+
+    #endregion
 }

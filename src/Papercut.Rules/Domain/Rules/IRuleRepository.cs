@@ -18,12 +18,11 @@
 
 using Papercut.Core.Domain.Rules;
 
-namespace Papercut.Rules.Domain.Rules
-{
-    public interface IRuleRepository
-    {
-        void SaveRules(IList<IRule> rules, string path);
+namespace Papercut.Rules.Domain.Rules;
 
-        IList<IRule> LoadRules(string path);
-    }
+public interface IRuleRepository
+{
+    void SaveRules(IList<IRule> rules, string path);
+
+    IList<IRule> LoadRules(string path);
 }

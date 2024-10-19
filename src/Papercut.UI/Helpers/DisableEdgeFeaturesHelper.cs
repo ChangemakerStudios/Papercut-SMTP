@@ -18,22 +18,21 @@
 
 using Microsoft.Web.WebView2.Core;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public static class DisableEdgeFeaturesHelper
 {
-    public static class DisableEdgeFeaturesHelper
+    public static void DisableEdgeFeatures(this CoreWebView2 coreWeb)
     {
-        public static void DisableEdgeFeatures(this CoreWebView2 coreWeb)
-        {
-            ArgumentNullException.ThrowIfNull(coreWeb);
+        ArgumentNullException.ThrowIfNull(coreWeb);
 
-            coreWeb.Settings.AreDefaultContextMenusEnabled = false;
-            coreWeb.Settings.IsZoomControlEnabled = false;
-            coreWeb.Settings.AreDevToolsEnabled = false;
-            coreWeb.Settings.AreDefaultScriptDialogsEnabled = false;
-            coreWeb.Settings.IsBuiltInErrorPageEnabled = false;
+        coreWeb.Settings.AreDefaultContextMenusEnabled = false;
+        coreWeb.Settings.IsZoomControlEnabled = false;
+        coreWeb.Settings.AreDevToolsEnabled = false;
+        coreWeb.Settings.AreDefaultScriptDialogsEnabled = false;
+        coreWeb.Settings.IsBuiltInErrorPageEnabled = false;
 
-            // Issue #145 fixed
-            coreWeb.Settings.IsStatusBarEnabled = true;
-        }
+        // Issue #145 fixed
+        coreWeb.Settings.IsStatusBarEnabled = true;
     }
 }

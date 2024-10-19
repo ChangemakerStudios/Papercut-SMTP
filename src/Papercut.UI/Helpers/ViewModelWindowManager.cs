@@ -20,38 +20,37 @@ using Autofac;
 
 using Caliburn.Micro;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public class ViewModelWindowManager(ILifetimeScope lifetimeScope) : WindowManager, IViewModelWindowManager
 {
-    public class ViewModelWindowManager(ILifetimeScope lifetimeScope) : WindowManager, IViewModelWindowManager
+    public async Task<bool?> ShowDialogWithViewModel<TViewModel>(
+        Action<TViewModel>? setViewModel = null,
+        object? context = null)
+        where TViewModel : PropertyChangedBase
     {
-        public async Task<bool?> ShowDialogWithViewModel<TViewModel>(
-            Action<TViewModel>? setViewModel = null,
-            object? context = null)
-            where TViewModel : PropertyChangedBase
-        {
-            var viewModel = lifetimeScope.Resolve<TViewModel>();
-            setViewModel?.Invoke(viewModel);
-            return await this.ShowDialogAsync(viewModel, context);
-        }
+        var viewModel = lifetimeScope.Resolve<TViewModel>();
+        setViewModel?.Invoke(viewModel);
+        return await this.ShowDialogAsync(viewModel, context);
+    }
 
-        public async Task ShowWindowWithViewModelAsync<TViewModel>(
-            Action<TViewModel>? setViewModel = null,
-            object? context = null)
-            where TViewModel : PropertyChangedBase
-        {
-            var viewModel = lifetimeScope.Resolve<TViewModel>();
-            setViewModel?.Invoke(viewModel);
-            await this.ShowWindowAsync(viewModel, context);
-        }
+    public async Task ShowWindowWithViewModelAsync<TViewModel>(
+        Action<TViewModel>? setViewModel = null,
+        object? context = null)
+        where TViewModel : PropertyChangedBase
+    {
+        var viewModel = lifetimeScope.Resolve<TViewModel>();
+        setViewModel?.Invoke(viewModel);
+        await this.ShowWindowAsync(viewModel, context);
+    }
 
-        public async Task ShowPopupWithViewModel<TViewModel>(
-            Action<TViewModel>? setViewModel = null,
-            object? context = null)
-            where TViewModel : PropertyChangedBase
-        {
-            var viewModel = lifetimeScope.Resolve<TViewModel>();
-            setViewModel?.Invoke(viewModel);
-            await this.ShowPopupAsync(viewModel, context);
-        }
+    public async Task ShowPopupWithViewModel<TViewModel>(
+        Action<TViewModel>? setViewModel = null,
+        object? context = null)
+        where TViewModel : PropertyChangedBase
+    {
+        var viewModel = lifetimeScope.Resolve<TViewModel>();
+        setViewModel?.Invoke(viewModel);
+        await this.ShowPopupAsync(viewModel, context);
     }
 }

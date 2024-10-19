@@ -18,8 +18,7 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Domain.UiCommands.Commands
-{
-    public class ShowOptionWindowCommand : ICommand
-    {}
-}
+namespace Papercut.Domain.UiCommands.Commands;
+
+public class ShowOptionWindowCommand : ICommand
+{}

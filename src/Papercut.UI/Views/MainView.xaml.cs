@@ -20,14 +20,13 @@ using MahApps.Metro.Controls;
 
 using Papercut.Helpers;
 
-namespace Papercut.Views
+namespace Papercut.Views;
+
+public partial class MainView : MetroWindow
 {
-    public partial class MainView : MetroWindow
+    public MainView()
     {
-        public MainView()
-        {
-            this.AutoAdjustBorders();
-            this.InitializeComponent();
-        }
+        this.AutoAdjustBorders();
+        this.InitializeComponent();
     }
 }

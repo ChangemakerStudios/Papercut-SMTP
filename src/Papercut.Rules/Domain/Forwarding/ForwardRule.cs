@@ -26,87 +26,86 @@ using Papercut.Common.Extensions;
 using Papercut.Core.Domain.Rules;
 using Papercut.Rules.Domain.Relaying;
 
-namespace Papercut.Rules.Domain.Forwarding
+namespace Papercut.Rules.Domain.Forwarding;
+
+[Serializable]
+public class ForwardRule : RelayRule
 {
-    [Serializable]
-    public class ForwardRule : RelayRule
+    private string _fromEmail;
+
+    private string _toEmail;
+
+    [Category("Information")]
+    public override string Type => "Forward";
+
+    [Category("Settings")]
+    [DisplayName("From Email")]
+    [Description("Forward From Email")]
+    public string FromEmail
     {
-        private string _fromEmail;
-
-        private string _toEmail;
-
-        [Category("Information")]
-        public override string Type => "Forward";
-
-        [Category("Settings")]
-        [DisplayName("From Email")]
-        [Description("Forward From Email")]
-        public string FromEmail
+        get => this._fromEmail;
+        set
         {
-            get => this._fromEmail;
-            set
-            {
-                if (value == this._fromEmail) return;
-                this._fromEmail = value;
-                this.OnPropertyChanged(nameof(this.FromEmail));
-            }
+            if (value == this._fromEmail) return;
+            this._fromEmail = value;
+            this.OnPropertyChanged(nameof(this.FromEmail));
         }
-
-        [Category("Settings")]
-        [DisplayName("To Email")]
-        [Description("Foward To Email")]
-        public string ToEmail
-        {
-            get => this._toEmail;
-            set
-            {
-                if (value == this._toEmail) return;
-                this._toEmail = value;
-                this.OnPropertyChanged(nameof(this.ToEmail));
-            }
-        }
-
-        public override void PopulateFromRule(MimeMessage mimeMessage)
-        {
-            if (mimeMessage == null) throw new ArgumentNullException(nameof(mimeMessage));
-
-            if (!string.IsNullOrWhiteSpace(this.FromEmail))
-            {
-                mimeMessage.From.Clear();
-                mimeMessage.From.Add(
-                    new MailboxAddress(this.FromEmail, this.FromEmail));
-            }
-
-            if (!string.IsNullOrWhiteSpace(this.ToEmail))
-            {
-                mimeMessage.To.Clear();
-                mimeMessage.Bcc.Clear();
-                mimeMessage.Cc.Clear();
-                mimeMessage.To.Add(new MailboxAddress(this.ToEmail, this.ToEmail));
-            }
-
-            base.PopulateFromRule(mimeMessage);
-        }
-
-        protected override IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
-        {
-            return base.GetPropertiesForDescription().Concat(this.GetProperties());
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-
-            builder.RegisterType<ForwardRule>().AsSelf().As<IRule>().InstancePerDependency();
-        }
-
-        #endregion
     }
+
+    [Category("Settings")]
+    [DisplayName("To Email")]
+    [Description("Foward To Email")]
+    public string ToEmail
+    {
+        get => this._toEmail;
+        set
+        {
+            if (value == this._toEmail) return;
+            this._toEmail = value;
+            this.OnPropertyChanged(nameof(this.ToEmail));
+        }
+    }
+
+    public override void PopulateFromRule(MimeMessage mimeMessage)
+    {
+        if (mimeMessage == null) throw new ArgumentNullException(nameof(mimeMessage));
+
+        if (!string.IsNullOrWhiteSpace(this.FromEmail))
+        {
+            mimeMessage.From.Clear();
+            mimeMessage.From.Add(
+                new MailboxAddress(this.FromEmail, this.FromEmail));
+        }
+
+        if (!string.IsNullOrWhiteSpace(this.ToEmail))
+        {
+            mimeMessage.To.Clear();
+            mimeMessage.Bcc.Clear();
+            mimeMessage.Cc.Clear();
+            mimeMessage.To.Add(new MailboxAddress(this.ToEmail, this.ToEmail));
+        }
+
+        base.PopulateFromRule(mimeMessage);
+    }
+
+    protected override IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
+    {
+        return base.GetPropertiesForDescription().Concat(this.GetProperties());
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+        builder.RegisterType<ForwardRule>().AsSelf().As<IRule>().InstancePerDependency();
+    }
+
+    #endregion
 }

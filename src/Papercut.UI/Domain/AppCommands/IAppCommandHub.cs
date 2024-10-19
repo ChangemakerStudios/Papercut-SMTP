@@ -16,12 +16,11 @@
 // limitations under the License.
 
 
-namespace Papercut.Domain.AppCommands
-{
-    public interface IAppCommandHub
-    {
-        IObservable<ShutdownCommand> OnShutdown { get; }
+namespace Papercut.Domain.AppCommands;
 
-        void Shutdown(int exitCode = 0);
-    }
+public interface IAppCommandHub
+{
+    IObservable<ShutdownCommand> OnShutdown { get; }
+
+    void Shutdown(int exitCode = 0);
 }

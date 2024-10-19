@@ -8,12 +8,16 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ApplicationIcon>icons\Papercut-icon.ico</ApplicationIcon>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	</PropertyGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Web\Assets\**" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Remove="electron.manifest.json" />
+		<None Update="appsettings.Production.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="electron.manifest.json">
@@ -21,14 +25,14 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="9.0.0" />
+		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
 		<PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
 		<PackageReference Include="ElectronNET.API" Version="23.6.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
-		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
+		<PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
 		<PackageReference Include="Serilog.ExceptionalLogContext" Version="1.1.0" />
-		<PackageReference Include="Serilog.Sinks.Seq" Version="7.0.0" />
-		<PackageReference Include="Serilog.Expressions" Version="4.0.0" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+		<PackageReference Include="Serilog.Expressions" Version="5.0.0" />
 		<PackageReference Include="SmtpServer" Version="10.0.1" />
 	</ItemGroup>
 	<ItemGroup>
@@ -55,5 +59,9 @@
 		<None Update="icons\Papercut-icon.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Update="JetBrains.Annotations" Version="2024.2.0" />
+	  <PackageReference Update="Serilog" Version="4.0.2" />
 	</ItemGroup>
 </Project>

@@ -18,21 +18,20 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Domain.Events
+namespace Papercut.Domain.Events;
+
+public class PapercutServiceStatusEvent : IEvent
 {
-    public class PapercutServiceStatusEvent : IEvent
+    public PapercutServiceStatusEvent(PapercutServiceStatusType papercutServiceStatus)
     {
-        public PapercutServiceStatusEvent(PapercutServiceStatusType papercutServiceStatus)
-        {
-            this.PapercutServiceStatus = papercutServiceStatus;
-        }
-
-        public PapercutServiceStatusType PapercutServiceStatus { get; }
+        this.PapercutServiceStatus = papercutServiceStatus;
     }
 
-    public enum PapercutServiceStatusType
-    {
-        Offline = 0,
-        Online = 1
-    }
+    public PapercutServiceStatusType PapercutServiceStatus { get; }
+}
+
+public enum PapercutServiceStatusType
+{
+    Offline = 0,
+    Online = 1
 }

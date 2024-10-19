@@ -18,35 +18,34 @@
 
 using System.Text.RegularExpressions;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public static class HtmlHelpers
 {
-    public static class HtmlHelpers
+    private static readonly Regex _uriRegex = new Regex(
+        @"(((?<scheme>http(s)?):\/\/)([\w-]+?\.\w+)+([a-zA-Z0-9\~\!\@\#\$\%\^\&amp\;\*\(\)_\-\=\+\\\/\?\.\:\;\,]*)?)",
+        RegexOptions.Compiled | RegexOptions.Multiline);
+
+    public static string Linkify(this string text, string target = "_self")
     {
-        private static readonly Regex _uriRegex = new Regex(
-            @"(((?<scheme>http(s)?):\/\/)([\w-]+?\.\w+)+([a-zA-Z0-9\~\!\@\#\$\%\^\&amp\;\*\(\)_\-\=\+\\\/\?\.\:\;\,]*)?)",
-            RegexOptions.Compiled | RegexOptions.Multiline);
-
-        public static string Linkify(this string text, string target = "_self")
-        {
-            return _uriRegex.Replace(
-                text,
-                match =>
+        return _uriRegex.Replace(
+            text,
+            match =>
+            {
+                try
                 {
-                    try
-                    {
-                        var link = match.ToString();
-                        var scheme = match.Groups["scheme"].Value == "https" ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+                    var link = match.ToString();
+                    var scheme = match.Groups["scheme"].Value == "https" ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
 
-                        var url = new UriBuilder(link) { Scheme = scheme }.Uri.ToString();
+                    var url = new UriBuilder(link) { Scheme = scheme }.Uri.ToString();
 
-                        return $@"<a href=""{url}"" target=""{target}"">{link}</a>";
-                    }
-                    catch (Exception)
-                    {
-                        return match.ToString();
-                    }
+                    return $@"<a href=""{url}"" target=""{target}"">{link}</a>";
                 }
-            );
-        }
+                catch (Exception)
+                {
+                    return match.ToString();
+                }
+            }
+        );
     }
 }

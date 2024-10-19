@@ -31,192 +31,191 @@ using Papercut.Domain.Themes;
 using Papercut.Infrastructure.Themes;
 using Papercut.Properties;
 
-namespace Papercut.ViewModels
+namespace Papercut.ViewModels;
+
+public class OptionsViewModel : Screen
 {
-    public class OptionsViewModel : Screen
+    const string WindowTitleDefault = "Options";
+
+    static readonly Lazy<IList<string>> _ipList = new Lazy<IList<string>>(GetIPs);
+
+    readonly IMessageBus _messageBus;
+
+    private readonly ThemeColorRepository _themeColorRepository;
+
+    string _ip = "Any";
+
+    string _messageListSortOrder = "Descending";
+
+    bool _minimizeOnClose;
+
+    private bool _minimizeToTray;
+
+    int _port = 25;
+
+    bool _runOnStartup;
+
+    private bool _showNotifications;
+
+    bool _startMinimized;
+
+    private ThemeColor _themeColor;
+
+    string _windowTitle = WindowTitleDefault;
+
+    public OptionsViewModel(IMessageBus messageBus, ThemeColorRepository themeColorRepository)
     {
-        const string WindowTitleDefault = "Options";
+        this._messageBus = messageBus;
+        this._themeColorRepository = themeColorRepository;
+        this.IPs = new ObservableCollection<string>(_ipList.Value);
+        this.SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
+        this.Themes = new ObservableCollection<ThemeColor>(themeColorRepository.GetAll());
+        this.Load();
+    }
 
-        static readonly Lazy<IList<string>> _ipList = new Lazy<IList<string>>(GetIPs);
-
-        readonly IMessageBus _messageBus;
-
-        private readonly ThemeColorRepository _themeColorRepository;
-
-        string _ip = "Any";
-
-        string _messageListSortOrder = "Descending";
-
-        bool _minimizeOnClose;
-
-        private bool _minimizeToTray;
-
-        int _port = 25;
-
-        bool _runOnStartup;
-
-        private bool _showNotifications;
-
-        bool _startMinimized;
-
-        private ThemeColor _themeColor;
-
-        string _windowTitle = WindowTitleDefault;
-
-        public OptionsViewModel(IMessageBus messageBus, ThemeColorRepository themeColorRepository)
+    public string WindowTitle
+    {
+        get => this._windowTitle;
+        set
         {
-            this._messageBus = messageBus;
-            this._themeColorRepository = themeColorRepository;
-            this.IPs = new ObservableCollection<string>(_ipList.Value);
-            this.SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
-            this.Themes = new ObservableCollection<ThemeColor>(themeColorRepository.GetAll());
-            this.Load();
+            this._windowTitle = value;
+            this.NotifyOfPropertyChange(() => this.WindowTitle);
         }
+    }
 
-        public string WindowTitle
+    public string MessageListSortOrder
+    {
+        get => this._messageListSortOrder;
+        set
         {
-            get => this._windowTitle;
-            set
-            {
-                this._windowTitle = value;
-                this.NotifyOfPropertyChange(() => this.WindowTitle);
-            }
+            this._messageListSortOrder = value;
+            this.NotifyOfPropertyChange(() => this.MessageListSortOrder);
         }
+    }
 
-        public string MessageListSortOrder
+    public ThemeColor ThemeColor
+    {
+        get => this._themeColor;
+        set
         {
-            get => this._messageListSortOrder;
-            set
-            {
-                this._messageListSortOrder = value;
-                this.NotifyOfPropertyChange(() => this.MessageListSortOrder);
-            }
+            this._themeColor = value;
+            this.NotifyOfPropertyChange(() => this.ThemeColor);
         }
+    }
 
-        public ThemeColor ThemeColor
+    public string IP
+    {
+        get => this._ip;
+        set
         {
-            get => this._themeColor;
-            set
-            {
-                this._themeColor = value;
-                this.NotifyOfPropertyChange(() => this.ThemeColor);
-            }
+            this._ip = value;
+            this.NotifyOfPropertyChange(() => this.IP);
         }
+    }
 
-        public string IP
+    public int Port
+    {
+        get => this._port;
+        set
         {
-            get => this._ip;
-            set
-            {
-                this._ip = value;
-                this.NotifyOfPropertyChange(() => this.IP);
-            }
+            this._port = value;
+            this.NotifyOfPropertyChange(() => this.Port);
         }
+    }
 
-        public int Port
+    public bool RunOnStartup
+    {
+        get => this._runOnStartup;
+        set
         {
-            get => this._port;
-            set
-            {
-                this._port = value;
-                this.NotifyOfPropertyChange(() => this.Port);
-            }
+            this._runOnStartup = value;
+            this.NotifyOfPropertyChange(() => this.RunOnStartup);
         }
+    }
 
-        public bool RunOnStartup
+    public bool MinimizeOnClose
+    {
+        get => this._minimizeOnClose;
+        set
         {
-            get => this._runOnStartup;
-            set
-            {
-                this._runOnStartup = value;
-                this.NotifyOfPropertyChange(() => this.RunOnStartup);
-            }
+            this._minimizeOnClose = value;
+            this.NotifyOfPropertyChange(() => this.MinimizeOnClose);
         }
+    }
 
-        public bool MinimizeOnClose
+    public bool MinimizeToTray
+    {
+        get => this._minimizeToTray;
+        set
         {
-            get => this._minimizeOnClose;
-            set
-            {
-                this._minimizeOnClose = value;
-                this.NotifyOfPropertyChange(() => this.MinimizeOnClose);
-            }
+            this._minimizeToTray = value;
+            this.NotifyOfPropertyChange(() => this.MinimizeToTray);
         }
+    }
 
-        public bool MinimizeToTray
+    public bool ShowNotifications
+    {
+        get => this._showNotifications;
+        set
         {
-            get => this._minimizeToTray;
-            set
-            {
-                this._minimizeToTray = value;
-                this.NotifyOfPropertyChange(() => this.MinimizeToTray);
-            }
+            this._showNotifications = value;
+            this.NotifyOfPropertyChange(() => this.ShowNotifications);
         }
+    }
 
-        public bool ShowNotifications
+    public bool StartMinimized
+    {
+        get => this._startMinimized;
+        set
         {
-            get => this._showNotifications;
-            set
-            {
-                this._showNotifications = value;
-                this.NotifyOfPropertyChange(() => this.ShowNotifications);
-            }
+            this._startMinimized = value;
+            this.NotifyOfPropertyChange(() => this.StartMinimized);
         }
+    }
 
-        public bool StartMinimized
-        {
-            get => this._startMinimized;
-            set
-            {
-                this._startMinimized = value;
-                this.NotifyOfPropertyChange(() => this.StartMinimized);
-            }
-        }
+    public ObservableCollection<string> IPs { get; }
 
-        public ObservableCollection<string> IPs { get; }
+    public ObservableCollection<string> SortOrders { get; }
 
-        public ObservableCollection<string> SortOrders { get; }
+    public ObservableCollection<ThemeColor> Themes { get; }
 
-        public ObservableCollection<ThemeColor> Themes { get; }
+    public void Load()
+    {
+        Settings.Default.CopyTo(this);
 
-        public void Load()
-        {
-            Settings.Default.CopyTo(this);
+        // set the theme color
+        this.ThemeColor =
+            this._themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme);
+    }
 
-            // set the theme color
-            this.ThemeColor =
-                this._themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme);
-        }
+    static IList<string> GetIPs()
+    {
+        var ips = new List<string> { "Any" };
 
-        static IList<string> GetIPs()
-        {
-            var ips = new List<string> { "Any" };
+        ips.AddRange(
+            Dns.GetHostAddresses("localhost")
+                .Select(a => a.ToString())
+                .Where(NetworkHelper.IsValidIP));
 
-            ips.AddRange(
-                Dns.GetHostAddresses("localhost")
-                    .Select(a => a.ToString())
-                    .Where(NetworkHelper.IsValidIP));
+        ips.AddRange(NetworkHelper.GetIPAddresses().Where(NetworkHelper.IsValidIP));
 
-            ips.AddRange(NetworkHelper.GetIPAddresses().Where(NetworkHelper.IsValidIP));
+        return ips;
+    }
 
-            return ips;
-        }
+    public async Task Save()
+    {
+        var previousSettings = new Settings();
 
-        public async Task Save()
-        {
-            var previousSettings = new Settings();
+        Settings.Default.CopyTo(previousSettings);
 
-            Settings.Default.CopyTo(previousSettings);
+        this.CopyTo(Settings.Default);
 
-            this.CopyTo(Settings.Default);
+        Settings.Default.Theme = this.ThemeColor.Name;
 
-            Settings.Default.Theme = this.ThemeColor.Name;
+        Settings.Default.Save();
 
-            Settings.Default.Save();
+        await this._messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings));
 
-            await this._messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings));
-
-            await this.TryCloseAsync(true);
-        }
+        await this.TryCloseAsync(true);
     }
 }

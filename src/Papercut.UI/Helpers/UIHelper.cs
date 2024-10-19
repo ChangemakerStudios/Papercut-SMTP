@@ -25,108 +25,107 @@ using ControlzEx.Theming;
 
 using MahApps.Metro.Controls;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public static class UIHelper
 {
-    public static class UIHelper
+    static readonly bool _isAeroEnabled;
+
+    static UIHelper()
     {
-        static readonly bool _isAeroEnabled;
-
-        static UIHelper()
+        // figure out if Aero is enabled/disabled
+        try
         {
-            // figure out if Aero is enabled/disabled
-            try
-            {
-                DwmIsCompositionEnabled(out _isAeroEnabled);
-            }
-            catch
-            {
-                // ignored
-            }
+            DwmIsCompositionEnabled(out _isAeroEnabled);
         }
-
-        [DllImport("dwmapi.dll")]
-        static extern IntPtr DwmIsCompositionEnabled(out bool pfEnabled);
-
-        public static void AutoAdjustBorders(this MetroWindow window)
+        catch
         {
-            var appStyle = ThemeManager.Current.DetectTheme(Application.Current);
-
-            // Only add borders if above call succeed and Aero Not enabled
-            var resourceDictionary = window.Resources;
-
-            if (appStyle != null)
-                SetBorder(resourceDictionary, appStyle.ShowcaseBrush);
-
-            ThemeManager.Current.ThemeChanged += (_, args) =>
-            {
-                SetBorder(resourceDictionary, args.NewTheme.ShowcaseBrush);
-            };
+            // ignored
         }
+    }
 
-        private static void SetBorder(ResourceDictionary resourceDictionary, object brush)
+    [DllImport("dwmapi.dll")]
+    static extern IntPtr DwmIsCompositionEnabled(out bool pfEnabled);
+
+    public static void AutoAdjustBorders(this MetroWindow window)
+    {
+        var appStyle = ThemeManager.Current.DetectTheme(Application.Current);
+
+        // Only add borders if above call succeed and Aero Not enabled
+        var resourceDictionary = window.Resources;
+
+        if (appStyle != null)
+            SetBorder(resourceDictionary, appStyle.ShowcaseBrush);
+
+        ThemeManager.Current.ThemeChanged += (_, args) =>
         {
-            TryRemoveFromResourceDictionary(resourceDictionary, "AccentBorderThickness");
-            TryRemoveFromResourceDictionary(resourceDictionary, "AccentBorderBrush");
-            TryRemoveFromResourceDictionary(resourceDictionary, "AccentGlowBrush");
+            SetBorder(resourceDictionary, args.NewTheme.ShowcaseBrush);
+        };
+    }
 
-            if (_isAeroEnabled)
-            {
-                resourceDictionary.Add("AccentBorderThickness", new Thickness(1));
-                resourceDictionary.Add("AccentGlowBrush", brush);
-            }
-            else
-            {
-                resourceDictionary.Add("AccentBorderThickness", new Thickness(3));
-                resourceDictionary.Add("AccentBorderBrush", brush);
-            }
+    private static void SetBorder(ResourceDictionary resourceDictionary, object brush)
+    {
+        TryRemoveFromResourceDictionary(resourceDictionary, "AccentBorderThickness");
+        TryRemoveFromResourceDictionary(resourceDictionary, "AccentBorderBrush");
+        TryRemoveFromResourceDictionary(resourceDictionary, "AccentGlowBrush");
+
+        if (_isAeroEnabled)
+        {
+            resourceDictionary.Add("AccentBorderThickness", new Thickness(1));
+            resourceDictionary.Add("AccentGlowBrush", brush);
         }
-
-        private static bool TryRemoveFromResourceDictionary(ResourceDictionary resourceDictionary, string keyName)
+        else
         {
-            if (!resourceDictionary.Contains(keyName)) return false;
-
-            resourceDictionary.Remove(keyName);
-
-            return true;
+            resourceDictionary.Add("AccentBorderThickness", new Thickness(3));
+            resourceDictionary.Add("AccentBorderBrush", brush);
         }
+    }
 
-        public static object? GetObjectDataFromPoint(this ListBox source, Point point)
+    private static bool TryRemoveFromResourceDictionary(ResourceDictionary resourceDictionary, string keyName)
+    {
+        if (!resourceDictionary.Contains(keyName)) return false;
+
+        resourceDictionary.Remove(keyName);
+
+        return true;
+    }
+
+    public static object? GetObjectDataFromPoint(this ListBox source, Point point)
+    {
+        ArgumentNullException.ThrowIfNull(source, nameof(source));
+
+        if (source.InputHitTest(point) is UIElement element)
         {
-            ArgumentNullException.ThrowIfNull(source, nameof(source));
+            object data = DependencyProperty.UnsetValue;
 
-            if (source.InputHitTest(point) is UIElement element)
+            while (data == DependencyProperty.UnsetValue)
             {
-                object data = DependencyProperty.UnsetValue;
+                // Try to get the object value for the corresponding element
+                data = source.ItemContainerGenerator.ItemFromContainer(element);
 
-                while (data == DependencyProperty.UnsetValue)
-                {
-                    // Try to get the object value for the corresponding element
-                    data = source.ItemContainerGenerator.ItemFromContainer(element);
+                // Get the parent and we will iterate again
+                if (data == DependencyProperty.UnsetValue && element != null)
+                    element = VisualTreeHelper.GetParent(element) as UIElement;
 
-                    // Get the parent and we will iterate again
-                    if (data == DependencyProperty.UnsetValue && element != null)
-                        element = VisualTreeHelper.GetParent(element) as UIElement;
-
-                    // If we reach the actual listbox then we must break to avoid an infinite loop
-                    if (Equals(element, source)) return null;
-                }
-
-                return data;
+                // If we reach the actual listbox then we must break to avoid an infinite loop
+                if (Equals(element, source)) return null;
             }
 
-            // Get the object from the element
-            return null;
+            return data;
         }
 
-        public static T? FindAncestor<T>(this DependencyObject dependencyObject)
-            where T : DependencyObject
-        {
-            ArgumentNullException.ThrowIfNull(dependencyObject);
+        // Get the object from the element
+        return null;
+    }
 
-            var parent = VisualTreeHelper.GetParent(dependencyObject);
-            if (parent == null) return null;
-            var parentT = parent as T;
-            return parentT ?? FindAncestor<T>(parent);
-        }
+    public static T? FindAncestor<T>(this DependencyObject dependencyObject)
+        where T : DependencyObject
+    {
+        ArgumentNullException.ThrowIfNull(dependencyObject);
+
+        var parent = VisualTreeHelper.GetParent(dependencyObject);
+        if (parent == null) return null;
+        var parentT = parent as T;
+        return parentT ?? FindAncestor<T>(parent);
     }
 }

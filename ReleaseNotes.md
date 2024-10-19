@@ -1,6 +1,6 @@
 # Release Notes
 
-## Papercut SMTP v7.0.0 [2024-05-17]
+## Papercut SMTP v7.0.0 [2024-10-14]
 
 _NOTE: Uninstall any existing Papercut SMTP installations BEFORE installing this new version._
 
@@ -8,6 +8,8 @@ _NOTE: Uninstall any existing Papercut SMTP installations BEFORE installing this
 - Upgraded to latest dependencies (Caliburn Micro, Autofac, MahApps) and associated systems to support .NET 8.
 - Switched to [Velopack](https://github.com/velopack/velopack) auto-upgradable installation system. Great project! (Thanks, [caesay](https://github.com/caesay)!)
 - Fix for log updating constantly causing unnecessary WebView2 loading. (PR thanks to [arthurzaczek](https://github.com/arthurzaczek))
+- Fix for double request when clicking on links in emails. Issue #232.
+- Added InvokeProcess Rule (#274)
 
 ## Papercut SMTP v6.2.0 [2022-04-24]
 

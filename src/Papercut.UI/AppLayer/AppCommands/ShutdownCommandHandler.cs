@@ -29,73 +29,72 @@ using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Lifecycle;
 using Papercut.Domain.AppCommands;
 
-namespace Papercut.AppLayer.AppCommands
+namespace Papercut.AppLayer.AppCommands;
+
+public class ShutdownCommandHandler : Disposable, IStartable
 {
-    public class ShutdownCommandHandler : Disposable, IStartable
+    private readonly IAppCommandHub _appCommandHub;
+
+    private readonly IAppMeta _appMeta;
+
+    private readonly ILogger _logger;
+
+    private readonly IMessageBus _messageBus;
+
+    private IDisposable _shutdownObservable;
+
+    public ShutdownCommandHandler(IAppCommandHub appCommandHub, IMessageBus messageBus, IAppMeta appMeta, ILogger logger)
     {
-        private readonly IAppCommandHub _appCommandHub;
-
-        private readonly IAppMeta _appMeta;
-
-        private readonly ILogger _logger;
-
-        private readonly IMessageBus _messageBus;
-
-        private IDisposable _shutdownObservable;
-
-        public ShutdownCommandHandler(IAppCommandHub appCommandHub, IMessageBus messageBus, IAppMeta appMeta, ILogger logger)
-        {
-            this._appCommandHub = appCommandHub;
-            this._messageBus = messageBus;
-            this._appMeta = appMeta;
-            this._logger = logger.ForContext<ShutdownCommandHandler>();
-        }
-
-        public void Start()
-        {
-            this.InitObservables();
-        }
-
-        private void InitObservables()
-        {
-            this._shutdownObservable = this._appCommandHub.OnShutdown
-                .ObserveOn(Dispatcher.CurrentDispatcher)
-                .SubscribeAsync(
-                    async @event =>
-                    {
-                        this._logger.Information("Shutdown Executed {ExitCode}", @event.ExitCode);
-                        
-                        // fire shutdown event
-                        await this._messageBus.PublishAsync(
-                            new PapercutClientExitEvent() { AppMeta = this._appMeta });
-
-                        Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-                        Application.Current.Shutdown(@event.ExitCode);
-                    });
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this._shutdownObservable?.Dispose();
-            }
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<ShutdownCommandHandler>().AsImplementedInterfaces().SingleInstance();
-        }
-
-        #endregion
+        this._appCommandHub = appCommandHub;
+        this._messageBus = messageBus;
+        this._appMeta = appMeta;
+        this._logger = logger.ForContext<ShutdownCommandHandler>();
     }
+
+    public void Start()
+    {
+        this.InitObservables();
+    }
+
+    private void InitObservables()
+    {
+        this._shutdownObservable = this._appCommandHub.OnShutdown
+            .ObserveOn(Dispatcher.CurrentDispatcher)
+            .SubscribeAsync(
+                async @event =>
+                {
+                    this._logger.Information("Shutdown Executed {ExitCode}", @event.ExitCode);
+                        
+                    // fire shutdown event
+                    await this._messageBus.PublishAsync(
+                        new PapercutClientExitEvent() { AppMeta = this._appMeta });
+
+                    Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                    Application.Current.Shutdown(@event.ExitCode);
+                });
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._shutdownObservable?.Dispose();
+        }
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<ShutdownCommandHandler>().AsImplementedInterfaces().SingleInstance();
+    }
+
+    #endregion
 }

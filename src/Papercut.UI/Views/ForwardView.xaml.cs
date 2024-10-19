@@ -20,14 +20,13 @@ using MahApps.Metro.Controls;
 
 using Papercut.Helpers;
 
-namespace Papercut.Views
+namespace Papercut.Views;
+
+public partial class ForwardView : MetroWindow
 {
-    public partial class ForwardView : MetroWindow
+    public ForwardView()
     {
-        public ForwardView()
-        {
-            this.AutoAdjustBorders();
-            this.InitializeComponent();
-        }
+        this.AutoAdjustBorders();
+        this.InitializeComponent();
     }
 }

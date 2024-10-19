@@ -16,13 +16,7 @@
 // limitations under the License.
 
 
-using System.Reflection;
-
-using Autofac;
-
 using AutofacSerilogIntegration;
-
-using Papercut.Common.Helper;
 
 namespace Papercut.Service;
 
@@ -30,8 +24,6 @@ public class PapercutServiceModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        builder.Register(_ => new ApplicationMeta("Papercut.Service", Assembly.GetExecutingAssembly().GetVersion())).As<IAppMeta>().SingleInstance();
-
         builder.RegisterLogger();
 
         builder.RegisterStaticMethods(this.ThisAssembly);

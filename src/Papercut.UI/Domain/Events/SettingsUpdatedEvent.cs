@@ -19,12 +19,11 @@
 using Papercut.Common.Domain;
 using Papercut.Properties;
 
-namespace Papercut.Domain.Events
-{
-    public class SettingsUpdatedEvent(Settings previousSettings, Settings? newSettings = null) : IEvent
-    {
-        public Settings PreviousSettings { get; } = previousSettings;
+namespace Papercut.Domain.Events;
 
-        public Settings NewSettings { get; } = newSettings ?? Settings.Default;
-    }
+public class SettingsUpdatedEvent(Settings previousSettings, Settings? newSettings = null) : IEvent
+{
+    public Settings PreviousSettings { get; } = previousSettings;
+
+    public Settings NewSettings { get; } = newSettings ?? Settings.Default;
 }

@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Domain.LifecycleHooks
+namespace Papercut.Domain.LifecycleHooks;
+
+public interface IAppLifecycleStarted : IAppLifecycleHook
 {
-    public interface IAppLifecycleStarted : IAppLifecycleHook
-    {
-        Task OnStartedAsync();
-    }
+    Task OnStartedAsync();
 }

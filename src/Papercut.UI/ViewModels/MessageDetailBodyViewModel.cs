@@ -23,43 +23,42 @@ using ICSharpCode.AvalonEdit.Document;
 using Papercut.Helpers;
 using Papercut.Views;
 
-namespace Papercut.ViewModels
+namespace Papercut.ViewModels;
+
+public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
 {
-    public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
+    readonly ILogger _logger;
+
+    string? _body;
+
+    public MessageDetailBodyViewModel(ILogger logger)
     {
-        readonly ILogger _logger;
+        this._logger = logger;
+        this.DisplayName = "Body";
+    }
 
-        string? _body;
-
-        public MessageDetailBodyViewModel(ILogger logger)
+    public string? Body
+    {
+        get => this._body;
+        set
         {
-            this._logger = logger;
-            this.DisplayName = "Body";
+            this._body = value;
+            this.NotifyOfPropertyChange(() => this.Body);
+        }
+    }
+
+    protected override void OnViewLoaded(object view)
+    {
+        base.OnViewLoaded(view);
+
+        if (!(view is MessageDetailBodyView typedView))
+        {
+            this._logger.Error("Unable to locate the MessageDetailBodyView to hook the Text Control");
+            return;
         }
 
-        public string? Body
-        {
-            get => this._body;
-            set
-            {
-                this._body = value;
-                this.NotifyOfPropertyChange(() => this.Body);
-            }
-        }
-
-        protected override void OnViewLoaded(object view)
-        {
-            base.OnViewLoaded(view);
-
-            if (!(view is MessageDetailBodyView typedView))
-            {
-                this._logger.Error("Unable to locate the MessageDetailBodyView to hook the Text Control");
-                return;
-            }
-
-            this.GetPropertyValues(p => p.Body)
-                .Subscribe(
-                    t => { typedView.BodyEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
-        }
+        this.GetPropertyValues(p => p.Body)
+            .Subscribe(
+                t => { typedView.BodyEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
     }
 }

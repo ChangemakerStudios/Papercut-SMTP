@@ -20,24 +20,23 @@ using System.Windows.Forms;
 
 using Papercut.Domain.UiCommands.Commands;
 
-namespace Papercut.Domain.UiCommands
+namespace Papercut.Domain.UiCommands;
+
+public interface IUiCommandHub
 {
-    public interface IUiCommandHub
-    {
-        IObservable<ShowBalloonTipCommand> OnShowBalloonTip { get; }
+    IObservable<ShowBalloonTipCommand> OnShowBalloonTip { get; }
 
-        IObservable<ShowOptionWindowCommand> OnShowOptionWindow { get; }
+    IObservable<ShowOptionWindowCommand> OnShowOptionWindow { get; }
 
-        IObservable<ShowMessageCommand> OnShowMessage { get; }
+    IObservable<ShowMessageCommand> OnShowMessage { get; }
 
-        IObservable<ShowMainWindowCommand> OnShowMainWindow { get; }
+    IObservable<ShowMainWindowCommand> OnShowMainWindow { get; }
 
-        void ShowMainWindow(bool selectMostRecentMessage = false);
+    void ShowMainWindow(bool selectMostRecentMessage = false);
 
-        void ShowMessage(string messageText, string caption);
+    void ShowMessage(string messageText, string caption);
 
-        void ShowOptionWindow();
+    void ShowOptionWindow();
 
-        void ShowBalloonTip(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon);
-    }
+    void ShowBalloonTip(int timeout, string tipTitle, string tipText, ToolTipIcon toolTipIcon);
 }

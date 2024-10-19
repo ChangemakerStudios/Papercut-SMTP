@@ -19,74 +19,72 @@
 using System.ComponentModel;
 
 using Autofac;
-
 using Papercut.Common.Extensions;
 using Papercut.Common.Helper;
 using Papercut.Core.Domain.Rules;
 
-namespace Papercut.Rules.Domain.Conditional.Forwarding
+namespace Papercut.Rules.Domain.Conditional.Forwarding;
+
+[Serializable]
+public class ConditionalForwardWithRetryRule : ConditionalForwardRule
 {
-    [Serializable]
-    public class ConditionalForwardWithRetryRule : ConditionalForwardRule
+    private int _retryAttemptDelaySeconds;
+
+    private int _retryAttempts;
+
+    public ConditionalForwardWithRetryRule()
     {
-        private int _retryAttemptDelaySeconds;
-
-        private int _retryAttempts;
-
-        public ConditionalForwardWithRetryRule()
-        {
-            this.RetryAttempts = 5;
-            this.RetryAttemptDelaySeconds = 60;
-        }
-
-        [Category("Settings")]
-        [DisplayName("Retry Attempts")]
-        public int RetryAttempts
-        {
-            get => this._retryAttempts;
-            set
-            {
-                if (value == this._retryAttempts) return;
-                this._retryAttempts = value;
-                this.OnPropertyChanged(nameof(this.RetryAttempts));
-            }
-        }
-
-        [Category("Settings")]
-        [DisplayName("Retry Attempt Delay in Seconds")]
-        public int RetryAttemptDelaySeconds
-        {
-            get => this._retryAttemptDelaySeconds;
-            set
-            {
-                if (value == this._retryAttemptDelaySeconds) return;
-                this._retryAttemptDelaySeconds = value;
-                this.OnPropertyChanged(nameof(this.RetryAttemptDelaySeconds));
-            }
-        }
-
-        [Category("Information")]
-        public override string Type => "Conditional Forward with Retry";
-
-        public override string ToString()
-        {
-            return this.GetProperties().OrderBy(s => s.Key).ToFormattedPairs().Join("\r\n");
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-
-            builder.RegisterType<ConditionalForwardWithRetryRule>().AsSelf().As<IRule>().InstancePerDependency();
-        }
-
-        #endregion
+        RetryAttempts = 5;
+        RetryAttemptDelaySeconds = 60;
     }
+
+    [Category("Settings")]
+    [DisplayName("Retry Attempts")]
+    public int RetryAttempts
+    {
+        get => _retryAttempts;
+        set
+        {
+            if (value == _retryAttempts) return;
+            _retryAttempts = value;
+            OnPropertyChanged(nameof(RetryAttempts));
+        }
+    }
+
+    [Category("Settings")]
+    [DisplayName("Retry Attempt Delay in Seconds")]
+    public int RetryAttemptDelaySeconds
+    {
+        get => _retryAttemptDelaySeconds;
+        set
+        {
+            if (value == _retryAttemptDelaySeconds) return;
+            _retryAttemptDelaySeconds = value;
+            OnPropertyChanged(nameof(RetryAttemptDelaySeconds));
+        }
+    }
+
+    [Category("Information")]
+    public override string Type => "Conditional Forward with Retry";
+
+    public override string ToString()
+    {
+        return this.GetProperties().OrderBy(s => s.Key).ToFormattedPairs().Join("\r\n");
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+        builder.RegisterType<ConditionalForwardWithRetryRule>().AsSelf().As<IRule>().InstancePerDependency();
+    }
+
+    #endregion
 }

@@ -20,56 +20,55 @@ using Autofac;
 
 using Papercut.Domain.LifecycleHooks;
 
-namespace Papercut.AppLayer.Settings
+namespace Papercut.AppLayer.Settings;
+
+public class SaveSettingsOnExitService : IAppLifecyclePreExit
 {
-    public class SaveSettingsOnExitService : IAppLifecyclePreExit
+    readonly ILogger _logger;
+
+    public SaveSettingsOnExitService(ILogger logger)
     {
-        readonly ILogger _logger;
-
-        public SaveSettingsOnExitService(ILogger logger)
-        {
-            this._logger = logger;
-        }
-
-        public Task<AppLifecycleActionResultType> OnPreExit()
-        {
-            try
-            {
-                if (Properties.Settings.Default.MainWindowHeight < 300)
-                {
-                    Properties.Settings.Default.MainWindowHeight = 300;
-                }
-                if (Properties.Settings.Default.MainWindowWidth < 400)
-                {
-                    Properties.Settings.Default.MainWindowWidth = 400;
-                }
-
-                this._logger.Debug("Saving Updated Settings...");
-                Properties.Settings.Default.Save();
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(ex, "Failure Saving Settings File");
-            }
-
-            return Task.FromResult(AppLifecycleActionResultType.Continue);
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<SaveSettingsOnExitService>().AsImplementedInterfaces()
-                .SingleInstance();
-        }
-
-        #endregion
+        this._logger = logger;
     }
+
+    public Task<AppLifecycleActionResultType> OnPreExit()
+    {
+        try
+        {
+            if (Properties.Settings.Default.MainWindowHeight < 300)
+            {
+                Properties.Settings.Default.MainWindowHeight = 300;
+            }
+            if (Properties.Settings.Default.MainWindowWidth < 400)
+            {
+                Properties.Settings.Default.MainWindowWidth = 400;
+            }
+
+            this._logger.Debug("Saving Updated Settings...");
+            Properties.Settings.Default.Save();
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Failure Saving Settings File");
+        }
+
+        return Task.FromResult(AppLifecycleActionResultType.Continue);
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<SaveSettingsOnExitService>().AsImplementedInterfaces()
+            .SingleInstance();
+    }
+
+    #endregion
 }

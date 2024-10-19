@@ -20,16 +20,10 @@ using System.Reflection;
 
 namespace Papercut.Core.Domain.Application
 {
-    public class ApplicationMeta : IAppMeta
+    public class ApplicationMeta(string appName, string? appVersion = null) : IAppMeta
     {
-        public ApplicationMeta(string appName, string? appVersion = null)
-        {
-            this.AppName = appName;
-            this.AppVersion = appVersion ?? Assembly.GetCallingAssembly().GetName().Version.ToString(3);
-        }
+        public string AppName { get; } = appName;
 
-        public string AppName { get; }
-
-        public string AppVersion { get; }
+        public string AppVersion { get; } = appVersion ?? Assembly.GetCallingAssembly().GetName().Version?.ToString(3) ?? "1.0.0.0";
     }
 }

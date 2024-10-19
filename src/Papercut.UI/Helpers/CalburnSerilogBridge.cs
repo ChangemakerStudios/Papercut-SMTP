@@ -18,30 +18,29 @@
 
 using Caliburn.Micro;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public class CalburnSerilogBridge : ILog
 {
-    public class CalburnSerilogBridge : ILog
+    readonly Lazy<ILogger> _logger;
+
+    public CalburnSerilogBridge(Lazy<ILogger> logger)
     {
-        readonly Lazy<ILogger> _logger;
+        this._logger = logger;
+    }
 
-        public CalburnSerilogBridge(Lazy<ILogger> logger)
-        {
-            this._logger = logger;
-        }
+    public void Info(string format, params object[] args)
+    {
+        if (!format.StartsWith("Action Convention Not Applied")) this._logger.Value.Verbose(format, args);
+    }
 
-        public void Info(string format, params object[] args)
-        {
-            if (!format.StartsWith("Action Convention Not Applied")) this._logger.Value.Verbose(format, args);
-        }
+    public void Warn(string format, params object[] args)
+    {
+        this._logger.Value.Warning(format, args);
+    }
 
-        public void Warn(string format, params object[] args)
-        {
-            this._logger.Value.Warning(format, args);
-        }
-
-        public void Error(Exception exception)
-        {
-            this._logger.Value.Error(exception, "Exception Logged");
-        }
+    public void Error(Exception exception)
+    {
+        this._logger.Value.Error(exception, "Exception Logged");
     }
 }

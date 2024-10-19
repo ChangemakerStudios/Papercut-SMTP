@@ -18,20 +18,19 @@
 
 using System.Reactive.Linq;
 
-namespace Papercut.Rules.Infrastructure
-{
-    public static class ObservableExtensions
-    {
-        public static IObservable<T> RetryWithDelay<T>(this IObservable<T> source, int retryCount, TimeSpan timeSpan)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-            if (timeSpan < TimeSpan.Zero)
-                throw new ArgumentOutOfRangeException(nameof(timeSpan));
-            if (timeSpan == TimeSpan.Zero)
-                return source.Retry(retryCount);
+namespace Papercut.Rules.Infrastructure;
 
-            return source.Catch(Observable.Timer(timeSpan).SelectMany(_ => source).Retry(retryCount));
-        }
+public static class ObservableExtensions
+{
+    public static IObservable<T> RetryWithDelay<T>(this IObservable<T> source, int retryCount, TimeSpan timeSpan)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+        if (timeSpan < TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(timeSpan));
+        if (timeSpan == TimeSpan.Zero)
+            return source.Retry(retryCount);
+
+        return source.Catch(Observable.Timer(timeSpan).SelectMany(_ => source).Retry(retryCount));
     }
 }

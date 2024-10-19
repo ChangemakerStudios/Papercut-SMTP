@@ -22,67 +22,66 @@ using Autofac.Util;
 using Papercut.Domain.LifecycleHooks;
 using Papercut.Infrastructure.IPComm.Network;
 
-namespace Papercut.AppLayer.IpComm
+namespace Papercut.AppLayer.IpComm;
+
+public class PapercutIpCommManager : Disposable, IAppLifecycleStarted
 {
-    public class PapercutIpCommManager : Disposable, IAppLifecycleStarted
+    readonly ILogger _logger;
+
+    private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
+
+    readonly PapercutIPCommServer _papercutIpCommServer;
+
+    public PapercutIpCommManager(
+        PapercutIPCommEndpoints papercutIpCommEndpoints,
+        PapercutIPCommServer ipCommServer,
+        ILogger logger)
     {
-        readonly ILogger _logger;
+        this._papercutIpCommEndpoints = papercutIpCommEndpoints;
+        this._logger = logger;
+        this._papercutIpCommServer = ipCommServer;
+    }
 
-        private readonly PapercutIPCommEndpoints _papercutIpCommEndpoints;
+    public async Task OnStartedAsync()
+    {
+        await this._papercutIpCommServer.StopAsync();
 
-        readonly PapercutIPCommServer _papercutIpCommServer;
-
-        public PapercutIpCommManager(
-            PapercutIPCommEndpoints papercutIpCommEndpoints,
-            PapercutIPCommServer ipCommServer,
-            ILogger logger)
+        try
         {
-            this._papercutIpCommEndpoints = papercutIpCommEndpoints;
-            this._logger = logger;
-            this._papercutIpCommServer = ipCommServer;
+            await this._papercutIpCommServer.StartAsync(this._papercutIpCommEndpoints.UI);
         }
+        catch (Exception ex)
+        {
+            this._logger.Warning(
+                ex,
+                "Papercut IPComm Server failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
+                this._papercutIpCommServer.ListenIpAddress,
+                this._papercutIpCommServer.ListenPort);
+        }
+    }
 
-        public async Task OnStartedAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
         {
             await this._papercutIpCommServer.StopAsync();
-
-            try
-            {
-                await this._papercutIpCommServer.StartAsync(this._papercutIpCommEndpoints.UI);
-            }
-            catch (Exception ex)
-            {
-                this._logger.Warning(
-                    ex,
-                    "Papercut IPComm Server failed to bind to the {Address} {Port} specified. The port may already be in use by another process.",
-                    this._papercutIpCommServer.ListenIpAddress,
-                    this._papercutIpCommServer.ListenPort);
-            }
         }
-
-        protected override async ValueTask DisposeAsync(bool disposing)
-        {
-            if (disposing)
-            {
-                await this._papercutIpCommServer.StopAsync();
-            }
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<PapercutIpCommManager>().AsImplementedInterfaces()
-                .SingleInstance();
-        }
-
-        #endregion
     }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<PapercutIpCommManager>().AsImplementedInterfaces()
+            .SingleInstance();
+    }
+
+    #endregion
 }

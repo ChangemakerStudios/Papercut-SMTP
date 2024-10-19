@@ -18,16 +18,15 @@
 
 using System.Windows.Controls;
 
-namespace Papercut.Views
+namespace Papercut.Views;
+
+/// <summary>
+///     Interaction logic for MessageDetailPartsListView.xaml
+/// </summary>
+public partial class MessageDetailPartsListView : UserControl
 {
-    /// <summary>
-    ///     Interaction logic for MessageDetailPartsListView.xaml
-    /// </summary>
-    public partial class MessageDetailPartsListView : UserControl
+    public MessageDetailPartsListView()
     {
-        public MessageDetailPartsListView()
-        {
-            this.InitializeComponent();
-        }
+        this.InitializeComponent();
     }
 }

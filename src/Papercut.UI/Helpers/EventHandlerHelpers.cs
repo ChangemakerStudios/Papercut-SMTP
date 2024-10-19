@@ -19,27 +19,26 @@
 using System.Reactive;
 using System.Reactive.Linq;
 
-namespace Papercut.Helpers
+namespace Papercut.Helpers;
+
+public static class EventHandlerHelpers
 {
-    public static class EventHandlerHelpers
+    public static IObservable<EventPattern<object>> ToObservable(this EventHandler eventHandler)
     {
-        public static IObservable<EventPattern<object>> ToObservable(this EventHandler eventHandler)
-        {
-            ArgumentNullException.ThrowIfNull(eventHandler);
+        ArgumentNullException.ThrowIfNull(eventHandler);
 
-            return Observable.FromEventPattern(
-                a => eventHandler += a,
-                d => eventHandler += d);
-        }
+        return Observable.FromEventPattern(
+            a => eventHandler += a,
+            d => eventHandler += d);
+    }
 
-        public static IObservable<EventPattern<TArgs>> ToObservable<TArgs>(this EventHandler<TArgs> eventHandler)
-            where TArgs : EventArgs
-        {
-            ArgumentNullException.ThrowIfNull(eventHandler);
+    public static IObservable<EventPattern<TArgs>> ToObservable<TArgs>(this EventHandler<TArgs> eventHandler)
+        where TArgs : EventArgs
+    {
+        ArgumentNullException.ThrowIfNull(eventHandler);
 
-            return Observable.FromEventPattern<EventHandler<TArgs>, TArgs>(
-                a => eventHandler += a,
-                d => eventHandler += d);
-        }
+        return Observable.FromEventPattern<EventHandler<TArgs>, TArgs>(
+            a => eventHandler += a,
+            d => eventHandler += d);
     }
 }

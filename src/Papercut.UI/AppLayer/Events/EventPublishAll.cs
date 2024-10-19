@@ -23,47 +23,46 @@ using Caliburn.Micro;
 using Papercut.Common.Domain;
 using Papercut.Core.Infrastructure.MessageBus;
 
-namespace Papercut.AppLayer.Events
+namespace Papercut.AppLayer.Events;
+
+public class EventPublishAll : AutofacMessageBus
 {
-    public class EventPublishAll : AutofacMessageBus
+    private readonly IEventAggregator _eventAggregator;
+
+    public EventPublishAll(
+        ILifetimeScope scope,
+        IEventAggregator eventAggregator)
+        : base(scope)
     {
-        private readonly IEventAggregator _eventAggregator;
-
-        public EventPublishAll(
-            ILifetimeScope scope,
-            IEventAggregator eventAggregator)
-            : base(scope)
-        {
-            this._eventAggregator = eventAggregator;
-        }
-
-        public override async Task PublishAsync<T>(T eventObject, CancellationToken token)
-        {
-            if (eventObject == null) throw new ArgumentNullException(nameof(eventObject));
-
-            await base.PublishAsync(eventObject, token);
-            await this._eventAggregator.PublishOnUIThreadAsync(eventObject, token);
-        }
-
-        protected override async Task HandleAsync<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
-        {
-            await Execute.OnUIThreadAsync(async () => await base.HandleAsync(eventObject, @event, token));
-        }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<EventPublishAll>().As<IMessageBus>().InstancePerLifetimeScope();
-        }
-
-        #endregion
+        this._eventAggregator = eventAggregator;
     }
+
+    public override async Task PublishAsync<T>(T eventObject, CancellationToken token)
+    {
+        if (eventObject == null) throw new ArgumentNullException(nameof(eventObject));
+
+        await base.PublishAsync(eventObject, token);
+        await this._eventAggregator.PublishOnUIThreadAsync(eventObject, token);
+    }
+
+    protected override async Task HandleAsync<T>(T eventObject, IEventHandler<T> @event, CancellationToken token)
+    {
+        await Execute.OnUIThreadAsync(async () => await base.HandleAsync(eventObject, @event, token));
+    }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<EventPublishAll>().As<IMessageBus>().InstancePerLifetimeScope();
+    }
+
+    #endregion
 }

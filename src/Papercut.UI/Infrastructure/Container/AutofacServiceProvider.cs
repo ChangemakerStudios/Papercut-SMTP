@@ -18,29 +18,28 @@
 
 using Autofac;
 
-namespace Papercut.Infrastructure.Container
+namespace Papercut.Infrastructure.Container;
+
+public class AutofacServiceProvider : IServiceProvider
 {
-    public class AutofacServiceProvider : IServiceProvider
+    readonly ILifetimeScope _lifetimeScope;
+
+    public AutofacServiceProvider(ILifetimeScope lifetimeScope)
     {
-        readonly ILifetimeScope _lifetimeScope;
-
-        public AutofacServiceProvider(ILifetimeScope lifetimeScope)
-        {
-            this._lifetimeScope = lifetimeScope;
-        }
-
-        public object GetService(Type serviceType)
-        {
-            return this._lifetimeScope.Resolve(serviceType);
-        }
-
-        #region Begin Static Container Registrations
-
-        static void Register(ContainerBuilder builder)
-        {
-            builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
-        }
-
-        #endregion
+        this._lifetimeScope = lifetimeScope;
     }
+
+    public object GetService(Type serviceType)
+    {
+        return this._lifetimeScope.Resolve(serviceType);
+    }
+
+    #region Begin Static Container Registrations
+
+    static void Register(ContainerBuilder builder)
+    {
+        builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
+    }
+
+    #endregion
 }

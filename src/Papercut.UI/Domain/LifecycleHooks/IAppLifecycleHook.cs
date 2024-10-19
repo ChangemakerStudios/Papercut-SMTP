@@ -16,8 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Domain.LifecycleHooks
-{
-    public interface IAppLifecycleHook
-    {}
-}
+namespace Papercut.Domain.LifecycleHooks;
+
+public interface IAppLifecycleHook
+{}

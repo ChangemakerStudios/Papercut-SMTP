@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Domain.LifecycleHooks
+namespace Papercut.Domain.LifecycleHooks;
+
+public interface IAppLifecyclePreExit : IAppLifecycleHook
 {
-    public interface IAppLifecyclePreExit : IAppLifecycleHook
-    {
-        Task<AppLifecycleActionResultType> OnPreExit();
-    }
+    Task<AppLifecycleActionResultType> OnPreExit();
 }

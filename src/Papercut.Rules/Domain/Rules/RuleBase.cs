@@ -26,69 +26,66 @@ using Papercut.Common.Extensions;
 using Papercut.Common.Helper;
 using Papercut.Core.Domain.Rules;
 
-namespace Papercut.Rules.Domain.Rules
+namespace Papercut.Rules.Domain.Rules;
+
+[Serializable]
+public abstract class RuleBase : IRule
 {
-    [Serializable]
-    public abstract class RuleBase : IRule
+    bool _isEnabled;
+
+    protected RuleBase()
     {
-        bool _isEnabled;
+        this.Id = Guid.NewGuid();
+    }
 
-        protected RuleBase()
+    [Category("Information")]
+    public Guid Id { get; protected set; }
+
+    [Category("State")]
+    [Browsable(true)]
+    [DisplayName("Is Enabled")]
+    [Description("Is the Rule Enabled for Processing?")]
+    public virtual bool IsEnabled
+    {
+        get => this._isEnabled;
+        set
         {
-            this.Id = Guid.NewGuid();
+            if (value.Equals(this._isEnabled)) return;
+            this._isEnabled = value;
+            this.OnPropertyChanged(nameof(this.IsEnabled));
         }
+    }
 
-        [Category("Information")]
-        public Guid Id { get; protected set; }
+    [Category("Information")]
+    [Browsable(false)]
+    public virtual string Type => this.GetType().Name;
 
-        [Category("State")]
-        [Browsable(true)]
-        [DisplayName("Is Enabled")]
-        [Description("Is the Rule Enabled for Processing?")]
-        public virtual bool IsEnabled
+    [Category("Information")]
+    [Browsable(false)]
+    [JsonIgnore]
+    public virtual string Description
+        =>
+            this.GetPropertiesForDescription()
+                .Where(s => !s.Key.IsAny("Id", "Type", "Description"))
+                .OrderBy(s => s.Key)
+                .ToFormattedPairs()
+                .Join("\r\n");
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected virtual IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
+    {
+        return this.GetProperties();
+    }
+
+    [NotifyPropertyChangedInvocator]
+    protected virtual void OnPropertyChanged(string propertyName)
+    {
+        PropertyChangedEventHandler? handler = this.PropertyChanged;
+        if (handler != null)
         {
-            get => this._isEnabled;
-            set
-            {
-                if (value.Equals(this._isEnabled)) return;
-                this._isEnabled = value;
-                this.OnPropertyChanged(nameof(this.IsEnabled));
-            }
-        }
-
-        [Category("Information")]
-        [Browsable(false)]
-        public virtual string Type => this.GetType().Name;
-
-        [Category("Information")]
-        [Browsable(false)]
-        [JsonIgnore]
-        public virtual string Description
-            =>
-                this.GetPropertiesForDescription()
-                    .Where(s => !s.Key.IsAny("Id", "Type", "Description"))
-                    .OrderBy(s => s.Key)
-                    .ToFormattedPairs()
-                    .Join("\r\n");
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public abstract void PopulateFromRule(MimeMessage message);
-
-        protected virtual IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
-        {
-            return this.GetProperties();
-        }
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChangedEventHandler? handler = this.PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-                handler(this, new PropertyChangedEventArgs("Description"));
-            }
+            handler(this, new PropertyChangedEventArgs(propertyName));
+            handler(this, new PropertyChangedEventArgs(nameof(Description)));
         }
     }
 }

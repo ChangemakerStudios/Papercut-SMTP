@@ -25,112 +25,111 @@ using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Domain.Events;
 using Papercut.Infrastructure.Smtp;
 
-namespace Papercut.AppLayer.SmtpServers
+namespace Papercut.AppLayer.SmtpServers;
+
+public class SmtpServerCoordinator : Disposable,
+    IEventHandler<SettingsUpdatedEvent>, IEventHandler<PapercutServiceStatusEvent>
 {
-    public class SmtpServerCoordinator : Disposable,
-        IEventHandler<SettingsUpdatedEvent>, IEventHandler<PapercutServiceStatusEvent>
+    readonly ILogger _logger;
+
+    readonly IMessageBus _messageBus;
+
+    private readonly PapercutSmtpServer _smtpServer;
+
+    public SmtpServerCoordinator(
+        PapercutSmtpServer smtpServer,
+        ILogger logger,
+        IMessageBus messageBus)
     {
-        readonly ILogger _logger;
+        this._smtpServer = smtpServer;
+        this._logger = logger;
+        this._messageBus = messageBus;
+    }
 
-        readonly IMessageBus _messageBus;
+    public bool IsServerActive => this._smtpServer.IsActive;
 
-        private readonly PapercutSmtpServer _smtpServer;
-
-        public SmtpServerCoordinator(
-            PapercutSmtpServer smtpServer,
-            ILogger logger,
-            IMessageBus messageBus)
+    public async Task HandleAsync(PapercutServiceStatusEvent @event, CancellationToken token = default)
+    {
+        if (@event.PapercutServiceStatus == PapercutServiceStatusType.Online)
         {
-            this._smtpServer = smtpServer;
-            this._logger = logger;
-            this._messageBus = messageBus;
+            this._logger.Information(
+                "Papercut Backend Service is running. SMTP disabled in UI.");
+
+            if (this.IsServerActive) await this.StopServerAsync();
         }
-
-        public bool IsServerActive => this._smtpServer.IsActive;
-
-        public async Task HandleAsync(PapercutServiceStatusEvent @event, CancellationToken token = default)
+        else if (@event.PapercutServiceStatus == PapercutServiceStatusType.Offline)
         {
-            if (@event.PapercutServiceStatus == PapercutServiceStatusType.Online)
-            {
-                this._logger.Information(
-                    "Papercut Backend Service is running. SMTP disabled in UI.");
+            this._logger.Information(
+                "Papercut Backend Service is not running. SMTP enabled in UI.");
 
-                if (this.IsServerActive) await this.StopServerAsync();
-            }
-            else if (@event.PapercutServiceStatus == PapercutServiceStatusType.Offline)
-            {
-                this._logger.Information(
-                    "Papercut Backend Service is not running. SMTP enabled in UI.");
+            // give it a half second though
+            await Task.Delay(TimeSpan.FromMilliseconds(500), token);
 
-                // give it a half second though
-                await Task.Delay(TimeSpan.FromMilliseconds(500), token);
-
-                if (!this.IsServerActive) await this.ListenServerAsync();
-            }
+            if (!this.IsServerActive) await this.ListenServerAsync();
         }
+    }
 
-        public async Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
+    public async Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
+    {
+        if (!this.IsServerActive) return;
+
+        if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
+
+        await this.ListenServerAsync();
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
         {
-            if (!this.IsServerActive) return;
-
-            if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
-
-            await this.ListenServerAsync();
-        }
-
-        protected override async ValueTask DisposeAsync(bool disposing)
-        {
-            if (disposing)
+            if (this._smtpServer != null)
             {
-                if (this._smtpServer != null)
-                {
-                    await this.StopServerAsync();
-                    await this._smtpServer.DisposeAsync();
-                }
+                await this.StopServerAsync();
+                await this._smtpServer.DisposeAsync();
             }
         }
+    }
 
-        private async Task StopServerAsync()
+    private async Task StopServerAsync()
+    {
+        await this._smtpServer.StopAsync();
+    }
+
+    async Task ListenServerAsync()
+    {
+        try
         {
             await this._smtpServer.StopAsync();
+            await this._smtpServer.StartAsync(new EndpointDefinition(Properties.Settings.Default.IP, Properties.Settings.Default.Port));
+            await this._messageBus.PublishAsync(new SmtpServerBindEvent(Properties.Settings.Default.IP, Properties.Settings.Default.Port));
         }
-
-        async Task ListenServerAsync()
+        catch (Exception ex)
         {
-            try
-            {
-                await this._smtpServer.StopAsync();
-                await this._smtpServer.StartAsync(new EndpointDefinition(Properties.Settings.Default.IP, Properties.Settings.Default.Port));
-                await this._messageBus.PublishAsync(new SmtpServerBindEvent(Properties.Settings.Default.IP, Properties.Settings.Default.Port));
-            }
-            catch (Exception ex)
-            {
-                this._logger.Warning(
-                    ex,
-                    "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
-                    Properties.Settings.Default.IP,
-                    Properties.Settings.Default.Port);
+            this._logger.Warning(
+                ex,
+                "Failed to bind SMTP to the {Address} {Port} specified. The port may already be in use by another process.",
+                Properties.Settings.Default.IP,
+                Properties.Settings.Default.Port);
 
-                await this._messageBus.PublishAsync(new SmtpServerBindFailedEvent());
-            }
+            await this._messageBus.PublishAsync(new SmtpServerBindFailedEvent());
         }
-
-        #region Begin Static Container Registrations
-
-        /// <summary>
-        /// Called dynamically from the RegisterStaticMethods() call in the container module.
-        /// </summary>
-        /// <param name="builder"></param>
-        [UsedImplicitly]
-        static void Register(ContainerBuilder builder)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-
-            builder.RegisterType<SmtpServerCoordinator>().AsSelf()
-                .AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
-        }
-
-        #endregion
     }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    static void Register(ContainerBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.RegisterType<SmtpServerCoordinator>().AsSelf()
+            .AsImplementedInterfaces()
+            .InstancePerLifetimeScope();
+    }
+
+    #endregion
 }

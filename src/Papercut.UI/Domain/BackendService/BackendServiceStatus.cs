@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Domain.BackendService
+namespace Papercut.Domain.BackendService;
+
+public interface IBackendServiceStatus
 {
-    public interface IBackendServiceStatus
-    {
-        bool IsOnline { get; }
-    }
+    bool IsOnline { get; }
 }
