@@ -17,6 +17,7 @@
 
 
 using System.Diagnostics;
+using System.IO;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Threading;
@@ -102,7 +103,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
         }
     }
 
-    private bool ShouldNavigateToUrl(string navigateToUrl)
+    private bool IsLocalNavigation(string navigateToUrl)
     {
         if (string.IsNullOrEmpty(navigateToUrl))
         {
@@ -174,24 +175,68 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
     private void SetupWebView(CoreWebView2 coreWebView)
     {
-        coreWebView.NavigationStarting += async (_, args) =>
-        {
-            var shouldNavigateToUrl = this.ShouldNavigateToUrl(args.Uri);
+        coreWebView.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
-            if (shouldNavigateToUrl)
+        var externalNavigation = new List<string>();
+
+        coreWebView.WebResourceRequested += async (_, args) =>
+        {
+            if (externalNavigation.Contains(args.Request.Uri))
             {
-                args.Cancel = false;
+                // handle the response
+                var response =
+                    coreWebView.Environment.CreateWebResourceResponse(new MemoryStream(), 200, "OK",
+                        "Content-Type: text/html");
+                args.Response = response;
+
+                externalNavigation.Remove(args.Request.Uri);
+            }
+        };
+
+        coreWebView.NewWindowRequested += async (_, args) =>
+        {
+            var internalUrl = !args.IsUserInitiated || this.IsLocalNavigation(args.Uri);
+
+            if (internalUrl)
+            {
+                args.Handled = false;
                 return;
             }
 
-            // do internal navigation
-            args.Cancel = true;
+            // external navigation
+            args.Handled = true;
 
             try
             {
                 await this.DoInternalNavigationAsync(new Uri(args.Uri));
             }
-            catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to Url {Url}", args.Uri))
+            catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to External Url {Url}", args.Uri))
+            {
+            }
+        };
+
+        coreWebView.NavigationStarting += async (_, args) =>
+        {
+            var uri = args.Uri;
+
+            var internalUrl = !args.IsUserInitiated || this.IsLocalNavigation(uri);
+
+            if (internalUrl)
+            {
+                args.Cancel = false;
+                return;
+            }
+
+            externalNavigation.Add(uri);
+
+            // external navigation
+            args.Cancel = true;
+
+            try
+            {
+                await this.DoInternalNavigationAsync(new Uri(uri));
+            }
+            catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to External Url {Url}", uri))
             {
             }
         };

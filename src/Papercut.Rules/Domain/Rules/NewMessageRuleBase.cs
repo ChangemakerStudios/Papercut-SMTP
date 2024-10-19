@@ -78,7 +78,7 @@ public abstract class NewMessageRuleBase : INewMessageRule
         if (handler != null)
         {
             handler(this, new PropertyChangedEventArgs(propertyName));
-            handler(this, new PropertyChangedEventArgs("Description"));
+            handler(this, new PropertyChangedEventArgs(nameof(Description)));
         }
     }
 }

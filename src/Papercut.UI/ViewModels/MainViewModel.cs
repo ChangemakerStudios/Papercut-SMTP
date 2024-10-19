@@ -23,6 +23,7 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Threading;
 
 using Caliburn.Micro;
@@ -53,6 +54,11 @@ using Papercut.Views;
 
 using Serilog.Events;
 
+using Velopack;
+
+using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
+
 namespace Papercut.ViewModels;
 
 public class MainViewModel : Conductor<object>,
@@ -69,6 +75,9 @@ public class MainViewModel : Conductor<object>,
     private readonly IUiCommandHub _uiCommandHub;
 
     private readonly INewVersionProvider _newVersionProvider;
+    private readonly ILogger _logger;
+
+    private readonly UpdateManager _updateManager;
 
     readonly UiLogSinkQueue _uiLogSinkQueue;
 
@@ -88,6 +97,8 @@ public class MainViewModel : Conductor<object>,
 
     string _logText;
 
+    UpdateInfo? _updateInfo;
+
     MetroWindow? _window;
 
     string _windowTitle = WindowTitleDefault;
@@ -99,6 +110,8 @@ public class MainViewModel : Conductor<object>,
         IAppCommandHub appCommandHub,
         IUiCommandHub uiCommandHub,
         INewVersionProvider newVersionProvider,
+        ILogger logger,
+        UpdateManager updateManager,
         WebView2Information webView2Information,
         ForwardRuleDispatch forwardRuleDispatch,
         Func<MessageListViewModel> messageListViewModelFactory,
@@ -110,6 +123,8 @@ public class MainViewModel : Conductor<object>,
         this._appCommandHub = appCommandHub;
         this._uiCommandHub = uiCommandHub;
         this._newVersionProvider = newVersionProvider;
+        this._logger = logger;
+        this._updateManager = updateManager;
         this._webView2Information = webView2Information;
         this._forwardRuleDispatch = forwardRuleDispatch;
 
@@ -245,10 +260,12 @@ public class MainViewModel : Conductor<object>,
                 {
                     if (updateInfo != null)
                     {
+                        _updateInfo = updateInfo;
                         this.UpgradeVersion = $"Upgrade available! Click here to upgrade to v{updateInfo.TargetFullRelease.Version}";
                     }
                     else
                     {
+                        _updateInfo = null;
                         this.UpgradeVersion = null;
                     }
                 });
@@ -456,6 +473,39 @@ public class MainViewModel : Conductor<object>,
             .SubscribeAsync(async c => await this.ExecuteAsync(c));
     }
 
+    public async Task UpgradeToLatest()
+    {
+        if (this._updateInfo == null)
+        {
+            await this.ShowMessageAsync("Update Failure", "Missing Update Information.");
+            return;
+        }
+
+        using var cancellationSource = new CancellationTokenSource();
+
+        var progressDialog = await this.ShowProgress("Updating", "Downloading Updates...", true,
+            cancellationSource);
+
+        try
+        {
+            // download new version
+            await this._updateManager.DownloadUpdatesAsync(this._updateInfo, cancelToken: cancellationSource.Token);
+
+            await progressDialog.CloseAsync();
+
+            // install new version and restart app
+            this._updateManager.ApplyUpdatesAndRestart(this._updateInfo);
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Update failed");
+
+            await progressDialog.CloseAsync();
+
+            await this.ShowMessageAsync("Update Failed", $"Failure during update: {ex.Message}");
+        }
+    }
+
     public void GoToSite()
     {
         new Uri("https://github.com/ChangemakerStudios/Papercut-SMTP").OpenUri();
@@ -519,20 +569,39 @@ public class MainViewModel : Conductor<object>,
         this.MessageDetailViewModel.IsLoading = isLoading;
     }
 
-    public async Task<ProgressDialogController> ShowForwardingEmailProgress()
+    public async Task<ProgressDialogController> ShowProgress(string title, string message, bool allowCancellation = false, CancellationTokenSource? tokenSource = null)
     {
         this.SetIsLoading(true);
 
-        Task<ProgressDialogController> progressController = this._window.ShowProgressAsync("Forwarding Email...", "Please wait");
+        var progressDialog = await this._window.ShowProgressAsync(title, message);
 
-        ProgressDialogController progressDialog = await progressController;
+        if (allowCancellation && tokenSource == null)
+        {
+            throw new ArgumentNullException(nameof(tokenSource),
+                "If Allow Cancellation is true, Token Source must not be null");
+        }
 
-        progressDialog.SetCancelable(false);
+        progressDialog.SetCancelable(allowCancellation);
         progressDialog.SetIndeterminate();
 
+        progressDialog.Canceled += (_, _) => tokenSource?.Cancel();
         progressDialog.Closed += (_, _) => this.SetIsLoading(false);
 
         return progressDialog;
+    }
+
+    public async Task<MessageDialogResult> ShowMessageAsync(string title, string message)
+    {
+        this.SetIsLoading(true);
+
+        try
+        {
+            return await this._window.ShowMessageAsync(title, message);
+        }
+        finally
+        {
+            this.SetIsLoading(false);
+        }
     }
 
     public async Task ForwardSelected()
@@ -543,7 +612,7 @@ public class MainViewModel : Conductor<object>,
         bool? result = await this._viewModelWindowManager.ShowDialogAsync(forwardViewModel);
         if (result == null || !result.Value) return;
 
-        var progressDialog = await this.ShowForwardingEmailProgress();
+        var progressDialog = await this.ShowProgress("Forwarding Email...", "Please wait");
 
         try
         {

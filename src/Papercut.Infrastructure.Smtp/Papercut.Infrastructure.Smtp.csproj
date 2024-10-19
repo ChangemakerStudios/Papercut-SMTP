@@ -14,4 +14,9 @@
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="JetBrains.Annotations" Version="2024.2.0" />
+    <PackageReference Update="Serilog" Version="4.0.2" />
+  </ItemGroup>
+
 </Project>
