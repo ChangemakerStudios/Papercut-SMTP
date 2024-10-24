@@ -29,8 +29,8 @@ Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be
 ![Logging View](https://changemakerstudios.us/content/images/2020/07/Papercut-Log.png)
 
 ## Papercut SMTP Service
-Papercut SMTP has an optional HTTP server to receive emails even when the client is not running. It's installed by default with [Papercut.Setup.exe](https://github.com/ChangemakerStudios/Papercut/releases).
-Alternatively, it can be run in an almost portable way by downloading [Papercut.Service.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
+Papercut SMTP has an optional HTTP server to receive emails even when the client is not running.
+It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping, and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
 
 ### Host in Docker
 
