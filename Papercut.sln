@@ -26,19 +26,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2D6337D4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Build", ".Build", "{8661B39E-1555-4A2F-B6C2-6442E83DE73D}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
 		appveyor.yml = appveyor.yml
+		build-docker.ps1 = build-docker.ps1
+		build-docker.sh = build-docker.sh
 		build.cake = build.cake
 		build.ps1 = build.ps1
-		build\BuildInformation.cake = build\BuildInformation.cake
 		Directory.Build.props = Directory.Build.props
+		Dockerfile = Dockerfile
 		GitVersion.yml = GitVersion.yml
+		README.md = README.md
 		build\ReleaseNotes.cake = build\ReleaseNotes.cake
 		ReleaseNotes.md = ReleaseNotes.md
-		.dockerignore = .dockerignore
-		Dockerfile = Dockerfile
-		README.md = README.md
-		build-docker.sh = build-docker.sh
-		build-docker.ps1 = build-docker.ps1
+		build\Velopack.cake = build\Velopack.cake
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Infrastructure.Smtp", "src\Papercut.Infrastructure.Smtp\Papercut.Infrastructure.Smtp.csproj", "{873EC485-8E94-4877-8EA7-A7DFE7612E0A}"
