@@ -26,18 +26,11 @@ using Papercut.Domain.Events;
 
 namespace Papercut.AppLayer.Settings;
 
-public class MergeServerBackendSettings : IEventHandler<AppProcessExchangeEvent>
+public class MergeServerBackendSettings(
+    MessagePathConfigurator configurator,
+    IMessageBus messageBus)
+    : IEventHandler<AppProcessExchangeEvent>
 {
-    readonly MessagePathConfigurator _configurator;
-
-    readonly IMessageBus _messageBus;
-
-    public MergeServerBackendSettings(MessagePathConfigurator configurator, IMessageBus messageBus)
-    {
-        this._configurator = configurator;
-        this._messageBus = messageBus;
-    }
-
     public async Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(@event);
@@ -45,7 +38,7 @@ public class MergeServerBackendSettings : IEventHandler<AppProcessExchangeEvent>
         if (string.IsNullOrWhiteSpace(@event.MessageWritePath))
             return;
 
-        if (!this._configurator.LoadPaths.Any(s => s.StartsWith(@event.MessageWritePath, StringComparison.OrdinalIgnoreCase)))
+        if (!configurator.LoadPaths.Any(s => s.StartsWith(@event.MessageWritePath, StringComparison.OrdinalIgnoreCase)))
         {
             // add it for watching...
             Properties.Settings.Default.MessagePaths = $"{Properties.Settings.Default.MessagePaths};{@event.MessageWritePath}";
@@ -60,7 +53,7 @@ public class MergeServerBackendSettings : IEventHandler<AppProcessExchangeEvent>
         Properties.Settings.Default.Port = @event.Port;
         Properties.Settings.Default.Save();
 
-        await this._messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings), token);
+        await messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings), token);
     }
 
     #region Begin Static Container Registrations
