@@ -33,6 +33,7 @@ using Papercut.Message;
 using Papercut.Rules;
 
 using Velopack;
+using Velopack.Sources;
 
 namespace Papercut
 {
@@ -64,7 +65,7 @@ namespace Papercut
                 .SingleInstance();
 
             builder.Register(c =>
-                new UpdateManager(AppConstants.UpgradeUrl,
+                new UpdateManager(new GithubSource(AppConstants.UpgradeUrl, null, false),
                     logger: c.ResolveOptional<ILogger<UpdateManager>>())).AsSelf().SingleInstance();
 
             builder.RegisterType<ViewModelWindowManager>()
