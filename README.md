@@ -6,10 +6,10 @@
 ## The problem
 If you ever send emails from an application or website during development, you're familiar with the fear of an email being released into the wild. Are you positive none of the 'test' emails are addressed to colleagues or worse, customers? Of course, you can set up and maintain a test email server for development -- but that's a chore. Plus, the delay when waiting to view new test emails can radically slow your development cycle.
 
+<img src="https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/papercut-choice.png" width="400" />
+
 ## Papercut SMTP to the rescue!
 Papercut SMTP is a 2-in-1 quick email viewer AND built-in SMTP server (designed to receive messages only). Papercut SMTP doesn't enforce any restrictions on how you prepare your email, but it allows you to view the whole email-chilada: body, HTML, headers, and attachment right down to the naughty raw encoded bits. Papercut can be configured to run on startup and sit quietly (minimized in the tray) only providing a notification when a new message has arrived.
-
-<img src="https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/papercut-choice.png" width="450" />
 
 ## Download Desktop App Now
 #### Download the 64-bit [PapercutSMTP-win-X64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) desktop installer in releases.
