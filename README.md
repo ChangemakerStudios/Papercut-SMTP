@@ -21,9 +21,9 @@ Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be
 
 ## Features
 #### Instant Feedback When New Email Arrives
-![Instant Feedback When New Email Arrives](https://changemakerstudios.us/content/images/2020/07/Papercut-2013.3-SS2.png)
+![Instant Feedback When New Email Arrives](https://github.com/ChangemakerStudios/Papercut-SMTP/blob/develop/graphics/PapercutV7-Notification-1.png?raw=true)
 #### Rich and Detailed View of Received Email
-![Rich and Detailed View of Received Email](https://changemakerstudios.us/content/images/2020/07/Papercut-Main.png)
+![Rich and Detailed View of Received Email](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/PapercutV7-Main-1.png)
 #### View and Download the Mime Sections of your Email
 ![View and Download the Mime Sections of your Email](https://changemakerstudios.us/content/images/2020/07/Papercut-Mime.png)
 #### Raw View
