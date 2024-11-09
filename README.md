@@ -13,10 +13,6 @@ Papercut SMTP is a 2-in-1 quick email viewer AND built-in SMTP server (designed 
 #### Download the 64-bit [PapercutSMTP-win-X64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) desktop installer in releases.
 #### Download the 32-bit [PapercutSMTP-win-x86-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) desktop installer in releases.
 
-## (Optional) Download Papercut SMTP Service
-Papercut SMTP has an optional HTTP server to receive emails even when the client is not running.
-It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping, and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
-
 ## Requirements
 Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be installed on your system. If you have any problems getting it running go to this site: 
 [WebView2 Download](https://developer.microsoft.com/en-us/microsoft-edge/webview2) and install it.
@@ -32,6 +28,10 @@ Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be
 ![Raw View](https://changemakerstudios.us/content/images/2020/07/Papercut-Raw.png)
 #### Logging View
 ![Logging View](https://changemakerstudios.us/content/images/2020/07/Papercut-Log.png)
+
+## (Optional) Download Papercut SMTP Service
+Papercut SMTP has an optional HTTP server to receive emails even when the client is not running.
+It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping, and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
 
 ### Host in Docker
 
