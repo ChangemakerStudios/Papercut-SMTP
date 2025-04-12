@@ -48,7 +48,7 @@ namespace Papercut.Infrastructure.IPComm
 
         #region Public Events
 
-        public event EventHandler ConnectionClosed;
+        public event EventHandler? ConnectionClosed;
 
         #endregion
 
@@ -60,13 +60,45 @@ namespace Papercut.Infrastructure.IPComm
             this.Connected = false;
 
             // Close out the socket
-            if (this.Client != null && this.Client.Connected)
+            if (this.Client is not null)
             {
-                this.Client.Shutdown(SocketShutdown.Both);
-                this.Client.Close();
+                try
+                {
+                    if (this.Client.Connected)
+                    {
+                        // Attempt to gracefully shut down the socket.
+                        this.Client.Shutdown(SocketShutdown.Both);
+                    }
+                }
+                catch (SocketException ex)
+                {
+                    // Log and ignore shutdown exceptions since they can occur when the remote end has already closed
+                    this.Logger.Warning(ex, "SocketException during Shutdown in Connection.Close.");
+                }
+                catch (ObjectDisposedException)
+                {
+                    // The socket may already be disposed, ignore if so.
+                }
+                finally
+                {
+                    try
+                    {
+                        // Ensure socket closure regardless of shutdown success
+                        this.Client.Close();
+                    }
+                    catch (SocketException ex)
+                    {
+                        // Log but don't rethrow to keep the close process moving smoothly.
+                        this.Logger.Warning(ex, "SocketException during Close in Connection.Close.");
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // If already disposed, this is harmless.
+                    }
+                }
             }
 
-            if (triggerEvent) this.OnConnectionClosed(new EventArgs());
+            if (triggerEvent) this.OnConnectionClosed(EventArgs.Empty);
 
             this.Logger.Debug("Connection {ConnectionId} Closed", this.Id);
         }
@@ -79,7 +111,7 @@ namespace Papercut.Infrastructure.IPComm
 
         public ILogger Logger { get; protected set; }
 
-        public Socket Client { get; protected set; }
+        public Socket? Client { get; protected set; }
 
         public bool Connected { get; protected set; }
 
