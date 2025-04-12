@@ -20,21 +20,20 @@ using Autofac;
 
 using Papercut.Infrastructure.IPComm.Network;
 
-namespace Papercut.Infrastructure.IPComm
-{
-    using Module = Autofac.Module;
+namespace Papercut.Infrastructure.IPComm;
 
-    public class PapercutIPCommModule : Module
+using Module = Autofac.Module;
+
+public class PapercutIPCommModule : Module
+{
+    protected override void Load(ContainerBuilder builder)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterType<PapercutIPCommProtocol>().AsSelf().InstancePerDependency();
-            builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
-            builder.RegisterType<Connection>().AsSelf().InstancePerDependency();
-            builder.RegisterType<PapercutIPCommServer>().AsSelf().SingleInstance();
-            builder.RegisterType<PapercutIPCommEndpoints>().AsSelf().SingleInstance();
-            builder.RegisterType<PapercutIPCommServer>().AsSelf().InstancePerDependency();
-            builder.RegisterType<PapercutIPCommClientFactory>().AsSelf().SingleInstance();
-        }
+        builder.RegisterType<PapercutIPCommProtocol>().AsSelf().InstancePerDependency();
+        builder.RegisterType<ConnectionManager>().AsSelf().InstancePerDependency();
+        builder.RegisterType<Connection>().AsSelf().InstancePerDependency();
+        builder.RegisterType<PapercutIPCommServer>().AsSelf().SingleInstance();
+        builder.RegisterType<PapercutIPCommEndpoints>().AsSelf().SingleInstance();
+        builder.RegisterType<PapercutIPCommServer>().AsSelf().InstancePerDependency();
+        builder.RegisterType<PapercutIPCommClientFactory>().AsSelf().SingleInstance();
     }
 }

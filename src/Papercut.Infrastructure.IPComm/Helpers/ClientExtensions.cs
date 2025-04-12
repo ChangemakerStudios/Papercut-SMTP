@@ -42,74 +42,73 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
-namespace Papercut.Infrastructure.IPComm.Helpers
+namespace Papercut.Infrastructure.IPComm.Helpers;
+
+/// <summary>
+/// Used from the JetBlack.Network Project:
+/// https://github.com/rob-blackbourn/JetBlack.Network
+/// MIT licensed
+/// THANK YOU -- no nuget so I had to copy and paste
+/// </summary>
+public static class ClientExtensions
 {
-    /// <summary>
-    /// Used from the JetBlack.Network Project:
-    /// https://github.com/rob-blackbourn/JetBlack.Network
-    /// MIT licensed
-    /// THANK YOU -- no nuget so I had to copy and paste
-    /// </summary>
-    public static class ClientExtensions
+    public static ISubject<ArraySegment<byte>, ArraySegment<byte>> ToClientSubject(
+        this Socket socket, int size, SocketFlags socketFlags = SocketFlags.None)
     {
-        public static ISubject<ArraySegment<byte>, ArraySegment<byte>> ToClientSubject(
-            this Socket socket, int size, SocketFlags socketFlags = SocketFlags.None)
+        if (socket == null) throw new ArgumentNullException(nameof(socket));
+
+        return Subject.Create<ArraySegment<byte>, ArraySegment<byte>>(
+            socket.ToClientObserver(socketFlags),
+            socket.ToClientObservable(size, socketFlags));
+    }
+
+    public static IObservable<ArraySegment<byte>> ToClientObservable(this Socket socket, int size, SocketFlags socketFlags = SocketFlags.None)
+    {
+        if (socket == null) throw new ArgumentNullException(nameof(socket));
+
+        return Observable.Create<ArraySegment<byte>>(async (observer, token) =>
         {
-            if (socket == null) throw new ArgumentNullException(nameof(socket));
+            var buffer = new byte[size];
+            var arraySegment = new ArraySegment<byte>(buffer);
 
-            return Subject.Create<ArraySegment<byte>, ArraySegment<byte>>(
-                socket.ToClientObserver(socketFlags),
-                socket.ToClientObservable(size, socketFlags));
-        }
-
-        public static IObservable<ArraySegment<byte>> ToClientObservable(this Socket socket, int size, SocketFlags socketFlags = SocketFlags.None)
-        {
-            if (socket == null) throw new ArgumentNullException(nameof(socket));
-
-            return Observable.Create<ArraySegment<byte>>(async (observer, token) =>
+            try
             {
-                var buffer = new byte[size];
-                var arraySegment = new ArraySegment<byte>(buffer);
-
-                try
+                while (!token.IsCancellationRequested)
                 {
-                    while (!token.IsCancellationRequested)
-                    {
-                        var received = await socket.ReceiveAsync(arraySegment, socketFlags);
-                        if (received == 0)
-                            break;
+                    var received = await socket.ReceiveAsync(arraySegment, socketFlags);
+                    if (received == 0)
+                        break;
 
-                        observer.OnNext(new ArraySegment<byte>(buffer, 0, received));
-                    }
-
-                    observer.OnCompleted();
+                    observer.OnNext(new ArraySegment<byte>(buffer, 0, received));
                 }
-                catch (Exception error)
-                {
-                    observer.OnError(error);
-                }
-            });
-        }
 
-        public static IObserver<ArraySegment<byte>> ToClientObserver(this Socket socket, SocketFlags socketFlags = SocketFlags.None)
-        {
-            return Observer.Create<ArraySegment<byte>>(async buffer =>
+                observer.OnCompleted();
+            }
+            catch (Exception error)
             {
-                var bufferArray = buffer.Array;
+                observer.OnError(error);
+            }
+        });
+    }
 
-                if (bufferArray == null)
-                {
-                    return;
-                }
+    public static IObserver<ArraySegment<byte>> ToClientObserver(this Socket socket, SocketFlags socketFlags = SocketFlags.None)
+    {
+        return Observer.Create<ArraySegment<byte>>(async buffer =>
+        {
+            var bufferArray = buffer.Array;
 
-                var sent = 0;
-                while (sent < buffer.Count)
-                {
-                    sent += await socket.SendAsync(
-                                new ArraySegment<byte>(bufferArray, sent, buffer.Count - sent),
-                                socketFlags);
-                }
-            });
-        }
+            if (bufferArray == null)
+            {
+                return;
+            }
+
+            var sent = 0;
+            while (sent < buffer.Count)
+            {
+                sent += await socket.SendAsync(
+                    new ArraySegment<byte>(bufferArray, sent, buffer.Count - sent),
+                    socketFlags);
+            }
+        });
     }
 }

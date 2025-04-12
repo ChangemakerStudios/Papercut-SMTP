@@ -24,199 +24,198 @@ using Autofac.Util;
 using Papercut.Core.Domain.Network;
 using Papercut.Infrastructure.IPComm.Protocols;
 
-namespace Papercut.Infrastructure.IPComm.Network
+namespace Papercut.Infrastructure.IPComm.Network;
+
+public class PapercutIPCommServer : Disposable, IServer
 {
-    public class PapercutIPCommServer : Disposable, IServer
+    private readonly Func<IProtocol> _protocolFactory;
+
+    private EndpointDefinition? _currentEndpoint;
+
+    bool _isActive;
+
+    Socket? _listener;
+
+    public PapercutIPCommServer(
+        Func<PapercutIPCommProtocol> protocolFactory,
+        ConnectionManager? connectionManager,
+        ILogger logger)
     {
-        private readonly Func<IProtocol> _protocolFactory;
+        this.ConnectionManager = connectionManager;
+        this.Logger = logger;
+        this._protocolFactory = protocolFactory;
+    }
 
-        private EndpointDefinition? _currentEndpoint;
+    public ConnectionManager? ConnectionManager { get; set; }
 
-        bool _isActive;
+    public ILogger Logger { get; set; }
 
-        Socket? _listener;
-
-        public PapercutIPCommServer(
-            Func<PapercutIPCommProtocol> protocolFactory,
-            ConnectionManager? connectionManager,
-            ILogger logger)
+    public bool IsActive
+    {
+        get
         {
-            this.ConnectionManager = connectionManager;
-            this.Logger = logger;
-            this._protocolFactory = protocolFactory;
-        }
-
-        public ConnectionManager? ConnectionManager { get; set; }
-
-        public ILogger Logger { get; set; }
-
-        public bool IsActive
-        {
-            get
+            lock (this)
             {
-                lock (this)
-                {
-                    return this._isActive;
-                }
-            }
-            private set
-            {
-                lock (this)
-                {
-                    this._isActive = value;
-                }
+                return this._isActive;
             }
         }
-
-        public IPAddress ListenIpAddress => this._currentEndpoint?.Address ?? IPAddress.None;
-
-        public int ListenPort => this._currentEndpoint?.Port ?? 0;
-
-        public async Task StopAsync()
+        private set
         {
-            await Task.CompletedTask;
+            lock (this)
+            {
+                this._isActive = value;
+            }
+        }
+    }
 
-            if (!this.IsActive) return;
+    public IPAddress ListenIpAddress => this._currentEndpoint?.Address ?? IPAddress.None;
 
-            this.Logger.Information("Stopping IPComm Server");
+    public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
+    public async Task StopAsync()
+    {
+        await Task.CompletedTask;
+
+        if (!this.IsActive) return;
+
+        this.Logger.Information("Stopping IPComm Server");
+
+        try
+        {
+            // Turn off the running bool
+            this.IsActive = false;
+
+            this._listener?.Close(2);
+
+            this.ConnectionManager?.CloseAll();
+
+            this.CleanupListener();
+        }
+        catch (Exception ex)
+        {
+            this.Logger.Error(ex, "Exception Stopping IPComm Server");
+        }
+    }
+
+    public async Task StartAsync(EndpointDefinition endpoint)
+    {
+        await Task.CompletedTask;
+
+        if (this.IsActive)
+        {
+            return;
+        }
+
+        this._currentEndpoint = endpoint;
+
+        try
+        {
+            // Set it as starting
+            this.IsActive = true;
+
+            // Create and start new listener socket
+            this.CreateListener();
+        }
+        catch
+        {
+            this.IsActive = false;
+            throw;
+        }
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
             try
             {
-                // Turn off the running bool
-                this.IsActive = false;
-
-                this._listener?.Close(2);
-
-                this.ConnectionManager?.CloseAll();
-
+                await this.StopAsync();
                 this.CleanupListener();
+                if (this.ConnectionManager != null)
+                {
+                    this.ConnectionManager.Dispose();
+                    this.ConnectionManager = null;
+                }
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, "Exception Stopping IPComm Server");
+                this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
             }
         }
+    }
 
-        public async Task StartAsync(EndpointDefinition endpoint)
+    IProtocol GetProtocolInstance()
+    {
+        return this._protocolFactory();
+    }
+
+    protected void CleanupListener()
+    {
+        if (this._listener == null) return;
+
+        this._listener.Dispose();
+        this._listener = null;
+    }
+
+    protected void CreateListener()
+    {
+        // If the listener isn't null, close before rebinding
+        this.CleanupListener();
+
+        // Bind to the listening port
+        this._listener = new Socket(
+            AddressFamily.InterNetwork,
+            SocketType.Stream,
+            ProtocolType.Tcp);
+
+        var endpointDefinition = this._currentEndpoint;
+
+        if (endpointDefinition != null)
         {
-            await Task.CompletedTask;
+            this._listener.Bind(endpointDefinition.ToIPEndPoint());
 
+            this._listener.Listen(20);
+            this._listener.BeginAccept(this.OnClientAccept, null);
+
+            this.Logger.Information(
+                "IPComm Server Ready: Listening for New Connections at {Endpoint}",
+                endpointDefinition);
+        }
+    }
+
+    void OnClientAccept(IAsyncResult asyncResult)
+    {
+        if (!this.IsActive || this._listener == null) return;
+
+        try
+        {
+            Socket clientSocket = this._listener.EndAccept(asyncResult);
+            this.ConnectionManager?.CreateConnection(clientSocket, this.GetProtocolInstance());
+        }
+        catch (ObjectDisposedException)
+        {
+            // This can occur when stopping the service.  Squash it, it only means the listener was stopped.
+        }
+        catch (ArgumentException)
+        {
+            // This can be thrown when updating settings and rebinding the listener.  It mainly means the IAsyncResult
+            // wasn't generated by a BeginAccept event.
+        }
+        catch (Exception ex)
+        {
+            this.Logger.Error(ex, "Exception in IPComm Server Client Accept");
+        }
+        finally
+        {
             if (this.IsActive)
-            {
-                return;
-            }
-
-            this._currentEndpoint = endpoint;
-
-            try
-            {
-                // Set it as starting
-                this.IsActive = true;
-
-                // Create and start new listener socket
-                this.CreateListener();
-            }
-            catch
-            {
-                this.IsActive = false;
-                throw;
-            }
-        }
-
-        protected override async ValueTask DisposeAsync(bool disposing)
-        {
-            if (disposing)
             {
                 try
                 {
-                    await this.StopAsync();
-                    this.CleanupListener();
-                    if (this.ConnectionManager != null)
-                    {
-                        this.ConnectionManager.Dispose();
-                        this.ConnectionManager = null;
-                    }
+                    this._listener.BeginAccept(this.OnClientAccept, null);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    this.Logger.Warning(ex, "Exception Disposing IPComm Server Instance");
-                }
-            }
-        }
-
-        IProtocol GetProtocolInstance()
-        {
-            return this._protocolFactory();
-        }
-
-        protected void CleanupListener()
-        {
-            if (this._listener == null) return;
-
-            this._listener.Dispose();
-            this._listener = null;
-        }
-
-        protected void CreateListener()
-        {
-            // If the listener isn't null, close before rebinding
-            this.CleanupListener();
-
-            // Bind to the listening port
-            this._listener = new Socket(
-                AddressFamily.InterNetwork,
-                SocketType.Stream,
-                ProtocolType.Tcp);
-
-            var endpointDefinition = this._currentEndpoint;
-
-            if (endpointDefinition != null)
-            {
-                this._listener.Bind(endpointDefinition.ToIPEndPoint());
-
-                this._listener.Listen(20);
-                this._listener.BeginAccept(this.OnClientAccept, null);
-
-                this.Logger.Information(
-                    "IPComm Server Ready: Listening for New Connections at {Endpoint}",
-                    endpointDefinition);
-            }
-        }
-
-        void OnClientAccept(IAsyncResult asyncResult)
-        {
-            if (!this.IsActive || this._listener == null) return;
-
-            try
-            {
-                Socket clientSocket = this._listener.EndAccept(asyncResult);
-                this.ConnectionManager?.CreateConnection(clientSocket, this.GetProtocolInstance());
-            }
-            catch (ObjectDisposedException)
-            {
-                // This can occur when stopping the service.  Squash it, it only means the listener was stopped.
-            }
-            catch (ArgumentException)
-            {
-                // This can be thrown when updating settings and rebinding the listener.  It mainly means the IAsyncResult
-                // wasn't generated by a BeginAccept event.
-            }
-            catch (Exception ex)
-            {
-                this.Logger.Error(ex, "Exception in IPComm Server Client Accept");
-            }
-            finally
-            {
-                if (this.IsActive)
-                {
-                    try
-                    {
-                        this._listener.BeginAccept(this.OnClientAccept, null);
-                    }
-                    catch
-                    {
-                        // This normally happens when trying to rebind to a port that is taken
-                    }
+                    // This normally happens when trying to rebind to a port that is taken
                 }
             }
         }

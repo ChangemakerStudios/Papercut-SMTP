@@ -16,14 +16,13 @@
 // limitations under the License.
 
 
-namespace Papercut.Infrastructure.IPComm.Network
+namespace Papercut.Infrastructure.IPComm.Network;
+
+public static class PapercutIPCommConstants
 {
-    public static class PapercutIPCommConstants
-    {
-        public const ushort UiListeningPort = 37402;
+    public const ushort UiListeningPort = 37402;
 
-        public const ushort ServiceListeningPort = 37403;
+    public const ushort ServiceListeningPort = 37403;
 
-        public const string Localhost = "127.0.0.1";
-    }
+    public const string Localhost = "127.0.0.1";
 }
