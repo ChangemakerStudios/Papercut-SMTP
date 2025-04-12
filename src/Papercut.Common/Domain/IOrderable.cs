@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Common.Domain
+namespace Papercut.Common.Domain;
+
+public interface IOrderable
 {
-    public interface IOrderable
-    {
-        int Order { get; }
-    }
+    int Order { get; }
 }

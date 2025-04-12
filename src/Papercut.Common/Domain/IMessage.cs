@@ -16,7 +16,6 @@
 // limitations under the License.
 
 
-namespace Papercut.Common.Domain
-{
-    public interface IMessage {}
-}
+namespace Papercut.Common.Domain;
+
+public interface IMessage {}

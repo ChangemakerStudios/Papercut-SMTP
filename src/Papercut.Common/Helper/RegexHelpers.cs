@@ -18,25 +18,24 @@
 
 using System.Text.RegularExpressions;
 
-namespace Papercut.Common.Helper
+namespace Papercut.Common.Helper;
+
+public static class RegexHelpers
 {
-    public static class RegexHelpers
+    public static bool IsValidRegex(this string regexString)
     {
-        public static bool IsValidRegex(this string regexString)
-        {
-            if (!regexString.IsSet())
-                return false;
-
-            try
-            {
-                var regex = new Regex(regexString);
-                return true;
-            }
-            catch (ArgumentException)
-            {
-            }
-
+        if (!regexString.IsSet())
             return false;
+
+        try
+        {
+            var regex = new Regex(regexString);
+            return true;
         }
+        catch (ArgumentException)
+        {
+        }
+
+        return false;
     }
 }

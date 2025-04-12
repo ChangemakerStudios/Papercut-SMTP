@@ -18,59 +18,58 @@
 
 using Papercut.Common.Extensions;
 
-namespace Papercut.Common.Domain
-{
-    public class ExecutionResult<T> : ExecutionResult
-    {
-        public ExecutionResult(bool isSuccess, T? value, IEnumerable<string>? errors = null)
-            : base(isSuccess, errors)
-        {
-            if (isSuccess)
-            {
-                ArgumentNullException.ThrowIfNull(value, nameof(value));
-                this.Value = value!;
-            }
-        }
+namespace Papercut.Common.Domain;
 
-        public T Value { get; }
+public class ExecutionResult<T> : ExecutionResult
+{
+    public ExecutionResult(bool isSuccess, T? value, IEnumerable<string>? errors = null)
+        : base(isSuccess, errors)
+    {
+        if (isSuccess)
+        {
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
+            this.Value = value!;
+        }
     }
 
-    public class ExecutionResult
+    public T Value { get; }
+}
+
+public class ExecutionResult
+{
+    protected ExecutionResult(bool isSuccess, IEnumerable<string>? errors)
     {
-        protected ExecutionResult(bool isSuccess, IEnumerable<string>? errors)
+        this.IsSuccess = isSuccess;
+
+        if (!this.IsSuccess)
         {
-            this.IsSuccess = isSuccess;
-
-            if (!this.IsSuccess)
-            {
-                this.Errors = errors.IfNullEmpty().ToArray();
-            }
+            this.Errors = errors.IfNullEmpty().ToArray();
         }
+    }
 
-        public IReadOnlyCollection<string> Errors { get; }
+    public IReadOnlyCollection<string> Errors { get; }
 
-        public bool IsSuccess { get; }
+    public bool IsSuccess { get; }
 
-        public bool IsFailed => !IsSuccess;
+    public bool IsFailed => !IsSuccess;
 
-        public static ExecutionResult Failure(params string[] errors)
-        {
-            return new ExecutionResult(false, errors);
-        }
+    public static ExecutionResult Failure(params string[] errors)
+    {
+        return new ExecutionResult(false, errors);
+    }
 
-        public static ExecutionResult Success()
-        {
-            return new ExecutionResult(true, null);
-        }
+    public static ExecutionResult Success()
+    {
+        return new ExecutionResult(true, null);
+    }
 
-        public static ExecutionResult<T> Failure<T>(params string[] errors)
-        {
-            return new ExecutionResult<T>(false, default, errors);
-        }
+    public static ExecutionResult<T> Failure<T>(params string[] errors)
+    {
+        return new ExecutionResult<T>(false, default, errors);
+    }
 
-        public static ExecutionResult<T> Success<T>(T result)
-        {
-            return new ExecutionResult<T>(true, result);
-        }
+    public static ExecutionResult<T> Success<T>(T result)
+    {
+        return new ExecutionResult<T>(true, result);
     }
 }

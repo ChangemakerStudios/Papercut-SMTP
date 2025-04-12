@@ -18,28 +18,24 @@
 
 using Papercut.Common.Helper;
 
-namespace Papercut.Common.Extensions
+namespace Papercut.Common.Extensions;
+
+public static class EnumerableExtensions
 {
-    public static class EnumerableExtensions
+    public static IEnumerable<T> IfNullEmpty<T>(this IEnumerable<T>? enumerable)
     {
-        public static IEnumerable<T> IfNullEmpty<T>(this IEnumerable<T>? enumerable)
-        {
-            if (enumerable == null)
-                return Enumerable.Empty<T>();
+        return enumerable ?? [];
+    }
 
-            return enumerable;
-        }
+    public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?>? enumerable)
+    {
+        return enumerable.IfNullEmpty().Where(s => s != null)!;
+    }
 
-        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?>? enumerable)
-        {
-            return enumerable.IfNullEmpty().Where(s => s != null)!;
-        }
-
-        public static IEnumerable<string> ToFormattedPairs(this IEnumerable<KeyValuePair<string, Lazy<object>>> keyValuePairs)
-        {
-            return keyValuePairs.IfNullEmpty().Select(s => KeyValuePair.Create(s.Key, $"{s.Value.Value}"))
-                .Where(s => s.Value.IsSet())
-                .Select(s => $"{s.Key}: {s.Value}");
-        }
+    public static IEnumerable<string> ToFormattedPairs(this IEnumerable<KeyValuePair<string, Lazy<object>>> keyValuePairs)
+    {
+        return keyValuePairs.IfNullEmpty().Select(s => KeyValuePair.Create(s.Key, $"{s.Value.Value}"))
+            .Where(s => s.Value.IsSet())
+            .Select(s => $"{s.Key}: {s.Value}");
     }
 }
