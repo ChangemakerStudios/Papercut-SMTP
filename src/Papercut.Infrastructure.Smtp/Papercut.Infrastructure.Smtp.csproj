@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="JetBrains.Annotations" Version="2024.2.0" />
-    <PackageReference Update="Serilog" Version="4.0.2" />
+    <PackageReference Update="JetBrains.Annotations" Version="2024.3.0" />
+    <PackageReference Update="Serilog" Version="4.2.0" />
   </ItemGroup>
 
 </Project>
