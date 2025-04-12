@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Infrastructure.Container
+namespace Papercut.Core.Infrastructure.Container;
+
+public static class ContainerScope
 {
-    public static class ContainerScope
-    {
-        public static readonly object UIScopeTag = new object();
-    }
+    public static readonly object UIScopeTag = new();
 }

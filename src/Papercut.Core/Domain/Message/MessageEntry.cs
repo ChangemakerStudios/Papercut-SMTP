@@ -21,132 +21,131 @@ using System.Globalization;
 
 using Papercut.Common.Extensions;
 
-namespace Papercut.Core.Domain.Message
+namespace Papercut.Core.Domain.Message;
+
+/// <summary>
+///     The message entry.
+/// </summary>
+public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IFile
 {
-    /// <summary>
-    ///     The message entry.
-    /// </summary>
-    public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IFile
+    // You can start by using another timestamp format. An example below.
+    //public const string DateTimeFormat = "yy.MMdd-HH.mm.ssfff";
+    // Bug. It is sucks to use FFF instead of fff.
+    // I.e. for 170ms we will get the string 17 and we will be forced to use RegEx dirty coding.
+    //public const string DateTimeFormat = "yyyyMMddHHmmssFFF";
+    public const string DateTimeFormat = "yyyyMMddHHmmssfff";
+
+    protected readonly FileInfo _info;
+
+    protected DateTime? _created;
+
+    bool _hasBeenSeen;
+
+    bool _isSelected;
+
+    public MessageEntry(FileInfo fileInfo)
     {
-        // You can start by using another timestamp format. An example below.
-        //public const string DateTimeFormat = "yy.MMdd-HH.mm.ssfff";
-        // Bug. It is sucks to use FFF instead of fff.
-        // I.e. for 170ms we will get the string 17 and we will be forced to use RegEx dirty coding.
-        //public const string DateTimeFormat = "yyyyMMddHHmmssFFF";
-        public const string DateTimeFormat = "yyyyMMddHHmmssfff";
+        this._info = fileInfo;
 
-        protected readonly FileInfo _info;
+        var firstBit = this._info.Name.Split(' ').FirstOrDefault();
 
-        protected DateTime? _created;
-
-        bool _hasBeenSeen;
-
-        bool _isSelected;
-
-        public MessageEntry(FileInfo fileInfo)
+        if (firstBit?.Length == DateTimeFormat.Length)
         {
-            this._info = fileInfo;
+            this._created = DateTime.ParseExact(
+                firstBit,
+                DateTimeFormat,
+                CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            this._created = this._info.CreationTime;
+        }
 
-            var firstBit = this._info.Name.Split(' ').FirstOrDefault();
+        if (this._created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
+        {
+            // anything under 5 minutes old is "new" still by default
+            this._hasBeenSeen = false;
+        }
+        else
+        {
+            // everything else has been seen by default
+            this._hasBeenSeen = true;
+        }
+    }
 
-            if (firstBit?.Length == DateTimeFormat.Length)
+    public MessageEntry(string file)
+        : this(new FileInfo(file))
+    {
+    }
+
+    public DateTime ModifiedDate => this._info.LastWriteTime;
+
+    public long SortTicks => (this._created ?? this.ModifiedDate).Ticks;
+
+    public string Name => this._info.Name;
+
+    public string FileSize => this._info.Length.ToFileSizeFormat();
+
+    public string DisplayText => $"{this._created?.ToString("G") ?? this._info.Name} ({this.FileSize})";
+
+    public bool IsSelected
+    {
+        get => this._isSelected;
+        set
+        {
+            this._isSelected = value;
+
+            if (value)
             {
-                this._created = DateTime.ParseExact(
-                    firstBit,
-                    DateTimeFormat,
-                    CultureInfo.InvariantCulture);
+                this.HasBeenSeen = true;
             }
-            else
-            {
-                this._created = this._info.CreationTime;
-            }
-
-            if (this._created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
-            {
-                // anything under 5 minutes old is "new" still by default
-                this._hasBeenSeen = false;
-            }
-            else
-            {
-                // everything else has been seen by default
-                this._hasBeenSeen = true;
-            }
+            this.OnPropertyChanged(nameof(this.IsSelected));
         }
+    }
 
-        public MessageEntry(string file)
-            : this(new FileInfo(file))
+    public bool HasBeenSeen
+    {
+        get => this._hasBeenSeen;
+        set
         {
+            this._hasBeenSeen = value;
+            this.OnPropertyChanged(nameof(this.HasBeenSeen));
         }
+    }
 
-        public DateTime ModifiedDate => this._info.LastWriteTime;
+    public bool Equals(MessageEntry? other)
+    {
+        return Equals(this.File, other?.File);
+    }
 
-        public long SortTicks => (this._created ?? this.ModifiedDate).Ticks;
+    public string File => this._info.FullName;
 
-        public string Name => this._info.Name;
+    public event PropertyChangedEventHandler PropertyChanged;
 
-        public string FileSize => this._info.Length.ToFileSizeFormat();
+    public override string ToString()
+    {
+        return this.DisplayText;
+    }
 
-        public string DisplayText => $"{this._created?.ToString("G") ?? this._info.Name} ({this.FileSize})";
+    public override bool Equals(object obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
 
-        public bool IsSelected
+        if (obj is MessageEntry entry)
         {
-            get => this._isSelected;
-            set
-            {
-                this._isSelected = value;
-
-				if (value)
-				{
-					this.HasBeenSeen = true;
-				}
-				this.OnPropertyChanged(nameof(this.IsSelected));
-			}
+            return this.Equals(entry);
         }
 
-        public bool HasBeenSeen
-		{
-			get => this._hasBeenSeen;
-			set
-			{
-				this._hasBeenSeen = value;
-				this.OnPropertyChanged(nameof(this.HasBeenSeen));
-			}
-		}
+        return false;
+    }
 
-        public bool Equals(MessageEntry? other)
-        {
-            return Equals(this.File, other?.File);
-        }
+    public override int GetHashCode() => this.File?.GetHashCode() ?? 0;
 
-        public string File => this._info.FullName;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public override string ToString()
-        {
-            return this.DisplayText;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-
-            if (obj is MessageEntry entry)
-            {
-                return this.Equals(entry);
-            }
-
-            return false;
-        }
-
-        public override int GetHashCode() => this.File?.GetHashCode() ?? 0;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChangedEventHandler handler = this.PropertyChanged;
-            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+    [NotifyPropertyChangedInvocator]
+    protected virtual void OnPropertyChanged(string propertyName)
+    {
+        PropertyChangedEventHandler handler = this.PropertyChanged;
+        handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

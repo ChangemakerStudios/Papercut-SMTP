@@ -16,15 +16,14 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Message
-{
-    public class NewMessageEventArgs : EventArgs
-    {
-        public NewMessageEventArgs(MessageEntry newMessage)
-        {
-            this.NewMessage = newMessage;
-        }
+namespace Papercut.Core.Domain.Message;
 
-        public MessageEntry NewMessage { get; set; }
+public class NewMessageEventArgs : EventArgs
+{
+    public NewMessageEventArgs(MessageEntry newMessage)
+    {
+        this.NewMessage = newMessage;
     }
+
+    public MessageEntry NewMessage { get; set; }
 }

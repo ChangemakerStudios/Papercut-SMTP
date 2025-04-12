@@ -16,12 +16,11 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Settings
-{
-    public interface ISettingStore : IReadValue<string>, IWriteValue<string>
-    {
-        void Load();
+namespace Papercut.Core.Domain.Settings;
 
-        void Save();
-    }
+public interface ISettingStore : IReadValue<string>, IWriteValue<string>
+{
+    void Load();
+
+    void Save();
 }

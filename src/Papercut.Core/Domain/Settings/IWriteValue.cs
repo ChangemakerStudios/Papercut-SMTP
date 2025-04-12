@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Settings
+namespace Papercut.Core.Domain.Settings;
+
+public interface IWriteValue<in T>
 {
-    public interface IWriteValue<in T>
-    {
-        void Set(string key, T value);
-    }
+    void Set(string key, T value);
 }

@@ -18,69 +18,68 @@
 
 using Newtonsoft.Json;
 
-namespace Papercut.Core.Infrastructure.Json
+namespace Papercut.Core.Infrastructure.Json;
+
+public static class JsonHelpers
 {
-    public static class JsonHelpers
+    private static readonly JsonSerializerSettings _serializationSettings =
+        new()
+        {
+            TypeNameHandling = TypeNameHandling.Auto,
+            Formatting = Formatting.Indented,
+            NullValueHandling = NullValueHandling.Include,
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
+        };
+
+    public static string ToJson(this object obj, JsonSerializerSettings? setting = null)
     {
-        private static readonly JsonSerializerSettings _serializationSettings =
-            new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.Auto,
-                Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Include,
-                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
-            };
+        return JsonConvert.SerializeObject(obj, setting ?? _serializationSettings);
+    }
 
-        public static string ToJson(this object obj, JsonSerializerSettings? setting = null)
-        {
-            return JsonConvert.SerializeObject(obj, setting ?? _serializationSettings);
-        }
+    public static void SaveJson<T>(
+        T obj,
+        string path,
+        Encoding? textEncoding = null,
+        JsonSerializerSettings? setting = null)
+        where T : class
+    {
+        if (obj == null) throw new ArgumentNullException(nameof(obj));
+        if (path == null) throw new ArgumentNullException(nameof(path));
 
-        public static void SaveJson<T>(
-            T obj,
-            string path,
-            Encoding? textEncoding = null,
-            JsonSerializerSettings? setting = null)
-            where T : class
-        {
-            if (obj == null) throw new ArgumentNullException(nameof(obj));
-            if (path == null) throw new ArgumentNullException(nameof(path));
+        string json = JsonConvert.SerializeObject(
+            obj,
+            Formatting.Indented,
+            setting ?? _serializationSettings);
 
-            string json = JsonConvert.SerializeObject(
-                obj,
-                Formatting.Indented,
-                setting ?? _serializationSettings);
+        File.WriteAllText(path, json, textEncoding ?? Encoding.UTF8);
+    }
 
-            File.WriteAllText(path, json, textEncoding ?? Encoding.UTF8);
-        }
+    public static T? LoadJson<T>(
+        string path,
+        Func<T>? defaultValueFunc = null,
+        Encoding? textEncoding = null,
+        JsonSerializerSettings? setting = null)
+        where T : class
+    {
+        if (path == null) throw new ArgumentNullException(nameof(path));
 
-        public static T? LoadJson<T>(
-            string path,
-            Func<T>? defaultValueFunc = null,
-            Encoding? textEncoding = null,
-            JsonSerializerSettings? setting = null)
-            where T : class
-        {
-            if (path == null) throw new ArgumentNullException(nameof(path));
+        if (!File.Exists(path)) return defaultValueFunc?.Invoke();
 
-            if (!File.Exists(path)) return defaultValueFunc?.Invoke();
+        string json = File.ReadAllText(path, textEncoding ?? Encoding.UTF8);
 
-            string json = File.ReadAllText(path, textEncoding ?? Encoding.UTF8);
+        return JsonConvert.DeserializeObject<T>(json, setting ?? _serializationSettings);
+    }
 
-            return JsonConvert.DeserializeObject<T>(json, setting ?? _serializationSettings);
-        }
+    public static object? FromJson(
+        this string json,
+        Type type,
+        JsonSerializerSettings? setting = null)
+    {
+        return JsonConvert.DeserializeObject(json, type, setting ?? _serializationSettings);
+    }
 
-        public static object? FromJson(
-            this string json,
-            Type type,
-            JsonSerializerSettings? setting = null)
-        {
-            return JsonConvert.DeserializeObject(json, type, setting ?? _serializationSettings);
-        }
-
-        public static T? FromJson<T>(this string json, JsonSerializerSettings? setting = null)
-        {
-            return JsonConvert.DeserializeObject<T>(json, setting ?? _serializationSettings);
-        }
+    public static T? FromJson<T>(this string json, JsonSerializerSettings? setting = null)
+    {
+        return JsonConvert.DeserializeObject<T>(json, setting ?? _serializationSettings);
     }
 }

@@ -18,16 +18,15 @@
 
 using System.ComponentModel;
 
-namespace Papercut.Core.Domain.Rules
+namespace Papercut.Core.Domain.Rules;
+
+public interface IRule : INotifyPropertyChanged
 {
-    public interface IRule : INotifyPropertyChanged
-    {
-        Guid Id { get; }
+    Guid Id { get; }
 
-        bool IsEnabled { get; set; }
+    bool IsEnabled { get; set; }
 
-        string Type { get; }
+    string Type { get; }
 
-        string Description { get; }
-    }
+    string Description { get; }
 }

@@ -21,68 +21,67 @@ using Autofac;
 using Papercut.Common.Domain;
 using Papercut.Common.Extensions;
 
-namespace Papercut.Core.Infrastructure.MessageBus
+namespace Papercut.Core.Infrastructure.MessageBus;
+
+public class AutofacMessageBus : IMessageBus
 {
-    public class AutofacMessageBus : IMessageBus
+    #region Fields
+
+    readonly ILifetimeScope _lifetimeScope;
+
+    #endregion
+
+    #region Constructors and Destructors
+
+    public AutofacMessageBus(ILifetimeScope lifetimeScope)
     {
-        #region Fields
-
-        readonly ILifetimeScope _lifetimeScope;
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        public AutofacMessageBus(ILifetimeScope lifetimeScope)
-        {
-            this._lifetimeScope = lifetimeScope;
-        }
-
-        #endregion
-
-        #region Methods
-
-        protected virtual async Task HandleAsync<T>(T eventObject, IEventHandler<T> handler, CancellationToken token)
-            where T : IEvent
-        {
-            await handler.HandleAsync(eventObject, token);
-        }
-
-        #endregion
-
-        #region Public Methods and Operators
-
-        public virtual async Task<ExecutionResult> ExecuteAsync<T>(T commandObject, CancellationToken token) where T : ICommand
-        {
-            var commandHandler = this._lifetimeScope.Resolve<ICommandHandler<T>>();
-
-            if (commandHandler != null)
-            {
-                return await commandHandler.ExecuteAsync(commandObject, token);
-            }
-
-            return ExecutionResult.Failure($"No Command Handler for {typeof(T)}");
-        }
-
-        public virtual async Task PublishAsync<T>(T eventObject, CancellationToken token) where T : IEvent
-        {
-            foreach (var @event in this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().MaybeByOrderable())
-            {
-                try
-                {
-                    await this.HandleAsync(eventObject, @event, token);
-                }
-                catch (Exception ex)
-                {
-                    this._lifetimeScope.Resolve<ILogger>().ForContext<AutofacMessageBus>().Error(
-                        ex,
-                        "Failed publishing {EventType} to {EventHandler}",
-                        typeof(T),
-                        @event.GetType());
-                }
-            }
-        }
-
-        #endregion
+        this._lifetimeScope = lifetimeScope;
     }
+
+    #endregion
+
+    #region Methods
+
+    protected virtual async Task HandleAsync<T>(T eventObject, IEventHandler<T> handler, CancellationToken token)
+        where T : IEvent
+    {
+        await handler.HandleAsync(eventObject, token);
+    }
+
+    #endregion
+
+    #region Public Methods and Operators
+
+    public virtual async Task<ExecutionResult> ExecuteAsync<T>(T commandObject, CancellationToken token) where T : ICommand
+    {
+        var commandHandler = this._lifetimeScope.Resolve<ICommandHandler<T>>();
+
+        if (commandHandler != null)
+        {
+            return await commandHandler.ExecuteAsync(commandObject, token);
+        }
+
+        return ExecutionResult.Failure($"No Command Handler for {typeof(T)}");
+    }
+
+    public virtual async Task PublishAsync<T>(T eventObject, CancellationToken token) where T : IEvent
+    {
+        foreach (var @event in this._lifetimeScope.Resolve<IEnumerable<IEventHandler<T>>>().MaybeByOrderable())
+        {
+            try
+            {
+                await this.HandleAsync(eventObject, @event, token);
+            }
+            catch (Exception ex)
+            {
+                this._lifetimeScope.Resolve<ILogger>().ForContext<AutofacMessageBus>().Error(
+                    ex,
+                    "Failed publishing {EventType} to {EventHandler}",
+                    typeof(T),
+                    @event.GetType());
+            }
+        }
+    }
+
+    #endregion
 }

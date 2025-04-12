@@ -21,36 +21,34 @@ using System.Collections.Concurrent;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Papercut.Core.Infrastructure.Logging
+namespace Papercut.Core.Infrastructure.Logging;
+
+public class EnvironmentEnricher : ILogEventEnricher
 {
-    public class EnvironmentEnricher : ILogEventEnricher
+    readonly ConcurrentDictionary<string, LogEventProperty> _cachedProperties = new();
+
+    /// <summary>
+    /// Enrich the log event.
+    /// 
+    /// </summary>
+    /// <param name="logEvent">The log event to enrich.</param><param name="propertyFactory">Factory for creating new properties to add to the event.</param>
+    public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        readonly ConcurrentDictionary<string, LogEventProperty> _cachedProperties =
-            new ConcurrentDictionary<string, LogEventProperty>();
-
-        /// <summary>
-        /// Enrich the log event.
-        /// 
-        /// </summary>
-        /// <param name="logEvent">The log event to enrich.</param><param name="propertyFactory">Factory for creating new properties to add to the event.</param>
-        public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        var properties = new List<LogEventProperty>
         {
-            var properties = new List<LogEventProperty>
-            {
-                this._cachedProperties.GetOrAdd("MachineName",
-                    k => propertyFactory.CreateProperty(k, Environment.MachineName)),
-                this._cachedProperties.GetOrAdd("Is64BitOperatingSystem",
-                    k => propertyFactory.CreateProperty(k, Environment.Is64BitOperatingSystem)),
-                this._cachedProperties.GetOrAdd("OSVersion", k => propertyFactory.CreateProperty(k, Environment.OSVersion)),
-                this._cachedProperties.GetOrAdd("ProcessorCount",
-                    k => propertyFactory.CreateProperty(k, Environment.ProcessorCount)),
-                this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, Environment.Version))
-            };
+            this._cachedProperties.GetOrAdd("MachineName",
+                k => propertyFactory.CreateProperty(k, Environment.MachineName)),
+            this._cachedProperties.GetOrAdd("Is64BitOperatingSystem",
+                k => propertyFactory.CreateProperty(k, Environment.Is64BitOperatingSystem)),
+            this._cachedProperties.GetOrAdd("OSVersion", k => propertyFactory.CreateProperty(k, Environment.OSVersion)),
+            this._cachedProperties.GetOrAdd("ProcessorCount",
+                k => propertyFactory.CreateProperty(k, Environment.ProcessorCount)),
+            this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, Environment.Version))
+        };
 
-            foreach (var p in properties)
-            {
-                logEvent.AddPropertyIfAbsent(p);
-            }
+        foreach (var p in properties)
+        {
+            logEvent.AddPropertyIfAbsent(p);
         }
     }
 }

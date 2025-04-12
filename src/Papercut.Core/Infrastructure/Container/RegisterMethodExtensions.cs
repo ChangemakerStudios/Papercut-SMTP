@@ -22,90 +22,89 @@ using Autofac;
 
 using Papercut.Common.Extensions;
 
-namespace Papercut.Core.Infrastructure.Container
+namespace Papercut.Core.Infrastructure.Container;
+
+public static class RegisterMethodExtensions
 {
-    public static class RegisterMethodExtensions
+    static IsRegisterContainerBuilderMethodSpecification MethodIsRegisterContainerBuilderSpecification =>
+        new();
+
+    /// <summary>
+    ///     Gets the register methods.
+    /// </summary>
+    /// <param name="assembly">The assembly.</param>
+    /// <returns></returns>
+    public static IReadOnlyList<Action<ContainerBuilder>> GetStaticRegisterMethods(this Assembly assembly)
     {
-        static IsRegisterContainerBuilderMethodSpecification MethodIsRegisterContainerBuilderSpecification =>
-            new IsRegisterContainerBuilderMethodSpecification();
+        if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 
-        /// <summary>
-        ///     Gets the register methods.
-        /// </summary>
-        /// <param name="assembly">The assembly.</param>
-        /// <returns></returns>
-        public static IReadOnlyList<Action<ContainerBuilder>> GetStaticRegisterMethods(this Assembly assembly)
-        {
-            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+        var instanceBasedRegisterMethods = assembly.GetTypes()
+            .SelectMany(_ => _.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            .Where(m => MethodIsRegisterContainerBuilderSpecification.IsSatisfiedBy(m))
+            .ToList();
 
-            var instanceBasedRegisterMethods = assembly.GetTypes()
-                .SelectMany(_ => _.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+        if (instanceBasedRegisterMethods.Any())
+            throw new AggregateException(
+                instanceBasedRegisterMethods.Select(
+                    s =>
+                        new MissingMethodException($"Registration Method: {s.DeclaringType}.{s} must be static!")));
+
+        var bindingFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
+        return
+            assembly.GetTypes()
+                .SelectMany(_ => _.GetMethods(bindingFlags))
                 .Where(m => MethodIsRegisterContainerBuilderSpecification.IsSatisfiedBy(m))
+                .Select(
+                    z => new Action<ContainerBuilder>(
+                        c =>
+                        {
+                            Log.Verbose(
+                                "Invoking Registration Method {MethodType} {MethodName}",
+                                z.DeclaringType?.ToString(),
+                                z.ToString());
+                            z.Invoke(null, new object[] {c});
+                        }))
                 .ToList();
+    }
 
-            if (instanceBasedRegisterMethods.Any())
-                throw new AggregateException(
-                    instanceBasedRegisterMethods.Select(
-                        s =>
-                            new MissingMethodException($"Registration Method: {s.DeclaringType}.{s} must be static!")));
+    /// <summary>
+    ///     Invokes all register methods
+    /// </summary>
+    /// <param name="builder">The builder.</param>
+    /// <param name="assembly"></param>
+    /// <param name="additionalAssemblies"></param>
+    public static void RegisterStaticMethods(
+        this ContainerBuilder builder,
+        Assembly assembly,
+        params Assembly[] additionalAssemblies)
+    {
+        if (builder == null) throw new ArgumentNullException(nameof(builder));
+        if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 
-            var bindingFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+        foreach (var registerMethod in assembly.ToEnumerable().Concat(additionalAssemblies)
+                     .SelectMany(s => s.GetStaticRegisterMethods())) registerMethod(builder);
+    }
 
-            return
-                assembly.GetTypes()
-                    .SelectMany(_ => _.GetMethods(bindingFlags))
-                    .Where(m => MethodIsRegisterContainerBuilderSpecification.IsSatisfiedBy(m))
-                    .Select(
-                        z => new Action<ContainerBuilder>(
-                            c =>
-                            {
-                                Log.Verbose(
-                                    "Invoking Registration Method {MethodType} {MethodName}",
-                                    z.DeclaringType?.ToString(),
-                                    z.ToString());
-                                z.Invoke(null, new object[] {c});
-                            }))
-                    .ToList();
+    internal class IsRegisterContainerBuilderMethodSpecification
+    {
+        public bool IsSatisfiedBy(MethodInfo method)
+        {
+            return !this.IsNotSatisfiedBecause(method).Any();
         }
 
-        /// <summary>
-        ///     Invokes all register methods
-        /// </summary>
-        /// <param name="builder">The builder.</param>
-        /// <param name="assembly"></param>
-        /// <param name="additionalAssemblies"></param>
-        public static void RegisterStaticMethods(
-            this ContainerBuilder builder,
-            Assembly assembly,
-            params Assembly[] additionalAssemblies)
+        private IEnumerable<string> IsNotSatisfiedBecause(MethodInfo method)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
-
-            foreach (var registerMethod in assembly.ToEnumerable().Concat(additionalAssemblies)
-                .SelectMany(s => s.GetStaticRegisterMethods())) registerMethod(builder);
-        }
-
-        internal class IsRegisterContainerBuilderMethodSpecification
-        {
-            public bool IsSatisfiedBy(MethodInfo method)
+            if (method?.Name != "Register")
             {
-                return !this.IsNotSatisfiedBecause(method).Any();
+                yield return "Method NewName must be 'Register'";
+                yield break;
             }
 
-            private IEnumerable<string> IsNotSatisfiedBecause(MethodInfo method)
-            {
-                if (method?.Name != "Register")
-                {
-                    yield return "Method NewName must be 'Register'";
-                    yield break;
-                }
+            var @params = method.GetParameters().IfNullEmpty().ToList();
 
-                var @params = method.GetParameters().IfNullEmpty().ToList();
-
-                if (@params.Count != 1 || @params[0].ParameterType != typeof(ContainerBuilder))
-                    yield return "Method must have one parameter of type 'ContainerBuilder'";
-            }
+            if (@params.Count != 1 || @params[0].ParameterType != typeof(ContainerBuilder))
+                yield return "Method must have one parameter of type 'ContainerBuilder'";
         }
     }
 }

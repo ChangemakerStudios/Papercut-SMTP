@@ -24,53 +24,52 @@ using Papercut.Core.Domain.Settings;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Core.Infrastructure.MessageBus;
 
-namespace Papercut.Core.Infrastructure.Container
+namespace Papercut.Core.Infrastructure.Container;
+
+using Module = Autofac.Module;
+
+public class PapercutCoreModule : Module
 {
-    using Module = Autofac.Module;
-
-    public class PapercutCoreModule : Module
+    protected override void Load(ContainerBuilder builder)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            RegisterLogging.Register(builder);
+        RegisterLogging.Register(builder);
 
-            //builder.RegisterType<AutofacServiceProvider>()
-            //    .As<IServiceProvider>()
-            //    .InstancePerLifetimeScope();
+        //builder.RegisterType<AutofacServiceProvider>()
+        //    .As<IServiceProvider>()
+        //    .InstancePerLifetimeScope();
 
-            // events
-            builder.RegisterType<AutofacMessageBus>()
-                .As<IMessageBus>()
-                .AsSelf()
-                .InstancePerLifetimeScope()
-                .PreserveExistingDefaults();
+        // events
+        builder.RegisterType<AutofacMessageBus>()
+            .As<IMessageBus>()
+            .AsSelf()
+            .InstancePerLifetimeScope()
+            .PreserveExistingDefaults();
 
-            builder.RegisterType<MessagePathConfigurator>()
-                .AsSelf()
-                .SingleInstance();
+        builder.RegisterType<MessagePathConfigurator>()
+            .AsSelf()
+            .SingleInstance();
 
-            builder.RegisterType<LoggingPathConfigurator>()
-                .AsSelf()
-                .SingleInstance();
+        builder.RegisterType<LoggingPathConfigurator>()
+            .AsSelf()
+            .SingleInstance();
 
-            builder.RegisterType<JsonSettingStore>()
-                .As<ISettingStore>()
-                .OnActivated(
-                    j =>
+        builder.RegisterType<JsonSettingStore>()
+            .As<ISettingStore>()
+            .OnActivated(
+                j =>
+                {
+                    try
                     {
-                        try
-                        {
-                            j.Instance.Load();
+                        j.Instance.Load();
 
-                            // immediately save all settings
-                            j.Instance.Save();
-                        }
-                        catch
-                        {
-                        }
-                    })
-                .AsSelf()
-                .SingleInstance();
-        }
+                        // immediately save all settings
+                        j.Instance.Save();
+                    }
+                    catch
+                    {
+                    }
+                })
+            .AsSelf()
+            .SingleInstance();
     }
 }

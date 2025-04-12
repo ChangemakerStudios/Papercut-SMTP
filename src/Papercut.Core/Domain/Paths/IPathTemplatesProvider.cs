@@ -18,12 +18,11 @@
 
 using System.Collections.ObjectModel;
 
-namespace Papercut.Core.Domain.Paths
-{
-    public interface IPathTemplatesProvider
-    {
-        ObservableCollection<string> MessagePathTemplates { get; }
+namespace Papercut.Core.Domain.Paths;
 
-        ObservableCollection<string> LoggingPathTemplates { get; }
-    }
+public interface IPathTemplatesProvider
+{
+    ObservableCollection<string> MessagePathTemplates { get; }
+
+    ObservableCollection<string> LoggingPathTemplates { get; }
 }
