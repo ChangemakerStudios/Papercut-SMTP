@@ -23,25 +23,24 @@ using MimeKit;
 
 using Papercut.Core.Domain.Message;
 
-namespace Papercut.Message.Helpers
+namespace Papercut.Message.Helpers;
+
+public static class MimeMessageLoaderExtensions
 {
-    public static class MimeMessageLoaderExtensions
+    public static async Task<MimeMessage> GetClonedAsync(this MimeMessageLoader loader, MessageEntry entry, CancellationToken token = default)
     {
-        public static async Task<MimeMessage> GetClonedAsync(this MimeMessageLoader loader, MessageEntry entry, CancellationToken token = default)
-        {
-            ArgumentNullException.ThrowIfNull(loader);
-            ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(loader);
+        ArgumentNullException.ThrowIfNull(entry);
 
-            var message = await loader.GetAsync(entry, token);
-            return await message.CloneMessageAsync(token);
-        }
+        var message = await loader.GetAsync(entry, token);
+        return await message.CloneMessageAsync(token);
+    }
 
-        public static IObservable<MimeMessage?> GetObservable(this MimeMessageLoader loader, MessageEntry entry, CancellationToken token = default)
-        {
-            ArgumentNullException.ThrowIfNull(loader);
-            ArgumentNullException.ThrowIfNull(entry);
+    public static IObservable<MimeMessage?> GetObservable(this MimeMessageLoader loader, MessageEntry entry, CancellationToken token = default)
+    {
+        ArgumentNullException.ThrowIfNull(loader);
+        ArgumentNullException.ThrowIfNull(entry);
 
-            return loader.GetAsync(entry, token).ToObservable(TaskPoolScheduler.Default);
-        }
+        return loader.GetAsync(entry, token).ToObservable(TaskPoolScheduler.Default);
     }
 }

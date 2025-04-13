@@ -21,56 +21,55 @@ using MimeKit;
 using Papercut.Common.Domain;
 using Papercut.Core.Domain.Message;
 
-namespace Papercut.Message
+namespace Papercut.Message;
+
+public class ReceivedDataMessageHandler(
+    MessageRepository messageRepository,
+    IMessageBus messageBus,
+    ILogger logger)
+    : IReceivedDataHandler
 {
-    public class ReceivedDataMessageHandler(
-        MessageRepository messageRepository,
-        IMessageBus messageBus,
-        ILogger logger)
-        : IReceivedDataHandler
+    public async Task HandleReceivedAsync(
+        byte[] messageData,
+        string[] recipients)
     {
-        public async Task HandleReceivedAsync(
-            byte[] messageData,
-            string[] recipients)
+        ArgumentNullException.ThrowIfNull(messageData);
+        ArgumentNullException.ThrowIfNull(recipients);
+
+        string file;
+
+        using (var ms = new MemoryStream(messageData))
         {
-            ArgumentNullException.ThrowIfNull(messageData);
-            ArgumentNullException.ThrowIfNull(recipients);
+            var message = await MimeMessage.LoadAsync(ParserOptions.Default, ms, true);
 
-            string file;
+            var lookup = recipients.ToHashSet(StringComparer.CurrentCultureIgnoreCase);
 
-            using (var ms = new MemoryStream(messageData))
+            // remove TO:
+            lookup.ExceptWith(message.To.Mailboxes.Select(s => s.Address));
+
+            // remove CC:
+            lookup.ExceptWith(message.Cc.Mailboxes.Select(s => s.Address));
+
+            if (lookup.Any())
             {
-                var message = await MimeMessage.LoadAsync(ParserOptions.Default, ms, true);
-
-                var lookup = recipients.ToHashSet(StringComparer.CurrentCultureIgnoreCase);
-
-                // remove TO:
-                lookup.ExceptWith(message.To.Mailboxes.Select(s => s.Address));
-
-                // remove CC:
-                lookup.ExceptWith(message.Cc.Mailboxes.Select(s => s.Address));
-
-                if (lookup.Any())
+                // Bcc is remaining, add to message
+                foreach (var r in lookup)
                 {
-                    // Bcc is remaining, add to message
-                    foreach (var r in lookup)
-                    {
-                        message.Bcc.Add(MailboxAddress.Parse(r));
-                    }
+                    message.Bcc.Add(MailboxAddress.Parse(r));
                 }
-
-                file = await messageRepository.SaveMessage(message.Subject, async fs => await message.WriteToAsync(fs));
             }
 
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(file))
-                    await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
-            }
-            catch (Exception ex)
-            {
-                logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
-            }
+            file = await messageRepository.SaveMessage(message.Subject, async fs => await message.WriteToAsync(fs));
+        }
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(file))
+                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
+        }
+        catch (Exception ex)
+        {
+            logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
         }
     }
 }

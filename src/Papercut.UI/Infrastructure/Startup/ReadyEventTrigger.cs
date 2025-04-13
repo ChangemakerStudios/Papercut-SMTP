@@ -25,22 +25,13 @@ using Papercut.Domain.LifecycleHooks;
 
 namespace Papercut.Smtp.Desktop.Infrastructure.Startup;
 
-public class ReadyEventTrigger : IAppLifecycleStarted, IOrderable
+public class ReadyEventTrigger(IMessageBus messageBus, IAppMeta appMeta)
+    : IAppLifecycleStarted, IOrderable
 {
-    private readonly IAppMeta _appMeta;
-
-    private readonly IMessageBus _messageBus;
-
-    public ReadyEventTrigger(IMessageBus messageBus, IAppMeta appMeta)
-    {
-        this._messageBus = messageBus;
-        this._appMeta = appMeta;
-    }
-
     public async Task OnStartedAsync()
     {
-        await this._messageBus.PublishAsync(
-            new PapercutClientReadyEvent() { AppMeta = this._appMeta });
+        await messageBus.PublishAsync(
+            new PapercutClientReadyEvent() { AppMeta = appMeta });
     }
 
     /// <summary>
