@@ -8,6 +8,7 @@ BuildDate=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 VcsRef=$(git rev-parse --short HEAD)
 
 docker build -t changemakerstudiosus/papercut-smtp:"$BuildVersion" . \
+    --platform linux/amd64 \
     --build-arg BUILD_VERSION="$BuildVersion" \
     --build-arg BUILD_DATE="$BuildDate" \
     --build-arg VCS_REF="$VcsRef" \

@@ -19,8 +19,8 @@
   "MessagePath_Description": "## Base path where incoming emails are written.",
   "LoggingPath": "%AppDataDirectory%\\Logs;%BaseDirectory%\\Logs",
   "LoggingPath_Description": "## Base path where logs are written.",
-  "Port": "25",
-  "Port_Description": "## SMTP Server listening Port. Default is 25.",
+  "Port": "37425",
+  "Port_Description": "## SMTP Server listening Port. Default is 37425.",
   "SeqEndpoint": null,
   "SeqEndpoint_Description": "## Populate with a endpoint if you want to enable SEQ (https://getseq.net/) logging."
 }

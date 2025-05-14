@@ -51,7 +51,7 @@ public class OptionsViewModel : Screen
 
     private bool _minimizeToTray;
 
-    int _port = 25;
+    int _port = 37425;
 
     bool _runOnStartup;
 

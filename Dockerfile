@@ -45,13 +45,13 @@ WORKDIR /app
 
 COPY --from=publish /app/publish .
 
-ENV ASPNETCORE_HTTP_PORTS=80
+ENV ASPNETCORE_HTTP_PORTS=37408
 
 # HTTP
-EXPOSE 80
+EXPOSE 37408
  
 # SMTP
-EXPOSE 25 
+EXPOSE 37425
 
 # optional -- should only be used locally: IPComm
 # EXPOSE 37403 

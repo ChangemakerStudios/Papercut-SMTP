@@ -37,7 +37,7 @@ namespace Papercut.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("25")]
+        [global::System.Configuration.DefaultSettingValueAttribute("37425")]
         public int Port {
             get {
                 return ((int)(this["Port"]));

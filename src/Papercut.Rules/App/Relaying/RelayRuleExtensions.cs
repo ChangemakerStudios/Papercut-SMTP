@@ -31,7 +31,7 @@ public static class RelayRuleExtensions
         var uri = new Uri("smtp://" + smtpServer);
 
         rule.SmtpServer = uri.DnsSafeHost;
-        rule.SmtpPort = uri.IsDefaultPort ? 25 : uri.Port;
+        rule.SmtpPort = uri.IsDefaultPort ? 37425 : uri.Port;
     }
 
     public static async Task<SmtpClient> CreateConnectedSmtpClientAsync(this RelayRule forwardRule, CancellationToken token)

@@ -33,7 +33,7 @@ public class RelayRule : RuleBase
 {
     string _smtpPassword;
 
-    int _smtpPort = 25;
+    int _smtpPort = 37425;
 
     string _smtpServer = "10.0.0.1";
 
