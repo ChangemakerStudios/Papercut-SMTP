@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,141 +35,153 @@ namespace Papercut.ViewModels;
 
 public class OptionsViewModel : Screen
 {
-    const string WindowTitleDefault = "Options";
+    private const string WindowTitleDefault = "Options";
 
-    static readonly Lazy<IList<string>> _ipList = new Lazy<IList<string>>(GetIPs);
+    private static readonly Lazy<IList<string>> _ipList = new(GetIPs);
 
-    readonly IMessageBus _messageBus;
+    private readonly IMessageBus _messageBus;
 
     private readonly ThemeColorRepository _themeColorRepository;
 
-    string _ip = "Any";
+    private bool _darkMode;
 
-    string _messageListSortOrder = "Descending";
+    private string _ip = "Any";
 
-    bool _minimizeOnClose;
+    private string _messageListSortOrder = "Descending";
+
+    private bool _minimizeOnClose;
 
     private bool _minimizeToTray;
 
-    int _port = 25;
+    private int _port = 25;
 
-    bool _runOnStartup;
+    private bool _runOnStartup;
 
     private bool _showNotifications;
 
-    bool _startMinimized;
+    private bool _startMinimized;
 
     private ThemeColor _themeColor;
 
-    string _windowTitle = WindowTitleDefault;
+    private string _windowTitle = WindowTitleDefault;
 
     public OptionsViewModel(IMessageBus messageBus, ThemeColorRepository themeColorRepository)
     {
-        this._messageBus = messageBus;
-        this._themeColorRepository = themeColorRepository;
-        this.IPs = new ObservableCollection<string>(_ipList.Value);
-        this.SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
-        this.Themes = new ObservableCollection<ThemeColor>(themeColorRepository.GetAll());
-        this.Load();
+        _messageBus = messageBus;
+        _themeColorRepository = themeColorRepository;
+        IPs = new ObservableCollection<string>(_ipList.Value);
+        SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
+        Themes = new ObservableCollection<ThemeColor>(themeColorRepository.GetAll());
+        Load();
     }
 
     public string WindowTitle
     {
-        get => this._windowTitle;
+        get => _windowTitle;
         set
         {
-            this._windowTitle = value;
-            this.NotifyOfPropertyChange(() => this.WindowTitle);
+            _windowTitle = value;
+            NotifyOfPropertyChange(() => WindowTitle);
         }
     }
 
     public string MessageListSortOrder
     {
-        get => this._messageListSortOrder;
+        get => _messageListSortOrder;
         set
         {
-            this._messageListSortOrder = value;
-            this.NotifyOfPropertyChange(() => this.MessageListSortOrder);
+            _messageListSortOrder = value;
+            NotifyOfPropertyChange(() => MessageListSortOrder);
         }
     }
 
     public ThemeColor ThemeColor
     {
-        get => this._themeColor;
+        get => _themeColor;
         set
         {
-            this._themeColor = value;
-            this.NotifyOfPropertyChange(() => this.ThemeColor);
+            _themeColor = value;
+            NotifyOfPropertyChange(() => ThemeColor);
         }
     }
 
     public string IP
     {
-        get => this._ip;
+        get => _ip;
         set
         {
-            this._ip = value;
-            this.NotifyOfPropertyChange(() => this.IP);
+            _ip = value;
+            NotifyOfPropertyChange(() => IP);
         }
     }
 
     public int Port
     {
-        get => this._port;
+        get => _port;
         set
         {
-            this._port = value;
-            this.NotifyOfPropertyChange(() => this.Port);
+            _port = value;
+            NotifyOfPropertyChange(() => Port);
         }
     }
 
     public bool RunOnStartup
     {
-        get => this._runOnStartup;
+        get => _runOnStartup;
         set
         {
-            this._runOnStartup = value;
-            this.NotifyOfPropertyChange(() => this.RunOnStartup);
+            _runOnStartup = value;
+            NotifyOfPropertyChange(() => RunOnStartup);
         }
     }
 
     public bool MinimizeOnClose
     {
-        get => this._minimizeOnClose;
+        get => _minimizeOnClose;
         set
         {
-            this._minimizeOnClose = value;
-            this.NotifyOfPropertyChange(() => this.MinimizeOnClose);
+            _minimizeOnClose = value;
+            NotifyOfPropertyChange(() => MinimizeOnClose);
         }
     }
 
     public bool MinimizeToTray
     {
-        get => this._minimizeToTray;
+        get => _minimizeToTray;
         set
         {
-            this._minimizeToTray = value;
-            this.NotifyOfPropertyChange(() => this.MinimizeToTray);
+            _minimizeToTray = value;
+            NotifyOfPropertyChange(() => MinimizeToTray);
         }
     }
 
     public bool ShowNotifications
     {
-        get => this._showNotifications;
+        get => _showNotifications;
         set
         {
-            this._showNotifications = value;
-            this.NotifyOfPropertyChange(() => this.ShowNotifications);
+            _showNotifications = value;
+            NotifyOfPropertyChange(() => ShowNotifications);
         }
     }
 
     public bool StartMinimized
     {
-        get => this._startMinimized;
+        get => _startMinimized;
         set
         {
-            this._startMinimized = value;
-            this.NotifyOfPropertyChange(() => this.StartMinimized);
+            _startMinimized = value;
+            NotifyOfPropertyChange(() => StartMinimized);
+        }
+    }
+
+    public bool DarkMode
+    {
+        get => _darkMode;
+        set
+        {
+            _darkMode = value;
+            NotifyOfPropertyChange(() => DarkMode);
         }
     }
 
@@ -184,11 +196,11 @@ public class OptionsViewModel : Screen
         Settings.Default.CopyTo(this);
 
         // set the theme color
-        this.ThemeColor =
-            this._themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme);
+        ThemeColor =
+            _themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme) ?? ThemeColorRepository.Default;
     }
 
-    static IList<string> GetIPs()
+    private static IList<string> GetIPs()
     {
         var ips = new List<string> { "Any" };
 
@@ -210,12 +222,13 @@ public class OptionsViewModel : Screen
 
         this.CopyTo(Settings.Default);
 
-        Settings.Default.Theme = this.ThemeColor.Name;
+        Settings.Default.Theme = ThemeColor.Name;
+        Settings.Default.DarkMode = DarkMode;
 
         Settings.Default.Save();
 
-        await this._messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings));
+        await _messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings));
 
-        await this.TryCloseAsync(true);
+        await TryCloseAsync(true);
     }
 }

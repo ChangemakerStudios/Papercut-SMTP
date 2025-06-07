@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,61 +29,54 @@ using Papercut.Infrastructure.Themes;
 
 namespace Papercut.AppLayer.Themes;
 
-public class ThemeManagerService : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
+public class ThemeManagerService(ILogger logger, ThemeColorRepository themeColorRepository)
+    : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
 {
-    private readonly ILogger _logger;
-
-    private readonly ThemeColorRepository _themeColorRepository;
-
-    public ThemeManagerService(ILogger logger, ThemeColorRepository themeColorRepository)
-    {
-        this._logger = logger;
-        this._themeColorRepository = themeColorRepository;
-    }
-
     private static ThemeManager CurrentTheme => ThemeManager.Current;
 
     public Task<AppLifecycleActionResultType> OnPreStart()
     {
-        this.SetTheme();
+        SetTheme();
         return Task.FromResult(AppLifecycleActionResultType.Continue);
     }
 
     public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
     {
-        if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) this.SetTheme();
+        if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) SetTheme();
 
         return Task.CompletedTask;
     }
 
     private void SetTheme()
     {
-        var colorTheme = this._themeColorRepository.FirstOrDefaultByName(Properties.Settings.Default.Theme);
+        var colorTheme = themeColorRepository.FirstOrDefaultByName(Properties.Settings.Default.Theme);
 
         if (colorTheme == null)
         {
-            this._logger.Warning("Unable to find theme color {ThemeColor}. Setting to default: LightBlue.", Properties.Settings.Default.Theme);
-            Properties.Settings.Default.Theme = "LightBlue";
+            logger.Warning(
+                "Unable to find theme color {ThemeColor}. Setting to default: {DefaultTheme}.",
+                Properties.Settings.Default.Theme, ThemeColorRepository.Default.Name);
+
+            Properties.Settings.Default.Theme = ThemeColorRepository.Default.Name;
             return;
         }
 
         var themeColor = colorTheme.Color;
+        var isDarkMode = Properties.Settings.Default.DarkMode;
+        var baseColorScheme = isDarkMode ? "Dark" : "Light";
 
-        var theme = CurrentTheme.DetectTheme(Application.Current);
-        if (theme != null)
+        var generateRuntimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(baseColorScheme, themeColor);
+        if (generateRuntimeTheme != null)
         {
-            var inverseTheme = CurrentTheme.GetInverseTheme(theme);
-            if (inverseTheme != null)
-            {
-                var runtimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(inverseTheme.BaseColorScheme, themeColor);
-                if (runtimeTheme != null) CurrentTheme.AddTheme(runtimeTheme);
-            }
-
-            var generateRuntimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(theme.BaseColorScheme, themeColor);
-            if (generateRuntimeTheme != null)
-                CurrentTheme.ChangeTheme(
-                    Application.Current,
-                    CurrentTheme.AddTheme(generateRuntimeTheme));
+            CurrentTheme.AddTheme(generateRuntimeTheme);
+            CurrentTheme.ChangeTheme(
+                Application.Current,
+                generateRuntimeTheme
+            );
+        }
+        else
+        {
+            logger.Error("Failed to generate theme for {Scheme}.{Color} -- theme not changed", baseColorScheme, themeColor);
         }
 
         Application.Current?.MainWindow?.Activate();
@@ -96,7 +89,7 @@ public class ThemeManagerService : IAppLifecyclePreStart, IEventHandler<Settings
     /// </summary>
     /// <param name="builder"></param>
     [UsedImplicitly]
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

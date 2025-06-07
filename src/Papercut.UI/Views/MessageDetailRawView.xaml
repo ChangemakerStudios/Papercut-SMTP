@@ -11,13 +11,14 @@
           ShowGridLines="False" Width="Auto">
         <Grid x:Name="Overlay" Panel.ZIndex="1000"
               Visibility="{Binding IsLoading,Converter={StaticResource CollapsedIfFalse}}">
-            <TextBlock Text="Loading Raw..." FontSize="30" Foreground="DarkGray" Opacity="0.75" TextAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock Text="Loading Raw..." FontSize="30" Foreground="{DynamicResource MahApps.Brushes.Accent}" Opacity="0.75" TextAlignment="Center" VerticalAlignment="Center" />
         </Grid>
         <Grid>
-            <Border BorderBrush="LightGray" BorderThickness="1">
+            <Border BorderBrush="{DynamicResource MahApps.Brushes.Control.Border}" BorderThickness="1">
                 <avalonEdit:TextEditor
                 xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
                 Name="rawEdit"
+                Foreground="{DynamicResource MahApps.Brushes.Text}"
                 Padding="4"
                 FontFamily="Consolas"
                 FontSize="9pt" IsReadOnly="True" />

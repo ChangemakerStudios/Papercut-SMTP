@@ -6,7 +6,7 @@
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:Behaviors="clr-namespace:Papercut.AppLayer.Behaviors"
-             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White"
+             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600"  Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
     <b:Interaction.Behaviors>
         <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />

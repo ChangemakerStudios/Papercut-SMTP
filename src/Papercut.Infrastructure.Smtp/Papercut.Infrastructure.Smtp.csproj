@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SmtpServer" Version="10.0.1" />
+    <PackageReference Include="SmtpServer" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Update="JetBrains.Annotations" Version="2024.3.0" />
-    <PackageReference Update="Serilog" Version="4.2.0" />
+    <PackageReference Update="Serilog" Version="4.3.0" />
   </ItemGroup>
 
 </Project>

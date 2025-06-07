@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d"
-             d:DesignHeight="400" d:DesignWidth="600">
+             d:DesignHeight="400" d:DesignWidth="600" Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
     <Grid>
         <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto"
                   VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"

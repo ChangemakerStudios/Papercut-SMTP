@@ -14,12 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="8.2.1" />
-    <PackageReference Include="MailKit" Version="4.11.0" />
+    <PackageReference Include="Autofac" Version="8.3.0" />
+    <PackageReference Include="MailKit" Version="4.12.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Polly" Version="8.5.2" />
     <PackageReference Update="JetBrains.Annotations" Version="2024.3.0" />
-    <PackageReference Update="Serilog" Version="4.2.0" />
+    <PackageReference Update="Serilog" Version="4.3.0" />
   </ItemGroup>
 
 </Project>

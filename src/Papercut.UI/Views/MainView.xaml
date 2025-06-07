@@ -108,12 +108,12 @@
     <Grid IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
           ShowGridLines="False" Width="Auto">
         <Grid x:Name="Overlay" Panel.ZIndex="1000"
-              Visibility="{Binding IsDeactivated,Converter={StaticResource CollapsedIfFalse}}">
-            <Grid.Background>
-                <SolidColorBrush Color="White" Opacity=".25" />
-            </Grid.Background>
+              Visibility="{Binding IsDeactivated,Converter={StaticResource CollapsedIfFalse}}"
+              Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+              Opacity="0.25"
+              >
         </Grid>
-        <Grid>
+        <Grid Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="325*" />
                 <RowDefinition Height="47" />
@@ -163,15 +163,15 @@
                    HorizontalAlignment="Left" Width="42" Source="/Papercut;component/App.ico" Grid.Row="1"
                    Grid.Column="2" />
 
-            <Label Margin="52,0,0,13" Name="versionLabel" VerticalAlignment="Bottom" FontSize="10" Foreground="#696969"
+            <Label Margin="52,0,0,13" Name="versionLabel" VerticalAlignment="Bottom" FontSize="10" Foreground="{DynamicResource MahApps.Brushes.Gray1}"
                    Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left" Width="450" Content="{Binding Version}" />
 
-            <Label Margin="53,0,0,2" VerticalAlignment="Bottom" FontSize="9" Foreground="#2e74a6" Cursor="Hand"
+            <Label Margin="53,0,0,2" VerticalAlignment="Bottom" FontSize="9" Foreground="{DynamicResource MahApps.Brushes.Accent}" Cursor="Hand"
                    ToolTip="Click to visit the site" Grid.Column="2" Grid.Row="1"
                    Content="https://github.com/ChangemakerStudios/Papercut-SMTP"
                    HorizontalAlignment="Left" cal:Message.Attach="[Event MouseUp] = [Action GoToSite]" />
 
-            <Label Margin="0,0,10,2" VerticalAlignment="Bottom" HorizontalContentAlignment="Right" FontSize="9" FontWeight="Bold" Foreground="#A6302E" Cursor="Hand"
+            <Label Margin="0,0,10,2" VerticalAlignment="Bottom" HorizontalContentAlignment="Right" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource MahApps.Brushes.Accent2}" Cursor="Hand"
                    ToolTip="Click to upgrade" Grid.Column="2" Grid.Row="1"
                    Content="{Binding UpgradeVersion}"
                    HorizontalAlignment="Right" cal:Message.Attach="[Event MouseUp] = [Action UpgradeToLatest]" />

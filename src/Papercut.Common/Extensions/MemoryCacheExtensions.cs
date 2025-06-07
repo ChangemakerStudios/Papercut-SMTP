@@ -7,7 +7,7 @@ public static class MemoryCacheExtensions
 {
     const int LockObjectCount = 0xFF;
 
-    static readonly SemaphoreSlim[] LockCacheItems;
+    static readonly SemaphoreSlim?[] LockCacheItems;
 
     static MemoryCacheExtensions()
     {

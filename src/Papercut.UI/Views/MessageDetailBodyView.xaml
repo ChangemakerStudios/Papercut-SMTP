@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <Border BorderBrush="LightGray" BorderThickness="1">
+        <Border BorderBrush="{DynamicResource MahApps.Brushes.Border.NonActive}" BorderThickness="1">
             <avalonEdit:TextEditor
                 xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
                 Name="BodyEdit"

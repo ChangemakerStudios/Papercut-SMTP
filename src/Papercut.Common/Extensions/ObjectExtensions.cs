@@ -40,7 +40,7 @@ public static class ObjectExtensions
         {
             if (string.IsNullOrEmpty(str)) return default;
         }
-        else if (!(instance is IConvertible) && !instance.GetType().IsValueType)
+        else if (instance is not IConvertible && !instance.GetType().IsValueType)
         {
             // just cast since it's a class....
             return (T) instance;

@@ -60,7 +60,7 @@ public class MessageWatcher : IDisposable
     {
         if (!disposing) return;
 
-        foreach (FileSystemWatcher watch in this._watchers)
+        foreach (var watch in this._watchers)
         {
             if (watch != null)
                 DisposeWatch(watch);

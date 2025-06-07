@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,11 +34,15 @@ public class ThemeColorRepository
 
     public IReadOnlyCollection<ThemeColor> GetAll() => ThemeColors;
 
-    public ThemeColor? FirstOrDefaultByName(string name)
+    public static readonly ThemeColor Default = new ThemeColor(nameof(Colors.LightBlue), Colors.LightBlue);
+
+    public ThemeColor? FirstOrDefaultByName(string nameOrDescription)
     {
-        return this.GetAll().FirstOrDefault(
+        var name = nameOrDescription.Replace(" ", string.Empty).Trim();
+
+        return GetAll().FirstOrDefault(
             s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
-                 || s.Description.Equals(name, StringComparison.OrdinalIgnoreCase));
+                 || s.Description.Equals(nameOrDescription, StringComparison.OrdinalIgnoreCase));
     }
 
     #region Begin Static Container Registrations
@@ -48,7 +52,7 @@ public class ThemeColorRepository
     /// </summary>
     /// <param name="builder"></param>
     [UsedImplicitly]
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
