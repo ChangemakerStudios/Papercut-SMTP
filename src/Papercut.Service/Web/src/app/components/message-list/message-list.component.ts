@@ -1,15 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { RouterModule, ActivatedRoute } from '@angular/router';
+import { Observable, map } from 'rxjs';
 
 interface Message {
   id: string;
-  from: string;
-  to: string;
   subject: string;
-  receivedDate: string;
+  size: string;
+  createdAt: string;
+}
+
+interface MessageResponse {
+  totalMessageCount: number;
+  messages: Message[];
 }
 
 @Component({
@@ -19,16 +22,15 @@ interface Message {
   template: `
     <div class="message-list">
       <div class="header">
-        <h1>Messages</h1>
+        <h1>Messages ({{ (messages$ | async)?.totalMessageCount }})</h1>
       </div>
       <div class="messages">
-        <div *ngFor="let message of messages$ | async" class="message-item" [routerLink]="['/message', message.id]">
+        <div *ngFor="let message of (messages$ | async)?.messages" class="message-item" [routerLink]="['/message', message.id]">
           <div class="message-header">
-            <span class="from">{{ message.from }}</span>
-            <span class="date">{{ message.receivedDate | date:'short' }}</span>
+            <span class="subject">{{ message.subject }}</span>
+            <span class="date">{{ message.createdAt | date:'short' }}</span>
           </div>
-          <div class="subject">{{ message.subject }}</div>
-          <div class="to">To: {{ message.to }}</div>
+          <div class="size">{{ message.size }}</div>
         </div>
       </div>
     </div>
@@ -72,32 +74,30 @@ interface Message {
       margin-bottom: 0.5rem;
     }
 
-    .from {
+    .subject {
       font-weight: 500;
+      flex: 1;
+      margin-right: 1rem;
     }
 
     .date {
       color: #666;
       font-size: 0.9rem;
+      white-space: nowrap;
     }
 
-    .subject {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .to {
+    .size {
       color: #666;
       font-size: 0.9rem;
     }
   `]
 })
-export class MessageListComponent implements OnInit {
-  messages$: Observable<Message[]>;
+export class MessageListComponent {
+  messages$: Observable<MessageResponse>;
 
-  constructor(private http: HttpClient) {}
-
-  ngOnInit() {
-    this.messages$ = this.http.get<Message[]>('/api/messages');
+  constructor(private route: ActivatedRoute) {
+    this.messages$ = this.route.data.pipe(
+      map(data => data['messages'])
+    );
   }
 } 

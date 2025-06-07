@@ -1,30 +1,44 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { Observable, switchMap } from 'rxjs';
+import { Observable, map } from 'rxjs';
+import { FileSizePipe } from '../../pipes/file-size.pipe';
+import { EmailListPipe } from '../../pipes/email-list.pipe';
 
-interface Attachment {
-  id: string;
-  fileName: string;
-  contentType: string;
-  size: number;
+interface EmailAddress {
+  name: string;
+  address: string;
+}
+
+interface Header {
+  name: string;
+  value: string;
+}
+
+interface Section {
+  id: string | null;
+  mediaType: string;
+  fileName: string | null;
 }
 
 interface MessageDetail {
   id: string;
-  from: string;
-  to: string;
+  createdAt: string;
   subject: string;
-  receivedDate: string;
-  body: string;
-  attachments: Attachment[];
+  from: EmailAddress[];
+  to: EmailAddress[];
+  cc: EmailAddress[];
+  bCc: EmailAddress[];
+  htmlBody: string;
+  textBody: string;
+  headers: Header[];
+  sections: Section[];
 }
 
 @Component({
   selector: 'app-message-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FileSizePipe, EmailListPipe],
   template: `
     <div class="message-detail">
       <div class="header">
@@ -33,19 +47,22 @@ interface MessageDetail {
       </div>
       <div class="content" *ngIf="message$ | async as message">
         <div class="message-header">
-          <div class="from">From: {{ message.from }}</div>
-          <div class="to">To: {{ message.to }}</div>
-          <div class="date">Received: {{ message.receivedDate | date:'medium' }}</div>
+          <div class="from">From: {{ message.from | emailList }}</div>
+          <div class="to">To: {{ message.to | emailList }}</div>
+          <div class="cc" *ngIf="message.cc?.length">CC: {{ message.cc | emailList }}</div>
+          <div class="bcc" *ngIf="message.bCc?.length">BCC: {{ message.bCc | emailList }}</div>
+          <div class="date">Received: {{ message.createdAt | date:'medium' }}</div>
         </div>
-        <div class="body" [innerHTML]="message.body"></div>
-        <div class="attachments" *ngIf="message.attachments?.length">
+        <div class="body" [innerHTML]="message.htmlBody || message.textBody"></div>
+        <div class="sections" *ngIf="message.sections?.length">
           <h3>Attachments</h3>
-          <div class="attachment-list">
-            <div *ngFor="let attachment of message.attachments" class="attachment-item">
-              <span class="filename">{{ attachment.fileName }}</span>
-              <span class="size">({{ attachment.size | fileSize }})</span>
-              <button (click)="downloadAttachment(attachment)">Download</button>
-            </div>
+          <div class="section-list">
+            <ng-container *ngFor="let section of message.sections">
+              <div *ngIf="section.id" class="section-item">
+                <span class="filename">{{ section.fileName || section.mediaType }}</span>
+                <button (click)="downloadSection(section)">Download</button>
+              </div>
+            </ng-container>
           </div>
         </div>
       </div>
@@ -94,7 +111,7 @@ interface MessageDetail {
       margin-bottom: 1rem;
     }
 
-    .from, .to, .date {
+    .from, .to, .cc, .bcc, .date {
       margin-bottom: 0.5rem;
     }
 
@@ -105,17 +122,17 @@ interface MessageDetail {
       margin-bottom: 1rem;
     }
 
-    .attachments {
+    .sections {
       background-color: #fff;
       padding: 1rem;
       border-radius: 4px;
     }
 
-    .attachment-list {
+    .section-list {
       margin-top: 0.5rem;
     }
 
-    .attachment-item {
+    .section-item {
       display: flex;
       align-items: center;
       gap: 1rem;
@@ -131,10 +148,6 @@ interface MessageDetail {
       font-weight: 500;
     }
 
-    .size {
-      color: #666;
-    }
-
     button {
       padding: 0.25rem 0.5rem;
       border: 1px solid #e0e0e0;
@@ -148,21 +161,18 @@ interface MessageDetail {
     }
   `]
 })
-export class MessageDetailComponent implements OnInit {
+export class MessageDetailComponent {
   message$: Observable<MessageDetail>;
 
-  constructor(
-    private route: ActivatedRoute,
-    private http: HttpClient
-  ) {}
-
-  ngOnInit() {
-    this.message$ = this.route.params.pipe(
-      switchMap(params => this.http.get<MessageDetail>(`/api/messages/${params['id']}`))
+  constructor(private route: ActivatedRoute) {
+    this.message$ = this.route.data.pipe(
+      map(data => data['message'])
     );
   }
 
-  downloadAttachment(attachment: Attachment) {
-    window.open(`/api/messages/${attachment.id}/download`, '_blank');
+  downloadSection(section: Section) {
+    if (section.id) {
+      window.open(`/api/messages/${section.id}/download`, '_blank');
+    }
   }
-} 
+}
