@@ -1,45 +1,31 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
-interface EmailAddress {
-  name: string;
-  address: string;
-}
-
-interface Header {
-  name: string;
-  value: string;
-}
-
-interface Section {
-  id: string | null;
-  mediaType: string;
-  fileName: string | null;
-}
-
-interface MessageDetail {
-  id: string;
-  createdAt: string;
-  subject: string;
-  from: EmailAddress[];
-  to: EmailAddress[];
-  cc: EmailAddress[];
-  bCc: EmailAddress[];
-  htmlBody: string;
-  textBody: string;
-  headers: Header[];
-  sections: Section[];
-}
+import { Observable, tap } from 'rxjs';
+import { MessageRepository, MessageDetail } from '../services/message.repository';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MessageDetailResolver implements Resolve<MessageDetail> {
-  constructor(private http: HttpClient) {}
+  constructor(private messageRepository: MessageRepository) {}
 
   resolve(route: ActivatedRouteSnapshot): Observable<MessageDetail> {
-    return this.http.get<MessageDetail>(`/api/messages/${route.paramMap.get('id')}`);
+    const messageId = route.paramMap.get('id');
+    console.log('MessageDetailResolver - Raw message ID from route:', messageId);
+    
+    if (!messageId) {
+      throw new Error('Message ID is required');
+    }
+    
+    // Decode the message ID since it comes URL encoded from the route
+    const decodedId = decodeURIComponent(messageId);
+    console.log('MessageDetailResolver - Decoded message ID:', decodedId);
+    
+    return this.messageRepository.getMessage(decodedId).pipe(
+      tap({
+        next: (result) => console.log('MessageDetailResolver - API call successful:', result),
+        error: (error) => console.error('MessageDetailResolver - API call failed:', error)
+      })
+    );
   }
 } 

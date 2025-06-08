@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-global using System.Net.Http;
 
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Http;
@@ -38,7 +36,6 @@ global using Papercut.Infrastructure.IPComm;
 global using Papercut.Infrastructure.Smtp;
 global using Papercut.Message;
 global using Papercut.Service.Domain.SmtpServer;
-global using Papercut.Service.Web.Models;
 
 global using Autofac;
 

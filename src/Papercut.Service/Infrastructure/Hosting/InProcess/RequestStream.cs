@@ -6,7 +6,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.Contracts;
 
-namespace Papercut.Service.Web.Hosting.InProcess;
+namespace Papercut.Service.Infrastructure.Hosting.InProcess;
 
 // This steam accepts writes from the server/app, buffers them internally, and returns the data via Reads
 // when requested by the client.
@@ -277,7 +277,7 @@ internal class ResponseStream : Stream
                 throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
             }
             if (count < 0 || count > buffer.Length - offset
-                || (!allowEmpty && count == 0))
+                || !allowEmpty && count == 0)
             {
                 throw new ArgumentOutOfRangeException("count", count, string.Empty);
             }

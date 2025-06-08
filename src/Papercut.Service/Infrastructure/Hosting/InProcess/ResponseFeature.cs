@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // https://raw.githubusercontent.com/aspnet/Hosting/rel/1.1.2/src/Microsoft.AspNetCore.TestHost/ResponseFeature.cs
 
-
-namespace Papercut.Service.Web.Hosting.InProcess;
+namespace Papercut.Service.Infrastructure.Hosting.InProcess;
 
 internal class ResponseFeature : IHttpResponseFeature
 {

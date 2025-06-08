@@ -15,8 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-namespace Papercut.Service.Web.Hosting;
+namespace Papercut.Service.Infrastructure.Hosting;
 
 public class PapercutWebServerReadyEvent : IEvent
 {

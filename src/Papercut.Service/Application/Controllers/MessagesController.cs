@@ -16,7 +16,10 @@
 // limitations under the License.
 
 
-using Papercut.Service.Web;
+using Papercut.Service.Domain.Models;
+using Papercut.Service.Infrastructure;
+
+using Papercut.Service.Domain;
 
 namespace Papercut.Service.Application.Controllers;
 
@@ -37,9 +40,22 @@ public class MessagesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<GetMessagesResponse> GetAll(int limit = 10, int start = 0, CancellationToken token = default)
+    public async Task<ActionResult<GetMessagesResponse>> GetAll(int limit = 10, int start = 0, CancellationToken token = default)
     {
         var messageEntries = this._messageRepository.LoadMessages().ToList();
+        
+        // Generate ETag based on the most recent modified date
+        var latestModifiedDate = messageEntries.Max(msg => msg.ModifiedDate);
+        var etag = $"\"{latestModifiedDate.Ticks}\"";
+        
+        // Check if client has the same version
+        if (Request.Headers.IfNoneMatch.Contains(etag))
+        {
+            return StatusCode(304);
+        }
+        
+        // Add ETag to response
+        Response.Headers.ETag = etag;
 
         var tasks =
             messageEntries
@@ -78,6 +94,18 @@ public class MessagesController : ControllerBase
         {
             return this.NotFound();
         }
+
+        // Generate ETag based on the message's modified date
+        var etag = $@"""{messageEntry.ModifiedDate.Ticks}""";
+        
+        // Check if client has the same version
+        if (Request.Headers.IfNoneMatch.Contains(etag))
+        {
+            return new StatusCodeResult(304);
+        }
+        
+        // Add ETag to response
+        Response.Headers.ETag = etag;
 
         return MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await this._messageLoader.GetAsync(messageEntry))!));
     }

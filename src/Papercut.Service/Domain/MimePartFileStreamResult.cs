@@ -15,8 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-namespace Papercut.Service.Web;
+namespace Papercut.Service.Domain;
 
 public class MimePartFileStreamResult : FileStreamResult
 {
@@ -25,21 +24,21 @@ public class MimePartFileStreamResult : FileStreamResult
     public MimePartFileStreamResult(IMimeContent contentObject, string contentType)
         : base(new MemoryStream(), contentType)
     {
-        this._tempFilePath = Path.GetTempFileName();
+        _tempFilePath = Path.GetTempFileName();
 
-        using (var tempFile = File.OpenWrite(this._tempFilePath))
+        using (var tempFile = File.OpenWrite(_tempFilePath))
         {
             contentObject.DecodeTo(tempFile);
         }
 
-        this.FileStream.Dispose();
-        this.FileStream = File.OpenRead(this._tempFilePath);
+        FileStream.Dispose();
+        FileStream = File.OpenRead(_tempFilePath);
     }
 
     public override void ExecuteResult(ActionContext context)
     {
         base.ExecuteResult(context);
-        this.Cleanup();
+        Cleanup();
     }
 
     public override Task ExecuteResultAsync(ActionContext context)
@@ -47,7 +46,7 @@ public class MimePartFileStreamResult : FileStreamResult
         return base.ExecuteResultAsync(context).ContinueWith(
             _ =>
             {
-                this.Cleanup();
+                Cleanup();
             });
     }
 
@@ -55,7 +54,7 @@ public class MimePartFileStreamResult : FileStreamResult
     {
         try
         {
-            File.Delete(this._tempFilePath);
+            File.Delete(_tempFilePath);
         }
         catch
         {

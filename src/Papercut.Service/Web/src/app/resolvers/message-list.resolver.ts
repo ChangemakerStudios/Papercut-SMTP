@@ -1,27 +1,18 @@
 import { Injectable } from '@angular/core';
-import { Resolve } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
-
-interface Message {
-  id: string;
-  subject: string;
-  size: string;
-  createdAt: string;
-}
-
-interface MessageResponse {
-  totalMessageCount: number;
-  messages: Message[];
-}
+import { MessageRepository, MessageResponse } from '../services/message.repository';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MessageListResolver implements Resolve<MessageResponse> {
-  constructor(private http: HttpClient) {}
+  constructor(private messageRepository: MessageRepository) {}
 
-  resolve(): Observable<MessageResponse> {
-    return this.http.get<MessageResponse>('/api/messages');
+  resolve(route: ActivatedRouteSnapshot): Observable<MessageResponse> {
+    const limit = parseInt(route.queryParams['limit'] || '10', 10);
+    const start = parseInt(route.queryParams['start'] || '0', 10);
+    
+    return this.messageRepository.getMessages({ limit, start });
   }
 } 

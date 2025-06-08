@@ -5,7 +5,7 @@
 
 using Microsoft.AspNetCore.Hosting.Server;
 
-namespace Papercut.Service.Web.Hosting.InProcess;
+namespace Papercut.Service.Infrastructure.Hosting.InProcess;
 
 public class HttpServer : IServer
 {

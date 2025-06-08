@@ -15,22 +15,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-namespace Papercut.Service.Web.Models;
+namespace Papercut.Service.Domain.Models;
 
 public class MimeMessageEntry : MessageEntry
 {
     public MimeMessageEntry(MessageEntry entry, MimeMessage message)
         : base(entry.File)
     {
-        this.MailMessage = message;
+        MailMessage = message;
     }
 
-    public string Subject => this.MailMessage?.Subject;
+    public string Subject => MailMessage?.Subject;
 
-    public DateTime? Created => this._created;
+    public DateTime? Created => _created;
 
-    public string Id => this.Name;
+    public string Id => Name;
 
     public MimeMessage MailMessage { get; }
 

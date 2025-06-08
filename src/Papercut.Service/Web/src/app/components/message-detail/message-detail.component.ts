@@ -4,46 +4,21 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Observable, map } from 'rxjs';
 import { FileSizePipe } from '../../pipes/file-size.pipe';
 import { EmailListPipe } from '../../pipes/email-list.pipe';
-
-interface EmailAddress {
-  name: string;
-  address: string;
-}
-
-interface Header {
-  name: string;
-  value: string;
-}
-
-interface Section {
-  id: string | null;
-  mediaType: string;
-  fileName: string | null;
-}
-
-interface MessageDetail {
-  id: string;
-  createdAt: string;
-  subject: string;
-  from: EmailAddress[];
-  to: EmailAddress[];
-  cc: EmailAddress[];
-  bCc: EmailAddress[];
-  htmlBody: string;
-  textBody: string;
-  headers: Header[];
-  sections: Section[];
-}
+import { CidTransformPipe } from '../../pipes/cid-transform.pipe';
+import { MessageRepository, MessageDetail, EmailAddress, Section } from '../../services/message.repository';
 
 @Component({
   selector: 'app-message-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FileSizePipe, EmailListPipe],
+  imports: [CommonModule, RouterModule, FileSizePipe, EmailListPipe, CidTransformPipe],
   template: `
     <div class="message-detail">
       <div class="header">
         <button class="back-button" routerLink="/">← Back</button>
         <h1>{{ (message$ | async)?.subject }}</h1>
+        <button class="download-raw-btn" (click)="downloadRaw()" *ngIf="message$ | async as message">
+          Download Raw
+        </button>
       </div>
       <div class="content" *ngIf="message$ | async as message">
         <div class="message-header">
@@ -53,14 +28,14 @@ interface MessageDetail {
           <div class="bcc" *ngIf="message.bCc?.length">BCC: {{ message.bCc | emailList }}</div>
           <div class="date">Received: {{ message.createdAt | date:'medium' }}</div>
         </div>
-        <div class="body" [innerHTML]="message.htmlBody || message.textBody"></div>
+        <div class="body" [innerHTML]="(message.htmlBody || message.textBody) | cidTransform:message.id"></div>
         <div class="sections" *ngIf="message.sections?.length">
           <h3>Attachments</h3>
           <div class="section-list">
             <ng-container *ngFor="let section of message.sections">
               <div *ngIf="section.id" class="section-item">
                 <span class="filename">{{ section.fileName || section.mediaType }}</span>
-                <button (click)="downloadSection(section)">Download</button>
+                <button (click)="downloadSection(message.id, section.id!)">Download</button>
               </div>
             </ng-container>
           </div>
@@ -85,7 +60,7 @@ interface MessageDetail {
       gap: 1rem;
     }
 
-    .back-button {
+    .back-button, .download-raw-btn {
       padding: 0.5rem 1rem;
       border: none;
       background: none;
@@ -95,6 +70,17 @@ interface MessageDetail {
 
       &:hover {
         color: #000;
+      }
+    }
+
+    .download-raw-btn {
+      margin-left: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      background: #fff;
+
+      &:hover {
+        background-color: #f5f6f8;
       }
     }
 
@@ -135,7 +121,7 @@ interface MessageDetail {
     .section-item {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      justify-content: space-between;
       padding: 0.5rem;
       border-bottom: 1px solid #e0e0e0;
 
@@ -163,16 +149,29 @@ interface MessageDetail {
 })
 export class MessageDetailComponent {
   message$: Observable<MessageDetail>;
+  private currentMessage: MessageDetail | null = null;
 
-  constructor(private route: ActivatedRoute) {
+  constructor(
+    private route: ActivatedRoute,
+    private messageRepository: MessageRepository
+  ) {
     this.message$ = this.route.data.pipe(
       map(data => data['message'])
     );
+
+    // Keep track of current message for download operations
+    this.message$.subscribe(message => {
+      this.currentMessage = message;
+    });
   }
 
-  downloadSection(section: Section) {
-    if (section.id) {
-      window.open(`/api/messages/${section.id}/download`, '_blank');
+  downloadRaw() {
+    if (this.currentMessage) {
+      this.messageRepository.downloadRawMessage(this.currentMessage.id);
     }
+  }
+
+  downloadSection(messageId: string, contentId: string) {
+    this.messageRepository.downloadSectionByContentId(messageId, contentId);
   }
 }

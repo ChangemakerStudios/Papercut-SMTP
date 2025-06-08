@@ -15,8 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-namespace Papercut.Service.Web.Notification;
+namespace Papercut.Service.Domain.Notification;
 
 public class NewMessageEventHandler: IEventHandler<NewMessageEvent>
 {
