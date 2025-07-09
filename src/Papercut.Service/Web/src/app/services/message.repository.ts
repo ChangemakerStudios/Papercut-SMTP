@@ -23,6 +23,7 @@ export interface Message {
   subject: string;
   size: string;
   createdAt: string;
+  from: EmailAddress[];
 }
 
 export interface MessageDetail {
@@ -57,13 +58,18 @@ export class MessageRepository {
 
   constructor(private http: HttpClient) {}
 
-  getMessages(options: PaginationOptions = {}): Observable<MessageResponse> {
-    const { limit = 10, start = 0 } = options;
+  getMessages(options?: PaginationOptions): Observable<MessageResponse> {
+    let params = new HttpParams();
     
-    let params = new HttpParams()
-      .set('limit', limit.toString())
-      .set('start', start.toString());
-
+    if (options) {
+      if (options.limit) {
+        params = params.set('limit', options.limit.toString());
+      }
+      if (options.start) {
+        params = params.set('start', options.start.toString());
+      }
+    }
+    
     return this.http.get<MessageResponse>(this.baseUrl, { params });
   }
 
