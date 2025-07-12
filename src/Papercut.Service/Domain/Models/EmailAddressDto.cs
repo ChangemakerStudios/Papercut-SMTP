@@ -15,22 +15,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Papercut.Service.Domain.Models;
 
-namespace Papercut.Service.Domain.Models;
-
-public class MessageDetail
+[PublicAPI]
+public class EmailAddressDto
 {
-    public string? Subject { get; set; }
+    public string? Name { get; set; }
 
-    public string? From { get; set; }
-
-    public string? To { get; set; }
-
-    public string? Cc { get; set; }
-
-    public string? Bcc { get; set; }
-
-    public string? BodyContent { get; set; }
-
-    public bool IsBodyHtml { get; set; }
+    public string? Address { get; set; }
 }

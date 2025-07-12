@@ -20,9 +20,9 @@ using Papercut.Service.Domain.Models;
 
 namespace Papercut.Service.Application.Controllers;
 
-public class GetMessagesResponse(int totalMessageCount, IEnumerable<MimeMessageEntry.RefDto> messages)
+public class GetMessagesResponse(int totalMessageCount, IEnumerable<RefDto> messages)
 {
     public int TotalMessageCount { get; } = totalMessageCount;
 
-    public List<MimeMessageEntry.RefDto> Messages { get; } = messages.IfNullEmpty().ToList();
+    public List<RefDto> Messages { get; } = messages.IfNullEmpty().ToList();
 }

@@ -1,4 +1,4 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -15,22 +15,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-namespace Papercut.Service.Domain.Models;
-
-public class MessageDetail
-{
-    public string? Subject { get; set; }
-
-    public string? From { get; set; }
-
-    public string? To { get; set; }
-
-    public string? Cc { get; set; }
-
-    public string? Bcc { get; set; }
-
-    public string? BodyContent { get; set; }
-
-    public bool IsBodyHtml { get; set; }
-}
+/**
+ * Represents an email attachment or section.
+ * Matches the C# EmailAttachmentDto class.
+ */
+export interface EmailAttachmentDto {
+  /** The content ID of the attachment */
+  id?: string | null;
+  
+  /** The media type (MIME type) of the attachment */
+  mediaType?: string | null;
+  
+  /** The filename of the attachment */
+  fileName?: string | null;
+} 

@@ -24,25 +24,16 @@ using Papercut.Service.Domain;
 namespace Papercut.Service.Application.Controllers;
 
 [Route("api/[controller]")]
-public class MessagesController : ControllerBase
+public class MessagesController(
+    MessageRepository messageRepository,
+    MimeMessageLoader messageLoader,
+    ILogger logger)
+    : ControllerBase
 {
-    private readonly ILogger _logger;
-
-    readonly MimeMessageLoader _messageLoader;
-
-    readonly MessageRepository _messageRepository;
-
-    public MessagesController(MessageRepository messageRepository, MimeMessageLoader messageLoader, ILogger logger)
-    {
-        this._messageRepository = messageRepository;
-        this._messageLoader = messageLoader;
-        this._logger = logger;
-    }
-
     [HttpGet]
     public async Task<ActionResult<GetMessagesResponse>> GetAll(int limit = 10, int start = 0, CancellationToken token = default)
     {
-        var messageEntries = this._messageRepository.LoadMessages().ToList();
+        var messageEntries = messageRepository.LoadMessages().ToList();
         
         // Generate ETag based on the most recent modified date
         var latestModifiedDate = messageEntries.Max(msg => msg.ModifiedDate);
@@ -62,7 +53,7 @@ public class MessagesController : ControllerBase
                 .OrderByDescending(msg => msg.ModifiedDate)
                 .Skip(start)
                 .Take(limit)
-                .Select(async e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, (await this._messageLoader.GetAsync(e, token))!)))
+                .Select(async e => RefDto.CreateFrom(new MimeMessageEntry(e, (await messageLoader.GetAsync(e, token))!)))
                 .ToArray();
 
         var messages = await Task.WhenAll(tasks).WaitAsync(token);
@@ -73,23 +64,23 @@ public class MessagesController : ControllerBase
     [HttpDelete]
     public void DeleteAll()
     {
-        foreach (var msg in this._messageRepository.LoadMessages())
+        foreach (var msg in messageRepository.LoadMessages())
         {
             try
             {
-                this._messageRepository.DeleteMessage(msg);
+                messageRepository.DeleteMessage(msg);
             }
             catch (Exception ex)
             {
-                this._logger.Warning(ex, "Failure Deleting Message File {MessageFile}", msg.File);
+                logger.Warning(ex, "Failure Deleting Message File {MessageFile}", msg.File);
             }
         }
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<MimeMessageEntry.DetailDto>> Get(string id)
+    public async Task<ActionResult<DetailDto>> Get(string id)
     {
-        var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
         if (messageEntry == null)
         {
             return this.NotFound();
@@ -107,13 +98,13 @@ public class MessagesController : ControllerBase
         // Add ETag to response
         Response.Headers.ETag = etag;
 
-        return MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await this._messageLoader.GetAsync(messageEntry))!));
+        return DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry))!));
     }
 
     [HttpGet("{messageId}/raw")]
     public ActionResult DownloadRaw(string messageId)
     {
-        var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
         if (messageEntry == null)
         {
             return this.NotFound();
@@ -141,13 +132,13 @@ public class MessagesController : ControllerBase
 
     async Task<ActionResult> DownloadSection(string messageId, Func<List<MimePart>, MimePart?> findSection)
     {
-        var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
         if (messageEntry == null)
         {
             return this.NotFound();
         }
 
-        var mimeMessage = new MimeMessageEntry(messageEntry, (await this._messageLoader.GetAsync(messageEntry))!);
+        var mimeMessage = new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry))!);
         var sections = mimeMessage.MailMessage.BodyParts.OfType<MimePart>().ToList();
 
         var mimePart = findSection(sections);

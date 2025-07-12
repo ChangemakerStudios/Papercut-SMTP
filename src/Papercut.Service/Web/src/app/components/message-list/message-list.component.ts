@@ -1,23 +1,18 @@
 import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { Observable, map, combineLatest, BehaviorSubject, switchMap, of, tap, take, finalize } from 'rxjs';
+import { Observable, map, combineLatest, BehaviorSubject, switchMap, of, finalize } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { Message, MessageResponse, MessageRepository, MessageDetail } from '../../services/message.repository';
-import { FileSizePipe } from '../../pipes/file-size.pipe';
-import { EmailListPipe } from '../../pipes/email-list.pipe';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
-import { MessageListItemComponent } from './message-list-item.component';
-import { MessageDetailsComponent } from './message-details.component';
 import { MessageService } from '../../services/message.service';
+import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
+import { EmailListPipe } from '../../pipes/email-list.pipe';
+import { CidTransformPipe } from '../../pipes/cid-transform.pipe';
 
 interface PaginationInfo {
   currentPage: number;
@@ -40,12 +35,9 @@ interface PaginationInfo {
     MatIconModule, 
     MatChipsModule,
     MatProgressSpinnerModule,
-    MatTabsModule,
-    MatExpansionModule,
-    MatTooltipModule,
     ScrollingModule,
-    MessageListItemComponent,
-    MessageDetailsComponent
+    EmailListPipe,
+    CidTransformPipe
   ],
   template: `
     <div class="message-list-container">
@@ -66,13 +58,18 @@ interface PaginationInfo {
         </div>
 
         <!-- Virtual Scroll List -->
-        <cdk-virtual-scroll-viewport [itemSize]="itemSize">
-          <app-message-list-item
-            *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
-            [message]="message"
-            [selected]="message.id === selectedMessageId"
-            (select)="selectMessage(message.id)">
-          </app-message-list-item>
+        <cdk-virtual-scroll-viewport [itemSize]="itemSize" (scrolledIndexChange)="onScroll()">
+          <div *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
+               class="message-item"
+               [class.selected]="message.id === selectedMessageId"
+               (click)="selectMessage(message.id!)">
+            <div class="message-from">{{ getFromDisplay(message) }}</div>
+            <div class="message-subject">{{ message.subject || '(No Subject)' }}</div>
+            <div class="message-meta">
+              <span>{{ message.createdAt | date:'short' }}</span>
+              <span>{{ message.size }}</span>
+            </div>
+          </div>
           
           <!-- Loading indicator for infinite scroll -->
           <div *ngIf="isLoadingMore" class="loading-more-indicator">
@@ -84,40 +81,75 @@ interface PaginationInfo {
 
       <!-- Message Detail Panel -->
       <div class="message-detail-panel">
-        <app-message-details 
-          [message]="selectedMessage$ | async">
-        </app-message-details>
+        <div *ngIf="selectedMessage$ | async as message; else noMessageSelected" class="message-details">
+          <div class="message-details-header">
+            <div class="message-subject">{{ message.subject || '(No Subject)' }}</div>
+            <div class="message-from">
+              <mat-icon>person</mat-icon>
+              {{ message.from | emailList }}
+            </div>
+            <div class="message-meta">
+              <div class="message-meta-item">
+                <mat-icon>schedule</mat-icon>
+                {{ message.createdAt | date:'medium' }}
+              </div>
+              <div class="message-meta-item" *ngIf="message.to?.length">
+                <mat-icon>people</mat-icon>
+                {{ message.to | emailList }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="message-content">
+            <div class="message-body" 
+                 [innerHTML]="(message.htmlBody || message.textBody) | cidTransform:(message.id || '')">
+            </div>
+            
+            <div *ngIf="message.sections?.length" class="attachments">
+              <h4>Attachments ({{ message.sections.length }})</h4>
+              <div *ngFor="let section of message.sections" class="attachment-item">
+                <mat-icon>attach_file</mat-icon>
+                <span>{{ section.fileName || section.mediaType }}</span>
+                <button mat-button (click)="downloadSection(message.id!, section.id!)">
+                  <mat-icon>download</mat-icon>
+                  Download
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <ng-template #noMessageSelected>
+          <div class="no-message">
+            <mat-icon>email</mat-icon>
+            <h3>No message selected</h3>
+            <p>Select a message from the list to view its contents</p>
+          </div>
+        </ng-template>
       </div>
     </div>
   `,
   styles: [``]
 })
 export class MessageListComponent implements OnDestroy {
-  messages$: Observable<MessageResponse> = this.route.data.pipe(
+  messages$: Observable<GetMessagesResponse> = this.route.data.pipe(
     map(data => data['messages'])
   );
   pagination$: Observable<PaginationInfo>;
-  selectedMessage$: Observable<MessageDetail | null>;
+  selectedMessage$: Observable<DetailDto | null>;
   
   private selectedMessageId$ = new BehaviorSubject<string | null>(null);
   selectedMessageId: string | null = null;
   isLoadingMessage = false;
   private loadingTimeout: any = null;
   
-  // Tab and attachment management
-  selectedTabIndex = 0;
-  showAttachments = false;
-  
   // Virtual scroll settings  
-  itemSize = 50; // Height of each message item in pixels
-  viewportHeight = 0;
-  allMessages: Message[] = [];
+  itemSize = 80; // Height of each message item in pixels
+  allMessages: RefDto[] = [];
   private currentPage = 1;
   isLoadingMore = false;
   private hasMorePages = true;
-  private readonly pageSize = 10; // Match backend's default limit
-  
-  Math = Math;
+  private readonly pageSize = 10;
 
   @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
 
@@ -126,7 +158,7 @@ export class MessageListComponent implements OnDestroy {
     private router: Router,
     private messageService: MessageService
   ) {
-    this.messages$.subscribe((response: MessageResponse) => {
+    this.messages$.subscribe((response: GetMessagesResponse) => {
       console.log('Messages loaded:', response);
       this.allMessages = response.messages;
       this.hasMorePages = response.messages.length < response.totalMessageCount;
@@ -138,7 +170,7 @@ export class MessageListComponent implements OnDestroy {
       this.route.queryParams
     ]).pipe(
       map(([data, queryParams]) => {
-        const messages = data['messages'] as MessageResponse;
+        const messages = data['messages'] as GetMessagesResponse;
         const limit = parseInt(queryParams['limit'] || '10', 10);
         const start = parseInt(queryParams['start'] || '0', 10);
         const currentPage = Math.floor(start / limit) + 1;
@@ -204,12 +236,8 @@ export class MessageListComponent implements OnDestroy {
     });
   }
 
-  trackByMessageId(index: number, message: Message): string {
-    return message.id;
-  }
-
-  isSelectedMessage(messageId: string): boolean {
-    return this.selectedMessageId === messageId;
+  trackByMessageId(index: number, message: RefDto): string {
+    return message.id || index.toString();
   }
 
   selectMessage(messageId: string): void {
@@ -218,43 +246,16 @@ export class MessageListComponent implements OnDestroy {
     this.selectedMessageId$.next(messageId);
   }
 
-  getFromDisplay(message: Message): string {
-    if (!message.from?.length) return 'Unknown';
-    const sender = message.from[0];
-    return sender.name && sender.name !== sender.address 
-      ? `${sender.name} <${sender.address}>`
-      : sender.address;
-  }
-
-  toggleAttachments(): void {
-    this.showAttachments = !this.showAttachments;
-  }
-
-  getPriorityDisplay(message: MessageDetail): string {
-    // Return priority or default to 'Normal'
-    return 'Normal'; // You can implement priority logic here
-  }
-
-  getRawMessageContent(message: MessageDetail): string {
-    // Return raw message content for Raw View tab
-    return message.textBody || message.htmlBody || 'No raw content available';
-  }
-
-  getMessageSections(message: MessageDetail): any[] {
-    // Return message sections
-    return message.sections || [];
-  }
-
-  downloadRaw(messageId: string): void {
-    // Implement download logic here or in MessageService if needed
+  getFromDisplay(message: RefDto): string {
+    // For RefDto, we don't have detailed from information, so we'll just show a placeholder
+    return 'Sender'; // This could be enhanced when the API provides more detailed ref data
   }
 
   downloadSection(messageId: string, contentId: string): void {
-    // Implement download logic here or in MessageService if needed
+    this.messageService.downloadSectionByContentId(messageId, contentId);
   }
 
   ngOnDestroy() {
-    // Clean up any pending loading timeout
     if (this.loadingTimeout) {
       clearTimeout(this.loadingTimeout);
       this.loadingTimeout = null;

@@ -1,4 +1,4 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -15,22 +15,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-namespace Papercut.Service.Domain.Models;
-
-public class MessageDetail
-{
-    public string? Subject { get; set; }
-
-    public string? From { get; set; }
-
-    public string? To { get; set; }
-
-    public string? Cc { get; set; }
-
-    public string? Bcc { get; set; }
-
-    public string? BodyContent { get; set; }
-
-    public bool IsBodyHtml { get; set; }
-}
+/**
+ * Represents an email address with optional display name.
+ * Matches the C# EmailAddressDto class.
+ */
+export interface EmailAddressDto {
+  /** The display name for the email address (optional) */
+  name?: string | null;
+  
+  /** The actual email address */
+  address?: string | null;
+} 

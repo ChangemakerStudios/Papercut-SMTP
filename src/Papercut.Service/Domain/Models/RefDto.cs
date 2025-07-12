@@ -1,4 +1,4 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -15,22 +15,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 namespace Papercut.Service.Domain.Models;
 
-public class MessageDetail
+[PublicAPI]
+public class RefDto
 {
+    public string? Size { get; set; }
+
+    public string? Id { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
     public string? Subject { get; set; }
 
-    public string? From { get; set; }
-
-    public string? To { get; set; }
-
-    public string? Cc { get; set; }
-
-    public string? Bcc { get; set; }
-
-    public string? BodyContent { get; set; }
-
-    public bool IsBodyHtml { get; set; }
+    public static RefDto CreateFrom(MimeMessageEntry messageEntry)
+    {
+        return new RefDto
+        {
+            Subject = messageEntry.Subject,
+            CreatedAt = messageEntry.Created?.ToUniversalTime(),
+            Id = messageEntry.Id,
+            Size = messageEntry.FileSize
+        };
+    }
 }
