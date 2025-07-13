@@ -80,6 +80,99 @@ body[data-theme="dark"] {
   h1, h2, h3, h4, h5, h6 {
     color: #ffffff;
   }
+
+  // Message detail dark mode overrides
+  .message-detail-container {
+    background-color: #111827 !important;
+  }
+
+  .header-section {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+  }
+
+  .message-details-section {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+  }
+
+  .detail-item {
+    &:nth-child(1) {
+      background-color: rgba(59, 130, 246, 0.1) !important;
+      
+      .detail-icon {
+        background-color: rgba(59, 130, 246, 0.2) !important;
+        
+        mat-icon {
+          color: #93c5fd !important;
+        }
+      }
+    }
+
+    &:nth-child(2) {
+      background-color: rgba(34, 197, 94, 0.1) !important;
+      
+      .detail-icon {
+        background-color: rgba(34, 197, 94, 0.2) !important;
+        
+        mat-icon {
+          color: #86efac !important;
+        }
+      }
+    }
+
+    &:nth-child(3) {
+      background-color: rgba(234, 179, 8, 0.1) !important;
+      
+      .detail-icon {
+        background-color: rgba(234, 179, 8, 0.2) !important;
+        
+        mat-icon {
+          color: #fde047 !important;
+        }
+      }
+    }
+
+    &:nth-child(4) {
+      background-color: rgba(239, 68, 68, 0.1) !important;
+      
+      .detail-icon {
+        background-color: rgba(239, 68, 68, 0.2) !important;
+        
+        mat-icon {
+          color: #fca5a5 !important;
+        }
+      }
+    }
+
+    &:nth-child(5) {
+      background-color: rgba(168, 85, 247, 0.1) !important;
+      
+      .detail-icon {
+        background-color: rgba(168, 85, 247, 0.2) !important;
+        
+        mat-icon {
+          color: #c4b5fd !important;
+        }
+      }
+    }
+  }
+
+  .detail-label {
+    color: #ffffff !important;
+  }
+
+  .detail-value {
+    color: #d1d5db !important;
+  }
+
+  .message-title {
+    color: #ffffff !important;
+  }
+
+  .message-date {
+    color: #9ca3af !important;
+  }
 }
 
 h1 {

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { Observable, map, combineLatest, finalize } from 'rxjs';
+import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+import { Observable, map, combineLatest, finalize, filter, Subject, takeUntil } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -375,6 +375,7 @@ export class MessageListComponent implements OnDestroy {
   
   selectedMessageId: string | null = null;
   private loadingTimeout: any = null;
+  private destroy$ = new Subject<void>();
   
   // Virtual scroll settings  
   itemSize = 80; // Height of each message item in pixels
@@ -391,7 +392,9 @@ export class MessageListComponent implements OnDestroy {
     private router: Router,
     private messageService: MessageService
   ) {
-    this.messages$.subscribe((response: GetMessagesResponse) => {
+    this.messages$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe((response: GetMessagesResponse) => {
       console.log('Messages loaded:', response);
       this.allMessages = response.messages;
       this.hasMorePages = response.messages.length < response.totalMessageCount;
@@ -421,11 +424,28 @@ export class MessageListComponent implements OnDestroy {
       })
     );
 
-
-
-    this.route.data.subscribe(data => {
-      console.log('Route data:', data);
+    // Listen for route changes to detect when a message is selected via URL
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.updateSelectedMessageFromUrl();
     });
+
+    // Set initial selected message from URL
+    this.updateSelectedMessageFromUrl();
+  }
+
+  private updateSelectedMessageFromUrl(): void {
+    // Check if we're on a child route with a message ID
+    let currentRoute = this.route.firstChild;
+    if (currentRoute && currentRoute.snapshot && currentRoute.snapshot.params['id']) {
+      const messageId = currentRoute.snapshot.params['id'];
+      console.log('Message ID from URL:', messageId);
+      this.selectedMessageId = messageId;
+    } else {
+      this.selectedMessageId = null;
+    }
   }
 
   // Handle virtual scroll events
@@ -482,5 +502,7 @@ export class MessageListComponent implements OnDestroy {
       clearTimeout(this.loadingTimeout);
       this.loadingTimeout = null;
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 } 

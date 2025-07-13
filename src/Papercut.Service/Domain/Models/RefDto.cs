@@ -15,6 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using Papercut.Service.Infrastructure.EmailAddresses;
+
 namespace Papercut.Service.Domain.Models;
 
 [PublicAPI]
@@ -28,6 +31,8 @@ public class RefDto
 
     public string? Subject { get; set; }
 
+    public List<EmailAddressDto> From { get; set; } = [];
+
     public static RefDto CreateFrom(MimeMessageEntry messageEntry)
     {
         return new RefDto
@@ -35,7 +40,8 @@ public class RefDto
             Subject = messageEntry.Subject,
             CreatedAt = messageEntry.Created?.ToUniversalTime(),
             Id = messageEntry.Id,
-            Size = messageEntry.FileSize
+            Size = messageEntry.FileSize,
+            From = (messageEntry.MailMessage?.From).ToAddressList()
         };
     }
 }

@@ -16,15 +16,26 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Domain.Models;
+using System.Security.Cryptography;
 
-public class MimeMessageEntry(MessageEntry entry, MimeMessage message) : MessageEntry(entry.File)
+namespace Papercut.Core.Infrastructure.Identities;
+
+public static class HashHelpers
 {
-    public string? Subject => MailMessage?.Subject;
+    public static string GenerateUniqueId(string input)
+    {
+        using SHA256 sha256 = SHA256.Create();
 
-    public DateTime? Created => _created;
+        // Compute the hash of the input string
+        byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
 
-    public string Id => entry.Id;
+        // Convert the byte array to a hexadecimal string
+        StringBuilder hashString = new StringBuilder();
+        foreach (byte b in hashBytes)
+        {
+            hashString.Append(b.ToString("x2")); // Convert to hex
+        }
 
-    public MimeMessage MailMessage { get; } = message;
+        return hashString.ToString();
+    }
 }

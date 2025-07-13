@@ -16,15 +16,21 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Domain.Models;
+namespace Papercut.Service.Infrastructure.EmailAddresses;
 
-public class MimeMessageEntry(MessageEntry entry, MimeMessage message) : MessageEntry(entry.File)
+public static class EmailAddressHelpers
 {
-    public string? Subject => MailMessage?.Subject;
+    public static List<EmailAddressDto> ToAddressList(this IEnumerable<InternetAddress>? mailAddresses)
+    {
+        if (mailAddresses == null)
+        {
+            return [];
+        }
 
-    public DateTime? Created => _created;
-
-    public string Id => entry.Id;
-
-    public MimeMessage MailMessage { get; } = message;
+        return mailAddresses
+            .IfNullEmpty()
+            .OfType<MailboxAddress>()
+            .Select(f => new EmailAddressDto { Address = f.Address, Name = f.Name })
+            .ToList();
+    }
 }

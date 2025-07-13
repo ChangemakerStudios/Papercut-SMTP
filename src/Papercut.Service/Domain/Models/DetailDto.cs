@@ -17,6 +17,7 @@
 
 
 using Papercut.Service.Domain.Models;
+using Papercut.Service.Infrastructure.EmailAddresses;
 
 [PublicAPI]
 public class DetailDto
@@ -52,10 +53,10 @@ public class DetailDto
             Subject = messageEntry.Subject,
             CreatedAt = messageEntry.Created?.ToUniversalTime(),
             Id = messageEntry.Id,
-            From = ToAddressList(mail?.From),
-            To = ToAddressList(mail?.To),
-            Cc = ToAddressList(mail?.Cc),
-            BCc = ToAddressList(mail?.Bcc),
+            From = (mail?.From).ToAddressList(),
+            To = (mail?.To).ToAddressList(),
+            Cc = (mail?.Cc).ToAddressList(),
+            BCc = (mail?.Bcc).ToAddressList(),
             HtmlBody = mail?.HtmlBody,
             TextBody = mail?.TextBody,
             Headers = (mail?.Headers ?? [])
@@ -76,18 +77,5 @@ public class DetailDto
                 MediaType = $"{e.ContentType.MediaType}/{e.ContentType.MediaSubtype}",
                 FileName = e.FileName
             }).ToList();
-    }
-
-    private static List<EmailAddressDto> ToAddressList(IEnumerable<InternetAddress>? mailAddresses)
-    {
-        if (mailAddresses == null)
-        {
-            return [];
-        }
-
-        return mailAddresses
-            .OfType<MailboxAddress>()
-            .Select(f => new EmailAddressDto { Address = f.Address, Name = f.Name })
-            .ToList();
     }
 }

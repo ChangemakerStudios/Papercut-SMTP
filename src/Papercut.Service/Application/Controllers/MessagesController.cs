@@ -80,7 +80,7 @@ public class MessagesController(
     [HttpGet("{id}")]
     public async Task<ActionResult<DetailDto>> Get(string id)
     {
-        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == id || msg.Name == id);
         if (messageEntry == null)
         {
             return this.NotFound();
@@ -104,7 +104,7 @@ public class MessagesController(
     [HttpGet("{messageId}/raw")]
     public ActionResult DownloadRaw(string messageId)
     {
-        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == messageId || msg.Name == messageId);
         if (messageEntry == null)
         {
             return this.NotFound();
@@ -132,7 +132,7 @@ public class MessagesController(
 
     async Task<ActionResult> DownloadSection(string messageId, Func<List<MimePart>, MimePart?> findSection)
     {
-        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == messageId || msg.Name == messageId);
         if (messageEntry == null)
         {
             return this.NotFound();
