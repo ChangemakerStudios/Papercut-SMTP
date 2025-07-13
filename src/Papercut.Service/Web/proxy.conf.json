@@ -1,8 +1,9 @@
-{
-  "/api/*": {
+[
+  {
+    "context": ["/api/**"],
     "target": "http://localhost:37408",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   }
-} 
+] 

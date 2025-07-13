@@ -65,7 +65,8 @@ export class MessageService {
    * @returns Observable of DetailDto
    */
   getMessage(messageId: string): Observable<DetailDto> {
-    return this.http.get<DetailDto>(`${this.apiUrl}/${messageId}`)
+    const encodedId = encodeURIComponent(messageId);
+    return this.http.get<DetailDto>(`${this.apiUrl}/${encodedId}`)
       .pipe(
         map(detail => ({
           ...detail,
@@ -79,7 +80,8 @@ export class MessageService {
    * @param messageId The unique message ID
    */
   downloadRawMessage(messageId: string): void {
-    const url = `${this.apiUrl}/${messageId}/raw`;
+    const encodedId = encodeURIComponent(messageId);
+    const url = `${this.apiUrl}/${encodedId}/raw`;
     window.open(url, '_blank');
   }
 
@@ -89,7 +91,8 @@ export class MessageService {
    * @param sectionIndex The zero-based section index
    */
   downloadSectionByIndex(messageId: string, sectionIndex: number): void {
-    const url = `${this.apiUrl}/${messageId}/sections/${sectionIndex}`;
+    const encodedId = encodeURIComponent(messageId);
+    const url = `${this.apiUrl}/${encodedId}/sections/${sectionIndex}`;
     window.open(url, '_blank');
   }
 
@@ -99,7 +102,9 @@ export class MessageService {
    * @param contentId The content ID of the section
    */
   downloadSectionByContentId(messageId: string, contentId: string): void {
-    const url = `${this.apiUrl}/${messageId}/contents/${contentId}`;
+    const encodedId = encodeURIComponent(messageId);
+    const encodedContentId = encodeURIComponent(contentId);
+    const url = `${this.apiUrl}/${encodedId}/contents/${encodedContentId}`;
     window.open(url, '_blank');
   }
 

@@ -1,17 +1,19 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { Observable, map } from 'rxjs';
+import { Observable, map, switchMap } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
+import { MatTabsModule } from '@angular/material/tabs';
 import { FileSizePipe } from '../../pipes/file-size.pipe';
 import { EmailListPipe } from '../../pipes/email-list.pipe';
 import { CidTransformPipe } from '../../pipes/cid-transform.pipe';
-import { MessageRepository, MessageDetail, EmailAddress, Section } from '../../services/message.repository';
+import { MessageService } from '../../services/message.service';
+import { DetailDto } from '../../models';
 
 @Component({
   selector: 'app-message-detail',
@@ -25,6 +27,7 @@ import { MessageRepository, MessageDetail, EmailAddress, Section } from '../../s
     MatChipsModule,
     MatDividerModule,
     MatListModule,
+    MatTabsModule,
     FileSizePipe, 
     EmailListPipe, 
     CidTransformPipe
@@ -33,14 +36,7 @@ import { MessageRepository, MessageDetail, EmailAddress, Section } from '../../s
     <div class="message-detail-container flex flex-col h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <!-- Header Section -->
       <div class="header-section flex-shrink-0 bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
-        <div class="header-content flex items-center gap-4 p-4 lg:p-6">
-          <!-- Back Button -->
-          <button mat-icon-button 
-                  routerLink="/" 
-                  class="back-button flex-shrink-0 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
-            <mat-icon class="text-gray-600 dark:text-gray-400">arrow_back</mat-icon>
-          </button>
-          
+        <div class="header-content flex items-center justify-between p-4 lg:p-6">
           <!-- Subject Section -->
           <div class="subject-section flex-1 min-w-0">
             <h1 class="message-title text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white truncate m-0">
@@ -65,141 +61,124 @@ import { MessageRepository, MessageDetail, EmailAddress, Section } from '../../s
           </div>
         </div>
       </div>
-      
-      <!-- Content Section -->
-      <div class="content-section flex-1 overflow-y-auto" *ngIf="message$ | async as message">
-        <div class="content-grid flex flex-col lg:flex-row gap-6 p-4 lg:p-6 max-w-7xl mx-auto">
-          
-          <!-- Main Content Column -->
-          <div class="main-column flex-1 flex flex-col gap-6">
-            
-            <!-- Message Content Card -->
-            <mat-card class="message-body-card shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <div class="card-header flex items-center gap-4 p-6 border-b border-gray-100 dark:border-gray-700">
-                <div class="header-icon flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 dark:from-purple-600 dark:to-pink-600 rounded-full">
-                  <mat-icon class="text-white text-2xl">article</mat-icon>
-                </div>
-                <div class="header-text">
-                  <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-0">Message Content</h2>
-                  <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Email body and content</p>
-                </div>
-              </div>
-              
-              <div class="card-content p-6">
-                <div class="message-body leading-relaxed min-h-32 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 border-l-primary-400 dark:border-l-primary-500" 
-                     [innerHTML]="(message.htmlBody || message.textBody) | cidTransform:message.id">
-                </div>
-              </div>
-            </mat-card>
 
-            <!-- Attachments Card -->
-            <mat-card *ngIf="message.sections?.length" 
-                      class="attachments-card shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <div class="card-header flex items-center gap-4 p-6 border-b border-gray-100 dark:border-gray-700">
-                <div class="header-icon flex items-center justify-center w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 dark:from-orange-600 dark:to-red-600 rounded-full">
-                  <mat-icon class="text-white text-2xl">attach_file</mat-icon>
-                </div>
-                <div class="header-text">
-                  <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-0">Attachments</h2>
-                  <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">{{ message.sections.length }} attachment(s)</p>
+      <!-- Message Details Section -->
+      <div class="message-details-section flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors duration-300" *ngIf="message$ | async as message">
+        <div class="message-details-content p-4 lg:p-6">
+          <div class="details-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <!-- From Section -->
+            <div class="detail-item flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div class="detail-icon flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0">
+                <mat-icon class="text-blue-600 dark:text-blue-400 text-sm">person</mat-icon>
+              </div>
+              <div class="detail-content flex-1 min-w-0">
+                <h4 class="detail-label font-semibold text-gray-800 dark:text-white text-sm mb-1">From</h4>
+                <p class="detail-value text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.from | emailList }}</p>
+              </div>
+            </div>
+            
+            <!-- To Section -->
+            <div class="detail-item flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div class="detail-icon flex items-center justify-center w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex-shrink-0">
+                <mat-icon class="text-green-600 dark:text-green-400 text-sm">people</mat-icon>
+              </div>
+              <div class="detail-content flex-1 min-w-0">
+                <h4 class="detail-label font-semibold text-gray-800 dark:text-white text-sm mb-1">To</h4>
+                <p class="detail-value text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.to | emailList }}</p>
+              </div>
+            </div>
+            
+            <!-- CC Section -->
+            <div *ngIf="message.cc?.length" class="detail-item flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+              <div class="detail-icon flex items-center justify-center w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-full flex-shrink-0">
+                <mat-icon class="text-yellow-600 dark:text-yellow-400 text-sm">people_outline</mat-icon>
+              </div>
+              <div class="detail-content flex-1 min-w-0">
+                <h4 class="detail-label font-semibold text-gray-800 dark:text-white text-sm mb-1">CC</h4>
+                <p class="detail-value text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.cc | emailList }}</p>
+              </div>
+            </div>
+            
+            <!-- BCC Section -->
+            <div *ngIf="message.bCc?.length" class="detail-item flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div class="detail-icon flex items-center justify-center w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex-shrink-0">
+                <mat-icon class="text-red-600 dark:text-red-400 text-sm">visibility_off</mat-icon>
+              </div>
+              <div class="detail-content flex-1 min-w-0">
+                <h4 class="detail-label font-semibold text-gray-800 dark:text-white text-sm mb-1">BCC</h4>
+                <p class="detail-value text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.bCc | emailList }}</p>
+              </div>
+            </div>
+            
+            <!-- Attachments Summary -->
+            <div *ngIf="message.sections?.length" class="detail-item flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <div class="detail-icon flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex-shrink-0">
+                <mat-icon class="text-purple-600 dark:text-purple-400 text-sm">attach_file</mat-icon>
+              </div>
+              <div class="detail-content flex-1 min-w-0">
+                <h4 class="detail-label font-semibold text-gray-800 dark:text-white text-sm mb-1">Attachments</h4>
+                <p class="detail-value text-gray-700 dark:text-gray-300 text-sm">{{ message.sections.length }} attachment(s)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Content Section with Tabs -->
+      <div class="content-section flex-1 overflow-hidden" *ngIf="message$ | async as message">
+        <div class="message-tabs h-full">
+          <mat-tab-group class="h-full" dynamicHeight="false">
+            
+            <!-- Body Tab -->
+            <mat-tab label="Body">
+              <div class="tab-content h-full overflow-auto">
+                <div class="body-content h-full p-4">
+                  <div class="message-body leading-relaxed min-h-32 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" 
+                       [innerHTML]="(message.htmlBody || message.textBody) | cidTransform:(message.id || '')">
+                  </div>
                 </div>
               </div>
-              
-              <div class="card-content p-6">
-                <div class="attachments-grid flex flex-col gap-3">
-                  <div *ngFor="let section of message.sections; let last = last" 
-                       class="attachment-item">
-                    <div *ngIf="section.id" 
-                         class="attachment-content flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
-                      <div class="attachment-icon flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0">
-                        <mat-icon class="text-blue-600 dark:text-blue-400">insert_drive_file</mat-icon>
+            </mat-tab>
+            
+            <!-- Headers Tab -->
+            <mat-tab label="Headers">
+              <div class="tab-content h-full overflow-auto">
+                <div class="headers-content p-4">
+                  <div *ngFor="let header of message.headers" class="header-item">
+                    <span class="header-name">{{ header.name }}:</span>
+                    <span class="header-value">{{ header.value }}</span>
+                  </div>
+                </div>
+              </div>
+            </mat-tab>
+            
+            <!-- Sections Tab -->
+            <mat-tab label="Sections" [disabled]="!message.sections?.length">
+              <div class="tab-content h-full overflow-auto">
+                <div class="sections-content p-4">
+                  <div *ngFor="let section of message.sections" class="section-item">
+                    <div class="section-header">
+                      <mat-icon>{{ getSectionIcon(section.mediaType) }}</mat-icon>
+                      <div class="flex-1">
+                        <div class="section-type">{{ section.fileName || section.mediaType }}</div>
+                        <div class="section-info">{{ section.mediaType }}</div>
                       </div>
-                      
-                      <div class="attachment-info flex-1 min-w-0">
-                        <h4 class="attachment-name font-semibold text-gray-800 dark:text-white truncate">
-                          {{ section.fileName || section.mediaType }}
-                        </h4>
-                        <p class="attachment-type text-gray-600 dark:text-gray-400 text-sm">{{ section.mediaType }}</p>
-                      </div>
-                      
                       <button 
-                        mat-raised-button 
+                        mat-icon-button 
                         color="primary"
-                        (click)="downloadSection(message.id, section.id!)"
-                        class="download-attachment-btn flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 flex-shrink-0">
-                        <mat-icon class="text-sm">download</mat-icon>
-                        <span class="hidden sm:inline">Download</span>
+                        (click)="downloadSectionSafe(message, section.id!)"
+                        *ngIf="section.id"
+                        title="Download attachment">
+                        <mat-icon>download</mat-icon>
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-            </mat-card>
-          </div>
-          
-          <!-- Sidebar Column -->
-          <div class="sidebar-column flex-shrink-0 w-full lg:w-80">
-            <mat-card class="message-info-card shadow-lg hover:shadow-xl transition-shadow duration-300 sticky top-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <div class="card-header flex items-center gap-4 p-6 border-b border-gray-100 dark:border-gray-700">
-                <div class="header-icon flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 dark:from-primary-600 dark:to-accent-600 rounded-full">
-                  <mat-icon class="text-white text-2xl">email</mat-icon>
-                </div>
-                <div class="header-text">
-                  <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-0">Message Details</h2>
-                  <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Sender and recipient information</p>
-                </div>
-              </div>
-              
-              <div class="card-content p-6">
-                <div class="info-grid flex flex-col gap-4">
-                  
-                  <!-- From Section -->
-                  <div class="info-item flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <div class="info-icon flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0">
-                      <mat-icon class="text-blue-600 dark:text-blue-400 text-sm">person</mat-icon>
-                    </div>
-                    <div class="info-content flex-1 min-w-0">
-                      <h4 class="info-label font-semibold text-gray-800 dark:text-white text-sm mb-1">From</h4>
-                      <p class="info-value text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.from | emailList }}</p>
-                    </div>
-                  </div>
-                  
-                  <!-- To Section -->
-                  <div class="info-item flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div class="info-icon flex items-center justify-center w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex-shrink-0">
-                      <mat-icon class="text-green-600 dark:text-green-400 text-sm">people</mat-icon>
-                    </div>
-                    <div class="info-content flex-1 min-w-0">
-                      <h4 class="info-label font-semibold text-gray-800 dark:text-white text-sm mb-1">To</h4>
-                      <p class="info-value text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.to | emailList }}</p>
-                    </div>
-                  </div>
-                  
-                  <!-- CC Section -->
-                  <div *ngIf="message.cc?.length" class="info-item flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                    <div class="info-icon flex items-center justify-center w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-full flex-shrink-0">
-                      <mat-icon class="text-yellow-600 dark:text-yellow-400 text-sm">people_outline</mat-icon>
-                    </div>
-                    <div class="info-content flex-1 min-w-0">
-                      <h4 class="info-label font-semibold text-gray-800 dark:text-white text-sm mb-1">CC</h4>
-                      <p class="info-value text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.cc | emailList }}</p>
-                    </div>
-                  </div>
-                  
-                  <!-- BCC Section -->
-                  <div *ngIf="message.bCc?.length" class="info-item flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                    <div class="info-icon flex items-center justify-center w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex-shrink-0">
-                      <mat-icon class="text-red-600 dark:text-red-400 text-sm">visibility_off</mat-icon>
-                    </div>
-                    <div class="info-content flex-1 min-w-0">
-                      <h4 class="info-label font-semibold text-gray-800 dark:text-white text-sm mb-1">BCC</h4>
-                      <p class="info-value text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.bCc | emailList }}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </mat-card>
-          </div>
+            </mat-tab>
+            
+          </mat-tab-group>
         </div>
       </div>
     </div>
@@ -221,16 +200,42 @@ import { MessageRepository, MessageDetail, EmailAddress, Section } from '../../s
       @apply text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 underline;
     }
 
-    .sidebar-column .message-info-card {
-      @apply lg:sticky lg:top-6;
+    // Headers styling
+    .headers-content {
+      @apply space-y-2;
     }
 
-    .attachment-content:hover {
-      @apply bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600;
+    .header-item {
+      @apply flex flex-col sm:flex-row sm:items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600;
     }
 
-    .info-item {
-      @apply transition-all duration-200 hover:shadow-sm;
+    .header-name {
+      @apply font-semibold text-gray-800 dark:text-white text-sm mr-2 min-w-0;
+    }
+
+    .header-value {
+      @apply text-gray-700 dark:text-gray-300 text-sm break-all;
+    }
+
+    // Sections styling
+    .sections-content {
+      @apply space-y-4;
+    }
+
+    .section-item {
+      @apply bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4;
+    }
+
+    .section-header {
+      @apply flex items-center gap-3;
+    }
+
+    .section-type {
+      @apply font-semibold text-gray-800 dark:text-white text-sm;
+    }
+
+    .section-info {
+      @apply text-gray-600 dark:text-gray-400 text-xs;
     }
 
     // Dark theme specific overrides
@@ -254,87 +259,87 @@ import { MessageRepository, MessageDetail, EmailAddress, Section } from '../../s
       }
 
       .message-body p {
-        color: #e5e7eb;
+        color: #ffffff;
       }
 
-      .content-section {
-        scrollbar-width: thin;
-        scrollbar-color: #374151 #1f2937;
-      }
-
-      .content-section::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      .content-section::-webkit-scrollbar-track {
-        background-color: #1f2937;
-      }
-
-      .content-section::-webkit-scrollbar-thumb {
-        background-color: #374151;
-        border-radius: 4px;
-      }
-
-      .content-section::-webkit-scrollbar-thumb:hover {
-        background-color: #4b5563;
+      .message-body div {
+        color: #ffffff;
       }
     }
 
+    // Responsive design
     @media (max-width: 1024px) {
       .content-grid {
-        @apply flex-col;
+        flex-direction: column;
       }
       
       .sidebar-column {
-        @apply w-full;
-      }
-      
-      .sidebar-column .message-info-card {
-        @apply relative top-auto;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .header-content {
-        @apply p-4;
-      }
-      
-      .content-grid {
-        @apply p-4;
-      }
-      
-      .download-btn span,
-      .download-attachment-btn span {
-        @apply hidden;
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid;
+        @apply border-gray-200 dark:border-gray-700;
       }
     }
   `]
 })
 export class MessageDetailComponent {
-  message$: Observable<MessageDetail>;
-  private currentMessage: MessageDetail | null = null;
+  message$: Observable<DetailDto>;
+  private currentMessage: DetailDto | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private messageRepository: MessageRepository
+    private messageService: MessageService
   ) {
-    this.message$ = this.route.data.pipe(
-      map(data => data['message'])
+    this.message$ = this.route.params.pipe(
+      switchMap(params => {
+        const messageId = params['id'];
+        if (messageId) {
+          return this.messageService.getMessage(messageId);
+        }
+        throw new Error('Message ID not found');
+      }),
+      map(messageDetail => {
+        this.currentMessage = messageDetail;
+        return messageDetail;
+      })
     );
-
-    // Keep track of current message for download operations
-    this.message$.subscribe(message => {
-      this.currentMessage = message;
-    });
   }
 
   downloadRaw() {
-    if (this.currentMessage) {
-      this.messageRepository.downloadRawMessage(this.currentMessage.id);
+    if (this.currentMessage && this.currentMessage.id) {
+      this.messageService.downloadRawMessage(this.currentMessage.id);
     }
   }
 
   downloadSection(messageId: string, contentId: string) {
-    this.messageRepository.downloadSectionByContentId(messageId, contentId);
+    this.messageService.downloadSectionByContentId(messageId, contentId);
+  }
+
+  downloadSectionSafe(message: DetailDto, contentId: string) {
+    if (message.id) {
+      this.downloadSection(message.id, contentId);
+    }
+  }
+
+  getSectionIcon(mediaType: string | null | undefined): string {
+    if (!mediaType) {
+      return 'attach_file';
+    }
+
+    if (mediaType.startsWith('image/')) {
+      return 'image';
+    } else if (mediaType.startsWith('text/')) {
+      return 'description';
+    } else if (mediaType.includes('pdf')) {
+      return 'picture_as_pdf';
+    } else if (mediaType.includes('word') || mediaType.includes('document')) {
+      return 'article';
+    } else if (mediaType.includes('spreadsheet') || mediaType.includes('excel')) {
+      return 'table_chart';
+    } else if (mediaType.includes('zip') || mediaType.includes('archive')) {
+      return 'archive';
+    } else {
+      return 'attach_file';
+    }
   }
 }

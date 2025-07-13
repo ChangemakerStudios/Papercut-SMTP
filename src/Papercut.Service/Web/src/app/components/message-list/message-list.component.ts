@@ -1,7 +1,7 @@
 import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { Observable, map, combineLatest, BehaviorSubject, switchMap, of, finalize } from 'rxjs';
+import { Observable, map, combineLatest, finalize } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -81,66 +81,299 @@ interface PaginationInfo {
 
       <!-- Message Detail Panel -->
       <div class="message-detail-panel">
-        <div *ngIf="selectedMessage$ | async as message; else noMessageSelected" class="message-details">
-          <div class="message-details-header">
-            <div class="message-subject">{{ message.subject || '(No Subject)' }}</div>
-            <div class="message-from">
-              <mat-icon>person</mat-icon>
-              {{ message.from | emailList }}
-            </div>
-            <div class="message-meta">
-              <div class="message-meta-item">
-                <mat-icon>schedule</mat-icon>
-                {{ message.createdAt | date:'medium' }}
-              </div>
-              <div class="message-meta-item" *ngIf="message.to?.length">
-                <mat-icon>people</mat-icon>
-                {{ message.to | emailList }}
-              </div>
-            </div>
-          </div>
-          
-          <div class="message-content">
-            <div class="message-body" 
-                 [innerHTML]="(message.htmlBody || message.textBody) | cidTransform:(message.id || '')">
-            </div>
-            
-            <div *ngIf="message.sections?.length" class="attachments">
-              <h4>Attachments ({{ message.sections.length }})</h4>
-              <div *ngFor="let section of message.sections" class="attachment-item">
-                <mat-icon>attach_file</mat-icon>
-                <span>{{ section.fileName || section.mediaType }}</span>
-                <button mat-button (click)="downloadSection(message.id!, section.id!)">
-                  <mat-icon>download</mat-icon>
-                  Download
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <router-outlet></router-outlet>
         
-        <ng-template #noMessageSelected>
-          <div class="no-message">
-            <mat-icon>email</mat-icon>
-            <h3>No message selected</h3>
-            <p>Select a message from the list to view its contents</p>
-          </div>
-        </ng-template>
+        <div *ngIf="!selectedMessageId" class="no-message">
+          <mat-icon>email</mat-icon>
+          <h3>No message selected</h3>
+          <p>Select a message from the list to view its contents</p>
+        </div>
       </div>
     </div>
   `,
-  styles: [``]
+  styles: [`
+    .message-list-container {
+      display: flex;
+      height: 100vh;
+      background-color: #f5f5f5;
+    }
+
+    .message-list-panel {
+      flex: 0 0 400px;
+      border-right: 1px solid #e0e0e0;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message-list-header {
+      padding: 1rem;
+      border-bottom: 1px solid #e0e0e0;
+      background-color: #fafafa;
+    }
+
+    .message-list-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .message-count {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    cdk-virtual-scroll-viewport {
+      flex: 1;
+      height: 100%;
+    }
+
+    .message-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .message-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .message-item.selected {
+      background-color: #e3f2fd;
+      border-left: 3px solid #2196f3;
+    }
+
+    .message-from {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.25rem;
+    }
+
+    .message-subject {
+      color: #555;
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .message-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .loading-more-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      gap: 0.5rem;
+      color: #666;
+    }
+
+    .loading-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 0.5rem;
+      color: #666;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      margin: 1rem;
+    }
+
+    .message-detail-panel {
+      flex: 1;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message-details {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message-details-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e0e0e0;
+      background-color: #fafafa;
+    }
+
+    .message-subject {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .message-from {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .message-meta {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .message-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .message-content {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .message-body {
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 1.5rem;
+    }
+
+    .attachments {
+      border-top: 1px solid #e0e0e0;
+      padding-top: 1rem;
+    }
+
+    .attachments h4 {
+      margin: 0 0 0.5rem 0;
+      color: #333;
+    }
+
+    .attachment-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    .attachment-item mat-icon {
+      color: #666;
+    }
+
+    .attachment-item span {
+      flex: 1;
+      font-size: 0.9rem;
+    }
+
+    .no-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #999;
+      text-align: center;
+    }
+
+    .no-message mat-icon {
+      font-size: 4rem;
+      width: 4rem;
+      height: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .no-message h3 {
+      margin: 0 0 0.5rem 0;
+      font-weight: 500;
+    }
+
+    .no-message p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    /* Dark theme support */
+    :host-context(body[data-theme="dark"]) .message-list-container {
+      background-color: #121212;
+    }
+
+    :host-context(body[data-theme="dark"]) .message-list-panel,
+    :host-context(body[data-theme="dark"]) .message-detail-panel {
+      background-color: #1e1e1e;
+      border-color: #333;
+    }
+
+    :host-context(body[data-theme="dark"]) .message-list-header,
+    :host-context(body[data-theme="dark"]) .message-details-header {
+      background-color: #2d2d2d;
+      border-color: #333;
+    }
+
+    :host-context(body[data-theme="dark"]) .message-item {
+      border-color: #333;
+    }
+
+    :host-context(body[data-theme="dark"]) .message-item:hover {
+      background-color: #2d2d2d;
+    }
+
+    :host-context(body[data-theme="dark"]) .message-item.selected {
+      background-color: #1565c0;
+    }
+
+    :host-context(body[data-theme="dark"]) .message-from,
+    :host-context(body[data-theme="dark"]) .message-subject,
+    :host-context(body[data-theme="dark"]) .message-list-title {
+      color: #ffffff;
+    }
+
+    :host-context(body[data-theme="dark"]) .message-body {
+      color: #ffffff;
+    }
+
+    :host-context(body[data-theme="dark"]) .attachment-item {
+      background-color: #2d2d2d;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .message-list-panel {
+        flex: 0 0 100%;
+      }
+      
+      .message-detail-panel {
+        display: none;
+      }
+      
+      .message-item.selected + .message-detail-panel {
+        display: flex;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+      }
+    }
+  `]
 })
 export class MessageListComponent implements OnDestroy {
   messages$: Observable<GetMessagesResponse> = this.route.data.pipe(
     map(data => data['messages'])
   );
   pagination$: Observable<PaginationInfo>;
-  selectedMessage$: Observable<DetailDto | null>;
   
-  private selectedMessageId$ = new BehaviorSubject<string | null>(null);
   selectedMessageId: string | null = null;
-  isLoadingMessage = false;
   private loadingTimeout: any = null;
   
   // Virtual scroll settings  
@@ -188,18 +421,7 @@ export class MessageListComponent implements OnDestroy {
       })
     );
 
-    // Initialize selected message observable
-    this.selectedMessage$ = this.selectedMessageId$.pipe(
-      switchMap(id => {
-        if (!id) return of(null);
-        this.isLoadingMessage = true;
-        return this.messageService.getMessage(id).pipe(
-          finalize(() => {
-            this.isLoadingMessage = false;
-          })
-        );
-      })
-    );
+
 
     this.route.data.subscribe(data => {
       console.log('Route data:', data);
@@ -229,7 +451,7 @@ export class MessageListComponent implements OnDestroy {
       finalize(() => {
         this.isLoadingMore = false;
       })
-    ).subscribe(response => {
+    ).subscribe((response: GetMessagesResponse) => {
       this.allMessages = [...this.allMessages, ...response.messages];
       this.currentPage = nextPage;
       this.hasMorePages = this.allMessages.length < response.totalMessageCount;
@@ -243,7 +465,7 @@ export class MessageListComponent implements OnDestroy {
   selectMessage(messageId: string): void {
     console.log('Selecting message:', messageId);
     this.selectedMessageId = messageId;
-    this.selectedMessageId$.next(messageId);
+    this.router.navigate(['message', messageId], { relativeTo: this.route });
   }
 
   getFromDisplay(message: RefDto): string {

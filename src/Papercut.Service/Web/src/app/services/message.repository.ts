@@ -75,7 +75,7 @@ export class MessageRepository {
 
   getMessage(id: string): Observable<MessageDetail> {
     console.log('MessageRepository - Original ID:', id);
-    // Ensure the message ID is properly encoded for the URL
+    // The ID from the route parameter is already decoded by Angular router
     const encodedId = encodeURIComponent(id);
     const finalUrl = `${this.baseUrl}/${encodedId}`;
     console.log('MessageRepository - Final URL:', finalUrl);
