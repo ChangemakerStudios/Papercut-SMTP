@@ -17,6 +17,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { EmailAddressDto } from '../models';
+import { EmailService } from '../services/email.service';
 
 /**
  * Pipe for formatting an array of email addresses into a readable string.
@@ -26,25 +27,14 @@ import { EmailAddressDto } from '../models';
   standalone: true
 })
 export class EmailListPipe implements PipeTransform {
+  
+  constructor(private emailService: EmailService) {}
+
   transform(emailAddresses: EmailAddressDto[] | null | undefined): string {
     if (!emailAddresses || emailAddresses.length === 0) {
       return '';
     }
 
-    return emailAddresses
-      .map(email => this.formatEmailAddress(email))
-      .join(', ');
-  }
-
-  private formatEmailAddress(email: EmailAddressDto): string {
-    if (!email.address) {
-      return email.name || '';
-    }
-
-    if (email.name && email.name !== email.address) {
-      return `${email.name} <${email.address}>`;
-    }
-
-    return email.address;
+    return this.emailService.formatEmailAddressList(emailAddresses);
   }
 } 

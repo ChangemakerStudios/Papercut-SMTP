@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileSizePipe } from '../../pipes/file-size.pipe';
+import { EmailService } from '../../services/email.service';
+import { RefDto } from 'src/app/models';
 
 @Component({
   selector: 'app-message-list-item',
@@ -11,14 +13,14 @@ import { FileSizePipe } from '../../pipes/file-size.pipe';
     <div class="message-item"
          [class.selected]="selected"
          (click)="onSelect()">
+      <div class="message-subject" [matTooltip]="message.subject ?? 'No Subject'">
+        {{ message.subject ?? '(No Subject)' }}
+      </div>
       <div class="message-from" [matTooltip]="getFromDisplay()">
         {{ getFromDisplay() }}
-      </div>
-      <div class="message-subject" [matTooltip]="message.subject">
-        {{ message.subject || '(No Subject)' }}
-      </div>
+      </div>      
       <div class="message-meta">
-        <span>{{ message.date | date:'MMM d, y h:mm a' }}</span>
+        <span>{{ message.createdAt| date:'MMM d, y h:mm a' }}</span>
         <span>•</span>
         <span>{{ message.size | fileSize }}</span>
       </div>
@@ -34,9 +36,11 @@ import { FileSizePipe } from '../../pipes/file-size.pipe';
   `
 })
 export class MessageListItemComponent {
-  @Input() message: any;
+  @Input() message!: RefDto;
   @Input() selected = false;
   @Output() select = new EventEmitter<void>();
+
+  constructor(private emailService: EmailService) {}
 
   onSelect(): void {
     console.log('Message item clicked:', this.message?.id);
@@ -44,10 +48,6 @@ export class MessageListItemComponent {
   }
 
   getFromDisplay(): string {
-    if (!this.message?.from?.length) return 'Unknown Sender';
-    const sender = this.message.from[0];
-    return sender.name && sender.name !== sender.address 
-      ? sender.name
-      : sender.address;
+    return this.emailService.formatEmailAddressList(this.message?.from || []);
   }
 } 

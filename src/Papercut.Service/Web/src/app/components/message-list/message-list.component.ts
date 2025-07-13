@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { MessageService } from '../../services/message.service';
+import { EmailService } from '../../services/email.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 import { EmailListPipe } from '../../pipes/email-list.pipe';
 import { CidTransformPipe } from '../../pipes/cid-transform.pipe';
@@ -65,11 +66,10 @@ interface PaginationInfo {
                class="message-item"
                [class.selected]="message.id === selectedMessageId"
                (click)="selectMessage(message.id!)">
-            <div class="message-from">{{ getFromDisplay(message) }}</div>
             <div class="message-subject">{{ message.subject || '(No Subject)' }}</div>
             <div class="message-meta">
-              <span>{{ message.createdAt | date:'short' }}</span>
-              <span>{{ message.size }}</span>
+              <span class="message-from-date">From: {{ getFromFormatted(message) }}, {{ message.createdAt | date:'short' }}</span>
+              <span class="message-size">{{ message.size }}</span>
             </div>
           </div>
           
@@ -158,14 +158,9 @@ interface PaginationInfo {
       border-left: 3px solid #2196f3;
     }
 
-    .message-from {
+    .message-subject {
       font-weight: 600;
       color: #333;
-      margin-bottom: 0.25rem;
-    }
-
-    .message-subject {
-      color: #555;
       margin-bottom: 0.25rem;
       white-space: nowrap;
       overflow: hidden;
@@ -175,8 +170,21 @@ interface PaginationInfo {
     .message-meta {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       font-size: 0.8rem;
       color: #888;
+    }
+
+    .message-from-date {
+      color: #555;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .message-size {
+      color: #666;
+      font-weight: 500;
+      margin-left: 0.5rem;
     }
 
     .loading-more-indicator {
@@ -425,7 +433,8 @@ export class MessageListComponent implements OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private emailService: EmailService
   ) {
     this.messages$.pipe(
       takeUntil(this.destroy$)
@@ -526,8 +535,11 @@ export class MessageListComponent implements OnDestroy {
   }
 
   getFromDisplay(message: RefDto): string {
-    // For RefDto, we don't have detailed from information, so we'll just show a placeholder
-    return 'Sender'; // This could be enhanced when the API provides more detailed ref data
+    return this.emailService.getFirstDisplayName(message.from || []);
+  }
+
+  getFromFormatted(message: RefDto): string {
+    return this.emailService.formatEmailAddressList(message.from || []);
   }
 
   downloadSection(messageId: string, contentId: string): void {

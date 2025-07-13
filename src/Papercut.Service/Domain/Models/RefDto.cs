@@ -23,8 +23,6 @@ namespace Papercut.Service.Domain.Models;
 [PublicAPI]
 public class RefDto
 {
-    public string? Size { get; set; }
-
     public string? Id { get; set; }
     
     public string? Name { get; set; }
@@ -32,6 +30,8 @@ public class RefDto
     public DateTime? CreatedAt { get; set; }
 
     public string? Subject { get; set; }
+    
+    public long Size { get; set; }
 
     public List<EmailAddressDto> From { get; set; } = [];
 

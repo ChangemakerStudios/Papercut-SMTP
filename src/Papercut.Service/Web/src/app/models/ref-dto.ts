@@ -21,10 +21,7 @@ import { EmailAddressDto } from "./email-address-dto";
  * Represents a message reference with basic metadata.
  * Used for message list views. Matches the C# RefDto class.
  */
-export interface RefDto {
-  /** The file size as a string */
-  size?: string | null;
-  
+export interface RefDto {  
   /** The unique message ID */
   id?: string | null;
   
@@ -33,6 +30,9 @@ export interface RefDto {
   
   /** The message subject */
   subject?: string | null;
+
+  /** The file size as a string */
+  size: number;
 
   from?: EmailAddressDto[] | null;
 } 
