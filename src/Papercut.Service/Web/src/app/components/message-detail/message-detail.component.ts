@@ -73,7 +73,7 @@ import { DetailDto } from '../../models';
               <!-- From Section -->
               <div class="detail-item flex items-start gap-2 p-2 bg-blue-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full flex-shrink-0">
-                  <mat-icon class="text-blue-600 text-sm">person</mat-icon>
+                  <mat-icon class="text-blue-600 flex items-center justify-center">person</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
                   <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">From</h4>
@@ -84,7 +84,7 @@ import { DetailDto } from '../../models';
               <!-- To Section -->
               <div class="detail-item flex items-start gap-2 p-2 bg-green-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-green-100 rounded-full flex-shrink-0">
-                  <mat-icon class="text-green-600 text-sm">people</mat-icon>
+                  <mat-icon class="text-green-600 flex items-center justify-center">people</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
                   <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">To</h4>
@@ -95,7 +95,7 @@ import { DetailDto } from '../../models';
               <!-- CC Section -->
               <div *ngIf="message.cc?.length" class="detail-item flex items-start gap-2 p-2 bg-yellow-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-yellow-100 rounded-full flex-shrink-0">
-                  <mat-icon class="text-yellow-600 text-sm">people_outline</mat-icon>
+                  <mat-icon class="text-yellow-600 flex items-center justify-center">people_outline</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
                   <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">CC</h4>
@@ -106,7 +106,7 @@ import { DetailDto } from '../../models';
               <!-- BCC Section -->
               <div *ngIf="message.bCc?.length" class="detail-item flex items-start gap-2 p-2 bg-red-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-red-100 rounded-full flex-shrink-0">
-                  <mat-icon class="text-red-600 text-sm">visibility_off</mat-icon>
+                  <mat-icon class="text-red-600 flex items-center justify-center">visibility_off</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
                   <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">BCC</h4>
@@ -117,7 +117,7 @@ import { DetailDto } from '../../models';
               <!-- Attachments Summary -->
               <div *ngIf="message.sections?.length" class="detail-item flex items-start gap-2 p-2 bg-purple-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full flex-shrink-0">
-                  <mat-icon class="text-purple-600 text-sm">attach_file</mat-icon>
+                  <mat-icon class="text-purple-600 flex items-center justify-center">attach_file</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
                   <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">Attachments</h4>
@@ -133,49 +133,74 @@ import { DetailDto } from '../../models';
           <div class="message-tabs h-full">
             <mat-tab-group class="h-full" dynamicHeight="false">
               
-              <!-- Body Tab -->
-              <mat-tab label="Body">
-                <div class="tab-content h-full overflow-auto">
-                  <div class="body-content h-full p-3">
-                    <div class="message-body leading-relaxed min-h-32 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" 
-                         [innerHTML]="(message.htmlBody || message.textBody) | cidTransform:(message.id || '')">
-                    </div>
+              <!-- Message Tab (HTML iframe view) -->
+              <mat-tab label="Message">
+                <div class="tab-content h-full overflow-hidden">
+                  <div class="message-content h-full">
+                    <iframe
+                      class="message-iframe w-full h-full"
+                      [srcdoc]="getMessageContent(message)"
+                      sandbox="allow-same-origin"
+                      frameborder="0">
+                    </iframe>
                   </div>
                 </div>
               </mat-tab>
-              
+
               <!-- Headers Tab -->
               <mat-tab label="Headers">
                 <div class="tab-content h-full overflow-auto">
                   <div class="headers-content p-3 space-y-2">
-                    <div *ngFor="let header of message.headers" class="header-item flex flex-col sm:flex-row sm:items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div *ngFor="let header of getMessageHeaders(message)" class="header-item flex flex-col sm:flex-row sm:items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                       <span class="header-name font-semibold text-gray-800 dark:text-white text-sm mr-2 min-w-0">{{ header.name }}:</span>
                       <span class="header-value text-gray-700 dark:text-gray-300 text-sm">{{ header.value }}</span>
                     </div>
                   </div>
                 </div>
               </mat-tab>
+
+              <!-- Body Tab (Plain text) -->
+              <mat-tab label="Body">
+                <div class="tab-content h-full overflow-hidden">
+                  <div class="body-content h-full p-3 overflow-auto">
+                    <div class="message-body h-full p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto">
+                      <pre class="whitespace-pre-wrap font-mono text-sm">{{ getBodyContent(message) }}</pre>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
               
               <!-- Sections Tab -->
-              <mat-tab label="Sections" [disabled]="!message.sections.length">
+              <mat-tab label="Sections" [disabled]="!getMessageSections(message).length">
                 <div class="tab-content h-full overflow-auto">
                   <div class="sections-content p-3 space-y-4">
-                    <div *ngFor="let section of message.sections" class="section-item bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-3">
-                      <div class="section-header flex items-center gap-3">
-                        <mat-icon>{{ getSectionIcon(section.mediaType) }}</mat-icon>
-                        <div class="flex-1">
-                          <div class="section-type font-semibold text-gray-800 dark:text-white text-sm">{{ section.fileName || section.mediaType }}</div>
-                          <div class="section-info text-gray-600 dark:text-gray-400 text-xs">{{ section.mediaType }}</div>
+                    <div *ngFor="let section of getMessageSections(message)" class="section-item bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-3">
+                                              <div class="section-header flex items-center gap-3">
+                          <mat-icon>{{ getSectionIcon(section.type) }}</mat-icon>
+                          <div class="flex-1">
+                            <div class="section-type font-semibold text-gray-800 dark:text-white text-sm">{{ section.type }}</div>
+                            <div class="section-info text-gray-600 dark:text-gray-400 text-xs">{{ section.info }}</div>
+                          </div>
+                          <button 
+                            mat-icon-button 
+                            color="primary"
+                            (click)="downloadSection(message, section)"
+                            title="Download attachment">
+                            <mat-icon>download</mat-icon>
+                          </button>
                         </div>
-                        <button 
-                          mat-icon-button 
-                          color="primary"
-                          (click)="downloadSectionSafe(message, section.id!)"
-                          *ngIf="section.id"
-                          title="Download attachment">
-                          <mat-icon>download</mat-icon>
-                        </button>
-                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+
+              <!-- Raw Tab -->
+              <mat-tab label="Raw">
+                <div class="tab-content h-full overflow-hidden">
+                  <div class="raw-content h-full p-3 overflow-auto">
+                    <div class="h-full p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto">
+                      <pre class="whitespace-pre-wrap font-mono text-xs">{{ getRawContent(message) }}</pre>
                     </div>
                   </div>
                 </div>
@@ -204,6 +229,8 @@ import { DetailDto } from '../../models';
       word-break: break-all;
       font-family: monospace;
     }
+
+
 
     /* Message body content styling */
     .message-body img {
@@ -460,40 +487,97 @@ export class MessageDetailComponent {
   }
 
   downloadRaw() {
-    if (this.currentMessage && this.currentMessage.id) {
-      this.messageService.downloadRawMessage(this.currentMessage.id);
+    if (this.currentMessage && (this.currentMessage.id || this.currentMessage.name)) {
+      const messageId = this.currentMessage?.name ?? this.currentMessage?.id ?? '';
+      console.log('Downloading raw message', this.currentMessage);
+      this.messageService.downloadRawMessage(messageId);
     }
   }
 
-  downloadSection(messageId: string, contentId: string) {
-    this.messageService.downloadSectionByContentId(messageId, contentId);
-  }
-
-  downloadSectionSafe(message: DetailDto, contentId: string) {
-    if (message.id) {
-      this.downloadSection(message.id, contentId);
+  downloadSection(message: DetailDto, section: { type: string; info: string; content?: string }) {
+    // Find the original section in message.sections to get the ID
+    if (message.id && message.sections) {
+      const originalSection = message.sections.find(s => 
+        (s.fileName || s.mediaType) === section.type && s.mediaType === section.info
+      );
+      if (originalSection && originalSection.id) {
+        this.messageService.downloadSectionByContentId(message.id, originalSection.id);
+      }
     }
   }
 
-  getSectionIcon(mediaType: string | null | undefined): string {
-    if (!mediaType) {
-      return 'attach_file';
-    }
 
-    if (mediaType.startsWith('image/')) {
+
+  getSectionIcon(type: string): string {
+    const lowerType = type.toLowerCase();
+    
+    if (lowerType.includes('image') || lowerType.includes('.jpg') || lowerType.includes('.png') || lowerType.includes('.gif')) {
       return 'image';
-    } else if (mediaType.startsWith('text/')) {
+    } else if (lowerType.includes('text') || lowerType.includes('.txt')) {
       return 'description';
-    } else if (mediaType.includes('pdf')) {
+    } else if (lowerType.includes('pdf')) {
       return 'picture_as_pdf';
-    } else if (mediaType.includes('word') || mediaType.includes('document')) {
+    } else if (lowerType.includes('word') || lowerType.includes('document') || lowerType.includes('.doc')) {
       return 'article';
-    } else if (mediaType.includes('spreadsheet') || mediaType.includes('excel')) {
+    } else if (lowerType.includes('spreadsheet') || lowerType.includes('excel') || lowerType.includes('.xls')) {
       return 'table_chart';
-    } else if (mediaType.includes('zip') || mediaType.includes('archive')) {
+    } else if (lowerType.includes('zip') || lowerType.includes('archive') || lowerType.includes('.zip')) {
       return 'archive';
     } else {
       return 'attach_file';
     }
+  }
+
+  getMessageContent(message: DetailDto): string {
+    return this.messageService.getMessageContent(message);
+  }
+
+  getMessageHeaders(message: DetailDto) {
+    return message.headers || [];
+  }
+
+  getBodyContent(message: DetailDto): string {
+    if (message.textBody) {
+      return message.textBody;
+    } else if (message.htmlBody) {
+      // Strip HTML tags for plain text view
+      return message.htmlBody.replace(/<[^>]*>/g, '');
+    } else {
+      return 'No message body available.';
+    }
+  }
+
+  getMessageSections(message: DetailDto): { type: string; info: string; content?: string }[] {
+    if (!message.sections || message.sections.length === 0) {
+      return [];
+    }
+    
+    return message.sections.map(section => ({
+      type: section.fileName || section.mediaType || 'Unknown',
+      info: section.mediaType || 'Unknown type',
+      content: undefined // Content not available in attachment DTO
+    }));
+  }
+
+  getRawContent(message: DetailDto): string {
+    let raw = '';
+    
+    // Add headers
+    if (message.headers) {
+      message.headers.forEach(header => {
+        raw += `${header.name}: ${header.value}\n`;
+      });
+    }
+    
+    raw += '\n';
+    
+    // Add body content
+    if (message.htmlBody) {
+      raw += message.htmlBody;
+    } else if (message.textBody) {
+      raw += message.textBody;
+    }
+    
+    return raw || 'Raw content not available';
   }
 }

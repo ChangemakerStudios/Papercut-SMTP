@@ -23,6 +23,8 @@ using Papercut.Service.Infrastructure.EmailAddresses;
 public class DetailDto
 {
     public string? Id { get; set; }
+    
+    public string? Name { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
@@ -50,9 +52,10 @@ public class DetailDto
 
         return new DetailDto
         {
+            Id = messageEntry.Id,
+            Name = messageEntry.Name,
             Subject = messageEntry.Subject,
             CreatedAt = messageEntry.Created?.ToUniversalTime(),
-            Id = messageEntry.Id,
             From = (mail?.From).ToAddressList(),
             To = (mail?.To).ToAddressList(),
             Cc = (mail?.Cc).ToAddressList(),

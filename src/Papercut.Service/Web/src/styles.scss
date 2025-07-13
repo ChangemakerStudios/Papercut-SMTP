@@ -307,6 +307,7 @@ body[data-theme="dark"] .message-list-panel cdk-virtual-scroll-viewport {
   display: flex;
   flex-direction: column;
   border-left: 1px solid #e0e0e0;
+  min-height: 0; /* Ensure flex child can shrink */
 }
 
 body[data-theme="dark"] .message-detail-panel {
@@ -641,8 +642,18 @@ body[data-theme="dark"] .no-message p {
    ================= */
 
 /* Force Angular Material tabs to use full height flex */
-app-message-details {
+
+/* Force router-outlet and app-message-detail to take full height */
+router-outlet {
+  display: flex;
+  flex-direction: column;
+}
+
+app-message-detail {
+  display: flex;
+  flex-direction: column;
   height: 100% !important;
+  flex: 1;
 }
 
 .message-tabs mat-tab-group {
@@ -759,7 +770,14 @@ body[data-theme="dark"] .header-value {
   font-family: 'Courier New', monospace;
   font-size: 11px;
   line-height: 1.4;
-  overflow: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.body-content .message-body {
+  flex: 1;
+  min-height: 0;
 }
 
 .body-content pre {

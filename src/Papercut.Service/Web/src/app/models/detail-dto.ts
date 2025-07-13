@@ -26,6 +26,9 @@ import { EmailAttachmentDto } from './email-attachment-dto';
 export interface DetailDto {
   /** The unique message ID */
   id?: string | null;
+
+  /** The message name */
+  name?: string | null;
   
   /** The creation timestamp */
   createdAt?: Date | null;

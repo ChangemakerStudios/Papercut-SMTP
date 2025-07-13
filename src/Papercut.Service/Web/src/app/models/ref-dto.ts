@@ -15,6 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { EmailAddressDto } from "./email-address-dto";
+
 /**
  * Represents a message reference with basic metadata.
  * Used for message list views. Matches the C# RefDto class.
@@ -31,4 +33,6 @@ export interface RefDto {
   
   /** The message subject */
   subject?: string | null;
+
+  from?: EmailAddressDto[] | null;
 } 
