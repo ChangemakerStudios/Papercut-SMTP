@@ -24,16 +24,22 @@ namespace Papercut.Service.Domain.Models;
 public class RefDto
 {
     public string? Id { get; set; }
-    
+
     public string? Name { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
     public string? Subject { get; set; }
-    
+
     public long Size { get; set; }
 
     public List<EmailAddressDto> From { get; set; } = [];
+
+    public bool IsRead { get; set; }
+
+    public string? Priority { get; set; }
+
+    public int Attachments { get; set; }
 
     public static RefDto CreateFrom(MimeMessageEntry messageEntry)
     {
@@ -44,7 +50,10 @@ public class RefDto
             Subject = messageEntry.Subject,
             CreatedAt = messageEntry.Created?.ToUniversalTime(),
             Size = messageEntry.FileSize,
-            From = (messageEntry.MailMessage?.From).ToAddressList()
+            From = (messageEntry.MailMessage?.From).ToAddressList(),
+            Attachments = messageEntry.MailMessage?.Attachments.Count() ?? 0,
+            Priority = (messageEntry.MailMessage?.Priority ?? MessagePriority.Normal).ToString(),
+            IsRead = messageEntry.HasBeenSeen,
         };
     }
 }

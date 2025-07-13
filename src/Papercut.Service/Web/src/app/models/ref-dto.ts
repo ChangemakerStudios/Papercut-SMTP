@@ -35,4 +35,10 @@ export interface RefDto {
   size: number;
 
   from?: EmailAddressDto[] | null;
+
+  isRead: boolean;
+
+  priority?: string;
+
+  attachments?: number;
 } 

@@ -10,11 +10,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { MessageService } from '../../services/message.service';
-import { EmailService } from '../../services/email.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
-import { EmailListPipe } from '../../pipes/email-list.pipe';
-import { CidTransformPipe } from '../../pipes/cid-transform.pipe';
+
 import { ResizerComponent } from '../resizer/resizer.component';
+import { MessageListItemComponent } from './message-list-item.component';
 
 interface PaginationInfo {
   currentPage: number;
@@ -38,43 +37,41 @@ interface PaginationInfo {
     MatChipsModule,
     MatProgressSpinnerModule,
     ScrollingModule,
-    EmailListPipe,
-    CidTransformPipe,
-    ResizerComponent
+    ResizerComponent,
+    MessageListItemComponent
   ],
   template: `
-    <div class="message-list-container" [class.dragging]="isDragging">
+    <div class="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300" 
+         [class.dragging]="isDragging">
       <!-- Message List Panel -->
-      <div class="message-list-panel" [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
+      <div class="border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col" 
+           [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
         <!-- Message List Header -->
-        <div class="message-list-header">
-          <h2 class="message-list-title">
-            <mat-icon style="margin-right: 0.5rem; vertical-align: middle;">inbox</mat-icon>
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+          <h2 class="m-0 mb-2 text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center">
+            <mat-icon class="mr-2">inbox</mat-icon>
             Messages
           </h2>
-          <p class="message-count" *ngIf="pagination$ | async as pagination">
+          <p class="m-0 text-sm text-gray-600 dark:text-gray-300" *ngIf="pagination$ | async as pagination">
             {{ pagination.totalCount }} total messages
-            <span *ngIf="isLoadingMore" style="margin-left: 0.5rem;">
+            <span *ngIf="isLoadingMore" class="ml-2">
               <mat-spinner diameter="16" strokeWidth="2"></mat-spinner>
             </span>
           </p>
         </div>
 
         <!-- Virtual Scroll List -->
-        <cdk-virtual-scroll-viewport [itemSize]="itemSize" (scrolledIndexChange)="onScroll()">
-          <div *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
-               class="message-item"
-               [class.selected]="message.id === selectedMessageId"
-               (click)="selectMessage(message.id!)">
-            <div class="message-subject">{{ message.subject || '(No Subject)' }}</div>
-            <div class="message-meta">
-              <span class="message-from-date">From: {{ getFromFormatted(message) }}, {{ message.createdAt | date:'short' }}</span>
-              <span class="message-size">{{ message.size }}</span>
-            </div>
-          </div>
+        <cdk-virtual-scroll-viewport [itemSize]="itemSize" (scrolledIndexChange)="onScroll()" 
+                                     class="flex-1 h-full">
+          <app-message-list-item 
+            *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
+            [message]="message"
+            [selected]="message.id === selectedMessageId"
+            (select)="selectMessage(message.id!)">
+          </app-message-list-item>
           
           <!-- Loading indicator for infinite scroll -->
-          <div *ngIf="isLoadingMore" class="loading-more-indicator">
+          <div *ngIf="isLoadingMore" class="flex items-center justify-center p-4 gap-2 text-gray-600 dark:text-gray-300">
             <mat-spinner diameter="24" strokeWidth="3"></mat-spinner>
             <span>Loading more messages...</span>
           </div>
@@ -93,303 +90,28 @@ interface PaginationInfo {
       </app-resizer>
 
       <!-- Message Detail Panel -->
-      <div class="message-detail-panel">
+      <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0">
         <router-outlet></router-outlet>
         
-        <div *ngIf="!selectedMessageId" class="no-message">
-          <mat-icon>email</mat-icon>
-          <h3>No message selected</h3>
-          <p>Select a message from the list to view its contents</p>
+        <div *ngIf="!selectedMessageId" class="flex-1 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8">
+          <mat-icon class="text-6xl mb-4 text-gray-400 dark:text-gray-500">email</mat-icon>
+          <h3 class="text-xl font-medium mb-2 text-gray-600 dark:text-gray-300">No message selected</h3>
+          <p class="text-gray-500 dark:text-gray-400">Select a message from the list to view its contents</p>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .message-list-container {
-      display: flex;
-      height: 100vh;
-      background-color: #f5f5f5;
+    /* Dragging state */
+    .dragging {
+      user-select: none;
     }
 
-    .message-list-panel {
-      border-right: 1px solid #e0e0e0;
-      background-color: white;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .message-list-header {
-      padding: 1rem;
-      border-bottom: 1px solid #e0e0e0;
-      background-color: #fafafa;
-    }
-
-    .message-list-title {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .message-count {
-      margin: 0;
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    cdk-virtual-scroll-viewport {
-      flex: 1;
-      height: 100%;
-    }
-
-    .message-item {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .message-item:hover {
-      background-color: #f8f9fa;
-    }
-
-    .message-item.selected {
-      background-color: #e3f2fd;
-      border-left: 3px solid #2196f3;
-    }
-
-    .message-subject {
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 0.25rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .message-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.8rem;
-      color: #888;
-    }
-
-    .message-from-date {
-      color: #555;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .message-size {
-      color: #666;
-      font-weight: 500;
-      margin-left: 0.5rem;
-    }
-
-    .loading-more-indicator {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      gap: 0.5rem;
-      color: #666;
-    }
-
-    .loading-message {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      gap: 0.5rem;
-      color: #666;
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      margin: 1rem;
-    }
-
-
-
-    .message-detail-panel {
-      flex: 1;
-      background-color: white;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .message-details {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .message-details-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid #e0e0e0;
-      background-color: #fafafa;
-    }
-
-    .message-subject {
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 0.5rem;
-    }
-
-    .message-from {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #666;
-      margin-bottom: 0.5rem;
-    }
-
-    .message-meta {
-      display: flex;
-      gap: 1rem;
-    }
-
-    .message-meta-item {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-size: 0.9rem;
-      color: #888;
-    }
-
-    .message-content {
-      flex: 1;
-      padding: 1.5rem;
-      overflow-y: auto;
-    }
-
-    .message-body {
-      line-height: 1.6;
-      color: #333;
-      margin-bottom: 1.5rem;
-    }
-
-    .attachments {
-      border-top: 1px solid #e0e0e0;
-      padding-top: 1rem;
-    }
-
-    .attachments h4 {
-      margin: 0 0 0.5rem 0;
-      color: #333;
-    }
-
-    .attachment-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      background-color: #f8f9fa;
-      border-radius: 4px;
-      margin-bottom: 0.5rem;
-    }
-
-    .attachment-item mat-icon {
-      color: #666;
-    }
-
-    .attachment-item span {
-      flex: 1;
-      font-size: 0.9rem;
-    }
-
-    .no-message {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #999;
-      text-align: center;
-    }
-
-    .no-message mat-icon {
-      font-size: 4rem;
-      width: 4rem;
-      height: 4rem;
-      margin-bottom: 1rem;
-    }
-
-    .no-message h3 {
-      margin: 0 0 0.5rem 0;
-      font-weight: 500;
-    }
-
-    .no-message p {
-      margin: 0;
-      font-size: 0.9rem;
-    }
-
-    /* Dark theme support */
-    :host-context(body[data-theme="dark"]) .message-list-container {
-      background-color: #121212;
-    }
-
-    :host-context(body[data-theme="dark"]) .message-list-panel,
-    :host-context(body[data-theme="dark"]) .message-detail-panel {
-      background-color: #1e1e1e;
-      border-color: #333;
-    }
-
-    :host-context(body[data-theme="dark"]) .message-list-header,
-    :host-context(body[data-theme="dark"]) .message-details-header {
-      background-color: #2d2d2d;
-      border-color: #333;
-    }
-
-    :host-context(body[data-theme="dark"]) .message-item {
-      border-color: #333;
-    }
-
-    :host-context(body[data-theme="dark"]) .message-item:hover {
-      background-color: #2d2d2d;
-    }
-
-    :host-context(body[data-theme="dark"]) .message-item.selected {
-      background-color: #1565c0;
-    }
-
-    :host-context(body[data-theme="dark"]) .message-from,
-    :host-context(body[data-theme="dark"]) .message-subject,
-    :host-context(body[data-theme="dark"]) .message-list-title {
-      color: #ffffff;
-    }
-
-    :host-context(body[data-theme="dark"]) .message-body {
-      color: #ffffff;
-    }
-
-    :host-context(body[data-theme="dark"]) .attachment-item {
-      background-color: #2d2d2d;
+    .dragging .cursor-pointer {
+      pointer-events: none;
     }
 
     /* Responsive design */
-    @media (max-width: 768px) {
-      .message-list-panel {
-        flex: 0 0 100%;
-      }
-      
-      .message-detail-panel {
-        display: none;
-      }
-      
-      .message-item.selected + .message-detail-panel {
-        display: flex;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1000;
-      }
-    }
-
-    // Responsive design - adjust layout on mobile devices
     @media (max-width: 768px) {
       .message-list-panel {
         flex: 0 0 100% !important;
@@ -398,11 +120,6 @@ interface PaginationInfo {
       .message-detail-panel {
         display: none;
       }
-    }
-
-    // Prevent text selection during dragging
-    .message-list-container.dragging {
-      user-select: none;
     }
   `]
 })
@@ -433,8 +150,7 @@ export class MessageListComponent implements OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private messageService: MessageService,
-    private emailService: EmailService
+    private messageService: MessageService
   ) {
     this.messages$.pipe(
       takeUntil(this.destroy$)
@@ -534,13 +250,7 @@ export class MessageListComponent implements OnDestroy {
     this.router.navigate(['message', messageId], { relativeTo: this.route });
   }
 
-  getFromDisplay(message: RefDto): string {
-    return this.emailService.getFirstDisplayName(message.from || []);
-  }
 
-  getFromFormatted(message: RefDto): string {
-    return this.emailService.formatEmailAddressList(message.from || []);
-  }
 
   downloadSection(messageId: string, contentId: string): void {
     this.messageService.downloadSectionByContentId(messageId, contentId);
