@@ -13,6 +13,7 @@ import { MessageService } from '../../services/message.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 import { EmailListPipe } from '../../pipes/email-list.pipe';
 import { CidTransformPipe } from '../../pipes/cid-transform.pipe';
+import { ResizerComponent } from '../resizer/resizer.component';
 
 interface PaginationInfo {
   currentPage: number;
@@ -37,12 +38,13 @@ interface PaginationInfo {
     MatProgressSpinnerModule,
     ScrollingModule,
     EmailListPipe,
-    CidTransformPipe
+    CidTransformPipe,
+    ResizerComponent
   ],
   template: `
-    <div class="message-list-container">
+    <div class="message-list-container" [class.dragging]="isDragging">
       <!-- Message List Panel -->
-      <div class="message-list-panel">
+      <div class="message-list-panel" [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
         <!-- Message List Header -->
         <div class="message-list-header">
           <h2 class="message-list-title">
@@ -79,6 +81,17 @@ interface PaginationInfo {
         </cdk-virtual-scroll-viewport>
       </div>
 
+      <!-- Resizer Handle -->
+      <app-resizer 
+        [currentWidth]="messageListWidth"
+        [minWidth]="200"
+        [maxWidth]="2000"
+        [defaultWidth]="400"
+        localStorageKey="papercut-message-list-width"
+        (widthChange)="onWidthChange($event)"
+        (draggingChange)="onDraggingChange($event)">
+      </app-resizer>
+
       <!-- Message Detail Panel -->
       <div class="message-detail-panel">
         <router-outlet></router-outlet>
@@ -99,7 +112,6 @@ interface PaginationInfo {
     }
 
     .message-list-panel {
-      flex: 0 0 400px;
       border-right: 1px solid #e0e0e0;
       background-color: white;
       display: flex;
@@ -188,11 +200,14 @@ interface PaginationInfo {
       margin: 1rem;
     }
 
+
+
     .message-detail-panel {
       flex: 1;
       background-color: white;
       display: flex;
       flex-direction: column;
+      min-width: 0;
     }
 
     .message-details {
@@ -365,6 +380,22 @@ interface PaginationInfo {
         z-index: 1000;
       }
     }
+
+    // Responsive design - adjust layout on mobile devices
+    @media (max-width: 768px) {
+      .message-list-panel {
+        flex: 0 0 100% !important;
+      }
+      
+      .message-detail-panel {
+        display: none;
+      }
+    }
+
+    // Prevent text selection during dragging
+    .message-list-container.dragging {
+      user-select: none;
+    }
   `]
 })
 export class MessageListComponent implements OnDestroy {
@@ -384,6 +415,10 @@ export class MessageListComponent implements OnDestroy {
   isLoadingMore = false;
   private hasMorePages = true;
   private readonly pageSize = 10;
+
+  // Resizer properties
+  messageListWidth = 400; // Default width
+  isDragging = false;
 
   @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
 
@@ -434,6 +469,8 @@ export class MessageListComponent implements OnDestroy {
 
     // Set initial selected message from URL
     this.updateSelectedMessageFromUrl();
+
+    // Note: Resizer component handles localStorage loading automatically
   }
 
   private updateSelectedMessageFromUrl(): void {
@@ -504,5 +541,14 @@ export class MessageListComponent implements OnDestroy {
     }
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  // Resizer event handlers
+  onWidthChange(width: number): void {
+    this.messageListWidth = width;
+  }
+
+  onDraggingChange(isDragging: boolean): void {
+    this.isDragging = isDragging;
   }
 } 

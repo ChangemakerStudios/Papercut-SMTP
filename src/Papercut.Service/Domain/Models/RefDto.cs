@@ -26,6 +26,8 @@ public class RefDto
     public string? Size { get; set; }
 
     public string? Id { get; set; }
+    
+    public string? Name { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
@@ -37,9 +39,10 @@ public class RefDto
     {
         return new RefDto
         {
+            Id = messageEntry.Id,
+            Name = messageEntry.Name,
             Subject = messageEntry.Subject,
             CreatedAt = messageEntry.Created?.ToUniversalTime(),
-            Id = messageEntry.Id,
             Size = messageEntry.FileSize,
             From = (messageEntry.MailMessage?.From).ToAddressList()
         };

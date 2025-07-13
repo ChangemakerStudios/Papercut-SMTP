@@ -601,8 +601,8 @@ body[data-theme="dark"] .message-list-container {
   display: flex;
   flex-direction: column;
   width: 320px;
-  min-width: 280px;
-  max-width: 400px;
+  min-width: 200px;
+  /* max-width: 400px; -- Removed to allow resizer to work */
   height: 100%;
   border-right: 1px solid #d0d0d0;
   background-color: #ffffff;
@@ -1498,7 +1498,7 @@ body[data-theme="dark"] .mobile-menu-btn:hover {
 @media (max-width: 1024px) {
   .message-list-panel {
     width: 320px;
-    min-width: 280px;
+    min-width: 200px;
   }
 }
 
