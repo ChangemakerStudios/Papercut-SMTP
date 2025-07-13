@@ -44,7 +44,9 @@ public class DetailDto
 
     public List<HeaderDto> Headers { get; set; } = [];
 
-    public List<EmailAttachmentDto> Sections { get; set; } = [];
+    public List<EmailSectionDto> Sections { get; set; } = [];
+    
+    public List<EmailSectionDto> Attachments { get; set; } = [];
 
     public static DetailDto CreateFrom(MimeMessageEntry messageEntry)
     {
@@ -64,17 +66,18 @@ public class DetailDto
             TextBody = mail?.TextBody,
             Headers = (mail?.Headers ?? [])
                 .Select(h => new HeaderDto { Name = h.Field, Value = h.Value }).ToList(),
-            Sections = ToSectionDtos(mail?.BodyParts)
+            Sections = ToSectionDtos(mail?.BodyParts),
+            Attachments = ToSectionDtos(mail?.Attachments)
         };
     }
 
-    private static List<EmailAttachmentDto> ToSectionDtos(IEnumerable<MimeEntity>? bodyParts)
+    private static List<EmailSectionDto> ToSectionDtos(IEnumerable<MimeEntity>? bodyParts)
     {
         if (bodyParts == null) return [];
 
         return bodyParts
             .OfType<MimePart>()
-            .Select(e => new EmailAttachmentDto
+            .Select(e => new EmailSectionDto
             {
                 Id = e.ContentId,
                 MediaType = $"{e.ContentType.MediaType}/{e.ContentType.MediaSubtype}",

@@ -22,7 +22,7 @@
 
 export { EmailAddressDto } from './email-address-dto';
 export { HeaderDto } from './header-dto';
-export { EmailAttachmentDto } from './email-attachment-dto';
+export { EmailSectionDto as EmailAttachmentDto } from './email-attachment-dto';
 export { RefDto } from './ref-dto';
 export { DetailDto } from './detail-dto';
 export { GetMessagesResponse } from './get-messages-response'; 

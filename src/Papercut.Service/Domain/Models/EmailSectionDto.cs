@@ -18,7 +18,7 @@
 using Papercut.Service.Domain.Models;
 
 [PublicAPI]
-public class EmailAttachmentDto
+public class EmailSectionDto
 {
     public string? Id { get; set; }
 

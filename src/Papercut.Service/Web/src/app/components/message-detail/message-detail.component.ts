@@ -121,7 +121,7 @@ import { DetailDto } from '../../models';
                 </div>
                 <div class="detail-content flex-1 min-w-0">
                   <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">Attachments</h4>
-                  <p class="detail-value text-gray-700 text-sm">{{ message.sections.length }} attachment(s)</p>
+                  <p class="detail-value text-gray-700 text-sm">{{ message.attachments.length }} attachment(s)</p>
                 </div>
               </div>
             </div>
@@ -164,7 +164,7 @@ import { DetailDto } from '../../models';
                 <div class="tab-content h-full overflow-hidden">
                   <div class="body-content h-full p-3 overflow-auto">
                     <div class="message-body h-full p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto">
-                      <pre class="whitespace-pre-wrap font-mono text-sm">{{ getBodyContent(message) }}</pre>
+                      <pre class="whitespace-pre-wrap font-mono text-sm">{{ getTextContent(message) }}</pre>
                     </div>
                   </div>
                 </div>
@@ -536,7 +536,7 @@ export class MessageDetailComponent {
     return message.headers || [];
   }
 
-  getBodyContent(message: DetailDto): string {
+  getTextContent(message: DetailDto): string {
     if (message.textBody) {
       return message.textBody;
     } else if (message.htmlBody) {

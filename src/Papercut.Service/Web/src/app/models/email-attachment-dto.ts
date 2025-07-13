@@ -17,9 +17,9 @@
 
 /**
  * Represents an email attachment or section.
- * Matches the C# EmailAttachmentDto class.
+ * Matches the C# EmailSectionDto class.
  */
-export interface EmailAttachmentDto {
+export interface EmailSectionDto {
   /** The content ID of the attachment */
   id?: string | null;
   

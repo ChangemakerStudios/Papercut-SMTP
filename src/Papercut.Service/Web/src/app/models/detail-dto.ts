@@ -17,7 +17,7 @@
 
 import { EmailAddressDto } from './email-address-dto';
 import { HeaderDto } from './header-dto';
-import { EmailAttachmentDto } from './email-attachment-dto';
+import { EmailSectionDto } from './email-attachment-dto';
 
 /**
  * Represents the complete details of an email message.
@@ -57,6 +57,9 @@ export interface DetailDto {
   /** The message headers */
   headers: HeaderDto[];
   
-  /** The message sections/attachments */
-  sections: EmailAttachmentDto[];
+  /** The message sections */
+  sections: EmailSectionDto[];
+
+  /** The message attachments */
+  attachments: EmailSectionDto[];
 } 
