@@ -40,7 +40,7 @@ import { DetailDto } from '../../models';
         <!-- Message Content -->
         <!-- Header Section -->
         <div class="header-section flex-shrink-0 bg-white shadow-md border-b border-gray-200 transition-colors duration-300">
-          <div class="header-content flex items-center justify-between p-4 lg:p-6">
+          <div class="header-content flex items-center justify-between p-3 lg:p-4">
             <!-- Subject Section -->
             <div class="subject-section flex-1 min-w-0">
               <h1 class="message-title text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white truncate m-0">
@@ -67,60 +67,60 @@ import { DetailDto } from '../../models';
 
         <!-- Message Details Section -->
         <div class="message-details-section flex-shrink-0 bg-white border-b border-gray-200 transition-colors duration-300">
-          <div class="message-details-content p-4 lg:p-6">
-            <div class="details-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="message-details-content p-3 lg:p-4">
+            <div class="details-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               
               <!-- From Section -->
-              <div class="detail-item flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+              <div class="detail-item flex items-start gap-2 p-2 bg-blue-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full flex-shrink-0">
                   <mat-icon class="text-blue-600 text-sm">person</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
-                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-1">From</h4>
+                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">From</h4>
                   <p class="detail-value text-gray-700 text-sm break-words">{{ message.from | emailList }}</p>
                 </div>
               </div>
               
               <!-- To Section -->
-              <div class="detail-item flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+              <div class="detail-item flex items-start gap-2 p-2 bg-green-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-green-100 rounded-full flex-shrink-0">
                   <mat-icon class="text-green-600 text-sm">people</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
-                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-1">To</h4>
+                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">To</h4>
                   <p class="detail-value text-gray-700 text-sm break-words">{{ message.to | emailList }}</p>
                 </div>
               </div>
               
               <!-- CC Section -->
-              <div *ngIf="message.cc?.length" class="detail-item flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
+              <div *ngIf="message.cc?.length" class="detail-item flex items-start gap-2 p-2 bg-yellow-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-yellow-100 rounded-full flex-shrink-0">
                   <mat-icon class="text-yellow-600 text-sm">people_outline</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
-                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-1">CC</h4>
+                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">CC</h4>
                   <p class="detail-value text-gray-700 text-sm break-words">{{ message.cc | emailList }}</p>
                 </div>
               </div>
               
               <!-- BCC Section -->
-              <div *ngIf="message.bCc?.length" class="detail-item flex items-start gap-3 p-3 bg-red-50 rounded-lg">
+              <div *ngIf="message.bCc?.length" class="detail-item flex items-start gap-2 p-2 bg-red-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-red-100 rounded-full flex-shrink-0">
                   <mat-icon class="text-red-600 text-sm">visibility_off</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
-                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-1">BCC</h4>
+                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">BCC</h4>
                   <p class="detail-value text-gray-700 text-sm break-words">{{ message.bCc | emailList }}</p>
                 </div>
               </div>
               
               <!-- Attachments Summary -->
-              <div *ngIf="message.sections?.length" class="detail-item flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
+              <div *ngIf="message.sections?.length" class="detail-item flex items-start gap-2 p-2 bg-purple-50 rounded-lg">
                 <div class="detail-icon flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full flex-shrink-0">
                   <mat-icon class="text-purple-600 text-sm">attach_file</mat-icon>
                 </div>
                 <div class="detail-content flex-1 min-w-0">
-                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-1">Attachments</h4>
+                  <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">Attachments</h4>
                   <p class="detail-value text-gray-700 text-sm">{{ message.sections.length }} attachment(s)</p>
                 </div>
               </div>
@@ -136,8 +136,8 @@ import { DetailDto } from '../../models';
               <!-- Body Tab -->
               <mat-tab label="Body">
                 <div class="tab-content h-full overflow-auto">
-                  <div class="body-content h-full p-4">
-                    <div class="message-body leading-relaxed min-h-32 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" 
+                  <div class="body-content h-full p-3">
+                    <div class="message-body leading-relaxed min-h-32 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" 
                          [innerHTML]="(message.htmlBody || message.textBody) | cidTransform:(message.id || '')">
                     </div>
                   </div>
@@ -147,10 +147,10 @@ import { DetailDto } from '../../models';
               <!-- Headers Tab -->
               <mat-tab label="Headers">
                 <div class="tab-content h-full overflow-auto">
-                  <div class="headers-content p-4">
-                    <div *ngFor="let header of message.headers" class="header-item">
-                      <span class="header-name">{{ header.name }}:</span>
-                      <span class="header-value">{{ header.value }}</span>
+                  <div class="headers-content p-3 space-y-2">
+                    <div *ngFor="let header of message.headers" class="header-item flex flex-col sm:flex-row sm:items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <span class="header-name font-semibold text-gray-800 dark:text-white text-sm mr-2 min-w-0">{{ header.name }}:</span>
+                      <span class="header-value text-gray-700 dark:text-gray-300 text-sm">{{ header.value }}</span>
                     </div>
                   </div>
                 </div>
@@ -159,13 +159,13 @@ import { DetailDto } from '../../models';
               <!-- Sections Tab -->
               <mat-tab label="Sections" [disabled]="!message.sections.length">
                 <div class="tab-content h-full overflow-auto">
-                  <div class="sections-content p-4">
-                    <div *ngFor="let section of message.sections" class="section-item">
-                      <div class="section-header">
+                  <div class="sections-content p-3 space-y-4">
+                    <div *ngFor="let section of message.sections" class="section-item bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-3">
+                      <div class="section-header flex items-center gap-3">
                         <mat-icon>{{ getSectionIcon(section.mediaType) }}</mat-icon>
                         <div class="flex-1">
-                          <div class="section-type">{{ section.fileName || section.mediaType }}</div>
-                          <div class="section-info">{{ section.mediaType }}</div>
+                          <div class="section-type font-semibold text-gray-800 dark:text-white text-sm">{{ section.fileName || section.mediaType }}</div>
+                          <div class="section-info text-gray-600 dark:text-gray-400 text-xs">{{ section.mediaType }}</div>
                         </div>
                         <button 
                           mat-icon-button 
@@ -188,9 +188,9 @@ import { DetailDto } from '../../models';
       
       <!-- Loading Template -->
       <ng-template #loadingTemplate>
-        <div class="loading-container flex-1 flex items-center justify-center">
+        <div class="loading-container flex-1 flex items-center justify-center min-h-96">
           <div class="loading-content text-center p-8">
-            <mat-icon class="loading-icon text-6xl text-gray-400 mb-4">email</mat-icon>
+            <mat-icon class="loading-icon text-6xl text-gray-400 mb-4 animate-pulse">email</mat-icon>
             <h2 class="text-xl text-gray-600 mb-2">Loading message...</h2>
             <p class="text-gray-500">Please wait while we fetch the message details.</p>
           </div>
@@ -199,67 +199,35 @@ import { DetailDto } from '../../models';
     </div>
   `,
   styles: [`
-    .message-body {
-      @apply min-h-32;
+    /* Only custom CSS that can't be expressed with Tailwind utilities */
+    .header-value {
+      word-break: break-all;
+      font-family: monospace;
     }
 
+    /* Message body content styling */
     .message-body img {
-      @apply max-w-full h-auto rounded-lg shadow-sm;
+      max-width: 100%;
+      height: auto;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
     }
 
     .message-body p {
-      @apply mb-4 last:mb-0;
+      margin-bottom: 0.75rem;
+    }
+
+    .message-body p:last-child {
+      margin-bottom: 0;
     }
 
     .message-body a {
-      @apply text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 underline;
+      color: #2563eb;
+      text-decoration: underline;
     }
 
-    // Loading state styling
-    .loading-container {
-      @apply min-h-96;
-    }
-
-    .loading-icon {
-      @apply animate-pulse;
-    }
-
-    // Headers styling
-    .headers-content {
-      @apply space-y-2;
-    }
-
-    .header-item {
-      @apply flex flex-col sm:flex-row sm:items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600;
-    }
-
-    .header-name {
-      @apply font-semibold text-gray-800 dark:text-white text-sm mr-2 min-w-0;
-    }
-
-    .header-value {
-      @apply text-gray-700 dark:text-gray-300 text-sm break-all;
-    }
-
-    // Sections styling
-    .sections-content {
-      @apply space-y-4;
-    }
-
-    .section-item {
-      @apply bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4;
-    }
-
-    .section-header {
-      @apply flex items-center gap-3;
-    }
-
-    .section-type {
-      @apply font-semibold text-gray-800 dark:text-white text-sm;
-    }
-
-    .section-info {
-      @apply text-gray-600 dark:text-gray-400 text-xs;
+    .message-body a:hover {
+      color: #1d4ed8;
     }
 
     // Dark theme specific overrides
