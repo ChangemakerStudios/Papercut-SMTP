@@ -58,8 +58,8 @@ export interface DetailDto {
   headers: HeaderDto[];
   
   /** The message sections */
-  sections: EmailSectionDto[];
+  sections?: EmailSectionDto[] | null;
 
   /** The message attachments */
-  attachments: EmailSectionDto[];
+  attachments?: EmailSectionDto[] | null;
 } 

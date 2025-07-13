@@ -121,7 +121,7 @@ import { DetailDto } from '../../models';
                 </div>
                 <div class="detail-content flex-1 min-w-0">
                   <h4 class="detail-label font-semibold text-gray-800 text-sm mb-0.5">Attachments</h4>
-                  <p class="detail-value text-gray-700 text-sm">{{ message.attachments.length }} attachment(s)</p>
+                  <p class="detail-value text-gray-700 text-sm">{{ message.attachments?.length ?? 0 }} attachment(s)</p>
                 </div>
               </div>
             </div>
