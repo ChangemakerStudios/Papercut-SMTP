@@ -18,23 +18,13 @@
 import { EmailAddressDto } from './email-address-dto';
 import { HeaderDto } from './header-dto';
 import { EmailSectionDto } from './email-attachment-dto';
+import { RefDto } from './ref-dto';
 
 /**
  * Represents the complete details of an email message.
  * Matches the C# DetailDto class.
  */
-export interface DetailDto {
-  /** The unique message ID */
-  id?: string | null;
-
-  /** The message name */
-  name?: string | null;
-  
-  /** The creation timestamp */
-  createdAt?: Date | null;
-  
-  /** The message subject */
-  subject?: string | null;
+export interface DetailDto extends RefDto {
   
   /** The sender addresses */
   from: EmailAddressDto[];

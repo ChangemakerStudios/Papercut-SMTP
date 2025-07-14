@@ -21,8 +21,8 @@
  */
 export interface HeaderDto {
   /** The header name (e.g., "Content-Type", "Subject") */
-  name: string;
+  name?: string | null;
   
   /** The header value */
-  value: string;
-} 
+  value?: string | null;
+}   

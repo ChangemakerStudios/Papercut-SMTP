@@ -24,6 +24,8 @@ import { EmailAddressDto } from "./email-address-dto";
 export interface RefDto {  
   /** The unique message ID */
   id?: string | null;
+
+  name?: string | null;
   
   /** The creation timestamp */
   createdAt?: Date | null;
@@ -36,9 +38,9 @@ export interface RefDto {
 
   from?: EmailAddressDto[] | null;
 
-  isRead: boolean;
+  isRead?: boolean | null;
 
-  priority?: string;
+  priority?: string | null;
 
-  attachments?: number;
+  attachmentCount?: number | null;
 } 

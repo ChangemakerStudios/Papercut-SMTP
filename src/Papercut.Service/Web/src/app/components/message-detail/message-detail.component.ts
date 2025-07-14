@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Observable, map, switchMap, catchError, of, EMPTY } from 'rxjs';
+import { Observable, map, switchMap, catchError, of, EMPTY, startWith, combineLatest, shareReplay } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,11 +9,18 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileSizePipe } from '../../pipes/file-size.pipe';
 import { EmailListPipe } from '../../pipes/email-list.pipe';
 import { CidTransformPipe } from '../../pipes/cid-transform.pipe';
 import { MessageService } from '../../services/message.service';
-import { DetailDto } from '../../models';
+import { DetailDto, RefDto } from '../../models';
+
+interface MessageViewData {
+  ref: RefDto | null;
+  detail: DetailDto | null;
+  isLoadingDetail: boolean;
+}
 
 @Component({
   selector: 'app-message-detail',
@@ -28,6 +35,7 @@ import { DetailDto } from '../../models';
     MatDividerModule,
     MatListModule,
     MatTabsModule,
+    MatProgressSpinnerModule,
     FileSizePipe, 
     EmailListPipe, 
     CidTransformPipe
@@ -36,7 +44,7 @@ import { DetailDto } from '../../models';
     <div class="flex flex-col h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       
       <!-- Single async pipe to prevent duplicate subscriptions -->
-      <ng-container *ngIf="message$ | async as message; else loadingTemplate">
+      <ng-container *ngIf="messageData$ | async as messageData; else loadingTemplate">
         <!-- Message Content -->
         <!-- Header Section -->
         <div class="flex-shrink-0 bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
@@ -44,10 +52,10 @@ import { DetailDto } from '../../models';
             <!-- Subject Section -->
             <div class="subject-section flex-1 min-w-0">
               <h1 class="message-title text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white truncate m-0">
-                {{ message.subject || '(No Subject)' }}
+                {{ (messageData.detail?.subject || messageData.ref?.subject) || '(No Subject)' }}
               </h1>
               <p class="message-date text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {{ message.createdAt | date:'full' }}
+                {{ (messageData.detail?.createdAt || messageData.ref?.createdAt) | date:'full' }}
               </p>
             </div>
             
@@ -57,6 +65,7 @@ import { DetailDto } from '../../models';
                 mat-raised-button 
                 color="accent" 
                 (click)="downloadRaw()" 
+                [disabled]="!messageData.detail"
                 class="download-btn flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200">
                 <mat-icon>download</mat-icon>
                 <span class="hidden sm:inline">Download Raw</span>
@@ -77,51 +86,51 @@ import { DetailDto } from '../../models';
                 </div>
                 <div class="flex-1 min-w-0">
                   <h4 class="font-semibold text-gray-800 dark:text-gray-100 text-sm mb-0.5">From</h4>
-                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.from | emailList }}</p>
+                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ (messageData.detail?.from || messageData.ref?.from) | emailList }}</p>
                 </div>
               </div>
               
               <!-- To Section -->
-              <div class="flex items-start gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div *ngIf="messageData.detail?.to?.length" class="flex items-start gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <div class="flex items-center justify-center w-8 h-8 bg-green-100 dark:bg-green-800/40 rounded-full flex-shrink-0">
                   <mat-icon class="text-green-600 dark:text-green-400 flex items-center justify-center">people</mat-icon>
                 </div>
                 <div class="flex-1 min-w-0">
                   <h4 class="font-semibold text-gray-800 dark:text-gray-100 text-sm mb-0.5">To</h4>
-                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.to | emailList }}</p>
+                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ messageData.detail?.to | emailList }}</p>
                 </div>
               </div>
               
               <!-- CC Section -->
-              <div *ngIf="message.cc?.length" class="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+              <div *ngIf="messageData.detail?.cc?.length" class="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <div class="flex items-center justify-center w-8 h-8 bg-yellow-100 dark:bg-yellow-800/40 rounded-full flex-shrink-0">
                   <mat-icon class="text-yellow-600 dark:text-yellow-400 flex items-center justify-center">people_outline</mat-icon>
                 </div>
                 <div class="flex-1 min-w-0">
                   <h4 class="font-semibold text-gray-800 dark:text-gray-100 text-sm mb-0.5">CC</h4>
-                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.cc | emailList }}</p>
+                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ messageData.detail?.cc | emailList }}</p>
                 </div>
               </div>
               
               <!-- BCC Section -->
-              <div *ngIf="message.bCc?.length" class="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div *ngIf="messageData.detail?.bCc?.length" class="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
                 <div class="flex items-center justify-center w-8 h-8 bg-red-100 dark:bg-red-800/40 rounded-full flex-shrink-0">
                   <mat-icon class="text-red-600 dark:text-red-400 flex items-center justify-center">visibility_off</mat-icon>
                 </div>
                 <div class="flex-1 min-w-0">
                   <h4 class="font-semibold text-gray-800 dark:text-gray-100 text-sm mb-0.5">BCC</h4>
-                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ message.bCc | emailList }}</p>
+                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ messageData.detail?.bCc | emailList }}</p>
                 </div>
               </div>
               
               <!-- Attachments Summary -->
-              <div *ngIf="message.attachments?.length" class="flex items-start gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <div *ngIf="messageData.detail?.attachments?.length || messageData.ref?.attachmentCount" class="flex items-start gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                 <div class="flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-800/40 rounded-full flex-shrink-0">
                   <mat-icon class="text-purple-600 dark:text-purple-400 flex items-center justify-center">attach_file</mat-icon>
                 </div>
                 <div class="flex-1 min-w-0">
                   <h4 class="font-semibold text-gray-800 dark:text-gray-100 text-sm mb-0.5">Attachments</h4>
-                  <p class="text-gray-700 dark:text-gray-300 text-sm">{{ message.attachments?.length ?? 0 }} attachment(s)</p>
+                  <p class="text-gray-700 dark:text-gray-300 text-sm">{{ (messageData.detail?.attachments?.length ?? messageData.ref?.attachmentCount ?? 0) }} attachment(s)</p>
                 </div>
               </div>
             </div>
@@ -131,7 +140,17 @@ import { DetailDto } from '../../models';
         <!-- Content Section with Tabs -->
         <div class="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900">
           <div class="h-full">
-            <mat-tab-group class="h-full" dynamicHeight="false">
+            <!-- Loading State for Tabs -->
+            <div *ngIf="messageData.isLoadingDetail" class="h-full flex items-center justify-center">
+              <div class="text-center p-8">
+                <mat-spinner diameter="48" strokeWidth="4" class="mx-auto mb-4"></mat-spinner>
+                <h3 class="text-lg text-gray-600 dark:text-gray-300 mb-2">Loading message content...</h3>
+                <p class="text-gray-500 dark:text-gray-400">Please wait while we fetch the message details.</p>
+              </div>
+            </div>
+            
+            <!-- Tabs Content -->
+            <mat-tab-group *ngIf="!messageData.isLoadingDetail && messageData.detail" class="h-full" dynamicHeight="false" animationDuration="0ms">
               
               <!-- Message Tab (HTML iframe view) -->
               <mat-tab label="Message">
@@ -139,7 +158,7 @@ import { DetailDto } from '../../models';
                   <div class="h-full">
                     <iframe
                       class="w-full h-full"
-                      [srcdoc]="getMessageContent(message)"
+                      [srcdoc]="getMessageContent(messageData.detail)"
                       sandbox="allow-same-origin"
                       frameborder="0">
                     </iframe>
@@ -151,7 +170,7 @@ import { DetailDto } from '../../models';
               <mat-tab label="Headers">
                 <div class="h-full overflow-auto bg-gray-50 dark:bg-gray-900">
                   <div class="p-3 space-y-2">
-                    <div *ngFor="let header of getMessageHeaders(message)" class="flex flex-col sm:flex-row sm:items-center p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div *ngFor="let header of getMessageHeaders(messageData.detail)" class="flex flex-col sm:flex-row sm:items-center p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                       <span class="font-semibold text-gray-800 dark:text-gray-100 text-sm mr-2 min-w-0 font-mono">{{ header.name }}:</span>
                       <span class="text-gray-700 dark:text-gray-300 text-sm font-mono break-all">{{ header.value }}</span>
                     </div>
@@ -164,17 +183,17 @@ import { DetailDto } from '../../models';
                 <div class="h-full overflow-hidden bg-gray-50 dark:bg-gray-900">
                   <div class="h-full p-3 overflow-auto">
                     <div class="h-full p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto">
-                      <pre class="whitespace-pre-wrap font-mono text-sm text-gray-900 dark:text-gray-100">{{ getTextContent(message) }}</pre>
+                      <pre class="whitespace-pre-wrap font-mono text-sm text-gray-900 dark:text-gray-100">{{ getTextContent(messageData.detail) }}</pre>
                     </div>
                   </div>
                 </div>
               </mat-tab>
               
               <!-- Sections Tab -->
-              <mat-tab label="Sections" [disabled]="!getMessageSections(message).length">
+              <mat-tab label="Sections" [disabled]="!getMessageSections(messageData.detail).length">
                 <div class="h-full overflow-auto bg-gray-50 dark:bg-gray-900">
                   <div class="p-3 space-y-4">
-                    <div *ngFor="let section of getMessageSections(message)" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                    <div *ngFor="let section of getMessageSections(messageData.detail)" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
                       <div class="flex items-center gap-3">
                         <mat-icon class="text-gray-600 dark:text-gray-400">{{ getSectionIcon(section.type) }}</mat-icon>
                         <div class="flex-1">
@@ -184,7 +203,7 @@ import { DetailDto } from '../../models';
                         <button 
                           mat-icon-button 
                           color="primary"
-                          (click)="downloadSection(message, section)"
+                          (click)="downloadSection(messageData.detail, section)"
                           title="Download attachment">
                           <mat-icon>download</mat-icon>
                         </button>
@@ -199,7 +218,7 @@ import { DetailDto } from '../../models';
                 <div class="h-full overflow-hidden bg-gray-50 dark:bg-gray-900">
                   <div class="h-full p-3 overflow-auto">
                     <div class="h-full p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto">
-                      <pre class="whitespace-pre-wrap font-mono text-xs text-gray-900 dark:text-gray-100">{{ getRawContent(message) }}</pre>
+                      <pre class="whitespace-pre-wrap font-mono text-xs text-gray-900 dark:text-gray-100">{{ getRawContent(messageData.detail) }}</pre>
                     </div>
                   </div>
                 </div>
@@ -236,7 +255,7 @@ import { DetailDto } from '../../models';
   `]
 })
 export class MessageDetailComponent {
-  message$: Observable<DetailDto | null>;
+  messageData$: Observable<MessageViewData>;
   private currentMessage: DetailDto | null = null;
 
   constructor(
@@ -244,38 +263,54 @@ export class MessageDetailComponent {
     private router: Router,
     private messageService: MessageService
   ) {
-    this.message$ = this.route.params.pipe(
+    this.messageData$ = this.route.params.pipe(
       switchMap(params => {
         const messageId = params['id'];
         if (messageId) {
           console.log('Loading message with ID:', messageId);
           console.log('Message ID length:', messageId.length);
           console.log('URL decoded message ID:', decodeURIComponent(messageId));
-          return this.messageService.getMessage(messageId);
+          
+          // Get RefDto first (fast)
+          const refMessage$ = this.messageService.getMessageRef(messageId);
+          
+          // Get DetailDto (slower)
+          const detailMessage$ = this.messageService.getMessage(messageId).pipe(
+            map(detail => {
+              console.log('Message detail loaded successfully:', detail);
+              this.currentMessage = detail;
+              return detail;
+            }),
+            catchError(error => {
+              console.error('Error loading message detail:', error);
+              
+              // Check if it's a 404 or other error
+              if (error.status === 404) {
+                console.log('Message not found (404), redirecting to home');
+                this.redirectToHome('Message not found');
+              } else {
+                console.log('Unknown error occurred, redirecting to home');
+                this.redirectToHome('Failed to load message');
+              }
+              
+              return of(null);
+            })
+          );
+          
+          // Combine RefDto and DetailDto
+          return combineLatest([refMessage$, detailMessage$.pipe(startWith(null))]).pipe(
+            map(([ref, detail]) => ({
+              ref,
+              detail,
+              isLoadingDetail: detail === null
+            }))
+          );
         }
         console.error('No message ID found in route parameters');
         this.redirectToHome('No message ID provided');
         return EMPTY;
       }),
-      map(messageDetail => {
-        console.log('Message loaded successfully:', messageDetail);
-        this.currentMessage = messageDetail;
-        return messageDetail;
-      }),
-      catchError(error => {
-        console.error('Error loading message:', error);
-        
-        // Check if it's a 404 or other error
-        if (error.status === 404) {
-          console.log('Message not found (404), redirecting to home');
-          this.redirectToHome('Message not found');
-        } else {
-          console.log('Unknown error occurred, redirecting to home');
-          this.redirectToHome('Failed to load message');
-        }
-        
-        return of(null);
-      })
+      shareReplay(1)
     );
   }
 
@@ -331,15 +366,18 @@ export class MessageDetailComponent {
     }
   }
 
-  getMessageContent(message: DetailDto): string {
+  getMessageContent(message: DetailDto | null): string {
+    if (!message) return '<html><body>No message content available.</body></html>';
     return this.messageService.getMessageContent(message);
   }
 
-  getMessageHeaders(message: DetailDto) {
+  getMessageHeaders(message: DetailDto | null) {
+    if (!message) return [];
     return message.headers || [];
   }
 
-  getTextContent(message: DetailDto): string {
+  getTextContent(message: DetailDto | null): string {
+    if (!message) return 'No message body available.';
     if (message.textBody) {
       return message.textBody;
     } else if (message.htmlBody) {
@@ -350,8 +388,8 @@ export class MessageDetailComponent {
     }
   }
 
-  getMessageSections(message: DetailDto): { type: string; info: string; content?: string }[] {
-    if (!message.sections || message.sections.length === 0) {
+  getMessageSections(message: DetailDto | null): { type: string; info: string; content?: string }[] {
+    if (!message || !message.sections || message.sections.length === 0) {
       return [];
     }
     
@@ -362,7 +400,9 @@ export class MessageDetailComponent {
     }));
   }
 
-  getRawContent(message: DetailDto): string {
+  getRawContent(message: DetailDto | null): string {
+    if (!message) return 'Raw content not available';
+    
     let raw = '';
     
     // Add headers

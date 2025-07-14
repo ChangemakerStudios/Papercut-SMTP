@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using Papercut.Common.Helper;
+using Papercut.Core.Infrastructure.Identities;
 using Papercut.Service.Domain.Models;
 using Papercut.Service.Infrastructure;
 
@@ -146,6 +148,22 @@ public class MessagesController(
         {
             return this.NotFound();
         }
+
+        if (!mimePart.ContentMd5.IsSet())
+        {
+            mimePart.ContentMd5 = mimePart.ComputeContentMd5();
+        }
+
+        var etag = $@"""{mimePart.ContentMd5}""";
+        
+        // Check if client has the same version
+        if (Request.Headers.IfNoneMatch.Contains(etag))
+        {
+            return new StatusCodeResult(304);
+        }
+        
+        // Add ETag to response
+        Response.Headers.ETag = etag;        
 
         var response = new MimePartFileStreamResult(
             mimePart.Content,

@@ -60,6 +60,22 @@ export class MessageService {
   }
 
   /**
+   * Gets the basic RefDto information for a specific message.
+   * This is faster than getMessage() as it queries the list endpoint.
+   * @param messageId The unique message ID
+   * @returns Observable of RefDto or null if not found
+   */
+  getMessageRef(messageId: string): Observable<RefDto | null> {
+    // Get recent messages and find the one with matching ID
+    return this.getMessages(50, 0).pipe(
+      map(response => {
+        const found = response.messages.find(msg => msg.id === messageId);
+        return found || null;
+      })
+    );
+  }
+
+  /**
    * Gets the detailed information for a specific message.
    * @param messageId The unique message ID
    * @returns Observable of DetailDto
