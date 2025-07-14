@@ -39,7 +39,7 @@ public class MessagesController(
         var latestModifiedDate = messageEntries.Max(msg => msg.ModifiedDate);
         var etag = $"\"{latestModifiedDate.Ticks}\"";
         
-        // Check if client has the same version
+        // Check if the client has the same version
         if (Request.Headers.IfNoneMatch.Contains(etag))
         {
             return StatusCode(304);

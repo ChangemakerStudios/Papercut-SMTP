@@ -11,7 +11,7 @@ import { RefDto } from 'src/app/models';
   standalone: true,
   imports: [CommonModule, MatTooltipModule, MatIconModule, FileSizePipe],
   template: `
-    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 w-full min-w-0"
          [class.bg-blue-50]="selected"
          [class.dark:bg-blue-900]="selected"
          [class.border-l-4]="selected"
@@ -22,7 +22,7 @@ import { RefDto } from 'src/app/models';
          [class.border-l-2]="!message.isRead && !selected"
          [class.border-blue-400]="!message.isRead && !selected"
          (click)="onSelect()">
-      <div class="font-semibold text-gray-800 dark:text-gray-100 mb-1 truncate" 
+      <div class="font-semibold text-gray-800 dark:text-gray-100 mb-1 overflow-hidden text-ellipsis whitespace-nowrap max-w-full" 
            [class.font-bold]="!message.isRead"
            [matTooltip]="message.subject ?? 'No Subject'">
         {{ message.subject ?? '(No Subject)' }}
@@ -55,6 +55,12 @@ import { RefDto } from 'src/app/models';
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
     mat-icon {
       vertical-align: middle;
     }

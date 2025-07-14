@@ -62,12 +62,13 @@ interface PaginationInfo {
 
         <!-- Virtual Scroll List -->
         <cdk-virtual-scroll-viewport [itemSize]="itemSize" (scrolledIndexChange)="onScroll()" 
-                                     class="flex-1 h-full">
+                                     class="flex-1 h-full w-full overflow-hidden">
           <app-message-list-item 
             *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
             [message]="message"
             [selected]="message.id === selectedMessageId"
-            (select)="selectMessage(message.id!)">
+            (select)="selectMessage(message.id!)"
+            class="block w-full">
           </app-message-list-item>
           
           <!-- Loading indicator for infinite scroll -->
@@ -102,6 +103,20 @@ interface PaginationInfo {
     </div>
   `,
   styles: [`
+    /* CDK Virtual Scroll content wrapper width constraint */
+    ::ng-deep cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+
+    ::ng-deep cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper > * {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
     /* Dragging state */
     .dragging {
       user-select: none;
