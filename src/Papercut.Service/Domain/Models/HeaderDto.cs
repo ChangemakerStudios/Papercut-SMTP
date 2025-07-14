@@ -15,12 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Papercut.Service.Domain.Models;
+
+namespace Papercut.Service.Domain.Models;
 
 [PublicAPI]
 public class HeaderDto
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
-    public string Value { get; set; }
+    public string? Value { get; set; }
 }

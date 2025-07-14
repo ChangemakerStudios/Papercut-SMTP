@@ -34,7 +34,7 @@ import { RefDto } from 'src/app/models';
       </div>
       <div class="flex items-center gap-2 mt-1" *ngIf="hasStatusIndicators()">
         <mat-icon class="text-base text-gray-500 dark:text-gray-400" 
-                  *ngIf="message.attachments && message.attachments > 0"
+                  *ngIf="message.attachmentCount && message.attachmentCount > 0"
                   matTooltip="Has attachments"
                   style="font-size: 16px; width: 16px; height: 16px;">
           attach_file
@@ -83,7 +83,7 @@ export class MessageListItemComponent {
   }
 
   hasStatusIndicators(): boolean {
-    return (this.message?.attachments && this.message.attachments > 0) ||
+    return (this.message?.attachmentCount && this.message.attachmentCount > 0) ||
            this.message?.priority === 'Urgent' ||
            this.message?.priority === 'Non-urgent' || false;
   }

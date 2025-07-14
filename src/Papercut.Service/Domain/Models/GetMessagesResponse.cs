@@ -16,9 +16,7 @@
 // limitations under the License.
 
 
-using Papercut.Service.Domain.Models;
-
-namespace Papercut.Service.Application.Controllers;
+namespace Papercut.Service.Domain.Models;
 
 public class GetMessagesResponse(int totalMessageCount, IEnumerable<RefDto> messages)
 {

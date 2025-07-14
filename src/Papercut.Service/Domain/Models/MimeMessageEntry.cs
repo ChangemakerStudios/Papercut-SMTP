@@ -20,11 +20,11 @@ namespace Papercut.Service.Domain.Models;
 
 public class MimeMessageEntry(MessageEntry entry, MimeMessage message) : MessageEntry(entry.File)
 {
+    public string Id => entry.Id;
+    
     public string? Subject => MailMessage?.Subject;
 
     public DateTime? Created => _created;
-
-    public string Id => entry.Id;
 
     public MimeMessage MailMessage { get; } = message;
 }

@@ -15,23 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-using Papercut.Service.Domain.Models;
 using Papercut.Service.Infrastructure.EmailAddresses;
 
+namespace Papercut.Service.Domain.Models;
+
 [PublicAPI]
-public class DetailDto
+public class DetailDto : RefDto
 {
-    public string? Id { get; set; }
-    
-    public string? Name { get; set; }
-
-    public DateTime? CreatedAt { get; set; }
-
-    public string? Subject { get; set; }
-
-    public List<EmailAddressDto> From { get; set; } = [];
-
     public List<EmailAddressDto> To { get; set; } = [];
 
     public List<EmailAddressDto> Cc { get; set; } = [];
@@ -45,10 +35,10 @@ public class DetailDto
     public List<HeaderDto> Headers { get; set; } = [];
 
     public List<EmailSectionDto> Sections { get; set; } = [];
-    
+
     public List<EmailSectionDto> Attachments { get; set; } = [];
 
-    public static DetailDto CreateFrom(MimeMessageEntry messageEntry)
+    public new static DetailDto CreateFrom(MimeMessageEntry messageEntry)
     {
         var mail = messageEntry.MailMessage;
 

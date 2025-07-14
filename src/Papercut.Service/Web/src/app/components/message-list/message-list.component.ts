@@ -41,7 +41,7 @@ interface PaginationInfo {
     MessageListItemComponent
   ],
   template: `
-    <div class="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300" 
+    <div class="flex h-full bg-gray-100 dark:bg-gray-900 transition-colors duration-300" 
          [class.dragging]="isDragging">
       <!-- Message List Panel -->
       <div class="border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col" 
@@ -62,7 +62,7 @@ interface PaginationInfo {
 
         <!-- Virtual Scroll List -->
         <cdk-virtual-scroll-viewport [itemSize]="itemSize" (scrolledIndexChange)="onScroll()" 
-                                     class="flex-1 h-full w-full overflow-hidden">
+                                     class="w-full overflow-hidden virtual-scroll-container">
           <app-message-list-item 
             *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
             [message]="message"
@@ -103,6 +103,13 @@ interface PaginationInfo {
     </div>
   `,
   styles: [`
+    /* Virtual Scroll Container with fixed height */
+    .virtual-scroll-container {
+      height: calc(100vh - 40px - 90px) !important;
+      flex: 1;
+      min-height: 0;
+    }
+
     /* CDK Virtual Scroll content wrapper width constraint */
     ::ng-deep cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper {
       width: 100% !important;
@@ -134,6 +141,10 @@ interface PaginationInfo {
       
       .message-detail-panel {
         display: none;
+      }
+      
+      .virtual-scroll-container {
+        height: calc(100vh - 36px - 80px) !important;
       }
     }
   `]

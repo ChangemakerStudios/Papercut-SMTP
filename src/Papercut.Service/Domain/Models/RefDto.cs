@@ -39,7 +39,7 @@ public class RefDto
 
     public string? Priority { get; set; }
 
-    public int Attachments { get; set; }
+    public int AttachmentCount { get; set; }
 
     public static RefDto CreateFrom(MimeMessageEntry messageEntry)
     {
@@ -51,7 +51,7 @@ public class RefDto
             CreatedAt = messageEntry.Created?.ToUniversalTime(),
             Size = messageEntry.FileSize,
             From = (messageEntry.MailMessage?.From).ToAddressList(),
-            Attachments = messageEntry.MailMessage?.Attachments.Count() ?? 0,
+            AttachmentCount = messageEntry.MailMessage?.Attachments.Count() ?? 0,
             Priority = (messageEntry.MailMessage?.Priority ?? MessagePriority.Normal).ToString(),
             IsRead = messageEntry.HasBeenSeen,
         };
