@@ -36,6 +36,11 @@ public class MessagesController(
     public async Task<ActionResult<GetMessagesResponse>> GetAll(int limit = 10, int start = 0, CancellationToken token = default)
     {
         var messageEntries = messageRepository.LoadMessages().ToList();
+
+        if (messageEntries.Count == 0)
+        {
+            return new GetMessagesResponse(0, []);
+        }
         
         // Generate ETag based on the most recent modified date
         var latestModifiedDate = messageEntries.Max(msg => msg.ModifiedDate);

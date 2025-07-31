@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -79,9 +79,16 @@ public class PathTemplateHelper
         {
             if (_templateDictionary.TryGetValue(pathKeyName, out var path))
             {
-                renderedPath = renderedPath.Replace($"%{pathKeyName}%", path).Replace(@"\\", @"\");
+                renderedPath = renderedPath.Replace($"%{pathKeyName}%", path);
             }
         }
+        
+        renderedPath = renderedPath
+            .Replace($"\\", $@"{Path.DirectorySeparatorChar}")
+            .Replace($"//", $@"{Path.DirectorySeparatorChar}")
+            .Replace("/", $@"{Path.DirectorySeparatorChar}")
+            .Replace(@"\", $@"{Path.DirectorySeparatorChar}");
+            
 
         return isUncPath ? $@"\\{renderedPath}" : renderedPath;
     }
