@@ -929,7 +929,7 @@ body[data-theme="dark"] .message-iframe {
   left: 0;
   right: 0;
   z-index: 50;
-  background: linear-gradient(to bottom, #e8e8e8, #d0d0d0);
+  background-color: #e8e8e8;
   border-bottom: 1px solid #a0a0a0;
   transition: all 0.2s ease;
   height: 56px;
@@ -937,7 +937,7 @@ body[data-theme="dark"] .message-iframe {
 }
 
 body[data-theme="dark"] .papercut-navbar {
-  background: linear-gradient(to bottom, #3e3e42, #2d2d30);
+  background-color: #2d2d30;
   border-bottom-color: #555;
 }
 
