@@ -932,7 +932,7 @@ body[data-theme="dark"] .message-iframe {
   background-color: #ffffff;
   border-bottom: 1px solid #d0d0d0;
   transition: all 0.2s ease;
-  height: 40px;
+  height: 48px;
 }
 
 body[data-theme="dark"] .navbar {
@@ -945,7 +945,7 @@ body[data-theme="dark"] .navbar {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 40px;
+  height: 48px;
   padding: 0 12px;
   max-width: 100%;
 }
@@ -964,7 +964,7 @@ body[data-theme="dark"] .navbar {
 }
 
 .logo-container img {
-  height: 20px;
+  height: 24px;
   width: auto;
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -1360,7 +1360,7 @@ body[data-theme="dark"] .app-container {
 
 .main-content {
   flex: 1;
-  margin-top: 40px;
+  margin-top: 48px;
   min-height: 0;
   background-color: #f5f5f5;
 }

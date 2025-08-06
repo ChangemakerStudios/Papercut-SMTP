@@ -47,9 +47,9 @@ interface PaginationInfo {
       <div class="border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col" 
            [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
         <!-- Message List Header -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 h-12 flex flex-col justify-center">
           <h2 class="m-0 mb-2 text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center">
-            <mat-icon class="mr-2">inbox</mat-icon>
+            <img src="/assets/images/papercut-logo.png" alt="Papercut" class="mr-2 h-6 w-auto">
             Messages
           </h2>
           <p class="m-0 text-sm text-gray-600 dark:text-gray-300" *ngIf="pagination$ | async as pagination">
@@ -70,13 +70,13 @@ interface PaginationInfo {
             (select)="selectMessage(message.id!)"
             class="block w-full">
           </app-message-list-item>
-          
-          <!-- Loading indicator for infinite scroll -->
-          <div *ngIf="isLoadingMore" class="flex items-center justify-center p-4 gap-2 text-gray-600 dark:text-gray-300">
-            <mat-spinner diameter="24" strokeWidth="3"></mat-spinner>
-            <span>Loading more messages...</span>
-          </div>
         </cdk-virtual-scroll-viewport>
+        
+        <!-- Loading indicator for infinite scroll - outside virtual scroll -->
+        <div *ngIf="isLoadingMore" class="flex items-center justify-center p-4 gap-2 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+          <mat-spinner diameter="24" strokeWidth="3"></mat-spinner>
+          <span>Loading more messages...</span>
+        </div>
       </div>
 
       <!-- Resizer Handle -->
@@ -103,11 +103,11 @@ interface PaginationInfo {
     </div>
   `,
   styles: [`
-    /* Virtual Scroll Container with fixed height */
+    /* Virtual Scroll Container with flexible height */
     .virtual-scroll-container {
-      height: calc(100vh - 40px - 90px) !important;
       flex: 1;
       min-height: 0;
+      height: 100%;
     }
 
     /* CDK Virtual Scroll content wrapper width constraint */
@@ -141,10 +141,6 @@ interface PaginationInfo {
       
       .message-detail-panel {
         display: none;
-      }
-      
-      .virtual-scroll-container {
-        height: calc(100vh - 36px - 80px) !important;
       }
     }
   `]
@@ -243,7 +239,9 @@ export class MessageListComponent implements OnDestroy {
     const end = this.viewport.getRenderedRange().end;
     const total = this.viewport.getDataLength();
     
-    if (end === total && !this.isLoadingMore && this.hasMorePages) {
+    // Trigger loading when we're near the end (within 5 items or at the end)
+    const threshold = Math.min(5, Math.max(1, total * 0.1)); // 10% of total or 5 items, whichever is smaller
+    if (end >= total - threshold && !this.isLoadingMore && this.hasMorePages) {
       this.loadMoreMessages();
     }
   }

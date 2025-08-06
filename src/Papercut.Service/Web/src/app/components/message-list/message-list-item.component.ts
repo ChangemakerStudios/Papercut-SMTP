@@ -12,15 +12,10 @@ import { RefDto } from 'src/app/models';
   imports: [CommonModule, MatTooltipModule, MatIconModule, FileSizePipe],
   template: `
     <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 w-full min-w-0"
-         [class.bg-blue-50]="selected"
-         [class.dark:bg-blue-900]="selected"
-         [class.border-l-4]="selected"
-         [class.border-blue-500]="selected"
-         [class.dark:border-blue-400]="selected"
-         [class.bg-blue-100]="!message.isRead && !selected"
-         [class.dark:bg-blue-800]="!message.isRead && !selected"
-         [class.border-l-2]="!message.isRead && !selected"
-         [class.border-blue-400]="!message.isRead && !selected"
+         [ngClass]="{
+           'bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 dark:border-blue-400': selected,
+           'bg-blue-100 dark:bg-blue-800 border-l-2 border-blue-400': !message.isRead && !selected
+         }"
          (click)="onSelect()">
       <div class="font-semibold text-gray-800 dark:text-gray-100 mb-1 overflow-hidden text-ellipsis whitespace-nowrap max-w-full" 
            [class.font-bold]="!message.isRead"
