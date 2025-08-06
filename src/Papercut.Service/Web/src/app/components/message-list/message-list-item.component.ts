@@ -3,44 +3,67 @@ import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { FileSizePipe } from '../../pipes/file-size.pipe';
+import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 import { EmailService } from '../../services/email.service';
 import { RefDto } from 'src/app/models';
 
 @Component({
   selector: 'app-message-list-item',
   standalone: true,
-  imports: [CommonModule, MatTooltipModule, MatIconModule, FileSizePipe],
+  imports: [CommonModule, MatTooltipModule, MatIconModule, FileSizePipe, TimeAgoPipe],
   template: `
-    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 w-full min-w-0"
+    <div class="px-4 py-3 border-b cursor-pointer transition-colors duration-200 w-full min-w-0"
          [ngClass]="{
-           'bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 dark:border-blue-400': selected,
-           'bg-blue-100 dark:bg-blue-800 border-l-2 border-blue-400': !message.isRead && !selected
+           'bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-600 dark:border-blue-400 border-b-gray-200 dark:border-b-gray-700': selected,
+           'bg-blue-50 dark:bg-blue-800 border-l-2 border-blue-500 dark:border-blue-400 border-b-gray-200 dark:border-b-gray-700': !message.isRead && !selected,
+           'border-b-gray-200 dark:border-b-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700': !selected && message.isRead,
+           'hover:bg-blue-200 dark:hover:bg-blue-800': selected,
+           'hover:bg-blue-100 dark:hover:bg-blue-700': !message.isRead && !selected
          }"
          (click)="onSelect()">
-      <div class="font-semibold text-gray-800 dark:text-gray-100 mb-1 overflow-hidden text-ellipsis whitespace-nowrap max-w-full" 
-           [class.font-bold]="!message.isRead">
+      <div class="font-semibold mb-1 overflow-hidden text-ellipsis whitespace-nowrap max-w-full" 
+           [ngClass]="{
+             'text-gray-900 dark:text-gray-100 font-bold': !message.isRead,
+             'text-gray-800 dark:text-gray-200': message.isRead,
+             'text-blue-800 dark:text-blue-200': selected
+           }">
            <!-- [matTooltip]="message.subject ?? 'No Subject'" -->           
         {{ message.subject ?? '(No Subject)' }}
       </div>
-      <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-        <span class="text-gray-600 dark:text-gray-300 flex-1 min-w-0" 
-              [class.font-semibold]="!message.isRead">From: {{ getFromDisplay() }}, {{ message.createdAt | date:'short' }}</span>
-        <span class="text-gray-600 dark:text-gray-300 font-medium ml-2">{{ message.size | fileSize }}</span>
+      <div class="flex justify-between items-center text-xs">
+        <span class="flex-1 min-w-0" 
+              [ngClass]="{
+                'text-gray-700 dark:text-gray-300 font-semibold': !message.isRead,
+                'text-gray-600 dark:text-gray-400': message.isRead,
+                'text-blue-700 dark:text-blue-300': selected }"
+                [matTooltip]="(message.createdAt | date:'full') ?? 'No data'">
+                From: {{ getFromDisplay() }}<br/>
+                Received: {{ message.createdAt | timeAgo }}</span>
+        <span class="font-medium ml-2" 
+              [ngClass]="{
+                'text-gray-700 dark:text-gray-300': !message.isRead,
+                'text-gray-600 dark:text-gray-400': message.isRead,
+                'text-blue-700 dark:text-blue-300': selected
+              }">{{ message.size | fileSize }}</span>
       </div>
       <div class="flex items-center gap-2 mt-1" *ngIf="hasStatusIndicators()">
-        <mat-icon class="text-base text-gray-500 dark:text-gray-400" 
+        <mat-icon class="text-base" 
+                  [ngClass]="{
+                    'text-gray-600 dark:text-gray-400': !selected,
+                    'text-blue-600 dark:text-blue-400': selected
+                  }"
                   *ngIf="message.attachmentCount && message.attachmentCount > 0"
                   matTooltip="Has attachments"
                   style="font-size: 16px; width: 16px; height: 16px;">
           attach_file
         </mat-icon>
-        <mat-icon class="text-base text-red-500 dark:text-red-400" 
+        <mat-icon class="text-base text-red-600 dark:text-red-400" 
                   *ngIf="message.priority === 'Urgent'"
                   matTooltip="Urgent priority"
                   style="font-size: 16px; width: 16px; height: 16px;">
           priority_high
         </mat-icon>
-        <mat-icon class="text-base text-blue-500 dark:text-blue-400" 
+        <mat-icon class="text-base text-blue-600 dark:text-blue-400" 
                   *ngIf="message.priority === 'Non-urgent'"
                   matTooltip="Non-urgent priority"
                   style="font-size: 16px; width: 16px; height: 16px;">

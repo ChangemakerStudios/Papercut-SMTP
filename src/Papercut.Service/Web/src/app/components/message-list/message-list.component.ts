@@ -44,7 +44,7 @@ interface PaginationInfo {
     <div class="flex h-full bg-gray-100 dark:bg-gray-900 transition-colors duration-300" 
          [class.dragging]="isDragging">
       <!-- Message List Panel -->
-      <div class="border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col" 
+      <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col" 
            [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
         <!-- Message List Header -->
         <!-- <div class="message-list-header">
@@ -98,10 +98,10 @@ interface PaginationInfo {
       <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0">
         <router-outlet></router-outlet>
         
-        <div *ngIf="!selectedMessageId" class="flex-1 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8">
+        <div *ngIf="!selectedMessageId" class="flex-1 flex flex-col items-center justify-center p-8">
           <mat-icon class="text-6xl mb-4 text-gray-400 dark:text-gray-500 !w-auto !h-auto">email</mat-icon>
-          <h3 class="text-xl font-medium mb-2 text-gray-600 dark:text-gray-300">No message selected</h3>
-          <p class="text-gray-500 dark:text-gray-400">Select a message from the list to view its contents</p>
+          <h3 class="text-xl font-medium mb-2 text-gray-700 dark:text-gray-300">No message selected</h3>
+          <p class="text-gray-600 dark:text-gray-400">Select a message from the list to view its contents</p>
         </div>
       </div>
     </div>

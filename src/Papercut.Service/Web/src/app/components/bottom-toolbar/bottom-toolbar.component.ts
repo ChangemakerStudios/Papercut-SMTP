@@ -57,7 +57,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   `,
   styles: [`
     .bottom-toolbar {
-      background-color: #f8f9fa;
+      background: linear-gradient( to bottom, #e8e8e8, #d0d0d0);
       border-top: 1px solid #dee2e6;
       padding: 8px 16px;
       min-height: 48px;
