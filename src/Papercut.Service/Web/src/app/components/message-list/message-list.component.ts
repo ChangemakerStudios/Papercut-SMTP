@@ -47,17 +47,17 @@ interface PaginationInfo {
       <div class="border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col" 
            [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
         <!-- Message List Header -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 h-12 flex flex-col justify-center">
-          <h2 class="m-0 mb-2 text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center">
-            <img src="/assets/images/papercut-logo.png" alt="Papercut" class="mr-2 h-6 w-auto">
+        <div class="message-list-header">
+          <div class="message-list-title">
+            <mat-icon>inbox</mat-icon>
             Messages
-          </h2>
-          <p class="m-0 text-sm text-gray-600 dark:text-gray-300" *ngIf="pagination$ | async as pagination">
-            {{ pagination.totalCount }} total messages
+          </div>
+          <div class="message-count" *ngIf="pagination$ | async as pagination">
+            {{ pagination.totalCount }} total
             <span *ngIf="isLoadingMore" class="ml-2">
-              <mat-spinner diameter="16" strokeWidth="2"></mat-spinner>
+              <mat-spinner diameter="12" strokeWidth="2"></mat-spinner>
             </span>
-          </p>
+          </div>
         </div>
 
         <!-- Virtual Scroll List -->
