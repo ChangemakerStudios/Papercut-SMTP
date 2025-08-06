@@ -47,7 +47,7 @@ interface PaginationInfo {
       <div class="border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col" 
            [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
         <!-- Message List Header -->
-        <div class="message-list-header">
+        <!-- <div class="message-list-header">
           <div class="message-list-title">
             <mat-icon>inbox</mat-icon>
             Messages
@@ -58,13 +58,17 @@ interface PaginationInfo {
               <mat-spinner diameter="12" strokeWidth="2"></mat-spinner>
             </span>
           </div>
-        </div>
+        </div> -->
 
         <!-- Virtual Scroll List -->
-        <cdk-virtual-scroll-viewport [itemSize]="itemSize" (scrolledIndexChange)="onScroll()" 
-                                     class="w-full overflow-hidden virtual-scroll-container">
+        <cdk-virtual-scroll-viewport 
+          [itemSize]="itemSize" 
+          [minBufferPx]="200"
+          [maxBufferPx]="400"
+          (scrolledIndexChange)="onScroll()" 
+          class="w-full overflow-hidden virtual-scroll-container">
           <app-message-list-item 
-            *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
+            *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId; templateCacheSize: 0"
             [message]="message"
             [selected]="message.id === selectedMessageId"
             (select)="selectMessage(message.id!)"
@@ -95,7 +99,7 @@ interface PaginationInfo {
         <router-outlet></router-outlet>
         
         <div *ngIf="!selectedMessageId" class="flex-1 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8">
-          <mat-icon class="text-6xl mb-4 text-gray-400 dark:text-gray-500">email</mat-icon>
+          <mat-icon class="text-6xl mb-4 text-gray-400 dark:text-gray-500 !w-auto !h-auto">email</mat-icon>
           <h3 class="text-xl font-medium mb-2 text-gray-600 dark:text-gray-300">No message selected</h3>
           <p class="text-gray-500 dark:text-gray-400">Select a message from the list to view its contents</p>
         </div>
@@ -108,6 +112,8 @@ interface PaginationInfo {
       flex: 1;
       min-height: 0;
       height: 100%;
+      max-height: 100%;
+      overflow: auto;
     }
 
     /* CDK Virtual Scroll content wrapper width constraint */
@@ -122,6 +128,16 @@ interface PaginationInfo {
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
+    }
+
+    /* Prevent over-scrolling in virtual scroll */
+    ::ng-deep cdk-virtual-scroll-viewport {
+      overflow-anchor: none;
+      will-change: transform;
+    }
+
+    ::ng-deep cdk-virtual-scroll-viewport .cdk-virtual-scroll-spacer {
+      pointer-events: none;
     }
 
     /* Dragging state */
@@ -239,10 +255,12 @@ export class MessageListComponent implements OnDestroy {
     const end = this.viewport.getRenderedRange().end;
     const total = this.viewport.getDataLength();
     
-    // Trigger loading when we're near the end (within 5 items or at the end)
-    const threshold = Math.min(5, Math.max(1, total * 0.1)); // 10% of total or 5 items, whichever is smaller
-    if (end >= total - threshold && !this.isLoadingMore && this.hasMorePages) {
-      this.loadMoreMessages();
+    // Only trigger loading if we have items and are near the end
+    if (total > 0) {
+      const threshold = Math.min(3, Math.max(1, Math.floor(total * 0.1))); // 10% of total or 3 items, whichever is smaller
+      if (end >= total - threshold && !this.isLoadingMore && this.hasMorePages) {
+        this.loadMoreMessages();
+      }
     }
   }
 

@@ -18,8 +18,8 @@ import { RefDto } from 'src/app/models';
          }"
          (click)="onSelect()">
       <div class="font-semibold text-gray-800 dark:text-gray-100 mb-1 overflow-hidden text-ellipsis whitespace-nowrap max-w-full" 
-           [class.font-bold]="!message.isRead"
-           [matTooltip]="message.subject ?? 'No Subject'">
+           [class.font-bold]="!message.isRead">
+           <!-- [matTooltip]="message.subject ?? 'No Subject'" -->           
         {{ message.subject ?? '(No Subject)' }}
       </div>
       <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">

@@ -28,7 +28,6 @@ import { Observable, map, switchMap, of } from 'rxjs';
             <img [src]="(isDarkTheme$ | async) ? '/assets/images/papercut-logo-dark.png' : '/assets/images/papercut-logo-light.png'" 
                  alt="Papercut Logo" 
                  class="papercut-logo">
-            <span class="brand-text">PAPERCUT SMTP</span>
           </div>
         </div>
         

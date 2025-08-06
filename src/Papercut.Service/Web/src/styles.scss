@@ -962,21 +962,13 @@ body[data-theme="dark"] .papercut-navbar {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
+  /*padding: 8px 12px;
+  border-radius: 4px;*/
   transition: background-color 0.2s ease;
 }
 
-.logo-container:hover {
-  background-color: rgba(0,0,0,0.05);
-}
-
-body[data-theme="dark"] .logo-container:hover {
-  background-color: rgba(255,255,255,0.05);
-}
-
 .papercut-logo {
-  height: 28px;
+  height: 72px;
   width: auto;
   transition: opacity 0.2s ease;
 }

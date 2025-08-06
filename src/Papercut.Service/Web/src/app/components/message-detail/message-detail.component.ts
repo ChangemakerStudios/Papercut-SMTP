@@ -233,7 +233,7 @@ interface MessageViewData {
       <ng-template #loadingTemplate>
         <div class="flex-1 flex items-center justify-center min-h-96 bg-gray-50 dark:bg-gray-900">
           <div class="text-center p-8">
-            <mat-icon class="text-6xl text-gray-400 dark:text-gray-500 mb-4 animate-pulse">email</mat-icon>
+            <mat-icon class="text-6xl text-gray-400 dark:text-gray-500 mb-4 animate-pulse !w-auto !h-auto">email</mat-icon>
             <h2 class="text-xl text-gray-600 dark:text-gray-300 mb-2">Loading message...</h2>
             <p class="text-gray-500 dark:text-gray-400">Please wait while we fetch the message details.</p>
           </div>
