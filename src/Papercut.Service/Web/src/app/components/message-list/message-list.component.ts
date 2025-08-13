@@ -37,20 +37,13 @@ import { PaginationComponent } from '../pagination/pagination.component';
       <!-- Message List Panel -->
       <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel" 
            [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
-        <!-- Loading indicator at the top -->
-        <div *ngIf="isLoading" class="w-full bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-700">
-          <div class="flex items-center justify-center py-2 gap-2 text-blue-600 dark:text-blue-400">
-            <mat-spinner diameter="16" strokeWidth="2"></mat-spinner>
-            <span class="text-sm font-medium">Loading messages...</span>
-          </div>
-        </div>
-
         <!-- Paginated List -->
         <div class="w-full overflow-auto virtual-scroll-container flex-1">
           <app-message-list-item
             *ngFor="let message of allMessages; trackBy: trackByMessageId"
             [message]="message"
             [selected]="message.id === selectedMessageId"
+            [isLoading]="isLoading"
             (select)="selectMessage(message.id!)"
             class="block w-full">
           </app-message-list-item>
@@ -65,6 +58,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
             [totalPages]="totalPages"
             [totalCount]="totalCount"
             [pageSizeOptions]="pageSizeOptions"
+            [isLoading]="isLoading"
             (pageSizeChange)="onPageSizeChange($event)"
             (pageChange)="goToPage($event)">
           </app-pagination>
@@ -215,7 +209,10 @@ export class MessageListComponent implements OnDestroy {
   selectMessage(messageId: string): void {
     console.log('Selecting message:', messageId);
     this.selectedMessageId = messageId;
-    this.router.navigate(['message', messageId], { relativeTo: this.route });
+    this.router.navigate(['message', messageId], { 
+      relativeTo: this.route,
+      queryParamsHandling: 'preserve'
+    });
   }
 
 

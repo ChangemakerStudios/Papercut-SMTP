@@ -12,13 +12,15 @@ import { RefDto } from 'src/app/models';
   standalone: true,
   imports: [CommonModule, MatTooltipModule, MatIconModule, FileSizePipe, TimeAgoPipe],
   template: `
-    <div class="px-4 border-b cursor-pointer transition-colors duration-200 w-full min-w-0 h-20 flex flex-col justify-center"
+    <div class="px-4 border-b transition-colors duration-200 w-full min-w-0 h-20 flex flex-col justify-center"
          [ngClass]="{
            'bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-600 dark:border-blue-400 border-b-gray-200 dark:border-b-gray-700': selected,
            'bg-blue-50 dark:bg-blue-800 border-l-2 border-blue-500 dark:border-blue-400 border-b-gray-200 dark:border-b-gray-700': !message.isRead && !selected,
-           'border-b-gray-200 dark:border-b-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700': !selected && message.isRead,
-           'hover:bg-blue-200 dark:hover:bg-blue-800': selected,
-           'hover:bg-blue-100 dark:hover:bg-blue-700': !message.isRead && !selected
+           'border-b-gray-200 dark:border-b-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700': !selected && message.isRead && !isLoading,
+           'hover:bg-blue-200 dark:hover:bg-blue-800': selected && !isLoading,
+           'hover:bg-blue-100 dark:hover:bg-blue-700': !message.isRead && !selected && !isLoading,
+           'cursor-pointer': !isLoading,
+           'cursor-not-allowed opacity-60': isLoading
          }"
          (click)="onSelect()">
       <div class="font-semibold mb-1 overflow-hidden text-ellipsis whitespace-nowrap max-w-full" 
@@ -87,11 +89,15 @@ import { RefDto } from 'src/app/models';
 export class MessageListItemComponent {
   @Input() message!: RefDto;
   @Input() selected = false;
+  @Input() isLoading = false;
   @Output() select = new EventEmitter<void>();
 
   constructor(private emailService: EmailService) {}
 
   onSelect(): void {
+    if (this.isLoading) {
+      return; // Prevent action during loading
+    }
     console.log('Message item clicked:', this.message?.id);
     this.select.emit();
   }

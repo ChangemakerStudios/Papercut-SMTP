@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export interface PaginationInfo {
   currentPage: number;
@@ -15,37 +16,43 @@ export interface PaginationInfo {
 @Component({
   selector: 'app-pagination',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatProgressSpinnerModule],
   template: `
     <div class="flex items-center justify-between gap-2 p-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 min-w-0">
-      <div class="text-xs text-gray-600 dark:text-gray-300 flex-shrink-0">
+      <div class="text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 flex items-center gap-2">
         {{ pageStart + 1 }}–{{ displayEnd }} of {{ totalCount }}
+        <mat-spinner *ngIf="isLoading" diameter="12" strokeWidth="2" class="text-blue-600 dark:text-blue-400"></mat-spinner>
       </div>
       <div class="flex items-center gap-1 flex-shrink-0">
-        <select class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded px-2 py-1 min-w-0"
+        <select class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded px-2 py-1 min-w-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 [ngModel]="pageSize"
-                (ngModelChange)="onPageSizeChange($event)">
+                (ngModelChange)="onPageSizeChange($event)"
+                [disabled]="isLoading">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}/page</option>
         </select>
         <div class="flex items-center gap-1 flex-shrink-0">
-          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 flex-shrink-0"
-                  (click)="goToPage(1)" [disabled]="currentPage === 1">«</button>
-          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 flex-shrink-0"
-                  (click)="prevPage()" [disabled]="currentPage === 1">‹</button>
+          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  (click)="goToPage(1)" [disabled]="currentPage === 1 || isLoading">«</button>
+          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  (click)="prevPage()" [disabled]="currentPage === 1 || isLoading">‹</button>
           <ng-container *ngFor="let p of visiblePageNumbers">
             <button *ngIf="p > 0; else dots"
-                    class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex-shrink-0"
+                    class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                     style="min-width: 20px;"
-                    [ngClass]="{ 'bg-blue-600 text-white border-blue-600': p === currentPage, 'text-gray-700 dark:text-gray-200': p !== currentPage }"
-                    (click)="goToPage(p)">{{ p }}</button>
+                    [ngClass]="{ 
+                      'bg-blue-600 text-white border-blue-600': p === currentPage, 
+                      'text-gray-700 dark:text-gray-200': p !== currentPage 
+                    }"
+                    (click)="goToPage(p)"
+                    [disabled]="isLoading">{{ p }}</button>
             <ng-template #dots>
               <span class="px-1 text-gray-500 flex-shrink-0">…</span>
             </ng-template>
           </ng-container>
-          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 flex-shrink-0"
-                  (click)="nextPage()" [disabled]="currentPage === totalPages">›</button>
-          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 flex-shrink-0"
-                  (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">»</button>
+          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  (click)="nextPage()" [disabled]="currentPage === totalPages || isLoading">›</button>
+          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages || isLoading">»</button>
         </div>
       </div>
     </div>
@@ -70,6 +77,7 @@ export class PaginationComponent implements OnChanges {
   @Input() totalPages = 1;
   @Input() totalCount = 0;
   @Input() pageSizeOptions: number[] = [10, 25, 50, 100];
+  @Input() isLoading = false;
 
   @Output() pageSizeChange = new EventEmitter<number>();
   @Output() pageChange = new EventEmitter<number>();
