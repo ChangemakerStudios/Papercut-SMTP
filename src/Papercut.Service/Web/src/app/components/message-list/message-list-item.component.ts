@@ -12,7 +12,7 @@ import { RefDto } from 'src/app/models';
   standalone: true,
   imports: [CommonModule, MatTooltipModule, MatIconModule, FileSizePipe, TimeAgoPipe],
   template: `
-    <div class="px-4 py-3 border-b cursor-pointer transition-colors duration-200 w-full min-w-0"
+    <div class="px-4 border-b cursor-pointer transition-colors duration-200 w-full min-w-0 h-20 flex flex-col justify-center"
          [ngClass]="{
            'bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-600 dark:border-blue-400 border-b-gray-200 dark:border-b-gray-700': selected,
            'bg-blue-50 dark:bg-blue-800 border-l-2 border-blue-500 dark:border-blue-400 border-b-gray-200 dark:border-b-gray-700': !message.isRead && !selected,

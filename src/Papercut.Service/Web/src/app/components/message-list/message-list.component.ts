@@ -1,29 +1,19 @@
-import { Component, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { Observable, map, combineLatest, finalize, filter, Subject, takeUntil } from 'rxjs';
+import { Observable, finalize, filter, Subject, takeUntil } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { MessageService } from '../../services/message.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { ResizerComponent } from '../resizer/resizer.component';
 import { MessageListItemComponent } from './message-list-item.component';
-
-interface PaginationInfo {
-  currentPage: number;
-  totalPages: number;
-  limit: number;
-  start: number;
-  totalCount: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-}
+import { PaginationComponent } from '../pagination/pagination.component';
 
 @Component({
   selector: 'app-message-list',
@@ -38,61 +28,61 @@ interface PaginationInfo {
     MatProgressSpinnerModule,
     ScrollingModule,
     ResizerComponent,
-    MessageListItemComponent
+    MessageListItemComponent,
+    PaginationComponent
   ],
   template: `
     <div class="flex h-full bg-gray-100 dark:bg-gray-900 transition-colors duration-300" 
          [class.dragging]="isDragging">
       <!-- Message List Panel -->
-      <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col" 
+      <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel" 
            [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
-        <!-- Message List Header -->
-        <!-- <div class="message-list-header">
-          <div class="message-list-title">
-            <mat-icon>inbox</mat-icon>
-            Messages
+        <!-- Loading indicator at the top -->
+        <div *ngIf="isLoading" class="w-full bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-700">
+          <div class="flex items-center justify-center py-2 gap-2 text-blue-600 dark:text-blue-400">
+            <mat-spinner diameter="16" strokeWidth="2"></mat-spinner>
+            <span class="text-sm font-medium">Loading messages...</span>
           </div>
-          <div class="message-count" *ngIf="pagination$ | async as pagination">
-            {{ pagination.totalCount }} total
-            <span *ngIf="isLoadingMore" class="ml-2">
-              <mat-spinner diameter="12" strokeWidth="2"></mat-spinner>
-            </span>
-          </div>
-        </div> -->
+        </div>
 
-        <!-- Virtual Scroll List -->
-        <cdk-virtual-scroll-viewport 
-          [itemSize]="itemSize" 
-          [minBufferPx]="200"
-          [maxBufferPx]="400"
-          (scrolledIndexChange)="onScroll()" 
-          class="w-full overflow-hidden virtual-scroll-container">
-          <app-message-list-item 
-            *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId; templateCacheSize: 0"
+        <!-- Paginated List -->
+        <div class="w-full overflow-auto virtual-scroll-container flex-1">
+          <app-message-list-item
+            *ngFor="let message of allMessages; trackBy: trackByMessageId"
             [message]="message"
             [selected]="message.id === selectedMessageId"
             (select)="selectMessage(message.id!)"
             class="block w-full">
           </app-message-list-item>
-        </cdk-virtual-scroll-viewport>
+        </div>
         
-        <!-- Loading indicator for infinite scroll - outside virtual scroll -->
-        <div *ngIf="isLoadingMore" class="flex items-center justify-center p-4 gap-2 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-          <mat-spinner diameter="24" strokeWidth="3"></mat-spinner>
-          <span>Loading more messages...</span>
+        <!-- Pagination Bar -->
+        <div class="w-full min-w-0">
+          <app-pagination
+            [pageSize]="pageSize"
+            [pageStart]="pageStart"
+            [currentPage]="currentPage"
+            [totalPages]="totalPages"
+            [totalCount]="totalCount"
+            [pageSizeOptions]="pageSizeOptions"
+            (pageSizeChange)="onPageSizeChange($event)"
+            (pageChange)="goToPage($event)">
+          </app-pagination>
         </div>
       </div>
 
       <!-- Resizer Handle -->
-      <app-resizer 
-        [currentWidth]="messageListWidth"
-        [minWidth]="200"
-        [maxWidth]="2000"
-        [defaultWidth]="400"
-        localStorageKey="papercut-message-list-width"
-        (widthChange)="onWidthChange($event)"
-        (draggingChange)="onDraggingChange($event)">
-      </app-resizer>
+      <div class="flex-shrink-0">
+        <app-resizer 
+          [currentWidth]="messageListWidth"
+          [minWidth]="200"
+          [maxWidth]="2000"
+          [defaultWidth]="400"
+          localStorageKey="papercut-message-list-width"
+          (widthChange)="onWidthChange($event)"
+          (draggingChange)="onDraggingChange($event)">
+        </app-resizer>
+      </div>
 
       <!-- Message Detail Panel -->
       <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0">
@@ -107,37 +97,13 @@ interface PaginationInfo {
     </div>
   `,
   styles: [`
-    /* Virtual Scroll Container with flexible height */
+    /* Scroll Container with flexible height */
     .virtual-scroll-container {
       flex: 1;
       min-height: 0;
       height: 100%;
       max-height: 100%;
       overflow: auto;
-    }
-
-    /* CDK Virtual Scroll content wrapper width constraint */
-    ::ng-deep cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper {
-      width: 100% !important;
-      max-width: 100% !important;
-      overflow: hidden !important;
-      box-sizing: border-box !important;
-    }
-
-    ::ng-deep cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper > * {
-      width: 100% !important;
-      max-width: 100% !important;
-      box-sizing: border-box !important;
-    }
-
-    /* Prevent over-scrolling in virtual scroll */
-    ::ng-deep cdk-virtual-scroll-viewport {
-      overflow-anchor: none;
-      will-change: transform;
-    }
-
-    ::ng-deep cdk-virtual-scroll-viewport .cdk-virtual-scroll-spacer {
-      pointer-events: none;
     }
 
     /* Dragging state */
@@ -147,6 +113,11 @@ interface PaginationInfo {
 
     .dragging .cursor-pointer {
       pointer-events: none;
+    }
+
+    /* Ensure message list panel respects width constraints */
+    .message-list-panel {
+      min-width: 0;
     }
 
     /* Responsive design */
@@ -162,65 +133,43 @@ interface PaginationInfo {
   `]
 })
 export class MessageListComponent implements OnDestroy {
-  messages$: Observable<GetMessagesResponse> = this.route.data.pipe(
-    map(data => data['messages'])
-  );
-  pagination$: Observable<PaginationInfo>;
+  // Observables are no longer used to drive the list directly; we imperatively load a page on query param change
+  messages$!: Observable<GetMessagesResponse>;
   
   selectedMessageId: string | null = null;
   private loadingTimeout: any = null;
   private destroy$ = new Subject<void>();
   
-  // Virtual scroll settings  
-  itemSize = 80; // Height of each message item in pixels
+  // Pagination state
   allMessages: RefDto[] = [];
-  private currentPage = 1;
-  isLoadingMore = false;
-  private hasMorePages = true;
-  private readonly pageSize = 10;
+  pageSize = 10;
+  pageStart = 0;
+  currentPage = 1;
+  totalPages = 1;
+  totalCount = 0;
+  pageSizeOptions: number[] = [10, 25, 50, 100];
 
   // Resizer properties
   messageListWidth = 400; // Default width
   isDragging = false;
-
-  @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
+  isLoading = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService
   ) {
-    this.messages$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe((response: GetMessagesResponse) => {
-      console.log('Messages loaded:', response);
-      this.allMessages = response.messages;
-      this.hasMorePages = response.messages.length < response.totalMessageCount;
-      this.currentPage = 1;
-    });
-
-    this.pagination$ = combineLatest([
-      this.route.data,
-      this.route.queryParams
-    ]).pipe(
-      map(([data, queryParams]) => {
-        const messages = data['messages'] as GetMessagesResponse;
-        const limit = parseInt(queryParams['limit'] || '10', 10);
-        const start = parseInt(queryParams['start'] || '0', 10);
-        const currentPage = Math.floor(start / limit) + 1;
-        const totalPages = Math.ceil(messages.totalMessageCount / limit);
-
-        return {
-          currentPage,
-          totalPages,
-          limit,
-          start,
-          totalCount: messages.totalMessageCount,
-          hasNext: start + limit < messages.totalMessageCount,
-          hasPrevious: start > 0
-        };
-      })
-    );
+    // Load current page when query params change
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const limit = parseInt(params['limit'] || '10', 10);
+        const start = parseInt(params['start'] || '0', 10);
+        this.pageSize = limit;
+        this.pageStart = start;
+        this.currentPage = Math.floor(start / limit) + 1;
+        this.loadPage(limit, start);
+      });
 
     // Listen for route changes to detect when a message is selected via URL
     this.router.events.pipe(
@@ -248,38 +197,15 @@ export class MessageListComponent implements OnDestroy {
     }
   }
 
-  // Handle virtual scroll events
-  onScroll(): void {
-    if (!this.viewport) return;
-    
-    const end = this.viewport.getRenderedRange().end;
-    const total = this.viewport.getDataLength();
-    
-    // Only trigger loading if we have items and are near the end
-    if (total > 0) {
-      const threshold = Math.min(3, Math.max(1, Math.floor(total * 0.1))); // 10% of total or 3 items, whichever is smaller
-      if (end >= total - threshold && !this.isLoadingMore && this.hasMorePages) {
-        this.loadMoreMessages();
-      }
-    }
-  }
-
-  private loadMoreMessages(): void {
-    if (this.isLoadingMore) return;
-    
-    this.isLoadingMore = true;
-    const nextPage = this.currentPage + 1;
-    const start = (nextPage - 1) * this.pageSize;
-
-    this.messageService.getMessages(this.pageSize, start).pipe(
-      finalize(() => {
-        this.isLoadingMore = false;
-      })
-    ).subscribe((response: GetMessagesResponse) => {
-      this.allMessages = [...this.allMessages, ...response.messages];
-      this.currentPage = nextPage;
-      this.hasMorePages = this.allMessages.length < response.totalMessageCount;
-    });
+  private loadPage(limit: number, start: number): void {
+    this.isLoading = true;
+    this.messageService.getMessages(limit, start)
+      .pipe(finalize(() => { this.isLoading = false; }))
+      .subscribe((response: GetMessagesResponse) => {
+        this.allMessages = response.messages;
+        this.totalCount = response.totalMessageCount;
+        this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+      });
   }
 
   trackByMessageId(index: number, message: RefDto): string {
@@ -310,6 +236,22 @@ export class MessageListComponent implements OnDestroy {
   // Resizer event handlers
   onWidthChange(width: number): void {
     this.messageListWidth = width;
+  }
+
+  // Pagination actions
+  onPageSizeChange(size: number): void {
+    this.pageSize = Number(size) || 10;
+    this.goToPage(1);
+  }
+
+  goToPage(page: number): void {
+    const safePage = Math.min(Math.max(1, page), this.totalPages || 1);
+    const start = (safePage - 1) * this.pageSize;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { limit: this.pageSize, start },
+      queryParamsHandling: 'merge'
+    });
   }
 
   onDraggingChange(isDragging: boolean): void {
