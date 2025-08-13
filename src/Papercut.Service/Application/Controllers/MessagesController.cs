@@ -117,10 +117,11 @@ public class MessagesController(
             return this.NotFound();
         }
 
-        var response = new FileStreamResult(System.IO.File.OpenRead(messageEntry.File), "message/rfc822")
-                       {
-                           FileDownloadName = Uri.EscapeDataString(messageId)
-                       };
+        var response =
+            new FileStreamResult(System.IO.File.OpenRead(messageEntry.File), "message/rfc822")
+            {
+                FileDownloadName = Uri.EscapeDataString(messageId)
+            };
 
         return response;
     }

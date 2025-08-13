@@ -10,11 +10,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { FileSizePipe } from '../../pipes/file-size.pipe';
 import { EmailListPipe } from '../../pipes/email-list.pipe';
-import { CidTransformPipe } from '../../pipes/cid-transform.pipe';
 import { MessageService } from '../../services/message.service';
 import { DetailDto, RefDto } from '../../models';
+import { MessageSectionsComponent } from '../message-sections/message-sections.component';
+import { FileDownloaderComponent, FileDownloaderService } from '../file-downloader/file-downloader.component';
+import { DownloadButtonDirective } from '../../directives/download-button.directive';
 
 interface MessageViewData {
   ref: RefDto | null;
@@ -36,9 +37,10 @@ interface MessageViewData {
     MatListModule,
     MatTabsModule,
     MatProgressSpinnerModule,
-    FileSizePipe, 
-    EmailListPipe, 
-    CidTransformPipe
+    EmailListPipe,
+    MessageSectionsComponent,
+    FileDownloaderComponent,
+    DownloadButtonDirective
   ],
   template: `
     <div class="flex flex-col h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -64,7 +66,9 @@ interface MessageViewData {
               <button 
                 mat-raised-button 
                 color="accent" 
-                (click)="downloadRaw()" 
+                [appDownloadButton]="'download-raw-' + (messageData.detail?.id || messageData.ref?.id)"
+                [downloadUrl]="getRawDownloadUrl(messageData.detail || messageData.ref)"
+                [downloadFilename]="(messageData.detail?.id || messageData.ref?.id) + '.eml'"
                 [disabled]="!messageData.detail"
                 class="download-btn flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200">
                 <mat-icon>download</mat-icon>
@@ -190,27 +194,8 @@ interface MessageViewData {
               </mat-tab>
               
               <!-- Sections Tab -->
-              <mat-tab label="Sections" [disabled]="!getMessageSections(messageData.detail).length">
-                <div class="h-full overflow-auto bg-gray-50 dark:bg-gray-900">
-                  <div class="p-3 space-y-4">
-                    <div *ngFor="let section of getMessageSections(messageData.detail)" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-                      <div class="flex items-center gap-3">
-                        <mat-icon class="text-gray-600 dark:text-gray-400">{{ getSectionIcon(section.type) }}</mat-icon>
-                        <div class="flex-1">
-                          <div class="font-semibold text-gray-800 dark:text-gray-100 text-sm">{{ section.type }}</div>
-                          <div class="text-gray-600 dark:text-gray-400 text-xs">{{ section.info }}</div>
-                        </div>
-                        <button 
-                          mat-icon-button 
-                          color="primary"
-                          (click)="downloadSection(messageData.detail, section)"
-                          title="Download attachment">
-                          <mat-icon>download</mat-icon>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <mat-tab label="Sections" [disabled]="!messageData.detail.sections?.length">
+                <app-message-sections [message]="messageData.detail"></app-message-sections>
               </mat-tab>
 
               <!-- Raw Tab -->
@@ -240,6 +225,9 @@ interface MessageViewData {
         </div>
       </ng-template>
     </div>
+    
+    <!-- File Downloader Component -->
+    <app-file-downloader></app-file-downloader>
   `,
   styles: [`
     /* Essential iframe styles for message content */
@@ -257,11 +245,14 @@ interface MessageViewData {
 export class MessageDetailComponent {
   messageData$: Observable<MessageViewData>;
   private currentMessage: DetailDto | null = null;
+  
+
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private fileDownloader: FileDownloaderService
   ) {
     this.messageData$ = this.route.params.pipe(
       switchMap(params => {
@@ -324,47 +315,17 @@ export class MessageDetailComponent {
     });
   }
 
-  downloadRaw() {
-    if (this.currentMessage && (this.currentMessage.id || this.currentMessage.name)) {
-      const messageId = this.currentMessage?.name ?? this.currentMessage?.id ?? '';
-      console.log('Downloading raw message', this.currentMessage);
-      this.messageService.downloadRawMessage(messageId);
-    }
-  }
-
-  downloadSection(message: DetailDto, section: { type: string; info: string; content?: string }) {
-    // Find the original section in message.sections to get the ID
-    if (message.id && message.sections) {
-      const originalSection = message.sections.find(s => 
-        (s.fileName || s.mediaType) === section.type && s.mediaType === section.info
-      );
-      if (originalSection && originalSection.id) {
-        this.messageService.downloadSectionByContentId(message.id, originalSection.id);
-      }
-    }
+  getRawDownloadUrl(message: DetailDto | RefDto | null): string {
+    if (!message) return '';
+    const messageId = message.name ?? message.id ?? '';
+    return `/api/messages/${encodeURIComponent(messageId)}/raw`;
   }
 
 
 
-  getSectionIcon(type: string): string {
-    const lowerType = type.toLowerCase();
-    
-    if (lowerType.includes('image') || lowerType.includes('.jpg') || lowerType.includes('.png') || lowerType.includes('.gif')) {
-      return 'image';
-    } else if (lowerType.includes('text') || lowerType.includes('.txt')) {
-      return 'description';
-    } else if (lowerType.includes('pdf')) {
-      return 'picture_as_pdf';
-    } else if (lowerType.includes('word') || lowerType.includes('document') || lowerType.includes('.doc')) {
-      return 'article';
-    } else if (lowerType.includes('spreadsheet') || lowerType.includes('excel') || lowerType.includes('.xls')) {
-      return 'table_chart';
-    } else if (lowerType.includes('zip') || lowerType.includes('archive') || lowerType.includes('.zip')) {
-      return 'archive';
-    } else {
-      return 'attach_file';
-    }
-  }
+
+
+
 
   getMessageContent(message: DetailDto | null): string {
     if (!message) return '<html><body>No message content available.</body></html>';
@@ -388,17 +349,7 @@ export class MessageDetailComponent {
     }
   }
 
-  getMessageSections(message: DetailDto | null): { type: string; info: string; content?: string }[] {
-    if (!message || !message.sections || message.sections.length === 0) {
-      return [];
-    }
-    
-    return message.sections.map(section => ({
-      type: section.fileName || section.mediaType || 'Unknown',
-      info: section.mediaType || 'Unknown type',
-      content: undefined // Content not available in attachment DTO
-    }));
-  }
+
 
   getRawContent(message: DetailDto | null): string {
     if (!message) return 'Raw content not available';

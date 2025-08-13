@@ -125,6 +125,42 @@ export class MessageService {
   }
 
   /**
+   * Downloads raw message file with progress tracking.
+   * @param messageId The unique message ID
+   */
+  downloadRawMessageWithProgress(messageId: string): void {
+    // This will be handled by FileDownloaderService
+    const encodedId = encodeURIComponent(messageId);
+    const url = `${this.apiUrl}/${encodedId}/raw`;
+    window.open(url, '_blank'); // Fallback for now
+  }
+
+  /**
+   * Gets the content of a specific message section by content ID.
+   * @param messageId The unique message ID
+   * @param contentId The content ID of the section
+   * @returns Observable of the section content as text
+   */
+  getSectionContent(messageId: string, contentId: string): Observable<string> {
+    const encodedId = encodeURIComponent(messageId);
+    const encodedContentId = encodeURIComponent(contentId);
+    const url = `${this.apiUrl}/${encodedId}/contents/${encodedContentId}`;
+    return this.http.get(url, { responseType: 'text' });
+  }
+
+  /**
+   * Gets the content of a specific message section by index.
+   * @param messageId The unique message ID
+   * @param index The index of the section in the sections array
+   * @returns Observable of the section content as text
+   */
+  getSectionByIndex(messageId: string, index: number): Observable<string> {
+    const encodedId = encodeURIComponent(messageId);
+    const url = `${this.apiUrl}/${encodedId}/sections/${index}`;
+    return this.http.get(url, { responseType: 'text' });
+  }
+
+  /**
    * Deletes all messages.
    * @returns Observable of void
    */
