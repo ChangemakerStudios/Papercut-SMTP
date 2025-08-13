@@ -14,9 +14,9 @@ import { EmailListPipe } from '../../pipes/email-list.pipe';
 import { MessageService } from '../../services/message.service';
 import { DetailDto, RefDto } from '../../models';
 import { MessageSectionsComponent } from '../message-sections/message-sections.component';
-import { FileDownloaderComponent, FileDownloaderService } from '../file-downloader/file-downloader.component';
-import { DownloadButtonDirective } from '../../directives/download-button.directive';
+
 import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
+import { MessageRawComponent } from '../message-raw/message-raw.component';
 
 interface MessageViewData {
   ref: RefDto | null;
@@ -40,9 +40,8 @@ interface MessageViewData {
     MatProgressSpinnerModule,
     EmailListPipe,
     MessageSectionsComponent,
-    FileDownloaderComponent,
-    DownloadButtonDirective,
-    SafeIframeComponent
+    SafeIframeComponent,
+    MessageRawComponent
   ],
   template: `
     <div class="flex flex-col h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -63,20 +62,7 @@ interface MessageViewData {
               </p>
             </div>
             
-            <!-- Action Buttons -->
-            <div class="action-section flex-shrink-0 flex items-center gap-2">
-              <button 
-                mat-raised-button 
-                color="accent" 
-                [appDownloadButton]="'download-raw-' + (messageData.detail?.id || messageData.ref?.id)"
-                [downloadUrl]="getRawDownloadUrl(messageData.detail || messageData.ref)"
-                [downloadFilename]="(messageData.detail?.id || messageData.ref?.id) + '.eml'"
-                [disabled]="!messageData.detail"
-                class="download-btn flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200">
-                <mat-icon>download</mat-icon>
-                <span class="hidden sm:inline">Download Raw</span>
-              </button>
-            </div>
+
           </div>
         </div>
 
@@ -119,13 +105,13 @@ interface MessageViewData {
               </div>
               
               <!-- BCC Section -->
-              <div *ngIf="messageData.detail?.bCc?.length" class="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div *ngIf="messageData.detail?.bcc?.length" class="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
                 <div class="flex items-center justify-center w-8 h-8 bg-red-100 dark:bg-red-800/40 rounded-full flex-shrink-0">
                   <mat-icon class="text-red-600 dark:text-red-400 flex items-center justify-center">visibility_off</mat-icon>
                 </div>
                 <div class="flex-1 min-w-0">
                   <h4 class="font-semibold text-gray-800 dark:text-gray-100 text-sm mb-0.5">BCC</h4>
-                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ messageData.detail?.bCc | emailList }}</p>
+                  <p class="text-gray-700 dark:text-gray-300 text-sm break-words">{{ messageData.detail?.bcc | emailList }}</p>
                 </div>
               </div>
               
@@ -200,13 +186,7 @@ interface MessageViewData {
 
               <!-- Raw Tab -->
               <mat-tab label="Raw">
-                <div class="h-full overflow-hidden bg-gray-50 dark:bg-gray-900">
-                  <div class="h-full p-3 overflow-auto">
-                    <div class="h-full p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto">
-                      <pre class="whitespace-pre-wrap font-mono text-xs text-gray-900 dark:text-gray-100">{{ getRawContent(messageData.detail) }}</pre>
-                    </div>
-                  </div>
-                </div>
+                <app-message-raw [message]="messageData.detail"></app-message-raw>
               </mat-tab>
               
             </mat-tab-group>
@@ -225,9 +205,7 @@ interface MessageViewData {
         </div>
       </ng-template>
     </div>
-    
-    <!-- File Downloader Component -->
-    <app-file-downloader></app-file-downloader>
+
   `,
   styles: [`
     /* Essential iframe styles for message content */
@@ -246,12 +224,10 @@ export class MessageDetailComponent {
   messageData$: Observable<MessageViewData>;
   private currentMessage: DetailDto | null = null;
 
-
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private messageService: MessageService,
-    private fileDownloader: FileDownloaderService
+    private messageService: MessageService
   ) {
     this.messageData$ = this.route.params.pipe(
       switchMap(params => {
@@ -314,20 +290,6 @@ export class MessageDetailComponent {
     });
   }
 
-
-
-  getRawDownloadUrl(message: DetailDto | RefDto | null): string {
-    if (!message) return '';
-    const messageId = message.name ?? message.id ?? '';
-    return `/api/messages/${encodeURIComponent(messageId)}/raw`;
-  }
-
-
-
-
-
-
-
   getMessageContent(message: DetailDto | null): string {
     if (!message) return '<html><body>No message content available.</body></html>';
     return this.messageService.getMessageContent(message);
@@ -348,31 +310,5 @@ export class MessageDetailComponent {
     } else {
       return 'No message body available.';
     }
-  }
-
-
-
-  getRawContent(message: DetailDto | null): string {
-    if (!message) return 'Raw content not available';
-    
-    let raw = '';
-    
-    // Add headers
-    if (message.headers) {
-      message.headers.forEach(header => {
-        raw += `${header.name}: ${header.value}\n`;
-      });
-    }
-    
-    raw += '\n';
-    
-    // Add body content
-    if (message.htmlBody) {
-      raw += message.htmlBody;
-    } else if (message.textBody) {
-      raw += message.textBody;
-    }
-    
-    return raw || 'Raw content not available';
   }
 }

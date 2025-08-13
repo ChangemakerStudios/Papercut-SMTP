@@ -23,6 +23,7 @@ import {
   DetailDto, 
   RefDto 
 } from '../models';
+import { MessageRepository } from './message.repository';
 
 /**
  * Service for managing email messages.
@@ -34,7 +35,10 @@ import {
 export class MessageService {
   private readonly apiUrl = '/api/messages';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private messageRepository: MessageRepository
+  ) {}
 
   /**
    * Gets a paginated list of messages.
@@ -43,11 +47,7 @@ export class MessageService {
    * @returns Observable of GetMessagesResponse
    */
   getMessages(limit: number = 10, start: number = 0): Observable<GetMessagesResponse> {
-    const params = new HttpParams()
-      .set('limit', limit.toString())
-      .set('start', start.toString());
-
-    return this.http.get<GetMessagesResponse>(this.apiUrl, { params })
+    return this.messageRepository.getMessages({ limit, start })
       .pipe(
         map(response => ({
           ...response,
@@ -81,8 +81,7 @@ export class MessageService {
    * @returns Observable of DetailDto
    */
   getMessage(messageId: string): Observable<DetailDto> {
-    const encodedId = encodeURIComponent(messageId);
-    return this.http.get<DetailDto>(`${this.apiUrl}/${encodedId}`)
+    return this.messageRepository.getMessage(messageId)
       .pipe(
         map(detail => ({
           ...detail,
@@ -96,9 +95,7 @@ export class MessageService {
    * @param messageId The unique message ID
    */
   downloadRawMessage(messageId: string): void {
-    const encodedId = encodeURIComponent(messageId);
-    const url = `${this.apiUrl}/${encodedId}/raw`;
-    window.open(url, '_blank');
+    this.messageRepository.downloadRawMessage(messageId);
   }
 
   /**
@@ -107,9 +104,7 @@ export class MessageService {
    * @param sectionIndex The zero-based section index
    */
   downloadSectionByIndex(messageId: string, sectionIndex: number): void {
-    const encodedId = encodeURIComponent(messageId);
-    const url = `${this.apiUrl}/${encodedId}/sections/${sectionIndex}`;
-    window.open(url, '_blank');
+    this.messageRepository.downloadSectionByIndex(messageId, sectionIndex);
   }
 
   /**
@@ -118,10 +113,7 @@ export class MessageService {
    * @param contentId The content ID of the section
    */
   downloadSectionByContentId(messageId: string, contentId: string): void {
-    const encodedId = encodeURIComponent(messageId);
-    const encodedContentId = encodeURIComponent(contentId);
-    const url = `${this.apiUrl}/${encodedId}/contents/${encodedContentId}`;
-    window.open(url, '_blank');
+    this.messageRepository.downloadSectionByContentId(messageId, contentId);
   }
 
   /**
@@ -130,9 +122,8 @@ export class MessageService {
    */
   downloadRawMessageWithProgress(messageId: string): void {
     // This will be handled by FileDownloaderService
-    const encodedId = encodeURIComponent(messageId);
-    const url = `${this.apiUrl}/${encodedId}/raw`;
-    window.open(url, '_blank'); // Fallback for now
+    // For now, use the repository method as fallback
+    this.messageRepository.downloadRawMessage(messageId);
   }
 
   /**
@@ -142,10 +133,7 @@ export class MessageService {
    * @returns Observable of the section content as text
    */
   getSectionContent(messageId: string, contentId: string): Observable<string> {
-    const encodedId = encodeURIComponent(messageId);
-    const encodedContentId = encodeURIComponent(contentId);
-    const url = `${this.apiUrl}/${encodedId}/contents/${encodedContentId}`;
-    return this.http.get(url, { responseType: 'text' });
+    return this.messageRepository.getSectionContent(messageId, contentId);
   }
 
   /**
@@ -155,9 +143,16 @@ export class MessageService {
    * @returns Observable of the section content as text
    */
   getSectionByIndex(messageId: string, index: number): Observable<string> {
-    const encodedId = encodeURIComponent(messageId);
-    const url = `${this.apiUrl}/${encodedId}/sections/${index}`;
-    return this.http.get(url, { responseType: 'text' });
+    return this.messageRepository.getSectionByIndex(messageId, index);
+  }
+
+  /**
+   * Gets the raw message content.
+   * @param messageId The unique message ID
+   * @returns Observable of the raw message content as text
+   */
+  getRawContent(messageId: string): Observable<string> {
+    return this.messageRepository.getRawContent(messageId);
   }
 
   /**
@@ -165,7 +160,7 @@ export class MessageService {
    * @returns Observable of void
    */
   deleteAllMessages(): Observable<void> {
-    return this.http.delete<void>(this.apiUrl);
+    return this.messageRepository.deleteAllMessages();
   }
 
 

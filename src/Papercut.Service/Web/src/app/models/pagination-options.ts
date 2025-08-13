@@ -16,14 +16,9 @@
 // limitations under the License.
 
 /**
- * Barrel export file for all Papercut domain models.
- * These interfaces match the C# DTOs exactly.
+ * Options for paginating message results.
  */
-
-export { EmailAddressDto } from './email-address-dto';
-export { HeaderDto } from './header-dto';
-export { EmailSectionDto, EmailSectionDto as EmailAttachmentDto } from './email-attachment-dto';
-export { RefDto } from './ref-dto';
-export { DetailDto } from './detail-dto';
-export { GetMessagesResponse } from './get-messages-response';
-export { PaginationOptions } from './pagination-options'; 
+export interface PaginationOptions {
+  limit?: number;
+  start?: number;
+}

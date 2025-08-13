@@ -36,7 +36,7 @@ export interface DetailDto extends RefDto {
   cc: EmailAddressDto[];
   
   /** The BCC addresses */
-  bCc: EmailAddressDto[];
+  bcc: EmailAddressDto[];
   
   /** The HTML body content */
   htmlBody?: string | null;

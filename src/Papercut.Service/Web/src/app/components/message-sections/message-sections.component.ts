@@ -130,12 +130,9 @@ export class MessageSectionsComponent {
   }
 
   toggleSectionView(section: EmailSectionDto, index: number) {
-    console.log('toggleSectionView called with:', section, 'index:', index);
-    
     if (this.isViewingSection(index)) {
       // Close the section
       this.viewingSectionIndex = null;
-      console.log('Closed section view for index:', index);
     } else {
       // Open the section
       this.viewingSectionIndex = index;
@@ -149,11 +146,8 @@ export class MessageSectionsComponent {
 
   private loadSectionContent(section: EmailSectionDto, index: number) {
     if (!this.message?.id) {
-      console.log('Cannot load section - missing message ID');
       return;
     }
-
-    console.log('Loading content for section index:', index, 'section ID:', section.id);
     
     this.loadingSections.add(index);
     
@@ -164,12 +158,10 @@ export class MessageSectionsComponent {
     
     observable.subscribe({
       next: (content) => {
-        console.log('Section content loaded for index', index, ':', content.substring(0, 100) + '...');
         this.sectionContents.set(index, content);
         this.loadingSections.delete(index);
       },
       error: (error) => {
-        console.error('Error loading section content for index', index, ':', error);
         this.sectionContents.set(index, `<html><body><h2>Error loading section content</h2><p>${error.message || error}</p></body></html>`);
         this.loadingSections.delete(index);
       }
@@ -188,17 +180,13 @@ export class MessageSectionsComponent {
     const mediaType = (section.mediaType || '').toLowerCase();
     const hasFileName = !!section.fileName;
     
-    console.log(`shouldShowViewButton for section ${section.id}: mediaType="${mediaType}", hasFileName=${hasFileName}`);
-    
     // If it has a filename, always download
     if (hasFileName) {
-      console.log(`Section ${section.id}: has filename, hiding view button`);
       return false;
     }
     
     // If content type is text/plain or text/html, show view option
     const showView = mediaType === 'text/plain' || mediaType === 'text/html';
-    console.log(`Section ${section.id}: showView=${showView}`);
     return showView;
   }
 
@@ -206,17 +194,13 @@ export class MessageSectionsComponent {
     const mediaType = (section.mediaType || '').toLowerCase();
     const hasFileName = !!section.fileName;
     
-    console.log(`shouldShowDownloadButton for section ${section.id}: mediaType="${mediaType}", hasFileName=${hasFileName}`);
-    
     // If it has a filename, always show download
     if (hasFileName) {
-      console.log(`Section ${section.id}: has filename, showing download button`);
       return true;
     }
     
     // Don't show download button for text/plain or text/html (they have view button instead)
     const showDownload = !(mediaType === 'text/plain' || mediaType === 'text/html');
-    console.log(`Section ${section.id}: showDownload=${showDownload}`);
     return showDownload;
   }
 
@@ -229,10 +213,7 @@ export class MessageSectionsComponent {
     
     // Use the message service's shared formatMessageContent method for consistent styling
     const formattedContent = this.messageService.formatMessageContent(content || '', mediaType, messageId);
-    
-    // Debug output to see what's being generated
-    console.log('Formatted content for section', index, ':', formattedContent.substring(0, 500) + '...');
-    
+        
     return formattedContent;
   }
 
