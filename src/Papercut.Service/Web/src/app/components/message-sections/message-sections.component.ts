@@ -1,4 +1,4 @@
-import { Component, Input, AfterViewInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +7,7 @@ import { DetailDto, EmailSectionDto } from '../../models';
 import { MessageService } from '../../services/message.service';
 import { FileDownloaderService } from '../file-downloader/file-downloader.component';
 import { DownloadButtonDirective } from '../../directives/download-button.directive';
+import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
 
 @Component({
   selector: 'app-message-sections',
@@ -16,7 +17,8 @@ import { DownloadButtonDirective } from '../../directives/download-button.direct
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    DownloadButtonDirective
+    DownloadButtonDirective,
+    SafeIframeComponent
   ],
   template: `
     <!-- Sections List -->
@@ -64,15 +66,10 @@ import { DownloadButtonDirective } from '../../directives/download-button.direct
                 <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">Loading content...</span>
               </div>
               <div *ngIf="!isSectionLoading(i)" class="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <iframe
-                  #sectionIframe
-                  class="w-full border-none"
-                  style="min-height: 200px; max-height: 400px;"
-                  [attr.data-section-index]="i"
-                  sandbox="allow-same-origin"
-                  frameborder="0"
-                  scrolling="auto">
-                </iframe>
+                <app-safe-iframe
+                  cssStyle="min-height: 200px; max-height: 400px;"
+                  [content]="getSectionContentForViewing(i)">
+                </app-safe-iframe>
               </div>
             </div>
           </div>
@@ -97,68 +94,20 @@ import { DownloadButtonDirective } from '../../directives/download-button.direct
     }
   `]
 })
-export class MessageSectionsComponent implements AfterViewInit {
+export class MessageSectionsComponent {
   @Input() message: DetailDto | null = null;
-  @ViewChildren('sectionIframe') iframes!: QueryList<ElementRef<HTMLIFrameElement>>;
   
   // Section viewing state
   viewingSectionIndex: number | null = null;
   sectionContents: Map<number, string> = new Map();
   loadingSections: Set<number> = new Set();
-  iframeContents: Map<number, string> = new Map();
 
   constructor(
     private messageService: MessageService,
     private fileDownloader: FileDownloaderService
   ) {}
 
-  ngAfterViewInit() {
-    // Set up iframe content after view is initialized
-    setTimeout(() => {
-      this.updateIframeContents();
-    }, 0);
-    
-    // Listen for iframe changes
-    this.iframes.changes.subscribe(() => {
-      setTimeout(() => {
-        this.updateIframeContents();
-      }, 0);
-    });
-  }
 
-  private updateIframeContents() {
-    this.iframes.forEach((iframeRef) => {
-      const iframe = iframeRef.nativeElement;
-      const sectionIndex = parseInt(iframe.getAttribute('data-section-index') || '0', 10);
-      
-      if (this.isViewingSection(sectionIndex) && this.sectionContents.has(sectionIndex)) {
-        const content = this.getSectionContentForViewing(sectionIndex);
-        this.setIframeContent(iframe, content, sectionIndex);
-      }
-    });
-  }
-
-  private setIframeContent(iframe: HTMLIFrameElement, content: string, sectionIndex: number) {
-    try {
-      // Use a more reliable method to set iframe content
-      const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (doc) {
-        doc.open();
-        doc.write(content);
-        doc.close();
-        
-        console.log(`Successfully set iframe content for section ${sectionIndex}`);
-      } else {
-        // Fallback to srcdoc if document access fails
-        iframe.srcdoc = content;
-        console.log(`Fallback: Set srcdoc for section ${sectionIndex}`);
-      }
-    } catch (error) {
-      console.error(`Error setting iframe content for section ${sectionIndex}:`, error);
-      // Final fallback
-      iframe.srcdoc = content;
-    }
-  }
 
   getMessageSections(): EmailSectionDto[] {
     if (!this.message || !this.message.sections || this.message.sections.length === 0) {
@@ -194,11 +143,6 @@ export class MessageSectionsComponent implements AfterViewInit {
       if (!this.sectionContents.has(index)) {
         // Load content if not already loaded
         this.loadSectionContent(section, index);
-      } else {
-        // Content already loaded, update iframe after view change
-        setTimeout(() => {
-          this.updateIframeContents();
-        }, 0);
       }
     }
   }
@@ -223,21 +167,11 @@ export class MessageSectionsComponent implements AfterViewInit {
         console.log('Section content loaded for index', index, ':', content.substring(0, 100) + '...');
         this.sectionContents.set(index, content);
         this.loadingSections.delete(index);
-        
-        // Update iframe content after loading
-        setTimeout(() => {
-          this.updateIframeContents();
-        }, 0);
       },
       error: (error) => {
         console.error('Error loading section content for index', index, ':', error);
         this.sectionContents.set(index, `<html><body><h2>Error loading section content</h2><p>${error.message || error}</p></body></html>`);
         this.loadingSections.delete(index);
-        
-        // Update iframe content even for errors
-        setTimeout(() => {
-          this.updateIframeContents();
-        }, 0);
       }
     });
   }
