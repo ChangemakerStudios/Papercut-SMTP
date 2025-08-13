@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileSizePipe } from '../../pipes/file-size.pipe';
 import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 import { EmailService } from '../../services/email.service';
@@ -10,7 +11,7 @@ import { RefDto } from 'src/app/models';
 @Component({
   selector: 'app-message-list-item',
   standalone: true,
-  imports: [CommonModule, MatTooltipModule, MatIconModule, FileSizePipe, TimeAgoPipe],
+  imports: [CommonModule, MatTooltipModule, MatIconModule, MatProgressSpinnerModule, FileSizePipe, TimeAgoPipe],
   template: `
     <div class="px-4 border-b transition-colors duration-200 w-full min-w-0 h-20 flex flex-col justify-center"
          [ngClass]="{
@@ -41,12 +42,16 @@ import { RefDto } from 'src/app/models';
                 [matTooltip]="(message.createdAt | date:'full') ?? 'No data'">
                 From: {{ getFromDisplay() }}<br/>
                 Received: {{ message.createdAt | timeAgo }}</span>
-        <span class="font-medium ml-2" 
-              [ngClass]="{
-                'text-gray-700 dark:text-gray-300': !message.isRead,
-                'text-gray-600 dark:text-gray-400': message.isRead,
-                'text-blue-700 dark:text-blue-300': selected
-              }">{{ message.size | fileSize }}</span>
+        <div class="flex items-center gap-2 ml-2">
+          <span class="font-medium" 
+                [ngClass]="{
+                  'text-gray-700 dark:text-gray-300': !message.isRead,
+                  'text-gray-600 dark:text-gray-400': message.isRead,
+                  'text-blue-700 dark:text-blue-300': selected
+                }">{{ message.size | fileSize }}</span>
+          <mat-spinner *ngIf="isLoadingDetail" diameter="16" strokeWidth="2" 
+                       class="text-blue-600 dark:text-blue-400"></mat-spinner>
+        </div>
       </div>
       <div class="flex items-center gap-2 mt-1" *ngIf="hasStatusIndicators()">
         <mat-icon class="text-base" 
@@ -90,6 +95,7 @@ export class MessageListItemComponent {
   @Input() message!: RefDto;
   @Input() selected = false;
   @Input() isLoading = false;
+  @Input() isLoadingDetail = false;
   @Output() select = new EventEmitter<void>();
 
   constructor(private emailService: EmailService) {}

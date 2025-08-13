@@ -44,6 +44,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
             [message]="message"
             [selected]="message.id === selectedMessageId"
             [isLoading]="isLoading"
+            [isLoadingDetail]="loadingMessageId === message.id"
             (select)="selectMessage(message.id!)"
             class="block w-full">
           </app-message-list-item>
@@ -79,7 +80,15 @@ import { PaginationComponent } from '../pagination/pagination.component';
       </div>
 
       <!-- Message Detail Panel -->
-      <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0">
+      <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0 relative">
+        <!-- Buffer loader overlay -->
+        <div *ngIf="isLoadingMessageDetail" class="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm z-10 flex items-center justify-center">
+          <div class="flex flex-col items-center gap-3">
+            <mat-spinner diameter="40" strokeWidth="4"></mat-spinner>
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Loading message...</span>
+          </div>
+        </div>
+        
         <router-outlet></router-outlet>
         
         <div *ngIf="!selectedMessageId" class="flex-1 flex flex-col items-center justify-center p-8">
@@ -147,6 +156,8 @@ export class MessageListComponent implements OnDestroy {
   messageListWidth = 400; // Default width
   isDragging = false;
   isLoading = false;
+  isLoadingMessageDetail = false;
+  loadingMessageId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -208,11 +219,19 @@ export class MessageListComponent implements OnDestroy {
 
   selectMessage(messageId: string): void {
     console.log('Selecting message:', messageId);
+    this.loadingMessageId = messageId;
+    this.isLoadingMessageDetail = true;
     this.selectedMessageId = messageId;
     this.router.navigate(['message', messageId], { 
       relativeTo: this.route,
       queryParamsHandling: 'preserve'
     });
+    
+    // Clear loading state after a short delay (the message detail component should handle its own loading)
+    setTimeout(() => {
+      this.loadingMessageId = null;
+      this.isLoadingMessageDetail = false;
+    }, 500);
   }
 
 
