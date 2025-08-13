@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, AfterViewInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -65,10 +65,13 @@ import { DownloadButtonDirective } from '../../directives/download-button.direct
               </div>
               <div *ngIf="!isSectionLoading(i)" class="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <iframe
+                  #sectionIframe
                   class="w-full border-none"
                   style="min-height: 200px; max-height: 400px;"
-                  [srcdoc]="getSectionContentForViewing(i)"
-                  sandbox="allow-same-origin">
+                  [attr.data-section-index]="i"
+                  sandbox="allow-same-origin"
+                  frameborder="0"
+                  scrolling="auto">
                 </iframe>
               </div>
             </div>
@@ -94,18 +97,68 @@ import { DownloadButtonDirective } from '../../directives/download-button.direct
     }
   `]
 })
-export class MessageSectionsComponent {
+export class MessageSectionsComponent implements AfterViewInit {
   @Input() message: DetailDto | null = null;
+  @ViewChildren('sectionIframe') iframes!: QueryList<ElementRef<HTMLIFrameElement>>;
   
   // Section viewing state
   viewingSectionIndex: number | null = null;
   sectionContents: Map<number, string> = new Map();
   loadingSections: Set<number> = new Set();
+  iframeContents: Map<number, string> = new Map();
 
   constructor(
     private messageService: MessageService,
     private fileDownloader: FileDownloaderService
   ) {}
+
+  ngAfterViewInit() {
+    // Set up iframe content after view is initialized
+    setTimeout(() => {
+      this.updateIframeContents();
+    }, 0);
+    
+    // Listen for iframe changes
+    this.iframes.changes.subscribe(() => {
+      setTimeout(() => {
+        this.updateIframeContents();
+      }, 0);
+    });
+  }
+
+  private updateIframeContents() {
+    this.iframes.forEach((iframeRef) => {
+      const iframe = iframeRef.nativeElement;
+      const sectionIndex = parseInt(iframe.getAttribute('data-section-index') || '0', 10);
+      
+      if (this.isViewingSection(sectionIndex) && this.sectionContents.has(sectionIndex)) {
+        const content = this.getSectionContentForViewing(sectionIndex);
+        this.setIframeContent(iframe, content, sectionIndex);
+      }
+    });
+  }
+
+  private setIframeContent(iframe: HTMLIFrameElement, content: string, sectionIndex: number) {
+    try {
+      // Use a more reliable method to set iframe content
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (doc) {
+        doc.open();
+        doc.write(content);
+        doc.close();
+        
+        console.log(`Successfully set iframe content for section ${sectionIndex}`);
+      } else {
+        // Fallback to srcdoc if document access fails
+        iframe.srcdoc = content;
+        console.log(`Fallback: Set srcdoc for section ${sectionIndex}`);
+      }
+    } catch (error) {
+      console.error(`Error setting iframe content for section ${sectionIndex}:`, error);
+      // Final fallback
+      iframe.srcdoc = content;
+    }
+  }
 
   getMessageSections(): EmailSectionDto[] {
     if (!this.message || !this.message.sections || this.message.sections.length === 0) {
@@ -141,6 +194,11 @@ export class MessageSectionsComponent {
       if (!this.sectionContents.has(index)) {
         // Load content if not already loaded
         this.loadSectionContent(section, index);
+      } else {
+        // Content already loaded, update iframe after view change
+        setTimeout(() => {
+          this.updateIframeContents();
+        }, 0);
       }
     }
   }
@@ -165,11 +223,21 @@ export class MessageSectionsComponent {
         console.log('Section content loaded for index', index, ':', content.substring(0, 100) + '...');
         this.sectionContents.set(index, content);
         this.loadingSections.delete(index);
+        
+        // Update iframe content after loading
+        setTimeout(() => {
+          this.updateIframeContents();
+        }, 0);
       },
       error: (error) => {
         console.error('Error loading section content for index', index, ':', error);
         this.sectionContents.set(index, `<html><body><h2>Error loading section content</h2><p>${error.message || error}</p></body></html>`);
         this.loadingSections.delete(index);
+        
+        // Update iframe content even for errors
+        setTimeout(() => {
+          this.updateIframeContents();
+        }, 0);
       }
     });
   }
@@ -220,76 +288,18 @@ export class MessageSectionsComponent {
 
   getSectionContentForViewing(index: number): string {
     const content = this.sectionContents.get(index);
-    if (!content) return this.createStyledHtml('Loading...', true);
-    
     const sections = this.getMessageSections();
     const section = sections[index];
-    const mediaType = (section?.mediaType || '').toLowerCase();
+    const mediaType = section?.mediaType || '';
+    const messageId = this.message?.id || '';
     
-    if (mediaType === 'text/html') {
-      // For HTML content, inject comprehensive styling
-      const baseStyles = this.getBaseStyles();
-      const styledContent = content.includes('<head>') 
-        ? content.replace('<head>', `<head>${baseStyles}`)
-        : `<html><head>${baseStyles}</head><body>${content}</body></html>`;
-      return styledContent;
-    } else {
-      // For text/plain, wrap in basic HTML with explicit styling
-      const escaped = content
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-      
-      return this.createStyledHtml(escaped, false);
-    }
-  }
-
-  private getBaseStyles(): string {
-    // Detect if we're in dark mode by checking if the document has dark theme classes
-    const isDarkMode = document.documentElement.classList.contains('dark') || 
-                      document.body.classList.contains('dark') ||
-                      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Use the message service's shared formatMessageContent method for consistent styling
+    const formattedContent = this.messageService.formatMessageContent(content || '', mediaType, messageId);
     
-    const textColor = isDarkMode ? '#ffffff' : '#000000';
-    const bgColor = isDarkMode ? '#1f2937' : '#ffffff';
-    const linkColor = isDarkMode ? '#60a5fa' : '#0066cc';
+    // Debug output to see what's being generated
+    console.log('Formatted content for section', index, ':', formattedContent.substring(0, 500) + '...');
     
-    return `<style>
-      * { 
-        color: ${textColor} !important; 
-        background-color: transparent !important;
-      }
-      body { 
-        background: ${bgColor} !important; 
-        color: ${textColor} !important; 
-        margin: 0 !important;
-        padding: 20px !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      }
-      p, div, span, h1, h2, h3, h4, h5, h6 {
-        color: ${textColor} !important;
-      }
-      a { 
-        color: ${linkColor} !important; 
-      }
-      pre {
-        font-family: 'Courier New', monospace !important;
-        white-space: pre-wrap !important;
-        color: ${textColor} !important;
-      }
-    </style>`;
-  }
-
-  private createStyledHtml(content: string, isPlainText: boolean): string {
-    const baseStyles = this.getBaseStyles();
-    
-    if (isPlainText) {
-      return `<html><head>${baseStyles}</head><body><pre>${content}</pre></body></html>`;
-    } else {
-      return `<html><head>${baseStyles}</head><body><pre style="white-space: pre-wrap; font-family: 'Courier New', monospace; margin: 0; padding: 0;">${content}</pre></body></html>`;
-    }
+    return formattedContent;
   }
 
   getSectionIcon(type: string): string {

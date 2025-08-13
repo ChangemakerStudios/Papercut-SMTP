@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable, map, switchMap, catchError, of, EMPTY, startWith, combineLatest, shareReplay } from 'rxjs';
@@ -161,10 +161,11 @@ interface MessageViewData {
                 <div class="h-full overflow-hidden bg-white dark:bg-gray-800">
                   <div class="h-full">
                     <iframe
+                      #messageIframe
                       class="w-full h-full"
-                      [srcdoc]="getMessageContent(messageData.detail)"
                       sandbox="allow-same-origin"
-                      frameborder="0">
+                      frameborder="0"
+                      scrolling="auto">
                     </iframe>
                   </div>
                 </div>
@@ -242,10 +243,12 @@ interface MessageViewData {
     }
   `]
 })
-export class MessageDetailComponent {
+export class MessageDetailComponent implements AfterViewInit {
+  @ViewChild('messageIframe') messageIframe?: ElementRef<HTMLIFrameElement>;
+  
   messageData$: Observable<MessageViewData>;
   private currentMessage: DetailDto | null = null;
-  
+  private currentMessageContent: string = '';
 
 
   constructor(
@@ -270,6 +273,10 @@ export class MessageDetailComponent {
             map(detail => {
               console.log('Message detail loaded successfully:', detail);
               this.currentMessage = detail;
+              // Trigger iframe update when message is loaded
+              setTimeout(() => {
+                this.updateIframeContent();
+              }, 0);
               return detail;
             }),
             catchError(error => {
@@ -313,6 +320,51 @@ export class MessageDetailComponent {
     }).catch(err => {
       console.error('Failed to redirect to home:', err);
     });
+  }
+
+  ngAfterViewInit() {
+    // Set up iframe content after view is initialized
+    setTimeout(() => {
+      this.updateIframeContent();
+    }, 0);
+
+    // Subscribe to message data changes to update iframe
+    this.messageData$.subscribe(messageData => {
+      if (messageData.detail && !messageData.isLoadingDetail) {
+        setTimeout(() => {
+          this.updateIframeContent();
+        }, 0);
+      }
+    });
+  }
+
+  private updateIframeContent() {
+    if (this.messageIframe && this.currentMessage) {
+      const content = this.getMessageContent(this.currentMessage);
+      this.setIframeContent(this.messageIframe.nativeElement, content);
+    }
+  }
+
+  private setIframeContent(iframe: HTMLIFrameElement, content: string) {
+    try {
+      // Use a more reliable method to set iframe content
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (doc) {
+        doc.open();
+        doc.write(content);
+        doc.close();
+        
+        console.log('Successfully set message iframe content');
+      } else {
+        // Fallback to srcdoc if document access fails
+        iframe.srcdoc = content;
+        console.log('Fallback: Set message iframe srcdoc');
+      }
+    } catch (error) {
+      console.error('Error setting message iframe content:', error);
+      // Final fallback
+      iframe.srcdoc = content;
+    }
   }
 
   getRawDownloadUrl(message: DetailDto | RefDto | null): string {

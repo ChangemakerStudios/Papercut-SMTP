@@ -177,62 +177,11 @@ export class MessageService {
     return html;
   }
 
-  // Returns the HTML content for a message, handling plain text and HTML bodies
+    // Returns the HTML content for a message, handling plain text and HTML bodies
   getMessageContent(message: DetailDto): string {
-    if (!message.htmlBody && message.textBody) {
-      return `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <style>
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-              line-height: 1.6; 
-              color: #333; 
-              margin: 16px; 
-              background: white;
-            }
-            pre { white-space: pre-wrap; word-wrap: break-word; }
-          </style>
-        </head>
-        <body>
-          <pre>${this.escapeHtml(message.textBody)}</pre>
-        </body>
-        </html>
-      `;
-    }
-    let content = message.htmlBody || '';
-    if (content) {
-      content = this.transformCidReferences(content, message.id ?? '');
-      content = this.makeUrlsAbsolute(content);
-    }
-    if (content.includes('<html') || content.includes('<HTML')) {
-      return content;
-    } else {
-      return `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <style>
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-              line-height: 1.6; 
-              color: #333; 
-              margin: 16px; 
-              background: white;
-            }
-          </style>
-        </head>
-        <body>
-          ${content}
-        </body>
-        </html>
-      `;
-    }
+    const content = message.htmlBody || message.textBody || '';
+    const mediaType = message.htmlBody ? 'text/html' : 'text/plain';
+    return this.formatMessageContent(content, mediaType, message.id ?? '');
   }
 
   private escapeHtml(unsafe: string): string {
@@ -261,5 +210,145 @@ export class MessageService {
     return html.replace(/src=["']\/api\/([^"']+)["']/gi, (match, apiPath) => {
       return `src="${baseUrl}/api/${apiPath}"`;
     });
-  }  
+  }
+
+  /**
+   * Formats content for display in iframe with proper styling and theme support.
+   * Used by both message content and section content display.
+   * @param content The raw content
+   * @param mediaType The media type of the content
+   * @param messageId The message ID for CID reference transformation
+   * @returns Formatted HTML content ready for iframe display
+   */
+  formatMessageContent(content: string, mediaType: string, messageId: string = ''): string {
+    if (!content) {
+      return this.createStyledDocument('Loading...', true);
+    }
+
+    const lowerMediaType = (mediaType || '').toLowerCase();
+    
+    if (lowerMediaType === 'text/html') {
+      // Process HTML content with CID and URL transformations
+      let processedContent = content;
+      if (messageId) {
+        processedContent = this.transformCidReferences(processedContent, messageId);
+        processedContent = this.makeUrlsAbsolute(processedContent);
+      }
+      
+      // If it's a complete HTML document, inject theme styles
+      if (processedContent.includes('<html') || processedContent.includes('<HTML')) {
+        return this.injectThemeStyles(processedContent);
+      } else {
+        // Wrap partial HTML in complete document
+        return this.createStyledDocument(processedContent, false);
+      }
+    } else {
+      // For text/plain and other text types
+      const escapedContent = this.escapeHtml(content);
+      return this.createStyledDocument(`<pre>${escapedContent}</pre>`, true);
+    }
+  }
+
+  /**
+   * @deprecated Use formatMessageContent instead
+   * Formats section content for display in iframe with proper styling and theme support.
+   */
+  formatSectionContent(content: string, mediaType: string, messageId: string): string {
+    return this.formatMessageContent(content, mediaType, messageId);
+  }
+
+  private createStyledDocument(content: string, isPreformatted: boolean): string {
+    const themeStyles = this.getThemeAwareStyles();
+    const bodyContent = isPreformatted ? content : content;
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        ${themeStyles}
+      </head>
+      <body>
+        ${bodyContent}
+      </body>
+      </html>
+    `;
+  }
+
+  private injectThemeStyles(html: string): string {
+    const themeStyles = this.getThemeAwareStyles();
+    
+    if (html.includes('<head>')) {
+      return html.replace('<head>', `<head>${themeStyles}`);
+    } else {
+      // If no head tag, wrap the content
+      return this.createStyledDocument(html, false);
+    }
+  }
+
+  private getThemeAwareStyles(): string {
+    // Detect theme similar to the component's approach
+    const isDarkMode = document.documentElement.classList.contains('dark') || 
+                      document.body.classList.contains('dark') ||
+                      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    const textColor = isDarkMode ? '#ffffff' : '#333333';
+    const bgColor = isDarkMode ? '#1f2937' : '#ffffff';
+    const linkColor = isDarkMode ? '#60a5fa' : '#0066cc';
+    
+    console.log('Theme detection - isDarkMode:', isDarkMode, 'textColor:', textColor, 'bgColor:', bgColor);
+    
+    return `<style>
+      html, body { 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        line-height: 1.6 !important;
+        background: ${bgColor} !important; 
+        color: ${textColor} !important; 
+        fill: ${textColor} !important;
+        margin: 0 !important;
+        padding: 4px !important;
+        min-height: 100vh !important;
+      }
+      * { 
+        color: ${textColor} !important; 
+        fill: ${textColor} !important;
+        background-color: transparent !important;
+      }
+      p, div, span, h1, h2, h3, h4, h5, h6, td, th, li {
+        color: ${textColor} !important;
+        fill: ${textColor} !important;
+        background-color: transparent !important;
+      }
+      a { 
+        color: ${linkColor} !important; 
+        fill: ${linkColor} !important;
+      }
+      pre {
+        font-family: 'Courier New', monospace !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        color: ${textColor} !important;
+        fill: ${textColor} !important;
+        background-color: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      img {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+      table {
+        border-collapse: collapse !important;
+        color: ${textColor} !important;
+        fill: ${textColor} !important;
+      }
+      table td, table th {
+        border: 1px solid ${isDarkMode ? '#4b5563' : '#d1d5db'} !important;
+        padding: 8px !important;
+        color: ${textColor} !important;
+        fill: ${textColor} !important;
+      }
+    </style>`;
+  }
 } 
