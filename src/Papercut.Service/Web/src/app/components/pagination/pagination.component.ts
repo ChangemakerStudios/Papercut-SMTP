@@ -20,7 +20,12 @@ export interface PaginationInfo {
   template: `
     <div class="flex items-center justify-between gap-2 p-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 min-w-0">
       <div class="text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 flex items-center gap-2">
-        {{ pageStart + 1 }}–{{ displayEnd }} of {{ totalCount }}
+        <ng-container *ngIf="totalCount > 0; else noResults">
+          {{ pageStart + 1 }}–{{ displayEnd }} of {{ totalCount }}
+        </ng-container>
+        <ng-template #noResults>
+          No results
+        </ng-template>
         <mat-spinner *ngIf="isLoading" diameter="12" strokeWidth="2" class="text-blue-600 dark:text-blue-400"></mat-spinner>
       </div>
       <div class="flex items-center gap-1 flex-shrink-0">

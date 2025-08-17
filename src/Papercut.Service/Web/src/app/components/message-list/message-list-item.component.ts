@@ -51,31 +51,31 @@ import { RefDto } from 'src/app/models';
                 }">{{ message.size | fileSize }}</span>
           <mat-spinner *ngIf="isLoadingDetail" diameter="16" strokeWidth="2" 
                        class="text-blue-600 dark:text-blue-400"></mat-spinner>
+          <!-- Attachment icon inline with size -->
+          <mat-icon class="text-base" 
+                    [ngClass]="{
+                      'text-gray-600 dark:text-gray-400': !selected,
+                      'text-blue-600 dark:text-blue-400': selected
+                    }"
+                    *ngIf="message.attachmentCount && message.attachmentCount > 0"
+                    matTooltip="Has attachments"
+                    style="font-size: 16px; width: 16px; height: 16px;">
+            attach_file
+          </mat-icon>
+          <!-- Priority icons inline with size -->
+          <mat-icon class="text-base text-red-600 dark:text-red-400" 
+                    *ngIf="message.priority === 'Urgent'"
+                    matTooltip="Urgent priority"
+                    style="font-size: 16px; width: 16px; height: 16px;">
+            priority_high
+          </mat-icon>
+          <mat-icon class="text-base text-blue-600 dark:text-blue-400" 
+                    *ngIf="message.priority === 'Non-urgent'"
+                    matTooltip="Non-urgent priority"
+                    style="font-size: 16px; width: 16px; height: 16px;">
+            keyboard_arrow_down
+          </mat-icon>
         </div>
-      </div>
-      <div class="flex items-center gap-2 mt-1" *ngIf="hasStatusIndicators()">
-        <mat-icon class="text-base" 
-                  [ngClass]="{
-                    'text-gray-600 dark:text-gray-400': !selected,
-                    'text-blue-600 dark:text-blue-400': selected
-                  }"
-                  *ngIf="message.attachmentCount && message.attachmentCount > 0"
-                  matTooltip="Has attachments"
-                  style="font-size: 16px; width: 16px; height: 16px;">
-          attach_file
-        </mat-icon>
-        <mat-icon class="text-base text-red-600 dark:text-red-400" 
-                  *ngIf="message.priority === 'Urgent'"
-                  matTooltip="Urgent priority"
-                  style="font-size: 16px; width: 16px; height: 16px;">
-          priority_high
-        </mat-icon>
-        <mat-icon class="text-base text-blue-600 dark:text-blue-400" 
-                  *ngIf="message.priority === 'Non-urgent'"
-                  matTooltip="Non-urgent priority"
-                  style="font-size: 16px; width: 16px; height: 16px;">
-          keyboard_arrow_down
-        </mat-icon>
       </div>
     </div>
   `,

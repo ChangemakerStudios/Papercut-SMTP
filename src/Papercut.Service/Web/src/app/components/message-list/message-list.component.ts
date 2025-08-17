@@ -39,6 +39,16 @@ import { PaginationComponent } from '../pagination/pagination.component';
            [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
         <!-- Paginated List -->
         <div class="w-full overflow-auto virtual-scroll-container flex-1">
+          <!-- No Messages Placeholder -->
+          <div *ngIf="!isLoading && allMessages.length === 0" 
+               class="flex flex-col items-center justify-center h-full p-8 text-center">
+            <mat-icon class="text-6xl mb-4 text-gray-400 dark:text-gray-500 !w-auto !h-auto">inbox</mat-icon>
+            <h3 class="text-xl font-medium mb-2 text-gray-700 dark:text-gray-300">No Messages</h3>
+            <p class="text-gray-600 dark:text-gray-400">No emails have been received yet</p>
+            <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Messages will appear here when they arrive</p>
+          </div>
+          
+          <!-- Messages List -->
           <app-message-list-item
             *ngFor="let message of allMessages; trackBy: trackByMessageId"
             [message]="message"
