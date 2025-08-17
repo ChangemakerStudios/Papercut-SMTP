@@ -42,39 +42,46 @@ import { RefDto } from 'src/app/models';
                 [matTooltip]="(message.createdAt | date:'full') ?? 'No data'">
                 From: {{ getFromDisplay() }}<br/>
                 Received: {{ message.createdAt | timeAgo }}</span>
-        <div class="flex items-center gap-2 ml-2">
-          <span class="font-medium" 
-                [ngClass]="{
-                  'text-gray-700 dark:text-gray-300': !message.isRead,
-                  'text-gray-600 dark:text-gray-400': message.isRead,
-                  'text-blue-700 dark:text-blue-300': selected
-                }">{{ message.size | fileSize }}</span>
-          <mat-spinner *ngIf="isLoadingDetail" diameter="16" strokeWidth="2" 
-                       class="text-blue-600 dark:text-blue-400"></mat-spinner>
-          <!-- Attachment icon inline with size -->
-          <mat-icon class="text-base" 
+        <div class="flex flex-row items-center ml-2">
+          <!-- Loading indicator first -->
+          <mat-spinner *ngIf="isLoadingDetail" 
+                      diameter="16" 
+                      strokeWidth="2" 
+                      class="mr-1 text-blue-600 dark:text-blue-400"></mat-spinner>
+          
+          <!-- Attachment icon second -->
+          <mat-icon class="text-base mr-1" 
                     [ngClass]="{
                       'text-gray-600 dark:text-gray-400': !selected,
                       'text-blue-600 dark:text-blue-400': selected
                     }"
                     *ngIf="message.attachmentCount && message.attachmentCount > 0"
                     matTooltip="Has attachments"
-                    style="font-size: 16px; width: 16px; height: 16px;">
+                    style="width: auto; font-size: 8pt;">
             attach_file
           </mat-icon>
-          <!-- Priority icons inline with size -->
-          <mat-icon class="text-base text-red-600 dark:text-red-400" 
+          
+          <!-- Priority icons -->
+          <mat-icon class="text-base mr-1 text-red-600 dark:text-red-400" 
                     *ngIf="message.priority === 'Urgent'"
                     matTooltip="Urgent priority"
-                    style="font-size: 16px; width: 16px; height: 16px;">
+                    style="width: auto; font-size: 8pt;">
             priority_high
           </mat-icon>
-          <mat-icon class="text-base text-blue-600 dark:text-blue-400" 
+          <mat-icon class="text-base mr-1 text-blue-600 dark:text-blue-400" 
                     *ngIf="message.priority === 'Non-urgent'"
                     matTooltip="Non-urgent priority"
-                    style="font-size: 16px; width: 16px; height: 16px;">
+                    style="width: auto; font-size: 8pt;">
             keyboard_arrow_down
           </mat-icon>
+          
+          <!-- File size last -->
+          <span class="font-medium" 
+                [ngClass]="{
+                  'text-gray-700 dark:text-gray-300': !message.isRead,
+                  'text-gray-600 dark:text-gray-400': message.isRead,
+                  'text-blue-700 dark:text-blue-300': selected
+                }">{{ message.size | fileSize }}</span>
         </div>
       </div>
     </div>
