@@ -283,16 +283,16 @@ export class MessageService {
   }
 
   private getThemeAwareStyles(): string {
-    // Detect theme similar to the component's approach
+    // Detect theme by checking the 'dark' class on documentElement (set by ThemeService)
+    // Also check data-theme attribute on body as fallback
     const isDarkMode = document.documentElement.classList.contains('dark') || 
-                      document.body.classList.contains('dark') ||
-                      window.matchMedia('(prefers-color-scheme: dark)').matches;
+                      document.body.getAttribute('data-theme') === 'dark';
     
     const textColor = isDarkMode ? '#ffffff' : '#333333';
     const bgColor = isDarkMode ? '#1f2937' : '#ffffff';
     const linkColor = isDarkMode ? '#60a5fa' : '#0066cc';
     
-    console.log('Theme detection - isDarkMode:', isDarkMode, 'textColor:', textColor, 'bgColor:', bgColor);
+    console.log('Theme detection - isDarkMode:', isDarkMode, 'documentElement.classList:', document.documentElement.classList.toString(), 'body.data-theme:', document.body.getAttribute('data-theme'), 'textColor:', textColor, 'bgColor:', bgColor);
     
     return `<style>
       html, body { 
