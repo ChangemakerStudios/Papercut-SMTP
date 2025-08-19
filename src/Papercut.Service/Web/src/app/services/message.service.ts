@@ -51,7 +51,7 @@ export class MessageService {
       .pipe(
         map(response => ({
           ...response,
-          messages: response.messages.map(msg => ({
+          messages: (response.messages || []).map(msg => ({
             ...msg,
             createdAt: msg.createdAt ? new Date(msg.createdAt) : null
           }))

@@ -15,10 +15,10 @@ export class MessageRepository {
     let params = new HttpParams();
     
     if (options) {
-      if (options.limit) {
+      if (options.limit !== undefined) {
         params = params.set('limit', options.limit.toString());
       }
-      if (options.start) {
+      if (options.start !== undefined) {
         params = params.set('start', options.start.toString());
       }
     }
