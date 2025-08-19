@@ -157,11 +157,11 @@ export class MessageSectionsComponent {
       : this.messageService.getSectionByIndex(this.message.id, index);
     
     observable.subscribe({
-      next: (content) => {
+      next: (content: string) => {
         this.sectionContents.set(index, content);
         this.loadingSections.delete(index);
       },
-      error: (error) => {
+      error: (error: any) => {
         this.sectionContents.set(index, `<html><body><h2>Error loading section content</h2><p>${error.message || error}</p></body></html>`);
         this.loadingSections.delete(index);
       }

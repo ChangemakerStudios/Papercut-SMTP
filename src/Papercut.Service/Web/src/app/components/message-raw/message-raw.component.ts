@@ -98,7 +98,7 @@ export class MessageRawComponent implements OnInit, OnDestroy {
           return of('');
         })
       )
-      .subscribe(content => {
+      .subscribe((content: string) => {
         this.rawContent = content;
         this.isLoading = false;
       });

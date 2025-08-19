@@ -18,7 +18,7 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
-import { MessageService } from '../services/message.service';
+import { MessageApiService } from '../services/message-api.service';
 import { GetMessagesResponse } from '../models';
 
 /**
@@ -29,7 +29,7 @@ import { GetMessagesResponse } from '../models';
   providedIn: 'root'
 })
 export class MessageListResolver implements Resolve<GetMessagesResponse> {
-  constructor(private messageService: MessageService) {}
+  constructor(private messageApiService: MessageApiService) {}
 
   resolve(
     route: ActivatedRouteSnapshot, 
@@ -38,6 +38,6 @@ export class MessageListResolver implements Resolve<GetMessagesResponse> {
     const limit = parseInt(route.queryParams['limit'] || '10', 10);
     const start = parseInt(route.queryParams['start'] || '0', 10);
     
-    return this.messageService.getMessages(limit, start);
+    return this.messageApiService.getMessages(limit, start);
   }
 } 
