@@ -25,3 +25,4 @@ publish
 Releases
 .angular
 src/Papercut.Service/Web/dist
+.DS_Store
