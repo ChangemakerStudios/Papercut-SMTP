@@ -16,151 +16,75 @@
 // limitations under the License.
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
-import { 
-  GetMessagesResponse, 
-  DetailDto, 
-  RefDto 
-} from '../models';
-import { MessageRepository } from './message.repository';
+import { Observable } from 'rxjs';
+import { DetailDto } from '../models';
+import { MessageApiService } from './message-api.service';
 
 /**
- * Service for managing email messages.
- * Provides methods to interact with the Papercut message API.
+ * Service for managing email message content and formatting.
+ * Focuses on content processing, formatting, and presentation logic.
+ * Uses MessageApiService for all HTTP operations.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class MessageService {
-  private readonly apiUrl = '/api/messages';
 
-  constructor(
-    private http: HttpClient,
-    private messageRepository: MessageRepository
-  ) {}
+  constructor(private messageApiService: MessageApiService) {}
 
   /**
-   * Gets a paginated list of messages.
-   * @param limit The maximum number of messages to return (default: 10)
-   * @param start The starting index for pagination (default: 0)
-   * @returns Observable of GetMessagesResponse
-   */
-  getMessages(limit: number = 10, start: number = 0): Observable<GetMessagesResponse> {
-    return this.messageRepository.getMessages({ limit, start })
-      .pipe(
-        map(response => ({
-          ...response,
-          messages: response.messages.map(msg => ({
-            ...msg,
-            createdAt: msg.createdAt ? new Date(msg.createdAt) : null
-          }))
-        }))
-      );
-  }
-
-  /**
-   * Gets the basic RefDto information for a specific message.
-   * This is faster than getMessage() as it queries the list endpoint.
+   * Gets the raw message content via the API service.
    * @param messageId The unique message ID
-   * @returns Observable of RefDto or null if not found
+   * @returns Observable of the raw message content as text
    */
-  getMessageRef(messageId: string): Observable<RefDto | null> {
-    // Get recent messages and find the one with matching ID
-    return this.getMessages(50, 0).pipe(
-      map(response => {
-        const found = response.messages.find(msg => msg.id === messageId);
-        return found || null;
-      })
-    );
+  getRawContent(messageId: string): Observable<string> {
+    return this.messageApiService.getRawContent(messageId);
   }
 
   /**
-   * Gets the detailed information for a specific message.
-   * @param messageId The unique message ID
-   * @returns Observable of DetailDto
-   */
-  getMessage(messageId: string): Observable<DetailDto> {
-    return this.messageRepository.getMessage(messageId)
-      .pipe(
-        map(detail => ({
-          ...detail,
-          createdAt: detail.createdAt ? new Date(detail.createdAt) : null
-        }))
-      );
-  }
-
-  /**
-   * Downloads the raw message file.
-   * @param messageId The unique message ID
-   */
-  downloadRawMessage(messageId: string): void {
-    this.messageRepository.downloadRawMessage(messageId);
-  }
-
-  /**
-   * Downloads a specific message section by index.
-   * @param messageId The unique message ID
-   * @param sectionIndex The zero-based section index
-   */
-  downloadSectionByIndex(messageId: string, sectionIndex: number): void {
-    this.messageRepository.downloadSectionByIndex(messageId, sectionIndex);
-  }
-
-  /**
-   * Downloads a specific message section by content ID.
-   * @param messageId The unique message ID
-   * @param contentId The content ID of the section
-   */
-  downloadSectionByContentId(messageId: string, contentId: string): void {
-    this.messageRepository.downloadSectionByContentId(messageId, contentId);
-  }
-
-  /**
-   * Downloads raw message file with progress tracking.
-   * @param messageId The unique message ID
-   */
-  downloadRawMessageWithProgress(messageId: string): void {
-    // This will be handled by FileDownloaderService
-    // For now, use the repository method as fallback
-    this.messageRepository.downloadRawMessage(messageId);
-  }
-
-  /**
-   * Gets the content of a specific message section by content ID.
+   * Gets the content of a specific message section by content ID via the API service.
    * @param messageId The unique message ID
    * @param contentId The content ID of the section
    * @returns Observable of the section content as text
    */
   getSectionContent(messageId: string, contentId: string): Observable<string> {
-    return this.messageRepository.getSectionContent(messageId, contentId);
+    return this.messageApiService.getSectionContent(messageId, contentId);
   }
 
   /**
-   * Gets the content of a specific message section by index.
+   * Gets the content of a specific message section by index via the API service.
    * @param messageId The unique message ID
    * @param index The index of the section in the sections array
    * @returns Observable of the section content as text
    */
   getSectionByIndex(messageId: string, index: number): Observable<string> {
-    return this.messageRepository.getSectionByIndex(messageId, index);
+    return this.messageApiService.getSectionByIndex(messageId, index);
   }
 
   /**
-   * Gets the raw message content.
+   * Downloads a specific message section by content ID via the API service.
    * @param messageId The unique message ID
-   * @returns Observable of the raw message content as text
+   * @param contentId The content ID of the section
    */
-  getRawContent(messageId: string): Observable<string> {
-    return this.messageRepository.getRawContent(messageId);
+  downloadSectionByContentId(messageId: string, contentId: string): void {
+    this.messageApiService.downloadSectionByContentId(messageId, contentId);
   }
 
   /**
-   * Deletes all messages.
-   * @returns Observable of void
+   * Downloads a specific message section by index via the API service.
+   * @param messageId The unique message ID
+   * @param sectionIndex The zero-based section index
    */
-  deleteAllMessages(): Observable<void> {
-    return this.messageRepository.deleteAllMessages();
+  downloadSectionByIndex(messageId: string, sectionIndex: number): void {
+    this.messageApiService.downloadSectionByIndex(messageId, sectionIndex);
+  }
+
+  /**
+   * Downloads the raw message file via the API service.
+   * @param messageId The unique message ID
+   */
+  downloadRawMessage(messageId: string): void {
+    this.messageApiService.downloadRawMessage(messageId);
   }
 
 

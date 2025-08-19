@@ -12,6 +12,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EmailListPipe } from '../../pipes/email-list.pipe';
 import { MessageService } from '../../services/message.service';
+import { MessageApiService } from '../../services/message-api.service';
 import { DetailDto, RefDto } from '../../models';
 import { MessageSectionsComponent } from '../message-sections/message-sections.component';
 
@@ -227,7 +228,8 @@ export class MessageDetailComponent {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private messageApiService: MessageApiService
   ) {
     this.messageData$ = this.route.params.pipe(
       switchMap(params => {
@@ -238,10 +240,10 @@ export class MessageDetailComponent {
           console.log('URL decoded message ID:', decodeURIComponent(messageId));
           
           // Get RefDto first (fast)
-          const refMessage$ = this.messageService.getMessageRef(messageId);
+          const refMessage$ = this.messageApiService.getMessageRef(messageId);
           
           // Get DetailDto (slower)
-          const detailMessage$ = this.messageService.getMessage(messageId).pipe(
+          const detailMessage$ = this.messageApiService.getMessageDetail(messageId).pipe(
             map(detail => {
               console.log('Message detail loaded successfully:', detail);
               this.currentMessage = detail;

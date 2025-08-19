@@ -9,6 +9,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MessageService } from '../../services/message.service';
+import { MessageApiService } from '../../services/message-api.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { ResizerComponent } from '../resizer/resizer.component';
@@ -172,7 +173,8 @@ export class MessageListComponent implements OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private messageApiService: MessageApiService
   ) {
     // Load current page when query params change
     this.route.queryParams
@@ -214,7 +216,7 @@ export class MessageListComponent implements OnDestroy {
 
   private loadPage(limit: number, start: number): void {
     this.isLoading = true;
-    this.messageService.getMessages(limit, start)
+    this.messageApiService.getMessages(limit, start)
       .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe((response: GetMessagesResponse) => {
         this.allMessages = response.messages;
