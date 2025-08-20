@@ -1,4 +1,4 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2024 Jaben Cargman
@@ -16,14 +16,13 @@
 // limitations under the License.
 
 
-using Papercut.Common.Helper;
-using Papercut.Core.Infrastructure.Identities;
-using Papercut.Service.Domain.Models;
-using Papercut.Service.Infrastructure;
+namespace Papercut.Service.Application.Messages;
 
-using Papercut.Service.Domain;
+using Common.Helper;
 
-namespace Papercut.Service.Application.Controllers;
+using Domain.Messages;
+
+using Infrastructure;
 
 [Route("api/[controller]")]
 public class MessagesController(
@@ -90,7 +89,7 @@ public class MessagesController(
         var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == id || msg.Name == id);
         if (messageEntry == null)
         {
-            return this.NotFound();
+            return NotFound();
         }
 
         // Generate ETag based on the message's modified date
@@ -114,7 +113,7 @@ public class MessagesController(
         var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == messageId || msg.Name == messageId);
         if (messageEntry == null)
         {
-            return this.NotFound();
+            return NotFound();
         }
 
         var response =
@@ -129,13 +128,13 @@ public class MessagesController(
     [HttpGet("{messageId}/sections/{index}")]
     public Task<ActionResult> DownloadSection(string messageId, int index)
     {
-        return this.DownloadSection(messageId, sections => index >= 0 && index < sections.Count ? sections[index] : null);
+        return DownloadSection(messageId, sections => index >= 0 && index < sections.Count ? sections[index] : null);
     }
 
     [HttpGet("{messageId}/contents/{contentId}")]
     public Task<ActionResult> DownloadSectionContent(string messageId, string contentId)
     {
-        return this.DownloadSection(messageId, sections => sections.FirstOrDefault(s => s.ContentId == contentId));
+        return DownloadSection(messageId, sections => sections.FirstOrDefault(s => s.ContentId == contentId));
     }
 
     async Task<ActionResult> DownloadSection(string messageId, Func<List<MimePart>, MimePart?> findSection)
@@ -143,7 +142,7 @@ public class MessagesController(
         var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == messageId || msg.Name == messageId);
         if (messageEntry == null)
         {
-            return this.NotFound();
+            return NotFound();
         }
 
         var mimeMessage = new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry))!);
@@ -152,7 +151,7 @@ public class MessagesController(
         var mimePart = findSection(sections);
         if (mimePart == null)
         {
-            return this.NotFound();
+            return NotFound();
         }
 
         if (!mimePart.ContentMd5.IsSet())

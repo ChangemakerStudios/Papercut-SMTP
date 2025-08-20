@@ -16,11 +16,11 @@
 // limitations under the License.
 
 
+namespace Papercut.Service.Infrastructure.Logging;
+
 using Microsoft.Extensions.Configuration;
 
 using Serilog.Configuration;
-
-namespace Papercut.Service.Infrastructure.Logging;
 
 public class AddReadFromConfiguration(IConfiguration configuration) : ILoggerSettings
 {

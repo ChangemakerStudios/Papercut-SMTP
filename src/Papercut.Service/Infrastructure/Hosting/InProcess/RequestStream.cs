@@ -3,10 +3,10 @@
 // https://raw.githubusercontent.com/aspnet/Hosting/rel/1.1.2/src/Microsoft.AspNetCore.TestHost/ResponseStream.cs
 
 
+namespace Papercut.Service.Infrastructure.Hosting.InProcess;
+
 using System.Collections.Concurrent;
 using System.Diagnostics.Contracts;
-
-namespace Papercut.Service.Infrastructure.Hosting.InProcess;
 
 // This steam accepts writes from the server/app, buffers them internally, and returns the data via Reads
 // when requested by the client.

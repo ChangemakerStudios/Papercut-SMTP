@@ -25,17 +25,17 @@ public class PublishAppEventsHandlerToClientService(
 {
     public Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token = default)
     {
-        return this.PublishAsync(@event);
+        return PublishAsync(@event);
     }
 
     public Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token = default)
     {
-        return this.PublishAsync(@event);
+        return PublishAsync(@event);
     }
 
     public Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
     {
-        return this.PublishAsync(@event);
+        return PublishAsync(@event);
     }
 
     public async Task PublishAsync<T>(T @event)

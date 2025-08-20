@@ -1,7 +1,7 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Domain.Models;
+namespace Papercut.Service.Application.Health;
 
-[PublicAPI]
-public class EmailSectionDto
+public class HealthController : ControllerBase
 {
-    public string? Id { get; set; }
-
-    public string? MediaType { get; set; }
-
-    public string? FileName { get; set; }
+    [HttpGet("health")]
+    public IActionResult Check()
+    {
+        return new ContentResult
+        {
+            Content = "Papercut WebUI server started successfully.",
+            ContentType = "text/plain"
+        };
+    }
 }

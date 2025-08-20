@@ -1,4 +1,4 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2024 Jaben Cargman
@@ -16,31 +16,31 @@
 // limitations under the License.
 
 
-using System.Reflection;
+namespace Papercut.Service.Application.StaticContent;
 
-namespace Papercut.Service.Application.Controllers;
+using System.Reflection;
 
 public class StaticContentController : ControllerBase
 {
     const string ResourcePath = "{0}.Web.Assets.{1}";
 
     private static readonly Dictionary<string, string> MimeMapping = new()
-                                                                     {
-                                                                         { "htm", "text/html" },
-                                                                         { "html", "text/html" },
-                                                                         { "txt", "text/plain" },
-                                                                         { "js", "text/javascript" },
-                                                                         { "css", "text/css" },
-                                                                         { "ico", "image/x-icon" },
-                                                                         { "png", "image/png" },
-                                                                         { "jpeg", "image/jpeg" },
-                                                                         { "jpg", "image/jpeg" },
-                                                                         { "gif", "image/gif" },
-                                                                         { "svg", "image/svg+xml" },
-                                                                         { "ttf", "application/x-font-ttf" },
-                                                                         { "woff", "application/font-woff" },
-                                                                         { "woff2", "application/font-woff2" },
-                                                                     };
+    {
+        { "htm", "text/html" },
+        { "html", "text/html" },
+        { "txt", "text/plain" },
+        { "js", "text/javascript" },
+        { "css", "text/css" },
+        { "ico", "image/x-icon" },
+        { "png", "image/png" },
+        { "jpeg", "image/jpeg" },
+        { "jpg", "image/jpeg" },
+        { "gif", "image/gif" },
+        { "svg", "image/svg+xml" },
+        { "ttf", "application/x-font-ttf" },
+        { "woff", "application/font-woff" },
+        { "woff2", "application/font-woff2" },
+    };
 
     [HttpGet("{*anything}", Order = short.MaxValue)]
     [ResponseCache(
@@ -52,11 +52,11 @@ public class StaticContentController : ControllerBase
     )]
     public IActionResult Get()
     {
-        var resourceName = GetRequestedResourceName(this.Request.Path);
+        var resourceName = GetRequestedResourceName(Request.Path);
         var resourceContent = GetResourceStream(resourceName);
         if (resourceContent == null)
         {
-            return this.NotFound();
+            return NotFound();
         }
 
         return new FileStreamResult(resourceContent, GetMimeType(resourceName));

@@ -16,9 +16,9 @@
 // limitations under the License.
 
 
-using System.Collections.ObjectModel;
-
 namespace Papercut.Service.Infrastructure.Paths;
+
+using System.Collections.ObjectModel;
 
 public class ServerPathTemplateProviderService : IPathTemplatesProvider
 {
@@ -28,13 +28,13 @@ public class ServerPathTemplateProviderService : IPathTemplatesProvider
             .Select(s => s.Trim())
             .Where(s => !string.IsNullOrWhiteSpace(s));
 
-        this.MessagePathTemplates = new ObservableCollection<string>(messagePaths);
+        MessagePathTemplates = new ObservableCollection<string>(messagePaths);
 
         var loggingPaths = smtpServerOptions.LoggingPath.Split(';')
             .Select(s => s.Trim())
             .Where(s => !string.IsNullOrWhiteSpace(s));
 
-        this.LoggingPathTemplates = new ObservableCollection<string>(loggingPaths);
+        LoggingPathTemplates = new ObservableCollection<string>(loggingPaths);
     }
 
     public ObservableCollection<string> MessagePathTemplates { get; }

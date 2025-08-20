@@ -1,4 +1,4 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2024 Jaben Cargman
@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Papercut.Service.Domain;
+namespace Papercut.Service.Application.Messages;
 
 public class MimePartFileStreamResult : FileStreamResult
 {

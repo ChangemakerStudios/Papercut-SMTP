@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { Observable, finalize, filter, Subject, takeUntil } from 'rxjs';
@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MessageService } from '../../services/message.service';
 import { MessageApiService } from '../../services/message-api.service';
+import { SignalRService } from '../../services/signalr.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { ResizerComponent } from '../resizer/resizer.component';
@@ -146,7 +147,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
     }
   `]
 })
-export class MessageListComponent implements OnDestroy {
+export class MessageListComponent implements OnInit, OnDestroy {
   // Observables are no longer used to drive the list directly; we imperatively load a page on query param change
   messages$!: Observable<GetMessagesResponse>;
   
@@ -174,7 +175,8 @@ export class MessageListComponent implements OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private messageApiService: MessageApiService
+    private messageApiService: MessageApiService,
+    private signalRService: SignalRService
   ) {
     // Load current page when query params change
     this.route.queryParams
@@ -202,6 +204,38 @@ export class MessageListComponent implements OnDestroy {
     // Note: Resizer component handles localStorage loading automatically
   }
 
+  ngOnInit(): void {
+    // Start SignalR connection
+    this.signalRService.start();
+
+    // Subscribe to new message notifications
+    this.signalRService.newMessage$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(newMessage => {
+        if (newMessage) {
+          console.log('New message received via SignalR:', newMessage);
+          this.handleNewMessage(newMessage);
+        }
+      });
+
+    // Subscribe to message list change notifications
+    this.signalRService.messageListChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(changed => {
+        if (changed) {
+          console.log('Message list changed via SignalR, refreshing...');
+          this.refreshCurrentPage();
+        }
+      });
+
+    // Subscribe to connection status
+    this.signalRService.isConnected$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isConnected => {
+        console.log('SignalR connection status:', isConnected);
+      });
+  }
+
   private updateSelectedMessageFromUrl(): void {
     // Check if we're on a child route with a message ID
     let currentRoute = this.route.firstChild;
@@ -223,6 +257,40 @@ export class MessageListComponent implements OnDestroy {
         this.totalCount = response.totalMessageCount;
         this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
       });
+  }
+
+  private handleNewMessage(newMessage: RefDto): void {
+    // If we're on the first page, add the new message to the top of the list
+    if (this.pageStart === 0) {
+      // Check if message already exists to avoid duplicates
+      const existingIndex = this.allMessages.findIndex(msg => msg.id === newMessage.id);
+      
+      if (existingIndex === -1) {
+        // Add new message to the beginning of the list
+        this.allMessages.unshift(newMessage);
+        
+        // If we've exceeded the page size, remove the last item
+        if (this.allMessages.length > this.pageSize) {
+          this.allMessages.pop();
+        }
+        
+        // Update total count
+        this.totalCount++;
+        this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+        
+        console.log('Added new message to list:', newMessage.id);
+      }
+    } else {
+      // If we're not on the first page, just update the total count
+      // The user will see the new message when they navigate back to page 1
+      this.totalCount++;
+      this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+    }
+  }
+
+  private refreshCurrentPage(): void {
+    // Refresh the current page without changing pagination state
+    this.loadPage(this.pageSize, this.pageStart);
   }
 
   trackByMessageId(index: number, message: RefDto): string {
@@ -257,6 +325,10 @@ export class MessageListComponent implements OnDestroy {
       clearTimeout(this.loadingTimeout);
       this.loadingTimeout = null;
     }
+    
+    // Stop SignalR connection
+    this.signalRService.stop();
+    
     this.destroy$.next();
     this.destroy$.complete();
   }

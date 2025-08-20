@@ -1,4 +1,4 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Domain.Models;
+namespace Papercut.Service.Domain.Messages;
 
 [PublicAPI]
 public class HeaderDto

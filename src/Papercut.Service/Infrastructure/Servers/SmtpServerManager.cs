@@ -16,11 +16,11 @@
 // limitations under the License.
 
 
-using Papercut.Core.Domain.Network;
-using Papercut.Core.Domain.Network.Smtp;
-
 namespace Papercut.Service.Infrastructure.Servers
 {
+    using Core.Domain.Network;
+    using Core.Domain.Network.Smtp;
+
     public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandler<PapercutServiceReadyEvent>
     {
         private readonly ILogger _logger;
@@ -33,47 +33,47 @@ namespace Papercut.Service.Infrastructure.Servers
             SmtpServerOptions smtpServerOptions,
             ILogger logger)
         {
-            this._smtpServer = smtpServer;
-            this._smtpServerOptions = smtpServerOptions;
-            this._logger = logger;
+            _smtpServer = smtpServer;
+            _smtpServerOptions = smtpServerOptions;
+            _logger = logger;
         }
 
         public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
         {
             await Task.Delay(TimeSpan.FromMilliseconds(500), token);
-            await this.BindSMTPServer();
+            await BindSMTPServer();
         }
 
         public async Task HandleAsync(SmtpServerBindEvent @event, CancellationToken token = default)
         {
-            this._logger.Information(
+            _logger.Information(
                 "Received New Smtp Server Binding Settings from UI {@Event}",
                 @event);
 
             // update settings...
-            this._smtpServerOptions.IP = @event.IP;
-            this._smtpServerOptions.Port = @event.Port;
+            _smtpServerOptions.IP = @event.IP;
+            _smtpServerOptions.Port = @event.Port;
             //this._smtpServerOptions.Save();
 
             // rebind the server...
-            await this.BindSMTPServer();
+            await BindSMTPServer();
         }
 
         async Task BindSMTPServer()
         {
             try
             {
-                await this._smtpServer.StopAsync();
-                await this._smtpServer.StartAsync(
-                    new EndpointDefinition(this._smtpServerOptions.IP, this._smtpServerOptions.Port));
+                await _smtpServer.StopAsync();
+                await _smtpServer.StartAsync(
+                    new EndpointDefinition(_smtpServerOptions.IP, _smtpServerOptions.Port));
             }
             catch (Exception ex)
             {
-                this._logger.Warning(
+                _logger.Warning(
                     ex,
                     "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                    this._smtpServerOptions.IP,
-                    this._smtpServerOptions.Port);
+                    _smtpServerOptions.IP,
+                    _smtpServerOptions.Port);
             }
         }
 

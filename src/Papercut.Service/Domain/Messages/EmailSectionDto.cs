@@ -1,4 +1,4 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -16,15 +16,14 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Domain.Models;
+namespace Papercut.Service.Domain.Messages;
 
-public class MimeMessageEntry(MessageEntry entry, MimeMessage message) : MessageEntry(entry.File)
+[PublicAPI]
+public class EmailSectionDto
 {
-    public string Id => entry.Id;
-    
-    public string? Subject => MailMessage?.Subject;
+    public string? Id { get; set; }
 
-    public DateTime? Created => _created;
+    public string? MediaType { get; set; }
 
-    public MimeMessage MailMessage { get; } = message;
+    public string? FileName { get; set; }
 }

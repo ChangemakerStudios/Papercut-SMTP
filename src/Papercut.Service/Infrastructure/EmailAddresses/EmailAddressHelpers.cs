@@ -16,9 +16,9 @@
 // limitations under the License.
 
 
-using Papercut.Service.Domain.Models;
-
 namespace Papercut.Service.Infrastructure.EmailAddresses;
+
+using Domain.Messages;
 
 public static class EmailAddressHelpers
 {

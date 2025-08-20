@@ -3,9 +3,9 @@
 // https://raw.githubusercontent.com/aspnet/Hosting/rel/1.1.2/src/Microsoft.AspNetCore.TestHost/TestServer.cs
 
 
-using Microsoft.AspNetCore.Hosting.Server;
-
 namespace Papercut.Service.Infrastructure.Hosting.InProcess;
+
+using Microsoft.AspNetCore.Hosting.Server;
 
 public class HttpServer : IServer
 {

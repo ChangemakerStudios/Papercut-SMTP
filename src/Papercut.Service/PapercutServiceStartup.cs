@@ -16,14 +16,17 @@
 // limitations under the License.
 
 
+namespace Papercut.Service;
+
+using Application.Messages;
+
+using Infrastructure.Servers;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-using Papercut.Rules;
-using Papercut.Service.Infrastructure.Servers;
-
-namespace Papercut.Service;
+using Rules;
 
 internal class PapercutServiceStartup
 {
@@ -44,8 +47,12 @@ internal class PapercutServiceStartup
                     {
                         c.AllowAnyHeader();
                         c.AllowAnyOrigin();
+                        c.AllowAnyMethod();
                     });
             });
+
+        // Add SignalR
+        services.AddSignalR();
 
         services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
         services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
@@ -54,7 +61,7 @@ internal class PapercutServiceStartup
         services.AddHostedService<PapercutServerHostedService>();
     }
 
-    IEnumerable<Autofac.Module> GetModules()
+    IEnumerable<Module> GetModules()
     {
         yield return new PapercutCoreModule();
         yield return new PapercutMessageModule();
@@ -69,7 +76,7 @@ internal class PapercutServiceStartup
     [UsedImplicitly]
     public void ConfigureContainer(ContainerBuilder builder)
     {
-        foreach (var module in this.GetModules())
+        foreach (var module in GetModules())
         {
             builder.RegisterModule(module);
         }
@@ -79,12 +86,15 @@ internal class PapercutServiceStartup
     {
         app.UseRouting();
 
+        app.UseCors();
+
         app.UseSerilogRequestLogging();
 
         app.UseEndpoints(
             s =>
             {
                 s.MapControllers();
+                s.MapHub<MessagesHub>("/hubs/messages");
             });
     }
 }

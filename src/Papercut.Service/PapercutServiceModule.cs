@@ -16,9 +16,9 @@
 // limitations under the License.
 
 
-using AutofacSerilogIntegration;
-
 namespace Papercut.Service;
+
+using AutofacSerilogIntegration;
 
 public class PapercutServiceModule : Module
 {
@@ -26,6 +26,6 @@ public class PapercutServiceModule : Module
     {
         builder.RegisterLogger();
 
-        builder.RegisterStaticMethods(this.ThisAssembly);
+        builder.RegisterStaticMethods(ThisAssembly);
     }
 }

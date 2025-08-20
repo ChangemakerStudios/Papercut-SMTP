@@ -15,9 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Papercut.Service.Infrastructure.EmailAddresses;
 
-namespace Papercut.Service.Domain.Models;
+namespace Papercut.Service.Domain.Messages;
+
+using Infrastructure.EmailAddresses;
 
 [PublicAPI]
 public class DetailDto : RefDto

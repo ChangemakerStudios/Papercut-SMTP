@@ -16,9 +16,9 @@
 // limitations under the License.
 
 
-using Papercut.Core.Infrastructure.Network;
-
 namespace Papercut.Service.Infrastructure.Paths;
+
+using Core.Infrastructure.Network;
 
 public class ReplyWithDefaultMessageSavePathService(MessagePathConfigurator messagePathConfigurator, SmtpServerOptions smtpServerOptions)
     : IEventHandler<AppProcessExchangeEvent>
