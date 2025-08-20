@@ -2,14 +2,22 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { RefDto, DetailDto, GetMessagesResponse, PaginationOptions } from '../models';
+import { EnvironmentService } from './environment.service';
+import { LoggingService } from './logging.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MessageRepository {
-  private readonly baseUrl = '/api/messages';
+  private readonly baseUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private environmentService: EnvironmentService,
+    private loggingService: LoggingService
+  ) {
+    this.baseUrl = this.environmentService.getApiEndpoint('messages');
+  }
 
   getMessages(options?: PaginationOptions): Observable<GetMessagesResponse> {
     let params = new HttpParams();
@@ -27,16 +35,26 @@ export class MessageRepository {
   }
 
   getMessage(id: string): Observable<DetailDto> {
-    console.log('MessageRepository - Original ID:', id);
+    this.loggingService.debug('MessageRepository - Fetching message', { originalId: id });
     // The ID from the route parameter is already decoded by Angular router
     const encodedId = encodeURIComponent(id);
     const finalUrl = `${this.baseUrl}/${encodedId}`;
-    console.log('MessageRepository - Final URL:', finalUrl);
+    this.loggingService.debug('MessageRepository - Final URL', { url: finalUrl });
     
+    const start = performance.now();
     return this.http.get<DetailDto>(finalUrl).pipe(
       tap({
-        next: (result) => console.log('MessageRepository - HTTP call successful'),
-        error: (error) => console.error('MessageRepository - HTTP call failed:', error)
+        next: (result) => {
+          const duration = performance.now() - start;
+          this.loggingService.debug('MessageRepository - HTTP call successful');
+          this.loggingService.logPerformance('getMessage', duration);
+          this.loggingService.logApiCall('GET', finalUrl, 200, duration);
+        },
+        error: (error) => {
+          const duration = performance.now() - start;
+          this.loggingService.error('MessageRepository - HTTP call failed', error);
+          this.loggingService.logApiCall('GET', finalUrl, error.status, duration);
+        }
       })
     );
   }

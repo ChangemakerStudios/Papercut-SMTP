@@ -93,7 +93,7 @@ export class MessageRawComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
-          console.error('Error loading raw content:', error);
+          // Error loading raw content - handled in error property
           this.error = error.message || 'Unknown error occurred';
           return of('');
         })

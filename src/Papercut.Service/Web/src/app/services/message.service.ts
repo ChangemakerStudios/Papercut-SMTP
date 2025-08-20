@@ -292,7 +292,7 @@ export class MessageService {
     const bgColor = isDarkMode ? '#1f2937' : '#ffffff';
     const linkColor = isDarkMode ? '#60a5fa' : '#0066cc';
     
-    console.log('Theme detection - isDarkMode:', isDarkMode, 'documentElement.classList:', document.documentElement.classList.toString(), 'body.data-theme:', document.body.getAttribute('data-theme'), 'textColor:', textColor, 'bgColor:', bgColor);
+    // Theme detection completed for email rendering
     
     return `<style>
       html, body { 

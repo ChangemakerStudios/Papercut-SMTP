@@ -111,7 +111,7 @@ export class MessageListItemComponent {
     if (this.isLoading) {
       return; // Prevent action during loading
     }
-    console.log('Message item clicked:', this.message?.id);
+    // Message item clicked - handled by parent component
     this.select.emit();
   }
 

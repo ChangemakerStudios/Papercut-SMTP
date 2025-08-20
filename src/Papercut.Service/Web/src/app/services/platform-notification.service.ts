@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { EnvironmentService } from './environment.service';
+import { LoggingService } from './logging.service';
 
 export interface PlatformNotificationOptions {
   title: string;
@@ -22,7 +24,10 @@ export class PlatformNotificationService {
   public permissionStatus$ = this._permissionStatus.asObservable();
   public isSupported$ = this._isSupported.asObservable();
 
-  constructor() {
+  constructor(
+    private environmentService: EnvironmentService,
+    private loggingService: LoggingService
+  ) {
     this.checkSupport();
     this.updatePermissionStatus();
   }
@@ -32,9 +37,9 @@ export class PlatformNotificationService {
     this._isSupported.next(isSupported);
     
     if (isSupported) {
-      console.log('Platform notifications are supported');
+      this.loggingService.info('Platform notifications are supported');
     } else {
-      console.warn('Platform notifications are not supported in this browser');
+      this.loggingService.warn('Platform notifications are not supported in this browser');
     }
   }
 
@@ -46,7 +51,7 @@ export class PlatformNotificationService {
 
   public async requestPermission(): Promise<NotificationPermission> {
     if (!this._isSupported.value) {
-      console.warn('Platform notifications are not supported');
+      this.loggingService.warn('Platform notifications are not supported');
       return 'denied';
     }
 
@@ -55,16 +60,16 @@ export class PlatformNotificationService {
       this._permissionStatus.next(permission);
       
       if (permission === 'granted') {
-        console.log('Notification permission granted');
+        this.loggingService.info('Notification permission granted');
       } else if (permission === 'denied') {
-        console.warn('Notification permission denied');
+        this.loggingService.warn('Notification permission denied');
       } else {
-        console.log('Notification permission dismissed');
+        this.loggingService.info('Notification permission dismissed');
       }
       
       return permission;
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
+      this.loggingService.error('Error requesting notification permission', error);
       this._permissionStatus.next('denied');
       return 'denied';
     }
@@ -72,13 +77,13 @@ export class PlatformNotificationService {
 
   public async showNotification(options: PlatformNotificationOptions): Promise<boolean> {
     if (!this._isSupported.value) {
-      console.warn('Platform notifications are not supported');
+      this.loggingService.warn('Platform notifications are not supported');
       return false;
     }
 
     // Check if we have permission
     if (Notification.permission !== 'granted') {
-      console.warn('Notification permission not granted');
+      this.loggingService.warn('Notification permission not granted');
       return false;
     }
 
@@ -116,10 +121,10 @@ export class PlatformNotificationService {
         }, 8000); // 8 seconds
       }
 
-      console.log('Platform notification shown:', options.title);
+      this.loggingService.debug('Platform notification shown', { title: options.title });
       return true;
     } catch (error) {
-      console.error('Error showing platform notification:', error);
+      this.loggingService.error('Error showing platform notification', error);
       return false;
     }
   }
@@ -199,7 +204,7 @@ export class PlatformNotificationService {
    */
   public async showNotificationIfTabHidden(options: PlatformNotificationOptions): Promise<boolean> {
     if (this.isTabVisible()) {
-      console.log('Tab is visible, skipping platform notification');
+      this.loggingService.debug('Tab is visible, skipping platform notification');
       return false;
     }
 
@@ -210,8 +215,14 @@ export class PlatformNotificationService {
    * Show new message notification only if the tab is not visible
    */
   public async showNewMessageNotificationIfTabHidden(subject: string, sender: string, onClickCallback?: () => void): Promise<boolean> {
+    // Check if notifications are enabled in environment
+    if (!this.environmentService.areNotificationsEnabled) {
+      this.loggingService.debug('Notifications disabled in environment, skipping platform notification');
+      return false;
+    }
+
     if (this.isTabVisible()) {
-      console.log('Tab is visible, skipping platform notification for new message');
+      this.loggingService.debug('Tab is visible, skipping platform notification for new message');
       return false;
     }
 

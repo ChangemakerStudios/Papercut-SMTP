@@ -6,6 +6,7 @@ import { MAT_SNACK_BAR_DATA, MatSnackBarAction } from '@angular/material/snack-b
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
+import { EnvironmentService } from './environment.service';
 
 export interface ToastData {
   message: string;
@@ -57,15 +58,23 @@ export class ToastNotificationComponent {
   providedIn: 'root'
 })
 export class ToastNotificationService {
-  constructor(private snackBar: MatSnackBar) {}
+  constructor(
+    private snackBar: MatSnackBar,
+    private environmentService: EnvironmentService
+  ) {}
 
-  showNewMessageToast(subject: string, sender: string, messageId: string, onMessageClick: () => void): MatSnackBarRef<ToastNotificationComponent> {
+  showNewMessageToast(subject: string, sender: string, messageId: string, onMessageClick: () => void): MatSnackBarRef<ToastNotificationComponent> | null {
+    // Check if notifications are enabled in environment
+    if (!this.environmentService.areNotificationsEnabled) {
+      return null;
+    }
+
     const data: ToastData = {
       message: `New message from ${sender}: ${subject}`,
       action: 'VIEW',
       icon: 'email',
       type: 'info',
-      duration: 8000,
+      duration: this.getNotificationDuration(),
       clickable: true
     };
 
@@ -166,5 +175,19 @@ export class ToastNotificationService {
       case 'info': return 'bg-blue-600';
       default: return 'bg-gray-600';
     }
+  }
+
+  private getNotificationDuration(): number {
+    // Base durations in milliseconds
+    const baseDuration = 8000; // 8 seconds for new messages
+    
+    // Adjust based on environment
+    if (this.environmentService.isProduction) {
+      return baseDuration * 0.75; // Shorter in production
+    } else if (this.environmentService.isDevelopment) {
+      return baseDuration * 1.5; // Longer in development for testing
+    }
+    
+    return baseDuration;
   }
 }

@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ThemeService } from '../../services/theme.service';
+import { LoggingService } from '../../services/logging.service';
 import { Observable, map, switchMap, of } from 'rxjs';
 
 @Component({
@@ -67,7 +68,10 @@ export class NavigationComponent implements OnDestroy {
   loadingTimeout: any;
   isLoadingMessage = false;
 
-  constructor(private themeService: ThemeService) {
+  constructor(
+    private themeService: ThemeService,
+    private loggingService: LoggingService
+  ) {
     this.isDarkTheme$ = this.themeService.theme$.pipe(
       map(theme => theme === 'dark')
     );
@@ -79,17 +83,17 @@ export class NavigationComponent implements OnDestroy {
 
   showLog(): void {
     // TODO: Implement log functionality
-    console.log('Show Log clicked');
+    this.loggingService.debug('Show Log clicked');
   }
 
   showRules(): void {
     // TODO: Implement rules functionality
-    console.log('Show Rules clicked');
+    this.loggingService.debug('Show Rules clicked');
   }
 
   showOptions(): void {
     // TODO: Implement options functionality
-    console.log('Show Options clicked');
+    this.loggingService.debug('Show Options clicked');
   }
 
 

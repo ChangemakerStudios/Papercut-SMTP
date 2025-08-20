@@ -73,7 +73,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
       if (this.iframe.nativeElement.isConnected) {
         this.setIframeContent(this.iframe.nativeElement, contentToSet);
       } else {
-        console.log('Iframe not connected to DOM, skipping content update');
+        // Iframe not connected to DOM, skipping content update
       }
     }
   }
@@ -87,14 +87,14 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
         doc.write(content);
         doc.close();
         
-        console.log('Successfully set iframe content via document.write');
+        // Successfully set iframe content via document.write
       } else {
         // Fallback to srcdoc if document access fails
         iframe.srcdoc = content;
-        console.log('Fallback: Set iframe content via srcdoc');
+        // Fallback: Set iframe content via srcdoc
       }
     } catch (error) {
-      console.error('Error setting iframe content:', error);
+      // Error setting iframe content - using fallback
       // Final fallback
       iframe.srcdoc = content;
     }

@@ -109,7 +109,7 @@ export class NotificationPermissionComponent implements OnInit {
         }, 500);
       }
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
+      // Error handled by PlatformNotificationService
     }
   }
 

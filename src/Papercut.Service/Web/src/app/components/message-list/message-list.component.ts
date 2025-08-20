@@ -13,6 +13,7 @@ import { MessageApiService } from '../../services/message-api.service';
 import { SignalRService } from '../../services/signalr.service';
 import { ToastNotificationService } from '../../services/toast-notification.service';
 import { PlatformNotificationService } from '../../services/platform-notification.service';
+import { LoggingService } from '../../services/logging.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { ResizerComponent } from '../resizer/resizer.component';
@@ -180,7 +181,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
     private messageApiService: MessageApiService,
     private signalRService: SignalRService,
     private toastService: ToastNotificationService,
-    private platformNotificationService: PlatformNotificationService
+    private platformNotificationService: PlatformNotificationService,
+    private loggingService: LoggingService
   ) {
     // Load current page when query params change
     this.route.queryParams
@@ -217,7 +219,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(newMessage => {
         if (newMessage) {
-          console.log('New message received via SignalR:', newMessage);
+          this.loggingService.debug('New message received via SignalR', newMessage);
           this.handleNewMessage(newMessage);
         }
       });
@@ -227,7 +229,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(changed => {
         if (changed) {
-          console.log('Message list changed via SignalR, refreshing...');
+          this.loggingService.debug('Message list changed via SignalR, refreshing...');
           this.refreshCurrentPage();
         }
       });
@@ -236,7 +238,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.signalRService.isConnected$
       .pipe(takeUntil(this.destroy$))
       .subscribe(isConnected => {
-        console.log('SignalR connection status:', isConnected);
+        this.loggingService.debug('SignalR connection status', { isConnected });
       });
   }
 
@@ -245,7 +247,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
     let currentRoute = this.route.firstChild;
     if (currentRoute && currentRoute.snapshot && currentRoute.snapshot.params['id']) {
       const messageId = currentRoute.snapshot.params['id'];
-      console.log('Message ID from URL:', messageId);
+      this.loggingService.debug('Message ID from URL', { messageId });
       this.selectedMessageId = messageId;
     } else {
       this.selectedMessageId = null;
@@ -303,7 +305,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
         this.totalCount++;
         this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
         
-        console.log('Added new message to list:', newMessage.id);
+        this.loggingService.debug('Added new message to list', { messageId: newMessage.id });
       }
     } else {
       // If we're not on the first page, just update the total count
@@ -337,7 +339,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   selectMessage(messageId: string): void {
-    console.log('Selecting message:', messageId);
+    this.loggingService.debug('Selecting message', { messageId });
     this.loadingMessageId = messageId;
     this.isLoadingMessageDetail = true;
     this.selectedMessageId = messageId;

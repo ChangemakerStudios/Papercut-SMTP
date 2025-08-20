@@ -13,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EmailListPipe } from '../../pipes/email-list.pipe';
 import { MessageService } from '../../services/message.service';
 import { MessageApiService } from '../../services/message-api.service';
+import { LoggingService } from '../../services/logging.service';
 import { DetailDto, RefDto } from '../../models';
 import { MessageSectionsComponent } from '../message-sections/message-sections.component';
 
@@ -229,15 +230,18 @@ export class MessageDetailComponent {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private messageApiService: MessageApiService
+    private messageApiService: MessageApiService,
+    private loggingService: LoggingService
   ) {
     this.messageData$ = this.route.params.pipe(
       switchMap(params => {
         const messageId = params['id'];
         if (messageId) {
-          console.log('Loading message with ID:', messageId);
-          console.log('Message ID length:', messageId.length);
-          console.log('URL decoded message ID:', decodeURIComponent(messageId));
+          this.loggingService.debug('Loading message with ID', { 
+            messageId, 
+            length: messageId.length, 
+            decoded: decodeURIComponent(messageId) 
+          });
           
           // Get RefDto first (fast)
           const refMessage$ = this.messageApiService.getMessageRef(messageId);
@@ -245,19 +249,19 @@ export class MessageDetailComponent {
           // Get DetailDto (slower)
           const detailMessage$ = this.messageApiService.getMessageDetail(messageId).pipe(
             map(detail => {
-              console.log('Message detail loaded successfully:', detail);
+              this.loggingService.debug('Message detail loaded successfully', { messageId: detail.id });
               this.currentMessage = detail;
               return detail;
             }),
             catchError(error => {
-              console.error('Error loading message detail:', error);
+              this.loggingService.error('Error loading message detail', error);
               
               // Check if it's a 404 or other error
               if (error.status === 404) {
-                console.log('Message not found (404), redirecting to home');
+                this.loggingService.info('Message not found (404), redirecting to home');
                 this.redirectToHome('Message not found');
               } else {
-                console.log('Unknown error occurred, redirecting to home');
+                this.loggingService.warn('Unknown error occurred, redirecting to home');
                 this.redirectToHome('Failed to load message');
               }
               
@@ -274,7 +278,7 @@ export class MessageDetailComponent {
             }))
           );
         }
-        console.error('No message ID found in route parameters');
+        this.loggingService.error('No message ID found in route parameters');
         this.redirectToHome('No message ID provided');
         return EMPTY;
       }),
@@ -283,12 +287,12 @@ export class MessageDetailComponent {
   }
 
   private redirectToHome(reason: string): void {
-    console.log(`Redirecting to home: ${reason}`);
+    this.loggingService.info(`Redirecting to home: ${reason}`);
     // Navigate to the parent route (home) and replace the current history entry
     this.router.navigate(['/']).then(() => {
-      console.log('Successfully redirected to home');
+      this.loggingService.debug('Successfully redirected to home');
     }).catch(err => {
-      console.error('Failed to redirect to home:', err);
+      this.loggingService.error('Failed to redirect to home', err);
     });
   }
 

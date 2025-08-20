@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { RefDto } from '../models/ref-dto';
+import { EnvironmentService } from './environment.service';
+import { LoggingService } from './logging.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,20 +18,24 @@ export class SignalRService {
   public newMessage$ = this._newMessage.asObservable();
   public messageListChanged$ = this._messageListChanged.asObservable();
 
-  constructor() {
+  constructor(
+    private environmentService: EnvironmentService,
+    private loggingService: LoggingService
+  ) {
     this.initializeConnection();
   }
 
   private initializeConnection(): void {
-    // Build the SignalR connection
+    // Build the SignalR connection using environment configuration
+    const hubUrl = this.environmentService.getSignalRUrl();
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl('/hubs/messages', {
+      .withUrl(hubUrl, {
         // Configure for cross-origin if needed
         skipNegotiation: false,
         transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
       })
       .withAutomaticReconnect([0, 2000, 10000, 30000])
-      .configureLogging(signalR.LogLevel.Information)
+      .configureLogging(this.getSignalRLogLevel())
       .build();
 
     // Set up event handlers
@@ -41,29 +47,29 @@ export class SignalRService {
 
     // Handle connection state changes
     this.connection.onclose((error: Error | undefined) => {
-      console.warn('SignalR connection closed:', error);
+      this.loggingService.warn('SignalR connection closed', error);
       this._isConnected.next(false);
     });
 
     this.connection.onreconnecting((error: Error | undefined) => {
-      console.log('SignalR reconnecting:', error);
+      this.loggingService.info('SignalR reconnecting', error);
       this._isConnected.next(false);
     });
 
     this.connection.onreconnected((connectionId: string | undefined) => {
-      console.log('SignalR reconnected:', connectionId);
+      this.loggingService.info('SignalR reconnected', { connectionId });
       this._isConnected.next(true);
       this.joinMessagesGroup();
     });
 
     // Handle incoming messages
     this.connection.on('NewMessageReceived', (message: RefDto) => {
-      console.log('New message received via SignalR:', message);
+      this.loggingService.debug('New message received via SignalR', message);
       this._newMessage.next(message);
     });
 
     this.connection.on('MessageListChanged', () => {
-      console.log('Message list changed via SignalR');
+      this.loggingService.debug('Message list changed via SignalR');
       this._messageListChanged.next(true);
     });
   }
@@ -76,12 +82,12 @@ export class SignalRService {
     try {
       if (this.connection?.state === signalR.HubConnectionState.Disconnected) {
         await this.connection.start();
-        console.log('SignalR connection started successfully');
+        this.loggingService.info('SignalR connection started successfully');
         this._isConnected.next(true);
         await this.joinMessagesGroup();
       }
     } catch (error) {
-      console.error('Failed to start SignalR connection:', error);
+      this.loggingService.error('Failed to start SignalR connection', error);
       this._isConnected.next(false);
       
       // Retry connection after a delay
@@ -94,9 +100,9 @@ export class SignalRService {
       try {
         await this.leaveMessagesGroup();
         await this.connection.stop();
-        console.log('SignalR connection stopped');
+        this.loggingService.info('SignalR connection stopped');
       } catch (error) {
-        console.error('Error stopping SignalR connection:', error);
+        this.loggingService.error('Error stopping SignalR connection', error);
       } finally {
         this._isConnected.next(false);
       }
@@ -107,9 +113,9 @@ export class SignalRService {
     if (this.connection?.state === signalR.HubConnectionState.Connected) {
       try {
         await this.connection.invoke('JoinMessagesGroup');
-        console.log('Joined Messages group');
+        this.loggingService.debug('Joined Messages group');
       } catch (error) {
-        console.error('Failed to join Messages group:', error);
+        this.loggingService.error('Failed to join Messages group', error);
       }
     }
   }
@@ -118,9 +124,9 @@ export class SignalRService {
     if (this.connection?.state === signalR.HubConnectionState.Connected) {
       try {
         await this.connection.invoke('LeaveMessagesGroup');
-        console.log('Left Messages group');
+        this.loggingService.debug('Left Messages group');
       } catch (error) {
-        console.error('Failed to leave Messages group:', error);
+        this.loggingService.error('Failed to leave Messages group', error);
       }
     }
   }
@@ -131,5 +137,27 @@ export class SignalRService {
 
   public isConnected(): boolean {
     return this.connection?.state === signalR.HubConnectionState.Connected;
+  }
+
+  private getSignalRLogLevel(): signalR.LogLevel {
+    if (!this.environmentService.isLoggingEnabled) {
+      return signalR.LogLevel.None;
+    }
+
+    switch (this.environmentService.logLevel) {
+      case 'debug':
+        return signalR.LogLevel.Debug;
+      case 'info':
+        return signalR.LogLevel.Information;
+      case 'warn':
+      case 'warning':
+        return signalR.LogLevel.Warning;
+      case 'error':
+        return signalR.LogLevel.Error;
+      default:
+        return this.environmentService.isProduction 
+          ? signalR.LogLevel.Warning 
+          : signalR.LogLevel.Information;
+    }
   }
 }

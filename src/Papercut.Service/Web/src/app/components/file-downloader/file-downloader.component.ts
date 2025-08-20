@@ -84,7 +84,7 @@ export class FileDownloaderService {
         }
       },
       error: (error) => {
-        console.error('Download failed:', error);
+        // Download failed - handled by error status
         this.updateDownloadStatus(id, 'error');
         this.removeButtonFromLoading(buttonId);
         this.snackBar.open(`Download failed: ${downloadFilename}`, 'Close', { duration: 5000 });

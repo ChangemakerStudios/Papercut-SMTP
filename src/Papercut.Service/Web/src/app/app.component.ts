@@ -6,6 +6,8 @@ import { NavigationComponent } from './components/navigation/navigation.componen
 import { BottomToolbarComponent } from './components/bottom-toolbar/bottom-toolbar.component';
 import { NotificationPermissionComponent } from './components/notification-permission/notification-permission.component';
 import { ThemeService } from './services/theme.service';
+import { EnvironmentService } from './services/environment.service';
+import { LoggingService } from './services/logging.service';
 
 @Component({
   selector: 'app-root',
@@ -34,22 +36,29 @@ export class AppComponent {
   selectedMessageCount = 0;
   totalMessageCount = 0;
 
-  constructor(private themeService: ThemeService) {
+  constructor(
+    private themeService: ThemeService,
+    private environmentService: EnvironmentService,
+    private loggingService: LoggingService
+  ) {
     // Initialize theme service
+    // Log environment info using the logging service
+    this.loggingService.logEnvironmentInfo();
+    this.loggingService.info('Papercut application started');
   }
 
   onForward(): void {
     // TODO: Implement forward functionality
-    console.log('Forward clicked from toolbar');
+    this.loggingService.debug('Forward clicked from toolbar');
   }
 
   onDeleteSelected(): void {
     // TODO: Implement delete selected functionality
-    console.log('Delete selected clicked from toolbar');
+    this.loggingService.debug('Delete selected clicked from toolbar');
   }
 
   onDeleteAll(): void {
     // TODO: Implement delete all functionality
-    console.log('Delete all clicked from toolbar');
+    this.loggingService.debug('Delete all clicked from toolbar');
   }
 } 

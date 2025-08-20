@@ -24,6 +24,7 @@ import {
   PaginationOptions
 } from '../models';
 import { MessageRepository } from './message.repository';
+import { EnvironmentService } from './environment.service';
 
 /**
  * Service for handling message API operations.
@@ -35,7 +36,10 @@ import { MessageRepository } from './message.repository';
 })
 export class MessageApiService {
 
-  constructor(private messageRepository: MessageRepository) {}
+  constructor(
+    private messageRepository: MessageRepository,
+    private environmentService: EnvironmentService
+  ) {}
 
   /**
    * Gets a paginated list of messages with proper date conversion.
