@@ -11,6 +11,8 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MessageService } from '../../services/message.service';
 import { MessageApiService } from '../../services/message-api.service';
 import { SignalRService } from '../../services/signalr.service';
+import { ToastNotificationService } from '../../services/toast-notification.service';
+import { PlatformNotificationService } from '../../services/platform-notification.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { ResizerComponent } from '../resizer/resizer.component';
@@ -176,7 +178,9 @@ export class MessageListComponent implements OnInit, OnDestroy {
     private router: Router,
     private messageService: MessageService,
     private messageApiService: MessageApiService,
-    private signalRService: SignalRService
+    private signalRService: SignalRService,
+    private toastService: ToastNotificationService,
+    private platformNotificationService: PlatformNotificationService
   ) {
     // Load current page when query params change
     this.route.queryParams
@@ -260,6 +264,27 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   private handleNewMessage(newMessage: RefDto): void {
+    // Extract sender and subject information
+    const sender = newMessage.from && newMessage.from.length > 0 
+      ? newMessage.from[0].name || newMessage.from[0].address || 'Unknown Sender'
+      : 'Unknown Sender';
+    const subject = newMessage.subject || 'No Subject';
+    
+    // Always show toast notification
+    this.toastService.showNewMessageToast(
+      subject,
+      sender,
+      newMessage.id!,
+      () => this.selectAndViewMessage(newMessage.id!)
+    );
+
+    // Show platform notification only if tab is not visible
+    this.platformNotificationService.showNewMessageNotificationIfTabHidden(
+      subject,
+      sender,
+      () => this.selectAndViewMessage(newMessage.id!)
+    );
+
     // If we're on the first page, add the new message to the top of the list
     if (this.pageStart === 0) {
       // Check if message already exists to avoid duplicates
@@ -295,6 +320,20 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   trackByMessageId(index: number, message: RefDto): string {
     return message.id || index.toString();
+  }
+
+  private selectAndViewMessage(messageId: string): void {
+    // Navigate to the first page if not already there
+    if (this.pageStart !== 0) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { limit: this.pageSize, start: 0 },
+        queryParamsHandling: 'merge'
+      });
+    }
+    
+    // Navigate to the message detail
+    this.router.navigate(['/messages', messageId]);
   }
 
   selectMessage(messageId: string): void {

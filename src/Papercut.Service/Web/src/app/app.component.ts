@@ -1,17 +1,20 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NavigationComponent } from './components/navigation/navigation.component';
 import { BottomToolbarComponent } from './components/bottom-toolbar/bottom-toolbar.component';
+import { NotificationPermissionComponent } from './components/notification-permission/notification-permission.component';
 import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavigationComponent, BottomToolbarComponent],
+  imports: [CommonModule, RouterOutlet, MatSnackBarModule, NavigationComponent, BottomToolbarComponent, NotificationPermissionComponent],
   template: `
     <div class="app-container">
       <app-navigation></app-navigation>
+      <app-notification-permission></app-notification-permission>
       <main class="main-content">
         <router-outlet></router-outlet>
       </main>

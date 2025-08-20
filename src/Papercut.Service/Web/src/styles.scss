@@ -1375,6 +1375,52 @@ body[data-theme="dark"] .main-content {
 }
 
 /* =================
+   TOAST NOTIFICATION STYLES
+   ================= */
+
+.toast-notification {
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+  padding: 0 !important;
+  min-width: 320px !important;
+  max-width: 480px !important;
+}
+
+.toast-notification .mat-mdc-snack-bar-container {
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+}
+
+.toast-new-message {
+  cursor: pointer !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.toast-new-message:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25) !important;
+}
+
+.toast-new-message .mdc-snack-bar__surface {
+  min-width: 320px !important;
+  max-width: 480px !important;
+}
+
+/* Dark theme toast adjustments */
+body[data-theme="dark"] .toast-notification {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+body[data-theme="dark"] .toast-new-message:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Toast notification positioning */
+.mat-mdc-snack-bar-container {
+  margin: 8px !important;
+}
+
+/* =================
    BOTTOM TOOLBAR POSITIONING
    ================= */
 
