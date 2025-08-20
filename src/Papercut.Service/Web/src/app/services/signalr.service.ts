@@ -40,17 +40,17 @@ export class SignalRService {
     if (!this.connection) return;
 
     // Handle connection state changes
-    this.connection.onclose((error) => {
+    this.connection.onclose((error: Error | undefined) => {
       console.warn('SignalR connection closed:', error);
       this._isConnected.next(false);
     });
 
-    this.connection.onreconnecting((error) => {
+    this.connection.onreconnecting((error: Error | undefined) => {
       console.log('SignalR reconnecting:', error);
       this._isConnected.next(false);
     });
 
-    this.connection.onreconnected((connectionId) => {
+    this.connection.onreconnected((connectionId: string | undefined) => {
       console.log('SignalR reconnected:', connectionId);
       this._isConnected.next(true);
       this.joinMessagesGroup();
