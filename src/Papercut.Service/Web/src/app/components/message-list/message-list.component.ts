@@ -18,7 +18,10 @@ import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { ResizerComponent } from '../resizer/resizer.component';
 import { MessageListItemComponent } from './message-list-item.component';
-import { PaginationComponent } from '../pagination/pagination.component';
+import { MessageListHeaderComponent } from './message-list-header.component';
+import { MessageListEmptyStateComponent } from './message-list-empty-state.component';
+import { MessageListLoadingOverlayComponent } from './message-list-loading-overlay.component';
+import { MessageListNoSelectionComponent } from './message-list-no-selection.component';
 
 @Component({
   selector: 'app-message-list',
@@ -34,7 +37,10 @@ import { PaginationComponent } from '../pagination/pagination.component';
     ScrollingModule,
     ResizerComponent,
     MessageListItemComponent,
-    PaginationComponent
+    MessageListHeaderComponent,
+    MessageListEmptyStateComponent,
+    MessageListLoadingOverlayComponent,
+    MessageListNoSelectionComponent
   ],
   template: `
     <div class="flex h-full bg-gray-100 dark:bg-gray-900 transition-colors duration-300" 
@@ -45,13 +51,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
         <!-- Paginated List -->
         <div class="w-full overflow-auto virtual-scroll-container flex-1">
           <!-- No Messages Placeholder -->
-          <div *ngIf="!isLoading && allMessages.length === 0" 
-               class="flex flex-col items-center justify-center h-full p-8 text-center">
-            <mat-icon class="text-6xl mb-4 text-gray-400 dark:text-gray-500 !w-auto !h-auto">inbox</mat-icon>
-            <h3 class="text-xl font-medium mb-2 text-gray-700 dark:text-gray-300">No Messages</h3>
-            <p class="text-gray-600 dark:text-gray-400">No emails have been received yet</p>
-            <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Messages will appear here when they arrive</p>
-          </div>
+          <app-message-list-empty-state *ngIf="!isLoading && allMessages.length === 0"></app-message-list-empty-state>
           
           <!-- Messages List -->
           <app-message-list-item
@@ -66,19 +66,17 @@ import { PaginationComponent } from '../pagination/pagination.component';
         </div>
         
         <!-- Pagination Bar -->
-        <div class="w-full min-w-0">
-          <app-pagination
-            [pageSize]="pageSize"
-            [pageStart]="pageStart"
-            [currentPage]="currentPage"
-            [totalPages]="totalPages"
-            [totalCount]="totalCount"
-            [pageSizeOptions]="pageSizeOptions"
-            [isLoading]="isLoading"
-            (pageSizeChange)="onPageSizeChange($event)"
-            (pageChange)="goToPage($event)">
-          </app-pagination>
-        </div>
+        <app-message-list-header
+          [pageSize]="pageSize"
+          [pageStart]="pageStart"
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          [totalCount]="totalCount"
+          [pageSizeOptions]="pageSizeOptions"
+          [isLoading]="isLoading"
+          (pageSizeChange)="onPageSizeChange($event)"
+          (pageChange)="goToPage($event)">
+        </app-message-list-header>
       </div>
 
       <!-- Resizer Handle -->
@@ -97,20 +95,14 @@ import { PaginationComponent } from '../pagination/pagination.component';
       <!-- Message Detail Panel -->
       <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0 relative">
         <!-- Buffer loader overlay -->
-        <div *ngIf="isLoadingMessageDetail" class="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm z-10 flex items-center justify-center">
-          <div class="flex flex-col items-center gap-3">
-            <mat-spinner diameter="40" strokeWidth="4"></mat-spinner>
-            <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Loading message...</span>
-          </div>
-        </div>
+        <app-message-list-loading-overlay 
+          [isLoading]="isLoadingMessageDetail"
+          loadingMessage="Loading message...">
+        </app-message-list-loading-overlay>
         
         <router-outlet></router-outlet>
         
-        <div *ngIf="!selectedMessageId" class="flex-1 flex flex-col items-center justify-center p-8">
-          <mat-icon class="text-6xl mb-4 text-gray-400 dark:text-gray-500 !w-auto !h-auto">email</mat-icon>
-          <h3 class="text-xl font-medium mb-2 text-gray-700 dark:text-gray-300">No message selected</h3>
-          <p class="text-gray-600 dark:text-gray-400">Select a message from the list to view its contents</p>
-        </div>
+        <app-message-list-no-selection *ngIf="!selectedMessageId"></app-message-list-no-selection>
       </div>
     </div>
   `,
