@@ -17,6 +17,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ContentTransformationService } from '../services/content-transformation.service';
 
 /**
  * Pipe for transforming CID references in email HTML content to proper API URLs.
@@ -26,30 +27,20 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   standalone: true
 })
 export class CidTransformPipe implements PipeTransform {
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(
+    private sanitizer: DomSanitizer,
+    private contentTransformationService: ContentTransformationService
+  ) {}
 
   transform(html: string | null | undefined, messageId: string): SafeHtml {
     if (!html) {
       return this.sanitizer.bypassSecurityTrustHtml('');
     }
 
-    // Transform CID references to API URLs
-    const transformedHtml = this.transformCidReferences(html, messageId);
+    // Transform CID references to API URLs using the service
+    const transformedHtml = this.contentTransformationService.transformCidReferences(html, messageId);
     
     // Return sanitized HTML
     return this.sanitizer.bypassSecurityTrustHtml(transformedHtml);
-  }
-
-  private transformCidReferences(html: string, messageId: string): string {
-    if (!html || !messageId) {
-      return html;
-    }
-
-    // Replace cid: references with API URLs
-    return html.replace(/src=["']cid:([^"']+)["']/gi, (match, contentId) => {
-      const encodedMessageId = encodeURIComponent(messageId);
-      const encodedContentId = encodeURIComponent(contentId);
-      return `src="/api/messages/${encodedMessageId}/contents/${encodedContentId}"`;
-    });
   }
 } 

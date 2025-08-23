@@ -16,7 +16,6 @@
 // limitations under the License.
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { 
   GetMessagesResponse, 
@@ -24,6 +23,8 @@ import {
   RefDto 
 } from '../models';
 import { MessageRepository } from './message.repository';
+import { ContentFormattingService } from './content-formatting.service';
+import { ContentTransformationService } from './content-transformation.service';
 
 /**
  * Service for managing email messages.
@@ -33,11 +34,11 @@ import { MessageRepository } from './message.repository';
   providedIn: 'root'
 })
 export class MessageService {
-  private readonly apiUrl = '/api/messages';
 
   constructor(
-    private http: HttpClient,
-    private messageRepository: MessageRepository
+    private messageRepository: MessageRepository,
+    private contentFormattingService: ContentFormattingService,
+    private contentTransformationService: ContentTransformationService
   ) {}
 
   /**
@@ -165,46 +166,13 @@ export class MessageService {
 
 
 
-  // Parse or sanitize HTML content (stub for now)
-  parseHtml(html: string): string {
-    // You can use a library like DOMPurify here if needed
-    // return DOMPurify.sanitize(html);
-    return html;
-  }
-
-    // Returns the HTML content for a message, handling plain text and HTML bodies
+  // Returns the HTML content for a message, handling plain text and HTML bodies
   getMessageContent(message: DetailDto): string {
-    const content = message.htmlBody || message.textBody || '';
-    const mediaType = message.htmlBody ? 'text/html' : 'text/plain';
-    return this.formatMessageContent(content, mediaType, message.id ?? '');
-  }
-
-  private escapeHtml(unsafe: string): string {
-    return unsafe
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  private transformCidReferences(html: string, messageId: string): string {
-    if (!html || !messageId) {
-      return html;
-    }
-    return html.replace(/src=["']cid:([^"']+)["']/gi, (match, contentId) => {
-      const encodedMessageId = encodeURIComponent(messageId);
-      const encodedContentId = encodeURIComponent(contentId);
-      return `src="/api/messages/${encodedMessageId}/contents/${encodedContentId}"`;
-    });
-  }
-
-  private makeUrlsAbsolute(html: string): string {
-    if (!html) return html;
-    const baseUrl = window.location.origin;
-    return html.replace(/src=["']\/api\/([^"']+)["']/gi, (match, apiPath) => {
-      return `src="${baseUrl}/api/${apiPath}"`;
-    });
+    return this.contentFormattingService.getMessageContent(
+      message.htmlBody ?? null, 
+      message.textBody ?? null, 
+      message.id ?? ''
+    );
   }
 
   /**
@@ -216,134 +184,29 @@ export class MessageService {
    * @returns Formatted HTML content ready for iframe display
    */
   formatMessageContent(content: string, mediaType: string, messageId: string = ''): string {
-    if (!content) {
-      return this.createStyledDocument('Loading...', true);
+    // Apply content transformations first
+    let processedContent = content;
+    if (messageId && mediaType.toLowerCase() === 'text/html') {
+      processedContent = this.contentTransformationService.transformContent(content, messageId);
     }
-
-    const lowerMediaType = (mediaType || '').toLowerCase();
     
-    if (lowerMediaType === 'text/html') {
-      // Process HTML content with CID and URL transformations
-      let processedContent = content;
-      if (messageId) {
-        processedContent = this.transformCidReferences(processedContent, messageId);
-        processedContent = this.makeUrlsAbsolute(processedContent);
-      }
-      
-      // If it's a complete HTML document, inject theme styles
-      if (processedContent.includes('<html') || processedContent.includes('<HTML')) {
-        return this.injectThemeStyles(processedContent);
-      } else {
-        // Wrap partial HTML in complete document
-        return this.createStyledDocument(processedContent, false);
-      }
-    } else {
-      // For text/plain and other text types
-      const escapedContent = this.escapeHtml(content);
-      return this.createStyledDocument(`<pre>${escapedContent}</pre>`, true);
-    }
+    // Then format the content
+    return this.contentFormattingService.formatMessageContent(processedContent, mediaType, messageId);
   }
 
   /**
-   * @deprecated Use formatMessageContent instead
    * Formats section content for display in iframe with proper styling and theme support.
+   * @param content The raw content
+   * @param mediaType The media type of the content
+   * @param messageId The message ID for CID reference transformation
+   * @returns Formatted HTML content ready for iframe display
    */
   formatSectionContent(content: string, mediaType: string, messageId: string): string {
-    return this.formatMessageContent(content, mediaType, messageId);
+    return this.contentFormattingService.formatSectionContent(content, mediaType, messageId);
   }
 
-  private createStyledDocument(content: string, isPreformatted: boolean): string {
-    const themeStyles = this.getThemeAwareStyles();
-    const bodyContent = isPreformatted ? content : content;
-    
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        ${themeStyles}
-      </head>
-      <body>
-        ${bodyContent}
-      </body>
-      </html>
-    `;
-  }
 
-  private injectThemeStyles(html: string): string {
-    const themeStyles = this.getThemeAwareStyles();
-    
-    if (html.includes('<head>')) {
-      return html.replace('<head>', `<head>${themeStyles}`);
-    } else {
-      // If no head tag, wrap the content
-      return this.createStyledDocument(html, false);
-    }
-  }
 
-  private getThemeAwareStyles(): string {
-    // Detect theme by checking the 'dark' class on documentElement (set by ThemeService)
-    // Also check data-theme attribute on body as fallback
-    const isDarkMode = document.documentElement.classList.contains('dark') || 
-                      document.body.getAttribute('data-theme') === 'dark';
-    
-    const textColor = isDarkMode ? '#ffffff' : '#333333';
-    const bgColor = isDarkMode ? '#1f2937' : '#ffffff';
-    const linkColor = isDarkMode ? '#60a5fa' : '#0066cc';
-    
-    // Theme detection completed for email rendering
-    
-    return `<style>
-      html, body { 
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-        line-height: 1.6 !important;
-        background: ${bgColor} !important; 
-        color: ${textColor} !important; 
-        fill: ${textColor} !important;
-        margin: 0 !important;
-        padding: 4px !important;
-        min-height: 100vh !important;
-      }
-      * { 
-        color: ${textColor} !important; 
-        fill: ${textColor} !important;
-        background-color: transparent !important;
-      }
-      p, div, span, h1, h2, h3, h4, h5, h6, td, th, li {
-        color: ${textColor} !important;
-        fill: ${textColor} !important;
-        background-color: transparent !important;
-      }
-      a { 
-        color: ${linkColor} !important; 
-        fill: ${linkColor} !important;
-      }
-      pre {
-        font-family: 'Courier New', monospace !important;
-        white-space: pre-wrap !important;
-        word-wrap: break-word !important;
-        color: ${textColor} !important;
-        fill: ${textColor} !important;
-        background-color: transparent !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      img {
-        max-width: 100% !important;
-        height: auto !important;
-      }
-      table {
-        border-collapse: collapse !important;
-        color: ${textColor} !important;
-        fill: ${textColor} !important;
-      }
-      table td, table th {
-        border: 1px solid ${isDarkMode ? '#4b5563' : '#d1d5db'} !important;
-        padding: 8px !important;
-        color: ${textColor} !important;
-        fill: ${textColor} !important;
-      }
-    </style>`;
-  }
+
+
 } 
