@@ -56,4 +56,14 @@ public class NewMessageEventHandler(
             logger.Error(ex, "Error sending SignalR notification for new message: {MessageFile}", @event.NewMessage.File);
         }
     }
+    
+    #region Begin Static Container Registrations
+
+    static void Register(ContainerBuilder builder)
+    {
+        builder.RegisterType<NewMessageEventHandler>().AsSelf().AsImplementedInterfaces();
+    }
+
+    #endregion
+        
 }

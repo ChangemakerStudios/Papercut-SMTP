@@ -26,6 +26,8 @@ public class PapercutServiceModule : Module
     {
         builder.RegisterLogger();
 
+        builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance().ExternallyOwned();
+
         builder.RegisterStaticMethods(ThisAssembly);
     }
 }

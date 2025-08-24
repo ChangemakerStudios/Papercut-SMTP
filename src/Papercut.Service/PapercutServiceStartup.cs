@@ -20,6 +20,7 @@ namespace Papercut.Service;
 
 using Application.Messages;
 
+using Infrastructure.MessageWatching;
 using Infrastructure.Servers;
 
 using Microsoft.AspNetCore.Builder;
@@ -59,6 +60,7 @@ internal class PapercutServiceStartup
 
         // hosted services
         services.AddHostedService<PapercutServerHostedService>();
+        services.AddHostedService<MessageWatcherHostedService>();
     }
 
     IEnumerable<Module> GetModules()

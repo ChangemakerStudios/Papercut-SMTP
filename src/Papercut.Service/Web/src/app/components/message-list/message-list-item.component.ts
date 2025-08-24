@@ -56,7 +56,7 @@ import { RefDto } from 'src/app/models';
                       'text-blue-600 dark:text-blue-400': selected
                     }"
                     *ngIf="message.attachmentCount && message.attachmentCount > 0"
-                    matTooltip="Has attachments"
+                    [matTooltip]="getAttachmentTooltip()"
                     style="width: auto; font-size: 8pt;">
             attach_file
           </mat-icon>
@@ -123,5 +123,12 @@ export class MessageListItemComponent {
     return (this.message?.attachmentCount && this.message.attachmentCount > 0) ||
            this.message?.priority === 'Urgent' ||
            this.message?.priority === 'Non-urgent' || false;
+  }
+
+  getAttachmentTooltip(): string {
+    if (!this.message.attachmentCount || this.message.attachmentCount === 0) {
+      return 'No attachments';
+    }
+    return this.message.attachmentCount === 1 ? 'Has 1 attachment' : `Has ${this.message.attachmentCount} attachments`;
   }
 } 

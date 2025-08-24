@@ -62,15 +62,23 @@ export class SignalRService {
       this.joinMessagesGroup();
     });
 
-    // Handle incoming messages
-    this.connection.on('NewMessageReceived', (message: RefDto) => {
-      this.loggingService.debug('New message received via SignalR', message);
-      this._newMessage.next(message);
+    // Handle incoming messages - return void to prevent response expectation
+    this.connection.on('NewMessageReceived', (message: RefDto): void => {
+      try {
+        this.loggingService.debug('New message received via SignalR', message);
+        this._newMessage.next(message);
+      } catch (error) {
+        this.loggingService.error('Error handling new message via SignalR', error);
+      }
     });
 
-    this.connection.on('MessageListChanged', () => {
-      this.loggingService.debug('Message list changed via SignalR');
-      this._messageListChanged.next(true);
+    this.connection.on('MessageListChanged', (): void => {
+      try {
+        this.loggingService.debug('Message list changed via SignalR');
+        this._messageListChanged.next(true);
+      } catch (error) {
+        this.loggingService.error('Error handling message list change via SignalR', error);
+      }
     });
   }
 
@@ -84,13 +92,16 @@ export class SignalRService {
         await this.connection.start();
         this.loggingService.info('SignalR connection started successfully');
         this._isConnected.next(true);
+        
+        // Wait a bit before joining the group to ensure connection is stable
+        await new Promise(resolve => setTimeout(resolve, 100));
         await this.joinMessagesGroup();
       }
     } catch (error) {
       this.loggingService.error('Failed to start SignalR connection', error);
       this._isConnected.next(false);
       
-      // Retry connection after a delay
+      // Retry connection after a delay, but limit retries
       setTimeout(() => this.start(), 5000);
     }
   }
@@ -98,7 +109,10 @@ export class SignalRService {
   public async stop(): Promise<void> {
     if (this.connection) {
       try {
-        await this.leaveMessagesGroup();
+        // Only try to leave group if we're connected
+        if (this.connection.state === signalR.HubConnectionState.Connected) {
+          await this.leaveMessagesGroup();
+        }
         await this.connection.stop();
         this.loggingService.info('SignalR connection stopped');
       } catch (error) {
@@ -116,7 +130,12 @@ export class SignalRService {
         this.loggingService.debug('Joined Messages group');
       } catch (error) {
         this.loggingService.error('Failed to join Messages group', error);
+        // Don't throw here, just log the error
       }
+    } else {
+      this.loggingService.warn('Cannot join Messages group - connection not ready', { 
+        state: this.connection?.state 
+      });
     }
   }
 
@@ -127,6 +146,7 @@ export class SignalRService {
         this.loggingService.debug('Left Messages group');
       } catch (error) {
         this.loggingService.error('Failed to leave Messages group', error);
+        // Don't throw here, just log the error
       }
     }
   }
@@ -137,6 +157,26 @@ export class SignalRService {
 
   public isConnected(): boolean {
     return this.connection?.state === signalR.HubConnectionState.Connected;
+  }
+
+  public async ensureConnection(): Promise<boolean> {
+    if (this.connection?.state === signalR.HubConnectionState.Connected) {
+      return true;
+    }
+
+    if (this.connection?.state === signalR.HubConnectionState.Disconnected) {
+      try {
+        await this.start();
+        return this.isConnected();
+      } catch (error) {
+        this.loggingService.error('Failed to ensure SignalR connection', error);
+        return false;
+      }
+    }
+
+    // If in any other state (Connecting, Reconnecting, etc.), wait a bit and check again
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return this.isConnected();
   }
 
   private getSignalRLogLevel(): signalR.LogLevel {

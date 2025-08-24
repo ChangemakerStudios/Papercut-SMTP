@@ -206,31 +206,54 @@ export class MessageListComponent implements OnInit, OnDestroy {
     // Start SignalR connection
     this.signalRService.start();
 
-    // Subscribe to new message notifications
+    // Subscribe to new message notifications with error handling
     this.signalRService.newMessage$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(newMessage => {
-        if (newMessage) {
-          this.loggingService.debug('New message received via SignalR', newMessage);
-          this.handleNewMessage(newMessage);
+      .subscribe({
+        next: (newMessage) => {
+          if (newMessage) {
+            this.loggingService.debug('New message received via SignalR', newMessage);
+            try {
+              this.handleNewMessage(newMessage);
+            } catch (error) {
+              this.loggingService.error('Error handling new message', error);
+            }
+          }
+        },
+        error: (error) => {
+          this.loggingService.error('Error in SignalR new message subscription', error);
         }
       });
 
-    // Subscribe to message list change notifications
+    // Subscribe to message list change notifications with error handling
     this.signalRService.messageListChanged$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(changed => {
-        if (changed) {
-          this.loggingService.debug('Message list changed via SignalR, refreshing...');
-          this.refreshCurrentPage();
+      .subscribe({
+        next: (changed) => {
+          if (changed) {
+            this.loggingService.debug('Message list changed via SignalR, refreshing...');
+            try {
+              this.refreshCurrentPage();
+            } catch (error) {
+              this.loggingService.error('Error refreshing page after SignalR notification', error);
+            }
+          }
+        },
+        error: (error) => {
+          this.loggingService.error('Error in SignalR message list change subscription', error);
         }
       });
 
     // Subscribe to connection status
     this.signalRService.isConnected$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(isConnected => {
-        this.loggingService.debug('SignalR connection status', { isConnected });
+      .subscribe({
+        next: (isConnected) => {
+          this.loggingService.debug('SignalR connection status', { isConnected });
+        },
+        error: (error) => {
+          this.loggingService.error('Error in SignalR connection status subscription', error);
+        }
       });
   }
 
