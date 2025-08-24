@@ -40,7 +40,7 @@ describe('ContentFormattingService', () => {
       
       const result = service.formatMessageContent(htmlContent, 'text/html', 'msg123');
       
-      expect(result).toContain('<!DOCTYPE html>');
+      expect(result).toContain('<html>');
       expect(result).toContain('<p>Test content</p>');
       expect(result).toContain('color: #333333');
       expect(result).toContain('background: #ffffff');

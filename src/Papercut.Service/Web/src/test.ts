@@ -1,4 +1,5 @@
-// First, initialize the Angular testing environment.
+// This file is required by karma.conf.js and loads recursively all
+// .spec and framework files
 import 'zone.js/testing';
 import { getTestBed } from '@angular/core/testing';
 import {

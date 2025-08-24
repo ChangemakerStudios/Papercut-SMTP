@@ -5,6 +5,9 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Component, Type, Input, Output, EventEmitter } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { of, Subject } from 'rxjs';
+import { MessageRepository } from '../services/message.repository';
+import { GetMessagesResponse, DetailDto } from '../models';
+import { mockGetMessagesResponse, mockDetailDto } from './mock-data';
 
 /**
  * Test utilities for Angular testing
@@ -38,14 +41,43 @@ export function createStandaloneTestModule(component: Type<any>) {
 }
 
 /**
+ * Creates a mock MessageRepository to prevent real HTTP calls during testing
+ */
+export function createMockMessageRepository(): jasmine.SpyObj<MessageRepository> {
+  const mockRepo = jasmine.createSpyObj('MessageRepository', [
+    'getMessages',
+    'getMessage',
+    'downloadRawMessage',
+    'downloadSectionByContentId',
+    'downloadSectionByIndex',
+    'getRawContent',
+    'getSectionContent',
+    'getSectionByIndex',
+    'deleteAllMessages'
+  ]);
+
+  // Set up default return values
+  mockRepo.getMessages.and.returnValue(of(mockGetMessagesResponse));
+  mockRepo.getMessage.and.returnValue(of(mockDetailDto));
+  mockRepo.getRawContent.and.returnValue(of('Mock raw content'));
+  mockRepo.getSectionContent.and.returnValue(of('Mock section content'));
+  mockRepo.getSectionByIndex.and.returnValue(of('Mock section content'));
+  mockRepo.deleteAllMessages.and.returnValue(of(void 0));
+
+  return mockRepo;
+}
+
+/**
  * Creates a mock ActivatedRoute with optional parameters
  */
 export function createMockActivatedRoute(params: any = {}, queryParams: any = {}) {
+  const paramsSubject = new Subject<any>();
   const queryParamsSubject = new Subject<any>();
   
   return {
-    params: of(params),
+    params: paramsSubject.asObservable(),
     queryParams: queryParamsSubject.asObservable(),
+    paramsSubject: paramsSubject, // Expose subject for test control
     queryParamsSubject: queryParamsSubject, // Expose subject for test control
     snapshot: {
       params,
@@ -65,6 +97,21 @@ export function createMockRouter() {
     navigateByUrl: jasmine.createSpy('navigateByUrl'),
     url: '/test',
     events: of(null)
+  };
+}
+
+/**
+ * Creates a mock SignalR service to prevent real connections during testing
+ */
+export function createMockSignalRService() {
+  return {
+    start: jasmine.createSpy('start').and.returnValue(Promise.resolve()),
+    stop: jasmine.createSpy('stop').and.returnValue(Promise.resolve()),
+    on: jasmine.createSpy('on'),
+    off: jasmine.createSpy('off'),
+    invoke: jasmine.createSpy('invoke'),
+    connectionState: 'Disconnected',
+    isConnected: false
   };
 }
 
