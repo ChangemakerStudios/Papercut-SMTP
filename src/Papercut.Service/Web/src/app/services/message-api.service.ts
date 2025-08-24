@@ -16,30 +16,35 @@
 // limitations under the License.
 
 import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, map, tap } from 'rxjs';
 import { 
   GetMessagesResponse, 
   DetailDto, 
   RefDto,
   PaginationOptions
 } from '../models';
-import { MessageRepository } from './message.repository';
 import { EnvironmentService } from './environment.service';
+import { LoggingService } from './logging.service';
 
 /**
- * Service for handling message API operations.
- * Provides a clean interface for HTTP operations related to messages.
- * This service focuses solely on API communication and data retrieval.
+ * Unified service for handling message API operations.
+ * Combines HTTP communication, data transformation, and business logic.
+ * This service provides a clean interface for all message-related operations.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class MessageApiService {
+  private readonly baseUrl: string;
 
   constructor(
-    private messageRepository: MessageRepository,
-    private environmentService: EnvironmentService
-  ) {}
+    private http: HttpClient,
+    private environmentService: EnvironmentService,
+    private loggingService: LoggingService
+  ) {
+    this.baseUrl = this.environmentService.getApiEndpoint('messages');
+  }
 
   /**
    * Gets a paginated list of messages with proper date conversion.
@@ -48,16 +53,24 @@ export class MessageApiService {
    * @returns Observable of GetMessagesResponse with converted dates
    */
   getMessages(limit: number = 10, start: number = 0): Observable<GetMessagesResponse> {
-    return this.messageRepository.getMessages({ limit, start })
-      .pipe(
-        map(response => ({
-          ...response,
-          messages: response.messages.map(msg => ({
-            ...msg,
-            createdAt: msg.createdAt ? new Date(msg.createdAt) : null
-          }))
+    let params = new HttpParams();
+    
+    if (limit !== undefined) {
+      params = params.set('limit', limit.toString());
+    }
+    if (start !== undefined) {
+      params = params.set('start', start.toString());
+    }
+    
+    return this.http.get<GetMessagesResponse>(this.baseUrl, { params }).pipe(
+      map(response => ({
+        ...response,
+        messages: response.messages.map(msg => ({
+          ...msg,
+          createdAt: msg.createdAt ? new Date(msg.createdAt) : null
         }))
-      );
+      }))
+    );
   }
 
   /**
@@ -82,13 +95,32 @@ export class MessageApiService {
    * @returns Observable of DetailDto with converted dates
    */
   getMessageDetail(messageId: string): Observable<DetailDto> {
-    return this.messageRepository.getMessage(messageId)
-      .pipe(
-        map(detail => ({
-          ...detail,
-          createdAt: detail.createdAt ? new Date(detail.createdAt) : null
-        }))
-      );
+    this.loggingService.debug('MessageApiService - Fetching message', { originalId: messageId });
+    // The ID from the route parameter is already decoded by Angular router
+    const encodedId = encodeURIComponent(messageId);
+    const finalUrl = `${this.baseUrl}/${encodedId}`;
+    this.loggingService.debug('MessageApiService - Final URL', { url: finalUrl });
+    
+    const start = performance.now();
+    return this.http.get<DetailDto>(finalUrl).pipe(
+      map(detail => ({
+        ...detail,
+        createdAt: detail.createdAt ? new Date(detail.createdAt) : null
+      })),
+      tap({
+        next: (result) => {
+          const duration = performance.now() - start;
+          this.loggingService.debug('MessageApiService - HTTP call successful');
+          this.loggingService.logPerformance('getMessage', duration);
+          this.loggingService.logApiCall('GET', finalUrl, 200, duration);
+        },
+        error: (error) => {
+          const duration = performance.now() - start;
+          this.loggingService.error('MessageApiService - HTTP call failed', error);
+          this.loggingService.logApiCall('GET', finalUrl, error.status, duration);
+        }
+      })
+    );
   }
 
   /**
@@ -97,7 +129,8 @@ export class MessageApiService {
    * @returns Observable of the raw message content as text
    */
   getRawContent(messageId: string): Observable<string> {
-    return this.messageRepository.getRawContent(messageId);
+    const encodedId = encodeURIComponent(messageId);
+    return this.http.get(`${this.baseUrl}/${encodedId}/raw`, { responseType: 'text' });
   }
 
   /**
@@ -107,7 +140,9 @@ export class MessageApiService {
    * @returns Observable of the section content as text
    */
   getSectionContent(messageId: string, contentId: string): Observable<string> {
-    return this.messageRepository.getSectionContent(messageId, contentId);
+    const encodedMessageId = encodeURIComponent(messageId);
+    const encodedContentId = encodeURIComponent(contentId);
+    return this.http.get(`${this.baseUrl}/${encodedMessageId}/contents/${encodedContentId}`, { responseType: 'text' });
   }
 
   /**
@@ -117,7 +152,8 @@ export class MessageApiService {
    * @returns Observable of the section content as text
    */
   getSectionByIndex(messageId: string, index: number): Observable<string> {
-    return this.messageRepository.getSectionByIndex(messageId, index);
+    const encodedId = encodeURIComponent(messageId);
+    return this.http.get(`${this.baseUrl}/${encodedId}/sections/${index}`, { responseType: 'text' });
   }
 
   /**
@@ -125,7 +161,8 @@ export class MessageApiService {
    * @param messageId The unique message ID
    */
   downloadRawMessage(messageId: string): void {
-    this.messageRepository.downloadRawMessage(messageId);
+    const encodedId = encodeURIComponent(messageId);
+    window.open(`${this.baseUrl}/${encodedId}/raw`, '_blank');
   }
 
   /**
@@ -134,7 +171,8 @@ export class MessageApiService {
    * @param sectionIndex The zero-based section index
    */
   downloadSectionByIndex(messageId: string, sectionIndex: number): void {
-    this.messageRepository.downloadSectionByIndex(messageId, sectionIndex);
+    const encodedId = encodeURIComponent(messageId);
+    window.open(`${this.baseUrl}/${encodedId}/sections/${sectionIndex}`, '_blank');
   }
 
   /**
@@ -143,7 +181,9 @@ export class MessageApiService {
    * @param contentId The content ID of the section
    */
   downloadSectionByContentId(messageId: string, contentId: string): void {
-    this.messageRepository.downloadSectionByContentId(messageId, contentId);
+    const encodedMessageId = encodeURIComponent(messageId);
+    const encodedContentId = encodeURIComponent(contentId);
+    window.open(`${this.baseUrl}/${encodedMessageId}/contents/${encodedContentId}`, '_blank');
   }
 
   /**
@@ -151,7 +191,7 @@ export class MessageApiService {
    * @returns Observable of void
    */
   deleteAllMessages(): Observable<void> {
-    return this.messageRepository.deleteAllMessages();
+    return this.http.delete<void>(this.baseUrl);
   }
 
   /**
@@ -162,7 +202,7 @@ export class MessageApiService {
    */
   downloadRawMessageWithProgress(messageId: string): void {
     // This will be enhanced when FileDownloaderService is implemented
-    // For now, use the repository method as fallback
-    this.messageRepository.downloadRawMessage(messageId);
+    // For now, use the basic download method as fallback
+    this.downloadRawMessage(messageId);
   }
 }

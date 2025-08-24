@@ -1,19 +1,20 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-import { MessageRepository, MessageDetail } from '../services/message.repository';
+import { MessageApiService } from '../services/message-api.service';
+import { DetailDto } from '../models';
 import { LoggingService } from '../services/logging.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class MessageDetailResolver implements Resolve<MessageDetail> {
+export class MessageDetailResolver implements Resolve<DetailDto> {
   constructor(
-    private messageRepository: MessageRepository,
+    private messageApiService: MessageApiService,
     private loggingService: LoggingService
   ) {}
 
-  resolve(route: ActivatedRouteSnapshot): Observable<MessageDetail> {
+  resolve(route: ActivatedRouteSnapshot): Observable<DetailDto> {
     const messageId = route.paramMap.get('id');
     this.loggingService.debug('MessageDetailResolver - Raw message ID from route', { messageId });
     
@@ -25,7 +26,7 @@ export class MessageDetailResolver implements Resolve<MessageDetail> {
     const decodedId = decodeURIComponent(messageId);
     this.loggingService.debug('MessageDetailResolver - Decoded message ID', { decodedId });
     
-    return this.messageRepository.getMessage(decodedId).pipe(
+    return this.messageApiService.getMessageDetail(decodedId).pipe(
       tap({
         next: (result) => this.loggingService.debug('MessageDetailResolver - API call successful', { messageId: result.id }),
         error: (error) => this.loggingService.error('MessageDetailResolver - API call failed', error)

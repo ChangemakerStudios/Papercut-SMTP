@@ -1,43 +1,55 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { MessageService } from './message.service';
-import { MessageRepository } from './message.repository';
-import { GetMessagesResponse, DetailDto, RefDto } from '../models';
-import { 
-  mockMessages, 
-  mockDetailDto, 
-  mockGetMessagesResponse,
-  mockErrorResponse 
-} from '../testing/mock-data';
+import { MessageApiService } from './message-api.service';
+import { ContentFormattingService } from './content-formatting.service';
+import { ContentTransformationService } from './content-transformation.service';
+import { GetMessagesResponse, RefDto, DetailDto, EmailAddressDto } from '../models';
 
 describe('MessageService', () => {
   let service: MessageService;
-  let httpMock: HttpTestingController;
-  let messageRepository: jasmine.SpyObj<MessageRepository>;
+  let messageApiService: jasmine.SpyObj<MessageApiService>;
+  let contentFormattingService: jasmine.SpyObj<ContentFormattingService>;
+  let contentTransformationService: jasmine.SpyObj<ContentTransformationService>;
 
   beforeEach(() => {
-    const repositorySpy = jasmine.createSpyObj('MessageRepository', [
+    const apiServiceSpy = jasmine.createSpyObj('MessageApiService', [
       'getMessages',
-      'getMessage',
-      'downloadRawMessage'
+      'getMessageRef',
+      'getMessageDetail',
+      'downloadRawMessage',
+      'downloadSectionByIndex',
+      'downloadSectionByContentId',
+      'downloadRawMessageWithProgress',
+      'getSectionContent',
+      'getSectionByIndex',
+      'getRawContent',
+      'deleteAllMessages'
+    ]);
+    
+    const formattingServiceSpy = jasmine.createSpyObj('ContentFormattingService', [
+      'getMessageContent',
+      'formatMessageContent',
+      'formatSectionContent'
+    ]);
+    
+    const transformationServiceSpy = jasmine.createSpyObj('ContentTransformationService', [
+      'transformContent'
     ]);
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
         MessageService,
-        { provide: MessageRepository, useValue: repositorySpy }
+        { provide: MessageApiService, useValue: apiServiceSpy },
+        { provide: ContentFormattingService, useValue: formattingServiceSpy },
+        { provide: ContentTransformationService, useValue: transformationServiceSpy }
       ]
     });
-
+    
     service = TestBed.inject(MessageService);
-    httpMock = TestBed.inject(HttpTestingController);
-    messageRepository = TestBed.inject(MessageRepository) as jasmine.SpyObj<MessageRepository>;
-  });
-
-  afterEach(() => {
-    httpMock.verify();
+    messageApiService = TestBed.inject(MessageApiService) as jasmine.SpyObj<MessageApiService>;
+    contentFormattingService = TestBed.inject(ContentFormattingService) as jasmine.SpyObj<ContentFormattingService>;
+    contentTransformationService = TestBed.inject(ContentTransformationService) as jasmine.SpyObj<ContentTransformationService>;
   });
 
   it('should be created', () => {
@@ -45,183 +57,238 @@ describe('MessageService', () => {
   });
 
   describe('getMessages', () => {
-    it('should return messages with default pagination', (done) => {
-      const expectedResponse = mockGetMessagesResponse;
-      messageRepository.getMessages.and.returnValue(of(expectedResponse));
-
-      service.getMessages().subscribe(response => {
-        expect(response).toEqual(expectedResponse);
-        expect(response.messages.length).toBe(3);
-        expect(response.totalMessageCount).toBe(3);
-        done();
-      });
-    });
-
-    it('should return messages with custom pagination', (done) => {
-      const limit = 5;
-      const start = 10;
-      // Create a response with exactly 5 messages to match the limit
-      const additionalMessages = [
-        { ...mockMessages[0], id: 'msg-004' },
-        { ...mockMessages[0], id: 'msg-005' }
-      ];
-      const expectedResponse: GetMessagesResponse = { 
-        totalMessageCount: 5,
-        messages: [...mockMessages, ...additionalMessages] 
+    it('should return messages from API service', () => {
+      const expectedResponse: GetMessagesResponse = {
+        messages: [
+          { 
+            id: '1', 
+            subject: 'Test 1', 
+            from: [{ name: 'Test User', address: 'test1@example.com' }], 
+            createdAt: new Date(), 
+            attachmentCount: 0,
+            size: 1024
+          },
+          { 
+            id: '2', 
+            subject: 'Test 2', 
+            from: [{ name: 'Test User 2', address: 'test2@example.com' }], 
+            createdAt: new Date(), 
+            attachmentCount: 1,
+            size: 2048
+          }
+        ],
+        totalMessageCount: 2
       };
       
-      messageRepository.getMessages.and.returnValue(of(expectedResponse));
-
-      service.getMessages(limit, start).subscribe(response => {
-        expect(response.messages.length).toBe(5); // Should be 5, not 3
-        expect(messageRepository.getMessages).toHaveBeenCalledWith({ limit: 5, start: 10 });
-        done();
+      messageApiService.getMessages.and.returnValue(of(expectedResponse));
+      
+      const result = service.getMessages(10, 0);
+      
+      result.subscribe(response => {
+        expect(response).toEqual(expectedResponse);
       });
+      
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
     });
 
-    it('should transform dates in response', (done) => {
-      // Create test data with string dates that the repository would return
-      const testDate = '2024-01-15T10:30:00Z';
-      // Use type assertion to simulate repository response with string dates
-      const repositoryResponse = {
-        totalMessageCount: 3,
-        messages: mockMessages.map(msg => ({
-          ...msg,
-          createdAt: testDate
-        }))
-      } as any; // Type assertion to bypass strict typing for test data
-
-      messageRepository.getMessages.and.returnValue(of(repositoryResponse));
-
-      service.getMessages().subscribe(response => {
-        // The service should transform string dates to Date objects
-        expect(response.messages[0].createdAt).toBeInstanceOf(Date);
-        expect(response.messages[0].createdAt?.getTime()).toBe(new Date(testDate).getTime());
-        done();
-      });
+    it('should use default parameters when none provided', () => {
+      const expectedResponse: GetMessagesResponse = {
+        messages: [],
+        totalMessageCount: 0
+      };
+      
+      messageApiService.getMessages.and.returnValue(of(expectedResponse));
+      
+      service.getMessages();
+      
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
     });
 
-    it('should handle null dates gracefully', (done) => {
-      // Use type assertion to simulate repository response with null dates
-      const repositoryResponse = {
-        totalMessageCount: 3,
-        messages: mockMessages.map(msg => ({
-          ...msg,
-          createdAt: null
-        }))
-      } as any; // Type assertion to bypass strict typing for test data
-
-      messageRepository.getMessages.and.returnValue(of(repositoryResponse));
-
-      service.getMessages().subscribe(response => {
-        expect(response.messages[0].createdAt).toBeNull();
-        done();
-      });
+    it('should pass custom parameters to API service', () => {
+      const expectedResponse: GetMessagesResponse = {
+        messages: [],
+        totalMessageCount: 0
+      };
+      
+      messageApiService.getMessages.and.returnValue(of(expectedResponse));
+      
+      service.getMessages(5, 10);
+      
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(5, 10);
     });
   });
 
   describe('getMessageRef', () => {
-    it('should find message by ID in recent messages', (done) => {
-      const messageId = 'msg-001';
-      const mockResponse: GetMessagesResponse = { ...mockGetMessagesResponse, messages: mockMessages };
-
-      messageRepository.getMessages.and.returnValue(of(mockResponse));
-
-      service.getMessageRef(messageId).subscribe(result => {
-        expect(result).toBeTruthy();
-        expect(result?.id).toBe(messageId);
-        done();
+    it('should return message ref from API service', () => {
+      const mockRef: RefDto = {
+        id: '123',
+        subject: 'Test Subject',
+        from: [{ name: 'Test User', address: 'test@example.com' }],
+        createdAt: new Date(),
+        attachmentCount: 0,
+        size: 1024
+      };
+      
+      messageApiService.getMessageRef.and.returnValue(of(mockRef));
+      
+      const result = service.getMessageRef('123');
+      
+      result.subscribe(ref => {
+        expect(ref).toEqual(mockRef);
       });
-    });
-
-    it('should return null for non-existent message ID', (done) => {
-      const messageId = 'non-existent-id';
-      const mockResponse: GetMessagesResponse = { ...mockGetMessagesResponse, messages: mockMessages };
-
-      messageRepository.getMessages.and.returnValue(of(mockResponse));
-
-      service.getMessageRef(messageId).subscribe(result => {
-        expect(result).toBeNull();
-        done();
-      });
-    });
-
-    it('should search in recent 50 messages', (done) => {
-      messageRepository.getMessages.and.returnValue(of(mockGetMessagesResponse));
-
-      service.getMessageRef('msg-001').subscribe(() => {
-        expect(messageRepository.getMessages).toHaveBeenCalledWith({ limit: 50, start: 0 });
-        done();
-      });
+      
+      expect(messageApiService.getMessageRef).toHaveBeenCalledWith('123');
     });
   });
 
   describe('getMessage', () => {
-    it('should return message details', (done) => {
-      const messageId = 'msg-001';
-      messageRepository.getMessage.and.returnValue(of(mockDetailDto));
-
-      service.getMessage(messageId).subscribe(result => {
-        expect(result).toEqual(mockDetailDto);
-        expect(messageRepository.getMessage).toHaveBeenCalledWith(messageId);
-        done();
-      });
-    });
-
-    it('should transform dates in message details', (done) => {
-      const messageId = 'msg-001';
-      const testDate = '2024-01-15T10:30:00Z';
-      // Use type assertion to simulate repository response with string date
-      const repositoryResponse = {
-        ...mockDetailDto,
-        createdAt: testDate
-      } as any; // Type assertion to bypass strict typing for test data
-
-      messageRepository.getMessage.and.returnValue(of(repositoryResponse));
-
-      service.getMessage(messageId).subscribe(result => {
-        // The service should transform string dates to Date objects
-        expect(result.createdAt).toBeInstanceOf(Date);
-        expect(result.createdAt?.getTime()).toBe(new Date(testDate).getTime());
-        done();
-      });
-    });
-
-    it('should handle null dates in message details', (done) => {
-      const messageId = 'msg-001';
-      const detailWithNullDate: DetailDto = {
-        ...mockDetailDto,
-        createdAt: null
+    it('should return message detail from API service', () => {
+      const mockDetail: DetailDto = {
+        id: '123',
+        subject: 'Test Subject',
+        from: [{ name: 'Test User', address: 'test@example.com' }],
+        to: [{ name: 'Recipient', address: 'recipient@example.com' }],
+        cc: [],
+        bcc: [],
+        createdAt: new Date(),
+        htmlBody: '<p>Test content</p>',
+        textBody: 'Test content',
+        headers: [],
+        sections: [],
+        attachments: [],
+        size: 1024
       };
+      
+      messageApiService.getMessageDetail.and.returnValue(of(mockDetail));
+      
+      const result = service.getMessage('123');
+      
+      result.subscribe(detail => {
+        expect(detail).toEqual(mockDetail);
+      });
+      
+      expect(messageApiService.getMessageDetail).toHaveBeenCalledWith('123');
+    });
+  });
 
-      messageRepository.getMessage.and.returnValue(of(detailWithNullDate));
+  describe('download operations', () => {
+    it('should delegate downloadRawMessage to API service', () => {
+      service.downloadRawMessage('123');
+      expect(messageApiService.downloadRawMessage).toHaveBeenCalledWith('123');
+    });
 
-      service.getMessage(messageId).subscribe(result => {
-        expect(result.createdAt).toBeNull();
-        done();
+    it('should delegate downloadSectionByIndex to API service', () => {
+      service.downloadSectionByIndex('123', 0);
+      expect(messageApiService.downloadSectionByIndex).toHaveBeenCalledWith('123', 0);
+    });
+
+    it('should delegate downloadSectionByContentId to API service', () => {
+      service.downloadSectionByContentId('123', 'content456');
+      expect(messageApiService.downloadSectionByContentId).toHaveBeenCalledWith('123', 'content456');
+    });
+
+    it('should delegate downloadRawMessageWithProgress to API service', () => {
+      service.downloadRawMessageWithProgress('123');
+      expect(messageApiService.downloadRawMessageWithProgress).toHaveBeenCalledWith('123');
+    });
+  });
+
+  describe('section content operations', () => {
+    it('should delegate getSectionContent to API service', () => {
+      const mockContent = 'Section content';
+      messageApiService.getSectionContent.and.returnValue(of(mockContent));
+      
+      const result = service.getSectionContent('123', 'content456');
+      
+      result.subscribe(content => {
+        expect(content).toEqual(mockContent);
+      });
+      
+      expect(messageApiService.getSectionContent).toHaveBeenCalledWith('123', 'content456');
+    });
+
+    it('should delegate getSectionByIndex to API service', () => {
+      const mockContent = 'Section content';
+      messageApiService.getSectionByIndex.and.returnValue(of(mockContent));
+      
+      const result = service.getSectionByIndex('123', 0);
+      
+      result.subscribe(content => {
+        expect(content).toEqual(mockContent);
+      });
+      
+      expect(messageApiService.getSectionByIndex).toHaveBeenCalledWith('123', 0);
+    });
+  });
+
+  describe('raw content operations', () => {
+    it('should delegate getRawContent to API service', () => {
+      const mockContent = 'Raw message content';
+      messageApiService.getRawContent.and.returnValue(of(mockContent));
+      
+      const result = service.getRawContent('123');
+      
+      result.subscribe(content => {
+        expect(content).toEqual(mockContent);
+      });
+      
+      expect(messageApiService.getRawContent).toHaveBeenCalledWith('123');
+    });
+  });
+
+  describe('delete operations', () => {
+    it('should delegate deleteAllMessages to API service', () => {
+      messageApiService.deleteAllMessages.and.returnValue(of(void 0));
+      
+      const result = service.deleteAllMessages();
+      
+      result.subscribe(() => {
+        expect(messageApiService.deleteAllMessages).toHaveBeenCalled();
       });
     });
   });
 
-  describe('downloadRawMessage', () => {
-    it('should call repository download method', () => {
-      const messageId = 'msg-001';
+  describe('content formatting', () => {
+    it('should delegate getMessageContent to content formatting service', () => {
+      const mockMessage: DetailDto = {
+        id: '123',
+        subject: 'Test',
+        from: [{ name: 'Test User', address: 'test@example.com' }],
+        to: [],
+        cc: [],
+        bcc: [],
+        createdAt: new Date(),
+        htmlBody: '<p>Test</p>',
+        textBody: 'Test',
+        headers: [],
+        sections: [],
+        attachments: [],
+        size: 1024
+      };
       
-      service.downloadRawMessage(messageId);
+      const expectedContent = '<html><body>Formatted content</body></html>';
+      contentFormattingService.getMessageContent.and.returnValue(expectedContent);
       
-      expect(messageRepository.downloadRawMessage).toHaveBeenCalledWith(messageId);
+      const result = service.getMessageContent(mockMessage);
+      
+      expect(result).toEqual(expectedContent);
+      expect(contentFormattingService.getMessageContent).toHaveBeenCalledWith(
+        '<p>Test</p>',
+        'Test',
+        '123'
+      );
     });
   });
 
   describe('error handling', () => {
-    it('should handle repository errors gracefully', (done) => {
-      const errorMessage = 'Repository error';
-      messageRepository.getMessages.and.returnValue(throwError(() => new Error(errorMessage)));
-
+    it('should propagate errors from API service', () => {
+      const errorMessage = 'API Error';
+      messageApiService.getMessages.and.returnValue(throwError(() => new Error(errorMessage)));
+      
       service.getMessages().subscribe({
+        next: () => fail('Should have errored'),
         error: (error) => {
           expect(error.message).toBe(errorMessage);
-          done();
         }
       });
     });

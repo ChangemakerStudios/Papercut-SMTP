@@ -5,9 +5,13 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Component, Type, Input, Output, EventEmitter } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { of, Subject } from 'rxjs';
-import { MessageRepository } from '../services/message.repository';
-import { GetMessagesResponse, DetailDto } from '../models';
-import { mockGetMessagesResponse, mockDetailDto } from './mock-data';
+import { MessageApiService } from '../services/message-api.service';
+import { 
+  mockMessages, 
+  mockDetailDto, 
+  mockGetMessagesResponse,
+  mockErrorResponse 
+} from './mock-data';
 
 /**
  * Test utilities for Angular testing
@@ -41,15 +45,17 @@ export function createStandaloneTestModule(component: Type<any>) {
 }
 
 /**
- * Creates a mock MessageRepository to prevent real HTTP calls during testing
+ * Creates a mock MessageApiService to prevent real HTTP calls during testing
  */
-export function createMockMessageRepository(): jasmine.SpyObj<MessageRepository> {
-  const mockRepo = jasmine.createSpyObj('MessageRepository', [
+export function createMockMessageApiService(): jasmine.SpyObj<MessageApiService> {
+  const mockApiService = jasmine.createSpyObj('MessageApiService', [
     'getMessages',
-    'getMessage',
+    'getMessageRef',
+    'getMessageDetail',
     'downloadRawMessage',
     'downloadSectionByContentId',
     'downloadSectionByIndex',
+    'downloadRawMessageWithProgress',
     'getRawContent',
     'getSectionContent',
     'getSectionByIndex',
@@ -57,14 +63,15 @@ export function createMockMessageRepository(): jasmine.SpyObj<MessageRepository>
   ]);
 
   // Set up default return values
-  mockRepo.getMessages.and.returnValue(of(mockGetMessagesResponse));
-  mockRepo.getMessage.and.returnValue(of(mockDetailDto));
-  mockRepo.getRawContent.and.returnValue(of('Mock raw content'));
-  mockRepo.getSectionContent.and.returnValue(of('Mock section content'));
-  mockRepo.getSectionByIndex.and.returnValue(of('Mock section content'));
-  mockRepo.deleteAllMessages.and.returnValue(of(void 0));
+  mockApiService.getMessages.and.returnValue(of(mockGetMessagesResponse));
+  mockApiService.getMessageRef.and.returnValue(of(mockMessages[0]));
+  mockApiService.getMessageDetail.and.returnValue(of(mockDetailDto));
+  mockApiService.getRawContent.and.returnValue(of('Mock raw content'));
+  mockApiService.getSectionContent.and.returnValue(of('Mock section content'));
+  mockApiService.getSectionByIndex.and.returnValue(of('Mock section content'));
+  mockApiService.deleteAllMessages.and.returnValue(of(void 0));
 
-  return mockRepo;
+  return mockApiService;
 }
 
 /**

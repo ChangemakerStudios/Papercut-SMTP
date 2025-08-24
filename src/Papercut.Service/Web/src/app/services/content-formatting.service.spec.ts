@@ -1,23 +1,28 @@
 import { TestBed } from '@angular/core/testing';
 import { ContentFormattingService } from './content-formatting.service';
 import { ThemeService } from './theme.service';
+import { ContentTransformationService } from './content-transformation.service';
 
 describe('ContentFormattingService', () => {
   let service: ContentFormattingService;
   let themeService: jasmine.SpyObj<ThemeService>;
+  let contentTransformationService: jasmine.SpyObj<ContentTransformationService>;
 
   beforeEach(() => {
     const themeServiceSpy = jasmine.createSpyObj('ThemeService', ['isDarkTheme']);
+    const contentTransformationServiceSpy = jasmine.createSpyObj('ContentTransformationService', ['transformContent']);
     
     TestBed.configureTestingModule({
       providers: [
         ContentFormattingService,
-        { provide: ThemeService, useValue: themeServiceSpy }
+        { provide: ThemeService, useValue: themeServiceSpy },
+        { provide: ContentTransformationService, useValue: contentTransformationServiceSpy }
       ]
     });
     
     service = TestBed.inject(ContentFormattingService);
     themeService = TestBed.inject(ThemeService) as jasmine.SpyObj<ThemeService>;
+    contentTransformationService = TestBed.inject(ContentTransformationService) as jasmine.SpyObj<ContentTransformationService>;
   });
 
   it('should be created', () => {
@@ -112,11 +117,13 @@ describe('ContentFormattingService', () => {
       const textBody = 'Text content';
       const messageId = 'msg123';
       themeService.isDarkTheme.and.returnValue(false);
+      contentTransformationService.transformContent.and.returnValue(htmlBody);
       
       const result = service.getMessageContent(htmlBody, textBody, messageId);
       
       expect(result).toContain('<!DOCTYPE html>');
       expect(result).toContain('<p>HTML content</p>');
+      expect(contentTransformationService.transformContent).toHaveBeenCalledWith(htmlBody, messageId);
     });
 
     it('should format text body when HTML body is not available', () => {
@@ -129,6 +136,7 @@ describe('ContentFormattingService', () => {
       
       expect(result).toContain('<!DOCTYPE html>');
       expect(result).toContain('<pre>Text content</pre>');
+      expect(contentTransformationService.transformContent).not.toHaveBeenCalled();
     });
 
     it('should handle empty content gracefully', () => {
@@ -141,6 +149,48 @@ describe('ContentFormattingService', () => {
       
       expect(result).toContain('<!DOCTYPE html>');
       expect(result).toContain('Loading...');
+      expect(contentTransformationService.transformContent).not.toHaveBeenCalled();
+    });
+
+    it('should apply content transformations for HTML content with message ID', () => {
+      const htmlBody = '<img src="cid:image123" alt="test">';
+      const textBody = null;
+      const messageId = 'msg123';
+      const transformedHtml = '<img src="/api/messages/msg123/contents/image123" alt="test">';
+      themeService.isDarkTheme.and.returnValue(false);
+      contentTransformationService.transformContent.and.returnValue(transformedHtml);
+      
+      const result = service.getMessageContent(htmlBody, textBody, messageId);
+      
+      expect(result).toContain('<!DOCTYPE html>');
+      expect(result).toContain(transformedHtml);
+      expect(contentTransformationService.transformContent).toHaveBeenCalledWith(htmlBody, messageId);
+    });
+
+    it('should not apply transformations for text content', () => {
+      const htmlBody = null;
+      const textBody = 'Text content';
+      const messageId = 'msg123';
+      themeService.isDarkTheme.and.returnValue(false);
+      
+      const result = service.getMessageContent(htmlBody, textBody, messageId);
+      
+      expect(result).toContain('<!DOCTYPE html>');
+      expect(result).toContain('<pre>Text content</pre>');
+      expect(contentTransformationService.transformContent).not.toHaveBeenCalled();
+    });
+
+    it('should not apply transformations when message ID is empty', () => {
+      const htmlBody = '<img src="cid:image123" alt="test">';
+      const textBody = null;
+      const messageId = '';
+      themeService.isDarkTheme.and.returnValue(false);
+      
+      const result = service.getMessageContent(htmlBody, textBody, messageId);
+      
+      expect(result).toContain('<!DOCTYPE html>');
+      expect(result).toContain(htmlBody);
+      expect(contentTransformationService.transformContent).not.toHaveBeenCalled();
     });
   });
 

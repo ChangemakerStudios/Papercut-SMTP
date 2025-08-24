@@ -12,7 +12,7 @@ import {
   mockDetailDto, 
   mockGetMessagesResponse 
 } from '../mock-data';
-import { createMockActivatedRoute, createMockMessageRepository } from '../test-utils';
+import { createMockActivatedRoute, createMockMessageApiService } from '../test-utils';
 import { throwError, of, Subject } from 'rxjs';
 
 describe('Message System Integration', () => {

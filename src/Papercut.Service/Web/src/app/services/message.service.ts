@@ -22,7 +22,7 @@ import {
   DetailDto, 
   RefDto 
 } from '../models';
-import { MessageRepository } from './message.repository';
+import { MessageApiService } from './message-api.service';
 import { ContentFormattingService } from './content-formatting.service';
 import { ContentTransformationService } from './content-transformation.service';
 
@@ -36,7 +36,7 @@ import { ContentTransformationService } from './content-transformation.service';
 export class MessageService {
 
   constructor(
-    private messageRepository: MessageRepository,
+    private messageApiService: MessageApiService,
     private contentFormattingService: ContentFormattingService,
     private contentTransformationService: ContentTransformationService
   ) {}
@@ -48,16 +48,7 @@ export class MessageService {
    * @returns Observable of GetMessagesResponse
    */
   getMessages(limit: number = 10, start: number = 0): Observable<GetMessagesResponse> {
-    return this.messageRepository.getMessages({ limit, start })
-      .pipe(
-        map(response => ({
-          ...response,
-          messages: (response.messages || []).map(msg => ({
-            ...msg,
-            createdAt: msg.createdAt ? new Date(msg.createdAt) : null
-          }))
-        }))
-      );
+    return this.messageApiService.getMessages(limit, start);
   }
 
   /**
@@ -67,13 +58,7 @@ export class MessageService {
    * @returns Observable of RefDto or null if not found
    */
   getMessageRef(messageId: string): Observable<RefDto | null> {
-    // Get recent messages and find the one with matching ID
-    return this.getMessages(50, 0).pipe(
-      map(response => {
-        const found = response.messages.find(msg => msg.id === messageId);
-        return found || null;
-      })
-    );
+    return this.messageApiService.getMessageRef(messageId);
   }
 
   /**
@@ -82,13 +67,7 @@ export class MessageService {
    * @returns Observable of DetailDto
    */
   getMessage(messageId: string): Observable<DetailDto> {
-    return this.messageRepository.getMessage(messageId)
-      .pipe(
-        map(detail => ({
-          ...detail,
-          createdAt: detail.createdAt ? new Date(detail.createdAt) : null
-        }))
-      );
+    return this.messageApiService.getMessageDetail(messageId);
   }
 
   /**
@@ -96,7 +75,7 @@ export class MessageService {
    * @param messageId The unique message ID
    */
   downloadRawMessage(messageId: string): void {
-    this.messageRepository.downloadRawMessage(messageId);
+    this.messageApiService.downloadRawMessage(messageId);
   }
 
   /**
@@ -105,7 +84,7 @@ export class MessageService {
    * @param sectionIndex The zero-based section index
    */
   downloadSectionByIndex(messageId: string, sectionIndex: number): void {
-    this.messageRepository.downloadSectionByIndex(messageId, sectionIndex);
+    this.messageApiService.downloadSectionByIndex(messageId, sectionIndex);
   }
 
   /**
@@ -114,7 +93,7 @@ export class MessageService {
    * @param contentId The content ID of the section
    */
   downloadSectionByContentId(messageId: string, contentId: string): void {
-    this.messageRepository.downloadSectionByContentId(messageId, contentId);
+    this.messageApiService.downloadSectionByContentId(messageId, contentId);
   }
 
   /**
@@ -122,9 +101,7 @@ export class MessageService {
    * @param messageId The unique message ID
    */
   downloadRawMessageWithProgress(messageId: string): void {
-    // This will be handled by FileDownloaderService
-    // For now, use the repository method as fallback
-    this.messageRepository.downloadRawMessage(messageId);
+    this.messageApiService.downloadRawMessageWithProgress(messageId);
   }
 
   /**
@@ -134,7 +111,7 @@ export class MessageService {
    * @returns Observable of the section content as text
    */
   getSectionContent(messageId: string, contentId: string): Observable<string> {
-    return this.messageRepository.getSectionContent(messageId, contentId);
+    return this.messageApiService.getSectionContent(messageId, contentId);
   }
 
   /**
@@ -144,7 +121,7 @@ export class MessageService {
    * @returns Observable of the section content as text
    */
   getSectionByIndex(messageId: string, index: number): Observable<string> {
-    return this.messageRepository.getSectionByIndex(messageId, index);
+    return this.messageApiService.getSectionByIndex(messageId, index);
   }
 
   /**
@@ -153,7 +130,7 @@ export class MessageService {
    * @returns Observable of the raw message content as text
    */
   getRawContent(messageId: string): Observable<string> {
-    return this.messageRepository.getRawContent(messageId);
+    return this.messageApiService.getRawContent(messageId);
   }
 
   /**
@@ -161,10 +138,8 @@ export class MessageService {
    * @returns Observable of void
    */
   deleteAllMessages(): Observable<void> {
-    return this.messageRepository.deleteAllMessages();
+    return this.messageApiService.deleteAllMessages();
   }
-
-
 
   // Returns the HTML content for a message, handling plain text and HTML bodies
   getMessageContent(message: DetailDto): string {
@@ -204,9 +179,4 @@ export class MessageService {
   formatSectionContent(content: string, mediaType: string, messageId: string): string {
     return this.contentFormattingService.formatSectionContent(content, mediaType, messageId);
   }
-
-
-
-
-
 } 

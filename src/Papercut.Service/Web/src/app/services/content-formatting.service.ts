@@ -16,6 +16,7 @@
 
 import { Injectable } from '@angular/core';
 import { ThemeService } from './theme.service';
+import { ContentTransformationService } from './content-transformation.service';
 
 /**
  * Service for formatting email content for display.
@@ -27,7 +28,10 @@ import { ThemeService } from './theme.service';
 })
 export class ContentFormattingService {
 
-  constructor(private themeService: ThemeService) {}
+  constructor(
+    private themeService: ThemeService,
+    private contentTransformationService: ContentTransformationService
+  ) {}
 
   /**
    * Formats content for display in iframe with proper styling and theme support.
@@ -80,7 +84,14 @@ export class ContentFormattingService {
   getMessageContent(htmlBody: string | null, textBody: string | null, messageId: string): string {
     const content = htmlBody || textBody || '';
     const mediaType = htmlBody ? 'text/html' : 'text/plain';
-    return this.formatMessageContent(content, mediaType, messageId);
+    
+    // Apply content transformations first if we have HTML content and a message ID
+    let processedContent = content;
+    if (messageId && htmlBody && mediaType === 'text/html') {
+      processedContent = this.contentTransformationService.transformContent(content, messageId);
+    }
+    
+    return this.formatMessageContent(processedContent, mediaType, messageId);
   }
 
   /**
