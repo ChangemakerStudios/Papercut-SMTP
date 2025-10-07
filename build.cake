@@ -184,10 +184,11 @@ Task("PackageUI32")
 .OnError(exception => Error(exception));
 
 Task("DeployReleases")
-    .WithCriteria(isRunningInGitHubActions && isMasterBranch && hasGithubToken)
+    .WithCriteria(isRunningInGitHubActions && (isMasterBranch || isDevelopBranch) && hasGithubToken)
     .Does(() =>
     {
-        Information($"Uploading Papercut SMTP 64-bit Release {versionInfo.FullSemVer}");
+        var releaseType = isMasterBranch ? "Release" : "Pre-release";
+        Information($"Uploading Papercut SMTP 64-bit {releaseType} {versionInfo.FullSemVer}");
 
         var uploadParams = new VpkUploadParams
         {
@@ -200,7 +201,7 @@ Task("DeployReleases")
 
         Velopack.UploadGithub(Context, uploadParams);
 
-        Information($"Uploading Papercut SMTP 32-bit Release {versionInfo.FullSemVer}");
+        Information($"Uploading Papercut SMTP 32-bit {releaseType} {versionInfo.FullSemVer}");
 
         uploadParams = new VpkUploadParams
         {
