@@ -10,6 +10,7 @@
                 xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
                 Name="HeaderEdit"
                 Foreground="{DynamicResource MahApps.Brushes.Text}"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
                 Padding="4"
                 FontFamily="Consolas"
                 FontSize="9pt" IsReadOnly="True" />

@@ -12,7 +12,10 @@
                 Name="BodyEdit"
                 Padding="4"
                 FontFamily="Consolas"
-                FontSize="9pt" IsReadOnly="True" />
+                FontSize="9pt"
+                IsReadOnly="True"
+                Foreground="{DynamicResource MahApps.Brushes.Text}"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}" />
         </Border>
     </Grid>
 </UserControl>

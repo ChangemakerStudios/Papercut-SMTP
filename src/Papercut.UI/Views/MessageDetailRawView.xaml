@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
-             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White"
+             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
     <Grid IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
           ShowGridLines="False" Width="Auto">
@@ -19,6 +19,7 @@
                 xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
                 Name="rawEdit"
                 Foreground="{DynamicResource MahApps.Brushes.Text}"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
                 Padding="4"
                 FontFamily="Consolas"
                 FontSize="9pt" IsReadOnly="True" />

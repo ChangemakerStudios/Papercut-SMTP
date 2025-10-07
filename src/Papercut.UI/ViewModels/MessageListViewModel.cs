@@ -381,7 +381,11 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
                 {
                     try
                     {
-                        this._messageRepository.DeleteMessage(entry);
+                        if (this._messageRepository.DeleteMessage(entry))
+                        {
+                            this._logger.Debug("Deleted Message {@Entry}", entry);
+                        }
+
                         return null;
                     }
                     catch (Exception ex)

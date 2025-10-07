@@ -9,7 +9,7 @@
                       xmlns:Helpers="clr-namespace:Papercut.Helpers"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
-                      mc:Ignorable="d" Background="White"
+                      mc:Ignorable="d" Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
                       d:DataContext="{x:Type ViewModels:MimePartViewModel}"
                       Title="{Binding WindowTitle}" MinWidth="300" MinHeight="200"
                       ResizeMode="CanResizeWithGrip" Width="500" Height="400"
