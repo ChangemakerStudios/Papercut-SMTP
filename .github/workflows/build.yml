@@ -56,25 +56,11 @@ jobs:
         run: |
           pwsh .\build.ps1
 
-      - name: Upload Build Artifacts (UI 64-bit)
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: papercut-ui-x64-${{ steps.gitversion.outputs.fullSemVer }}
-          path: releases/*win-x64*.exe
-          if-no-files-found: warn
-
-      - name: Upload Build Artifacts (UI 32-bit)
-        uses: actions/upload-artifact@v4
-        with:
-          name: papercut-ui-x86-${{ steps.gitversion.outputs.fullSemVer }}
-          path: releases/*win-x86*.exe
-          if-no-files-found: warn
-
-      - name: Upload Build Artifacts (Service)
-        uses: actions/upload-artifact@v4
-        with:
-          name: papercut-service-${{ steps.gitversion.outputs.fullSemVer }}
-          path: releases/*.zip
+          name: papercut-releases-${{ steps.gitversion.outputs.fullSemVer }}
+          path: releases/
           if-no-files-found: warn
 
       - name: Create GitHub Release (master only)
@@ -91,10 +77,7 @@ jobs:
             See [ReleaseNotes.md](https://github.com/ChangemakerStudios/Papercut-SMTP/blob/master/ReleaseNotes.md) for details.
           draft: false
           prerelease: false
-          files: |
-            releases/*win-x64*.exe
-            releases/*win-x86*.exe
-            releases/*.zip
+          files: releases/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -112,9 +95,6 @@ jobs:
             **Version:** ${{ steps.gitversion.outputs.fullSemVer }}
           draft: false
           prerelease: true
-          files: |
-            releases/*win-x64*.exe
-            releases/*win-x86*.exe
-            releases/*.zip
+          files: releases/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
