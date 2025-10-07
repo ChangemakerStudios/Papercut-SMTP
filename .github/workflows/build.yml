@@ -34,15 +34,14 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.0.0
+        uses: gittools/actions/gitversion/setup@v4.1.0
         with:
           versionSpec: '6.x'
 
       - name: Determine Version
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v3.0.0
+        uses: gittools/actions/gitversion/execute@v4.1.0
         with:
-          useConfigFile: true
           configFilePath: GitVersion.yml
 
       - name: Display GitVersion outputs
