@@ -24,12 +24,93 @@
                       Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
                       Foreground="{DynamicResource MahApps.Brushes.Text}">
     <controls:MetroWindow.Resources>
+        <!-- Override ContextMenu/Popup colors used by MenuItem submenus -->
+        <StaticResource x:Key="{x:Static SystemColors.MenuBrushKey}" ResourceKey="MahApps.Brushes.ThemeBackground" />
+        <StaticResource x:Key="{x:Static SystemColors.MenuTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
+
+        <!-- Override Menu default colors -->
+        <StaticResource x:Key="Menu.Static.Background" ResourceKey="MahApps.Brushes.Control.Background" />
+        <StaticResource x:Key="Menu.Static.Border" ResourceKey="MahApps.Brushes.Control.Border" />
+
+        <Style TargetType="ToolBar" BasedOn="{StaticResource {x:Type ToolBar}}">
+            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
+            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
+        </Style>
         <Style TargetType="Menu" BasedOn="{StaticResource {x:Type Menu}}">
             <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
             <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
         </Style>
-        <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+        <Style TargetType="MenuItem">
+            <Setter Property="OverridesDefaultStyle" Value="True" />
             <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
+            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Grid>
+                            <!-- Top Level MenuItem (on toolbar) -->
+                            <Border x:Name="TopLevelBorder"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    CornerRadius="2"
+                                    Padding="8,4"
+                                    Visibility="Visible">
+                                <ContentPresenter ContentSource="Header" />
+                            </Border>
+                            <!-- Submenu Popup -->
+                            <Popup x:Name="PART_Popup"
+                                   IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                                        BorderBrush="{DynamicResource MahApps.Brushes.Control.Border}"
+                                        BorderThickness="1"
+                                        Padding="0"
+                                        CornerRadius="4">
+                                    <StackPanel IsItemsHost="True"
+                                                Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                                                KeyboardNavigation.DirectionalNavigation="Cycle" />
+                                </Border>
+                            </Popup>
+                            <!-- Submenu Item -->
+                            <Border x:Name="SubMenuBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderThickness="0"
+                                    Padding="24,4,8,4"
+                                    Visibility="Collapsed">
+                                <ContentPresenter ContentSource="Header" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <!-- Show submenu item style when this is a submenu item -->
+                            <Trigger Property="Role" Value="SubmenuItem">
+                                <Setter TargetName="TopLevelBorder" Property="Visibility" Value="Collapsed" />
+                                <Setter TargetName="SubMenuBorder" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <!-- Hover on top level -->
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="Role" Value="TopLevelHeader" />
+                                    <Condition Property="IsHighlighted" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="TopLevelBorder" Property="Background" Value="{DynamicResource MahApps.Brushes.Gray5}" />
+                            </MultiTrigger>
+                            <!-- Hover on submenu item -->
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="Role" Value="SubmenuItem" />
+                                    <Condition Property="IsHighlighted" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="SubMenuBorder" Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}" />
+                                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}" />
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
             <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
@@ -47,6 +128,20 @@
             <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
             <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
             <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Control.Border}" />
+        </Style>
+        <Style TargetType="pg:PropertyItem">
+            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Gray5}" />
+                    <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}" />
+                    <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style TargetType="xctk:PropertyGrid">
             <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
@@ -66,7 +161,7 @@
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}" />
-                                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.AccentForeground}" />
+                                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}" />
                                 <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Accent}" />
                             </Trigger>
                         </Style.Triggers>
@@ -141,7 +236,7 @@
 
                                     <Thumb x:Name="PART_DragThumb"
                                            Grid.Column="0"
-                                           Width="6"
+                                           Width="2"
                                            Margin="0"
                                            HorizontalAlignment="Right"
                                            Cursor="SizeWE">
@@ -343,6 +438,13 @@
                         <StaticResource x:Key="{x:Static SystemColors.ControlBrushKey}" ResourceKey="MahApps.Brushes.ThemeBackground" />
                         <StaticResource x:Key="{x:Static SystemColors.ControlTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
                         <StaticResource x:Key="{x:Static SystemColors.WindowTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
+                        <StaticResource x:Key="{x:Static SystemColors.HighlightBrushKey}" ResourceKey="MahApps.Brushes.Accent" />
+                        <StaticResource x:Key="{x:Static SystemColors.HighlightTextBrushKey}" ResourceKey="MahApps.Brushes.IdealForeground" />
+                        <StaticResource x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" ResourceKey="MahApps.Brushes.Gray5" />
+                        <StaticResource x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
+                        <StaticResource x:Key="{x:Static SystemColors.GrayTextBrushKey}" ResourceKey="MahApps.Brushes.Gray" />
+                        <StaticResource x:Key="{x:Static SystemColors.InfoBrushKey}" ResourceKey="MahApps.Brushes.ThemeBackground" />
+                        <StaticResource x:Key="{x:Static SystemColors.InfoTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
 
                         <Style TargetType="TextBox">
                             <Setter Property="Background" Value="Transparent" />
