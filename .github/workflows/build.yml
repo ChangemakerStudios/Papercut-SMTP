@@ -50,9 +50,6 @@ jobs:
           echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
           echo "BranchName: ${{ steps.gitversion.outputs.branchName }}"
 
-      - name: Restore NuGet packages
-        run: dotnet restore Papercut.sln
-
       - name: Run Cake Build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
