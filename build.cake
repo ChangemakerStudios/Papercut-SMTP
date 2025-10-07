@@ -1,12 +1,12 @@
 
 #tool "nuget:?package=System.Configuration.ConfigurationManager&version=4.5.0"
 #tool "nuget:?package=MarkdownSharp&version=2.0.5"
-#tool "nuget:?package=MimekitLite&version=4.5.0"
+#tool "nuget:?package=MimekitLite&version=4.14.0"
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.17.0"
 #tool "nuget:?package=OpenCover&version=4.7.1221"
 
-#tool "dotnet:?package=GitVersion.Tool&version=5.12.0"
-#tool "dotnet:?package=vpk&version=0.0.359"
+#tool "dotnet:?package=GitVersion.Tool&version=6.4.0"
+#tool "dotnet:?package=vpk&version=0.0.1298"
 
 #addin "nuget:?package=Cake.FileHelpers&version=6.1.3"
 #addin "nuget:?package=Cake.Incubator&version=8.0.0"
@@ -101,23 +101,6 @@ Task("Restore")
 {
     DotNetRestore("./Papercut.sln");
 });
-
-Task("DownloadReleases")
-    .WithCriteria(hasGithubToken)
-    .IsDependentOn("Restore")
-    .Does(() =>
-{
-    var arguments = new ProcessArgumentBuilder()
-        .Append("download").Append("github")
-        .Append("--repoUrl").Append("https://github.com/ChangemakerStudios/Papercut-SMTP")
-        .Append("--token").Append(githubToken ?? "");
-
-    StartProcess("vpk", new ProcessSettings
-    {
-        Arguments = arguments
-    });
-})
-.OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
@@ -291,7 +274,6 @@ Task("All")
     .IsDependentOn("Clean")
     .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("CreateReleaseNotes")
-    .IsDependentOn("DownloadReleases")
     .IsDependentOn("Restore")
     .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
     .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
