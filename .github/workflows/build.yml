@@ -1,0 +1,124 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - 'feature/**'
+      - 'release/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - master
+      - develop
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  CONFIGURATION: Release
+
+jobs:
+  build:
+    name: Build Papercut SMTP
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for GitVersion
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.0.0
+        with:
+          versionSpec: '6.x'
+
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v3.0.0
+        with:
+          useConfigFile: true
+          configFilePath: GitVersion.yml
+
+      - name: Display GitVersion outputs
+        run: |
+          echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
+          echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+          echo "BranchName: ${{ steps.gitversion.outputs.branchName }}"
+
+      - name: Restore NuGet packages
+        run: dotnet restore Papercut.sln
+
+      - name: Run Cake Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pwsh .\build.ps1
+
+      - name: Upload Build Artifacts (UI 64-bit)
+        uses: actions/upload-artifact@v4
+        with:
+          name: papercut-ui-x64-${{ steps.gitversion.outputs.fullSemVer }}
+          path: releases/*win-x64*.exe
+          if-no-files-found: warn
+
+      - name: Upload Build Artifacts (UI 32-bit)
+        uses: actions/upload-artifact@v4
+        with:
+          name: papercut-ui-x86-${{ steps.gitversion.outputs.fullSemVer }}
+          path: releases/*win-x86*.exe
+          if-no-files-found: warn
+
+      - name: Upload Build Artifacts (Service)
+        uses: actions/upload-artifact@v4
+        with:
+          name: papercut-service-${{ steps.gitversion.outputs.fullSemVer }}
+          path: releases/*.zip
+          if-no-files-found: warn
+
+      - name: Create GitHub Release (master only)
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.gitversion.outputs.semVer }}
+          name: Release v${{ steps.gitversion.outputs.semVer }}
+          body: |
+            ## Release Notes
+
+            This is an automated release for Papercut SMTP v${{ steps.gitversion.outputs.semVer }}.
+
+            See [ReleaseNotes.md](https://github.com/ChangemakerStudios/Papercut-SMTP/blob/master/ReleaseNotes.md) for details.
+          draft: false
+          prerelease: false
+          files: |
+            releases/*win-x64*.exe
+            releases/*win-x86*.exe
+            releases/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pre-release (develop only)
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.gitversion.outputs.semVer }}
+          name: Pre-release v${{ steps.gitversion.outputs.semVer }}
+          body: |
+            ## Development Pre-release
+
+            This is an automated pre-release build from the develop branch.
+
+            **Version:** ${{ steps.gitversion.outputs.fullSemVer }}
+          draft: false
+          prerelease: true
+          files: |
+            releases/*win-x64*.exe
+            releases/*win-x86*.exe
+            releases/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
