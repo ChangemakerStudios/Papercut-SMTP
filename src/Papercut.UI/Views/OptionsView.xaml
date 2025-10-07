@@ -11,7 +11,7 @@
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:OptionsViewModel}"
-                      Title="{Binding WindowTitle}" Width="325" Height="325" Icon="/Papercut;component/App.ico"
+                      Title="{Binding WindowTitle}" Width="325" SizeToContent="Height" MinHeight="325" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="NoResize"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner"
@@ -24,11 +24,10 @@
             <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
             <Button Width="75" Margin="2" Name="Save" IsDefault="True">Save</Button>
         </StackPanel>
-        <Grid Width="310">
+        <Grid Width="310" Margin="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="466*" />
-                <ColumnDefinition Width="97*"/>
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -37,37 +36,48 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Label Grid.Column="0" Grid.Row="0" Margin="0,2,0,29" Grid.RowSpan="2">IP Address:</Label>
-            <ComboBox Grid.Column="1" Grid.Row="0" Margin="2,2,0,2" Width="170" HorizontalAlignment="Left"
-                      Name="IPs" SelectedItem="{Binding IP}" Grid.ColumnSpan="2" />
-            <Label Grid.Column="0" Grid.Row="1" Margin="0,2,10,0" Grid.RowSpan="3">Port:</Label>
-            <Grid Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2">
-                <TextBox Margin="2,2,0,2" Width="100" HorizontalAlignment="Left" Name="Port" />
-                <Label Margin="102,0,-0.2,0.4">(default is 25)</Label>
-            </Grid>
-            <Label Grid.Column="0" Grid.Row="4" Content="Message Sort Order:" Margin="0,3,3,4"/>
-            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,2.6,0,7.4"
-                      x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2" />
-            <Label Grid.Column="0" Grid.Row="4" Content="Theme:" Margin="0,33,3,-26"/>
-            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,33.6,0,-23.6"
-                x:Name="Themes" SelectedItem="{Binding ThemeColor}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2">
+
+            <!-- IP Address -->
+            <Label Grid.Column="0" Grid.Row="0" Margin="0,2,4,2" VerticalAlignment="Center">IP Address:</Label>
+            <ComboBox Grid.Column="1" Grid.Row="0" Margin="2" Name="IPs" SelectedItem="{Binding IP}" />
+
+            <!-- Port -->
+            <Label Grid.Column="0" Grid.Row="1" Margin="0,2,4,2" VerticalAlignment="Center">Port:</Label>
+            <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" Margin="2">
+                <TextBox Width="100" Name="Port" Margin="0,0,4,0" />
+                <TextBlock VerticalAlignment="Center" Text="(default is 25)" />
+            </StackPanel>
+
+            <!-- Message Sort Order -->
+            <Label Grid.Column="0" Grid.Row="2" Margin="0,2,4,2" VerticalAlignment="Center">Message Sort Order:</Label>
+            <ComboBox Grid.Column="1" Grid.Row="2" Margin="2" x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" />
+
+            <!-- Theme -->
+            <Label Grid.Column="0" Grid.Row="3" Margin="0,2,4,2" VerticalAlignment="Center">Theme:</Label>
+            <ComboBox Grid.Column="1" Grid.Row="3" Margin="2" x:Name="Themes" SelectedItem="{Binding ThemeColor}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0 2 5 2" />
+                            <Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0,2,5,2" />
                             <TextBlock Text="{Binding Description}" />
                         </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
-            <CheckBox Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="5,0,5,-47" Name="StartMinimized" VerticalAlignment="Bottom" Height="18">Start minimized</CheckBox>
-            <CheckBox Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="5,0,5,-70" Name="MinimizeToTray" VerticalAlignment="Bottom" Height="18" Content="Minimize to tray"/>
-            <CheckBox Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="5,0,5,-93" Name="MinimizeOnClose" VerticalAlignment="Bottom" Height="18">Minimize on close</CheckBox>
-            <CheckBox Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="5,0,5,-116" Name="RunOnStartup" VerticalAlignment="Bottom" Content="Run on startup" Height="18" />
-            <CheckBox Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="5,0,5,-139" Name="ShowNotifications" VerticalAlignment="Bottom" Height="18">Show Notifications</CheckBox>
-            <CheckBox Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="5,0,5,-163" Name="DarkMode" VerticalAlignment="Bottom" Height="18">Dark Mode</CheckBox>
+            <!-- Checkboxes -->
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="2,8,2,2" Name="StartMinimized">Start minimized</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="5" Margin="2" Name="MinimizeToTray" Content="Minimize to tray"/>
+            <CheckBox Grid.Column="1" Grid.Row="6" Margin="2" Name="MinimizeOnClose">Minimize on close</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="7" Margin="2" Name="RunOnStartup" Content="Run on startup" />
+            <CheckBox Grid.Column="1" Grid.Row="8" Margin="2" Name="ShowNotifications">Show Notifications</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="9" Margin="2" Name="DarkMode">Dark Mode</CheckBox>
         </Grid>
     </DockPanel>
 </controls:MetroWindow>

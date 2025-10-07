@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,7 +42,11 @@ public class ThemeManagerService(ILogger logger, ThemeColorRepository themeColor
 
     public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
     {
-        if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) SetTheme();
+        if (@event.PreviousSettings.Theme != @event.NewSettings.Theme
+            || @event.PreviousSettings.DarkMode != @event.NewSettings.DarkMode)
+        {
+            SetTheme();
+        }
 
         return Task.CompletedTask;
     }
