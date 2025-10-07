@@ -15,7 +15,7 @@
 
 #reference "tools/System.Configuration.ConfigurationManager.4.5.0/lib/netstandard2.0/System.Configuration.ConfigurationManager.dll"
 #reference "tools/MarkdownSharp.2.0.5/lib/netstandard2.0/MarkdownSharp.dll"
-#reference "tools/MimeKitLite.4.5.0/lib/netstandard2.0/MimeKitLite.dll"
+#reference "tools/MimeKitLite.4.14.0/lib/netstandard2.0/MimeKitLite.dll"
 
 #load "./build/ReleaseNotes.cake"
 #load "./build/Velopack.cake"
