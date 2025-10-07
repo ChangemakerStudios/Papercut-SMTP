@@ -65,8 +65,11 @@ namespace Papercut
                 .SingleInstance();
 
             builder.Register(c =>
-                new UpdateManager(new GithubSource(AppConstants.UpgradeUrl, null, false),
-                    logger: c.ResolveOptional<ILogger<UpdateManager>>())).AsSelf().SingleInstance();
+            {
+                var updateOptions = new UpdateOptions();
+
+                return new UpdateManager(new GithubSource(AppConstants.UpgradeUrl, null, false), updateOptions);
+            });
 
             builder.RegisterType<ViewModelWindowManager>()
                 .As<IViewModelWindowManager>()
