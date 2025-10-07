@@ -21,6 +21,8 @@ jobs:
   build:
     name: Build Papercut SMTP
     runs-on: windows-2022
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -63,38 +65,62 @@ jobs:
           path: releases/*
           if-no-files-found: warn
 
-      - name: Create GitHub Release (master only)
+      - name: Attach Service artifacts to release (master only)
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.gitversion.outputs.semVer }}
-          name: Release v${{ steps.gitversion.outputs.semVer }}
-          body: |
-            ## Release Notes
-
-            This is an automated release for Papercut SMTP v${{ steps.gitversion.outputs.semVer }}.
-
-            See [ReleaseNotes.md](https://github.com/ChangemakerStudios/Papercut-SMTP/blob/master/ReleaseNotes.md) for details.
-          draft: false
-          prerelease: false
-          files: releases/*
+          files: releases/Papercut.Smtp.Service.*.zip
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Pre-release (develop only)
+      - name: Attach Service artifacts to pre-release (develop only)
         if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.gitversion.outputs.semVer }}
-          name: Pre-release v${{ steps.gitversion.outputs.semVer }}
-          body: |
-            ## Development Pre-release
-
-            This is an automated pre-release build from the develop branch.
-
-            **Version:** ${{ steps.gitversion.outputs.fullSemVer }}
-          draft: false
-          prerelease: true
-          files: releases/*
+          files: releases/Papercut.Smtp.Service.*.zip
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract Docker metadata
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: changemakerstudios/papercut-smtp
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/develop' }}
+            type=raw,value=${{ steps.gitversion.outputs.fullSemVer }},enable=${{ github.ref == 'refs/heads/develop' }}
+            type=semver,pattern={{version}},value=${{ steps.gitversion.outputs.semVer }},enable=${{ github.ref == 'refs/heads/master' }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.gitversion.outputs.semVer }},enable=${{ github.ref == 'refs/heads/master' }}
+
+      - name: Build and push Docker image
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILD_VERSION=${{ steps.gitversion.outputs.fullSemVer }}
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,12 +1,12 @@
 
 #tool "nuget:?package=System.Configuration.ConfigurationManager&version=4.5.0"
 #tool "nuget:?package=MarkdownSharp&version=2.0.5"
-#tool "nuget:?package=MimekitLite&version=4.5.0"
+#tool "nuget:?package=MimekitLite&version=4.14.0"
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.17.0"
 #tool "nuget:?package=OpenCover&version=4.7.1221"
 
-#tool "dotnet:?package=GitVersion.Tool&version=5.12.0"
-#tool "dotnet:?package=vpk&version=0.0.359"
+#tool "dotnet:?package=GitVersion.Tool&version=6.4.0"
+#tool "dotnet:?package=vpk&version=0.0.1298"
 
 #addin "nuget:?package=Cake.FileHelpers&version=6.1.3"
 #addin "nuget:?package=Cake.Incubator&version=8.0.0"
@@ -28,22 +28,16 @@ var configuration = Argument("configuration", "Release");
 var target = Argument("target", "All");
 GitVersion versionInfo = GitVersion(new GitVersionSettings { OutputType = GitVersionOutput.Json });
 
-var isMasterBranch = false;
-var isDevelopBranch = false;
-var hasGithubToken = false;
-string? githubToken = null;
+var isRunningInGitHubActions = !string.IsNullOrEmpty(EnvironmentVariable("GITHUB_ACTIONS"));
+var branchName = EnvironmentVariable("GITHUB_REF_NAME") ?? versionInfo.BranchName;
+var isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", branchName);
+var isDevelopBranch = StringComparer.OrdinalIgnoreCase.Equals("develop", branchName);
+var githubToken = EnvironmentVariable<string?>("GITHUB_TOKEN", null);
+var hasGithubToken = !string.IsNullOrEmpty(githubToken);
 
-if (AppVeyor.IsRunningOnAppVeyor)
+if (isRunningInGitHubActions)
 {
-    Information($"Building Branch '{BuildSystem.AppVeyor.Environment.Repository.Branch}'...");
-    isMasterBranch = StringComparer.OrdinalIgnoreCase.Equals("master", BuildSystem.AppVeyor.Environment.Repository.Branch);
-    isDevelopBranch = StringComparer.OrdinalIgnoreCase.Equals("develop", BuildSystem.AppVeyor.Environment.Repository.Branch);
-    githubToken = EnvironmentVariable<string?>("github-token", null);
-}
-
-if (!string.IsNullOrEmpty(githubToken))
-{
-    hasGithubToken = true;
+    Information($"Building Branch '{branchName}'...");
 }
 
 var channelPostfix = isMasterBranch ? "-stable" : isDevelopBranch ? "-dev" : "-alpha";
@@ -54,11 +48,7 @@ var channelPostfix = isMasterBranch ? "-stable" : isDevelopBranch ? "-dev" : "-a
 Setup(ctx =>
 {
     Information("Running tasks...");
-
-    if (AppVeyor.IsRunningOnAppVeyor)
-    {
-        AppVeyor.UpdateBuildVersion(versionInfo.SemVer);
-    }
+    Information($"Version: {versionInfo.SemVer}");
 });
 
 Teardown(ctx => Information("Finished running tasks."));
@@ -111,23 +101,6 @@ Task("Restore")
 {
     DotNetRestore("./Papercut.sln");
 });
-
-Task("DownloadReleases")
-    .WithCriteria(hasGithubToken)
-    .IsDependentOn("Restore")
-    .Does(() =>
-{
-    var arguments = new ProcessArgumentBuilder()
-        .Append("download").Append("github")
-        .Append("--repoUrl").Append("https://github.com/ChangemakerStudios/Papercut-SMTP")
-        .Append("--token").Append(EnvironmentVariable<string>("github-token", ""));
-
-    StartProcess("vpk", new ProcessSettings
-    {
-        Arguments = arguments
-    });
-})
-.OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
@@ -211,29 +184,29 @@ Task("PackageUI32")
 .OnError(exception => Error(exception));
 
 Task("DeployReleases")
-    .WithCriteria(AppVeyor.IsRunningOnAppVeyor && isMasterBranch && hasGithubToken)
+    .WithCriteria(isRunningInGitHubActions && isMasterBranch && hasGithubToken)
     .Does(() =>
     {
-        Information($"Uploading Papercut SMTP 64-bit Release {GitVersionOutput.BuildServer}");
+        Information($"Uploading Papercut SMTP 64-bit Release {versionInfo.FullSemVer}");
 
         var uploadParams = new VpkUploadParams
         {
             Channel = "win-x64" + channelPostfix,
             ReleaseDirectory = releasesDirectory,
-            Token = EnvironmentVariable<string>("github-token", ""),
+            Token = githubToken ?? "",
             Repository = "https://github.com/ChangemakerStudios/Papercut-SMTP",
             IsPrelease = !isMasterBranch
         };
 
         Velopack.UploadGithub(Context, uploadParams);
 
-        Information($"Uploading Papercut SMTP 32-bit Release {GitVersionOutput.BuildServer}");
+        Information($"Uploading Papercut SMTP 32-bit Release {versionInfo.FullSemVer}");
 
         uploadParams = new VpkUploadParams
         {
             Channel = "win-x86" + channelPostfix,
             ReleaseDirectory = releasesDirectory,
-            Token = EnvironmentVariable<string>("github-token", ""),
+            Token = githubToken ?? "",
             Repository = "https://github.com/ChangemakerStudios/Papercut-SMTP",
             IsPrelease = !isMasterBranch
         };
@@ -248,8 +221,6 @@ Task("BuildAndPackServiceWin64")
     .Does(() =>
 {
     CleanDirectory(publishDirectory);
-    CleanDirectory(releasesDirectory);
-
     var runtime = "win-x64";
 
     var settings = new DotNetPublishSettings
@@ -298,32 +269,17 @@ Task("BuildAndPackServiceWin32")
 })
 .OnError(exception => Error(exception));
 
-Task("UploadArtifacts")
-    .WithCriteria(AppVeyor.IsRunningOnAppVeyor)
-    .IsDependentOn("BuildAndPackServiceWin32")
-    .Does(() =>
-    {
-        foreach (var file in GetFiles(releasesDirectory.ToString() + "/**/*.zip"))
-        {
-            Information($"Uploading Artifact to AppVeyor: {file}");
-            AppVeyor.UploadArtifact(file);
-        }
-    })
-.OnError(exception => Error(exception));
-
 ///////////////////////////////////////////////////////////////////////////////
 Task("All")
     .IsDependentOn("Clean")
     .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("CreateReleaseNotes")
-    .IsDependentOn("DownloadReleases")
     .IsDependentOn("Restore")
     .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
     .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
     .IsDependentOn("DeployReleases")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
-    .IsDependentOn("UploadArtifacts")
     .OnError(exception => Error(exception));
 
 RunTarget(target);
