@@ -20,7 +20,7 @@
                       GlowBrush="{DynamicResource AccentGlowBrush}"
                       BorderBrush="{DynamicResource AccentBorderBrush}">
     <DockPanel>
-        <ToolBarTray Height="Auto" DockPanel.Dock="Top" Background="WhiteSmoke">
+        <ToolBarTray Height="Auto" DockPanel.Dock="Top" Background="{DynamicResource MahApps.Brushes.Control.Background}">
             <ToolBar Width="Auto" Margin="2">
                 <Menu>
                     <MenuItem x:Name="RegisteredRules" Margin="1" Padding="8,4,8,4" cal:Message.Attach="AddRule($originalsourcecontext)">

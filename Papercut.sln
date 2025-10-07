@@ -27,7 +27,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Build", ".Build", "{8661B39E-1555-4A2F-B6C2-6442E83DE73D}"
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
-		appveyor.yml = appveyor.yml
 		build-docker.ps1 = build-docker.ps1
 		build-docker.sh = build-docker.sh
 		build.cake = build.cake
