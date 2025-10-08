@@ -38,6 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Build", ".Build", "{8661B3
 		README.md = README.md
 		build\ReleaseNotes.cake = build\ReleaseNotes.cake
 		ReleaseNotes.md = ReleaseNotes.md
+		ReleaseNotesCurrent.md = ReleaseNotesCurrent.md
 		build\Velopack.cake = build\Velopack.cake
 	EndProjectSection
 EndProject
