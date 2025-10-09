@@ -1,10 +1,51 @@
 ## How to Run Papercut.Service
 
-- Option 1:
-Run from the command line by entering: `Papercut.Service.exe`
-- Option 2: Install as a service with the command `Install-Papercut-Service.bat` and the service will be installed. Enter `Papercut.Service.exe install --sudo` to immediately start the service.
+### Option 1: Run as Console Application
+Run from the command line by entering:
+```
+Papercut.Service.exe
+```
 
-A listing of all command line options are avaliable by entering: `Papercut.Service.exe help`
+### Option 2: Install as Windows Service (Recommended)
+
+The service can be installed to run automatically on Windows startup.
+
+#### Using the Installation Scripts:
+
+**For PowerShell users:**
+```powershell
+.\install-papercut-service.ps1
+```
+
+**For Command Prompt users:**
+```cmd
+install-papercut-service.bat
+```
+
+Both scripts will:
+- Require administrator privileges (will prompt if needed)
+- Validate that Papercut.Service.exe exists
+- Install the service with automatic startup configured
+- Start the service immediately
+
+#### Uninstalling the Service:
+
+**PowerShell:**
+```powershell
+.\uninstall-papercut-service.ps1
+```
+
+**Command Prompt:**
+```cmd
+uninstall-papercut-service.bat
+```
+
+#### Manual Installation (Advanced):
+You can also install the service manually using `sc.exe`:
+```cmd
+sc.exe create Papercut.Smtp.Service binPath= "C:\path\to\Papercut.Service.exe" DisplayName= "Papercut SMTP Service" start= auto
+sc.exe start Papercut.Smtp.Service
+```
 
 ## How to Configure Papercut.Service
 

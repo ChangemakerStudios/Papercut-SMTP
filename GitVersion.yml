@@ -1,1 +1,6 @@
 mode: ContinuousDelivery
+branches:
+  feature:
+    increment: Patch
+  develop:
+    increment: Patch
