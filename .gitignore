@@ -24,3 +24,5 @@ src/Papercut.UI/publish
 src/Papercut.UI/Releases
 publish
 Releases
+.angular
+settings.local.json
