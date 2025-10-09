@@ -35,7 +35,10 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        Console.Title = AppMeta.AppName;
+        if (Environment.UserInteractive)
+        {
+            Console.Title = AppMeta.AppName;
+        }
 
         Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
 
