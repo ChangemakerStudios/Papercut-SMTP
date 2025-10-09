@@ -30,6 +30,7 @@ jobs:
     runs-on: windows-2022
     permissions:
       contents: write
+      checks: write
 
     steps:
       - name: Checkout code
@@ -65,8 +66,28 @@ jobs:
         run: |
           pwsh .\build.ps1
 
+      - name: Check for Test Results
+        if: always()
+        run: |
+          if (Test-Path "TestResults") {
+            Write-Host "TestResults directory found"
+            Get-ChildItem -Path TestResults -Recurse -File | ForEach-Object { Write-Host $_.FullName }
+          } else {
+            Write-Host "TestResults directory not found"
+          }
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Results
+          path: 'TestResults/*.trx'
+          reporter: dotnet-trx
+          fail-on-error: false
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
         with:
           name: papercut-releases-${{ steps.gitversion.outputs.fullSemVer }}
           path: releases/*
