@@ -33,7 +33,20 @@ Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be
 
 ## (Optional) Download Papercut SMTP Service
 Papercut SMTP has an optional HTTP server to receive emails even when the client is not running.
-It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping, and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
+It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut-SMTP/releases), unzipping, and installing as a Windows Service.
+
+### Installing Papercut SMTP Service
+
+1. **Download** the appropriate [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) for your system (win-x64 or win-x86)
+2. **Extract** the zip file to your desired location
+3. **Run the installation script** (requires administrator privileges):
+   - **Option A:** Double-click `install-papercut-service.bat`
+   - **Option B:** Run `install-papercut-service.ps1` in PowerShell
+4. The service will be installed and configured to **start automatically** on system boot
+
+**To uninstall:** Run `uninstall-papercut-service.bat` or `uninstall-papercut-service.ps1`
+
+For more details, see the [Service Installation Guide](https://github.com/ChangemakerStudios/Papercut-SMTP/tree/develop/src/Papercut.Service).
 
 ### Host in Docker
 
