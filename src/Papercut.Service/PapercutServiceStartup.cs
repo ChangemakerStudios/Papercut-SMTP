@@ -21,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 using Papercut.Rules;
+using Papercut.Service.Infrastructure.Configuration;
 using Papercut.Service.Infrastructure.Servers;
 
 namespace Papercut.Service;
@@ -51,6 +52,7 @@ internal class PapercutServiceStartup
         services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
 
         // hosted services
+        services.AddHostedService<SmtpServerOptionsInitializer>();
         services.AddHostedService<PapercutServerHostedService>();
     }
 
