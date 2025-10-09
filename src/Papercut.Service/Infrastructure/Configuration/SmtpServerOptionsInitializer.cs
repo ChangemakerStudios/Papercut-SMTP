@@ -50,7 +50,7 @@ public class SmtpServerOptionsInitializer : IHostedService
             // GetOrSet will use the appsettings.json value as default if not already persisted
 
             var persistedIp = _settingStore.GetOrSet("IP", _smtpServerOptions.IP, "SMTP Server listening IP. 'Any' is the default and it means '0.0.0.0'.");
-            var persistedPort = _settingStore.GetOrSet("Port", _smtpServerOptions.Port.ToString(), "SMTP Server listening Port. Default is 2525.");
+            var persistedPort = _settingStore.GetOrSet("Port", _smtpServerOptions.Port.ToString(), "SMTP Server listening Port. Default is 25.");
             var persistedMessagePath = _settingStore.GetOrSet("MessagePath", _smtpServerOptions.MessagePath, "Base path where incoming emails are written.");
             var persistedLoggingPath = _settingStore.GetOrSet("LoggingPath", _smtpServerOptions.LoggingPath, "Base path where logs are written.");
 

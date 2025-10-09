@@ -45,15 +45,16 @@ WORKDIR /app
 
 COPY --from=publish /app/publish .
 
-ENV ASPNETCORE_HTTP_PORTS=80
+# Use Docker-specific configuration with non-privileged ports
+ENV ASPNETCORE_ENVIRONMENT=Docker
 
-# HTTP
-EXPOSE 80
- 
-# SMTP
-EXPOSE 25 
+# HTTP (non-privileged port)
+EXPOSE 8080
+
+# SMTP (non-privileged port)
+EXPOSE 2525
 
 # optional -- should only be used locally: IPComm
-# EXPOSE 37403 
+# EXPOSE 37403
 
 CMD ["dotnet", "Papercut.Service.dll"]

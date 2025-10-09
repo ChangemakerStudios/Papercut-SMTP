@@ -22,7 +22,7 @@ public class SmtpServerOptions
 {
     public string IP { get; set; } = "Any";
 
-    public int Port { get; set; } = 2525;
+    public int Port { get; set; } = 25;
 
     /// <summary>
     /// Base path where messages are written
