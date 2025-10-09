@@ -111,6 +111,8 @@ Task("Test")
     .Does(() =>
 {
     var testProjects = GetFiles("./test/**/*.Tests.csproj");
+    var testResultsDir = Directory("./TestResults");
+    EnsureDirectoryExists(testResultsDir);
 
     foreach (var project in testProjects)
     {
@@ -121,7 +123,8 @@ Task("Test")
             Configuration = configuration,
             NoBuild = false,
             NoRestore = false,
-            Verbosity = DotNetVerbosity.Normal
+            Verbosity = DotNetVerbosity.Normal,
+            Loggers = new[] { $"trx;LogFileName={MakeAbsolute(testResultsDir).FullPath}/{project.GetFilenameWithoutExtension()}.trx" }
         };
 
         DotNetTest(project.FullPath, settings);

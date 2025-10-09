@@ -65,6 +65,16 @@ jobs:
         run: |
           pwsh .\build.ps1
 
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/windows@v2
+        if: always()
+        with:
+          files: |
+            **/TestResults/**/*.trx
+            **/TestResults/**/*.xml
+          check_name: Test Results
+          comment_mode: off
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
