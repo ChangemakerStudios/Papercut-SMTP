@@ -20,24 +20,23 @@ using System.Reflection;
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Core.Infrastructure.MessageBus
+namespace Papercut.Core.Infrastructure.MessageBus;
+
+[PublicAPI]
+public static class PublishEventExtensions
 {
-    [PublicAPI]
-    public static class PublishEventExtensions
+    static readonly MethodInfo _publishAsyncMethodInfo = typeof(IMessageBus).GetMethod(nameof(IMessageBus.PublishAsync));
+
+    public static Task PublishObjectAsync(
+        this IMessageBus messageBus,
+        object @event,
+        Type eventType,
+        CancellationToken token = default)
     {
-        static readonly MethodInfo _publishAsyncMethodInfo = typeof(IMessageBus).GetMethod(nameof(IMessageBus.PublishAsync));
+        if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
 
-        public static Task PublishObjectAsync(
-            this IMessageBus messageBus,
-            object @event,
-            Type eventType,
-            CancellationToken token = default)
-        {
-            if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
+        MethodInfo publishMethod = _publishAsyncMethodInfo.MakeGenericMethod(eventType);
 
-            MethodInfo publishMethod = _publishAsyncMethodInfo.MakeGenericMethod(eventType);
-
-            return (Task)publishMethod.Invoke(messageBus, new[] { @event, token });
-        }
+        return (Task)publishMethod.Invoke(messageBus, new[] { @event, token });
     }
 }

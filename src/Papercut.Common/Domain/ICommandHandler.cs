@@ -16,11 +16,10 @@
 // limitations under the License.
 
 
-namespace Papercut.Common.Domain
+namespace Papercut.Common.Domain;
+
+public interface ICommandHandler<in TCommand>
+    where TCommand : ICommand
 {
-    public interface ICommandHandler<in TCommand>
-        where TCommand : ICommand
-    {
-        Task<ExecutionResult> ExecuteAsync(TCommand @command, CancellationToken token = default);
-    }
+    Task<ExecutionResult> ExecuteAsync(TCommand @command, CancellationToken token = default);
 }

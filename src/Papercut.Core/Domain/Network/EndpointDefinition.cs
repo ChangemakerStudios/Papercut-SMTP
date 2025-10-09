@@ -18,38 +18,37 @@
 
 using System.Net;
 
-namespace Papercut.Core.Domain.Network
+namespace Papercut.Core.Domain.Network;
+
+public class EndpointDefinition
 {
-    public class EndpointDefinition
+    public EndpointDefinition(string address, int port)
     {
-        public EndpointDefinition(string address, int port)
+        this.Address = this.ParseIpAddress(address);
+        this.Port = port;
+    }
+
+    public IPAddress Address { get; }
+
+    public int Port { get; }
+
+    public IPEndPoint ToIPEndPoint()
+    {
+        return new IPEndPoint(this.Address, this.Port);
+    }
+
+    private IPAddress ParseIpAddress(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || string.Equals(value, "any", StringComparison.OrdinalIgnoreCase))
         {
-            this.Address = this.ParseIpAddress(address);
-            this.Port = port;
+            return IPAddress.Any;
         }
 
-        public IPAddress Address { get; }
+        return IPAddress.Parse(value);
+    }
 
-        public int Port { get; }
-
-        public IPEndPoint ToIPEndPoint()
-        {
-            return new IPEndPoint(this.Address, this.Port);
-        }
-
-        private IPAddress ParseIpAddress(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value) || string.Equals(value, "any", StringComparison.OrdinalIgnoreCase))
-            {
-                return IPAddress.Any;
-            }
-
-            return IPAddress.Parse(value);
-        }
-
-        public override string ToString()
-        {
-            return $"{this.Address}:{this.Port}";
-        }
+    public override string ToString()
+    {
+        return $"{this.Address}:{this.Port}";
     }
 }

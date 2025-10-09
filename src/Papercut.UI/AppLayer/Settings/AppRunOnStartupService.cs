@@ -16,6 +16,7 @@
 // limitations under the License.
 
 
+using System.IO;
 using System.Security;
 
 using Autofac;
@@ -26,13 +27,52 @@ using Papercut.Common.Domain;
 using Papercut.Common.Extensions;
 using Papercut.Domain.Application;
 using Papercut.Domain.Events;
+using Papercut.Domain.LifecycleHooks;
 using Papercut.Domain.UiCommands;
 
 namespace Papercut.AppLayer.Settings;
 
-public class AppRunOnStartupService(ILogger logger, IUiCommandHub uiCommandHub) : IEventHandler<SettingsUpdatedEvent>
+public class AppRunOnStartupService(ILogger logger, IUiCommandHub uiCommandHub) : IAppLifecycleStarted, IEventHandler<SettingsUpdatedEvent>
 {
     const string AppStartupKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+
+    public Task OnStartedAsync()
+    {
+        if (Properties.Settings.Default.RunOnStartup)
+        {
+            // check if we need to migrate....
+            bool needsMigration = false;
+            try
+            {
+                using var registryKey = Registry.CurrentUser.OpenSubKey(AppStartupKey, true);
+
+                object? legacyAppKey = registryKey?.GetValue(PapercutAppConstants.LegacyName, null);
+
+                if (registryKey != null && legacyAppKey != null)
+                {
+                    needsMigration = true;
+
+                    logger.Information(
+                        "Migrating App Run on Startup Registry {LegacyKey} to {NewKey}",
+                        $"{AppStartupKey}\\{PapercutAppConstants.LegacyName}",
+                        $"{AppStartupKey}\\{PapercutAppConstants.Name}");
+
+                    registryKey.DeleteValue(PapercutAppConstants.LegacyName, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Debug(ex, "Failure deleting legacy app key");
+            }
+
+            if (needsMigration)
+            {
+                UpdateRunAtStartup();
+            }
+        }
+
+        return Task.CompletedTask;
+    }
 
     public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
     {
@@ -40,14 +80,21 @@ public class AppRunOnStartupService(ILogger logger, IUiCommandHub uiCommandHub) 
         if (@event.PreviousSettings.RunOnStartup == @event.NewSettings.RunOnStartup)
             return Task.CompletedTask;
 
+        UpdateRunAtStartup();
+
+        return Task.CompletedTask;
+    }
+
+    private bool UpdateRunAtStartup()
+    {
         try
         {
-            var registryKey = Registry.CurrentUser.OpenSubKey(AppStartupKey, true);
+            using var registryKey = Registry.CurrentUser.OpenSubKey(AppStartupKey, true);
 
             if (registryKey == null)
             {
                 logger.Error("Failure opening registry key {AppStartupKey}", AppStartupKey);
-                return Task.CompletedTask;
+                return true;
             }
 
             var applicationName = PapercutAppConstants.Name;
@@ -59,6 +106,17 @@ public class AppRunOnStartupService(ILogger logger, IUiCommandHub uiCommandHub) 
 
             if (Properties.Settings.Default.RunOnStartup && !runOnStartup)
             {
+                if (!File.Exists(executablePath))
+                {
+                    logger.Error(
+                        "App Startup Failure: {ExecutablePath} for Papercut Doesn't Exist -- Run at Startup Disabled",
+                        executablePath);
+
+                    Properties.Settings.Default.RunOnStartup = false;
+
+                    return false;
+                }
+
                 // turn on...
                 logger.Information(
                     "Setting AppStartup Registry {Key} to Run Papercut at {ExecutablePath}",
@@ -86,7 +144,7 @@ public class AppRunOnStartupService(ILogger logger, IUiCommandHub uiCommandHub) 
                 "Failed");
         }
 
-        return Task.CompletedTask;
+        return false;
     }
 
     #region Begin Static Container Registrations

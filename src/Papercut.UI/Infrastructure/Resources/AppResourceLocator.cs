@@ -25,18 +25,11 @@ using Autofac;
 
 namespace Papercut.Infrastructure.Resources;
 
-public class AppResourceLocator
+public class AppResourceLocator(ILogger logger)
 {
-    readonly string _appExecutableName;
+    readonly string _appExecutableName = Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
 
-    readonly ILogger _logger;
-
-    public AppResourceLocator(ILogger logger)
-    {
-        this._logger = logger.ForContext<AppResourceLocator>();
-        this._appExecutableName =
-            Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
-    }
+    readonly ILogger _logger = logger.ForContext<AppResourceLocator>();
 
     public string GetResourceString(string resourceName)
     {
@@ -47,16 +40,13 @@ public class AppResourceLocator
                 .GetManifestResourceNames()
                 .FirstOrDefault(s => s.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));
 
-        using (
-            var streamReader = new StreamReader(
-                Assembly.GetExecutingAssembly().GetManifestResourceStream(resource),
-                Encoding.Default))
-        {
-            return streamReader.ReadToEnd();
-        }
+        using var streamReader = new StreamReader(
+            Assembly.GetExecutingAssembly().GetManifestResourceStream(resource),
+            Encoding.Default);
+        return streamReader.ReadToEnd();
     }
 
-    public StreamResourceInfo GetResource(string resourceName)
+    public StreamResourceInfo? GetResource(string resourceName)
     {
         try
         {

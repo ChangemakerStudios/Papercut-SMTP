@@ -18,14 +18,13 @@
 
 using Papercut.Core.Infrastructure.Network;
 
-namespace Papercut.Core.Domain.Network.Smtp
+namespace Papercut.Core.Domain.Network.Smtp;
+
+public class SmtpServerBindEvent : BaseBindEvent
 {
-    public class SmtpServerBindEvent : BaseBindEvent
+    public SmtpServerBindEvent(string ip, int port)
     {
-        public SmtpServerBindEvent(string ip, int port)
-        {
-            this.IP = ip;
-            this.Port = port;
-        }
+        this.IP = ip;
+        this.Port = port;
     }
 }

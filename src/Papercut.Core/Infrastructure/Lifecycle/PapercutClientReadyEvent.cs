@@ -19,10 +19,9 @@
 using Papercut.Common.Domain;
 using Papercut.Core.Domain.Application;
 
-namespace Papercut.Core.Infrastructure.Lifecycle
+namespace Papercut.Core.Infrastructure.Lifecycle;
+
+public class PapercutClientReadyEvent : IEvent
 {
-    public class PapercutClientReadyEvent : IEvent
-    {
-        public IAppMeta AppMeta { get; set; }
-    }
+    public IAppMeta? AppMeta { get; set; }
 }

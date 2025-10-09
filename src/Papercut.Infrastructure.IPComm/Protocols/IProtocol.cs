@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Infrastructure.IPComm.Protocols
+namespace Papercut.Infrastructure.IPComm.Protocols;
+
+public interface IProtocol
 {
-    public interface IProtocol
-    {
-        Task BeginAsync(Connection connection, CancellationToken token = default);
-    }
+    Task BeginAsync(Connection connection, CancellationToken token = default);
 }

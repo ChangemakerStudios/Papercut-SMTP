@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ using Autofac;
 using Papercut.Core.Infrastructure.Container;
 using Papercut.Core.Infrastructure.Logging;
 
-using Serilog.Extensions.Logging;
-
 using Velopack;
 
 namespace Papercut;
@@ -40,16 +38,10 @@ public class Program
         {
             Log.Information("Running Velopack...");
 
-            var microsoftLogger = new SerilogLoggerFactory().CreateLogger(nameof(VelopackApp));
-
             // It's important to Run() the VelopackApp as early as possible in app startup.
             VelopackApp.Build()
-                .WithFirstRun(
-                    (v) =>
-                    {
-                        /* Your first run code here */
-                    })
-                .Run(microsoftLogger);
+                .SetLogger(new VelopackBridgeLogger(Log.Logger))
+                .Run();
 
             Log.Information("Launching Papercut SMTP App...");
 

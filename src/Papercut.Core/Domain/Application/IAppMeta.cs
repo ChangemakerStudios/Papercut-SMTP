@@ -16,12 +16,11 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Application
-{
-    public interface IAppMeta
-    {
-        string AppName { get; }
+namespace Papercut.Core.Domain.Application;
 
-        string AppVersion { get; }
-    }
+public interface IAppMeta
+{
+    string AppName { get; }
+
+    string AppVersion { get; }
 }

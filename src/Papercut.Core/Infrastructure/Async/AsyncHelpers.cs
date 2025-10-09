@@ -44,4 +44,46 @@ public static class AsyncHelpers
                     onCompleted?.Invoke();
                 });
     }
+
+    /// <summary>
+    /// Avoid the 'classic deadlock problem' when blocking on async work from non-async
+    /// code by disabling any synchronization context while the async work takes place
+    /// </summary>
+    public static T RunAsync<T>(this Task<T> task)
+    {
+        if (task == null) throw new ArgumentNullException(nameof(task));
+
+        var currentSyncContext = SynchronizationContext.Current;
+        try
+        {
+            SynchronizationContext.SetSynchronizationContext(null);
+
+            return task.Result;
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(currentSyncContext);
+        }
+    }
+
+    /// <summary>
+    /// Avoid the 'classic deadlock problem' when blocking on async work from non-async
+    /// code by disabling any synchronization context while the async work takes place
+    /// </summary>
+    public static void RunAsync(this Task task)
+    {
+        if (task == null) throw new ArgumentNullException(nameof(task));
+
+        var currentSyncContext = SynchronizationContext.Current;
+        try
+        {
+            SynchronizationContext.SetSynchronizationContext(null);
+
+            task.Wait();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(currentSyncContext);
+        }
+    }
 }

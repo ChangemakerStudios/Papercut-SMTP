@@ -18,8 +18,7 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Core.Domain.Network.Smtp
-{
-    public class SmtpServerForceRebindEvent : IEvent
-    {}
-}
+namespace Papercut.Core.Domain.Network.Smtp;
+
+public class SmtpServerForceRebindEvent : IEvent
+{}

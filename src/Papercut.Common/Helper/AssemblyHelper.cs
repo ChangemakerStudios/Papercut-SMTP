@@ -18,15 +18,14 @@
 
 using System.Reflection;
 
-namespace Papercut.Common.Helper
-{
-    public static class AssemblyHelper
-    {
-        public static string? GetVersion(this Assembly assembly)
-        {
-            ArgumentNullException.ThrowIfNull(assembly);
+namespace Papercut.Common.Helper;
 
-            return assembly.GetName()?.Version?.ToString(4);
-        }
+public static class AssemblyHelper
+{
+    public static string? GetVersion(this Assembly assembly)
+    {
+        ArgumentNullException.ThrowIfNull(assembly);
+
+        return assembly.GetName()?.Version?.ToString(4);
     }
 }

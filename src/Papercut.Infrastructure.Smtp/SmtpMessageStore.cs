@@ -25,28 +25,20 @@ using SmtpServer.Mail;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
 
-namespace Papercut.Infrastructure.Smtp
+namespace Papercut.Infrastructure.Smtp;
+
+public class SmtpMessageStore(IReceivedDataHandler receivedDataHandler) : MessageStore
 {
-    public class SmtpMessageStore : MessageStore
+    public override async Task<SmtpResponse> SaveAsync(
+        ISessionContext context,
+        IMessageTransaction transaction,
+        ReadOnlySequence<byte> buffer,
+        CancellationToken cancellationToken)
     {
-        private readonly IReceivedDataHandler _receivedDataHandler;
+        await receivedDataHandler.HandleReceivedAsync(
+            buffer.ToArray(),
+            transaction.To.Select(s => s.AsAddress()).ToArray());
 
-        public SmtpMessageStore(IReceivedDataHandler receivedDataHandler)
-        {
-            this._receivedDataHandler = receivedDataHandler;
-        }
-
-        public override async Task<SmtpResponse> SaveAsync(
-            ISessionContext context,
-            IMessageTransaction transaction,
-            ReadOnlySequence<byte> buffer,
-            CancellationToken cancellationToken)
-        {
-            await this._receivedDataHandler.HandleReceivedAsync(
-                buffer.ToArray(),
-                transaction.To.Select(s => s.AsAddress()).ToArray());
-
-            return SmtpResponse.Ok;
-        }
+        return SmtpResponse.Ok;
     }
 }

@@ -19,13 +19,12 @@
 using SmtpServer;
 using SmtpServer.Authentication;
 
-namespace Papercut.Infrastructure.Smtp
+namespace Papercut.Infrastructure.Smtp;
+
+public class SimpleAuthentication : IUserAuthenticatorFactory
 {
-    public class SimpleAuthentication : IUserAuthenticatorFactory
+    public IUserAuthenticator CreateInstance(ISessionContext context)
     {
-        public IUserAuthenticator CreateInstance(ISessionContext context)
-        {
-            return new DelegatingUserAuthenticator((username, password) => true);
-        }
+        return new DelegatingUserAuthenticator((username, password) => true);
     }
 }

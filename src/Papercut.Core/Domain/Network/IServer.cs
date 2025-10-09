@@ -18,21 +18,20 @@
 
 using System.Net;
 
-namespace Papercut.Core.Domain.Network
+namespace Papercut.Core.Domain.Network;
+
+/// <summary>
+///     The Server interface.
+/// </summary>
+public interface IServer : IDisposable, IAsyncDisposable
 {
-    /// <summary>
-    ///     The Server interface.
-    /// </summary>
-    public interface IServer : IDisposable, IAsyncDisposable
-    {
-        bool IsActive { get; }
+    bool IsActive { get; }
 
-        IPAddress ListenIpAddress { get; }
+    IPAddress ListenIpAddress { get; }
 
-        int ListenPort { get; }
+    int ListenPort { get; }
 
-        Task StartAsync(EndpointDefinition endpoint);
+    Task StartAsync(EndpointDefinition endpoint);
 
-        Task StopAsync();
-    }
+    Task StopAsync();
 }

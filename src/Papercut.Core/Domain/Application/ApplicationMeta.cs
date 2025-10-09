@@ -18,12 +18,11 @@
 
 using System.Reflection;
 
-namespace Papercut.Core.Domain.Application
-{
-    public class ApplicationMeta(string appName, string? appVersion = null) : IAppMeta
-    {
-        public string AppName { get; } = appName;
+namespace Papercut.Core.Domain.Application;
 
-        public string AppVersion { get; } = appVersion ?? Assembly.GetCallingAssembly().GetName().Version?.ToString(3) ?? "1.0.0.0";
-    }
+public class ApplicationMeta(string appName, string? appVersion = null) : IAppMeta
+{
+    public string AppName { get; } = appName;
+
+    public string AppVersion { get; } = appVersion ?? Assembly.GetCallingAssembly().GetName().Version?.ToString(3) ?? "1.0.0.0";
 }

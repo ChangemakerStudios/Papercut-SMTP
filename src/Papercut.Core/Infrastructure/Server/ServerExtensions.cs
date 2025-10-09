@@ -23,46 +23,45 @@ using System.Reactive.Linq;
 
 using Papercut.Core.Domain.Network;
 
-namespace Papercut.Core.Infrastructure.Server
+namespace Papercut.Core.Infrastructure.Server;
+
+public static class ServerExtensions
 {
-    public static class ServerExtensions
+    public static IObservable<bool> ObserveStartServer(
+        this IServer server,
+        string ip,
+        int port,
+        IScheduler? scheduler = null)
     {
-        public static IObservable<bool> ObserveStartServer(
-            this IServer server,
-            string ip,
-            int port,
-            IScheduler? scheduler = null)
-        {
-            return server.ObserveStartServer(new EndpointDefinition(ip, port), scheduler);
-        }
+        return server.ObserveStartServer(new EndpointDefinition(ip, port), scheduler);
+    }
 
-        public static IObservable<bool> ObserveStartServer(
-            this IServer server,
-            EndpointDefinition endpoint,
-            IScheduler? scheduler = null)
-        {
-            if (server == null) throw new ArgumentNullException(nameof(server));
+    public static IObservable<bool> ObserveStartServer(
+        this IServer server,
+        EndpointDefinition endpoint,
+        IScheduler? scheduler = null)
+    {
+        if (server == null) throw new ArgumentNullException(nameof(server));
 
-            IObservable<bool> bindObservable = Observable.Create(
-                async (IObserver<bool> o) =>
+        IObservable<bool> bindObservable = Observable.Create(
+            async (IObserver<bool> o) =>
+            {
+                Observer.Synchronize(o);
+                try
                 {
-                    Observer.Synchronize(o);
-                    try
-                    {
-                        await server.StopAsync();
-                        await server.StartAsync(endpoint);
+                    await server.StopAsync();
+                    await server.StartAsync(endpoint);
 
-                        o.OnCompleted();
-                    }
-                    catch (Exception ex)
-                    {
-                        o.OnError(ex);
-                    }
+                    o.OnCompleted();
+                }
+                catch (Exception ex)
+                {
+                    o.OnError(ex);
+                }
 
-                    return Disposable.Empty;
-                }).ObserveOn(scheduler ?? Scheduler.Default);
+                return Disposable.Empty;
+            }).ObserveOn(scheduler ?? Scheduler.Default);
 
-            return bindObservable;
-        }
+        return bindObservable;
     }
 }

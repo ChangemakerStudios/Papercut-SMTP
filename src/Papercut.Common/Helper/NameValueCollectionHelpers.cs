@@ -18,32 +18,31 @@
 
 using System.Collections.Specialized;
 
-namespace Papercut.Common.Helper
+namespace Papercut.Common.Helper;
+
+public static class NameValueCollectionExtensions
 {
-    public static class NameValueCollectionExtensions
+    public static ILookup<string, string> ToLookup(
+        this NameValueCollection nameValueCollection)
     {
-        public static ILookup<string, string> ToLookup(
-            this NameValueCollection nameValueCollection)
-        {
-            if (nameValueCollection == null) throw new ArgumentNullException(nameof(nameValueCollection));
+        if (nameValueCollection == null) throw new ArgumentNullException(nameof(nameValueCollection));
 
-            return nameValueCollection.ToKeyValuePairs().ToLookup(k => k.Key, v => v.Value);
-        }
+        return nameValueCollection.ToKeyValuePairs().ToLookup(k => k.Key, v => v.Value);
+    }
 
-        public static IEnumerable<KeyValuePair<string, string>> ToKeyValuePairs(
-            this NameValueCollection nameValueCollection)
-        {
-            if (nameValueCollection == null) throw new ArgumentNullException(nameof(nameValueCollection));
+    public static IEnumerable<KeyValuePair<string, string>> ToKeyValuePairs(
+        this NameValueCollection nameValueCollection)
+    {
+        if (nameValueCollection == null) throw new ArgumentNullException(nameof(nameValueCollection));
 
-            return nameValueCollection.AllKeys.SelectMany(
-                k =>
-                {
-                    string[] values = nameValueCollection.GetValues(k);
+        return nameValueCollection.AllKeys.SelectMany(
+            k =>
+            {
+                string[] values = nameValueCollection.GetValues(k);
 
-                    if (values != null && values.Any()) return values.Select(s => new KeyValuePair<string, string>(k, s));
+                if (values != null && values.Any()) return values.Select(s => new KeyValuePair<string, string>(k, s));
 
-                    return Enumerable.Empty<KeyValuePair<string, string>>();
-                });
-        }
+                return [];
+            });
     }
 }

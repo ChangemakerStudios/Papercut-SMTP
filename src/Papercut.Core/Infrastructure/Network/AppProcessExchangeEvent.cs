@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Infrastructure.Network
+namespace Papercut.Core.Infrastructure.Network;
+
+public class AppProcessExchangeEvent : BaseBindEvent
 {
-    public class AppProcessExchangeEvent : BaseBindEvent
-    {
-        public string MessageWritePath { get; set; }
-    }
+    public string MessageWritePath { get; set; }
 }

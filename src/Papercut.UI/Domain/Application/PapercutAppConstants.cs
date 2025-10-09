@@ -22,7 +22,10 @@ namespace Papercut.Domain.Application;
 
 public static class PapercutAppConstants
 {
-    internal static string Name { get; } = "Papercut.App";
+    internal static string Name => "Papercut.Smtp.App";
 
-    internal static string ExecutablePath { get; } = Assembly.GetExecutingAssembly().Location;
+    internal static string LegacyName => "Papercut.App";
+
+    internal static string ExecutablePath { get; } =
+        Assembly.GetExecutingAssembly().Location.Replace(".dll", ".exe");
 }

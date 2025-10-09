@@ -19,19 +19,18 @@
 using Autofac;
 using Autofac.Core;
 
-namespace Papercut.Core.Infrastructure.Container
+namespace Papercut.Core.Infrastructure.Container;
+
+public class SimpleContainer<TModule>
+    where TModule : IModule, new()
 {
-    public class SimpleContainer<TModule>
-        where TModule : IModule, new()
+    public IContainer Build()
     {
-        public IContainer Build()
-        {
-            var builder = new ContainerBuilder();
+        var builder = new ContainerBuilder();
 
-            builder.RegisterModule<PapercutCoreModule>();
-            builder.RegisterModule<TModule>();
+        builder.RegisterModule<PapercutCoreModule>();
+        builder.RegisterModule<TModule>();
 
-            return builder.Build();
-        }
+        return builder.Build();
     }
 }

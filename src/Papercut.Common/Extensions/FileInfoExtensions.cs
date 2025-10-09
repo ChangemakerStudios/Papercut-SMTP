@@ -18,44 +18,43 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Common.Extensions
+namespace Papercut.Common.Extensions;
+
+public static class FileInfoExtensions
 {
-    public static class FileInfoExtensions
+    public static async Task<bool> CanReadFile(this FileInfo file)
     {
-        public static async Task<bool> CanReadFile(this FileInfo file)
+        ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+        try
         {
-            ArgumentNullException.ThrowIfNull(file, nameof(file));
-
-            try
-            {
-                await using (var _ = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) { }
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-
-            return true;
+            await using (var _ = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) { }
+        }
+        catch (IOException)
+        {
+            return false;
         }
 
-        public static async Task<ExecutionResult<byte[]>> TryReadFile(this FileInfo file)
+        return true;
+    }
+
+    public static async Task<ExecutionResult<byte[]>> TryReadFile(this FileInfo file)
+    {
+        ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+        try
         {
-            ArgumentNullException.ThrowIfNull(file, nameof(file));
+            using var ms = new MemoryStream();
+            await using var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            try
-            {
-                using var ms = new MemoryStream();
-                await using var fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            await fileStream.CopyToAsync(ms);
 
-                await fileStream.CopyToAsync(ms);
-
-                return ExecutionResult.Success(ms.ToArray());
-            }
-            catch (IOException)
-            {
-                // the file is unavailable because it is still being written by another thread or process
-                return ExecutionResult.Failure<byte[]>("File is unavailable");
-            }
+            return ExecutionResult.Success(ms.ToArray());
+        }
+        catch (IOException)
+        {
+            // the file is unavailable because it is still being written by another thread or process
+            return ExecutionResult.Failure<byte[]>("File is unavailable");
         }
     }
 }

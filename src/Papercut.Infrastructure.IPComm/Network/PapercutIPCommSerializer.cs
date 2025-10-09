@@ -18,42 +18,41 @@
 
 using Newtonsoft.Json;
 
-namespace Papercut.Infrastructure.IPComm.Network
+namespace Papercut.Infrastructure.IPComm.Network;
+
+public static class PapercutIPCommSerializer
 {
-    public static class PapercutIPCommSerializer
+    private static readonly JsonSerializerSettings _ipCommJsonSerializerSettings
+        = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Auto,
+            Formatting = Formatting.None,
+            NullValueHandling = NullValueHandling.Include,
+            TypeNameAssemblyFormatHandling =
+                TypeNameAssemblyFormatHandling.Simple
+        };
+
+    public static string ToJson<TObject>(TObject @object)
     {
-        private static readonly JsonSerializerSettings _ipCommJsonSerializerSettings
-            = new JsonSerializerSettings
-              {
-                  TypeNameHandling = TypeNameHandling.Auto,
-                  Formatting = Formatting.None,
-                  NullValueHandling = NullValueHandling.Include,
-                  TypeNameAssemblyFormatHandling =
-                      TypeNameAssemblyFormatHandling.Simple
-              };
+        return
+            JsonConvert.SerializeObject(@object, Formatting.None, _ipCommJsonSerializerSettings);
+    }
 
-        public static string ToJson<TObject>(TObject @object)
-        {
-            return
-                JsonConvert.SerializeObject(@object, Formatting.None, _ipCommJsonSerializerSettings);
-        }
+    public static object FromJson(Type type, string json)
+    {
+        return
+            JsonConvert.DeserializeObject(json, type, _ipCommJsonSerializerSettings);
+    }
 
-        public static object FromJson(Type type, string json)
-        {
-            return
-                JsonConvert.DeserializeObject(json, type, _ipCommJsonSerializerSettings);
-        }
+    public static string ToJson(Type type, object @object)
+    {
+        return
+            JsonConvert.SerializeObject(@object, type, Formatting.None, _ipCommJsonSerializerSettings);
+    }
 
-        public static string ToJson(Type type, object @object)
-        {
-            return
-                JsonConvert.SerializeObject(@object, type, Formatting.None, _ipCommJsonSerializerSettings);
-        }
-
-        public static TObject FromJson<TObject>(string json)
-        {
-            return
-                JsonConvert.DeserializeObject<TObject>(json, _ipCommJsonSerializerSettings);
-        }
+    public static TObject FromJson<TObject>(string json)
+    {
+        return
+            JsonConvert.DeserializeObject<TObject>(json, _ipCommJsonSerializerSettings);
     }
 }

@@ -18,56 +18,55 @@
 
 using System.Collections.Concurrent;
 
-namespace Papercut.Core.Domain.Settings
+namespace Papercut.Core.Domain.Settings;
+
+public abstract class BaseSettingsStore : ISettingStore
 {
-    public abstract class BaseSettingsStore : ISettingStore
+    protected BaseSettingsStore()
     {
-        protected BaseSettingsStore()
+        this.CurrentSettings = new ConcurrentDictionary<string, string>();
+    }
+
+    protected ConcurrentDictionary<string, string> CurrentSettings { get; set; }
+
+    public string this[string key]
+    {
+        get
         {
-            this.CurrentSettings = new ConcurrentDictionary<string, string>();
+            if (key == null) throw new ArgumentNullException(nameof(key));
+
+            return this.CurrentSettings.TryGetValue(key, out var value) ? value : null;
         }
-
-        protected ConcurrentDictionary<string, string> CurrentSettings { get; set; }
-
-        public string this[string key]
+        set
         {
-            get
-            {
-                if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
-                return this.CurrentSettings.TryGetValue(key, out var value) ? value : null;
-            }
-            set
-            {
-                if (key == null) throw new ArgumentNullException(nameof(key));
-
-                this.CurrentSettings.AddOrUpdate(key, value, (k, v) => value);
-            }
+            this.CurrentSettings.AddOrUpdate(key, value, (k, v) => value);
         }
+    }
 
-        public string Get(string key)
-        {
-            return this[key];
-        }
+    public string Get(string key)
+    {
+        return this[key];
+    }
 
-        public void Set(string key, string value)
-        {
-            this[key] = value;
-        }
+    public void Set(string key, string value)
+    {
+        this[key] = value;
+    }
 
-        public abstract void Load();
+    public abstract void Load();
 
-        public abstract void Save();
+    public abstract void Save();
 
-        protected Dictionary<string, string> GetSettingSnapshot()
-        {
-            return new Dictionary<string, string>(this.CurrentSettings);
-        }
+    protected Dictionary<string, string> GetSettingSnapshot()
+    {
+        return new Dictionary<string, string>(this.CurrentSettings);
+    }
 
-        protected void LoadSettings(IEnumerable<KeyValuePair<string, string>>? settings = null)
-        {
-            if (settings != null) this.CurrentSettings = new ConcurrentDictionary<string, string>(settings);
-            else this.CurrentSettings.Clear();
-        }
+    protected void LoadSettings(IEnumerable<KeyValuePair<string, string>>? settings = null)
+    {
+        if (settings != null) this.CurrentSettings = new ConcurrentDictionary<string, string>(settings);
+        else this.CurrentSettings.Clear();
     }
 }
