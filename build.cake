@@ -1,4 +1,6 @@
 
+#module nuget:?package=Cake.BuildSystems.Module&version=8.0.0
+
 #tool "nuget:?package=System.Configuration.ConfigurationManager&version=4.5.0"
 #tool "nuget:?package=MarkdownSharp&version=2.0.5"
 #tool "nuget:?package=MimekitLite&version=4.14.0"
@@ -101,6 +103,31 @@ Task("Restore")
 {
     DotNetRestore("./Papercut.sln");
 });
+
+///////////////////////////////////////////////////////////////////////////////
+// TEST
+Task("Test")
+    .IsDependentOn("Restore")
+    .Does(() =>
+{
+    var testProjects = GetFiles("./test/**/*.Tests.csproj");
+
+    foreach (var project in testProjects)
+    {
+        Information($"Running tests for {project.GetFilename()}");
+
+        var settings = new DotNetTestSettings
+        {
+            Configuration = configuration,
+            NoBuild = false,
+            NoRestore = false,
+            Verbosity = DotNetVerbosity.Normal
+        };
+
+        DotNetTest(project.FullPath, settings);
+    }
+})
+.OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
@@ -302,6 +329,7 @@ Task("All")
     .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
+    .IsDependentOn("Test")
     .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
     .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
     .IsDependentOn("BuildAndPackServiceWin64")
