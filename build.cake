@@ -185,9 +185,13 @@ Task("PackageUI32")
 
 Task("DeployReleases")
     .WithCriteria(isRunningInGitHubActions && (isMasterBranch || isDevelopBranch) && hasGithubToken)
+    .IsDependentOn("BuildAndPackServiceWin64")
+    .IsDependentOn("BuildAndPackServiceWin32")
     .Does(() =>
     {
         var releaseType = isMasterBranch ? "Release" : "Pre-release";
+        var releaseTag = versionInfo.SemVer;
+
         Information($"Uploading Papercut SMTP 64-bit {releaseType} {versionInfo.FullSemVer}");
 
         var uploadParams = new VpkUploadParams
@@ -213,6 +217,28 @@ Task("DeployReleases")
         };
 
         Velopack.UploadGithub(Context, uploadParams);
+
+        // Attach Service artifacts to the Velopack-created release
+        Information($"Attaching Service artifacts to release {releaseTag}");
+
+        var serviceFiles = GetFiles(releasesDirectory.ToString() + "/Papercut.Smtp.Service.*.zip");
+        foreach (var file in serviceFiles)
+        {
+            Information($"Uploading {file.GetFilename()}");
+            StartProcess("gh", new ProcessSettings
+            {
+                Arguments = new ProcessArgumentBuilder()
+                    .Append("release").Append("upload")
+                    .Append(releaseTag)
+                    .AppendQuoted(file.FullPath)
+                    .Append("--clobber")
+                    .Append("--repo").Append("ChangemakerStudios/Papercut-SMTP"),
+                EnvironmentVariables = new Dictionary<string, string>
+                {
+                    { "GH_TOKEN", githubToken ?? "" }
+                }
+            });
+        }
     })
 .OnError(exception => Error(exception));
 
@@ -278,9 +304,9 @@ Task("All")
     .IsDependentOn("Restore")
     .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
     .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
-    .IsDependentOn("DeployReleases")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
+    .IsDependentOn("DeployReleases")
     .OnError(exception => Error(exception));
 
 RunTarget(target);

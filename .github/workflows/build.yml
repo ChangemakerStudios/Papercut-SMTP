@@ -72,26 +72,6 @@ jobs:
           path: releases/*
           if-no-files-found: warn
 
-      - name: Attach Service artifacts to release (master only)
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.gitversion.outputs.semVer }}
-          files: releases/Papercut.Smtp.Service.*.zip
-          fail_on_unmatched_files: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Attach Service artifacts to pre-release (develop only)
-        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.gitversion.outputs.semVer }}
-          files: releases/Papercut.Smtp.Service.*.zip
-          fail_on_unmatched_files: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build-docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
