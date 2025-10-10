@@ -96,8 +96,9 @@ docker run -d -p 8080:80 -p 25:25 papercut-smtp:latest
 
 ### Versioning
 - Uses GitVersion for semantic versioning
-- Version info stored in src/GlobalAssemblyInfo.cs (auto-generated)
+- Version properties defined in Directory.Build.props (populated by GitVersion during build)
 - GitVersion.yml configures versioning strategy
+- All version info (Version, AssemblyVersion, FileVersion, InformationalVersion) passed as MSBuild properties
 
 ## Common Tasks
 

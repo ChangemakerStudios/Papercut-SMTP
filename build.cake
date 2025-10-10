@@ -63,6 +63,13 @@ var papercutServiceDir = Directory("./src/Papercut.Service");
 var publishDirectory = Directory("./publish");
 var releasesDirectory = Directory("./releases");
 
+// Reusable MSBuild settings with GitVersion properties
+var versionMSBuildSettings = new DotNetMSBuildSettings()
+    .WithProperty("Version", versionInfo.FullSemVer)
+    .WithProperty("AssemblyVersion", versionInfo.AssemblySemVer)
+    .WithProperty("FileVersion", versionInfo.AssemblySemFileVer)
+    .WithProperty("InformationalVersion", versionInfo.InformationalVersion);
+
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,20 +82,6 @@ Task("Clean")
         CleanDirectory(directory);
     }
 });
-
-///////////////////////////////////////////////////////////////////////////////
-// Assembly Version Patching
-Task("PatchAssemblyInfo")
-    .Does(() =>
-{
-    GitVersion(new GitVersionSettings
-    {
-        UpdateAssemblyInfo = true,
-        OutputType = GitVersionOutput.BuildServer,
-        UpdateAssemblyInfoFilePath = "./src/GlobalAssemblyInfo.cs"
-    });
-})
-.OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
 // RELEASE NOTES
@@ -143,7 +136,8 @@ Task("BuildUI64")
         Configuration = configuration,
         Runtime = "win-x64",
         OutputDirectory = publishDirectory,
-        EnableCompressionInSingleFile = true
+        EnableCompressionInSingleFile = true,
+        MSBuildSettings = versionMSBuildSettings
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
@@ -183,7 +177,8 @@ Task("BuildUI32")
         Configuration = configuration,
         Runtime = "win-x86",
         OutputDirectory = publishDirectory,
-        EnableCompressionInSingleFile = true
+        EnableCompressionInSingleFile = true,
+        MSBuildSettings = versionMSBuildSettings
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
@@ -224,7 +219,8 @@ Task("BuildUIArm64")
         Configuration = configuration,
         Runtime = "win-arm64",
         OutputDirectory = publishDirectory,
-        EnableCompressionInSingleFile = true
+        EnableCompressionInSingleFile = true,
+        MSBuildSettings = versionMSBuildSettings
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
@@ -342,6 +338,7 @@ Task("BuildAndPackServiceWin64")
         EnableCompressionInSingleFile = true,
         PublishSingleFile = true,
         SelfContained = true,
+        MSBuildSettings = versionMSBuildSettings
     };
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
@@ -370,6 +367,7 @@ Task("BuildAndPackServiceWin32")
         EnableCompressionInSingleFile = true,
         PublishSingleFile = true,
         SelfContained = true,
+        MSBuildSettings = versionMSBuildSettings
     };
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
@@ -398,6 +396,7 @@ Task("BuildAndPackServiceWinArm64")
         EnableCompressionInSingleFile = true,
         PublishSingleFile = true,
         SelfContained = true,
+        MSBuildSettings = versionMSBuildSettings
     };
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
