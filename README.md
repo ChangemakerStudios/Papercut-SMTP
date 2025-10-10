@@ -46,24 +46,21 @@ It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.
 
 **To uninstall:** Run `uninstall-papercut-service.bat` or `uninstall-papercut-service.ps1`
 
-For more details, see the [Service Installation Guide](https://github.com/ChangemakerStudios/Papercut-SMTP/tree/develop/src/Papercut.Service).
+**For complete Service configuration and Docker deployment instructions, see the [Service README](src/Papercut.Service/Readme.md).**
 
 ### Host in Docker
 
-Optionally you can run Papercut SMTP Service in docker: [Papercut SMTP Service in Docker](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
+Optionally run Papercut SMTP Service in Docker: [Papercut SMTP on Docker Hub](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
 
-#### Pull Image:
-
+**Quick start:**
 ```powershell
-> docker pull changemakerstudiosus/papercut-smtp:latest
+docker pull changemakerstudiosus/papercut-smtp:latest
+docker run -d -p 37408:8080 -p 2525:2525 changemakerstudiosus/papercut-smtp:latest
 ```
 
-#### Run Papercut STMP Server Locally in Docker (HTTP Port :8080 and STMP port 25)
-```powershell
-docker run -d -p 8080:80 -p 25:25 changemakerstudiosus/papercut-smtp:latest
-```
+Access at: **http://localhost:37408** | Send emails to: **localhost:2525**
 
-The Papercut-SMTP Server Site will be accessible at http://localhost:8080.
+> **Note:** Docker uses non-privileged ports by default (SMTP: 2525, HTTP: 8080). See the [Service README](src/Papercut.Service/Readme.md#option-3-run-in-docker) for configuration options, Docker Compose examples, and troubleshooting.
 
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

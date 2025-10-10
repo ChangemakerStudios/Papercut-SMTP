@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'workflow_dispatch' ||
-      (github.ref == 'refs/heads/master' && github.event_name == 'push')
+      ((github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push')
     permissions:
       contents: read
       packages: write
@@ -145,8 +145,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          push: ${{ (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && (github.event_name != 'workflow_dispatch' || inputs.push_docker) }}
+          tags: ${{ steps.meta.outputs.tags || format('changemakerstudiosus/papercut-smtp:test-{0}', github.sha) }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_VERSION=${{ steps.gitversion.outputs.fullSemVer }}
