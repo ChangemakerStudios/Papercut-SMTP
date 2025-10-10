@@ -46,52 +46,21 @@ It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.
 
 **To uninstall:** Run `uninstall-papercut-service.bat` or `uninstall-papercut-service.ps1`
 
-For more details, see the [Service Installation Guide](https://github.com/ChangemakerStudios/Papercut-SMTP/tree/develop/src/Papercut.Service).
+**For complete Service configuration and Docker deployment instructions, see the [Service README](src/Papercut.Service/Readme.md).**
 
 ### Host in Docker
 
-Optionally you can run Papercut SMTP Service in docker: [Papercut SMTP Service in Docker](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
+Optionally run Papercut SMTP Service in Docker: [Papercut SMTP on Docker Hub](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
 
-#### Pull Image:
-
+**Quick start:**
 ```powershell
-> docker pull changemakerstudiosus/papercut-smtp:latest
-```
-
-#### Run Papercut SMTP Server Locally in Docker
-
-The Docker image uses **non-privileged ports** by default (no root required):
-- **HTTP**: Port 8080
-- **SMTP**: Port 2525
-
-```powershell
-# Default - non-privileged ports
+docker pull changemakerstudiosus/papercut-smtp:latest
 docker run -d -p 37408:8080 -p 2525:2525 changemakerstudiosus/papercut-smtp:latest
-
-# Or map to traditional ports on host (requires host privileges)
-docker run -d -p 8080:8080 -p 25:2525 changemakerstudiosus/papercut-smtp:latest
 ```
 
-The Papercut-SMTP Web UI will be accessible at http://localhost:37408 (or http://localhost:8080 if using the second example).
+Access at: **http://localhost:37408** | Send emails to: **localhost:2525**
 
-#### Configuration
-
-You can override the default ports using environment variables or by mounting a custom `appsettings.Production.json`:
-
-```powershell
-# Using environment variables
-docker run -d \
-  -e SmtpServer__Port=2525 \
-  -e Urls=http://0.0.0.0:8080 \
-  -p 8080:8080 -p 2525:2525 \
-  changemakerstudiosus/papercut-smtp:latest
-
-# Or mount custom configuration
-docker run -d \
-  -v /path/to/appsettings.Production.json:/app/appsettings.Production.json \
-  -p 8080:8080 -p 2525:2525 \
-  changemakerstudiosus/papercut-smtp:latest
-```
+> **Note:** Docker uses non-privileged ports by default (SMTP: 2525, HTTP: 8080). See the [Service README](src/Papercut.Service/Readme.md#option-3-run-in-docker) for configuration options, Docker Compose examples, and troubleshooting.
 
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
