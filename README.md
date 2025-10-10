@@ -58,12 +58,40 @@ Optionally you can run Papercut SMTP Service in docker: [Papercut SMTP Service i
 > docker pull changemakerstudiosus/papercut-smtp:latest
 ```
 
-#### Run Papercut STMP Server Locally in Docker (HTTP Port :8080 and STMP port 25)
+#### Run Papercut SMTP Server Locally in Docker
+
+The Docker image uses **non-privileged ports** by default (no root required):
+- **HTTP**: Port 8080
+- **SMTP**: Port 2525
+
 ```powershell
-docker run -d -p 8080:80 -p 25:25 changemakerstudiosus/papercut-smtp:latest
+# Default - non-privileged ports
+docker run -d -p 37408:8080 -p 2525:2525 changemakerstudiosus/papercut-smtp:latest
+
+# Or map to traditional ports on host (requires host privileges)
+docker run -d -p 8080:8080 -p 25:2525 changemakerstudiosus/papercut-smtp:latest
 ```
 
-The Papercut-SMTP Server Site will be accessible at http://localhost:8080.
+The Papercut-SMTP Web UI will be accessible at http://localhost:37408 (or http://localhost:8080 if using the second example).
+
+#### Configuration
+
+You can override the default ports using environment variables or by mounting a custom `appsettings.Production.json`:
+
+```powershell
+# Using environment variables
+docker run -d \
+  -e SmtpServer__Port=2525 \
+  -e Urls=http://0.0.0.0:8080 \
+  -p 8080:8080 -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+
+# Or mount custom configuration
+docker run -d \
+  -v /path/to/appsettings.Production.json:/app/appsettings.Production.json \
+  -p 8080:8080 -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
 
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

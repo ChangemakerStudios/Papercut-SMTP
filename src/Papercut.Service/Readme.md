@@ -51,4 +51,53 @@ sc.exe start Papercut.Smtp.Service
 
 _Papercut.Service_ does not need manual configuration. When the service and the client (_Papercut.exe_) processes are run at the same time, they will automatically synchronize their configurations. For example, when the SMTP settings is modified in the Papercut UI options, the service will automatically update itself and save these changes. Rule changes work the same way.
 
-If manual confiugration is needed, the configuration file for _Papercut.Service_ can be found in the same directory as the _Papercut.Service.exe_. `Papercut.Service.json` contains the configuration with comments outlining options. Note that any changes will require the service to be restarted to take effect.
+### Configuration Files
+
+Configuration is managed through a layered system:
+
+1. **`Papercut.Service.Settings.json`** - User-editable settings that persist UI changes
+   - Located in the same directory as `Papercut.Service.exe`
+   - Contains configuration with comments outlining options
+   - Changes made via the Papercut UI are saved here automatically
+
+2. **`appsettings.json`** - Default configuration
+   - Provides baseline defaults (SMTP port: 25, IP: Any)
+   - Not recommended to edit directly
+
+3. **`appsettings.Production.json`** - Production/Docker overrides
+   - Used when `ASPNETCORE_ENVIRONMENT=Production`
+   - Docker deployments use non-privileged ports (SMTP: 2525, HTTP: 8080)
+
+**Configuration Priority:** `Papercut.Service.Settings.json` > `appsettings.{Environment}.json` > `appsettings.json`
+
+### Common Configuration Changes
+
+**Change SMTP Port:**
+Edit `Papercut.Service.Settings.json` and set:
+```json
+{
+  "Port": "25"
+}
+```
+
+**Change HTTP Port:**
+Use the `Urls` setting in `appsettings.json` or environment variable:
+```json
+{
+  "Urls": "http://localhost:8080"
+}
+```
+
+**Change SMTP IP Address:**
+Edit `Papercut.Service.Settings.json`:
+```json
+{
+  "IP": "127.0.0.1"
+}
+```
+
+**Note:** Any manual configuration changes require the service to be restarted to take effect.
+
+### Docker Configuration
+
+See [DOCKER.md](../../DOCKER.md) for Docker-specific configuration and deployment instructions.
