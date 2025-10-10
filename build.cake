@@ -159,7 +159,8 @@ Task("PackageUI64")
         PublishDirectory = publishDirectory,
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
-        Framework = "net8.0-x64-desktop,webview2"
+        Framework = "net8.0-x64-desktop,webview2",
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
     };
 
     Velopack.Pack(Context, packParams);
@@ -205,7 +206,8 @@ Task("PackageUI32")
         PublishDirectory = publishDirectory,
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
-        Framework = "net8.0-x86-desktop,webview2"
+        Framework = "net8.0-x86-desktop,webview2",
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
     };
 
     Velopack.Pack(Context, packParams);
@@ -250,7 +252,8 @@ Task("PackageUIArm64")
         PublishDirectory = publishDirectory,
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
-        Framework = "net8.0-arm64-desktop,webview2"
+        Framework = "net8.0-arm64-desktop,webview2",
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
     };
 
     Velopack.Pack(Context, packParams);
