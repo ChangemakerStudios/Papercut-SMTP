@@ -213,10 +213,51 @@ Task("PackageUI32")
 })
 .OnError(exception => Error(exception));
 
+Task("BuildUIArm64")
+    .IsDependentOn("Restore")
+    .Does(() =>
+{
+    CleanDirectory(publishDirectory);
+
+    var settings = new DotNetPublishSettings
+    {
+        Configuration = configuration,
+        Runtime = "win-arm64",
+        OutputDirectory = publishDirectory,
+        EnableCompressionInSingleFile = true
+    };
+
+    DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
+})
+.OnError(exception => Error(exception));
+
+Task("PackageUIArm64")
+    .IsDependentOn("BuildUIArm64")
+    .Does(() =>
+{
+    var packParams = new VpkPackParams
+    {
+        Id = "PapercutSMTP",
+        Title = "Papercut SMTP",
+        Icon = papercutDir + File("App.ico"),
+        ReleaseNotes = "ReleaseNotesCurrent.md",
+        Channel = "win-arm64" + channelPostfix,
+        Version = versionInfo.FullSemVer,
+        PublishDirectory = publishDirectory,
+        ReleaseDirectory = releasesDirectory,
+        ExeName = "Papercut.exe",
+        Framework = "net8.0-arm64-desktop,webview2"
+    };
+
+    Velopack.Pack(Context, packParams);
+})
+.OnError(exception => Error(exception));
+
 Task("DeployReleases")
     .WithCriteria(isRunningInGitHubActions && (isMasterBranch || isDevelopBranch) && hasGithubToken)
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
+    .IsDependentOn("BuildAndPackServiceWinArm64")
     .Does(() =>
     {
         var releaseType = isMasterBranch ? "Release" : "Pre-release";
@@ -240,6 +281,19 @@ Task("DeployReleases")
         uploadParams = new VpkUploadParams
         {
             Channel = "win-x86" + channelPostfix,
+            ReleaseDirectory = releasesDirectory,
+            Token = githubToken ?? "",
+            Repository = "https://github.com/ChangemakerStudios/Papercut-SMTP",
+            IsPrelease = !isMasterBranch
+        };
+
+        Velopack.UploadGithub(Context, uploadParams);
+
+        Information($"Uploading Papercut SMTP ARM64 {releaseType} {versionInfo.FullSemVer}");
+
+        uploadParams = new VpkUploadParams
+        {
+            Channel = "win-arm64" + channelPostfix,
             ReleaseDirectory = releasesDirectory,
             Token = githubToken ?? "",
             Repository = "https://github.com/ChangemakerStudios/Papercut-SMTP",
@@ -328,6 +382,34 @@ Task("BuildAndPackServiceWin32")
 })
 .OnError(exception => Error(exception));
 
+Task("BuildAndPackServiceWinArm64")
+    .IsDependentOn("Restore")
+    .Does(() =>
+{
+    CleanDirectory(publishDirectory);
+
+    var runtime = "win-arm64";
+
+    var settings = new DotNetPublishSettings
+    {
+        Configuration = configuration,
+        OutputDirectory = publishDirectory,
+        Runtime = runtime,
+        EnableCompressionInSingleFile = true,
+        PublishSingleFile = true,
+        SelfContained = true,
+    };
+
+    DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
+
+    CopyFiles("./extras/*.ps1", publishDirectory);
+    CopyFiles("./extras/*.bat", publishDirectory);
+
+    var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
+    Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
+})
+.OnError(exception => Error(exception));
+
 ///////////////////////////////////////////////////////////////////////////////
 Task("All")
     .IsDependentOn("Clean")
@@ -337,8 +419,10 @@ Task("All")
     .IsDependentOn("Test")
     .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
     .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
+    .IsDependentOn("BuildUIArm64").IsDependentOn("PackageUIArm64")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
+    .IsDependentOn("BuildAndPackServiceWinArm64")
     .IsDependentOn("DeployReleases")
     .OnError(exception => Error(exception));
 
