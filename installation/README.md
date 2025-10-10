@@ -47,7 +47,7 @@ type help.txt
 
 Or use the included PowerShell helper script:
 ```powershell
-.\Install-PapercutSMTP.ps1 --help
+.\Install-PapercutSMTP.ps1 -Help
 ```
 
 ## Using the PowerShell Helper Script

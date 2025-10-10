@@ -9,7 +9,7 @@
 .PARAMETER Silent
     Run installation silently without prompts
 
-.PARAMETER Verbose
+.PARAMETER VerboseLogging
     Enable verbose logging output
 
 .PARAMETER Log
