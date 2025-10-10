@@ -156,14 +156,19 @@ if ($Arguments.Count -gt 0) {
 }
 
 try {
-    if ($Arguments.Count -gt 0) {
-        Start-Process -FilePath $SetupExe.FullName -ArgumentList $Arguments -Wait
+    $process = if ($Arguments.Count -gt 0) {
+        Start-Process -FilePath $SetupExe.FullName -ArgumentList $Arguments -Wait -PassThru
     } else {
-        Start-Process -FilePath $SetupExe.FullName -Wait
+        Start-Process -FilePath $SetupExe.FullName -Wait -PassThru
     }
 
-    Write-Host "`nInstallation completed." -ForegroundColor Green
+    if ($process.ExitCode -ne 0) {
+        Write-Error "Installation failed with exit code $($process.ExitCode). Check the log file if you specified one with -Log."
+        exit 1
+    }
+
+    Write-Host "`nInstallation completed successfully." -ForegroundColor Green
 } catch {
-    Write-Error "Installation failed: $_"
+    Write-Error "Installation failed with exception: $_"
     exit 1
 }
