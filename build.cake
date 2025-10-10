@@ -10,7 +10,7 @@
 #tool "dotnet:?package=GitVersion.Tool&version=6.4.0"
 #tool "dotnet:?package=vpk&version=0.0.1298"
 
-#addin "nuget:?package=Cake.FileHelpers&version=6.1.3"
+#addin "nuget:?package=Cake.FileHelpers&version=7.0.0"
 #addin "nuget:?package=Cake.Incubator&version=8.0.0"
 
 #nullable enable
