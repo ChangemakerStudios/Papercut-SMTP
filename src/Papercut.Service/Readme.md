@@ -98,6 +98,30 @@ Edit `Papercut.Service.Settings.json`:
 
 **Note:** Any manual configuration changes require the service to be restarted to take effect.
 
-### Docker Configuration
+---
 
-See [DOCKER.md](../../DOCKER.md) for Docker-specific configuration and deployment instructions.
+## Option 3: Run in Docker
+
+For complete Docker deployment instructions including examples for Docker Compose, Kubernetes, volume persistence, and troubleshooting, see the **[Docker Hub page](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)**.
+
+### Quick Docker Start
+
+```bash
+# Pull and run with default non-privileged ports (2525 for SMTP, 8080 for HTTP)
+docker pull changemakerstudiosus/papercut-smtp:latest
+docker run -d -p 37408:8080 -p 2525:2525 changemakerstudiosus/papercut-smtp:latest
+```
+
+Access at: **http://localhost:37408** | Send emails to: **localhost:2525**
+
+### Docker Configuration via Environment Variables
+
+```bash
+docker run -d \
+  -e SmtpServer__Port=2525 \
+  -e Urls=http://0.0.0.0:8080 \
+  -p 8080:8080 -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Note:** Docker uses `appsettings.Production.json` which sets non-privileged ports by default (SMTP: 2525, HTTP: 8080).

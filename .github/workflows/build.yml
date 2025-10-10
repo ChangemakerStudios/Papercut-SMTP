@@ -145,7 +145,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' }}
+          push: ${{ (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && (github.event_name != 'workflow_dispatch' || inputs.push_docker) }}
           tags: ${{ steps.meta.outputs.tags || format('changemakerstudiosus/papercut-smtp:test-{0}', github.sha) }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
