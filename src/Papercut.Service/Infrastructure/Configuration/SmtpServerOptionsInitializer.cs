@@ -22,8 +22,9 @@ using Papercut.Core.Domain.Settings;
 namespace Papercut.Service.Infrastructure.Configuration;
 
 /// <summary>
-/// Initializes SmtpServerOptions by merging appsettings.json defaults with persisted settings from legacy Settings.json
-/// This allows appsettings.json to provide defaults (good for Docker) while Settings.json provides overrides (good for UI changes)
+/// Initializes SmtpServerOptions by merging appsettings.json defaults with persisted settings from legacy Settings.json.
+/// This allows appsettings.json to provide defaults (good for Docker) while Settings.json provides overrides (good for UI changes).
+/// Configuration precedence: Settings.json > appsettings.{Environment}.json > appsettings.json > code defaults.
 /// </summary>
 public class SmtpServerOptionsInitializer : IHostedService
 {
@@ -31,6 +32,12 @@ public class SmtpServerOptionsInitializer : IHostedService
     private readonly ISettingStore _settingStore;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SmtpServerOptionsInitializer"/> class.
+    /// </summary>
+    /// <param name="smtpServerOptions">The SMTP server options to initialize from appsettings.json.</param>
+    /// <param name="settingStore">The setting store for persisted user settings.</param>
+    /// <param name="logger">The logger instance.</param>
     public SmtpServerOptionsInitializer(
         SmtpServerOptions smtpServerOptions,
         ISettingStore settingStore,
@@ -41,6 +48,12 @@ public class SmtpServerOptionsInitializer : IHostedService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Triggered when the application host is ready to start the service.
+    /// Loads persisted settings from Settings.json and merges them with appsettings.json defaults.
+    /// </summary>
+    /// <param name="cancellationToken">Indicates that the start process has been aborted.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public Task StartAsync(CancellationToken cancellationToken)
     {
         try
@@ -91,6 +104,11 @@ public class SmtpServerOptionsInitializer : IHostedService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Triggered when the application host is performing a graceful shutdown.
+    /// </summary>
+    /// <param name="cancellationToken">Indicates that the shutdown process should no longer be graceful.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public Task StopAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
