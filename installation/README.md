@@ -109,9 +109,9 @@ Enable logging to diagnose issues:
 
 ## More Information
 
-- **GitHub**: https://github.com/ChangemakerStudios/Papercut-SMTP
-- **Documentation**: https://github.com/ChangemakerStudios/Papercut-SMTP/wiki
-- **Issues**: https://github.com/ChangemakerStudios/Papercut-SMTP/issues
+- **GitHub**: [https://github.com/ChangemakerStudios/Papercut-SMTP](https://github.com/ChangemakerStudios/Papercut-SMTP)
+- **Documentation**: [https://github.com/ChangemakerStudios/Papercut-SMTP/wiki](https://github.com/ChangemakerStudios/Papercut-SMTP/wiki)
+- **Issues**: [https://github.com/ChangemakerStudios/Papercut-SMTP/issues](https://github.com/ChangemakerStudios/Papercut-SMTP/issues)
 
 ## System Requirements
 
