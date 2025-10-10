@@ -45,8 +45,8 @@ WORKDIR /app
 
 COPY --from=publish /app/publish .
 
-# Use Docker-specific configuration with non-privileged ports
-ENV ASPNETCORE_ENVIRONMENT=Docker
+# Use Production environment which configures non-privileged ports (2525, 8080)
+ENV ASPNETCORE_ENVIRONMENT=Production
 
 # HTTP (non-privileged port)
 EXPOSE 8080
