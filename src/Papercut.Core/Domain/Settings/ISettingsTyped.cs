@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Settings
+namespace Papercut.Core.Domain.Settings;
+
+public interface ISettingsTyped
 {
-    public interface ISettingsTyped
-    {
-        ISettingStore Settings { get; set; }
-    }
+    ISettingStore Settings { get; set; }
 }

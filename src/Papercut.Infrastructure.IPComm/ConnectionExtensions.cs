@@ -18,33 +18,32 @@
 
 using Papercut.Infrastructure.IPComm.Network;
 
-namespace Papercut.Infrastructure.IPComm
+namespace Papercut.Infrastructure.IPComm;
+
+public static class ConnectionExtensions
 {
-    public static class ConnectionExtensions
+    public static async Task SendStringAsync(this Connection connection, string message)
     {
-        public static async Task SendStringAsync(this Connection connection, string message)
-        {
-            await connection.SendDataAsync(connection.Encoding.GetBytes(message));
-        }
+        await connection.SendDataAsync(connection.Encoding.GetBytes(message));
+    }
 
-        public static async Task SendLineAsync(this Connection connection, string message)
-        {
-            await connection.SendStringAsync($"{message}{Environment.NewLine}");
-        }
+    public static async Task SendLineAsync(this Connection connection, string message)
+    {
+        await connection.SendStringAsync($"{message}{Environment.NewLine}");
+    }
 
-        public static async Task SendJsonAsync(this Connection connection, Type type, object instance)
-        {
-            var json = PapercutIPCommSerializer.ToJson(type, instance);
+    public static async Task SendJsonAsync(this Connection connection, Type type, object instance)
+    {
+        var json = PapercutIPCommSerializer.ToJson(type, instance);
 
-            await connection.SendDataAsync(connection.Encoding.GetBytes(json));
-        }
+        await connection.SendDataAsync(connection.Encoding.GetBytes(json));
+    }
 
-        public static async Task SendAsync(
-            this Connection connection,
-            string message,
-            params object[] args)
-        {
-            await connection.SendDataAsync(connection.Encoding.GetBytes(string.Format(message, args)));
-        }
+    public static async Task SendAsync(
+        this Connection connection,
+        string message,
+        params object[] args)
+    {
+        await connection.SendDataAsync(connection.Encoding.GetBytes(string.Format(message, args)));
     }
 }

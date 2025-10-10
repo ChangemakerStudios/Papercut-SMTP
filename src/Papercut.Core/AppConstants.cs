@@ -16,24 +16,23 @@
 // limitations under the License.
 
 
-namespace Papercut.Core
+namespace Papercut.Core;
+
+public static class AppConstants
 {
-    public static class AppConstants
-    {
-        public const string ApplicationName = "Papercut SMTP";
+    public const string ApplicationName = "Papercut SMTP";
 
-        public const string CompanyName = "Changemaker Studios";
+    public const string CompanyName = "Changemaker Studios";
 
-        public const string UpgradeUrl = "https://github.com/ChangemakerStudios/Papercut-SMTP";
+    public const string UpgradeUrl = "https://github.com/ChangemakerStudios/Papercut-SMTP";
 
-        public static string AppDataDirectory { get; } =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                CompanyName,
-                ApplicationName);
+    public static string AppDataDirectory { get; } =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            CompanyName,
+            ApplicationName);
 
-        public static string UserAppDataDirectory { get; } =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                CompanyName,
-                ApplicationName);
-    }
+    public static string UserAppDataDirectory { get; } =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            CompanyName,
+            ApplicationName);
 }

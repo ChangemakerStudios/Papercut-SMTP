@@ -16,7 +16,6 @@
 // limitations under the License.
 
 
-namespace Papercut.Common.Domain
-{
-    public interface IEvent : IMessage {}
-}
+namespace Papercut.Common.Domain;
+
+public interface IEvent : IMessage {}

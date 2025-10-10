@@ -16,30 +16,29 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Settings
+namespace Papercut.Core.Domain.Settings;
+
+public static class SettingsTypedExtensions
 {
-    public static class SettingsTypedExtensions
+    public static T UseTyped<T>(this ISettingStore settingStore)
+        where T : ISettingsTyped, new()
     {
-        public static T UseTyped<T>(this ISettingStore settingStore)
-            where T : ISettingsTyped, new()
-        {
-            if (settingStore == null) throw new ArgumentNullException(nameof(settingStore));
+        if (settingStore == null) throw new ArgumentNullException(nameof(settingStore));
 
-            return new T { Settings = settingStore };
-        }
+        return new T { Settings = settingStore };
+    }
 
-        public static void Save(this ISettingsTyped typedSettings)
-        {
-            if (typedSettings == null) throw new ArgumentNullException(nameof(typedSettings));
+    public static void Save(this ISettingsTyped typedSettings)
+    {
+        if (typedSettings == null) throw new ArgumentNullException(nameof(typedSettings));
 
-            typedSettings.Settings.Save();
-        }
+        typedSettings.Settings.Save();
+    }
 
-        public static void Load(this ISettingsTyped typedSettings)
-        {
-            if (typedSettings == null) throw new ArgumentNullException(nameof(typedSettings));
+    public static void Load(this ISettingsTyped typedSettings)
+    {
+        if (typedSettings == null) throw new ArgumentNullException(nameof(typedSettings));
 
-            typedSettings.Settings.Load();
-        }
+        typedSettings.Settings.Load();
     }
 }

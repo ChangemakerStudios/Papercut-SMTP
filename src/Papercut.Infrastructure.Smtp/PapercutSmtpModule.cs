@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,57 +24,56 @@ using SmtpServer.Net;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
 
-namespace Papercut.Infrastructure.Smtp
+namespace Papercut.Infrastructure.Smtp;
+
+[PublicAPI]
+public class PapercutSmtpModule : Module
 {
-    [PublicAPI]
-    public class PapercutSmtpModule : Module
+    protected override void Load(ContainerBuilder builder)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterType<PapercutSmtpServer>().AsSelf();
+        builder.RegisterType<PapercutSmtpServer>().AsSelf();
 
-            // smtp
-            builder.RegisterType<SmtpMessageStore>().As<IMessageStore>();
+        // smtp
+        builder.RegisterType<SmtpMessageStore>().As<IMessageStore>();
 
-            // factories
-            builder.RegisterType<SimpleAuthentication>().As<IUserAuthenticatorFactory>();
-            builder.RegisterType<EndpointListenerFactory>().As<IEndpointListenerFactory>();
-            builder.RegisterType<SmtpCommandFactory>().As<ISmtpCommandFactory>();
+        // factories
+        builder.RegisterType<SimpleAuthentication>().As<IUserAuthenticatorFactory>();
+        builder.RegisterType<EndpointListenerFactory>().As<IEndpointListenerFactory>();
+        builder.RegisterType<SmtpCommandFactory>().As<ISmtpCommandFactory>();
 
-            builder.Register(
-                    ctx =>
-                    {
-                        var c = ctx.Resolve<IComponentContext>();
-                        return new DelegatingMessageStoreFactory(context => c.Resolve<IMessageStore>());
-                    })
-                .As<IMessageStoreFactory>();
-
-            builder.Register(
+        builder.Register(
                 ctx =>
                 {
-                    return new DelegatingMailboxFilterFactory(
-                        context => new DelegatingMailboxFilter(mailbox => true));
-                }).As<IMailboxFilterFactory>();
-
-            builder.Register(
-                (ctx, p) =>
-                {
                     var c = ctx.Resolve<IComponentContext>();
+                    return new DelegatingMessageStoreFactory(context => c.Resolve<IMessageStore>());
+                })
+            .As<IMessageStoreFactory>();
 
-                    try
-                    {
-                        return new SmtpServer.SmtpServer(
-                            p.TypedAs<ISmtpServerOptions>(),
-                            (IServiceProvider)c);
-                    }
-                    catch (Exception ex)
-                    {
-                        ctx.Resolve<Serilog.ILogger>().ForContext<PapercutSmtpModule>()
-                            .Error(ex, "Failure Loading Smtp Server");
-                    }
+        builder.Register(
+            ctx =>
+            {
+                return new DelegatingMailboxFilterFactory(
+                    context => new DelegatingMailboxFilter(mailbox => true));
+            }).As<IMailboxFilterFactory>();
 
-                    return null;
-                }).As<SmtpServer.SmtpServer>();
-        }
+        builder.Register(
+            (ctx, p) =>
+            {
+                var c = ctx.Resolve<IComponentContext>();
+
+                try
+                {
+                    return new SmtpServer.SmtpServer(
+                        p.TypedAs<ISmtpServerOptions>(),
+                        (IServiceProvider)c);
+                }
+                catch (Exception ex)
+                {
+                    ctx.Resolve<ILogger>().ForContext<PapercutSmtpModule>()
+                        .Error(ex, "Failure Loading Smtp Server");
+                }
+
+                return null;
+            }).As<SmtpServer.SmtpServer>();
     }
 }

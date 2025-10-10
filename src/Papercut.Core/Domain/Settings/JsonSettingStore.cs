@@ -19,31 +19,30 @@
 using Papercut.Core.Domain.Application;
 using Papercut.Core.Infrastructure.Json;
 
-namespace Papercut.Core.Domain.Settings
+namespace Papercut.Core.Domain.Settings;
+
+public class JsonSettingStore : BaseSettingsStore
 {
-    public class JsonSettingStore : BaseSettingsStore
+    public JsonSettingStore(IAppMeta appMeta)
     {
-        public JsonSettingStore(IAppMeta appMeta)
-        {
-            this.SettingsFilePath = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
-                $"{appMeta.AppName}.Settings.json");
-        }
+        this.SettingsFilePath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            $"{appMeta.AppName}.Settings.json");
+    }
 
-        protected string SettingsFilePath { get; set; }
+    protected string SettingsFilePath { get; set; }
 
-        public override void Load()
-        {
-            if (this.SettingsFilePath == null) return;
+    public override void Load()
+    {
+        if (this.SettingsFilePath == null) return;
 
-            this.LoadSettings(JsonHelpers.LoadJson<Dictionary<string, string>>(this.SettingsFilePath));
-        }
+        this.LoadSettings(JsonHelpers.LoadJson<Dictionary<string, string>>(this.SettingsFilePath));
+    }
 
-        public override void Save()
-        {
-            if (this.SettingsFilePath == null) return;
+    public override void Save()
+    {
+        if (this.SettingsFilePath == null) return;
 
-            JsonHelpers.SaveJson(new SortedDictionary<string, string>(this.GetSettingSnapshot()), this.SettingsFilePath);
-        }
+        JsonHelpers.SaveJson(new SortedDictionary<string, string>(this.GetSettingSnapshot()), this.SettingsFilePath);
     }
 }

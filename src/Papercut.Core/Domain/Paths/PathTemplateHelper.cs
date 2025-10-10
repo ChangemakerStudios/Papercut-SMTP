@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,70 +20,81 @@ using System.Text.RegularExpressions;
 
 using Papercut.Common.Helper;
 
-namespace Papercut.Core.Domain.Paths
+namespace Papercut.Core.Domain.Paths;
+
+public class PathTemplateHelper
 {
-    public class PathTemplateHelper
+    static readonly IDictionary<string, string> _templateDictionary;
+
+    static readonly Regex TemplateRegex = new(
+        @"\%(?<name>.+?)\%",
+        RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
+
+    static PathTemplateHelper()
     {
-        static readonly IDictionary<string, string> _templateDictionary;
+        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-        static readonly Regex TemplateRegex = new Regex(
-            @"\%(?<name>.+?)\%",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
-
-        static PathTemplateHelper()
+        if (baseDirectory.EndsWith("current", StringComparison.OrdinalIgnoreCase))
         {
-            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            // Velo installation -- nothing should go in the "current" directory
+            baseDirectory = Path.GetDirectoryName(baseDirectory)!;
+        }
 
-            if (baseDirectory.EndsWith("current", StringComparison.OrdinalIgnoreCase))
+        _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
             {
-                // Velo installation -- nothing should go in the "current" directory
-                baseDirectory = Path.GetDirectoryName(baseDirectory)!;
-            }
+                nameof(AppDomain.CurrentDomain.BaseDirectory),
+                baseDirectory
+            },
+            { "DataDirectory", AppConstants.AppDataDirectory },
+            { nameof(AppConstants.AppDataDirectory), AppConstants.AppDataDirectory },
+            { nameof(AppConstants.UserAppDataDirectory), AppConstants.UserAppDataDirectory }
+        };
 
-            _templateDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        foreach (Environment.SpecialFolder specialPath in EnumHelpers.GetEnumList<Environment.SpecialFolder>())
+        {
+            string specialPathName = specialPath.ToString();
+
+            if (!_templateDictionary.ContainsKey(specialPathName)) _templateDictionary.Add(specialPathName, Environment.GetFolderPath(specialPath));
+        }
+    }
+
+    public static string RenderPathTemplate(string pathTemplate)
+    {
+        var pathKeys =
+            TemplateRegex.Matches(pathTemplate)
+                .Select(s => s.Groups["name"].Value);
+
+        string renderedPath = pathTemplate.Trim();
+
+        bool isUncPath = renderedPath.StartsWith(@"\\");
+
+        if (isUncPath)
+        {
+            // remove \\ from start of path
+            renderedPath = renderedPath.Substring(2, renderedPath.Length - 2);
+        }
+
+        foreach (string pathKeyName in pathKeys)
+        {
+            if (_templateDictionary.TryGetValue(pathKeyName, out var path))
             {
-                {
-                    nameof(AppDomain.CurrentDomain.BaseDirectory),
-                    baseDirectory
-                },
-                { "DataDirectory", AppConstants.AppDataDirectory },
-                { nameof(AppConstants.AppDataDirectory), AppConstants.AppDataDirectory },
-                { nameof(AppConstants.UserAppDataDirectory), AppConstants.UserAppDataDirectory }
-            };
-
-            foreach (Environment.SpecialFolder specialPath in EnumHelpers.GetEnumList<Environment.SpecialFolder>())
-            {
-                string specialPathName = specialPath.ToString();
-
-                if (!_templateDictionary.ContainsKey(specialPathName)) _templateDictionary.Add(specialPathName, Environment.GetFolderPath(specialPath));
+                renderedPath = renderedPath.Replace($"%{pathKeyName}%", path);
             }
         }
 
-        public static string RenderPathTemplate(string pathTemplate)
+        // Normalize all path separators to OS-appropriate separator
+        // Replace both forward and backslashes, then deduplicate
+        renderedPath = renderedPath.Replace('\\', Path.DirectorySeparatorChar)
+                                   .Replace('/', Path.DirectorySeparatorChar);
+
+        // Remove duplicate separators
+        string duplicateSeparator = new string(Path.DirectorySeparatorChar, 2);
+        while (renderedPath.Contains(duplicateSeparator))
         {
-            var pathKeys =
-                TemplateRegex.Matches(pathTemplate)
-                    .Select(s => s.Groups["name"].Value);
-
-            string renderedPath = pathTemplate.Trim();
-
-            bool isUncPath = renderedPath.StartsWith(@"\\");
-
-            if (isUncPath)
-            {
-                // remove \\ from start of path
-                renderedPath = renderedPath.Substring(2, renderedPath.Length - 2);
-            }
-
-            foreach (string pathKeyName in pathKeys)
-            {
-                if (_templateDictionary.TryGetValue(pathKeyName, out var path))
-                {
-                    renderedPath = renderedPath.Replace($"%{pathKeyName}%", path).Replace(@"\\", @"\");
-                }
-            }
-
-            return isUncPath ? $@"\\{renderedPath}" : renderedPath;
+            renderedPath = renderedPath.Replace(duplicateSeparator, Path.DirectorySeparatorChar.ToString());
         }
+
+        return isUncPath ? $@"\\{renderedPath}" : renderedPath;
     }
 }

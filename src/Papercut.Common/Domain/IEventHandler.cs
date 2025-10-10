@@ -16,11 +16,10 @@
 // limitations under the License.
 
 
-namespace Papercut.Common.Domain
+namespace Papercut.Common.Domain;
+
+public interface IEventHandler<in TEvent>
+    where TEvent : IEvent
 {
-    public interface IEventHandler<in TEvent>
-        where TEvent : IEvent
-    {
-        Task HandleAsync(TEvent @event, CancellationToken token = default);
-    }
+    Task HandleAsync(TEvent @event, CancellationToken token = default);
 }

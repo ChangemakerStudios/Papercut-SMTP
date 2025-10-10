@@ -20,34 +20,25 @@ using Autofac;
 
 namespace Papercut.Infrastructure.WebView;
 
-public class WebView2Reporter : IStartable
+public class WebView2Reporter(Lazy<ILogger> logger, WebView2Information webView2Information)
+    : IStartable
 {
-    private readonly Lazy<ILogger> _logger;
-
-    private readonly WebView2Information _webView2Information;
-
-    public WebView2Reporter(Lazy<ILogger> logger, WebView2Information webView2Information)
-    {
-        this._logger = logger;
-        this._webView2Information = webView2Information;
-    }
-
-    protected ILogger Logger => this._logger.Value;
+    protected ILogger Logger => logger.Value;
 
     public void Start()
     {
-        if (!this._webView2Information.IsInstalled)
+        if (!webView2Information.IsInstalled)
         {
             this.Logger.Error(
-                this._webView2Information.WebView2LoadException,
+                webView2Information.WebView2LoadException,
                 "Failure Loading 'WebView2' or Required Component 'WebView2' is not installed. Visit this URL to download: https://go.microsoft.com/fwlink/p/?LinkId=2124703");
         }
         else
         {
             this.Logger.Information(
                 "WebView2 Installed Version {WebView2:l} {WebView2InstallType}",
-                this._webView2Information.Version,
-                this._webView2Information.InstallType);
+                webView2Information.Version,
+                webView2Information.InstallType);
         }
     }
 

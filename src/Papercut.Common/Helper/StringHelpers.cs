@@ -22,108 +22,107 @@ using System.Text.RegularExpressions;
 
 using Papercut.Common.Extensions;
 
-namespace Papercut.Common.Helper
+namespace Papercut.Common.Helper;
+
+public static class StringHelpers
 {
-    public static class StringHelpers
+    static readonly Regex UpperCaseWordRegex = new("([A-Z]{1,1})[a-z]+", RegexOptions.Singleline);
+
+    public static string SmallRandomString()
     {
-        static readonly Regex _upperCaseWordRegex = new Regex("([A-Z]{1,1})[a-z]+", RegexOptions.Singleline);
+        return Guid.NewGuid().ToString("N").Substring(0, 6);
+    }
 
-        public static string SmallRandomString()
+    [StringFormatMethod("args")]
+    public static string FormatWith(this string str, params object[] args)
+    {
+        return string.Format(str, args);
+    }
+
+    public static bool IsSet(this string? str)
+    {
+        return !string.IsNullOrWhiteSpace(str);
+    }
+
+    public static string Join(this IEnumerable<string>? strings, string separator)
+    {
+        return string.Join(separator, strings.IfNullEmpty());
+    }
+
+    public static string? ToTitleCase(this string? str, CultureInfo? culture = null)
+    {
+        if (str.IsNullOrWhiteSpace())
         {
-            return Guid.NewGuid().ToString("N").Substring(0, 6);
+            return str;
         }
 
-        [StringFormatMethod("args")]
-        public static string FormatWith(this string str, params object[] args)
+        return (culture ?? Thread.CurrentThread.CurrentCulture).TextInfo.ToTitleCase(str);
+    }
+
+    public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? str)
+    {
+        return string.IsNullOrWhiteSpace(str);
+    }
+
+    public static string CamelCaseToSeparated(this string str)
+    {
+        if (str.IsNullOrWhiteSpace())
         {
-            return string.Format(str, args);
+            return str;
         }
 
-        public static bool IsSet(this string? str)
-        {
-            return !string.IsNullOrWhiteSpace(str);
-        }
-
-        public static string Join(this IEnumerable<string>? strings, string separator)
-        {
-            return string.Join(separator, strings.IfNullEmpty());
-        }
-
-        public static string? ToTitleCase(this string? str, CultureInfo? culture = null)
-        {
-            if (str.IsNullOrWhiteSpace())
-            {
-                return str;
-            }
-
-            return (culture ?? Thread.CurrentThread.CurrentCulture).TextInfo.ToTitleCase(str);
-        }
-
-        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? str)
-        {
-            return string.IsNullOrWhiteSpace(str);
-        }
-
-        public static string CamelCaseToSeparated(this string str)
-        {
-            if (str.IsNullOrWhiteSpace())
-            {
-                return str;
-            }
-
-            var lines = new List<string>();
-            var lastIndex = 0;
+        var lines = new List<string>();
+        var lastIndex = 0;
 	
-            foreach (var match in _upperCaseWordRegex.Matches(str).ToList())
-            {
-                if (match.Index > lastIndex)
-                {
-                    lines.Add(str.Substring(lastIndex, match.Index - lastIndex).Trim());
-                }
-
-                lines.Add(match.Captures[0].Value);
-                lastIndex = match.Index + match.Length + 1;
-            }
-	
-            if (lastIndex < str.Length) {
-                lines.Add(str.Substring(lastIndex, str.Length-lastIndex).Trim());
-            }
-
-            return string.Join(" ", lines);
-        }
-
-        public static string? Truncate([NotNullIfNotNull(nameof(input))] this string? input, int inputLimit, string? cutOff = "")
+        foreach (var match in UpperCaseWordRegex.Matches(str).ToList())
         {
-            cutOff ??= string.Empty;
-
-            if (string.IsNullOrWhiteSpace(input)) return null;
-
-            string output = input;
-            int limit = inputLimit - cutOff.Length;
-
-            // Check if the string is longer than the allowed amount
-            // otherwise do nothing
-            if (output.Length > limit && limit > 0)
+            if (match.Index > lastIndex)
             {
-                // cut the string down to the maximum number of characters
-                output = output.Substring(0, limit);
-
-                // Check if the space right after the truncate point
-                // was a space. if not, we are in the middle of a word and
-                // need to cut out the rest of it
-                if (input.Substring(output.Length, 1) != " ")
-                {
-                    int lastSpace = output.LastIndexOf(" ");
-
-                    // if we found a space then, cut back to that space
-                    if (lastSpace != -1) output = output.Substring(0, lastSpace);
-                }
-
-                // Finally, add the the cut off string...
-                output += cutOff;
+                lines.Add(str.Substring(lastIndex, match.Index - lastIndex).Trim());
             }
 
-            return output;
+            lines.Add(match.Captures[0].Value);
+            lastIndex = match.Index + match.Length + 1;
         }
+	
+        if (lastIndex < str.Length) {
+            lines.Add(str.Substring(lastIndex, str.Length-lastIndex).Trim());
+        }
+
+        return string.Join(" ", lines);
+    }
+
+    public static string? Truncate([NotNullIfNotNull(nameof(input))] this string? input, int inputLimit, string? cutOff = "")
+    {
+        cutOff ??= string.Empty;
+
+        if (string.IsNullOrWhiteSpace(input)) return null;
+
+        string output = input;
+        int limit = inputLimit - cutOff.Length;
+
+        // Check if the string is longer than the allowed amount
+        // otherwise do nothing
+        if (output.Length > limit && limit > 0)
+        {
+            // cut the string down to the maximum number of characters
+            output = output.Substring(0, limit);
+
+            // Check if the space right after the truncate point
+            // was a space. if not, we are in the middle of a word and
+            // need to cut out the rest of it
+            if (input.Substring(output.Length, 1) != " ")
+            {
+                int lastSpace = output.LastIndexOf(" ");
+
+                // if we found a space then, cut back to that space
+                if (lastSpace != -1) output = output.Substring(0, lastSpace);
+            }
+
+            // Finally, add the cut-off string...
+            output += cutOff;
+        }
+
+        return output;
     }
 }

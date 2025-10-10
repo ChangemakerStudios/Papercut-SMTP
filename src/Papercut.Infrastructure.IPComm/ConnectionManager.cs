@@ -25,139 +25,130 @@ using System.Reactive.Linq;
 
 using Papercut.Infrastructure.IPComm.Protocols;
 
-namespace Papercut.Infrastructure.IPComm
+namespace Papercut.Infrastructure.IPComm;
+
+public class ConnectionManager(
+    Func<int, Socket, IProtocol, Connection> connectionFactory,
+    ILogger logger)
+    : IDisposable
 {
-    public class ConnectionManager : IDisposable
+    readonly ConcurrentDictionary<int, Connection> _connections = new();
+
+    readonly CompositeDisposable _disposables = new CompositeDisposable();
+
+    int _connectionId;
+
+    bool _isInitialized;
+
+    public ILogger Logger { get; set; } = logger;
+
+    public void Dispose()
     {
-        readonly Func<int, Socket, IProtocol, Connection> _connectionFactory;
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-        readonly ConcurrentDictionary<int, Connection> _connections =
-            new ConcurrentDictionary<int, Connection>();
-
-        readonly CompositeDisposable _disposables = new CompositeDisposable();
-
-        int _connectionID;
-
-        bool _isInitialized;
-
-        public ConnectionManager(
-            Func<int, Socket, IProtocol, Connection> connectionFactory,
-            ILogger logger)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
         {
-            this.Logger = logger;
-            this._connectionFactory = connectionFactory;
-        }
-
-        public ILogger Logger { get; set; }
-
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            try
             {
-                try
-                {
-                    this.CloseAll();
-                }
-                catch (Exception ex)
-                {
-                    this.Logger.Warning(ex, "Exception Calling CloseAll");
-                }
+                this.CloseAll();
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Warning(ex, "Exception Calling CloseAll");
+            }
 
-                try
-                {
-                    this._disposables.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    this.Logger.Warning(ex, "Exception Calling Disposable.Dispose");
-                }
+            try
+            {
+                this._disposables.Dispose();
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Warning(ex, "Exception Calling Disposable.Dispose");
             }
         }
+    }
 
-        public Connection CreateConnection(Socket clientSocket, IProtocol protocol)
-        {
-            Interlocked.Increment(ref this._connectionID);
-            Connection connection = this._connectionFactory(this._connectionID, clientSocket, protocol);
-            connection.ConnectionClosed += this.ConnectionClosed;
-            this._connections.TryAdd(connection.Id, connection);
+    public Connection CreateConnection(Socket clientSocket, IProtocol protocol)
+    {
+        Interlocked.Increment(ref this._connectionId);
+        Connection connection = connectionFactory(this._connectionId, clientSocket, protocol);
+        connection.ConnectionClosed += this.ConnectionClosed;
+        this._connections.TryAdd(connection.Id, connection);
 
-            this.Logger.Debug(
-                "New Connection {ConnectionId} from {RemoteEndPoint}",
-                this._connectionID,
-                clientSocket.RemoteEndPoint);
+        this.Logger.Debug(
+            "New Connection {ConnectionId} from {RemoteEndPoint}",
+            this._connectionId,
+            clientSocket.RemoteEndPoint);
 
-            this.InitCleanupObservables();
+        this.InitCleanupObservables();
 
-            return connection;
-        }
+        return connection;
+    }
 
-        void InitCleanupObservables()
-        {
-            if (this._isInitialized) return;
-            this._isInitialized = true;
+    void InitCleanupObservables()
+    {
+        if (this._isInitialized) return;
+        this._isInitialized = true;
 
-            this.Logger.Debug("Initializing Background Processes...");
+        this.Logger.Debug("Initializing Background Processes...");
 
-            this._disposables.Add(
-                Observable.Timer(
-                    TimeSpan.FromMinutes(1),
-                    TimeSpan.FromMinutes(5),
-                    TaskPoolScheduler.Default).Subscribe(
-                        t =>
-                        {
-                            // Get the number of current connections
-                            int[] keys = this._connections.Keys.ToArray();
+        this._disposables.Add(
+            Observable.Timer(
+                TimeSpan.FromMinutes(1),
+                TimeSpan.FromMinutes(5),
+                TaskPoolScheduler.Default).Subscribe(
+                t =>
+                {
+                    // Get the number of current connections
+                    int[] keys = this._connections.Keys.ToArray();
 
-                            // Loop through the connections
-                            foreach (int key in keys)
-                            {
-                                // If they have been idle for too long, disconnect them
-                                if (DateTime.Now <= this._connections[key].LastActivity.AddMinutes(1)) continue;
-
-                                this.Logger.Information(
-                                    "Session timeout, disconnecting {ConnectionId}",
-                                    this._connections[key].Id);
-                                this._connections[key].Close();
-                            }
-                        }));
-
-            // print out status every 20 minutes
-            double memusage = (double)Process.GetCurrentProcess().WorkingSet64
-                              / 1024 / 1024;
-
-            this._disposables.Add(
-                Observable.Timer(
-                    TimeSpan.FromMinutes(1),
-                    TimeSpan.FromMinutes(20),
-                    TaskPoolScheduler.Default).Subscribe(
-                    t =>
+                    // Loop through the connections
+                    foreach (int key in keys)
                     {
-                        this.Logger.Debug(
-                            "Status: {ConnectionCount} Connections {MemoryUsed} Memory Used",
-                            this._connections.Count,
-                            memusage.ToString("0.#") + "MB");
-                    }));
-        }
+                        // If they have been idle for too long, disconnect them
+                        if (DateTime.Now <= this._connections[key].LastActivity.AddMinutes(1)) continue;
 
-        public void CloseAll()
-        {
-            // Close all open connections
-            foreach (var connection in this._connections.Values.Where(connection => connection != null))
-            {
-                this._connections.TryRemove(connection.Id, out _);
-                connection.Close(false);
-            }
-        }
+                        this.Logger.Information(
+                            "Session timeout, disconnecting {ConnectionId}",
+                            this._connections[key].Id);
+                        this._connections[key].Close();
+                    }
+                }));
 
-        void ConnectionClosed(object sender, EventArgs e)
+        // print out status every 20 minutes
+        double memoryUsage = (double)Process.GetCurrentProcess().WorkingSet64
+                          / 1024 / 1024;
+
+        this._disposables.Add(
+            Observable.Timer(
+                TimeSpan.FromMinutes(1),
+                TimeSpan.FromMinutes(20),
+                TaskPoolScheduler.Default).Subscribe(
+                t =>
+                {
+                    this.Logger.Debug(
+                        "Status: {ConnectionCount} Connections {MemoryUsed} Memory Used",
+                        this._connections.Count,
+                        memoryUsage.ToString("0.#") + "MB");
+                }));
+    }
+
+    public void CloseAll()
+    {
+        // Close all open connections
+        foreach (var connection in this._connections.Values)
         {
-            if (sender is Connection connection) this._connections.TryRemove(connection.Id, out _);
+            this._connections.TryRemove(connection.Id, out _);
+            connection.Close(false);
         }
+    }
+
+    void ConnectionClosed(object sender, EventArgs e)
+    {
+        if (sender is Connection connection) this._connections.TryRemove(connection.Id, out _);
     }
 }

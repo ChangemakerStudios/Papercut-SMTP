@@ -11,7 +11,6 @@ Papercut.ncrunchsolution.*
 *.ide
 deploy/
 changelog.bat
-graphics/
 .vs/
 /build/tools
 /tools
@@ -24,3 +23,6 @@ src/Papercut.UI/publish
 src/Papercut.UI/Releases
 publish
 Releases
+.angular
+settings.local.json
+TestResults/

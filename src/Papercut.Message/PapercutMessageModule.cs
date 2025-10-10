@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,16 +20,15 @@ using Autofac;
 
 using Papercut.Core.Domain.Message;
 
-namespace Papercut.Message
-{
-    public class PapercutMessageModule : Module
-    {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
-            builder.RegisterType<MimeMessageLoader>().AsSelf().SingleInstance();
+namespace Papercut.Message;
 
-            builder.RegisterType<ReceivedDataMessageHandler>().AsSelf().As<IReceivedDataHandler>().SingleInstance();
-        }
+public class PapercutMessageModule : Module
+{
+    protected override void Load(ContainerBuilder builder)
+    {
+        builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
+        builder.RegisterType<MimeMessageLoader>().AsSelf().SingleInstance();
+
+        builder.RegisterType<ReceivedDataMessageHandler>().AsSelf().As<IReceivedDataHandler>().SingleInstance();
     }
 }

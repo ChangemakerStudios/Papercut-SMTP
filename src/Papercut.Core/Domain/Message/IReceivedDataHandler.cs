@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Message
+namespace Papercut.Core.Domain.Message;
+
+public interface IReceivedDataHandler
 {
-    public interface IReceivedDataHandler
-    {
-        Task HandleReceivedAsync(byte[] message, string[] recipients);
-    }
+    Task HandleReceivedAsync(byte[] message, string[] recipients);
 }

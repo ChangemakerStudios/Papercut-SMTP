@@ -18,10 +18,9 @@
 
 using Papercut.Core.Domain.Message;
 
-namespace Papercut.Core.Domain.Rules
+namespace Papercut.Core.Domain.Rules;
+
+public interface IRulesRunner
 {
-    public interface IRulesRunner
-    {
-        Task RunAsync(IRule[] rules, MessageEntry messageEntry, CancellationToken token = default);
-    }
+    Task RunAsync(IRule[] rules, MessageEntry messageEntry, CancellationToken token = default);
 }

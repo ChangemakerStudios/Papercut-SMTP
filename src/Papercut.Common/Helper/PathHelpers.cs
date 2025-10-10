@@ -18,16 +18,16 @@
 
 using System.Reflection;
 
-namespace Papercut.Common.Helper
-{
-    public static class PathHelpers
-    {
-        public static string GetPath(this Assembly assembly)
-        {
-            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+namespace Papercut.Common.Helper;
 
-            string filePath = new Uri(assembly.CodeBase).LocalPath;
-            return Path.GetDirectoryName(filePath);
-        }
+public static class PathHelpers
+{
+    public static string? GetPath(this Assembly assembly)
+    {
+        if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+
+        string filePath = new Uri(assembly.Location).LocalPath;
+
+        return Path.GetDirectoryName(filePath);
     }
 }

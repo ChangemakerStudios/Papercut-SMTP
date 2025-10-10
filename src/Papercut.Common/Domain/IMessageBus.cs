@@ -16,13 +16,12 @@
 // limitations under the License.
 
 
-namespace Papercut.Common.Domain
-{
-    public interface IMessageBus
-    {
-        Task<ExecutionResult> ExecuteAsync<T>(T @command, CancellationToken token = default)
-            where T : ICommand;
+namespace Papercut.Common.Domain;
 
-        Task PublishAsync<T>(T @event, CancellationToken token = default) where T : IEvent;
-    }
+public interface IMessageBus
+{
+    Task<ExecutionResult> ExecuteAsync<T>(T @command, CancellationToken token = default)
+        where T : ICommand;
+
+    Task PublishAsync<T>(T @event, CancellationToken token = default) where T : IEvent;
 }

@@ -16,48 +16,47 @@
 // limitations under the License.
 
 
-namespace Papercut.Infrastructure.IPComm.Protocols
+namespace Papercut.Infrastructure.IPComm.Protocols;
+
+public abstract class StringCommandProtocol : IProtocol
 {
-    public abstract class StringCommandProtocol : IProtocol
+    StringBuilder _stringBuffer = new StringBuilder();
+
+    protected StringCommandProtocol(ILogger logger)
     {
-        StringBuilder _stringBuffer = new StringBuilder();
-
-        protected StringCommandProtocol(ILogger logger)
-        {
-            this.Logger = logger;
-        }
-
-        protected ILogger Logger { get; set; }
-
-        public abstract Task BeginAsync(Connection connection, CancellationToken token = default);
-
-        public virtual async Task ProcessIncomingBufferAsync(byte[] bufferedData, Encoding encoding, CancellationToken token = default)
-        {
-            // Get the string data and append to buffer
-            string data = encoding.GetString(bufferedData, 0, bufferedData.Length);
-
-            this._stringBuffer.Append(data);
-
-            // Check if the string buffer contains a line break
-            string line = this._stringBuffer.ToString().Replace("\r", string.Empty);
-
-            while (line.Contains("\n"))
-            {
-                // Take a snippet of the buffer, find the line, and process it
-                this._stringBuffer =
-                    new StringBuilder(
-                        line.Substring(line.IndexOf("\n", StringComparison.Ordinal) + 1));
-
-                line = line.Substring(0, line.IndexOf("\n", StringComparison.Ordinal));
-
-                this.Logger.Debug("Received Line {Line}", line);
-
-                await this.ProcessRequest(line, token);
-
-                line = this._stringBuffer.ToString();
-            }
-        }
-
-        protected abstract Task ProcessRequest(string request, CancellationToken token = default);
+        this.Logger = logger;
     }
+
+    protected ILogger Logger { get; set; }
+
+    public abstract Task BeginAsync(Connection connection, CancellationToken token = default);
+
+    public virtual async Task ProcessIncomingBufferAsync(byte[] bufferedData, Encoding encoding, CancellationToken token = default)
+    {
+        // Get the string data and append to buffer
+        string data = encoding.GetString(bufferedData, 0, bufferedData.Length);
+
+        this._stringBuffer.Append(data);
+
+        // Check if the string buffer contains a line break
+        string line = this._stringBuffer.ToString().Replace("\r", string.Empty);
+
+        while (line.Contains("\n"))
+        {
+            // Take a snippet of the buffer, find the line, and process it
+            this._stringBuffer =
+                new StringBuilder(
+                    line.Substring(line.IndexOf("\n", StringComparison.Ordinal) + 1));
+
+            line = line.Substring(0, line.IndexOf("\n", StringComparison.Ordinal));
+
+            this.Logger.Debug("Received Line {Line}", line);
+
+            await this.ProcessRequest(line, token);
+
+            line = this._stringBuffer.ToString();
+        }
+    }
+
+    protected abstract Task ProcessRequest(string request, CancellationToken token = default);
 }

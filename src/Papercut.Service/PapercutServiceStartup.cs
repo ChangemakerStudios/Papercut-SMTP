@@ -17,16 +17,18 @@
 
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 using Papercut.Rules;
+using Papercut.Service.Infrastructure.Configuration;
 using Papercut.Service.Infrastructure.Servers;
 
 namespace Papercut.Service;
 
 internal class PapercutServiceStartup
 {
-    public void ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddLogging();
         services.AddMemoryCache();
@@ -46,11 +48,11 @@ internal class PapercutServiceStartup
                     });
             });
 
-        services.AddOptions<SmtpServerOptions>("SmtpServer");
-
+        services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
         services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
 
         // hosted services
+        services.AddHostedService<SmtpServerOptionsInitializer>();
         services.AddHostedService<PapercutServerHostedService>();
     }
 

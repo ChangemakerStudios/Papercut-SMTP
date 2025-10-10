@@ -16,18 +16,14 @@
 // limitations under the License.
 
 
-using System.Reflection;
-
 using Autofac.Extensions.DependencyInjection;
-
 using ElectronNET.API;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
 using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Logging;
+using System.Reflection;
 
 namespace Papercut.Service;
 
@@ -39,7 +35,10 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        Console.Title = AppMeta.AppName;
+        if (Environment.UserInteractive)
+        {
+            Console.Title = AppMeta.AppName;
+        }
 
         Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
 
@@ -71,7 +70,7 @@ public class Program
     private static WebApplication CreateWebApp(string[] args)
     {
         var applicationOptions = new WebApplicationOptions()
-                                 { ContentRootPath = AppContext.BaseDirectory, Args = args };
+        { ContentRootPath = AppContext.BaseDirectory, Args = args };
 
         var builder = WebApplication.CreateBuilder(applicationOptions);
 
@@ -96,7 +95,7 @@ public class Program
         var startup = new PapercutServiceStartup();
 
         builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory(startup.ConfigureContainer));
-        startup.ConfigureServices(builder.Services);
+        startup.ConfigureServices(builder.Services, builder.Configuration);
 
         var webApp = builder.Build();
 

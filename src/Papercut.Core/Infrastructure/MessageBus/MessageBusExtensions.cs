@@ -18,26 +18,25 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Core.Infrastructure.MessageBus
-{
-    public static class MessageBusExtensions
-    {
-        public static void PublishFireAndForget<T>(this IMessageBus messageBus, T @event)
-            where T : IEvent
-        {
-            if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
+namespace Papercut.Core.Infrastructure.MessageBus;
 
-            Task.Run(() =>
+public static class MessageBusExtensions
+{
+    public static void PublishFireAndForget<T>(this IMessageBus messageBus, T @event)
+        where T : IEvent
+    {
+        if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
+
+        Task.Run(() =>
+        {
+            try
             {
-                try
-                {
-                    messageBus.PublishAsync(@event, default);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, "Exception Publishing Event {EventType}", typeof(T).FullName);
-                }
-            });
-        }
+                messageBus.PublishAsync(@event, default);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Exception Publishing Event {EventType}", typeof(T).FullName);
+            }
+        });
     }
 }

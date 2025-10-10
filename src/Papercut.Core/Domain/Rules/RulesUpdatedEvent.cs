@@ -18,15 +18,14 @@
 
 using Papercut.Common.Domain;
 
-namespace Papercut.Core.Domain.Rules
-{
-    public class RulesUpdatedEvent : IEvent
-    {
-        public RulesUpdatedEvent(IRule[] rules)
-        {
-            this.Rules = rules;
-        }
+namespace Papercut.Core.Domain.Rules;
 
-        public IRule[] Rules { get; set; }
+public class RulesUpdatedEvent : IEvent
+{
+    public RulesUpdatedEvent(IRule[] rules)
+    {
+        this.Rules = rules;
     }
+
+    public IRule[] Rules { get; set; }
 }

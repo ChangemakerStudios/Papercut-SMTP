@@ -21,69 +21,68 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 
-namespace Papercut.Core.Infrastructure.Network
+namespace Papercut.Core.Infrastructure.Network;
+
+public static class NetworkHelper
 {
-    public static class NetworkHelper
+    const string NetworkAdapterQuery =
+        "SELECT IPAddress from Win32_NetworkAdapterConfiguration WHERE IPEnabled=true";
+
+    static readonly Regex _ipv4 = new(
+        @"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
+        RegexOptions.Compiled);
+
+    public static string GetLocalDnsHostName()
     {
-        const string NetworkAdapterQuery =
-            "SELECT IPAddress from Win32_NetworkAdapterConfiguration WHERE IPEnabled=true";
-
-        static readonly Regex _ipv4 = new Regex(
-            @"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
-            RegexOptions.Compiled);
-
-        public static string GetLocalDnsHostName()
+        string hostName = "localhost";
+        try
         {
-            string hostName = "localhost";
-            try
-            {
-                hostName = Dns.GetHostName().ToLower();
-            }
-            catch (SocketException socketException)
-            {
-                Log.Logger.Warning(socketException, "Failure Getting the Local Hostname");
-            }
-
-            return hostName;
+            hostName = Dns.GetHostName().ToLower();
+        }
+        catch (SocketException socketException)
+        {
+            Log.Logger.Warning(socketException, "Failure Getting the Local Hostname");
         }
 
-        public static IEnumerable<string> GetIPAddresses()
-        {
-            try
-            {
-                var ips = new List<string>();
+        return hostName;
+    }
 
-                using (var managementObjectSearcher = new ManagementObjectSearcher(NetworkAdapterQuery))
-                using (var mgtObjects = managementObjectSearcher.Get())
+    public static IEnumerable<string> GetIPAddresses()
+    {
+        try
+        {
+            var ips = new List<string>();
+
+            using (var managementObjectSearcher = new ManagementObjectSearcher(NetworkAdapterQuery))
+            using (var mgtObjects = managementObjectSearcher.Get())
+            {
+                IEnumerable<PropertyData> addresses =
+                    mgtObjects.OfType<ManagementObject>()
+                        .Select(mo => mo.Properties["IPAddress"])
+                        .Where(ip => ip.IsLocal)
+                        .ToList();
+
+                foreach (PropertyData ipAddress in addresses)
                 {
-                    IEnumerable<PropertyData> addresses =
-                        mgtObjects.OfType<ManagementObject>()
-                            .Select(mo => mo.Properties["IPAddress"])
-                            .Where(ip => ip.IsLocal)
-                            .ToList();
-
-                    foreach (PropertyData ipAddress in addresses)
-                    {
-                        if (ipAddress.IsArray) ips.AddRange((string[])ipAddress.Value);
-                        else ips.Add(ipAddress.Value.ToString());
-                    }
+                    if (ipAddress.IsArray) ips.AddRange((string[])ipAddress.Value);
+                    else ips.Add(ipAddress.Value.ToString());
                 }
-
-                return ips.Where(address => address.IsValidIP()).ToList();
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Warning(ex,
-                    "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
             }
 
-            return new[] { "127.0.0.1" };
+            return ips.Where(address => address.IsValidIP()).ToList();
         }
-
-        public static bool IsValidIP(this string ip)
+        catch (Exception ex)
         {
-            if (ip == null) return false;
-            return _ipv4.IsMatch(ip);
+            Log.Logger.Warning(ex,
+                "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
         }
+
+        return new[] { "127.0.0.1" };
+    }
+
+    public static bool IsValidIP(this string ip)
+    {
+        if (ip == null) return false;
+        return _ipv4.IsMatch(ip);
     }
 }

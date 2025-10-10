@@ -12,16 +12,12 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-		<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-		<GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+		<!-- Version is populated by GitVersion during build -->
+		<Version Condition="'$(Version)' == ''">1.0.0</Version>
+		<AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(Version)</AssemblyVersion>
+		<FileVersion Condition="'$(FileVersion)' == ''">$(Version)</FileVersion>
+		<InformationalVersion Condition="'$(InformationalVersion)' == ''">$(Version)</InformationalVersion>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Compile Include="..\GlobalAssemblyInfo.cs">
-			<Link>Properties\GlobalAssemblyInfo.cs</Link>
-		</Compile>
-	</ItemGroup>
 
 	<ItemGroup>
 		<Using Include="System.Text" />

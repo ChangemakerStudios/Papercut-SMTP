@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Settings
+namespace Papercut.Core.Domain.Settings;
+
+public interface IReadValue<out T>
 {
-    public interface IReadValue<out T>
-    {
-        T Get(string key);
-    }
+    T Get(string key);
 }

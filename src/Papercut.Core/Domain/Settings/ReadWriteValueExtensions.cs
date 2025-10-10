@@ -19,75 +19,74 @@
 using Papercut.Common.Extensions;
 using Papercut.Common.Helper;
 
-namespace Papercut.Core.Domain.Settings
+namespace Papercut.Core.Domain.Settings;
+
+public static class ReadWriteValueExtensions
 {
-    public static class ReadWriteValueExtensions
+    public static void Set(
+        this IWriteValue<string> writeValue,
+        string key, object value)
     {
-        public static void Set(
-            this IWriteValue<string> writeValue,
-            string key, object value)
-        {
-            if (writeValue == null) throw new ArgumentNullException(nameof(writeValue));
-            if (key == null) throw new ArgumentNullException(nameof(key));
+        if (writeValue == null) throw new ArgumentNullException(nameof(writeValue));
+        if (key == null) throw new ArgumentNullException(nameof(key));
 
-            writeValue.Set(key, value.ToType<string>());
+        writeValue.Set(key, value.ToType<string>());
+    }
+
+    public static T GetOrSet<T>(this ISettingStore settings, string key, T defaultValue, string description)
+    {
+        return settings.GetOrSet(key, () => defaultValue, description);
+    }
+
+    public static T GetOrSet<T>(this ISettingStore settings, string key, Func<T> getDefaultValue, string description)
+    {
+        T returnValue;
+
+        string keyValue = settings.Get(key);
+
+        if (keyValue.IsNullOrWhiteSpace())
+        {
+            returnValue = getDefaultValue();
+
+            // set default
+            settings.Set(key, returnValue);
+        }
+        else
+        {
+            returnValue = keyValue.ToType<T>();
         }
 
-        public static T GetOrSet<T>(this ISettingStore settings, string key, T defaultValue, string description)
+        var descriptionKey = $"{key}_Description";
+
+        if (!description.IsNullOrWhiteSpace() && settings.Get(descriptionKey).IsNullOrWhiteSpace())
         {
-            return settings.GetOrSet(key, () => defaultValue, description);
+            settings.Set(descriptionKey, $@"## {description}");
         }
 
-        public static T GetOrSet<T>(this ISettingStore settings, string key, Func<T> getDefaultValue, string description)
-        {
-            T returnValue;
+        return returnValue;
+    }
 
-            string keyValue = settings.Get(key);
+    public static T Get<T>(
+        this IReadValue<string> readValue,
+        string key,
+        Func<T> getDefaultValue)
+    {
+        if (readValue == null) throw new ArgumentNullException(nameof(readValue));
+        if (key == null) throw new ArgumentNullException(nameof(key));
+        if (getDefaultValue == null) throw new ArgumentNullException(nameof(getDefaultValue));
 
-            if (keyValue.IsNullOrWhiteSpace())
-            {
-                returnValue = getDefaultValue();
+        string value = readValue.Get(key);
+        return value.IsNullOrWhiteSpace() ? getDefaultValue() : value.ToType<T>();
+    }
 
-                // set default
-                settings.Set(key, returnValue);
-            }
-            else
-            {
-                returnValue = keyValue.ToType<T>();
-            }
+    public static T Get<T>(
+        this IReadValue<string> readValue,
+        string key,
+        [CanBeNull] T defaultValue = default(T))
+    {
+        if (readValue == null) throw new ArgumentNullException(nameof(readValue));
+        if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var descriptionKey = $"{key}_Description";
-
-            if (!description.IsNullOrWhiteSpace() && settings.Get(descriptionKey).IsNullOrWhiteSpace())
-            {
-                settings.Set(descriptionKey, $@"## {description}");
-            }
-
-            return returnValue;
-        }
-
-        public static T Get<T>(
-            this IReadValue<string> readValue,
-            string key,
-            Func<T> getDefaultValue)
-        {
-            if (readValue == null) throw new ArgumentNullException(nameof(readValue));
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (getDefaultValue == null) throw new ArgumentNullException(nameof(getDefaultValue));
-
-            string value = readValue.Get(key);
-            return value.IsNullOrWhiteSpace() ? getDefaultValue() : value.ToType<T>();
-        }
-
-        public static T Get<T>(
-            this IReadValue<string> readValue,
-            string key,
-            [CanBeNull] T defaultValue = default(T))
-        {
-            if (readValue == null) throw new ArgumentNullException(nameof(readValue));
-            if (key == null) throw new ArgumentNullException(nameof(key));
-
-            return readValue.Get(key, () => defaultValue);
-        }
+        return readValue.Get(key, () => defaultValue);
     }
 }

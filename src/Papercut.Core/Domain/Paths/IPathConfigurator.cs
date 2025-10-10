@@ -16,14 +16,13 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Domain.Paths
+namespace Papercut.Core.Domain.Paths;
+
+public interface IPathConfigurator
 {
-    public interface IPathConfigurator
-    {
-        string DefaultSavePath { get; }
+    string DefaultSavePath { get; }
 
-        IReadOnlyCollection<string> LoadPaths { get; }
+    IReadOnlyCollection<string> LoadPaths { get; }
 
-        event EventHandler RefreshLoadPath;
-    }
+    event EventHandler RefreshLoadPath;
 }

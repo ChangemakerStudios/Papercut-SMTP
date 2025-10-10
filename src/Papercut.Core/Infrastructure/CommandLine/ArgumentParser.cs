@@ -16,64 +16,63 @@
 // limitations under the License.
 
 
-namespace Papercut.Core.Infrastructure.CommandLine
+namespace Papercut.Core.Infrastructure.CommandLine;
+
+public static class ArgumentParser
 {
-    public static class ArgumentParser
+    public static IEnumerable<KeyValuePair<string, string>> GetArgsKeyValue(string[] args)
     {
-        public static IEnumerable<KeyValuePair<string, string>> GetArgsKeyValue(string[] args)
+        var startingValues = new[] { "--", "-", "/" };
+
+        var cleanedValues = new List<string>();
+
+        foreach (var a in args)
         {
-            var startingValues = new[] { "--", "-", "/" };
+            var cleaned = a;
 
-            var cleanedValues = new List<string>();
-
-            foreach (var a in args)
+            var starting = startingValues.FirstOrDefault(s => a.StartsWith(s));
+            if (!string.IsNullOrEmpty(starting))
             {
-                var cleaned = a;
+                // remove it
+                cleaned = a.Substring(
+                    starting.Length,
+                    a.Length - starting.Length).Trim();
 
-                var starting = startingValues.FirstOrDefault(s => a.StartsWith(s));
-                if (!string.IsNullOrEmpty(starting))
+                if (cleanedValues.Count % 2 == 1)
                 {
-                    // remove it
-                    cleaned = a.Substring(
-                        starting.Length,
-                        a.Length - starting.Length).Trim();
-
-                    if (cleanedValues.Count % 2 == 1)
-                    {
-                        // odd, add an empty value/pair
-                        cleanedValues.Add(null);
-                    }
-
+                    // odd, add an empty value/pair
+                    cleanedValues.Add(null);
                 }
 
-                if (cleaned.Contains("="))
-                {
-                    // needs to be split
-                    var pair = cleaned.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(s => s.Trim()).ToArray();
-
-                    if (pair.Length == 2)
-                    {
-                        // all good, return it
-                        yield return KeyValuePair.Create(pair[0], pair[1]);
-                    }
-                }
-                else
-                {
-                    cleanedValues.Add(cleaned);
-                }
             }
 
-            var count = cleanedValues.Count % 2 == 1
-                ? cleanedValues.Count - 1
-                : cleanedValues.Count;
-
-            for (int i = 0; i < count; i += 2)
+            if (cleaned.Contains("="))
             {
-                if (cleanedValues[i] == null || cleanedValues[i + 1] == null) continue;
+                // needs to be split
+                var pair = cleaned.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => s.Trim()).ToArray();
 
-                yield return KeyValuePair.Create(cleanedValues[i], cleanedValues[i + 1]);
+                if (pair.Length == 2)
+                {
+                    // all good, return it
+                    yield return KeyValuePair.Create(pair[0], pair[1]);
+                }
             }
+            else
+            {
+                cleanedValues.Add(cleaned);
+            }
+        }
+
+        var count = cleanedValues.Count % 2 == 1
+            ? cleanedValues.Count - 1
+            : cleanedValues.Count;
+
+        for (int i = 0; i < count; i += 2)
+        {
+            if (cleanedValues[i] == null || cleanedValues[i + 1] == null) continue;
+
+            yield return KeyValuePair.Create(cleanedValues[i], cleanedValues[i + 1]);
         }
     }
 }

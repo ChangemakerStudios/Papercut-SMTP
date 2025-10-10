@@ -1,10 +1,20 @@
 # Release Notes
 
-## Papercut SMTP v7.0.0 [2024-05-17]
+## Papercut SMTP v7.0.2 [2025-10-09]
 
-_NOTE: Uninstall any existing Papercut SMTP installations BEFORE installing this new version._
+### Improvements
+- Modernized versioning system to use Directory.Build.props instead of GlobalAssemblyInfo.cs
+- Added Windows ARM64 support (#283)
+- Improved port configuration for SMTP and HTTP services (#285, #286, #293)
+- Enhanced Docker support with non-privileged ports (SMTP: 2525, HTTP: 8080)
+- Consolidated documentation and improved Docker build process
 
-- Upgraded to .NET 8
-- Upgraded to latest dependencies (Caliburn Micro, Autofac, MahApps) and associated systems to support .NET 8.
-- Switched to [Velopack](https://github.com/velopack/velopack) auto-upgradable installation system. Great project! (Thanks, [caesay](https://github.com/caesay)!)
-- Fix for log updating constantly causing unnecessary WebView2 loading. (PR thanks to [arthurzaczek](https://github.com/arthurzaczek))
+### Bug Fixes
+- Fixed Windows Service installation and auto-start issues (#294)
+- Fixed Linux path separator handling (#292)
+- Fixed SMTP server options configuration
+
+### Build System
+- Refactored build.cake to reduce code duplication
+- GitVersion now populates version properties via MSBuild
+- Removed deprecated assembly patching approach

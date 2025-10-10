@@ -16,14 +16,13 @@
 // limitations under the License.
 
 
-namespace Papercut.Infrastructure.IPComm.Network
+namespace Papercut.Infrastructure.IPComm.Network;
+
+public enum PapercutIPCommCommandType
 {
-    public enum PapercutIPCommCommandType
-    {
-        NoOp = 0,
+    NoOp = 0,
 
-        Publish = 1,
+    Publish = 1,
 
-        Exchange = 2
-    }
+    Exchange = 2
 }
