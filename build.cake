@@ -412,7 +412,6 @@ Task("BuildAndPackServiceWinArm64")
 ///////////////////////////////////////////////////////////////////////////////
 Task("All")
     .IsDependentOn("Clean")
-    .IsDependentOn("PatchAssemblyInfo")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("Test")
