@@ -71,7 +71,7 @@ namespace Papercut
 
         protected override void Configure()
         {
-            MessageBinder.SpecialValues.Add(
+            MessageBinder.SpecialValues.TryAdd(
                 "$originalsourcecontext",
                 context =>
                 {
