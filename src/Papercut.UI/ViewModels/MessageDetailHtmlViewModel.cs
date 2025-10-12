@@ -85,22 +85,12 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         if (settingsEvent.PreviousSettings.IgnoreSslCertificateErrors != settingsEvent.NewSettings.IgnoreSslCertificateErrors)
         {
             _logger.Information(
-                "SSL Certificate Error setting changed from {Old} to {New}, clearing cache and reloading",
+                "SSL Certificate Error setting changed from {Old} to {New}. Restart Papercut for changes to take effect.",
                 settingsEvent.PreviousSettings.IgnoreSslCertificateErrors,
                 settingsEvent.NewSettings.IgnoreSslCertificateErrors);
-
-            if (_coreWebView != null)
-            {
-                // Clear the certificate error cache
-                await _coreWebView.ClearServerCertificateErrorActionsAsync();
-
-                // Reload the current email if one is displayed
-                if (_currentMessage != null)
-                {
-                    ShowMessage(_currentMessage);
-                }
-            }
         }
+
+        await Task.CompletedTask;
     }
 
     public void ShowMessage(MimeMessage? mailMessageEx)
@@ -218,11 +208,20 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         {
             coreWebView.ServerCertificateErrorDetected += (sender, args) =>
             {
-                _logger.Warning(
-                    "SSL certificate error detected and BLOCKED for {Uri} - Status: {Status}",
-                    args.RequestUri,
-                    args.ErrorStatus);
-                // Default action is to block
+                var deferral = args.GetDeferral();
+                try
+                {
+                    _logger.Warning(
+                        "SSL certificate error detected and BLOCKED for {Uri} - Status: {Status}",
+                        args.RequestUri,
+                        args.ErrorStatus);
+                    // Default action is to block (Cancel)
+                    args.Action = CoreWebView2ServerCertificateErrorAction.Cancel;
+                }
+                finally
+                {
+                    deferral.Complete();
+                }
             };
         }
 
