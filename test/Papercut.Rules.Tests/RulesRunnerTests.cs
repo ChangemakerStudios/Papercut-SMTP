@@ -101,18 +101,18 @@ public class RulesRunnerTests
     #region Null Parameter Tests
 
     [Test]
-    public void RunAsync_WithNullRules_ThrowsArgumentNullException()
+    public async Task RunAsync_WithNullRules_ThrowsArgumentNullException()
     {
         var action = async () => await _runner.RunAsync(null!, _testMessageEntry, CancellationToken.None);
-        action.Should().ThrowAsync<ArgumentNullException>();
+        await action.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Test]
-    public void RunAsync_WithNullMessageEntry_ThrowsArgumentNullException()
+    public async Task RunAsync_WithNullMessageEntry_ThrowsArgumentNullException()
     {
         var rules = new IRule[] { new TestRule() };
         var action = async () => await _runner.RunAsync(rules, null!, CancellationToken.None);
-        action.Should().ThrowAsync<ArgumentNullException>();
+        await action.Should().ThrowAsync<ArgumentNullException>();
     }
 
     #endregion

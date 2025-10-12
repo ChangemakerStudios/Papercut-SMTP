@@ -183,12 +183,12 @@ public class MessageRepositoryTests
     }
 
     [Test]
-    public void GetMessage_WithNonExistentFile_ThrowsIOException()
+    public async Task GetMessage_WithNonExistentFile_ThrowsIOException()
     {
         var nonExistentFile = Path.Combine(_testDirectory, "nonexistent.eml");
 
-        Assert.ThrowsAsync<IOException>(async () =>
-            await _repository.GetMessage(nonExistentFile));
+        var action = async () => await _repository.GetMessage(nonExistentFile);
+        await action.Should().ThrowAsync<IOException>();
     }
 
     #endregion
