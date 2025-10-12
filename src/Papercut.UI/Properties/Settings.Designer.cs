@@ -228,5 +228,17 @@ namespace Papercut.Properties {
                 this["ShowNotifications"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IgnoreSslCertificateErrors {
+            get {
+                return ((bool)(this["IgnoreSslCertificateErrors"]));
+            }
+            set {
+                this["IgnoreSslCertificateErrors"] = value;
+            }
+        }
     }
 }

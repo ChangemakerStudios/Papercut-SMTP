@@ -19,7 +19,6 @@
 using Microsoft.Web.WebView2.Core;
 
 using Papercut.AppLayer.Uris;
-using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Domain.HtmlPreviews;
 using Papercut.Infrastructure.WebView;
@@ -27,13 +26,15 @@ using Papercut.Views;
 
 namespace Papercut.ViewModels;
 
-public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
+public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<SettingsUpdatedEvent>
 {
-    readonly ILogger _logger;
+    private readonly ILogger _logger;
 
-    readonly IHtmlPreviewGenerator _previewGenerator;
+    private readonly IHtmlPreviewGenerator _previewGenerator;
 
     private readonly WebView2Information _webView2Information;
+
+    private CoreWebView2? _coreWebView;
 
     private string? _htmlFile;
 
@@ -41,40 +42,54 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
     public MessageDetailHtmlViewModel(ILogger logger, WebView2Information webView2Information, IHtmlPreviewGenerator previewGenerator)
     {
-        this.DisplayName = "Message";
-        this._logger = logger;
-        this._webView2Information = webView2Information;
-        this._previewGenerator = previewGenerator;
-        this.IsWebViewInstalled = this._webView2Information.IsInstalled;
+        DisplayName = "Message";
+        _logger = logger;
+        _webView2Information = webView2Information;
+        _previewGenerator = previewGenerator;
+        IsWebViewInstalled = _webView2Information.IsInstalled;
     }
 
     public bool IsWebViewInstalled
     {
 
-        get => this._isWebViewInstalled;
+        get => _isWebViewInstalled;
 
         set
         {
-            this._isWebViewInstalled = value;
-            this.NotifyOfPropertyChange(() => this.IsWebViewInstalled);
-            this.NotifyOfPropertyChange(() => this.ShowHtmlView);
+            _isWebViewInstalled = value;
+            NotifyOfPropertyChange(() => IsWebViewInstalled);
+            NotifyOfPropertyChange(() => ShowHtmlView);
         }
     }
 
     public string? HtmlFile
     {
 
-        get => this._htmlFile;
+        get => _htmlFile;
 
         set
         {
-            this._htmlFile = value;
-            this.NotifyOfPropertyChange(() => this.HtmlFile);
-            this.NotifyOfPropertyChange(() => this.ShowHtmlView);
+            _htmlFile = value;
+            NotifyOfPropertyChange(() => HtmlFile);
+            NotifyOfPropertyChange(() => ShowHtmlView);
         }
     }
 
-    public bool ShowHtmlView => !string.IsNullOrWhiteSpace(this.HtmlFile);
+    public bool ShowHtmlView => !string.IsNullOrWhiteSpace(HtmlFile);
+
+    public async Task HandleAsync(SettingsUpdatedEvent settingsEvent, CancellationToken cancellationToken)
+    {
+        // Check if SSL certificate setting changed
+        if (settingsEvent.PreviousSettings.IgnoreSslCertificateErrors != settingsEvent.NewSettings.IgnoreSslCertificateErrors)
+        {
+            _logger.Information(
+                "SSL Certificate Error setting changed from {Old} to {New}. Restart Papercut for changes to take effect.",
+                settingsEvent.PreviousSettings.IgnoreSslCertificateErrors,
+                settingsEvent.NewSettings.IgnoreSslCertificateErrors);
+        }
+
+        await Task.CompletedTask;
+    }
 
     public void ShowMessage(MimeMessage? mailMessageEx)
     {
@@ -82,11 +97,11 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
         try
         {
-            this.HtmlFile = this._previewGenerator.GetHtmlPreviewFile(mailMessageEx);
+            HtmlFile = _previewGenerator.GetHtmlPreviewFile(mailMessageEx);
         }
         catch (Exception ex)
         {
-            this._logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
+            _logger.Error(ex, "Failure Saving Browser Temp File for {MailMessage}", mailMessageEx.ToString());
         }
     }
 
@@ -111,7 +126,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
         if (view is not MessageDetailHtmlView typedView)
         {
-            this._logger.Error("Unable to locate the MessageDetailHtmlView to hook the WebBrowser Control");
+            _logger.Error("Unable to locate the MessageDetailHtmlView to hook the WebBrowser Control");
             return;
         }
 
@@ -119,14 +134,15 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
         {
             if (!args.IsSuccess)
             {
-                this._logger.Error(
+                _logger.Error(
                     args.InitializationException,
                     "Failure Initializing Edge WebView2");
 
             }
             else
             {
-                this.SetupWebView(typedView.htmlView.CoreWebView2);
+                _coreWebView = typedView.htmlView.CoreWebView2;
+                SetupWebView(_coreWebView);
             }
         };
 
@@ -162,6 +178,50 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
     private void SetupWebView(CoreWebView2 coreWebView)
     {
+        // Handle SSL certificate errors if the setting is enabled
+        _logger.Information("WebView2 SSL Certificate Error Handling: {Enabled}", Settings.Default.IgnoreSslCertificateErrors ? "Enabled" : "Disabled");
+
+        if (Settings.Default.IgnoreSslCertificateErrors)
+        {
+            coreWebView.ServerCertificateErrorDetected += (sender, args) =>
+            {
+                var deferral = args.GetDeferral();
+                try
+                {
+                    _logger.Information(
+                        "SSL certificate error detected and ignored for {Uri} - Status: {Status}",
+                        args.RequestUri,
+                        args.ErrorStatus);
+
+                    args.Action = CoreWebView2ServerCertificateErrorAction.AlwaysAllow;
+                }
+                finally
+                {
+                    deferral.Complete();
+                }
+            };
+        }
+        else
+        {
+            coreWebView.ServerCertificateErrorDetected += (sender, args) =>
+            {
+                var deferral = args.GetDeferral();
+                try
+                {
+                    _logger.Warning(
+                        "SSL certificate error detected and BLOCKED for {Uri} - Status: {Status}",
+                        args.RequestUri,
+                        args.ErrorStatus);
+                    // Default action is to block (Cancel)
+                    args.Action = CoreWebView2ServerCertificateErrorAction.Cancel;
+                }
+                finally
+                {
+                    deferral.Complete();
+                }
+            };
+        }
+
         coreWebView.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
         var externalNavigation = new List<string>();
@@ -182,7 +242,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
         coreWebView.NewWindowRequested += async (_, args) =>
         {
-            var internalUrl = !args.IsUserInitiated || this.IsLocalNavigation(args.Uri);
+            var internalUrl = !args.IsUserInitiated || IsLocalNavigation(args.Uri);
 
             if (internalUrl)
             {
@@ -195,7 +255,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
             try
             {
-                await this.DoInternalNavigationAsync(new Uri(args.Uri));
+                await DoInternalNavigationAsync(new Uri(args.Uri));
             }
             catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to External Url {Url}", args.Uri))
             {
@@ -206,7 +266,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
         {
             var uri = args.Uri;
 
-            var internalUrl = !args.IsUserInitiated || this.IsLocalNavigation(uri);
+            var internalUrl = !args.IsUserInitiated || IsLocalNavigation(uri);
 
             if (internalUrl)
             {
@@ -221,7 +281,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem
 
             try
             {
-                await this.DoInternalNavigationAsync(new Uri(uri));
+                await DoInternalNavigationAsync(new Uri(uri));
             }
             catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to External Url {Url}", uri))
             {

@@ -31,8 +31,20 @@ public class WebView2Base : WebView2
     {
         var webViewUserDataFolder = PathTemplateHelper.RenderPathTemplate(Settings.Default.WebView2UserFolder);
 
-        this.CreationProperties = new CoreWebView2CreationProperties()
-            { UserDataFolder = webViewUserDataFolder };
+        var creationProperties = new CoreWebView2CreationProperties()
+        {
+            UserDataFolder = webViewUserDataFolder
+        };
+
+        // Add browser arguments to ignore SSL certificate errors if enabled
+        // Note: This requires application restart to take effect
+        if (Settings.Default.IgnoreSslCertificateErrors)
+        {
+            creationProperties.AdditionalBrowserArguments = "--ignore-certificate-errors";
+            Log.Information("WebView2 configured to ignore SSL certificate errors (restart required for changes)");
+        }
+
+        this.CreationProperties = creationProperties;
 
         Log.Information("Setting WebView2 User Data Folder: {UserDataFolder}", webViewUserDataFolder);
     }
