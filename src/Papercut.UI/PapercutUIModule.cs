@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,13 @@
 // limitations under the License.
 
 
-using Autofac;
 using Autofac.Core;
-
-using Caliburn.Micro;
 
 using Microsoft.Extensions.Logging;
 
 using Papercut.Core;
 using Papercut.Core.Domain.Application;
 using Papercut.Core.Infrastructure.Container;
-using Papercut.Helpers;
 using Papercut.Infrastructure.IPComm;
 using Papercut.Infrastructure.Smtp;
 using Papercut.Message;
@@ -34,6 +30,8 @@ using Papercut.Rules;
 
 using Velopack;
 using Velopack.Sources;
+
+using Module = Autofac.Module;
 
 namespace Papercut
 {

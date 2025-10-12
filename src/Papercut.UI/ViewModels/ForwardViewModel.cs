@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,12 +17,8 @@
 
 
 using System.Text.RegularExpressions;
-using System.Windows;
-
-using Caliburn.Micro;
 
 using Papercut.Core;
-using Papercut.Properties;
 
 namespace Papercut.ViewModels;
 

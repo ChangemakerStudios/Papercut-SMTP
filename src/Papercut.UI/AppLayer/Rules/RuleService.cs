@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,9 @@
 // limitations under the License.
 
 
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-
-using Autofac;
-
-using Papercut.Common.Domain;
 using Papercut.Core.Domain.Rules;
 using Papercut.Core.Infrastructure.Async;
 using Papercut.Domain.BackendService;
-using Papercut.Domain.LifecycleHooks;
-using Papercut.Helpers;
 using Papercut.Message;
 using Papercut.Rules.App;
 using Papercut.Rules.Domain.Rules;

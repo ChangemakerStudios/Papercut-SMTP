@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,17 +20,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net;
 
-using Caliburn.Micro;
-
-using Papercut.Common.Domain;
-using Papercut.Common.Extensions;
-using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Network;
-using Papercut.Domain.Events;
 using Papercut.Domain.Themes;
 using Papercut.Infrastructure.Networking;
 using Papercut.Infrastructure.Themes;
-using Papercut.Properties;
 
 namespace Papercut.ViewModels;
 
