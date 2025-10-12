@@ -125,7 +125,7 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
                     mimePart.Content.DecodeTo(outputFile);
                 }
 
-                Process.Start(new ProcessStartInfo(tempFileName));
+                Process.Start(new ProcessStartInfo(tempFileName) { UseShellExecute = true });
             }
             catch (Exception ex)
             {
