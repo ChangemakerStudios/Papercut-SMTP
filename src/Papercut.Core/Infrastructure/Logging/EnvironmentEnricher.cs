@@ -17,6 +17,7 @@
 
 
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 
 using Serilog.Core;
 using Serilog.Events;
@@ -43,7 +44,9 @@ public class EnvironmentEnricher : ILogEventEnricher
             this._cachedProperties.GetOrAdd("OSVersion", k => propertyFactory.CreateProperty(k, Environment.OSVersion)),
             this._cachedProperties.GetOrAdd("ProcessorCount",
                 k => propertyFactory.CreateProperty(k, Environment.ProcessorCount)),
-            this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, Environment.Version))
+            this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, Environment.Version)),
+            this._cachedProperties.GetOrAdd("RuntimeIdentifier",
+                k => propertyFactory.CreateProperty(k, RuntimeInformation.RuntimeIdentifier))
         };
 
         foreach (var p in properties)

@@ -469,6 +469,14 @@ public class MainViewModel : Conductor<object>,
             return;
         }
 
+        if (!this._updateManager.IsInstalled)
+        {
+            this._logger.Warning("Cannot upgrade - application was not installed via Velopack");
+            await this.ShowMessageAsync("Update Not Available",
+                "Updates are only available for installations performed through the installer.");
+            return;
+        }
+
         using var cancellationSource = new CancellationTokenSource();
 
         var progressDialog = await this.ShowProgress("Updating", "Downloading Updates...", true,
@@ -476,21 +484,42 @@ public class MainViewModel : Conductor<object>,
 
         try
         {
-            // download new version
-            await this._updateManager.DownloadUpdatesAsync(this._updateInfo, cancelToken: cancellationSource.Token);
+            this._logger.Information("Starting update download for version {Version}", this._updateInfo.TargetFullRelease.Version);
+
+            // download new version with progress reporting
+            await this._updateManager.DownloadUpdatesAsync(this._updateInfo,
+                progress: p =>
+                {
+                    progressDialog.SetMessage($"Downloading Updates... {p}%");
+                    progressDialog.SetProgress(p / 100.0);
+                },
+                cancelToken: cancellationSource.Token);
+
+            this._logger.Information("Update download completed successfully");
 
             await progressDialog.CloseAsync();
+
+            this._logger.Information("Applying updates and restarting application");
 
             // install new version and restart app
             this._updateManager.ApplyUpdatesAndRestart(this._updateInfo);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            this._logger.Error(ex, "Update failed");
+            this._logger.Information("Update download was cancelled by user");
 
             await progressDialog.CloseAsync();
 
-            await this.ShowMessageAsync("Update Failed", $"Failure during update: {ex.Message}");
+            await this.ShowMessageAsync("Update Cancelled", "The update download was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Update failed: {Message}", ex.Message);
+
+            await progressDialog.CloseAsync();
+
+            await this.ShowMessageAsync("Update Failed",
+                $"Failure during update: {ex.Message}\n\nPlease try again later or download the latest version manually from the website.");
         }
     }
 

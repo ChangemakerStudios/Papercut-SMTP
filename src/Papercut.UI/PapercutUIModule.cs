@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Runtime.InteropServices;
+
 using Autofac.Core;
 
 using Microsoft.Extensions.Logging;
@@ -64,10 +66,24 @@ namespace Papercut
 
             builder.Register(c =>
             {
-                var updateOptions = new UpdateOptions();
+                var logger = c.Resolve<Serilog.ILogger>();
+
+                // Determine the correct channel based on the runtime identifier
+                // Channel format: win-{arch}-stable (e.g., win-x64-stable, win-x86-stable, win-arm64-stable)
+                // RuntimeInformation.RuntimeIdentifier returns the platform for which the runtime was built (e.g., "win-x64")
+                string runtimeId = RuntimeInformation.RuntimeIdentifier;
+                string channel = $"{runtimeId}-stable";
+
+                var updateOptions = new UpdateOptions()
+                {
+                    ExplicitChannel = channel
+                };
+
+                logger.Information("Initializing UpdateManager with URL: {UpgradeUrl}, Channel: {Channel}, RuntimeId: {RuntimeId}",
+                    AppConstants.UpgradeUrl, channel, runtimeId);
 
                 return new UpdateManager(new GithubSource(AppConstants.UpgradeUrl, null, false), updateOptions);
-            });
+            }).SingleInstance();
 
             builder.RegisterType<ViewModelWindowManager>()
                 .As<IViewModelWindowManager>()
