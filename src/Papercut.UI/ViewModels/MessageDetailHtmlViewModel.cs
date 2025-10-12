@@ -36,8 +36,6 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
     private CoreWebView2? _coreWebView;
 
-    private MimeMessage? _currentMessage;
-
     private string? _htmlFile;
 
     private bool _isWebViewInstalled = false;
@@ -96,8 +94,6 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
     public void ShowMessage(MimeMessage? mailMessageEx)
     {
         ArgumentNullException.ThrowIfNull(mailMessageEx);
-
-        _currentMessage = mailMessageEx;
 
         try
         {
@@ -192,10 +188,11 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
                 var deferral = args.GetDeferral();
                 try
                 {
-                    _logger.Warning(
+                    _logger.Information(
                         "SSL certificate error detected and ignored for {Uri} - Status: {Status}",
                         args.RequestUri,
                         args.ErrorStatus);
+
                     args.Action = CoreWebView2ServerCertificateErrorAction.AlwaysAllow;
                 }
                 finally
