@@ -68,6 +68,7 @@
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
 		<PackageReference Include="Velopack" Version="0.0.1298" />
+		<PackageReference Include="System.Management" Version="9.0.9" />
 	</ItemGroup>
 	<ItemGroup>
 		<Resource Include="Resources\attachment-icon.png" />

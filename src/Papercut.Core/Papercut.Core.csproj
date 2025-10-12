@@ -24,7 +24,6 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Trace" Version="4.0.0" />
-    <PackageReference Include="System.Management" Version="9.0.9" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>
 

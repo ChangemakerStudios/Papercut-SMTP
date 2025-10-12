@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 
-namespace Papercut.Core.Infrastructure.Network;
+namespace Papercut.Infrastructure.Networking;
 
 public static class NetworkHelper
 {
-    const string NetworkAdapterQuery =
+    private const string NetworkAdapterQuery =
         "SELECT IPAddress from Win32_NetworkAdapterConfiguration WHERE IPEnabled=true";
 
-    static readonly Regex _ipv4 = new(
+    private static readonly Regex _ipv4 = new(
         @"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
         RegexOptions.Compiled);
 
@@ -65,7 +65,7 @@ public static class NetworkHelper
                 foreach (PropertyData ipAddress in addresses)
                 {
                     if (ipAddress.IsArray) ips.AddRange((string[])ipAddress.Value);
-                    else ips.Add(ipAddress.Value.ToString());
+                    else if (ipAddress.Value != null) ips.Add(ipAddress.Value.ToString()!);
                 }
             }
 
@@ -77,10 +77,10 @@ public static class NetworkHelper
                 "Failure obtaining Local IP address(es). Most likely due to permissions. Run as elevated (Administrator) to access all local IP addresses.");
         }
 
-        return new[] { "127.0.0.1" };
+        return ["127.0.0.1"];
     }
 
-    public static bool IsValidIP(this string ip)
+    public static bool IsValidIP(this string? ip)
     {
         if (ip == null) return false;
         return _ipv4.IsMatch(ip);
