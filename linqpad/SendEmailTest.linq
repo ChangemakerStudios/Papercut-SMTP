@@ -44,6 +44,7 @@ void Main()
 			using (var file = new MemoryStream(svg))
 			{
 				var linkedResource = new LinkedResource(file, new ContentType("image/svg+xml"));
+				linkedResource.ContentId = "image1"; // Set ContentId before using it in HTML
 
 				// My mail provider would not accept an email with only an image, adding hello so that the content looks less suspicious.
 				var htmlBody = @"<b> " + string.Join("<br />", Lorem.Paragraphs()) + @$"</b>
