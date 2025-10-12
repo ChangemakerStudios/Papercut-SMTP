@@ -28,8 +28,6 @@ namespace Papercut.ViewModels;
 
 public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<SettingsUpdatedEvent>
 {
-    private readonly IMessageBus _eventAggregator;
-
     private readonly ILogger _logger;
 
     private readonly IHtmlPreviewGenerator _previewGenerator;
