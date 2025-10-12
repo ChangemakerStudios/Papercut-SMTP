@@ -34,9 +34,9 @@ public class ConditionalForwardWithRetryRuleDispatch : IRuleDispatcher<Condition
 {
     private readonly ILogger _logger;
 
-    private readonly Lazy<MimeMessageLoader> _mimeMessageLoader;
+    private readonly Lazy<IMimeMessageLoader> _mimeMessageLoader;
 
-    public ConditionalForwardWithRetryRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
+    public ConditionalForwardWithRetryRuleDispatch(Lazy<IMimeMessageLoader> mimeMessageLoader, ILogger logger)
     {
         _mimeMessageLoader = mimeMessageLoader;
         _logger = logger;

@@ -21,32 +21,20 @@ using Papercut.Service.Web;
 namespace Papercut.Service.Application.Controllers;
 
 [Route("api/[controller]")]
-public class MessagesController : ControllerBase
+public class MessagesController(IMessageRepository messageRepository, IMimeMessageLoader messageLoader, ILogger logger)
+    : ControllerBase
 {
-    private readonly ILogger _logger;
-
-    readonly MimeMessageLoader _messageLoader;
-
-    readonly MessageRepository _messageRepository;
-
-    public MessagesController(MessageRepository messageRepository, MimeMessageLoader messageLoader, ILogger logger)
-    {
-        this._messageRepository = messageRepository;
-        this._messageLoader = messageLoader;
-        this._logger = logger;
-    }
-
     [HttpGet]
     public async Task<GetMessagesResponse> GetAll(int limit = 10, int start = 0, CancellationToken token = default)
     {
-        var messageEntries = this._messageRepository.LoadMessages().ToList();
+        var messageEntries = messageRepository.LoadMessages().ToList();
 
         var tasks =
             messageEntries
                 .OrderByDescending(msg => msg.ModifiedDate)
                 .Skip(start)
                 .Take(limit)
-                .Select(async e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, (await this._messageLoader.GetAsync(e, token))!)))
+                .Select(async e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, (await messageLoader.GetAsync(e, token))!)))
                 .ToArray();
 
         var messages = await Task.WhenAll(tasks).WaitAsync(token);
@@ -57,15 +45,15 @@ public class MessagesController : ControllerBase
     [HttpDelete]
     public void DeleteAll()
     {
-        foreach (var msg in this._messageRepository.LoadMessages())
+        foreach (var msg in messageRepository.LoadMessages())
         {
             try
             {
-                this._messageRepository.DeleteMessage(msg);
+                messageRepository.DeleteMessage(msg);
             }
             catch (Exception ex)
             {
-                this._logger.Warning(ex, "Failure Deleting Message File {MessageFile}", msg.File);
+                logger.Warning(ex, "Failure Deleting Message File {MessageFile}", msg.File);
             }
         }
     }
@@ -73,19 +61,19 @@ public class MessagesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<MimeMessageEntry.DetailDto>> Get(string id)
     {
-        var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
         if (messageEntry == null)
         {
             return this.NotFound();
         }
 
-        return MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await this._messageLoader.GetAsync(messageEntry))!));
+        return MimeMessageEntry.DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry))!));
     }
 
     [HttpGet("{messageId}/raw")]
     public ActionResult DownloadRaw(string messageId)
     {
-        var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
         if (messageEntry == null)
         {
             return this.NotFound();
@@ -113,13 +101,13 @@ public class MessagesController : ControllerBase
 
     async Task<ActionResult> DownloadSection(string messageId, Func<List<MimePart>, MimePart?> findSection)
     {
-        var messageEntry = this._messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == messageId);
         if (messageEntry == null)
         {
             return this.NotFound();
         }
 
-        var mimeMessage = new MimeMessageEntry(messageEntry, (await this._messageLoader.GetAsync(messageEntry))!);
+        var mimeMessage = new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry))!);
         var sections = mimeMessage.MailMessage.BodyParts.OfType<MimePart>().ToList();
 
         var mimePart = findSection(sections);

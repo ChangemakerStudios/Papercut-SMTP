@@ -16,22 +16,24 @@
 // limitations under the License.
 
 
-using Autofac;
-
 using Papercut.Core.Domain.Message;
-using Papercut.Core.Domain.Paths;
 
 namespace Papercut.Message;
 
-public class PapercutMessageModule : Module
+public interface IMessageRepository
 {
-    protected override void Load(ContainerBuilder builder)
-    {
-        builder.Register(c =>
-                new MessageRepository(new MessagePathConfigurator(c.Resolve<IPathTemplatesProvider>(),
-                    c.Resolve<ILogger>().ForContext<MessagePathConfigurator>()), c.Resolve<ILogger>().ForContext<MessageRepository>()))
-            .As<IMessageRepository>().SingleInstance();
-        builder.RegisterType<MimeMessageLoader>().As<IMimeMessageLoader>().SingleInstance();
-        builder.RegisterType<ReceivedDataMessageHandler>().As<IReceivedDataHandler>().SingleInstance();
-    }
+    bool DeleteMessage(MessageEntry entry);
+
+    Task<byte[]> GetMessage(string? file);
+
+    /// <summary>
+    /// Loads all messages
+    /// </summary>
+    IEnumerable<MessageEntry> LoadMessages();
+
+    string GetFullMailFilename(string mailSubject);
+
+    Task<string> SaveMessage(string mailSubject, Func<FileStream, Task> writeTo);
+
+    static string MessageFileSearchPattern => "*.eml";
 }

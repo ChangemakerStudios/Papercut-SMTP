@@ -39,7 +39,7 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
 {
     readonly ILogger _logger;
 
-    private readonly MessageRepository _messageRepository;
+    private readonly IMessageRepository _messageRepository;
 
     readonly IViewModelWindowManager _viewModelWindowManager;
 
@@ -49,7 +49,7 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
 
     MimeEntity? _selectedPart;
 
-    public MessageDetailPartsListViewModel(MessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
+    public MessageDetailPartsListViewModel(IMessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
     {
         this.DisplayName = "Sections";
         this._messageRepository = messageRepository;

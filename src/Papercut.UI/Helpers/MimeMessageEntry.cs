@@ -31,7 +31,7 @@ public class MimeMessageEntry : MessageEntry
 
     string _subject;
 
-    public MimeMessageEntry(MessageEntry entry, MimeMessageLoader loader)
+    public MimeMessageEntry(MessageEntry entry, IMimeMessageLoader loader)
         : base(entry.File)
     {
         this.IsSelected = entry.IsSelected;

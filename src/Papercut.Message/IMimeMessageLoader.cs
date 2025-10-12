@@ -16,22 +16,17 @@
 // limitations under the License.
 
 
-using Autofac;
+using MimeKit;
 
 using Papercut.Core.Domain.Message;
-using Papercut.Core.Domain.Paths;
 
 namespace Papercut.Message;
 
-public class PapercutMessageModule : Module
+public interface IMimeMessageLoader
 {
-    protected override void Load(ContainerBuilder builder)
-    {
-        builder.Register(c =>
-                new MessageRepository(new MessagePathConfigurator(c.Resolve<IPathTemplatesProvider>(),
-                    c.Resolve<ILogger>().ForContext<MessagePathConfigurator>()), c.Resolve<ILogger>().ForContext<MessageRepository>()))
-            .As<IMessageRepository>().SingleInstance();
-        builder.RegisterType<MimeMessageLoader>().As<IMimeMessageLoader>().SingleInstance();
-        builder.RegisterType<ReceivedDataMessageHandler>().As<IReceivedDataHandler>().SingleInstance();
-    }
+    void GetMessageCallback(
+        MessageEntry messageEntry,
+        Action<MimeMessage?> callback);
+
+    Task<MimeMessage?> GetAsync(MessageEntry messageEntry, CancellationToken token = default);
 }

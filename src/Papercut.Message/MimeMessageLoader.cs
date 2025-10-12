@@ -29,7 +29,7 @@ using Serilog.Events;
 
 namespace Papercut.Message;
 
-public class MimeMessageLoader : Disposable
+public class MimeMessageLoader : Disposable, IMimeMessageLoader
 {
     public static MemoryCache MimeMessageCache;
 
@@ -39,7 +39,7 @@ public class MimeMessageLoader : Disposable
 
     readonly ILogger _logger;
 
-    readonly MessageRepository _messageRepository;
+    readonly IMessageRepository _messageRepository;
 
     private readonly ConcurrentQueue<MessageLoadRequest?> _queue = new();
 
@@ -50,7 +50,7 @@ public class MimeMessageLoader : Disposable
         MimeMessageCache = new MemoryCache(nameof(MimeMessage));
     }
 
-    public MimeMessageLoader(MessageRepository messageRepository, ILogger logger)
+    public MimeMessageLoader(IMessageRepository messageRepository, ILogger logger)
     {
         this._messageRepository = messageRepository;
         this._logger = logger.ForContext<MimeMessageLoader>();
@@ -65,7 +65,7 @@ public class MimeMessageLoader : Disposable
 
     }
 
-    private async Task LoopAsync()
+    protected virtual async Task LoopAsync()
     {
         try
         {
@@ -114,7 +114,7 @@ public class MimeMessageLoader : Disposable
         }
     }
 
-    public void GetMessageCallback(
+    public virtual void GetMessageCallback(
         MessageEntry messageEntry,
         Action<MimeMessage?> callback)
     {
@@ -122,12 +122,12 @@ public class MimeMessageLoader : Disposable
         _signal.Release();
     }
 
-    public Task<MimeMessage?> GetAsync(MessageEntry messageEntry, CancellationToken token = default)
+    public virtual Task<MimeMessage?> GetAsync(MessageEntry messageEntry, CancellationToken token = default)
     {
         return this.GetMimeMessageFromCacheAsync(messageEntry, token);
     }
 
-    private async Task<MimeMessage?> GetMimeMessageFromCacheAsync(MessageEntry messageEntry, CancellationToken token = default)
+    protected virtual async Task<MimeMessage?> GetMimeMessageFromCacheAsync(MessageEntry messageEntry, CancellationToken token = default)
     {
         return await MimeMessageCache.GetOrSetAsync(
             messageEntry.File,

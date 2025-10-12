@@ -57,11 +57,11 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
 {
     readonly ILogger _logger;
 
-    readonly MessageRepository _messageRepository;
+    readonly IMessageRepository _messageRepository;
 
     readonly MessageWatcher _messageWatcher;
 
-    readonly MimeMessageLoader _mimeMessageLoader;
+    readonly IMimeMessageLoader _mimeMessageLoader;
 
     private readonly ExplorerProcessService _explorerProcessService;
 
@@ -75,9 +75,9 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
 
     public MessageListViewModel(
         IUiCommandHub uiCommandHub,
-        MessageRepository messageRepository,
+        IMessageRepository messageRepository,
         MessageWatcher messageWatcher,
-        MimeMessageLoader mimeMessageLoader,
+        IMimeMessageLoader mimeMessageLoader,
         ExplorerProcessService explorerProcessService,
         ILogger logger)
     {
