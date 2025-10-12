@@ -9,6 +9,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+		<NoWarn>NU1605</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -23,7 +24,7 @@
 		<Using Include="System.Text" />
 		<Using Include="Serilog" />
 		<Using Include="JetBrains.Annotations" />
-		<PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
-		<PackageReference Include="Serilog" Version="3.1.1" />
+		<PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
+		<PackageReference Include="Serilog" Version="4.3.0" />
 	</ItemGroup>
 </Project>
