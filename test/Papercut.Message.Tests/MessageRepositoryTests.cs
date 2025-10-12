@@ -75,7 +75,9 @@ public class MessageRepositoryTests
         var result = _repository.GetFullMailFilename(longSubject);
 
         var filename = Path.GetFileName(result);
-        var subjectPart = filename.Split(' ')[2]; // Date, time, subject, random, .eml
+        var firstIndex = filename.IndexOf(' ');
+        var lastIndex = filename.LastIndexOf(' ');
+        var subjectPart = filename.Substring(firstIndex + 1, lastIndex - firstIndex - 1).Trim();
         subjectPart.Length.Should().BeLessThanOrEqualTo(40);
     }
 

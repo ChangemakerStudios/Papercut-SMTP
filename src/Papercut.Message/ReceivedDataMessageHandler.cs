@@ -70,12 +70,12 @@ public class ReceivedDataMessageHandler : IReceivedDataHandler
                 }
             }
 
-            file = await _messageRepository.SaveMessage(message.Subject, async fs => await message.WriteToAsync(fs));
+            file = await _messageRepository.SaveMessage(message.Subject ?? string.Empty, async fs => await message.WriteToAsync(fs));
         }
 
         try
         {
-            if (!string.IsNullOrWhiteSpace(file))
+            if (!string.IsNullOrWhiteSpace(file) && File.Exists(file))
                 await _messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
         }
         catch (Exception ex)

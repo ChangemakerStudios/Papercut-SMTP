@@ -89,17 +89,27 @@ public class ReceivedDataMessageHandlerTests
     {
         var messageData = CreateTestMessage("recipient@test.com");
         var recipients = new[] { "recipient@test.com" };
-        var expectedFile = "test.eml";
+        var tempFile = Path.GetTempFileName();
 
-        _mockRepository
-            .Setup(x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()))
-            .ReturnsAsync(expectedFile);
+        try
+        {
+            _mockRepository
+                .Setup(x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()))
+                .ReturnsAsync(tempFile);
 
-        await _handler.HandleReceivedAsync(messageData, recipients);
+            await _handler.HandleReceivedAsync(messageData, recipients);
 
-        _mockMessageBus.Verify(
-            x => x.PublishAsync(It.IsAny<NewMessageEvent>(), It.IsAny<CancellationToken>()),
-            Times.Once);
+            _mockMessageBus.Verify(
+                x => x.PublishAsync(It.IsAny<NewMessageEvent>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
+        }
     }
 
     [Test]
@@ -166,24 +176,35 @@ public class ReceivedDataMessageHandlerTests
     {
         var messageData = CreateTestMessage("recipient@test.com");
         var recipients = new[] { "recipient@test.com" };
+        var tempFile = Path.GetTempFileName();
 
-        _mockRepository
-            .Setup(x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()))
-            .ReturnsAsync("test.eml");
+        try
+        {
+            _mockRepository
+                .Setup(x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()))
+                .ReturnsAsync(tempFile);
 
-        _mockMessageBus
-            .Setup(x => x.PublishAsync(It.IsAny<NewMessageEvent>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("Publish failed"));
+            _mockMessageBus
+                .Setup(x => x.PublishAsync(It.IsAny<NewMessageEvent>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("Publish failed"));
 
-        // Should not throw - error is caught and logged
-        await _handler.HandleReceivedAsync(messageData, recipients);
+            // Should not throw - error is caught and logged
+            await _handler.HandleReceivedAsync(messageData, recipients);
 
-        _mockLogger.Verify(
-            x => x.Fatal(
-                It.IsAny<Exception>(),
-                It.Is<string>(s => s.Contains("Unable to publish")),
-                It.IsAny<string>()),
-            Times.Once);
+            _mockLogger.Verify(
+                x => x.Fatal(
+                    It.IsAny<Exception>(),
+                    It.Is<string>(s => s.Contains("Unable to publish")),
+                    It.IsAny<string>()),
+                Times.Once);
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
+        }
     }
 
     [Test]

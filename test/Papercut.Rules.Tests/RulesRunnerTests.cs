@@ -214,20 +214,18 @@ public class RulesRunnerTests
         var rule1 = new TestRule { IsEnabled = true };
         var rule2 = new TestRule { IsEnabled = true };
         var rules = new IRule[] { rule1, rule2 };
-        var executionTimes = new List<DateTime>();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
 
         _testDispatcher.DispatchAction = async (r, m, t) =>
         {
-            executionTimes.Add(DateTime.Now);
             await Task.Delay(100, t);
         };
 
-        var startTime = DateTime.Now;
         await _runner.RunAsync(rules, _testMessageEntry, CancellationToken.None);
-        var totalTime = DateTime.Now - startTime;
+        sw.Stop();
 
         // If executed in parallel, total time should be ~100ms, not ~200ms
-        totalTime.TotalMilliseconds.Should().BeLessThan(150);
+        sw.ElapsedMilliseconds.Should().BeLessThan(150);
     }
 
     #endregion
@@ -235,7 +233,7 @@ public class RulesRunnerTests
     #region Cancellation Tests
 
     [Test]
-    public void RunAsync_WithCancelledToken_ThrowsOperationCanceledException()
+    public async Task RunAsync_WithCancelledToken_ThrowsOperationCanceledException()
     {
         var rule = new TestRule { IsEnabled = true };
         var rules = new IRule[] { rule };
@@ -243,7 +241,7 @@ public class RulesRunnerTests
         cts.Cancel();
 
         var action = async () => await _runner.RunAsync(rules, _testMessageEntry, cts.Token);
-        action.Should().ThrowAsync<OperationCanceledException>();
+        await action.Should().ThrowAsync<OperationCanceledException>();
     }
 
     [Test]
