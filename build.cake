@@ -159,10 +159,15 @@ Task("PackageUI64")
         PublishDirectory = publishDirectory,
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
-        Framework = "net8.0-x64-desktop,webview2"
+        Framework = "net8.0-x64-desktop,webview2",
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
     };
 
     Velopack.Pack(Context, packParams);
+
+    // Copy installation helper files alongside Setup.exe
+    CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
+    CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
 })
 .OnError(exception => Error(exception));
 
@@ -201,10 +206,15 @@ Task("PackageUI32")
         PublishDirectory = publishDirectory,
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
-        Framework = "net8.0-x86-desktop,webview2"
+        Framework = "net8.0-x86-desktop,webview2",
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
     };
 
     Velopack.Pack(Context, packParams);
+
+    // Copy installation helper files alongside Setup.exe
+    CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
+    CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
 })
 .OnError(exception => Error(exception));
 
@@ -242,10 +252,15 @@ Task("PackageUIArm64")
         PublishDirectory = publishDirectory,
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
-        Framework = "net8.0-arm64-desktop,webview2"
+        Framework = "net8.0-arm64-desktop,webview2",
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
     };
 
     Velopack.Pack(Context, packParams);
+
+    // Copy installation helper files alongside Setup.exe
+    CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
+    CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
 })
 .OnError(exception => Error(exception));
 
@@ -343,8 +358,8 @@ Task("BuildAndPackServiceWin64")
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
-    CopyFiles("./extras/*.ps1", publishDirectory);
-    CopyFiles("./extras/*.bat", publishDirectory);
+    CopyFiles("./installation/service/*.ps1", publishDirectory);
+    CopyFiles("./installation/service/*.bat", publishDirectory);
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
@@ -372,8 +387,8 @@ Task("BuildAndPackServiceWin32")
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
-    CopyFiles("./extras/*.ps1", publishDirectory);
-    CopyFiles("./extras/*.bat", publishDirectory);
+    CopyFiles("./installation/service/*.ps1", publishDirectory);
+    CopyFiles("./installation/service/*.bat", publishDirectory);
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
@@ -401,8 +416,8 @@ Task("BuildAndPackServiceWinArm64")
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
-    CopyFiles("./extras/*.ps1", publishDirectory);
-    CopyFiles("./extras/*.bat", publishDirectory);
+    CopyFiles("./installation/service/*.ps1", publishDirectory);
+    CopyFiles("./installation/service/*.bat", publishDirectory);
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));

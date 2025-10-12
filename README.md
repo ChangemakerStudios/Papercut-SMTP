@@ -15,8 +15,10 @@ Papercut SMTP is a 2-in-1 quick email viewer AND built-in SMTP server (designed 
 #### Download the 64-bit [PapercutSMTP-win-X64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) desktop installer in releases.
 #### Download the 32-bit [PapercutSMTP-win-x86-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) desktop installer in releases.
 
+**For installation options, command-line parameters, and silent/unattended installation instructions, see the [Installation Guide](installation/README.md).**
+
 ## Requirements
-Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be installed on your system. If you have any problems getting it running go to this site: 
+Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be installed on your system. If you have any problems getting it running go to this site:
 [WebView2 Download](https://developer.microsoft.com/en-us/microsoft-edge/webview2) and install it.
 
 ## Features
