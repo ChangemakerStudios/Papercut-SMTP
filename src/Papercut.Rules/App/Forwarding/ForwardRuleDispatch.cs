@@ -26,7 +26,7 @@ namespace Papercut.Rules.App.Forwarding;
 
 public class ForwardRuleDispatch : BaseRelayRuleDispatch<ForwardRule>
 {
-    public ForwardRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
+    public ForwardRuleDispatch(Lazy<IMimeMessageLoader> mimeMessageLoader, ILogger logger)
         : base(mimeMessageLoader, logger)
     {
     }

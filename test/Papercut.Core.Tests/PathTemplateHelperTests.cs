@@ -20,7 +20,7 @@ using AwesomeAssertions;
 using NUnit.Framework;
 using Papercut.Core.Domain.Paths;
 
-namespace Papercut.Core.Tests.Domain.Paths;
+namespace Papercut.Core.Tests;
 
 [TestFixture]
 public class PathTemplateHelperTests

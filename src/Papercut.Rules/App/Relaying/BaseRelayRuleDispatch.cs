@@ -28,9 +28,9 @@ namespace Papercut.Rules.App.Relaying;
 public abstract class BaseRelayRuleDispatch<T> : IRuleDispatcher<T>
     where T : RelayRule
 {
-    private readonly Lazy<MimeMessageLoader> _mimeMessageLoader;
+    private readonly Lazy<IMimeMessageLoader> _mimeMessageLoader;
 
-    protected BaseRelayRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
+    protected BaseRelayRuleDispatch(Lazy<IMimeMessageLoader> mimeMessageLoader, ILogger logger)
     {
         Logger = logger;
         _mimeMessageLoader = mimeMessageLoader;

@@ -113,7 +113,7 @@ public class MessageWatcher : IDisposable
     {
         this._logger.Debug("Adding FileSystemWatcher for {Path}", path);
 
-        var watcher = new FileSystemWatcher(path, MessageRepository.MessageFileSearchPattern)
+        var watcher = new FileSystemWatcher(path, IMessageRepository.MessageFileSearchPattern)
         {
             NotifyFilter =
                 NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName

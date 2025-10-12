@@ -24,7 +24,7 @@ namespace Papercut.ViewModels;
 
 public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
 {
-    readonly MimeMessageLoader _mimeMessageLoader;
+    readonly IMimeMessageLoader _mimeMessageLoader;
 
     int _attachmentCount;
 
@@ -62,7 +62,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         Func<MessageDetailRawViewModel> rawViewModelFactory,
         Func<MessageDetailHeaderViewModel> headerViewModelFactory,
         Func<MessageDetailBodyViewModel> bodyViewModelFactory,
-        MimeMessageLoader mimeMessageLoader)
+        IMimeMessageLoader mimeMessageLoader)
     {
         this._mimeMessageLoader = mimeMessageLoader;
 

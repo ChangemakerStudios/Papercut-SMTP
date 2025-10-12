@@ -48,6 +48,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Infrastructure.IPC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Core.Tests", "test\Papercut.Core.Tests\Papercut.Core.Tests.csproj", "{26A0A4C3-EA5A-490E-9805-5B255DD56994}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Message.Tests", "test\Papercut.Message.Tests\Papercut.Message.Tests.csproj", "{9A019B4C-378B-2566-564C-03CD2D1BAFA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Rules.Tests", "test\Papercut.Rules.Tests\Papercut.Rules.Tests.csproj", "{DBD09AAF-2367-CC97-CF28-164BF3E6B721}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|AnyCPU = Debug|AnyCPU
@@ -166,12 +170,38 @@ Global
 		{26A0A4C3-EA5A-490E-9805-5B255DD56994}.Release|x64.Build.0 = Release|x64
 		{26A0A4C3-EA5A-490E-9805-5B255DD56994}.Release|x86.ActiveCfg = Release|x86
 		{26A0A4C3-EA5A-490E-9805-5B255DD56994}.Release|x86.Build.0 = Release|x86
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Debug|AnyCPU.Build.0 = Debug|Any CPU
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Debug|x64.ActiveCfg = Debug|x64
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Debug|x64.Build.0 = Debug|x64
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Debug|x86.ActiveCfg = Debug|x86
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Debug|x86.Build.0 = Debug|x86
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Release|AnyCPU.ActiveCfg = Release|Any CPU
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Release|AnyCPU.Build.0 = Release|Any CPU
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Release|x64.ActiveCfg = Release|x64
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Release|x64.Build.0 = Release|x64
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Release|x86.ActiveCfg = Release|x86
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8}.Release|x86.Build.0 = Release|x86
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Debug|AnyCPU.Build.0 = Debug|Any CPU
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Debug|x64.ActiveCfg = Debug|x64
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Debug|x64.Build.0 = Debug|x64
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Debug|x86.ActiveCfg = Debug|x86
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Debug|x86.Build.0 = Debug|x86
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Release|AnyCPU.ActiveCfg = Release|Any CPU
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Release|AnyCPU.Build.0 = Release|Any CPU
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Release|x64.ActiveCfg = Release|x64
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Release|x64.Build.0 = Release|x64
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Release|x86.ActiveCfg = Release|x86
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{26A0A4C3-EA5A-490E-9805-5B255DD56994} = {2D6337D4-FD59-49E0-9209-4B06219DB29D}
+		{9A019B4C-378B-2566-564C-03CD2D1BAFA8} = {2D6337D4-FD59-49E0-9209-4B06219DB29D}
+		{DBD09AAF-2367-CC97-CF28-164BF3E6B721} = {2D6337D4-FD59-49E0-9209-4B06219DB29D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {437095E2-5973-4D07-849D-267DF2341A59}

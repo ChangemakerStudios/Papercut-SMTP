@@ -23,12 +23,23 @@ using Papercut.Core.Domain.Message;
 
 namespace Papercut.Message;
 
-public class ReceivedDataMessageHandler(
-    MessageRepository messageRepository,
-    IMessageBus messageBus,
-    ILogger logger)
-    : IReceivedDataHandler
+public class ReceivedDataMessageHandler : IReceivedDataHandler
 {
+    private readonly IMessageRepository _messageRepository;
+
+    private readonly IMessageBus _messageBus;
+
+    private readonly ILogger _logger;
+
+    public ReceivedDataMessageHandler(IMessageRepository messageRepository,
+        IMessageBus messageBus,
+        ILogger logger)
+    {
+        _messageRepository = messageRepository;
+        _messageBus = messageBus;
+        _logger = logger;
+    }
+
     public async Task HandleReceivedAsync(
         byte[] messageData,
         string[] recipients)
@@ -59,17 +70,17 @@ public class ReceivedDataMessageHandler(
                 }
             }
 
-            file = await messageRepository.SaveMessage(message.Subject, async fs => await message.WriteToAsync(fs));
+            file = await _messageRepository.SaveMessage(message.Subject ?? string.Empty, async fs => await message.WriteToAsync(fs));
         }
 
         try
         {
-            if (!string.IsNullOrWhiteSpace(file))
-                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
+            if (!string.IsNullOrWhiteSpace(file) && File.Exists(file))
+                await _messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
         }
         catch (Exception ex)
         {
-            logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
+            _logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
         }
     }
 }

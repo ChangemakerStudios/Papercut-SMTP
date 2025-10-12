@@ -28,7 +28,7 @@ namespace Papercut.Rules.App.Conditional.Forwarding;
 
 public class ConditionalForwardRuleDispatch : BaseRelayRuleDispatch<ConditionalForwardRule>
 {
-    public ConditionalForwardRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
+    public ConditionalForwardRuleDispatch(Lazy<IMimeMessageLoader> mimeMessageLoader, ILogger logger)
         : base(mimeMessageLoader, logger)
     {
     }

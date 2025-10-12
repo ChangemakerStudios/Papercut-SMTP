@@ -26,7 +26,7 @@ namespace Papercut.Rules.App.Relaying;
 [UsedImplicitly]
 public class RelayRuleDispatch : BaseRelayRuleDispatch<RelayRule>
 {
-    public RelayRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
+    public RelayRuleDispatch(Lazy<IMimeMessageLoader> mimeMessageLoader, ILogger logger)
         : base(mimeMessageLoader, logger)
     {
     }

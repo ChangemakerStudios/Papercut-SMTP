@@ -28,7 +28,7 @@ namespace Papercut.Rules.App.Conditional.Relaying;
 
 public class ConditionalRelayRuleDispatch : BaseRelayRuleDispatch<ConditionalRelayRule>
 {
-    public ConditionalRelayRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
+    public ConditionalRelayRuleDispatch(Lazy<IMimeMessageLoader> mimeMessageLoader, ILogger logger)
         : base(mimeMessageLoader, logger)
     {
     }
