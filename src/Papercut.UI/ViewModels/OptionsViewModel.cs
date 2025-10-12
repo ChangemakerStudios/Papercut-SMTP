@@ -53,6 +53,8 @@ public class OptionsViewModel : Screen
 
     bool _startMinimized;
 
+    private bool _ignoreSslCertificateErrors;
+
     private ThemeColor _themeColor;
 
     string _windowTitle = WindowTitleDefault;
@@ -164,6 +166,16 @@ public class OptionsViewModel : Screen
         {
             this._startMinimized = value;
             this.NotifyOfPropertyChange(() => this.StartMinimized);
+        }
+    }
+
+    public bool IgnoreSslCertificateErrors
+    {
+        get => this._ignoreSslCertificateErrors;
+        set
+        {
+            this._ignoreSslCertificateErrors = value;
+            this.NotifyOfPropertyChange(() => this.IgnoreSslCertificateErrors);
         }
     }
 
