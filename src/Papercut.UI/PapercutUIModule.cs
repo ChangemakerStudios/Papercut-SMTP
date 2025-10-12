@@ -72,6 +72,15 @@ namespace Papercut
                 // Channel format: win-{arch}-stable (e.g., win-x64-stable, win-x86-stable, win-arm64-stable)
                 // RuntimeInformation.RuntimeIdentifier returns the platform for which the runtime was built (e.g., "win-x64")
                 string runtimeId = RuntimeInformation.RuntimeIdentifier;
+
+                // Validate that we're running on Windows since this is a Windows-only application
+                if (!runtimeId.StartsWith("win-", StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.Warning("Papercut SMTP is a Windows-only application but detected RuntimeIdentifier: {RuntimeId}. Update checks will be disabled.", runtimeId);
+                    throw new PlatformNotSupportedException(
+                        $"Papercut SMTP is designed for Windows only. Detected platform: {runtimeId}");
+                }
+
                 string channel = $"{runtimeId}-stable";
 
                 var updateOptions = new UpdateOptions()
