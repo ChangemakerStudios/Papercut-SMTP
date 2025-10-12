@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,36 +17,24 @@
 
 
 using System;
-using System.Diagnostics;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
-using System.Reflection;
-using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Threading;
-
-using Caliburn.Micro;
 
 using ICSharpCode.AvalonEdit.Utils;
 
-using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 
 using Papercut.AppLayer.LogSinks;
 using Papercut.AppLayer.NewVersionCheck;
 using Papercut.AppLayer.Uris;
-using Papercut.Common.Extensions;
 using Papercut.Core;
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Infrastructure.Async;
 using Papercut.Domain.AppCommands;
 using Papercut.Domain.UiCommands;
 using Papercut.Domain.UiCommands.Commands;
-using Papercut.Helpers;
 using Papercut.Infrastructure.Resources;
 using Papercut.Infrastructure.WebView;
-using Papercut.Properties;
 using Papercut.Rules.App.Forwarding;
 using Papercut.Rules.App.Relaying;
 using Papercut.Rules.Domain.Forwarding;

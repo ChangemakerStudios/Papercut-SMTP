@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright Â© 2008 - 2012 Ken Robertson
+// Copyright Â© 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ using Papercut.Rules.App.Relaying;
 using Papercut.Rules.Domain.Conditional.Forwarding;
 
 using Polly;
+using Polly.Retry;
 
 namespace Papercut.Rules.App.Conditional.Forwarding;
 
@@ -56,30 +57,33 @@ public class ConditionalForwardWithRetryRuleDispatch : IRuleDispatcher<Condition
 
         rule.PopulateFromRule(message);
 
-        var polly = Policy
-            .Handle<Exception>()
-            .WaitAndRetryAsync(
-                rule.RetryAttempts,
-                (attempt) => TimeSpan.FromSeconds(rule.RetryAttemptDelaySeconds),
-                (exception, span) =>
+        var pipeline = new ResiliencePipelineBuilder()
+            .AddRetry(new RetryStrategyOptions
+            {
+                MaxRetryAttempts = rule.RetryAttempts,
+                Delay = TimeSpan.FromSeconds(rule.RetryAttemptDelaySeconds),
+                BackoffType = DelayBackoffType.Constant,
+                OnRetry = args =>
                 {
                     _logger.Error(
-                        exception,
-                        "Failed to send {@MessageEntry} after {RetryAttempts}",
+                        args.Outcome.Exception,
+                        "Failed to send {@MessageEntry}, attempt {AttemptNumber} of {MaxAttempts}",
                         messageEntry,
+                        args.AttemptNumber,
                         rule.RetryAttempts);
-                });
+                    return ValueTask.CompletedTask;
+                }
+            })
+            .Build();
 
-        async Task SendMessage()
+        await pipeline.ExecuteAsync(async ct =>
         {
-            using (var client = await rule.CreateConnectedSmtpClientAsync(token))
+            using (var client = await rule.CreateConnectedSmtpClientAsync(ct))
             {
-                await client.SendAsync(message, token);
-                await client.DisconnectAsync(true, token);
+                await client.SendAsync(message, ct);
+                await client.DisconnectAsync(true, ct);
             }
-        }
-
-        await polly.ExecuteAsync(async () => await SendMessage());
+        }, token);
     }
 
     protected virtual bool RuleMatches(ConditionalForwardWithRetryRule rule, MimeMessage mimeMessage)
