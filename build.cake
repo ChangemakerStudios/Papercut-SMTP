@@ -21,6 +21,7 @@
 
 #load "./build/ReleaseNotes.cake"
 #load "./build/Velopack.cake"
+#load "./build/WinGet.cake"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -334,6 +335,31 @@ Task("DeployReleases")
                 }
             });
         }
+
+        // Attach WinGet manifests to the release (master branch only)
+        if (isMasterBranch)
+        {
+            Information($"Attaching WinGet manifests to release {releaseTag}");
+
+            var wingetFiles = GetFiles(releasesDirectory.ToString() + "/winget/*.yaml");
+            foreach (var file in wingetFiles)
+            {
+                Information($"Uploading {file.GetFilename()}");
+                StartProcess("gh", new ProcessSettings
+                {
+                    Arguments = new ProcessArgumentBuilder()
+                        .Append("release").Append("upload")
+                        .Append(releaseTag)
+                        .AppendQuoted(file.FullPath)
+                        .Append("--clobber")
+                        .Append("--repo").Append("ChangemakerStudios/Papercut-SMTP"),
+                    EnvironmentVariables = new Dictionary<string, string>
+                    {
+                        { "GH_TOKEN", githubToken ?? "" }
+                    }
+                });
+            }
+        }
     })
 .OnError(exception => Error(exception));
 
@@ -425,6 +451,24 @@ Task("BuildAndPackServiceWinArm64")
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
+// WINGET
+Task("PrepareWinGetRelease")
+    .WithCriteria(isMasterBranch)
+    .Does(() =>
+{
+    var wingetParams = new WinGetReleaseParams
+    {
+        Version = versionInfo.SemVer,
+        ChannelPostfix = channelPostfix,
+        ReleasesDirectory = releasesDirectory,
+        OutputDirectory = releasesDirectory + Directory("/winget")
+    };
+
+    WinGet.PrepareRelease(Context, wingetParams);
+})
+.OnError(exception => Error(exception));
+
+///////////////////////////////////////////////////////////////////////////////
 Task("All")
     .IsDependentOn("Clean")
     .IsDependentOn("CreateReleaseNotes")
@@ -436,6 +480,7 @@ Task("All")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
     .IsDependentOn("BuildAndPackServiceWinArm64")
+    .IsDependentOn("PrepareWinGetRelease")
     .IsDependentOn("DeployReleases")
     .OnError(exception => Error(exception));
 
