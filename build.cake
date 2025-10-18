@@ -461,7 +461,7 @@ Task("PrepareWinGetRelease")
         Version = versionInfo.SemVer,
         ChannelPostfix = channelPostfix,
         ReleasesDirectory = releasesDirectory,
-        OutputDirectory = releasesDirectory + Directory("/winget")
+        OutputDirectory = releasesDirectory + Directory("winget")
     };
 
     WinGet.PrepareRelease(Context, wingetParams);
