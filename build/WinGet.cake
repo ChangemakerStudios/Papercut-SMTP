@@ -28,7 +28,7 @@ public static class WinGet
             if (context.FileExists(setupFilePath))
             {
                 context.Information($"Calculating SHA256 for {setupFileName}");
-                var hash = context.CalculateFileHash(setupFilePath, HashAlgorithm.SHA256).ToHex();
+                var hash = context.CalculateFileHash(setupFilePath, HashAlgorithm.SHA256).ToHex().ToUpperInvariant();
                 installerHashes[arch] = hash;
                 context.Information($"  {arch}: {hash}");
             }
@@ -37,6 +37,18 @@ public static class WinGet
                 context.Warning($"Setup file not found: {setupFilePath}");
             }
         }
+
+        // Fail-fast check: ensure at least one installer was found
+        if (installerHashes.Count == 0)
+        {
+            var errorMessage = $"No installer files found in {@params.ReleasesDirectory}. " +
+                             $"Expected files: PapercutSMTP-win-{{x64,x86,arm64}}{@params.ChannelPostfix}-Setup.exe. " +
+                             "WinGet manifest generation requires at least one installer to be present.";
+            context.Error(errorMessage);
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        context.Information($"Found {installerHashes.Count} installer(s) for WinGet manifest generation");
 
         // Generate version manifest
         var versionManifest = new WinGetVersionManifest

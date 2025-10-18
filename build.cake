@@ -270,6 +270,7 @@ Task("DeployReleases")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
     .IsDependentOn("BuildAndPackServiceWinArm64")
+    .IsDependentOn("PrepareWinGetRelease")
     .Does(() =>
     {
         var releaseType = isMasterBranch ? "Release" : "Pre-release";
