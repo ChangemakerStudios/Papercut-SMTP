@@ -15,8 +15,10 @@ Papercut SMTP is a 2-in-1 quick email viewer AND built-in SMTP server (designed 
 #### Download the 64-bit [PapercutSMTP-win-X64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) desktop installer in releases.
 #### Download the 32-bit [PapercutSMTP-win-x86-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) desktop installer in releases.
 
+**For installation options, command-line parameters, and silent/unattended installation instructions, see the [Installation Guide](installation/README.md).**
+
 ## Requirements
-Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be installed on your system. If you have any problems getting it running go to this site: 
+Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be installed on your system. If you have any problems getting it running go to this site:
 [WebView2 Download](https://developer.microsoft.com/en-us/microsoft-edge/webview2) and install it.
 
 ## Features
@@ -33,24 +35,34 @@ Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be
 
 ## (Optional) Download Papercut SMTP Service
 Papercut SMTP has an optional HTTP server to receive emails even when the client is not running.
-It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut/releases), unzipping, and [following the service installation instructions](https://github.com/ChangemakerStudios/Papercut/tree/develop/src/Papercut.Service).
+It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut-SMTP/releases), unzipping, and installing as a Windows Service.
+
+### Installing Papercut SMTP Service
+
+1. **Download** the appropriate [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) for your system (win-x64 or win-x86)
+2. **Extract** the zip file to your desired location
+3. **Run the installation script** (requires administrator privileges):
+   - **Option A:** Double-click `install-papercut-service.bat`
+   - **Option B:** Run `install-papercut-service.ps1` in PowerShell
+4. The service will be installed and configured to **start automatically** on system boot
+
+**To uninstall:** Run `uninstall-papercut-service.bat` or `uninstall-papercut-service.ps1`
+
+**For complete Service configuration and Docker deployment instructions, see the [Service README](src/Papercut.Service/Readme.md).**
 
 ### Host in Docker
 
-Optionally you can run Papercut SMTP Service in docker: [Papercut SMTP Service in Docker](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
+Optionally run Papercut SMTP Service in Docker: [Papercut SMTP on Docker Hub](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
 
-#### Pull Image:
-
+**Quick start:**
 ```powershell
-> docker pull changemakerstudiosus/papercut-smtp:latest
+docker pull changemakerstudiosus/papercut-smtp:latest
+docker run -d -p 37408:8080 -p 2525:2525 changemakerstudiosus/papercut-smtp:latest
 ```
 
-#### Run Papercut STMP Server Locally in Docker (HTTP Port :8080 and STMP port 25)
-```powershell
-docker run -d -p 8080:80 -p 25:25 changemakerstudiosus/papercut-smtp:latest
-```
+Access at: **http://localhost:37408** | Send emails to: **localhost:2525**
 
-The Papercut-SMTP Server Site will be accessible at http://localhost:8080.
+> **Note:** Docker uses non-privileged ports by default (SMTP: 2525, HTTP: 8080). See the [Service README](src/Papercut.Service/Readme.md#option-3-run-in-docker) for configuration options, Docker Compose examples, and troubleshooting.
 
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

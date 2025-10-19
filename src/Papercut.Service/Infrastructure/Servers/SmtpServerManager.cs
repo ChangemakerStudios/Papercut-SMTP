@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 
 using Papercut.Core.Domain.Network;
 using Papercut.Core.Domain.Network.Smtp;
+using Papercut.Core.Domain.Settings;
 
 namespace Papercut.Service.Infrastructure.Servers
 {
@@ -29,12 +30,16 @@ namespace Papercut.Service.Infrastructure.Servers
 
         private readonly SmtpServerOptions _smtpServerOptions;
 
+        private readonly ISettingStore _settingStore;
+
         public SmtpServerManager(PapercutSmtpServer smtpServer,
             SmtpServerOptions smtpServerOptions,
+            ISettingStore settingStore,
             ILogger logger)
         {
             this._smtpServer = smtpServer;
             this._smtpServerOptions = smtpServerOptions;
+            this._settingStore = settingStore;
             this._logger = logger;
         }
 
@@ -53,7 +58,23 @@ namespace Papercut.Service.Infrastructure.Servers
             // update settings...
             this._smtpServerOptions.IP = @event.IP;
             this._smtpServerOptions.Port = @event.Port;
-            //this._smtpServerOptions.Save();
+
+            // persist the settings to Settings.json so they survive restarts
+            try
+            {
+                this._settingStore.Set("IP", @event.IP);
+                this._settingStore.Set("Port", @event.Port.ToString());
+                this._settingStore.Save();
+
+                this._logger.Information(
+                    "Persisted SMTP Server settings: IP={IP}, Port={Port}",
+                    @event.IP,
+                    @event.Port);
+            }
+            catch (Exception ex)
+            {
+                this._logger.Warning(ex, "Failed to persist SMTP server settings");
+            }
 
             // rebind the server...
             await this.BindSMTPServer();

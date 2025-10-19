@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,6 @@
 // limitations under the License.
 
 
-using System.Windows;
-using System.Windows.Threading;
-
-using Autofac;
-
-using Caliburn.Micro;
-
-using Papercut.Domain.LifecycleHooks;
 using Papercut.Infrastructure.LifecycleHooks;
 using Papercut.ViewModels;
 
@@ -71,7 +63,7 @@ public class AppBootstrapper : BootstrapperBase
 
     protected override void Configure()
     {
-        MessageBinder.SpecialValues.Add(
+        MessageBinder.SpecialValues.TryAdd(
             "$originalsourcecontext",
             context =>
             {
@@ -87,7 +79,7 @@ public class AppBootstrapper : BootstrapperBase
     protected override IEnumerable<object> GetAllInstances(Type service)
     {
         return this.Container.Resolve(
-            typeof(IEnumerable<>)
+                typeof(IEnumerable<>)
                 .MakeGenericType(service)) as IEnumerable<object> ?? [];
     }
 

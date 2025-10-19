@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,19 +17,9 @@
 
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Windows;
-
-using Caliburn.Micro;
 
 using Microsoft.Win32;
 
-using MimeKit;
-
-using Papercut.Common.Extensions;
-using Papercut.Common.Helper;
-using Papercut.Helpers;
 using Papercut.Message;
 using Papercut.Message.Helpers;
 
@@ -39,7 +29,7 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
 {
     readonly ILogger _logger;
 
-    private readonly MessageRepository _messageRepository;
+    private readonly IMessageRepository _messageRepository;
 
     readonly IViewModelWindowManager _viewModelWindowManager;
 
@@ -49,7 +39,7 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
 
     MimeEntity? _selectedPart;
 
-    public MessageDetailPartsListViewModel(MessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
+    public MessageDetailPartsListViewModel(IMessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
     {
         this.DisplayName = "Sections";
         this._messageRepository = messageRepository;
@@ -135,7 +125,7 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
                     mimePart.Content.DecodeTo(outputFile);
                 }
 
-                Process.Start(new ProcessStartInfo(tempFileName));
+                Process.Start(new ProcessStartInfo(tempFileName) { UseShellExecute = true });
             }
             catch (Exception ex)
             {

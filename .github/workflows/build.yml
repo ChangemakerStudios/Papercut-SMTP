@@ -30,6 +30,7 @@ jobs:
     runs-on: windows-2022
     permissions:
       contents: write
+      checks: write
 
     steps:
       - name: Checkout code
@@ -65,8 +66,28 @@ jobs:
         run: |
           pwsh .\build.ps1
 
+      - name: Check for Test Results
+        if: always()
+        run: |
+          if (Test-Path "TestResults") {
+            Write-Host "TestResults directory found"
+            Get-ChildItem -Path TestResults -Recurse -File | ForEach-Object { Write-Host $_.FullName }
+          } else {
+            Write-Host "TestResults directory not found"
+          }
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Results
+          path: 'TestResults/*.trx'
+          reporter: dotnet-trx
+          fail-on-error: false
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
         with:
           name: papercut-releases-${{ steps.gitversion.outputs.fullSemVer }}
           path: releases/*
@@ -77,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'workflow_dispatch' ||
-      (github.ref == 'refs/heads/master' && github.event_name == 'push')
+      ((github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push')
     permissions:
       contents: read
       packages: write
@@ -124,8 +145,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          push: ${{ (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && (github.event_name != 'workflow_dispatch' || inputs.push_docker) }}
+          tags: ${{ steps.meta.outputs.tags || format('changemakerstudiosus/papercut-smtp:test-{0}', github.sha) }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_VERSION=${{ steps.gitversion.outputs.fullSemVer }}

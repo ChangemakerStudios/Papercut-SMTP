@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ namespace Papercut.Rules.App.Relaying;
 public abstract class BaseRelayRuleDispatch<T> : IRuleDispatcher<T>
     where T : RelayRule
 {
-    private readonly Lazy<MimeMessageLoader> _mimeMessageLoader;
+    private readonly Lazy<IMimeMessageLoader> _mimeMessageLoader;
 
-    protected BaseRelayRuleDispatch(Lazy<MimeMessageLoader> mimeMessageLoader, ILogger logger)
+    protected BaseRelayRuleDispatch(Lazy<IMimeMessageLoader> mimeMessageLoader, ILogger logger)
     {
         Logger = logger;
         _mimeMessageLoader = mimeMessageLoader;

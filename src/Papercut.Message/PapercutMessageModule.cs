@@ -19,6 +19,7 @@
 using Autofac;
 
 using Papercut.Core.Domain.Message;
+using Papercut.Core.Domain.Paths;
 
 namespace Papercut.Message;
 
@@ -26,9 +27,11 @@ public class PapercutMessageModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterType<MessageRepository>().AsSelf().SingleInstance();
-        builder.RegisterType<MimeMessageLoader>().AsSelf().SingleInstance();
-
-        builder.RegisterType<ReceivedDataMessageHandler>().AsSelf().As<IReceivedDataHandler>().SingleInstance();
+        builder.Register(c =>
+                new MessageRepository(new MessagePathConfigurator(c.Resolve<IPathTemplatesProvider>(),
+                    c.Resolve<ILogger>().ForContext<MessagePathConfigurator>()), c.Resolve<ILogger>().ForContext<MessageRepository>()))
+            .As<IMessageRepository>().SingleInstance();
+        builder.RegisterType<MimeMessageLoader>().As<IMimeMessageLoader>().SingleInstance();
+        builder.RegisterType<ReceivedDataMessageHandler>().As<IReceivedDataHandler>().SingleInstance();
     }
 }

@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-using Autofac;
-
 using Papercut.Core.Infrastructure.Container;
 using Papercut.Core.Infrastructure.Logging;
+using Papercut.Infrastructure;
 
 using Velopack;
 

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,36 +17,24 @@
 
 
 using System;
-using System.Diagnostics;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
-using System.Reflection;
-using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Threading;
-
-using Caliburn.Micro;
 
 using ICSharpCode.AvalonEdit.Utils;
 
-using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 
 using Papercut.AppLayer.LogSinks;
 using Papercut.AppLayer.NewVersionCheck;
 using Papercut.AppLayer.Uris;
-using Papercut.Common.Extensions;
 using Papercut.Core;
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Infrastructure.Async;
 using Papercut.Domain.AppCommands;
 using Papercut.Domain.UiCommands;
 using Papercut.Domain.UiCommands.Commands;
-using Papercut.Helpers;
 using Papercut.Infrastructure.Resources;
 using Papercut.Infrastructure.WebView;
-using Papercut.Properties;
 using Papercut.Rules.App.Forwarding;
 using Papercut.Rules.App.Relaying;
 using Papercut.Rules.Domain.Forwarding;
@@ -481,6 +469,14 @@ public class MainViewModel : Conductor<object>,
             return;
         }
 
+        if (!this._updateManager.IsInstalled)
+        {
+            this._logger.Warning("Cannot upgrade - application was not installed via Velopack");
+            await this.ShowMessageAsync("Update Not Available",
+                "Updates are only available for installations performed through the installer.");
+            return;
+        }
+
         using var cancellationSource = new CancellationTokenSource();
 
         var progressDialog = await this.ShowProgress("Updating", "Downloading Updates...", true,
@@ -488,21 +484,42 @@ public class MainViewModel : Conductor<object>,
 
         try
         {
-            // download new version
-            await this._updateManager.DownloadUpdatesAsync(this._updateInfo, cancelToken: cancellationSource.Token);
+            this._logger.Information("Starting update download for version {Version}", this._updateInfo.TargetFullRelease.Version);
+
+            // download new version with progress reporting
+            await this._updateManager.DownloadUpdatesAsync(this._updateInfo,
+                progress: p =>
+                {
+                    progressDialog.SetMessage($"Downloading Updates... {p}%");
+                    progressDialog.SetProgress(p / 100.0);
+                },
+                cancelToken: cancellationSource.Token);
+
+            this._logger.Information("Update download completed successfully");
 
             await progressDialog.CloseAsync();
+
+            this._logger.Information("Applying updates and restarting application");
 
             // install new version and restart app
             this._updateManager.ApplyUpdatesAndRestart(this._updateInfo);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            this._logger.Error(ex, "Update failed");
+            this._logger.Information("Update download was cancelled by user");
 
             await progressDialog.CloseAsync();
 
-            await this.ShowMessageAsync("Update Failed", $"Failure during update: {ex.Message}");
+            await this.ShowMessageAsync("Update Cancelled", "The update download was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Update failed: {Message}", ex.Message);
+
+            await progressDialog.CloseAsync();
+
+            await this.ShowMessageAsync("Update Failed",
+                $"Failure during update: {ex.Message}\n\nPlease try again later or download the latest version manually from the website.");
         }
     }
 

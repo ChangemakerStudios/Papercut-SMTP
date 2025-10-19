@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,7 @@
 // limitations under the License.
 
 
-using System.Reactive.Linq;
-using System.Windows.Threading;
-
-using Caliburn.Micro;
-
-using MimeKit;
-
 using Papercut.Core.Domain.Message;
-using Papercut.Helpers;
 using Papercut.Message;
 using Papercut.Message.Helpers;
 
@@ -32,7 +24,7 @@ namespace Papercut.ViewModels;
 
 public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
 {
-    readonly MimeMessageLoader _mimeMessageLoader;
+    readonly IMimeMessageLoader _mimeMessageLoader;
 
     int _attachmentCount;
 
@@ -70,7 +62,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         Func<MessageDetailRawViewModel> rawViewModelFactory,
         Func<MessageDetailHeaderViewModel> headerViewModelFactory,
         Func<MessageDetailBodyViewModel> bodyViewModelFactory,
-        MimeMessageLoader mimeMessageLoader)
+        IMimeMessageLoader mimeMessageLoader)
     {
         this._mimeMessageLoader = mimeMessageLoader;
 

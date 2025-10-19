@@ -21,7 +21,7 @@ using Serilog.Events;
 using Velopack;
 using Velopack.Logging;
 
-namespace Papercut;
+namespace Papercut.Infrastructure;
 
 public class VelopackBridgeLogger(ILogger logger) : IVelopackLogger
 {
