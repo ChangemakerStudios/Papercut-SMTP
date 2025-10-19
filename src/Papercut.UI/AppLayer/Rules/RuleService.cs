@@ -108,6 +108,8 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
         await this.SetupPropertyChangeObservablesForAllRules();
     }
 
+    private static TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);
+
     private Task SetupRuleObservables()
     {
         if (_backendServiceStatus.IsOnline)
@@ -139,13 +141,20 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
                     e.EventArgs.NewMessage, _cancellationTokenSource.Token),
                 ex => _logger.Error(ex, "Error Running Rules on New Message"));
 
-        _logger.Debug("Setting up Periodic Rule Observable");
+        _logger.Debug("Setting up Periodic Rule Observable {RunInterval}", PeriodicRunInterval);
 
-        _periodicRuleSubscription = Observable.Interval(TimeSpan.FromMinutes(1), TaskPoolScheduler.Default)
+        _periodicRuleSubscription = Observable.Interval(PeriodicRunInterval, TaskPoolScheduler.Default)
             .SubscribeAsync(
                 async e => await _rulesRunner.RunPeriodicBackgroundRules(
-                    Rules.OfType<IPeriodicBackgroundRule>().ToArray(), _cancellationTokenSource.Token),
-                ex => _logger.Error(ex, "Error Running Period Rules"));
+                    Rules.OfType<IPeriodicBackgroundRule>().ToArray(), CancellationToken.None),
+                ex =>
+                {
+                    // Only log if it's not a cancellation exception (which happens during shutdown)
+                    if (ex is not OperationCanceledException and not TaskCanceledException)
+                    {
+                        _logger.Error(ex, "Error Running Periodic Rules");
+                    }
+                });
 
         return Task.CompletedTask;
     }

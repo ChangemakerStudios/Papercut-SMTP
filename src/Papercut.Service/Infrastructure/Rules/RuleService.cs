@@ -16,8 +16,12 @@
 // limitations under the License.
 
 
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+
 using Papercut.Core.Domain.BackgroundTasks;
 using Papercut.Core.Domain.Rules;
+using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Rules.App;
 using Papercut.Rules.Domain.Rules;
@@ -27,10 +31,13 @@ namespace Papercut.Service.Infrastructure.Rules;
 public class RuleService : RuleServiceBase,
     IEventHandler<RulesUpdatedEvent>,
     IEventHandler<PapercutClientReadyEvent>,
-    IEventHandler<NewMessageEvent>
+    IEventHandler<NewMessageEvent>,
+    IAsyncDisposable
 {
     private readonly IBackgroundTaskRunner _backgroundTaskRunner;
     private readonly IRulesRunner _rulesRunner;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private IDisposable? _periodicRuleSubscription;
 
     public RuleService(IRuleRepository ruleRepository,
         IBackgroundTaskRunner backgroundTaskRunner,
@@ -91,7 +98,30 @@ public class RuleService : RuleServiceBase,
         {
         }
 
+        SetupPeriodicRuleObservable();
+
         return Task.CompletedTask;
+    }
+
+    private static TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);
+
+    private void SetupPeriodicRuleObservable()
+    {
+        _logger.Debug("Setting up Periodic Rule Observable {RunInterval}", PeriodicRunInterval);
+
+        _periodicRuleSubscription = Observable.Interval(PeriodicRunInterval, TaskPoolScheduler.Default)
+            .SubscribeAsync(
+                async e => await _rulesRunner.RunPeriodicBackgroundRules(
+                    Rules.OfType<IPeriodicBackgroundRule>().ToArray(),
+                    CancellationToken.None),
+                ex =>
+                {
+                    // Only log if it's not a cancellation exception (which happens during shutdown)
+                    if (ex is not OperationCanceledException and not TaskCanceledException)
+                    {
+                        _logger.Error(ex, "Error Running Periodic Rules");
+                    }
+                });
     }
 
     public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token = default)
@@ -101,6 +131,25 @@ public class RuleService : RuleServiceBase,
         Save();
 
         return Task.CompletedTask;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await _cancellationTokenSource.CancelAsync();
+            _periodicRuleSubscription?.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            // ignore
+        }
+        finally
+        {
+            _cancellationTokenSource.Dispose();
+        }
+
+        GC.SuppressFinalize(this);
     }
 
     #region Begin Static Container Registrations
