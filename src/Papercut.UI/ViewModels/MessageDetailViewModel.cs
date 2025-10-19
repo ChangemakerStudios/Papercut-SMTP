@@ -86,6 +86,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         {
             this._subject = value;
             this.NotifyOfPropertyChange(() => this.Subject);
+            this.NotifyOfPropertyChange(() => this.HasMessage);
         }
     }
 
@@ -146,6 +147,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         {
             this._from = value;
             this.NotifyOfPropertyChange(() => this.From);
+            this.NotifyOfPropertyChange(() => this.HasMessage);
         }
     }
 
@@ -211,6 +213,8 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
     }
 
     public bool HasAttachments => this.AttachmentCount > 0;
+
+    public bool HasMessage => !string.IsNullOrEmpty(this.From) || !string.IsNullOrEmpty(this.Subject);
 
     public string? HtmlFile
     {

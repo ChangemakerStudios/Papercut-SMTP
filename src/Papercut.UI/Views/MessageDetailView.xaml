@@ -12,6 +12,31 @@
         <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />
     </b:Interaction.Behaviors>
     <Grid>
+        <!-- Empty State Placeholder -->
+        <Border Visibility="{Binding HasMessage, Converter={StaticResource CollapsedIfTrue}}"
+                Background="{DynamicResource MahApps.Brushes.Gray10}"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray6}"
+                BorderThickness="1"
+                Margin="4"
+                CornerRadius="4">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="40">
+                <TextBlock Text="Select an email"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource MahApps.Brushes.Text}"
+                           Margin="0,0,0,8"/>
+                <TextBlock Text="Choose an email from the list to view its contents."
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           Foreground="{DynamicResource MahApps.Brushes.Gray1}"
+                           MaxWidth="300"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Message Details Content -->
+        <Grid Visibility="{Binding HasMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -75,5 +100,6 @@
             </Grid>
         </StackPanel>
         <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}" Name="Items" />
+        </Grid>
     </Grid>
 </UserControl>

@@ -48,8 +48,7 @@
                            TextAlignment="Center"
                            Foreground="{DynamicResource MahApps.Brushes.Gray1}"
                            MaxWidth="300">
-                    <Run Text="Send an email to"/>
-                    <Run Text="localhost:25" FontWeight="SemiBold"/>
+                    <Run Text="Send an email to the SMTP server"/>
                     <LineBreak/>
                     <Run Text="to see it appear here."/>
                 </TextBlock>
