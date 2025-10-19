@@ -19,46 +19,11 @@
         <BitmapImage x:Key="AttachmentIconImageSource" UriSource="./../Resources/attachment-icon.png" />
     </UserControl.Resources>
 
-    <Grid>
-        <!-- Empty State Placeholder -->
-        <Border Visibility="{Binding HasMessages, Converter={StaticResource CollapsedIfTrue}}"
-                Background="{DynamicResource MahApps.Brushes.Gray10}"
-                BorderBrush="{DynamicResource MahApps.Brushes.Gray6}"
-                BorderThickness="1"
-                Margin="2"
-                CornerRadius="4">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20">
-                <iconPacks:PackIconMaterial Kind="EmailOutline"
-                                            Width="64"
-                                            Height="64"
-                                            HorizontalAlignment="Center"
-                                            Foreground="{DynamicResource MahApps.Brushes.Gray6}"
-                                            Margin="0,0,0,16"/>
-                <TextBlock Text="No Emails Yet"
-                           FontSize="18"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           Foreground="{DynamicResource MahApps.Brushes.Text}"
-                           Margin="0,0,0,8"/>
-                <TextBlock TextWrapping="Wrap"
-                           HorizontalAlignment="Center"
-                           TextAlignment="Center"
-                           Foreground="{DynamicResource MahApps.Brushes.Gray1}"
-                           MaxWidth="300">
-                    <Run Text="Send an email to the SMTP server"/>
-                    <LineBreak/>
-                    <Run Text="to see it appear here."/>
-                </TextBlock>
-            </StackPanel>
-        </Border>
-
-        <!-- Message List -->
-        <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
-                 cal:Message.Attach="[Event KeyDown] = [Action MessageListKeyDown($eventArgs)]"
-                 ItemsSource="{Binding MessagesSorted}"
-                 Visibility="{Binding HasMessages, Converter={StaticResource BooleanToVisibilityConverter}}">
+    <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
+             cal:Message.Attach="[Event KeyDown] = [Action MessageListKeyDown($eventArgs)]"
+             ItemsSource="{Binding MessagesSorted}">
         <ListBox.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="Open Containing Folder..." IsEnabled="{Binding Path=HasSelectedMessage}"
@@ -139,6 +104,5 @@
             </Style>
         </ListBox.ItemContainerStyle>
     </ListBox>
-    </Grid>
 
 </UserControl>
