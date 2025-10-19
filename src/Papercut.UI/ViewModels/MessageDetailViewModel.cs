@@ -334,6 +334,14 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
     void ResetMessage()
     {
+        this.From = null;
+        this.Subject = null;
+        this.To = null;
+        this.CC = null;
+        this.Bcc = null;
+        this.Date = null;
+        this.Priority = null;
+        this.PriorityColor = null;
         this.AttachmentCount = 0;
         this.IsHtml = false;
         this.HtmlFile = null;
