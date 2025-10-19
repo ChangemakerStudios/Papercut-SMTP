@@ -6,6 +6,7 @@
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:Behaviors="clr-namespace:Papercut.AppLayer.Behaviors"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
     <Grid>
@@ -17,18 +18,26 @@
                 Margin="4"
                 CornerRadius="4">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="40">
-                <TextBlock Text="Select an email"
-                           FontSize="18"
+                <iconPacks:PackIconMaterial Kind="EmailOpenOutline"
+                                            Width="80"
+                                            Height="80"
+                                            HorizontalAlignment="Center"
+                                            Foreground="{DynamicResource MahApps.Brushes.Gray5}"
+                                            Margin="0,0,0,20"/>
+                <TextBlock Text="Select an Email to View"
+                           FontSize="20"
                            FontWeight="SemiBold"
                            HorizontalAlignment="Center"
                            Foreground="{DynamicResource MahApps.Brushes.Text}"
-                           Margin="0,0,0,8"/>
-                <TextBlock Text="Choose an email from the list to view its contents."
+                           Margin="0,0,0,12"/>
+                <TextBlock Text="Choose an email from the list on the left to see its full details here."
                            TextWrapping="Wrap"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
+                           FontSize="14"
                            Foreground="{DynamicResource MahApps.Brushes.Gray1}"
-                           MaxWidth="300"/>
+                           MaxWidth="350"
+                           LineHeight="20"/>
             </StackPanel>
         </Border>
 
