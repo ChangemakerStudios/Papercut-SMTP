@@ -25,6 +25,7 @@ namespace Papercut.ViewModels;
 public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
 {
     readonly IMimeMessageLoader _mimeMessageLoader;
+    readonly IMessageRepository _messageRepository;
 
     int _attachmentCount;
 
@@ -62,9 +63,11 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         Func<MessageDetailRawViewModel> rawViewModelFactory,
         Func<MessageDetailHeaderViewModel> headerViewModelFactory,
         Func<MessageDetailBodyViewModel> bodyViewModelFactory,
-        IMimeMessageLoader mimeMessageLoader)
+        IMimeMessageLoader mimeMessageLoader,
+        IMessageRepository messageRepository)
     {
         this._mimeMessageLoader = mimeMessageLoader;
+        this._messageRepository = messageRepository;
 
         this.PartsListViewModel = partsListViewModelFactory();
         this.HtmlViewModel = htmlViewModelFactory();
@@ -216,6 +219,8 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
     public bool HasMessage => !string.IsNullOrEmpty(this.From) || !string.IsNullOrEmpty(this.Subject);
 
+    public bool HasAnyMessages => this._messageRepository.LoadMessages().Any();
+
     public string? HtmlFile
     {
         get => this._htmlFile;
@@ -338,5 +343,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         this.HeaderViewModel.Headers = null;
         this.BodyViewModel.Body = null;
         this.PartsListViewModel.MimeMessage = null;
+
+        this.NotifyOfPropertyChange(() => this.HasAnyMessages);
     }
 }
