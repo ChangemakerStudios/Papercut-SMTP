@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@
 
 using System.ComponentModel;
 
-using MimeKit;
-
 using Newtonsoft.Json;
 
 using Papercut.Common.Extensions;
@@ -29,22 +27,17 @@ using Papercut.Core.Domain.Rules;
 namespace Papercut.Rules.Domain.Rules;
 
 [Serializable]
-public abstract class RuleBase : IRule
+public abstract class PeriodicBackgroundRuleBase : IPeriodicBackgroundRule
 {
     bool _isEnabled;
 
-    protected RuleBase()
-    {
-        this.Id = Guid.NewGuid();
-    }
-
     [Category("Information")]
-    public Guid Id { get; protected set; }
+    public Guid Id { get; protected set; } = Guid.NewGuid();
 
     [Category("State")]
     [Browsable(true)]
     [DisplayName("Is Enabled")]
-    [Description("Is the Rule Enabled for Processing?")]
+    [Description("Is the Background Rule Enabled for Periodic Processing?")]
     public virtual bool IsEnabled
     {
         get => this._isEnabled;
@@ -85,7 +78,7 @@ public abstract class RuleBase : IRule
         if (handler != null)
         {
             handler(this, new PropertyChangedEventArgs(propertyName));
-            handler(this, new PropertyChangedEventArgs(nameof(Description)));
+            handler(this, new PropertyChangedEventArgs("Description"));
         }
     }
 }

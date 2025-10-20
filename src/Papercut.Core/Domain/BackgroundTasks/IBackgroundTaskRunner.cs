@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 // limitations under the License.
 
 
-using Papercut.Core.Domain.Message;
+namespace Papercut.Core.Domain.BackgroundTasks;
 
-namespace Papercut.Core.Domain.Rules;
-
-public interface IRulesRunner
+public interface IBackgroundTaskRunner
 {
-    Task RunNewMessageRules(INewMessageRule[] rules, MessageEntry messageEntry, CancellationToken token = default);
-
-    Task RunPeriodicBackgroundRules(IPeriodicBackgroundRule[] rules, CancellationToken token = default);
+    /// <summary>
+    /// Queues a background task to be executed.
+    /// </summary>
+    /// <param name="taskFunc">An asynchronous function representing the task.</param>
+    void QueueBackgroundTask(Func<CancellationToken, Task> taskFunc);
 }

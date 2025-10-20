@@ -19,8 +19,10 @@
 using Autofac;
 
 using Papercut.Common.Domain;
+using Papercut.Core.Domain.BackgroundTasks;
 using Papercut.Core.Domain.Paths;
 using Papercut.Core.Domain.Settings;
+using Papercut.Core.Infrastructure.BackgroundTasks;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Core.Infrastructure.MessageBus;
 
@@ -33,6 +35,8 @@ public class PapercutCoreModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         RegisterLogging.Register(builder);
+
+        builder.RegisterType<BackgroundTaskRunner>().As<IBackgroundTaskRunner>().SingleInstance();
 
         //builder.RegisterType<AutofacServiceProvider>()
         //    .As<IServiceProvider>()

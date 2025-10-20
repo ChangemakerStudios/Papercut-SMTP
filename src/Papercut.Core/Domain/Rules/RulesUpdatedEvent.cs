@@ -20,12 +20,7 @@ using Papercut.Common.Domain;
 
 namespace Papercut.Core.Domain.Rules;
 
-public class RulesUpdatedEvent : IEvent
+public class RulesUpdatedEvent(IRule[] rules) : IEvent
 {
-    public RulesUpdatedEvent(IRule[] rules)
-    {
-        this.Rules = rules;
-    }
-
-    public IRule[] Rules { get; set; }
+    public IRule[] Rules { get; set; } = rules;
 }

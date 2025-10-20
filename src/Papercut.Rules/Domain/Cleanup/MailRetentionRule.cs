@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright © 2013 - 2024 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,42 +24,37 @@ using Papercut.Common.Extensions;
 using Papercut.Core.Domain.Rules;
 using Papercut.Rules.Domain.Rules;
 
-namespace Papercut.Rules.Domain.Invoking;
+namespace Papercut.Rules.Domain.Cleanup;
 
 [Serializable]
-public class InvokeProcessRule : NewMessageRuleBase
+public class MailRetentionRule : PeriodicBackgroundRuleBase
 {
-    private string? _processToRun;
-    private string? _processCommandLine = @"""%e""";
+    private const int MinRetentionDays = 1;
+    private const int MaxRetentionDays = 3650; // ~10 years
+
+    private int _mailRetentionDays = 7;
 
     [Category("Information")]
-    public override string Type => "Invoke Process";
+    public override string Type => "Cleanup Mail";
 
     [Category("Settings")]
-    [DisplayName("Process to Run")]
-    [Description("Full Path and EXE of Process to Run on New Message")]
-    public string? ProcessToRun
+    [DisplayName("Mail Retention in Days")]
+    [Description("Clean up emails older than X days.")]
+    public int MailRetentionDays
     {
-        get => _processToRun;
+        get => _mailRetentionDays;
         set
         {
-            if (value == _processToRun) return;
-            _processToRun = value;
-            OnPropertyChanged(nameof(ProcessToRun));
-        }
-    }
+            if (value == _mailRetentionDays) return;
 
-    [Category("Settings")]
-    [DisplayName("Process Command Line")]
-    [Description(@"Command line to use when running process. Note ""%e"" will be replaced with the full path to the email that triggered the rule.")]
-    public string? ProcessCommandLine
-    {
-        get => this._processCommandLine;
-        set
-        {
-            if (value == this._processCommandLine) return;
-            this._processCommandLine = value;
-            this.OnPropertyChanged(nameof(this.ProcessCommandLine));
+            if (value < MinRetentionDays || value > MaxRetentionDays)
+                throw new ArgumentOutOfRangeException(
+                    nameof(MailRetentionDays),
+                    value,
+                    $"Retention days must be between {MinRetentionDays} and {MaxRetentionDays}.");
+
+            _mailRetentionDays = value;
+            OnPropertyChanged(nameof(MailRetentionDays));
         }
     }
 
@@ -79,7 +74,7 @@ public class InvokeProcessRule : NewMessageRuleBase
     {
         if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-        builder.RegisterType<InvokeProcessRule>().AsSelf().As<IRule>().InstancePerDependency();
+        builder.RegisterType<MailRetentionRule>().AsSelf().As<IRule>().InstancePerDependency();
     }
 
     #endregion

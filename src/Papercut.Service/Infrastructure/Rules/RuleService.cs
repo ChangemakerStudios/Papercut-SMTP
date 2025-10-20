@@ -16,112 +16,149 @@
 // limitations under the License.
 
 
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+
+using Papercut.Core.Domain.BackgroundTasks;
 using Papercut.Core.Domain.Rules;
+using Papercut.Core.Infrastructure.Async;
+using Papercut.Core.Infrastructure.Logging;
 using Papercut.Rules.App;
 using Papercut.Rules.Domain.Rules;
 
-namespace Papercut.Service.Infrastructure.Rules
+namespace Papercut.Service.Infrastructure.Rules;
+
+public class RuleService : RuleServiceBase,
+    IEventHandler<RulesUpdatedEvent>,
+    IEventHandler<PapercutClientReadyEvent>,
+    IEventHandler<NewMessageEvent>,
+    IAsyncDisposable
 {
-    public class RuleService : RuleServiceBase,
-        IEventHandler<RulesUpdatedEvent>,
-        IEventHandler<PapercutClientReadyEvent>,
-        IEventHandler<NewMessageEvent>
+    private readonly IBackgroundTaskRunner _backgroundTaskRunner;
+    private readonly IRulesRunner _rulesRunner;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private IDisposable? _periodicRuleSubscription;
+
+    public RuleService(IRuleRepository ruleRepository,
+        IBackgroundTaskRunner backgroundTaskRunner,
+        ILogger logger,
+        IRulesRunner rulesRunner) : base(ruleRepository, logger)
     {
-        private readonly CancellationTokenSource _cancellationTokenSource =
-            new CancellationTokenSource();
-
-        readonly IRulesRunner _rulesRunner;
-
-        public RuleService(
-            IRuleRepository ruleRepository,
-            ILogger logger,
-            IRulesRunner rulesRunner)
-            : base(ruleRepository, logger)
-        {
-            this._rulesRunner = rulesRunner;
-        }
-
-        public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
-        {
-            this._logger.Information(
-                "New Message {MessageFile} Arrived -- Running Rules",
-                @event.NewMessage);
-
-            Task.Run(
-                async () =>
-                {
-                    try
-                    {
-                        await Task.Delay(2000, this._cancellationTokenSource.Token);
-                        await this._rulesRunner.RunAsync(
-                            this.Rules.ToArray(),
-                            @event.NewMessage,
-                            this._cancellationTokenSource.Token);
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                    }
-                    catch (TaskCanceledException)
-                    {
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "Failure Running Rules");
-                    }
-                },
-                this._cancellationTokenSource.Token);
-
-            return Task.CompletedTask;
-        }
-
-        public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
-        {
-            this._logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", this.RuleFileName);
-
-            try
-            {
-                // accessing "Rules" forces the collection to be loaded
-                if (this.Rules.Any())
-                {
-                    this._logger.Information(
-                        "Loaded {RuleCount} from {RuleFileName}",
-                        this.Rules.Count,
-                        this.RuleFileName);
-                }
-            }
-            catch (Exception ex)
-            {
-                this._logger.Error(ex, "Error loading rules from file {RuleFileName}", this.RuleFileName);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token = default)
-        {
-            this.Rules.Clear();
-            this.Rules.AddRange(@event.Rules);
-            this.Save();
-
-            return Task.CompletedTask;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this._cancellationTokenSource.Cancel();
-            }
-        }
-
-        #region Begin Static Container Registrations
-
-        static void Register(ContainerBuilder builder)
-        {
-            builder.RegisterType<RuleService>().AsImplementedInterfaces().AsSelf()
-                .InstancePerLifetimeScope();
-        }
-
-        #endregion
+        _backgroundTaskRunner = backgroundTaskRunner;
+        _rulesRunner = rulesRunner;
     }
+
+    public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
+    {
+        _logger.Information(
+            "New Message {MessageFile} Arrived -- Running Rules",
+            @event.NewMessage);
+
+        _backgroundTaskRunner.QueueBackgroundTask(
+            async (t) =>
+            {
+                try
+                {
+                    await Task.Delay(2000, t);
+                    await _rulesRunner.RunNewMessageRules(
+                        Rules.OfType<INewMessageRule>().ToArray(),
+                        @event.NewMessage,
+                        t);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+                catch (TaskCanceledException)
+                {
+                }
+                catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Running New Message Rules"))
+                {
+                }
+            });
+
+        return Task.CompletedTask;
+    }
+
+    public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
+    {
+        _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
+
+        try
+        {
+            // accessing "Rules" forces the collection to be loaded
+            if (Rules.Any())
+            {
+                _logger.Information(
+                    "Loaded {RuleCount} from {RuleFileName}",
+                    Rules.Count,
+                    RuleFileName);
+            }
+        }
+        catch (Exception ex) when (_logger.ErrorWithContext(ex, "Error loading rules from file {RuleFileName}", RuleFileName))
+        {
+        }
+
+        SetupPeriodicRuleObservable();
+
+        return Task.CompletedTask;
+    }
+
+    private static TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);
+
+    private void SetupPeriodicRuleObservable()
+    {
+        _logger.Debug("Setting up Periodic Rule Observable {RunInterval}", PeriodicRunInterval);
+
+        _periodicRuleSubscription = Observable.Interval(PeriodicRunInterval, TaskPoolScheduler.Default)
+            .SubscribeAsync(
+                async e => await _rulesRunner.RunPeriodicBackgroundRules(
+                    Rules.OfType<IPeriodicBackgroundRule>().ToArray(),
+                    CancellationToken.None),
+                ex =>
+                {
+                    // Only log if it's not a cancellation exception (which happens during shutdown)
+                    if (ex is not OperationCanceledException and not TaskCanceledException)
+                    {
+                        _logger.Error(ex, "Error Running Periodic Rules");
+                    }
+                });
+    }
+
+    public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token = default)
+    {
+        Rules.Clear();
+        Rules.AddRange(@event.Rules);
+        Save();
+
+        return Task.CompletedTask;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await _cancellationTokenSource.CancelAsync();
+            _periodicRuleSubscription?.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            // ignore
+        }
+        finally
+        {
+            _cancellationTokenSource.Dispose();
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    #region Begin Static Container Registrations
+
+    static void Register(ContainerBuilder builder)
+    {
+        builder.RegisterType<RuleService>().AsImplementedInterfaces().AsSelf()
+            .InstancePerLifetimeScope();
+    }
+
+    #endregion
 }

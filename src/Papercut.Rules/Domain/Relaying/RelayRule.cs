@@ -29,7 +29,7 @@ using Papercut.Rules.Domain.Rules;
 namespace Papercut.Rules.Domain.Relaying;
 
 [Serializable]
-public class RelayRule : RuleBase
+public class RelayRule : NewMessageRuleBase
 {
     string _smtpPassword;
 
