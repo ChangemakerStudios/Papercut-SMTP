@@ -1,0 +1,98 @@
+# Docker Compose example for Papercut SMTP Service
+# Copy this file to docker-compose.yml and customize as needed
+
+services:
+  papercut-smtp:
+    image: changemakerstudiosus/papercut-smtp:latest
+    container_name: papercut-smtp
+    ports:
+      # Web UI
+      - "8080:8080"
+      # SMTP (plain - default)
+      - "2525:2525"
+    volumes:
+      # Persist email messages
+      - papercut-data:/app/Incoming
+      # Persist logs
+      - papercut-logs:/app/Logs
+    environment:
+      # Basic SMTP configuration
+      - IP=Any
+      - Port=2525
+    restart: unless-stopped
+
+  # Example: Papercut with TLS/STARTTLS support
+  papercut-smtp-tls:
+    image: changemakerstudiosus/papercut-smtp:latest
+    container_name: papercut-smtp-tls
+    profiles:
+      - tls  # Enable with: docker-compose --profile tls up
+    ports:
+      - "8080:8080"
+      - "587:587"  # STARTTLS port
+    volumes:
+      - papercut-data-tls:/app/Incoming
+      - papercut-logs-tls:/app/Logs
+      # Mount certificate directory (adjust path to your cert location)
+      # - /path/to/certs:/certs:ro
+    environment:
+      - IP=Any
+      - Port=587
+      # TLS/STARTTLS Configuration
+      # Uncomment and configure these to enable TLS
+      # - CertificateFindType=FindByThumbprint
+      # - CertificateFindValue=YOUR_CERT_THUMBPRINT_HERE
+      # - CertificateStoreLocation=LocalMachine
+      # - CertificateStoreName=My
+    restart: unless-stopped
+
+  # Example: Multiple ports (plain SMTP + STARTTLS)
+  # Note: This requires running multiple instances or modifying the service
+  # to support multiple endpoints (future enhancement)
+
+volumes:
+  papercut-data:
+    driver: local
+  papercut-logs:
+    driver: local
+  papercut-data-tls:
+    driver: local
+  papercut-logs-tls:
+    driver: local
+
+# Usage:
+# 1. Basic (plain SMTP):
+#    docker-compose up -d papercut-smtp
+#
+# 2. With TLS (requires certificate configuration):
+#    docker-compose --profile tls up -d
+#
+# 3. View logs:
+#    docker-compose logs -f papercut-smtp
+#
+# 4. Stop:
+#    docker-compose down
+
+# TLS Certificate Setup for Docker:
+#
+# Option 1: Use host certificate store (Windows only)
+#   - Install certificate on host machine
+#   - Configure CertificateFindType and CertificateFindValue
+#   - Container will access host's certificate store
+#
+# Option 2: Mount certificate file (cross-platform)
+#   - Generate or obtain a PFX certificate
+#   - Mount certificate directory to container
+#   - Use CertificateFindType=FindBySubjectName
+#   - Ensure certificate is in container's cert store
+#
+# Option 3: Self-signed certificate (development)
+#   On Windows host:
+#   $cert = New-SelfSignedCertificate -Subject "CN=localhost" `
+#       -DnsName "localhost" -CertStoreLocation "cert:\LocalMachine\My" `
+#       -NotAfter (Get-Date).AddYears(2)
+#   $cert.Thumbprint  # Use in CertificateFindValue
+
+# Testing TLS:
+#   openssl s_client -connect localhost:587 -starttls smtp
+#   # Should show STARTTLS in EHLO response

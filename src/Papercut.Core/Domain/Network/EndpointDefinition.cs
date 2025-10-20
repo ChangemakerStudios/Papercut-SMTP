@@ -17,6 +17,7 @@
 
 
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Papercut.Core.Domain.Network;
 
@@ -28,9 +29,27 @@ public class EndpointDefinition
         this.Port = port;
     }
 
+    public EndpointDefinition(
+        string address,
+        int port,
+        X509FindType certificateFindType,
+        string certificateFindValue,
+        StoreLocation storeLocation = StoreLocation.LocalMachine,
+        StoreName storeName = StoreName.My)
+        : this(address, port)
+    {
+        this.Certificate = this.LoadCertificateFromStore(
+            certificateFindType,
+            certificateFindValue,
+            storeLocation,
+            storeName);
+    }
+
     public IPAddress Address { get; }
 
     public int Port { get; }
+
+    public X509Certificate? Certificate { get; }
 
     public IPEndPoint ToIPEndPoint()
     {
@@ -47,8 +66,44 @@ public class EndpointDefinition
         return IPAddress.Parse(value);
     }
 
+    private X509Certificate? LoadCertificateFromStore(
+        X509FindType findType,
+        string findValue,
+        StoreLocation storeLocation,
+        StoreName storeName)
+    {
+        using var store = new X509Store(storeName, storeLocation);
+
+        try
+        {
+            store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+
+            var certificates = store.Certificates.Find(findType, findValue, validOnly: false);
+
+            if (certificates.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"No certificate found matching {findType}='{findValue}' in {storeLocation}\\{storeName} store.");
+            }
+
+            if (certificates.Count > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple certificates ({certificates.Count}) found matching {findType}='{findValue}' in {storeLocation}\\{storeName} store. Please provide a more specific search criteria.");
+            }
+
+            // Return the first (and only) certificate
+            return certificates[0];
+        }
+        finally
+        {
+            store.Close();
+        }
+    }
+
     public override string ToString()
     {
-        return $"{this.Address}:{this.Port}";
+        var certInfo = this.Certificate != null ? " (with TLS)" : string.Empty;
+        return $"{this.Address}:{this.Port}{certInfo}";
     }
 }

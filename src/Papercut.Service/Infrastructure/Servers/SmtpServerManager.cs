@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Security.Cryptography.X509Certificates;
+
 using Papercut.Core.Domain.Network;
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Domain.Settings;
@@ -85,8 +87,42 @@ namespace Papercut.Service.Infrastructure.Servers
             try
             {
                 await this._smtpServer.StopAsync();
-                await this._smtpServer.StartAsync(
-                    new EndpointDefinition(this._smtpServerOptions.IP, this._smtpServerOptions.Port));
+
+                EndpointDefinition endpoint;
+
+                // Check if TLS/STARTTLS should be enabled via certificate configuration
+                if (!string.IsNullOrWhiteSpace(this._smtpServerOptions.CertificateFindValue))
+                {
+                    this._logger.Information(
+                        "Configuring SMTP server with TLS certificate: {FindType}={FindValue} from {StoreLocation}\\{StoreName}",
+                        this._smtpServerOptions.CertificateFindType,
+                        this._smtpServerOptions.CertificateFindValue,
+                        this._smtpServerOptions.CertificateStoreLocation,
+                        this._smtpServerOptions.CertificateStoreName);
+
+                    // Parse certificate configuration
+                    var findType = Enum.Parse<X509FindType>(this._smtpServerOptions.CertificateFindType, ignoreCase: true);
+                    var storeLocation = Enum.Parse<StoreLocation>(this._smtpServerOptions.CertificateStoreLocation, ignoreCase: true);
+                    var storeName = Enum.Parse<StoreName>(this._smtpServerOptions.CertificateStoreName, ignoreCase: true);
+
+                    endpoint = new EndpointDefinition(
+                        this._smtpServerOptions.IP,
+                        this._smtpServerOptions.Port,
+                        findType,
+                        this._smtpServerOptions.CertificateFindValue,
+                        storeLocation,
+                        storeName);
+
+                    this._logger.Information("TLS/STARTTLS support enabled for SMTP server");
+                }
+                else
+                {
+                    // No certificate configured - plain SMTP without TLS
+                    endpoint = new EndpointDefinition(this._smtpServerOptions.IP, this._smtpServerOptions.Port);
+                    this._logger.Information("SMTP server configured without TLS (plain text mode)");
+                }
+
+                await this._smtpServer.StartAsync(endpoint);
             }
             catch (Exception ex)
             {

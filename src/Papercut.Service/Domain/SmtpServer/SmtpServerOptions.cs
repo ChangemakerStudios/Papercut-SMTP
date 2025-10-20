@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Security.Cryptography.X509Certificates;
+
 namespace Papercut.Service.Domain.SmtpServer;
 
 public class SmtpServerOptions
@@ -23,6 +25,30 @@ public class SmtpServerOptions
     public string IP { get; set; } = "Any";
 
     public int Port { get; set; } = 25;
+
+    /// <summary>
+    /// Certificate find type for TLS/STARTTLS support.
+    /// Common values: FindByThumbprint, FindBySubjectName, FindBySubjectDistinguishedName
+    /// </summary>
+    public string CertificateFindType { get; set; } = "FindByThumbprint";
+
+    /// <summary>
+    /// Certificate find value (e.g., thumbprint hash or subject name).
+    /// Leave empty to disable TLS/STARTTLS.
+    /// </summary>
+    public string CertificateFindValue { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Certificate store location (LocalMachine or CurrentUser).
+    /// Default: LocalMachine
+    /// </summary>
+    public string CertificateStoreLocation { get; set; } = StoreLocation.LocalMachine.ToString();
+
+    /// <summary>
+    /// Certificate store name (My, Root, TrustedPeople, etc.).
+    /// Default: My (Personal certificates)
+    /// </summary>
+    public string CertificateStoreName { get; set; } = StoreName.My.ToString();
 
     /// <summary>
     /// Base path where messages are written
