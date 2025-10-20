@@ -112,9 +112,49 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             return true;
         }
 
-        if (navigateToUrl.StartsWith("file:") || navigateToUrl.StartsWith("about:") || navigateToUrl.StartsWith("data:text/html"))
+        // Allow about: and data: URIs to be handled by WebView2
+        if (navigateToUrl.StartsWith("about:") || navigateToUrl.StartsWith("data:text/html"))
         {
             return true;
+        }
+
+        // Check if it's a file:/// URI
+        if (navigateToUrl.StartsWith("file:"))
+        {
+            // Allow navigation to our own HTML preview files and their resources
+            // The HTML preview file is stored in a Papercut-* temp directory
+            if (!string.IsNullOrEmpty(_htmlFile))
+            {
+                try
+                {
+                    // Get the directory of our HTML preview file (e.g., C:\Users\...\Temp\Papercut-abc123)
+                    var htmlFileDir = Path.GetDirectoryName(_htmlFile);
+
+                    if (!string.IsNullOrEmpty(htmlFileDir))
+                    {
+                        // Convert file:/// URL to local path for comparison
+                        var uri = new Uri(navigateToUrl);
+                        var localPath = uri.LocalPath;
+
+                        // Check if the target file is in our preview directory or subdirectory
+                        // This allows the main HTML file and any embedded resources (images, CSS, etc.)
+                        var targetDir = Path.GetDirectoryName(localPath);
+
+                        if (!string.IsNullOrEmpty(targetDir) &&
+                            targetDir.StartsWith(htmlFileDir, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Warning(ex, "Error checking if file:/// URI is local navigation: {Url}", navigateToUrl);
+                }
+            }
+
+            // All other file:/// links should be opened externally with the shell
+            return false;
         }
 
         return false;
@@ -311,6 +351,47 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
         {
             navigateToUri.OpenUri();
+        }
+        else if (navigateToUri.Scheme == Uri.UriSchemeFile)
+        {
+            // Handle file:/// links - open with shell/explorer
+            var localPath = navigateToUri.LocalPath;
+
+            try
+            {
+                // Check if the path is a directory
+                if (Directory.Exists(localPath))
+                {
+                    // Open directory in Windows Explorer
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"\"{localPath}\"",
+                        UseShellExecute = true
+                    });
+
+                    _logger.Information("Opened directory in Explorer: {Path}", localPath);
+                }
+                else if (File.Exists(localPath))
+                {
+                    // Open file with associated application
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = localPath,
+                        UseShellExecute = true
+                    });
+
+                    _logger.Information("Opened file with associated application: {Path}", localPath);
+                }
+                else
+                {
+                    _logger.Warning("File or directory not found: {Path}", localPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open file:/// link: {Path}", localPath);
+            }
         }
         else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
         {
