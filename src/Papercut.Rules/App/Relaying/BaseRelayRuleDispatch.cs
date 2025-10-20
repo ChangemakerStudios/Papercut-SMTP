@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,10 +38,12 @@ public abstract class BaseRelayRuleDispatch<T> : IRuleDispatcher<T>
 
     protected ILogger Logger { get; }
 
-    public virtual async Task DispatchAsync(T rule, MessageEntry messageEntry, CancellationToken token = default)
+    public virtual async Task DispatchAsync(T rule, MessageEntry? messageEntry = null, CancellationToken token = default)
     {
         if (rule == null) throw new ArgumentNullException(nameof(rule));
-        if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
+
+        // Skip processing when messageEntry is null (e.g., periodic rules)
+        if (messageEntry == null) return;
 
         var mimeMessage = await _mimeMessageLoader.Value.GetClonedAsync(messageEntry, token);
 

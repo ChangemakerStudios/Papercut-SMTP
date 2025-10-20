@@ -49,6 +49,8 @@ public sealed class BackgroundTaskRunner : Disposable, IBackgroundTaskRunner
     /// <param name="taskFunc">An asynchronous function representing the task.</param>
     public void QueueBackgroundTask(Func<CancellationToken, Task> taskFunc)
     {
+        if (taskFunc == null) throw new ArgumentNullException(nameof(taskFunc));
+
         if (!_taskChannel.Writer.TryWrite(taskFunc))
         {
             throw new InvalidOperationException("Unable to queue the background task.");
@@ -83,6 +85,14 @@ public sealed class BackgroundTaskRunner : Disposable, IBackgroundTaskRunner
             try
             {
                 await _processingTask.WaitAsync(TimeSpan.FromSeconds(15));
+            }
+            catch (TimeoutException)
+            {
+                // Ignore timeout if background task doesn't complete within the grace period.
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore cancellation exceptions that occur during shutdown.
             }
             catch (AggregateException ex) when (ex.InnerExceptions.All(e => e is TaskCanceledException or OperationCanceledException))
             {

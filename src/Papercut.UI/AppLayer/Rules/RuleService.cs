@@ -104,8 +104,21 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
         this._logger.Information("Papercut Service is now {NewStatus}",
             @event.PapercutServiceStatus);
 
+        // Always cleanup existing subscriptions first to ensure rules only run in ONE place
         await this.CleanupRuleSubscriptions();
         await this.SetupPropertyChangeObservablesForAllRules();
+
+        // Re-establish rule subscriptions when service goes offline so UI continues running rules
+        // When service is online, subscriptions remain cleaned up - service handles rule execution
+        if (@event.PapercutServiceStatus == PapercutServiceStatusType.Offline)
+        {
+            _logger.Information("Re-establishing rule subscriptions in UI since backend service is offline");
+            await SetupRuleObservables();
+        }
+        else
+        {
+            _logger.Information("Backend service is online - rule execution delegated to service");
+        }
     }
 
     private static TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);

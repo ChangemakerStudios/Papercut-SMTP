@@ -36,7 +36,7 @@ public class MailRetentionRule : PeriodicBackgroundRuleBase
 
     [Category("Settings")]
     [DisplayName("Mail Retention in Days")]
-    [Description("Cleanup email thats older then X days old")]
+    [Description("Clean up emails older than X days.")]
     public int MailRetentionDays
     {
         get => _mailRetentionDays;

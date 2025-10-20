@@ -43,10 +43,12 @@ public class ConditionalForwardWithRetryRuleDispatch : IRuleDispatcher<Condition
         _logger = logger;
     }
 
-    public async Task DispatchAsync(ConditionalForwardWithRetryRule rule, MessageEntry messageEntry, CancellationToken token)
+    public async Task DispatchAsync(ConditionalForwardWithRetryRule rule, MessageEntry? messageEntry = null, CancellationToken token = default)
     {
         if (rule == null) throw new ArgumentNullException(nameof(rule));
-        if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
+
+        // Skip processing when messageEntry is null (e.g., periodic rules)
+        if (messageEntry == null) return;
 
         var message = await _mimeMessageLoader.Value.GetClonedAsync(messageEntry, token);
 
