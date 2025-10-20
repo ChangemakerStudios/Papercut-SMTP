@@ -81,9 +81,11 @@ New-SelfSignedCertificate -Subject "CN=localhost" -DnsName "localhost" `
 
 ```json
 {
-  "CertificateFindType": "FindBySubjectName",
-  "CertificateFindValue": "localhost",
-  "Port": 587
+  "SmtpServer": {
+    "CertificateFindType": "FindBySubjectName",
+    "CertificateFindValue": "localhost",
+    "Port": 587
+  }
 }
 ```
 
@@ -97,8 +99,8 @@ Mount a certificate and configure via environment variables:
 docker run -d \
   -p 587:587 \
   -p 8080:8080 \
-  -e CertificateFindType=FindBySubjectName \
-  -e CertificateFindValue=localhost \
+  -e SmtpServer__CertificateFindType=FindBySubjectName \
+  -e SmtpServer__CertificateFindValue=localhost \
   changemakerstudiosus/papercut-smtp:latest
 ```
 

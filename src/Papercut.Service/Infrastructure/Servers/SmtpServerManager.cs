@@ -100,20 +100,65 @@ namespace Papercut.Service.Infrastructure.Servers
                         this._smtpServerOptions.CertificateStoreLocation,
                         this._smtpServerOptions.CertificateStoreName);
 
-                    // Parse certificate configuration
-                    var findType = Enum.Parse<X509FindType>(this._smtpServerOptions.CertificateFindType, ignoreCase: true);
-                    var storeLocation = Enum.Parse<StoreLocation>(this._smtpServerOptions.CertificateStoreLocation, ignoreCase: true);
-                    var storeName = Enum.Parse<StoreName>(this._smtpServerOptions.CertificateStoreName, ignoreCase: true);
+                    try
+                    {
+                        // Parse certificate configuration with safe TryParse
+                        if (!Enum.TryParse<X509FindType>(this._smtpServerOptions.CertificateFindType, ignoreCase: true, out var findType))
+                        {
+                            this._logger.Warning(
+                                "Invalid CertificateFindType '{FindType}'. Falling back to plain SMTP without TLS.",
+                                this._smtpServerOptions.CertificateFindType);
+                            endpoint = new EndpointDefinition(this._smtpServerOptions.IP, this._smtpServerOptions.Port);
+                        }
+                        else if (!Enum.TryParse<StoreLocation>(this._smtpServerOptions.CertificateStoreLocation, ignoreCase: true, out var storeLocation))
+                        {
+                            this._logger.Warning(
+                                "Invalid CertificateStoreLocation '{StoreLocation}'. Falling back to plain SMTP without TLS.",
+                                this._smtpServerOptions.CertificateStoreLocation);
+                            endpoint = new EndpointDefinition(this._smtpServerOptions.IP, this._smtpServerOptions.Port);
+                        }
+                        else if (!Enum.TryParse<StoreName>(this._smtpServerOptions.CertificateStoreName, ignoreCase: true, out var storeName))
+                        {
+                            this._logger.Warning(
+                                "Invalid CertificateStoreName '{StoreName}'. Falling back to plain SMTP without TLS.",
+                                this._smtpServerOptions.CertificateStoreName);
+                            endpoint = new EndpointDefinition(this._smtpServerOptions.IP, this._smtpServerOptions.Port);
+                        }
+                        else
+                        {
+                            // Attempt to load certificate - wrapped in try/catch for defensive handling
+                            try
+                            {
+                                endpoint = new EndpointDefinition(
+                                    this._smtpServerOptions.IP,
+                                    this._smtpServerOptions.Port,
+                                    findType,
+                                    this._smtpServerOptions.CertificateFindValue,
+                                    storeLocation,
+                                    storeName);
 
-                    endpoint = new EndpointDefinition(
-                        this._smtpServerOptions.IP,
-                        this._smtpServerOptions.Port,
-                        findType,
-                        this._smtpServerOptions.CertificateFindValue,
-                        storeLocation,
-                        storeName);
-
-                    this._logger.Information("TLS/STARTTLS support enabled for SMTP server");
+                                this._logger.Information("TLS/STARTTLS support enabled for SMTP server");
+                            }
+                            catch (Exception certEx)
+                            {
+                                this._logger.Warning(
+                                    certEx,
+                                    "Failed to load TLS certificate ({FindType}={FindValue} from {StoreLocation}\\{StoreName}). Falling back to plain SMTP without TLS.",
+                                    findType,
+                                    this._smtpServerOptions.CertificateFindValue,
+                                    storeLocation,
+                                    storeName);
+                                endpoint = new EndpointDefinition(this._smtpServerOptions.IP, this._smtpServerOptions.Port);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this._logger.Warning(
+                            ex,
+                            "Unexpected error during TLS configuration. Falling back to plain SMTP without TLS.");
+                        endpoint = new EndpointDefinition(this._smtpServerOptions.IP, this._smtpServerOptions.Port);
+                    }
                 }
                 else
                 {

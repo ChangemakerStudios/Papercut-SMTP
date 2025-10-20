@@ -87,7 +87,7 @@ docker run -d \
 - `Urls` - HTTP server URLs (default: http://0.0.0.0:8080)
 
 **TLS/STARTTLS Configuration (Optional):**
-- `SmtpServer__CertificateFindType` - Certificate search method (default: "FindByThumbprint")
+- `SmtpServer__CertificateFindType` - Certificate search method (default: "FindBySubjectName")
 - `SmtpServer__CertificateFindValue` - Certificate identifier (empty = TLS disabled)
 - `SmtpServer__CertificateStoreLocation` - Store location: "LocalMachine" or "CurrentUser" (default: "LocalMachine")
 - `SmtpServer__CertificateStoreName` - Store name: "My", "Root", etc. (default: "My")

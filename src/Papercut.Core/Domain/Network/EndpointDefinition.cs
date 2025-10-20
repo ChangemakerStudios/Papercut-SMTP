@@ -78,22 +78,59 @@ public class EndpointDefinition
         {
             store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
 
-            var certificates = store.Certificates.Find(findType, findValue, validOnly: false);
+            // Normalize thumbprint search values (remove whitespace, uppercase)
+            var normalizedFindValue = findValue;
+            if (findType == X509FindType.FindByThumbprint)
+            {
+                normalizedFindValue = findValue.Replace(" ", "").Replace(":", "").ToUpperInvariant();
+            }
+
+            var certificates = store.Certificates.Find(findType, normalizedFindValue, validOnly: false);
 
             if (certificates.Count == 0)
             {
                 throw new InvalidOperationException(
-                    $"No certificate found matching {findType}='{findValue}' in {storeLocation}\\{storeName} store.");
+                    $"No certificate found matching {findType}='{normalizedFindValue}' in {storeLocation}\\{storeName} store.");
             }
 
             if (certificates.Count > 1)
             {
                 throw new InvalidOperationException(
-                    $"Multiple certificates ({certificates.Count}) found matching {findType}='{findValue}' in {storeLocation}\\{storeName} store. Please provide a more specific search criteria.");
+                    $"Multiple certificates ({certificates.Count}) found matching {findType}='{normalizedFindValue}' in {storeLocation}\\{storeName} store. Please provide a more specific search criteria.");
             }
 
-            // Return the first (and only) certificate
-            return certificates[0];
+            var certificate = certificates[0];
+
+            // Validate certificate has private key (required for TLS server)
+            if (certificate is X509Certificate2 cert2)
+            {
+                if (!cert2.HasPrivateKey)
+                {
+                    throw new InvalidOperationException(
+                        $"Certificate '{cert2.Subject}' does not have a private key. TLS/STARTTLS requires a certificate with a private key.");
+                }
+
+                // Log warnings for certificate validity issues
+                var now = DateTime.Now;
+                if (cert2.NotBefore > now)
+                {
+                    Log.Warning(
+                        "Certificate '{Subject}' is not yet valid (NotBefore: {NotBefore}, Current: {Now})",
+                        cert2.Subject,
+                        cert2.NotBefore,
+                        now);
+                }
+                else if (cert2.NotAfter < now)
+                {
+                    Log.Warning(
+                        "Certificate '{Subject}' has expired (NotAfter: {NotAfter}, Current: {Now})",
+                        cert2.Subject,
+                        cert2.NotAfter,
+                        now);
+                }
+            }
+
+            return certificate;
         }
         finally
         {

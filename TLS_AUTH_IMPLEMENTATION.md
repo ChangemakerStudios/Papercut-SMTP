@@ -73,7 +73,7 @@ Updated to use the new extension method:
 Added four new configuration properties:
 
 ```csharp
-public string CertificateFindType { get; set; } = "FindByThumbprint";
+public string CertificateFindType { get; set; } = "FindBySubjectName";
 public string CertificateFindValue { get; set; } = string.Empty;
 public string CertificateStoreLocation { get; set; } = "LocalMachine";
 public string CertificateStoreName { get; set; } = "My";
@@ -147,34 +147,45 @@ public class SimpleAuthentication : IUserAuthenticatorFactory
 
 ## Configuration Guide
 
-### Option 1: Using Certificate Thumbprint (Recommended)
+### Option 1: Using Subject Name (Recommended)
 
 1. Install certificate in Windows certificate store (LocalMachine\Personal)
-2. Get the thumbprint (open cert → Details → Thumbprint)
-3. Configure in `appsettings.json` or environment:
+2. Configure using the certificate's common name (CN):
 
 ```json
 {
-  "CertificateFindType": "FindByThumbprint",
-  "CertificateFindValue": "1234567890ABCDEF1234567890ABCDEF12345678"
+  "SmtpServer": {
+    "CertificateFindType": "FindBySubjectName",
+    "CertificateFindValue": "localhost"
+  }
 }
 ```
 
-### Option 2: Using Subject Name
+**Easiest approach**: Use the certificate's CN directly (e.g., "localhost", "mail.example.com")
+
+### Option 2: Using Certificate Thumbprint
+
+More specific but requires hex thumbprint value:
 
 ```json
 {
-  "CertificateFindType": "FindBySubjectName",
-  "CertificateFindValue": "localhost"
+  "SmtpServer": {
+    "CertificateFindType": "FindByThumbprint",
+    "CertificateFindValue": "1234567890ABCDEF1234567890ABCDEF12345678"
+  }
 }
 ```
+
+**Get thumbprint**: Open certificate → Details → Thumbprint (remove spaces)
 
 ### Option 3: Using Distinguished Name
 
 ```json
 {
-  "CertificateFindType": "FindBySubjectDistinguishedName",
-  "CertificateFindValue": "CN=localhost, O=Papercut"
+  "SmtpServer": {
+    "CertificateFindType": "FindBySubjectDistinguishedName",
+    "CertificateFindValue": "CN=localhost, O=Papercut"
+  }
 }
 ```
 
