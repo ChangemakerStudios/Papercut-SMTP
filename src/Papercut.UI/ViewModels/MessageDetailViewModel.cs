@@ -36,6 +36,8 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
     string? _from;
 
+    bool _hasAnyMessages;
+
     string? _htmlFile;
 
     bool _isHtml;
@@ -86,6 +88,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         {
             this._subject = value;
             this.NotifyOfPropertyChange(() => this.Subject);
+            this.NotifyOfPropertyChange(() => this.HasMessage);
         }
     }
 
@@ -146,6 +149,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         {
             this._from = value;
             this.NotifyOfPropertyChange(() => this.From);
+            this.NotifyOfPropertyChange(() => this.HasMessage);
         }
     }
 
@@ -211,6 +215,18 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
     }
 
     public bool HasAttachments => this.AttachmentCount > 0;
+
+    public bool HasMessage => !string.IsNullOrEmpty(this.From) || !string.IsNullOrEmpty(this.Subject);
+
+    public bool HasAnyMessages
+    {
+        get => this._hasAnyMessages;
+        set
+        {
+            this._hasAnyMessages = value;
+            this.NotifyOfPropertyChange(() => this.HasAnyMessages);
+        }
+    }
 
     public string? HtmlFile
     {
@@ -325,6 +341,14 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
     void ResetMessage()
     {
+        this.From = null;
+        this.Subject = null;
+        this.To = null;
+        this.CC = null;
+        this.Bcc = null;
+        this.Date = null;
+        this.Priority = null;
+        this.PriorityColor = null;
         this.AttachmentCount = 0;
         this.IsHtml = false;
         this.HtmlFile = null;

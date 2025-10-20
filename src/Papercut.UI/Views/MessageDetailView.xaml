@@ -6,12 +6,75 @@
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:Behaviors="clr-namespace:Papercut.AppLayer.Behaviors"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
-    <b:Interaction.Behaviors>
-        <Behaviors:InteractivityBlurOnDisabled BlurRadius="3" />
-    </b:Interaction.Behaviors>
     <Grid>
+        <!-- Empty State Placeholder - Has messages but none selected -->
+        <Border Visibility="{Binding HasMessage, Converter={StaticResource CollapsedIfTrue}}"
+                Background="{DynamicResource MahApps.Brushes.Gray10}"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray6}"
+                BorderThickness="1"
+                Margin="4"
+                CornerRadius="4">
+            <Grid>
+                <!-- Show "Select Email" when there ARE messages -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="40"
+                            Visibility="{Binding HasAnyMessages, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <iconPacks:PackIconMaterial Kind="EmailOpenOutline"
+                                                Width="80"
+                                                Height="80"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource MahApps.Brushes.Gray5}"
+                                                Margin="0,0,0,20"/>
+                    <TextBlock Text="Select an Email to View"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource MahApps.Brushes.Text}"
+                               Margin="0,0,0,12"/>
+                    <TextBlock Text="Choose an email from the list on the left to see its full details here."
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               FontSize="14"
+                               Foreground="{DynamicResource MahApps.Brushes.Gray1}"
+                               MaxWidth="350"
+                               LineHeight="20"/>
+                </StackPanel>
+
+                <!-- Show "No Emails" when there are NO messages at all -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="40"
+                            Visibility="{Binding HasAnyMessages, Converter={StaticResource CollapsedIfTrue}}">
+                    <iconPacks:PackIconMaterial Kind="EmailOutline"
+                                                Width="80"
+                                                Height="80"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource MahApps.Brushes.Gray5}"
+                                                Margin="0,0,0,20"/>
+                    <TextBlock Text="No Email"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource MahApps.Brushes.Text}"
+                               Margin="0,0,0,12"/>
+                    <TextBlock TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               FontSize="14"
+                               Foreground="{DynamicResource MahApps.Brushes.Gray1}"
+                               MaxWidth="350"
+                               LineHeight="20">
+                        <Run Text="Send an email to the Papercut SMTP server"/>
+                        <LineBreak/>
+                        <Run Text="and it will appear here instantly."/>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Message Details Content -->
+        <Grid Visibility="{Binding HasMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -75,5 +138,6 @@
             </Grid>
         </StackPanel>
         <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}" Name="Items" />
+        </Grid>
     </Grid>
 </UserControl>

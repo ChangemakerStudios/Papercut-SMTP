@@ -203,6 +203,7 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
                     this.NotifyOfPropertyChange(() => this.SelectedMessageCount);
                     this.NotifyOfPropertyChange(() => this.SelectedMessage);
                     this.NotifyOfPropertyChange(() => this.DeleteText);
+                    this.NotifyOfPropertyChange(() => this.HasMessages);
                 });
 
             if (args.NewItems != null)
