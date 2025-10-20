@@ -298,11 +298,11 @@ Alternatively, configure TLS in a custom `appsettings.Production.json`:
 
 ### Certificate Search Methods
 
-| FindType | Example | Use Case |
-|----------|---------|----------|
-| `FindByThumbprint` | `ABC123DEF456...` | Most specific, recommended |
-| `FindBySubjectName` | `localhost` | Find by common name |
-| `FindBySubjectDistinguishedName` | `CN=localhost, O=Company` | Full distinguished name |
+| FindType | Example | Use Case | Ease of Use |
+|----------|---------|----------|-------------|
+| `FindBySubjectName` | `localhost` | Find by common name | ⭐⭐⭐ **Recommended** - Easiest |
+| `FindByThumbprint` | `ABC123DEF456...` | Most specific | ⭐⭐ More secure but harder to configure |
+| `FindBySubjectDistinguishedName` | `CN=localhost, O=Company` | Full distinguished name | ⭐ Most specific |
 
 ### SMTP Authentication
 

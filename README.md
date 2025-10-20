@@ -70,23 +70,24 @@ Papercut SMTP Server supports optional SMTP authentication and TLS/STARTTLS encr
 
 ### Quick Setup
 
-**Enable TLS/STARTTLS** by configuring a certificate in your `appsettings.json`:
+**Step 1: Create a test certificate** (PowerShell):
+
+```powershell
+New-SelfSignedCertificate -Subject "CN=localhost" -DnsName "localhost" `
+    -CertStoreLocation "cert:\LocalMachine\My" -NotAfter (Get-Date).AddYears(2)
+```
+
+**Step 2: Enable TLS/STARTTLS** in your `appsettings.json`:
 
 ```json
 {
-  "CertificateFindType": "FindByThumbprint",
-  "CertificateFindValue": "YOUR_CERTIFICATE_THUMBPRINT",
+  "CertificateFindType": "FindBySubjectName",
+  "CertificateFindValue": "localhost",
   "Port": 587
 }
 ```
 
-**Create a test certificate** (PowerShell):
-
-```powershell
-$cert = New-SelfSignedCertificate -Subject "CN=localhost" -DnsName "localhost" `
-    -CertStoreLocation "cert:\LocalMachine\My" -NotAfter (Get-Date).AddYears(2)
-$cert.Thumbprint  # Use this value in CertificateFindValue
-```
+That's it! The server will automatically find your "localhost" certificate.
 
 ### Docker with TLS
 
@@ -113,13 +114,13 @@ docker run -d \
 
 ### Configuration Options
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `CertificateFindType` | Certificate search method | `FindByThumbprint` |
-| `CertificateFindValue` | Certificate identifier (empty = TLS disabled) | `""` |
-| `CertificateStoreLocation` | Store location (`LocalMachine` or `CurrentUser`) | `LocalMachine` |
-| `CertificateStoreName` | Store name (`My`, `Root`, etc.) | `My` |
-| `Port` | SMTP port (25=plain, 587=STARTTLS, 465=TLS) | `25` |
+| Setting | Description | Default | Example |
+|---------|-------------|---------|---------|
+| `CertificateFindType` | Certificate search method | `FindBySubjectName` | `FindBySubjectName` |
+| `CertificateFindValue` | Certificate name or identifier (empty = TLS disabled) | `""` | `localhost` |
+| `CertificateStoreLocation` | Store location | `LocalMachine` | `LocalMachine` or `CurrentUser` |
+| `CertificateStoreName` | Store name | `My` | `My` (Personal) |
+| `Port` | SMTP port | `25` | 587 (STARTTLS recommended) |
 
 **For complete TLS/auth documentation, certificate management, and testing instructions, see [TLS_AUTH_IMPLEMENTATION.md](TLS_AUTH_IMPLEMENTATION.md).**
 

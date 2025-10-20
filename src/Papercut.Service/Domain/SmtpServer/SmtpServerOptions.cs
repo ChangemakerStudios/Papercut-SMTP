@@ -28,13 +28,15 @@ public class SmtpServerOptions
 
     /// <summary>
     /// Certificate find type for TLS/STARTTLS support.
-    /// Common values: FindByThumbprint, FindBySubjectName, FindBySubjectDistinguishedName
+    /// Recommended: FindBySubjectName (easiest - use certificate CN like "localhost")
+    /// Alternative: FindByThumbprint (more specific but harder to configure)
     /// </summary>
-    public string CertificateFindType { get; set; } = "FindByThumbprint";
+    public string CertificateFindType { get; set; } = "FindBySubjectName";
 
     /// <summary>
-    /// Certificate find value (e.g., thumbprint hash or subject name).
+    /// Certificate find value (e.g., "localhost" for subject name, or thumbprint hash).
     /// Leave empty to disable TLS/STARTTLS.
+    /// Example: "localhost" when using FindBySubjectName
     /// </summary>
     public string CertificateFindValue { get; set; } = string.Empty;
 

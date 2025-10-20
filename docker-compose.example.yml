@@ -40,10 +40,15 @@ services:
       - Port=587
       # TLS/STARTTLS Configuration
       # Uncomment and configure these to enable TLS
-      # - CertificateFindType=FindByThumbprint
-      # - CertificateFindValue=YOUR_CERT_THUMBPRINT_HERE
+      # Simple approach - use certificate by name (most common):
+      - CertificateFindType=FindBySubjectName
+      - CertificateFindValue=localhost
       # - CertificateStoreLocation=LocalMachine
       # - CertificateStoreName=My
+      #
+      # Alternative - use thumbprint (more specific but harder to use):
+      # - CertificateFindType=FindByThumbprint
+      # - CertificateFindValue=YOUR_CERT_THUMBPRINT_HERE
     restart: unless-stopped
 
   # Example: Multiple ports (plain SMTP + STARTTLS)
