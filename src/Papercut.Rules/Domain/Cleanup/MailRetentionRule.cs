@@ -29,6 +29,9 @@ namespace Papercut.Rules.Domain.Cleanup;
 [Serializable]
 public class MailRetentionRule : PeriodicBackgroundRuleBase
 {
+    private const int MinRetentionDays = 1;
+    private const int MaxRetentionDays = 3650; // ~10 years
+
     private int _mailRetentionDays = 7;
 
     [Category("Information")]
@@ -43,6 +46,13 @@ public class MailRetentionRule : PeriodicBackgroundRuleBase
         set
         {
             if (value == _mailRetentionDays) return;
+
+            if (value < MinRetentionDays || value > MaxRetentionDays)
+                throw new ArgumentOutOfRangeException(
+                    nameof(MailRetentionDays),
+                    value,
+                    $"Retention days must be between {MinRetentionDays} and {MaxRetentionDays}.");
+
             _mailRetentionDays = value;
             OnPropertyChanged(nameof(MailRetentionDays));
         }
