@@ -140,10 +140,18 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
                         // This allows the main HTML file and any embedded resources (images, CSS, etc.)
                         var targetDir = Path.GetDirectoryName(localPath);
 
-                        if (!string.IsNullOrEmpty(targetDir) &&
-                            targetDir.StartsWith(htmlFileDir, StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(targetDir))
                         {
-                            return true;
+                            // Normalize both paths to prevent traversal attacks
+                            var normalizedHtmlDir = Path.GetFullPath(htmlFileDir).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                            var normalizedTargetDir = Path.GetFullPath(targetDir).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                            // Check if target is within preview directory using normalized paths
+                            if (normalizedTargetDir.Equals(normalizedHtmlDir, StringComparison.OrdinalIgnoreCase) ||
+                                normalizedTargetDir.StartsWith(normalizedHtmlDir + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
