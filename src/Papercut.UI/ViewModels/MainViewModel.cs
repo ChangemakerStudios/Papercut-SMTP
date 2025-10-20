@@ -380,6 +380,11 @@ public class MainViewModel : Conductor<object>,
             .Subscribe(
                 _ => this.MessageDetailViewModel.LoadMessageEntry(this.MessageListViewModel.SelectedMessage));
 
+        this.MessageListViewModel.GetPropertyValues(m => m.HasMessages)
+            .ObserveOn(Dispatcher.CurrentDispatcher)
+            .Subscribe(
+                hasMessages => this.MessageDetailViewModel.HasAnyMessages = hasMessages);
+
         Observable.FromEventPattern<EventHandler, EventArgs>(
                 h => new EventHandler(h),
                 h => this._uiLogSinkQueue.LogEvent += h,

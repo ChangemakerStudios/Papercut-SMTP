@@ -25,7 +25,6 @@ namespace Papercut.ViewModels;
 public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
 {
     readonly IMimeMessageLoader _mimeMessageLoader;
-    readonly IMessageRepository _messageRepository;
 
     int _attachmentCount;
 
@@ -36,6 +35,8 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
     string? _date;
 
     string? _from;
+
+    bool _hasAnyMessages;
 
     string? _htmlFile;
 
@@ -63,11 +64,9 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         Func<MessageDetailRawViewModel> rawViewModelFactory,
         Func<MessageDetailHeaderViewModel> headerViewModelFactory,
         Func<MessageDetailBodyViewModel> bodyViewModelFactory,
-        IMimeMessageLoader mimeMessageLoader,
-        IMessageRepository messageRepository)
+        IMimeMessageLoader mimeMessageLoader)
     {
         this._mimeMessageLoader = mimeMessageLoader;
-        this._messageRepository = messageRepository;
 
         this.PartsListViewModel = partsListViewModelFactory();
         this.HtmlViewModel = htmlViewModelFactory();
@@ -219,7 +218,15 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
     public bool HasMessage => !string.IsNullOrEmpty(this.From) || !string.IsNullOrEmpty(this.Subject);
 
-    public bool HasAnyMessages => this._messageRepository.LoadMessages().Any();
+    public bool HasAnyMessages
+    {
+        get => this._hasAnyMessages;
+        set
+        {
+            this._hasAnyMessages = value;
+            this.NotifyOfPropertyChange(() => this.HasAnyMessages);
+        }
+    }
 
     public string? HtmlFile
     {
@@ -351,7 +358,5 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         this.HeaderViewModel.Headers = null;
         this.BodyViewModel.Body = null;
         this.PartsListViewModel.MimeMessage = null;
-
-        this.NotifyOfPropertyChange(() => this.HasAnyMessages);
     }
 }
