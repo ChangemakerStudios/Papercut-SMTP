@@ -67,6 +67,12 @@ public class SmtpServerOptionsInitializer : IHostedService
             var persistedMessagePath = _settingStore.GetOrSet("MessagePath", _smtpServerOptions.MessagePath, "Base path where incoming emails are written.");
             var persistedLoggingPath = _settingStore.GetOrSet("LoggingPath", _smtpServerOptions.LoggingPath, "Base path where logs are written.");
 
+            // TLS/Certificate settings
+            var persistedCertFindType = _settingStore.GetOrSet("CertificateFindType", _smtpServerOptions.CertificateFindType, "Certificate search method (FindBySubjectName, FindByThumbprint, etc.).");
+            var persistedCertFindValue = _settingStore.GetOrSet("CertificateFindValue", _smtpServerOptions.CertificateFindValue, "Certificate identifier (e.g., 'localhost' or thumbprint). Leave empty to disable TLS.");
+            var persistedCertStoreLocation = _settingStore.GetOrSet("CertificateStoreLocation", _smtpServerOptions.CertificateStoreLocation, "Certificate store location (LocalMachine or CurrentUser).");
+            var persistedCertStoreName = _settingStore.GetOrSet("CertificateStoreName", _smtpServerOptions.CertificateStoreName, "Certificate store name (My, Root, etc.).");
+
             // Save settings file to ensure defaults are persisted
             _settingStore.Save();
 
@@ -91,10 +97,33 @@ public class SmtpServerOptionsInitializer : IHostedService
                 _smtpServerOptions.LoggingPath = persistedLoggingPath;
             }
 
+            if (!string.IsNullOrWhiteSpace(persistedCertFindType))
+            {
+                _smtpServerOptions.CertificateFindType = persistedCertFindType;
+            }
+
+            // CertificateFindValue can be empty (TLS disabled), so always apply it
+            _smtpServerOptions.CertificateFindValue = persistedCertFindValue ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(persistedCertStoreLocation))
+            {
+                _smtpServerOptions.CertificateStoreLocation = persistedCertStoreLocation;
+            }
+
+            if (!string.IsNullOrWhiteSpace(persistedCertStoreName))
+            {
+                _smtpServerOptions.CertificateStoreName = persistedCertStoreName;
+            }
+
+            var tlsStatus = string.IsNullOrWhiteSpace(_smtpServerOptions.CertificateFindValue)
+                ? "Disabled"
+                : $"Enabled (Cert: {_smtpServerOptions.CertificateFindValue})";
+
             _logger.Information(
-                "SMTP Server Configuration Initialized: IP={IP}, Port={Port}",
+                "SMTP Server Configuration Initialized: IP={IP}, Port={Port}, TLS={TlsStatus}",
                 _smtpServerOptions.IP,
-                _smtpServerOptions.Port);
+                _smtpServerOptions.Port,
+                tlsStatus);
         }
         catch (Exception ex)
         {
