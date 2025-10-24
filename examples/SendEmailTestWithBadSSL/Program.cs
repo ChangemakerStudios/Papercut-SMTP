@@ -101,7 +101,7 @@ async Task SendBadSSLTestEmailAsync()
 		<li>With <i>Ignore SSL Certificate Errors</i> <b>disabled</b>: Only the last image (Good SSL) should display</li>
 	</ul>
 
-	<p>{string.Join("<br />", faker.Lorem.Paragraphs(3))}</p>
+	<p>{faker.Lorem.Paragraphs(3, "<br />")}</p>
 </body>
 </html>";
 

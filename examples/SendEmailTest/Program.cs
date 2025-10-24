@@ -124,7 +124,7 @@ async Task SendEmailAsync(int index, byte[] svgData, Faker faker, SmtpSendOption
             <h2>Test Email #{index + 1}</h2>
         </div>
         <div class='content'>
-            <p>{string.Join("</p><p>", faker.Lorem.Paragraphs(3))}</p>
+            <p>{faker.Lorem.Paragraphs(3, "</p><p>")}</p>
             <div class='image-box'>
                 <p><b>Embedded SVG Image:</b></p>
                 <img src=""cid:{linkedResource.ContentId}"" style=""width: 200px"" alt=""Scissors"" />
