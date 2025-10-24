@@ -124,7 +124,5 @@ docker run -d \
 | `CertificateStoreName` | Store name | `My` | `My` (Personal) |
 | `Port` | SMTP port | `25` | 587 (STARTTLS recommended) |
 
-**For complete TLS/auth documentation, certificate management, and testing instructions, see [TLS_AUTH_IMPLEMENTATION.md](TLS_AUTH_IMPLEMENTATION.md).**
-
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
