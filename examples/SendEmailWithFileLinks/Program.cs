@@ -55,13 +55,6 @@ async Task SendFileLinkEmailAsync()
         EnableSsl = options.Security != SmtpSecurityMode.None
     };
 
-    // Configure SSL/TLS based on security mode
-    if (options.Security == SmtpSecurityMode.SslOnConnect)
-    {
-        // Port 465 typically uses implicit TLS
-        // Additional TLS configuration if needed
-    }
-
     var from = new MailAddress("test@company.com", "Test Sender");
     var to = new MailAddress("user@example.com", "Test User");
 

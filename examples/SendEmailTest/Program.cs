@@ -83,13 +83,6 @@ async Task SendEmailAsync(int index, byte[] svgData, Faker faker, SmtpSendOption
         EnableSsl = smtpOptions.Security != SmtpSecurityMode.None
     };
 
-    // Configure SSL/TLS based on security mode
-    if (smtpOptions.Security == SmtpSecurityMode.SslOnConnect)
-    {
-        // Port 465 typically uses implicit TLS
-        // Additional TLS configuration if needed
-    }
-
     // Generate fake email addresses and names
     var fromName = faker.Name.FullName();
     var fromEmail = faker.Internet.Email();

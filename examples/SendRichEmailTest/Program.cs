@@ -59,13 +59,6 @@ async Task SendRichEmailAsync()
         EnableSsl = options.Security != SmtpSecurityMode.None
     };
 
-    // Configure SSL/TLS based on security mode
-    if (options.Security == SmtpSecurityMode.SslOnConnect)
-    {
-        // Port 465 typically uses implicit TLS
-        // Additional TLS configuration if needed
-    }
-
     var from = new MailAddress("noreply@company.com", companyName);
     var to = new MailAddress("customer@example.com", customerFullName);
 

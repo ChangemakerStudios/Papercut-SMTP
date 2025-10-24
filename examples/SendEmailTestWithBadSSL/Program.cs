@@ -62,13 +62,6 @@ async Task SendBadSSLTestEmailAsync()
         EnableSsl = options.Security != SmtpSecurityMode.None
     };
 
-    // Configure SSL/TLS based on security mode
-    if (options.Security == SmtpSecurityMode.SslOnConnect)
-    {
-        // Port 465 typically uses implicit TLS
-        // Additional TLS configuration if needed
-    }
-
     var fromName = faker.Name.FullName();
     var fromEmail = faker.Internet.Email();
     var from = new MailAddress(fromEmail, fromName);
