@@ -64,5 +64,65 @@ Access at: **http://localhost:37408** | Send emails to: **localhost:2525**
 
 > **Note:** Docker uses non-privileged ports by default (SMTP: 2525, HTTP: 8080). See the [Service README](src/Papercut.Service/Readme.md#option-3-run-in-docker) for configuration options, Docker Compose examples, and troubleshooting.
 
+## SMTP Authentication and TLS/STARTTLS Support
+
+Papercut SMTP Server supports optional SMTP authentication and TLS/STARTTLS encryption for secure email testing.
+
+### Quick Setup
+
+**Step 1: Create a test certificate** (PowerShell):
+
+```powershell
+New-SelfSignedCertificate -Subject "CN=localhost" -DnsName "localhost" `
+    -CertStoreLocation "cert:\LocalMachine\My" -NotAfter (Get-Date).AddYears(2)
+```
+
+**Step 2: Enable TLS/STARTTLS** in your `appsettings.json`:
+
+```json
+{
+  "SmtpServer": {
+    "CertificateFindType": "FindBySubjectName",
+    "CertificateFindValue": "localhost",
+    "Port": 587
+  }
+}
+```
+
+That's it! The server will automatically find your "localhost" certificate.
+
+### Docker with TLS
+
+Mount a certificate and configure via environment variables:
+
+```bash
+docker run -d \
+  -p 587:587 \
+  -p 8080:8080 \
+  -e SmtpServer__CertificateFindType=FindBySubjectName \
+  -e SmtpServer__CertificateFindValue=localhost \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Or use Docker Compose** (see [Service README](src/Papercut.Service/Readme.md) for complete examples).
+
+### Features
+
+- ✅ **TLS/STARTTLS** support on any port (recommended: 587)
+- ✅ **SMTP AUTH** with flexible authentication (accepts all credentials in dev mode)
+- ✅ **Certificate store integration** (Windows LocalMachine/CurrentUser stores)
+- ✅ **Multiple search methods** (Thumbprint, SubjectName, etc.)
+- ✅ **Backward compatible** (TLS disabled by default)
+
+### Configuration Options
+
+| Setting | Description | Default | Example |
+|---------|-------------|---------|---------|
+| `CertificateFindType` | Certificate search method | `FindBySubjectName` | `FindBySubjectName` |
+| `CertificateFindValue` | Certificate name or identifier (empty = TLS disabled) | `""` | `localhost` |
+| `CertificateStoreLocation` | Store location | `LocalMachine` | `LocalMachine` or `CurrentUser` |
+| `CertificateStoreName` | Store name | `My` | `My` (Personal) |
+| `Port` | SMTP port | `25` | 587 (STARTTLS recommended) |
+
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

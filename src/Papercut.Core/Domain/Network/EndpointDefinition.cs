@@ -17,6 +17,7 @@
 
 
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Papercut.Core.Domain.Network;
 
@@ -28,9 +29,27 @@ public class EndpointDefinition
         this.Port = port;
     }
 
+    public EndpointDefinition(
+        string address,
+        int port,
+        X509FindType certificateFindType,
+        string certificateFindValue,
+        StoreLocation storeLocation = StoreLocation.LocalMachine,
+        StoreName storeName = StoreName.My)
+        : this(address, port)
+    {
+        this.Certificate = this.LoadCertificateFromStore(
+            certificateFindType,
+            certificateFindValue,
+            storeLocation,
+            storeName);
+    }
+
     public IPAddress Address { get; }
 
     public int Port { get; }
+
+    public X509Certificate? Certificate { get; }
 
     public IPEndPoint ToIPEndPoint()
     {
@@ -47,8 +66,81 @@ public class EndpointDefinition
         return IPAddress.Parse(value);
     }
 
+    private X509Certificate? LoadCertificateFromStore(
+        X509FindType findType,
+        string findValue,
+        StoreLocation storeLocation,
+        StoreName storeName)
+    {
+        using var store = new X509Store(storeName, storeLocation);
+
+        try
+        {
+            store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+
+            // Normalize thumbprint search values (remove whitespace, uppercase)
+            var normalizedFindValue = findValue;
+            if (findType == X509FindType.FindByThumbprint)
+            {
+                normalizedFindValue = findValue.Replace(" ", "").Replace(":", "").ToUpperInvariant();
+            }
+
+            var certificates = store.Certificates.Find(findType, normalizedFindValue, validOnly: false);
+
+            if (certificates.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"No certificate found matching {findType}='{normalizedFindValue}' in {storeLocation}\\{storeName} store.");
+            }
+
+            if (certificates.Count > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple certificates ({certificates.Count}) found matching {findType}='{normalizedFindValue}' in {storeLocation}\\{storeName} store. Please provide a more specific search criteria.");
+            }
+
+            var certificate = certificates[0];
+
+            // Validate certificate has private key (required for TLS server)
+            if (certificate is X509Certificate2 cert2)
+            {
+                if (!cert2.HasPrivateKey)
+                {
+                    throw new InvalidOperationException(
+                        $"Certificate '{cert2.Subject}' does not have a private key. TLS/STARTTLS requires a certificate with a private key.");
+                }
+
+                // Log warnings for certificate validity issues
+                var now = DateTime.Now;
+                if (cert2.NotBefore > now)
+                {
+                    Log.Warning(
+                        "Certificate '{Subject}' is not yet valid (NotBefore: {NotBefore}, Current: {Now})",
+                        cert2.Subject,
+                        cert2.NotBefore,
+                        now);
+                }
+                else if (cert2.NotAfter < now)
+                {
+                    Log.Warning(
+                        "Certificate '{Subject}' has expired (NotAfter: {NotAfter}, Current: {Now})",
+                        cert2.Subject,
+                        cert2.NotAfter,
+                        now);
+                }
+            }
+
+            return certificate;
+        }
+        finally
+        {
+            store.Close();
+        }
+    }
+
     public override string ToString()
     {
-        return $"{this.Address}:{this.Port}";
+        var certInfo = this.Certificate != null ? " (with TLS)" : string.Empty;
+        return $"{this.Address}:{this.Port}{certInfo}";
     }
 }

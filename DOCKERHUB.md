@@ -81,10 +81,16 @@ docker run -d \
 
 **Available Environment Variables:**
 - `SmtpServer__IP` - SMTP listening address (default: "Any" = 0.0.0.0)
-- `SmtpServer__Port` - SMTP listening port (default: 2525)
+- `SmtpServer__Port` - SMTP listening port (default: 2525, use 587 for STARTTLS)
 - `SmtpServer__MessagePath` - Path where emails are stored (default: /app/Incoming)
 - `SmtpServer__LoggingPath` - Path for log files (default: /app/logs)
 - `Urls` - HTTP server URLs (default: http://0.0.0.0:8080)
+
+**TLS/STARTTLS Configuration (Optional):**
+- `SmtpServer__CertificateFindType` - Certificate search method (default: "FindBySubjectName")
+- `SmtpServer__CertificateFindValue` - Certificate identifier (empty = TLS disabled)
+- `SmtpServer__CertificateStoreLocation` - Store location: "LocalMachine" or "CurrentUser" (default: "LocalMachine")
+- `SmtpServer__CertificateStoreName` - Store name: "My", "Root", etc. (default: "My")
 
 ### Using Custom Configuration File
 
@@ -175,6 +181,186 @@ Run with:
 ```bash
 docker compose up -d
 ```
+
+---
+
+## TLS/STARTTLS and SMTP Authentication
+
+Papercut SMTP supports optional TLS/STARTTLS encryption and SMTP authentication for secure email testing.
+
+### Quick TLS Setup
+
+**Enable STARTTLS** using environment variables:
+
+```bash
+docker run -d \
+  --name papercut-tls \
+  -p 8080:8080 \
+  -p 587:587 \
+  -e SmtpServer__Port=587 \
+  -e SmtpServer__CertificateFindType=FindBySubjectName \
+  -e SmtpServer__CertificateFindValue=localhost \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+### Certificate Requirements
+
+TLS/STARTTLS requires an X.509 certificate. The certificate must be installed in the Windows certificate store (LocalMachine or CurrentUser).
+
+**Create a self-signed certificate for testing** (on Windows host):
+
+```powershell
+# Create certificate
+$cert = New-SelfSignedCertificate `
+    -Subject "CN=localhost" `
+    -DnsName "localhost" `
+    -CertStoreLocation "cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(2)
+
+# Get thumbprint for configuration
+$cert.Thumbprint
+```
+
+Then use the thumbprint in your Docker configuration:
+
+```bash
+docker run -d \
+  --name papercut-tls \
+  -p 8080:8080 \
+  -p 587:587 \
+  -e SmtpServer__Port=587 \
+  -e SmtpServer__CertificateFindType=FindByThumbprint \
+  -e SmtpServer__CertificateFindValue=YOUR_THUMBPRINT_HERE \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+### Docker Compose with TLS
+
+```yaml
+version: '3.8'
+
+services:
+  papercut-tls:
+    image: changemakerstudiosus/papercut-smtp:latest
+    container_name: papercut-smtp-tls
+    ports:
+      - "8080:8080"
+      - "587:587"  # STARTTLS port
+    volumes:
+      - papercut-messages:/app/Incoming
+      - papercut-logs:/app/logs
+    environment:
+      # Basic configuration
+      - SmtpServer__IP=0.0.0.0
+      - SmtpServer__Port=587
+      - Urls=http://0.0.0.0:8080
+      # TLS configuration
+      - SmtpServer__CertificateFindType=FindByThumbprint
+      - SmtpServer__CertificateFindValue=YOUR_CERT_THUMBPRINT
+      - SmtpServer__CertificateStoreLocation=LocalMachine
+      - SmtpServer__CertificateStoreName=My
+    restart: unless-stopped
+
+volumes:
+  papercut-messages:
+  papercut-logs:
+```
+
+### Configuration in appsettings.json
+
+Alternatively, configure TLS in a custom `appsettings.Production.json`:
+
+```json
+{
+  "Urls": "http://0.0.0.0:8080",
+
+  "SmtpServer": {
+    "IP": "Any",
+    "Port": 587,
+    "MessagePath": "/app/Incoming",
+    "LoggingPath": "/app/logs",
+    "CertificateFindType": "FindByThumbprint",
+    "CertificateFindValue": "YOUR_CERT_THUMBPRINT_HERE",
+    "CertificateStoreLocation": "LocalMachine",
+    "CertificateStoreName": "My"
+  }
+}
+```
+
+### SMTP Ports Explained
+
+| Port | Mode | Description |
+|------|------|-------------|
+| 25 | Plain SMTP | No encryption (default) |
+| 587 | STARTTLS | Start plain, upgrade to TLS (recommended) |
+| 465 | SMTPS | Immediate TLS encryption |
+| 2525 | Plain SMTP | Non-privileged alternative to port 25 |
+
+### Certificate Search Methods
+
+| FindType | Example | Use Case | Ease of Use |
+|----------|---------|----------|-------------|
+| `FindBySubjectName` | `localhost` | Find by common name | ⭐⭐⭐ **Recommended** - Easiest |
+| `FindByThumbprint` | `ABC123DEF456...` | Most specific | ⭐⭐ More secure but harder to configure |
+| `FindBySubjectDistinguishedName` | `CN=localhost, O=Company` | Full distinguished name | ⭐ Most specific |
+
+### SMTP Authentication
+
+SMTP AUTH is automatically available when using TLS/STARTTLS. By default, Papercut accepts **all credentials** for development/testing purposes.
+
+**Test with authentication:**
+
+```bash
+# Using openssl
+openssl s_client -connect localhost:587 -starttls smtp
+
+# Should see in EHLO response:
+# 250-STARTTLS
+# 250-AUTH PLAIN LOGIN
+```
+
+**Send email with MailKit (C#):**
+
+```csharp
+using var client = new SmtpClient();
+client.Connect("localhost", 587, SecureSocketOptions.StartTls);
+client.Authenticate("anyuser", "anypass");  // Accepts any credentials
+client.Send(message);
+client.Disconnect(true);
+```
+
+### Testing TLS Connection
+
+```bash
+# Test STARTTLS connection
+openssl s_client -connect localhost:587 -starttls smtp
+
+# Expected output should include:
+# - STARTTLS in EHLO response
+# - Certificate details
+# - "Verify return code: 0 (ok)" or self-signed warning
+```
+
+### Troubleshooting TLS
+
+**Certificate Not Found:**
+```
+Error: No certificate found matching FindByThumbprint='...'
+```
+- Verify certificate is installed in the correct store
+- Check thumbprint is correct (remove spaces)
+- Ensure container has access to host certificate store
+
+**Multiple Certificates Found:**
+```
+Error: Multiple certificates (3) found matching...
+```
+- Use a more specific search method (e.g., thumbprint instead of subject name)
+
+**Connection Refused on Port 587:**
+- Ensure port mapping includes 587: `-p 587:587`
+- Verify TLS is configured (non-empty CertificateFindValue)
+- Check logs: `docker logs papercut-tls | grep TLS`
 
 ---
 

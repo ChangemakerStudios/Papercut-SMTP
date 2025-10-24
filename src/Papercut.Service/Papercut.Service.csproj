@@ -15,9 +15,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<None Remove="electron.manifest.json" />
-		<None Update="appsettings.Production.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="electron.manifest.json">
@@ -44,10 +41,15 @@
 		<ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<None Update="appsettings.Development.json">
+		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Update="appsettings.json">
+		<None Update="appsettings.Development.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.Production.json">
+			<DependentUpon>appsettings.json</DependentUpon>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="icons\Papercut-icon.icns">
