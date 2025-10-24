@@ -42,9 +42,6 @@ catch (Exception ex)
     Environment.Exit(1);
 }
 
-Console.WriteLine("\nPress any key to exit...");
-Console.ReadKey();
-
 async Task SendRichEmailAsync()
 {
     var faker = new Faker();

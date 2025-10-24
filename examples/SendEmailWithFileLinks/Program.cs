@@ -44,9 +44,6 @@ catch (Exception ex)
     Environment.Exit(1);
 }
 
-Console.WriteLine("\nPress any key to exit...");
-Console.ReadKey();
-
 async Task SendFileLinkEmailAsync()
 {
     using var smtpClient = new SmtpClient(options.Host, options.Port)

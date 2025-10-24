@@ -34,8 +34,6 @@ if (!File.Exists(svgPath))
 {
     Console.WriteLine($"❌ ERROR: SVG file not found at {svgPath}");
     Console.WriteLine("This example requires the SVG file to demonstrate embedded images.");
-    Console.WriteLine("\nPress any key to exit...");
-    Console.ReadKey();
     Environment.Exit(1);
 }
 
@@ -59,9 +57,6 @@ catch (Exception ex)
     Console.WriteLine($"\nDetails: {ex}");
     Environment.Exit(1);
 }
-
-Console.WriteLine("\nPress any key to exit...");
-Console.ReadKey();
 
 async Task SendBulkEmailsAsync(byte[] svgData)
 {
