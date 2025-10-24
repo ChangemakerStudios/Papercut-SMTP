@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test CSS Word-Wrap Issue #154</title>
+</head>
+<body>
+    <h1>CSS Word-Wrap Test Email</h1>
+
+    <h2>Test 1: Long text in paragraph without word-wrap CSS</h2>
+    <p>
+        ThisIsAVeryLongUnbrokenStringWithNoSpacesThatShouldNormallyExtendBeyondTheViewportWidthAndCauseHorizontalScrollingIfWordWrapIsNotProperlyImplementedInTheEmailViewerThisTestsTheBasicWordWrapFunctionality
+    </p>
+
+    <h2>Test 2: Paragraph with explicit word-wrap CSS (should work now)</h2>
+    <p style="word-wrap: break-word;">
+        ThisIsAVeryLongUnbrokenStringWithNoSpacesThatShouldNormallyExtendBeyondTheViewportWidthAndCauseHorizontalScrollingIfWordWrapIsNotProperlyImplementedInTheEmailViewerThisTestsTheBasicWordWrapFunctionality
+    </p>
+
+    <h2>Test 3: Code element with word-wrap CSS (reported in issue)</h2>
+    <code style="overflow-wrap: break-word; white-space: pre-wrap;">
+        ThisIsAVeryLongUnbrokenStringWithNoSpacesThatShouldNormallyExtendBeyondTheViewportWidthAndCauseHorizontalScrollingIfWordWrapIsNotProperlyImplementedInTheEmailViewerThisTestsTheBasicWordWrapFunctionality
+    </code>
+
+    <h2>Test 4: Pre element with word-break CSS</h2>
+    <pre style="word-break: break-all;">
+ThisIsAVeryLongUnbrokenStringWithNoSpacesThatShouldNormallyExtendBeyondTheViewportWidthAndCauseHorizontalScrollingIfWordWrapIsNotProperlyImplementedInTheEmailViewerThisTestsTheBasicWordWrapFunctionality
+    </pre>
+
+    <h2>Test 5: Div wrapper (reported to work in issue)</h2>
+    <div style="word-wrap: break-word;">
+        <p>ThisIsAVeryLongUnbrokenStringWithNoSpacesThatShouldNormallyExtendBeyondTheViewportWidthAndCauseHorizontalScrollingIfWordWrapIsNotProperlyImplementedInTheEmailViewerThisTestsTheBasicWordWrapFunctionality</p>
+    </div>
+
+    <h2>Test 6: Long URL</h2>
+    <p>
+        Check this URL: https://www.example.com/this/is/a/very/long/url/path/that/should/wrap/properly/when/word-wrap/is/enabled/in/the/email/viewer/application/thanks/to/issue/154/fix
+    </p>
+
+</body>
+</html>
