@@ -284,10 +284,11 @@ public class RulesRunnerTests
         await _runner.RunNewMessageRules(rules, _testMessageEntry, CancellationToken.None);
 
         _mockLogger.Verify(
-            l => l.Warning(
+            l => l.Warning<TestRule, MessageEntry>(
                 It.IsAny<Exception>(),
                 It.Is<string>(s => s.Contains("Failure Dispatching Rule")),
-                It.IsAny<object[]>()),
+                It.IsAny<TestRule>(),
+                It.IsAny<MessageEntry>()),
             Times.Once);
     }
 
@@ -329,9 +330,10 @@ public class RulesRunnerTests
         await _runner.RunNewMessageRules(rules, _testMessageEntry, CancellationToken.None);
 
         _mockLogger.Verify(
-            l => l.Information(
+            l => l.Information<TestRule, MessageEntry>(
                 It.Is<string>(s => s.Contains("Running Rule Dispatch")),
-                It.IsAny<object[]>()),
+                It.IsAny<TestRule>(),
+                It.IsAny<MessageEntry>()),
             Times.Once);
     }
 

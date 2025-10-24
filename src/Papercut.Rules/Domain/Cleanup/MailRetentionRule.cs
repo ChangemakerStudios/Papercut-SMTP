@@ -47,12 +47,6 @@ public class MailRetentionRule : PeriodicBackgroundRuleBase
         {
             if (value == _mailRetentionDays) return;
 
-            if (value < MinRetentionDays || value > MaxRetentionDays)
-                throw new ArgumentOutOfRangeException(
-                    nameof(MailRetentionDays),
-                    value,
-                    $"Retention days must be between {MinRetentionDays} and {MaxRetentionDays}.");
-
             _mailRetentionDays = value;
             OnPropertyChanged(nameof(MailRetentionDays));
         }
