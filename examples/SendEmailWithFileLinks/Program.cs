@@ -52,8 +52,18 @@ async Task SendFileLinkEmailAsync()
     using var smtpClient = new SmtpClient(options.Host, options.Port)
     {
         UseDefaultCredentials = false,
-        Credentials = new NetworkCredential(options.Username ?? "username", options.Password ?? "password")
+        Credentials = !string.IsNullOrEmpty(options.Username)
+            ? new NetworkCredential(options.Username, options.Password ?? string.Empty)
+            : null,
+        EnableSsl = options.Security != SmtpSecurityMode.None
     };
+
+    // Configure SSL/TLS based on security mode
+    if (options.Security == SmtpSecurityMode.SslOnConnect)
+    {
+        // Port 465 typically uses implicit TLS
+        // Additional TLS configuration if needed
+    }
 
     var from = new MailAddress("test@company.com", "Test Sender");
     var to = new MailAddress("user@example.com", "Test User");
@@ -154,7 +164,7 @@ async Task SendFileLinkEmailAsync()
     message.IsBodyHtml = true;
     message.Priority = MailPriority.Normal;
 
-    await Task.Run(() => smtpClient.Send(message));
+    await smtpClient.SendMailAsync(message);
 
     Console.WriteLine("✓ Test email sent successfully!");
     Console.WriteLine($"  Subject: {message.Subject}");

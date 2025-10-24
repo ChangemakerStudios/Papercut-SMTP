@@ -50,13 +50,24 @@ async Task SendRichEmailAsync()
     var faker = new Faker();
     var companyName = faker.Company.CompanyName();
     var customerName = faker.Name.FirstName();
-    var customerFullName = faker.Name.FullName();
+    var customerLastName = faker.Name.LastName();
+    var customerFullName = $"{customerName} {customerLastName}";
 
     using var smtpClient = new SmtpClient(options.Host, options.Port)
     {
         UseDefaultCredentials = false,
-        Credentials = new NetworkCredential(options.Username ?? "username", options.Password ?? "password")
+        Credentials = !string.IsNullOrEmpty(options.Username)
+            ? new NetworkCredential(options.Username, options.Password ?? string.Empty)
+            : null,
+        EnableSsl = options.Security != SmtpSecurityMode.None
     };
+
+    // Configure SSL/TLS based on security mode
+    if (options.Security == SmtpSecurityMode.SslOnConnect)
+    {
+        // Port 465 typically uses implicit TLS
+        // Additional TLS configuration if needed
+    }
 
     var from = new MailAddress("noreply@company.com", companyName);
     var to = new MailAddress("customer@example.com", customerFullName);
@@ -242,7 +253,7 @@ async Task SendRichEmailAsync()
     message.IsBodyHtml = true;
     message.Priority = MailPriority.Normal;
 
-    await Task.Run(() => smtpClient.Send(message));
+    await smtpClient.SendMailAsync(message);
 
     Console.WriteLine("✓ Rich email sent successfully!");
     Console.WriteLine($"  Subject: {message.Subject}");

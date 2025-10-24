@@ -71,19 +71,29 @@ async Task SendBulkEmailsAsync(byte[] svgData)
     for (int i = 0; i < EmailCount; i++)
     {
         var index = i;
-        tasks.Add(Task.Run(() => SendEmailAsync(index, svgData, faker, options)));
+        tasks.Add(Task.Run(async () => await SendEmailAsync(index, svgData, faker, options)));
     }
 
     await Task.WhenAll(tasks);
 }
 
-void SendEmailAsync(int index, byte[] svgData, Faker faker, SmtpSendOptions smtpOptions)
+async Task SendEmailAsync(int index, byte[] svgData, Faker faker, SmtpSendOptions smtpOptions)
 {
     using var smtpClient = new SmtpClient(smtpOptions.Host, smtpOptions.Port)
     {
         UseDefaultCredentials = false,
-        Credentials = new NetworkCredential(smtpOptions.Username ?? "username", smtpOptions.Password ?? "password")
+        Credentials = !string.IsNullOrEmpty(smtpOptions.Username)
+            ? new NetworkCredential(smtpOptions.Username, smtpOptions.Password ?? string.Empty)
+            : null,
+        EnableSsl = smtpOptions.Security != SmtpSecurityMode.None
     };
+
+    // Configure SSL/TLS based on security mode
+    if (smtpOptions.Security == SmtpSecurityMode.SslOnConnect)
+    {
+        // Port 465 typically uses implicit TLS
+        // Additional TLS configuration if needed
+    }
 
     // Generate fake email addresses and names
     var fromName = faker.Name.FullName();
@@ -150,7 +160,7 @@ void SendEmailAsync(int index, byte[] svgData, Faker faker, SmtpSendOptions smtp
     message.AlternateViews.Add(alternateView);
     message.IsBodyHtml = true;
 
-    smtpClient.Send(message);
+    await smtpClient.SendMailAsync(message);
 
     Console.WriteLine($"✓ Email {index + 1}/{EmailCount} sent: {message.Subject.Substring(0, Math.Min(50, message.Subject.Length))}...");
 }

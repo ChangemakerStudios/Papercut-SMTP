@@ -51,7 +51,9 @@ async Task SendInvoiceEmailAsync()
     var faker = new Faker();
     var random = new Random();
     var companyName = faker.Company.CompanyName();
-    var customerFullName = faker.Name.FullName();
+    var customerFirstName = faker.Name.FirstName();
+    var customerLastName = faker.Name.LastName();
+    var customerFullName = $"{customerFirstName} {customerLastName}";
     var invoiceNumber = "INV-" + DateTime.Now.ToString("yyyyMM") + "-" + random.Next(1000, 9999);
     var amount = random.Next(500, 5000);
 
@@ -245,7 +247,7 @@ async Task SendInvoiceEmailAsync()
 
         <!-- Main Content -->
         <div class=""content"">
-            <p>Dear {faker.Name.FirstName()},</p>
+            <p>Dear {customerFirstName},</p>
 
             <p>Thank you for your business! This email confirms that we have received your payment and your invoice has been processed successfully.</p>
 
