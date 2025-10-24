@@ -133,7 +133,7 @@ public class RulesRunner : IRulesRunner
         {
             _logger.Warning(
                 ex,
-                "Failure Dispatching Rule {Rule} for Message {@MessageEntry}",
+                "Failure Dispatching Rule {Rule} on Message {@MessageEntry}",
                 rule,
                 messageEntry);
         }
