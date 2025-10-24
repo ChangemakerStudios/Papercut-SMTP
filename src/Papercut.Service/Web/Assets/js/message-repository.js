@@ -11,7 +11,7 @@ papercutApp.factory('messageRepository', function($http, $q){
     }
 
     function getMessage(id){
-        return $http.get('/api/messages/' + id);
+        return $http.get('/api/messages/' + encodeURIComponent(id));
     }
 
     function deleteAllMessages(onComplete){

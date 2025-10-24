@@ -117,7 +117,7 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   };
   
   $scope.downloadSection = function (msgId, sectionIndex, name) {
-      var url = '/api/messages/' + msgId + '/sections/' + sectionIndex;
+      var url = '/api/messages/' + encodeURIComponent(msgId) + '/sections/' + sectionIndex;
       if (!nativeFeatures.isNative()){
           window.open(url,  '_blank');
           return;
@@ -127,7 +127,7 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   };
   
   $scope.downloadRawMessage = function (msgId) {
-      var url = '/api/messages/' + msgId + '/raw';
+      var url = '/api/messages/' + encodeURIComponent(msgId) + '/raw';
       if (!nativeFeatures.isNative()){
           window.open(url,  '_blank');
           return;
