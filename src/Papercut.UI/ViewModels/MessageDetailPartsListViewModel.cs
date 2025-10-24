@@ -125,7 +125,17 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
                     mimePart.Content.DecodeTo(outputFile);
                 }
 
-                Process.Start(new ProcessStartInfo(tempFileName) { UseShellExecute = true });
+                // Set WorkingDirectory to file's directory to avoid path resolution issues on Windows 11
+                // Explicitly set Verb to "open" for reliability with shell file associations
+                var directory = Path.GetDirectoryName(tempFileName) ?? Path.GetTempPath();
+                var processStartInfo = new ProcessStartInfo(tempFileName)
+                {
+                    UseShellExecute = true,
+                    WorkingDirectory = directory,
+                    Verb = "open"
+                };
+
+                Process.Start(processStartInfo);
             }
             catch (Exception ex)
             {
