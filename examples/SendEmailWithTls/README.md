@@ -1,6 +1,6 @@
-# SMTP TLS Test Application
+# SendEmailWithTls - TLS/STARTTLS Test Application
 
-Example console application demonstrating TLS/STARTTLS and SMTP authentication with Papercut SMTP server.
+Example console application demonstrating TLS/STARTTLS connections and SMTP authentication with Papercut SMTP server.
 
 ## Purpose
 
@@ -36,14 +36,14 @@ const string Password = "testpass";
 
 ### From Command Line
 
-```bash
-cd examples/SmtpTlsTest
+```powershell
+cd examples/SendEmailWithTls
 dotnet run
 ```
 
 ### From Visual Studio
 
-1. Open `SmtpTlsTest.csproj`
+1. Open `SendEmailWithTls.csproj`
 2. Press F5 to run
 3. Or right-click project → Debug → Start New Instance
 
@@ -127,7 +127,7 @@ Test 2: Send Test Email
 
 ## Files
 
-- `SmtpTlsTest.csproj` - Project file
+- `SendEmailWithTls.csproj` - Project file
 - `Program.cs` - Main test application
 - `README.md` - This file
 

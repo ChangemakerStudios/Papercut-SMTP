@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <UseBogus>true</UseBogus>
+    <UseConfiguration>true</UseConfiguration>
+  </PropertyGroup>
+
+</Project>
