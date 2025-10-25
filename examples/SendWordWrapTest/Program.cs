@@ -47,10 +47,8 @@ catch (Exception ex)
 
 async Task SendWordWrapTestEmailAsync()
 {
-    // Read the test HTML file
-    var htmlFilePath = Path.Combine(
-        Directory.GetParent(AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.Parent!.FullName,
-        "test-word-wrap.html");
+    // Read the test HTML file from resources directory
+    var htmlFilePath = Path.Combine(AppContext.BaseDirectory, "resources", "test-word-wrap.html");
 
     if (!File.Exists(htmlFilePath))
     {

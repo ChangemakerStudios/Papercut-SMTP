@@ -37,7 +37,7 @@ dotnet run
 
 ### Configuration
 
-Edit `appsettings.json` to customize SMTP settings:
+SMTP settings are configured in the shared `../appsettings.json` file. Edit it to customize:
 
 ```json
 {
@@ -62,10 +62,12 @@ When viewing the email in Papercut:
 
 ## Technical Details
 
-The test email is generated from [../../test-word-wrap.html](../../test-word-wrap.html), which contains various HTML elements with long unbroken strings to test the CSS word-wrap fix implemented in the `HtmlToHtmlFormatWrapper` template.
+The test email is generated from [../resources/test-word-wrap.html](../resources/test-word-wrap.html), which contains various HTML elements with long unbroken strings to test the CSS word-wrap fix implemented in the `HtmlToHtmlFormatWrapper` template.
+
+The HTML file is copied to the build output's `resources` directory during build (configured via `Directory.Build.props`).
 
 ## Related
 
 - **Issue**: #154 - Does not support CSS force word wrap
 - **Fix**: Added global CSS rules to HTML wrapper template
-- **Test File**: `test-word-wrap.html` in project root
+- **Test File**: `examples/resources/test-word-wrap.html`
