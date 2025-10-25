@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Runtime.InteropServices;
+
 using Microsoft.Web.WebView2.Core;
 
 using Papercut.AppLayer.Processes;
@@ -285,7 +287,19 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             try
             {
                 // Check if the context menu is for a link
-                var linkUrl = args.ContextMenuTarget.LinkUri;
+                string? linkUrl = null;
+
+                try
+                {
+                    linkUrl = args.ContextMenuTarget.LinkUri;
+                }
+                catch (COMException ex) when (ex.HResult == unchecked((int)0x8000000E))
+                {
+                    // The ContextMenuTarget became invalid (race condition if user moved quickly)
+                    _logger.Debug("Context menu target became invalid (user moved quickly)");
+                    args.MenuItems.Clear();
+                    return;
+                }
 
                 if (!string.IsNullOrEmpty(linkUrl))
                 {
