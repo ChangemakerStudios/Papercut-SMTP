@@ -2,11 +2,10 @@
 // Example console application demonstrating sending professional invoice emails
 // with PDF attachments
 
-using System.Net;
-using System.Net.Mail;
-using System.Net.Mime;
 using Bogus;
+using MailKit.Net.Smtp;
 using Microsoft.Extensions.Configuration;
+using MimeKit;
 using Papercut.Examples;
 
 // Load configuration
@@ -54,23 +53,19 @@ async Task SendInvoiceEmailAsync()
     var invoiceNumber = "INV-" + DateTime.Now.ToString("yyyyMM") + "-" + random.Next(1000, 9999);
     var amount = random.Next(500, 5000);
 
-    using var smtpClient = new SmtpClient(options.Host, options.Port)
-    {
-        UseDefaultCredentials = false,
-        Credentials = new NetworkCredential(options.Username ?? "username", options.Password ?? "password")
-    };
+    using var smtpClient = await SmtpClientHelper.CreateAndConnectAsync(options);
 
-    var from = new MailAddress("invoices@acmecorp.com", $"{companyName} Billing");
-    var to = new MailAddress("customer@example.com", customerFullName);
-
-    using var message = new MailMessage(from, to);
-
-    message.ReplyToList.Add(new MailAddress("billing@acmecorp.com"));
+    var message = new MimeMessage();
+    message.From.Add(new MailboxAddress($"{companyName} Billing", "invoices@acmecorp.com"));
+    message.To.Add(new MailboxAddress(customerFullName, "customer@example.com"));
+    message.ReplyTo.Add(new MailboxAddress("", "billing@acmecorp.com"));
     message.Subject = $"Your Invoice {invoiceNumber} - Payment Confirmation";
-    message.SubjectEncoding = System.Text.Encoding.UTF8;
+    message.Priority = MessagePriority.Urgent;
 
     // Professional invoice-style HTML email template
-    message.Body = $@"<!DOCTYPE html>
+    var bodyBuilder = new BodyBuilder
+    {
+        HtmlBody = $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""UTF-8"">
@@ -323,22 +318,15 @@ async Task SendInvoiceEmailAsync()
         </div>
     </div>
 </body>
-</html>";
-
-    message.BodyEncoding = System.Text.Encoding.UTF8;
-    message.IsBodyHtml = true;
-    message.Priority = MailPriority.High;
+</html>"
+    };
 
     // Attach the PDF file if it exists
     var pdfPath = Path.Combine(AppContext.BaseDirectory, "resources", "sample.pdf");
 
     if (File.Exists(pdfPath))
     {
-        var pdfAttachment = new Attachment(pdfPath, MediaTypeNames.Application.Pdf)
-        {
-            Name = $"Invoice-{invoiceNumber}.pdf"
-        };
-        message.Attachments.Add(pdfAttachment);
+        bodyBuilder.Attachments.Add(pdfPath, ContentType.Parse("application/pdf"));
         Console.WriteLine($"✓ PDF attachment added: {pdfPath}");
     }
     else
@@ -348,12 +336,15 @@ async Task SendInvoiceEmailAsync()
         Console.WriteLine("  To include a PDF, place a 'sample.pdf' file in the same directory as the executable\n");
     }
 
-    await Task.Run(() => smtpClient.Send(message));
+    message.Body = bodyBuilder.ToMessageBody();
+
+    await smtpClient.SendAsync(message);
+    await smtpClient.DisconnectAsync(true);
 
     Console.WriteLine();
     Console.WriteLine("✓ Email sent successfully!");
     Console.WriteLine($"  Subject: {message.Subject}");
-    Console.WriteLine($"  To: {to.DisplayName} <{to.Address}>");
-    Console.WriteLine($"  From: {from.DisplayName} <{from.Address}>");
-    Console.WriteLine($"  Attachments: {message.Attachments.Count}");
+    Console.WriteLine($"  To: {message.To}");
+    Console.WriteLine($"  From: {message.From}");
+    Console.WriteLine($"  Attachments: {bodyBuilder.Attachments.Count}");
 }

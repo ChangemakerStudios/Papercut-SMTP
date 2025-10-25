@@ -2,9 +2,8 @@
 // Example console application demonstrating sending multiple test emails
 // with embedded images and parallel processing
 
-using System.Net;
-using System.Net.Mail;
-using System.Net.Mime;
+using MailKit.Net.Smtp;
+using MimeKit;
 using Bogus;
 using Microsoft.Extensions.Configuration;
 using Papercut.Examples;
@@ -74,42 +73,31 @@ async Task SendBulkEmailsAsync(byte[] svgData)
 
 async Task SendEmailAsync(int index, byte[] svgData, Faker faker, SmtpSendOptions smtpOptions)
 {
-    using var smtpClient = new SmtpClient(smtpOptions.Host, smtpOptions.Port)
-    {
-        UseDefaultCredentials = false,
-        Credentials = !string.IsNullOrEmpty(smtpOptions.Username)
-            ? new NetworkCredential(smtpOptions.Username, smtpOptions.Password ?? string.Empty)
-            : null,
-        EnableSsl = smtpOptions.Security != SmtpSecurityMode.None
-    };
+    using var smtpClient = await SmtpClientHelper.CreateAndConnectAsync(smtpOptions);
 
     // Generate fake email addresses and names
     var fromName = faker.Name.FullName();
     var fromEmail = faker.Internet.Email();
-    var from = new MailAddress(fromEmail, fromName);
-    var to = new MailAddress("you@example.com", "Test Recipient");
 
-    using var message = new MailMessage(from, to);
+    var message = new MimeMessage();
+    message.From.Add(new MailboxAddress(fromName, fromEmail));
+    message.To.Add(new MailboxAddress("Test Recipient", "you@example.com"));
 
     // Add reply-to
-    message.ReplyToList.Add(new MailAddress("reply@example.com"));
+    message.ReplyTo.Add(new MailboxAddress("", "reply@example.com"));
 
     // Set subject with random data
     message.Subject = $"Dear {faker.Name.FullName()} - Fun at {faker.Company.CompanyName()} {Guid.NewGuid()}";
-    message.SubjectEncoding = System.Text.Encoding.UTF8;
 
     // Set priority alternating
-    message.Priority = index % 2 == 0 ? MailPriority.Low : MailPriority.Normal;
+    message.Priority = index % 2 == 0 ? MessagePriority.NonUrgent : MessagePriority.Normal;
 
     // Create HTML body with embedded SVG image
-    using var imageStream = new MemoryStream(svgData);
+    var bodyBuilder = new BodyBuilder();
+    var linkedResource = bodyBuilder.LinkedResources.Add("image1", svgData, ContentType.Parse("image/svg+xml"));
+    linkedResource.ContentId = "image1";
 
-    var linkedResource = new LinkedResource(imageStream, new ContentType("image/svg+xml"))
-    {
-        ContentId = "image1"
-    };
-
-    var htmlBody = $@"<html>
+    bodyBuilder.HtmlBody = $@"<html>
         <head>
         <style>
             body {{ font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }}
@@ -139,16 +127,10 @@ async Task SendEmailAsync(int index, byte[] svgData, Faker faker, SmtpSendOption
         </body>
     </html>";
 
-    var alternateView = AlternateView.CreateAlternateViewFromString(
-        htmlBody,
-        null,
-        MediaTypeNames.Text.Html);
-    alternateView.LinkedResources.Add(linkedResource);
+    message.Body = bodyBuilder.ToMessageBody();
 
-    message.AlternateViews.Add(alternateView);
-    message.IsBodyHtml = true;
-
-    await smtpClient.SendMailAsync(message);
+    await smtpClient.SendAsync(message);
+    await smtpClient.DisconnectAsync(true);
 
     Console.WriteLine($"✓ Email {index + 1}/{EmailCount} sent: {message.Subject.Substring(0, Math.Min(50, message.Subject.Length))}...");
 }

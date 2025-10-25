@@ -2,10 +2,10 @@
 // Example console application demonstrating how Papercut handles HTML emails
 // with images from sites with various SSL certificate issues (badssl.com)
 
-using System.Net;
-using System.Net.Mail;
 using Bogus;
+using MailKit.Net.Smtp;
 using Microsoft.Extensions.Configuration;
+using MimeKit;
 using Papercut.Examples;
 
 // Load configuration
@@ -53,28 +53,23 @@ async Task SendBadSSLTestEmailAsync()
 {
     var faker = new Faker();
 
-    using var smtpClient = new SmtpClient(options.Host, options.Port)
-    {
-        UseDefaultCredentials = false,
-        Credentials = !string.IsNullOrEmpty(options.Username)
-            ? new NetworkCredential(options.Username, options.Password ?? string.Empty)
-            : null,
-        EnableSsl = options.Security != SmtpSecurityMode.None
-    };
+    using var smtpClient = await SmtpClientHelper.CreateAndConnectAsync(options);
 
     var fromName = faker.Name.FullName();
     var fromEmail = faker.Internet.Email();
-    var from = new MailAddress(fromEmail, fromName);
-    var to = new MailAddress("you@example.com", "Test Recipient");
 
-    using var message = new MailMessage(from, to);
+    var message = new MimeMessage();
+    message.From.Add(new MailboxAddress(fromName, fromEmail));
+    message.To.Add(new MailboxAddress("Test Recipient", "you@example.com"));
+    message.ReplyTo.Add(new MailboxAddress("Reply", "reply@example.com"));
 
-    message.ReplyToList.Add(new MailAddress("reply@example.com"));
     message.Subject = "SSL Certificate Test - " + Guid.NewGuid();
-    message.SubjectEncoding = System.Text.Encoding.UTF8;
+    message.Priority = MessagePriority.Normal;
 
     // HTML body with images from various bad SSL scenarios
-    message.Body = $@"<html>
+    var bodyBuilder = new BodyBuilder
+    {
+        HtmlBody = $@"<html>
 <body>
 	<h2>SSL Certificate Error Test Email</h2>
 	<p>This email contains PNG images from various bad SSL certificate scenarios from badssl.com</p>
@@ -103,16 +98,16 @@ async Task SendBadSSLTestEmailAsync()
 
 	<p>{faker.Lorem.Paragraphs(3, "<br />")}</p>
 </body>
-</html>";
+</html>"
+    };
 
-    message.BodyEncoding = System.Text.Encoding.UTF8;
-    message.IsBodyHtml = true;
-    message.Priority = MailPriority.Normal;
+    message.Body = bodyBuilder.ToMessageBody();
 
-    await smtpClient.SendMailAsync(message);
+    await smtpClient.SendAsync(message);
+    await smtpClient.DisconnectAsync(true);
 
     Console.WriteLine("✓ Test email sent successfully!");
     Console.WriteLine($"  Subject: {message.Subject}");
-    Console.WriteLine($"  To: {to.DisplayName} <{to.Address}>");
-    Console.WriteLine($"  From: {from.DisplayName} <{from.Address}>");
+    Console.WriteLine($"  To: {message.To}");
+    Console.WriteLine($"  From: {message.From}");
 }
