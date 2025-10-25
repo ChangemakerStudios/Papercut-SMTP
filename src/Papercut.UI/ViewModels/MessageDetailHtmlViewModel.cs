@@ -228,12 +228,8 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
                 }
             });
 
-        // Context menu is now handled by CoreWebView2.ContextMenuRequested
-        // Keep this for fallback if WebView2 doesn't handle it
-        typedView.htmlView.ContextMenuOpening += (_, args) =>
-        {
-            args.Handled = true;
-        };
+        // Context menu is now handled by CoreWebView2.ContextMenuRequested in SetupWebView
+        // Removed the ContextMenuOpening handler that was blocking all context menus
     }
 
     private void SetupWebView(CoreWebView2 coreWebView)
