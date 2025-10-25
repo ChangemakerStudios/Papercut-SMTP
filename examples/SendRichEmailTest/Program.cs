@@ -200,7 +200,7 @@ async Task SendRichEmailAsync()
 
             <p><strong>Quick Stats:</strong></p>
             <ul>
-                <li>Account ID: <code>{Guid.NewGuid().ToString().Substring(0, 8)}</code></li>
+                <li>Account ID: <code>{Guid.NewGuid().ToString()[..8]}</code></li>
                 <li>Member since: {DateTime.Now:MMMM dd, yyyy}</li>
                 <li>Plan: Professional</li>
             </ul>
