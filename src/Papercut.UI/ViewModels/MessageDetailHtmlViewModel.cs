@@ -77,6 +77,9 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
     public bool ShowHtmlView => !string.IsNullOrWhiteSpace(HtmlFile);
 
+    public MessageDetailAttachmentsViewModel? AttachmentsViewModel =>
+        (this.Parent as MessageDetailViewModel)?.AttachmentsViewModel;
+
     public async Task HandleAsync(SettingsUpdatedEvent settingsEvent, CancellationToken cancellationToken)
     {
         // Check if SSL certificate setting changed

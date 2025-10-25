@@ -64,6 +64,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         Func<MessageDetailRawViewModel> rawViewModelFactory,
         Func<MessageDetailHeaderViewModel> headerViewModelFactory,
         Func<MessageDetailBodyViewModel> bodyViewModelFactory,
+        Func<MessageDetailAttachmentsViewModel> attachmentsViewModelFactory,
         IMimeMessageLoader mimeMessageLoader)
     {
         this._mimeMessageLoader = mimeMessageLoader;
@@ -73,6 +74,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         this.RawViewModel = rawViewModelFactory();
         this.HeaderViewModel = headerViewModelFactory();
         this.BodyViewModel = bodyViewModelFactory();
+        this.AttachmentsViewModel = attachmentsViewModelFactory();
 
         this.Items.Add(this.HtmlViewModel);
         this.Items.Add(this.HeaderViewModel);
@@ -248,6 +250,8 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
     public MessageDetailBodyViewModel BodyViewModel { get; }
 
+    public MessageDetailAttachmentsViewModel AttachmentsViewModel { get; }
+
     public void LoadMessageEntry(MessageEntry? messageEntry)
     {
         this._loadingDisposable?.Dispose();
@@ -321,6 +325,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
             this.RawViewModel.MimeMessage = mailMessageEx;
             this.PartsListViewModel.MimeMessage = mailMessageEx;
+            this.AttachmentsViewModel.LoadAttachments(mailMessageEx);
 
             this.BodyViewModel.Body = mainBody != null ? mainBody.GetText(Encoding.UTF8) : string.Empty;
 

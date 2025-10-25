@@ -44,6 +44,9 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
         }
     }
 
+    public MessageDetailAttachmentsViewModel? AttachmentsViewModel =>
+        (this.Parent as MessageDetailViewModel)?.AttachmentsViewModel;
+
     protected override void OnViewLoaded(object view)
     {
         base.OnViewLoaded(view);
