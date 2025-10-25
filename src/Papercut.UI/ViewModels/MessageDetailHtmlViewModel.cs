@@ -228,6 +228,8 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
                 }
             });
 
+        // Context menu is now handled by CoreWebView2.ContextMenuRequested
+        // Keep this for fallback if WebView2 doesn't handle it
         typedView.htmlView.ContextMenuOpening += (_, args) =>
         {
             args.Handled = true;
@@ -279,6 +281,47 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
                 }
             };
         }
+
+        // Handle context menu for links
+        coreWebView.ContextMenuRequested += (sender, args) =>
+        {
+            var deferral = args.GetDeferral();
+            try
+            {
+                // Check if the context menu is for a link
+                var linkUrl = args.ContextMenuTarget.LinkUri;
+
+                if (!string.IsNullOrEmpty(linkUrl))
+                {
+                    // Remove default menu items
+                    args.MenuItems.Clear();
+
+                    // Add "Copy Link" menu item
+                    var copyLinkItem = coreWebView.Environment.CreateContextMenuItem(
+                        "Copy Link",
+                        null,
+                        CoreWebView2ContextMenuItemKind.Command);
+
+                    copyLinkItem.CustomItemSelected += (_, __) =>
+                    {
+                        CopyLinkToClipboard(linkUrl);
+                    };
+
+                    args.MenuItems.Insert(0, copyLinkItem);
+
+                    _logger.Debug("Context menu shown for link: {Url}", linkUrl);
+                }
+                else
+                {
+                    // For non-links, remove all menu items (no context menu)
+                    args.MenuItems.Clear();
+                }
+            }
+            finally
+            {
+                deferral.Complete();
+            }
+        };
 
         coreWebView.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
@@ -420,6 +463,19 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             {
                 model.SelectedPart = part;
             }
+        }
+    }
+
+    private void CopyLinkToClipboard(string linkUrl)
+    {
+        try
+        {
+            Clipboard.SetText(linkUrl);
+            _logger.Information("Copied link to clipboard: {Url}", linkUrl);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Failed to copy link to clipboard: {Url}", linkUrl);
         }
     }
 }
