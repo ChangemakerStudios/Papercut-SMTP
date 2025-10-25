@@ -54,7 +54,7 @@ public class AttachmentFileService()
         mimePart.Content.DecodeTo(outputFile);
     }
 
-    private string CreateTempFileWithExtension(string extension)
+    private string CreateTempFileWithExtension(string? extension)
     {
         string tempFileName = Path.GetTempFileName();
 
