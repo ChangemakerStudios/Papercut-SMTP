@@ -22,6 +22,8 @@ public class ProcessService(ILogger logger)
 {
     public void OpenFolder(string folder)
     {
+        ArgumentNullException.ThrowIfNull(folder, nameof(folder));
+
         try
         {
             Process.Start(new ProcessStartInfo("explorer.exe", folder));
@@ -39,6 +41,8 @@ public class ProcessService(ILogger logger)
 
     public ExecutionResult OpenFile(string filePath)
     {
+        ArgumentNullException.ThrowIfNull(filePath, nameof(filePath));
+
         try
         {
             // Set WorkingDirectory to file's directory to avoid path resolution issues on Windows 11
@@ -65,7 +69,7 @@ public class ProcessService(ILogger logger)
 
     public ExecutionResult OpenUri(Uri uri)
     {
-        ArgumentNullException.ThrowIfNull(uri);
+        ArgumentNullException.ThrowIfNull(uri, nameof(uri));
 
         try
         {

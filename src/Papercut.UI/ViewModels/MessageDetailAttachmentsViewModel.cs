@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 
 using Papercut.AppLayer.Attachments;
 using Papercut.AppLayer.Processes;
+using Papercut.Domain.UiCommands;
 using Papercut.Message;
 using Papercut.Message.Helpers;
 
@@ -33,14 +34,18 @@ public sealed class MessageDetailAttachmentsViewModel : PropertyChangedBase
 
     readonly ProcessService _processService;
 
+    readonly IUiCommandHub _uiCommandHub;
+
     public MessageDetailAttachmentsViewModel(
         ILogger logger,
         AttachmentFileService attachmentFileService,
-        ProcessService processService)
+        ProcessService processService,
+        IUiCommandHub uiCommandHub)
     {
         this._logger = logger;
         this._attachmentFileService = attachmentFileService;
         this._processService = processService;
+        this._uiCommandHub = uiCommandHub;
         this.Attachments = new ObservableCollection<MimePart>();
     }
 
@@ -78,14 +83,16 @@ public sealed class MessageDetailAttachmentsViewModel : PropertyChangedBase
 
             if (result.IsFailed)
             {
-                MessageBox.Show(string.Join(Environment.NewLine, result.Errors),
+                this._uiCommandHub.ShowMessage(
+                    string.Join(Environment.NewLine, result.Errors),
                     "Unable to Open Attachment");
             }
         }
         catch (Exception ex)
         {
             this._logger.Error(ex, "Failure Creating Attachment File for {FileName}", mimePart.FileName);
-            MessageBox.Show($"Failed to Create Attachment File: {ex.Message}",
+            this._uiCommandHub.ShowMessage(
+                $"Failed to Create Attachment File: {ex.Message}",
                 "Unable to Create Attachment");
         }
     }
