@@ -18,7 +18,7 @@
 
 namespace Papercut.AppLayer.Processes;
 
-public class ExplorerProcessService
+public class ProcessService(ILogger logger)
 {
     public void OpenFolder(string folder)
     {
@@ -37,11 +37,37 @@ public class ExplorerProcessService
         }
     }
 
+    public ExecutionResult OpenFile(string filePath)
+    {
+        try
+        {
+            // Set WorkingDirectory to file's directory to avoid path resolution issues on Windows 11
+            // Explicitly set Verb to "open" for reliability with shell file associations
+            var directory = Path.GetDirectoryName(filePath) ?? Path.GetTempPath();
+            var processStartInfo = new ProcessStartInfo(filePath)
+            {
+                UseShellExecute = true,
+                WorkingDirectory = directory,
+                Verb = "open"
+            };
+
+            Process.Start(processStartInfo);
+
+            return ExecutionResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, "Failure Opening File: {FilePath}", filePath);
+
+            return ExecutionResult.Failure($"Failed to open file '{filePath}': {ex.Message}");
+        }
+    }
+
     #region Begin Static Container Registrations
 
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
-        builder.RegisterType<ExplorerProcessService>().AsSelf();
+        builder.RegisterType<ProcessService>().AsSelf();
     }
 
     #endregion
