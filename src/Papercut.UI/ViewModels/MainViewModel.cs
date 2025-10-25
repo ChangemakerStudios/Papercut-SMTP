@@ -227,7 +227,7 @@ public class MainViewModel : Conductor<object>,
 
     public Task HandleAsync(SmtpServerBindFailedEvent message, CancellationToken cancellationToken = default)
     {
-        MessageBox.Show(
+        this._uiCommandHub.ShowMessage(
             "Failed to start SMTP server listening. The IP and Port combination is in use by another program. To fix, change the server bindings in the options.",
             "Failed");
 
@@ -637,9 +637,14 @@ public class MainViewModel : Conductor<object>,
     {
         if (this.MessageListViewModel.SelectedMessage == null) return;
 
-        var forwardViewModel = new ForwardViewModel {FromSetting = true};
-        bool? result = await this._viewModelWindowManager.ShowDialogAsync(forwardViewModel);
-        if (result == null || !result.Value) return;
+        ForwardViewModel? forwardViewModel = null;
+        bool? result = await this._viewModelWindowManager.ShowDialogWithViewModel<ForwardViewModel>(
+            vm =>
+            {
+                vm.FromSetting = true;
+                forwardViewModel = vm;
+            });
+        if (result == null || !result.Value || forwardViewModel == null) return;
 
         var progressDialog = await this.ShowProgress("Forwarding Email...", "Please wait");
 
