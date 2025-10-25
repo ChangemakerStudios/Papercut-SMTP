@@ -55,7 +55,13 @@ public class ProcessService(ILogger logger)
                 Verb = "open"
             };
 
-            Process.Start(processStartInfo);
+            var process = Process.Start(processStartInfo);
+
+            if (process == null)
+            {
+                logger.Error("Process.Start returned null for file: {FilePath}", filePath);
+                return ExecutionResult.Failure($"Failed to start process for file '{filePath}': No process was started");
+            }
 
             return ExecutionResult.Success();
         }
@@ -73,7 +79,13 @@ public class ProcessService(ILogger logger)
 
         try
         {
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+            var process = Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+
+            if (process == null)
+            {
+                logger.Error("Process.Start returned null for URI: {Uri}", uri.AbsoluteUri);
+                return ExecutionResult.Failure($"Failed to start process for URI '{uri.AbsoluteUri}': No process was started");
+            }
 
             return ExecutionResult.Success();
         }
