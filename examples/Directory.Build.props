@@ -25,6 +25,7 @@
   <!-- Shared code files -->
   <ItemGroup>
     <Compile Include="..\SmtpSendOptions.cs" Link="SmtpSendOptions.cs" Condition="'$(UseConfiguration)' == 'true'" />
+    <Compile Include="..\SmtpClientHelper.cs" Link="SmtpClientHelper.cs" Condition="'$(UseMailKit)' == 'true'" />
   </ItemGroup>
 
   <!-- Shared resources -->

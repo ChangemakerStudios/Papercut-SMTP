@@ -2,10 +2,11 @@
 // Example console application demonstrating professional HTML email templates
 // with modern styling, responsive design, and rich formatting
 
-using System.Net;
-using System.Net.Mail;
 using Bogus;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Configuration;
+using MimeKit;
 using Papercut.Examples;
 
 // Load configuration
@@ -50,26 +51,17 @@ async Task SendRichEmailAsync()
     var customerLastName = faker.Name.LastName();
     var customerFullName = $"{customerName} {customerLastName}";
 
-    using var smtpClient = new SmtpClient(options.Host, options.Port)
-    {
-        UseDefaultCredentials = false,
-        Credentials = !string.IsNullOrEmpty(options.Username)
-            ? new NetworkCredential(options.Username, options.Password ?? string.Empty)
-            : null,
-        EnableSsl = options.Security != SmtpSecurityMode.None
-    };
+    using var smtpClient = await SmtpClientHelper.CreateAndConnectAsync(options);
 
-    var from = new MailAddress("noreply@company.com", companyName);
-    var to = new MailAddress("customer@example.com", customerFullName);
-
-    using var message = new MailMessage(from, to);
-
-    message.ReplyToList.Add(new MailAddress("support@company.com"));
+    var message = new MimeMessage();
+    message.From.Add(new MailboxAddress(companyName, "noreply@company.com"));
+    message.To.Add(new MailboxAddress(customerFullName, "customer@example.com"));
+    message.ReplyTo.Add(new MailboxAddress("Support", "support@company.com"));
     message.Subject = $"Welcome to {companyName} - Your Account is Ready!";
-    message.SubjectEncoding = System.Text.Encoding.UTF8;
 
-    // Rich HTML email template with modern styling
-    message.Body = $@"<!DOCTYPE html>
+    var bodyBuilder = new BodyBuilder
+    {
+        HtmlBody = $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""UTF-8"">
@@ -237,16 +229,17 @@ async Task SendRichEmailAsync()
         </div>
     </div>
 </body>
-</html>";
+</html>"
+    };
 
-    message.BodyEncoding = System.Text.Encoding.UTF8;
-    message.IsBodyHtml = true;
-    message.Priority = MailPriority.Normal;
+    message.Body = bodyBuilder.ToMessageBody();
+    message.Priority = MessagePriority.Normal;
 
-    await smtpClient.SendMailAsync(message);
+    await smtpClient.SendAsync(message);
+    await smtpClient.DisconnectAsync(true);
 
     Console.WriteLine("✓ Rich email sent successfully!");
     Console.WriteLine($"  Subject: {message.Subject}");
-    Console.WriteLine($"  To: {to.DisplayName} <{to.Address}>");
-    Console.WriteLine($"  From: {from.DisplayName} <{from.Address}>");
+    Console.WriteLine($"  To: {message.To}");
+    Console.WriteLine($"  From: {message.From}");
 }

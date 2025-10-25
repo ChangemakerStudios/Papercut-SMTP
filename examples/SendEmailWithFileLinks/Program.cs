@@ -2,9 +2,9 @@
 // Example console application demonstrating file:/// protocol links (Issue #232)
 // Tests that file links open correctly in Windows Explorer or associated applications
 
-using System.Net;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
 using Microsoft.Extensions.Configuration;
+using MimeKit;
 using Papercut.Examples;
 
 // Load configuration
@@ -46,27 +46,19 @@ catch (Exception ex)
 
 async Task SendFileLinkEmailAsync()
 {
-    using var smtpClient = new SmtpClient(options.Host, options.Port)
-    {
-        UseDefaultCredentials = false,
-        Credentials = !string.IsNullOrEmpty(options.Username)
-            ? new NetworkCredential(options.Username, options.Password ?? string.Empty)
-            : null,
-        EnableSsl = options.Security != SmtpSecurityMode.None
-    };
+    using var smtpClient = await SmtpClientHelper.CreateAndConnectAsync(options);
 
-    var from = new MailAddress("test@company.com", "Test Sender");
-    var to = new MailAddress("user@example.com", "Test User");
-
-    using var message = new MailMessage(from, to);
-
+    var message = new MimeMessage();
+    message.From.Add(new MailboxAddress("Test Sender", "test@company.com"));
+    message.To.Add(new MailboxAddress("Test User", "user@example.com"));
     message.Subject = "Test Email with file:/// Links (Issue #232)";
-    message.SubjectEncoding = System.Text.Encoding.UTF8;
 
     // HTML email with file:/// links
     var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).Replace("\\", "/");
 
-    message.Body = $@"<!DOCTYPE html>
+    var bodyBuilder = new BodyBuilder
+    {
+        HtmlBody = $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""UTF-8"">
@@ -148,16 +140,17 @@ async Task SendFileLinkEmailAsync()
         Make file links functional
     </p>
 </body>
-</html>";
+</html>"
+    };
 
-    message.BodyEncoding = System.Text.Encoding.UTF8;
-    message.IsBodyHtml = true;
-    message.Priority = MailPriority.Normal;
+    message.Body = bodyBuilder.ToMessageBody();
+    message.Priority = MessagePriority.Normal;
 
-    await smtpClient.SendMailAsync(message);
+    await smtpClient.SendAsync(message);
+    await smtpClient.DisconnectAsync(true);
 
     Console.WriteLine("✓ Test email sent successfully!");
     Console.WriteLine($"  Subject: {message.Subject}");
-    Console.WriteLine($"  To: {to.DisplayName} <{to.Address}>");
-    Console.WriteLine($"  From: {from.DisplayName} <{from.Address}>");
+    Console.WriteLine($"  To: {message.To}");
+    Console.WriteLine($"  From: {message.From}");
 }

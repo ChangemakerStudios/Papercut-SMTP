@@ -3,6 +3,7 @@
   <PropertyGroup>
     <UseBogus>true</UseBogus>
     <UseConfiguration>true</UseConfiguration>
+    <UseMailKit>true</UseMailKit>
   </PropertyGroup>
 
 </Project>

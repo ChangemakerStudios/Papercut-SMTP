@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <UseConfiguration>true</UseConfiguration>
+    <UseMailKit>true</UseMailKit>
   </PropertyGroup>
 
 </Project>
