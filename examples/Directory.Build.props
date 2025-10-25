@@ -1,0 +1,41 @@
+<Project>
+  <!-- Common properties for all example projects -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- Centralized NuGet package versions -->
+  <ItemGroup Label="Common Packages">
+    <!-- Fake data generation for test emails -->
+    <PackageReference Include="Bogus" Version="35.6.1" Condition="'$(UseBogus)' == 'true'" />
+
+    <!-- Modern SMTP/MIME libraries (MailKit) -->
+    <PackageReference Include="MailKit" Version="4.9.0" Condition="'$(UseMailKit)' == 'true'" />
+    <PackageReference Include="MimeKit" Version="4.9.0" Condition="'$(UseMailKit)' == 'true'" />
+
+    <!-- Configuration support -->
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" Condition="'$(UseConfiguration)' == 'true'" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" Condition="'$(UseConfiguration)' == 'true'" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" Condition="'$(UseConfiguration)' == 'true'" />
+  </ItemGroup>
+
+  <!-- Shared code files -->
+  <ItemGroup>
+    <Compile Include="..\SmtpSendOptions.cs" Link="SmtpSendOptions.cs" Condition="'$(UseConfiguration)' == 'true'" />
+    <Compile Include="..\SmtpClientHelper.cs" Link="SmtpClientHelper.cs" Condition="'$(UseMailKit)' == 'true'" />
+  </ItemGroup>
+
+  <!-- Shared resources -->
+  <ItemGroup>
+    <None Include="..\resources\**\*.*" Link="resources\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\appsettings.json" Link="appsettings.json" Condition="'$(UseConfiguration)' == 'true'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

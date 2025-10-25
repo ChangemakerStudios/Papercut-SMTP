@@ -29,8 +29,6 @@ try
     Console.WriteLine("\n=============================================================");
     Console.WriteLine("✅ ALL TESTS PASSED");
     Console.WriteLine("=============================================================");
-    Console.WriteLine("\nPress any key to exit...");
-    Console.ReadKey();
 }
 catch (Exception ex)
 {
@@ -39,8 +37,6 @@ catch (Exception ex)
     Console.WriteLine("=============================================================");
     Console.WriteLine($"Error: {ex.Message}");
     Console.WriteLine($"\nDetails: {ex}");
-    Console.WriteLine("\nPress any key to exit...");
-    Console.ReadKey();
     Environment.Exit(1);
 }
 
