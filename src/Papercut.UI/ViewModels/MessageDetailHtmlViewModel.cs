@@ -18,7 +18,7 @@
 
 using Microsoft.Web.WebView2.Core;
 
-using Papercut.AppLayer.Uris;
+using Papercut.AppLayer.Processes;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Domain.HtmlPreviews;
 using Papercut.Infrastructure.WebView;
@@ -34,17 +34,24 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
     private readonly WebView2Information _webView2Information;
 
+    private readonly ProcessService _processService;
+
     private CoreWebView2? _coreWebView;
 
     private string? _htmlFile;
 
     private bool _isWebViewInstalled = false;
 
-    public MessageDetailHtmlViewModel(ILogger logger, WebView2Information webView2Information, IHtmlPreviewGenerator previewGenerator)
+    public MessageDetailHtmlViewModel(
+        ILogger logger,
+        WebView2Information webView2Information,
+        ProcessService processService,
+        IHtmlPreviewGenerator previewGenerator)
     {
         DisplayName = "Message";
         _logger = logger;
         _webView2Information = webView2Information;
+        _processService = processService;
         _previewGenerator = previewGenerator;
         IsWebViewInstalled = _webView2Information.IsInstalled;
     }
@@ -361,7 +368,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
     {
         if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
         {
-            navigateToUri.OpenUri();
+            _processService.OpenUri(navigateToUri);
         }
         else if (navigateToUri.Scheme == Uri.UriSchemeFile)
         {

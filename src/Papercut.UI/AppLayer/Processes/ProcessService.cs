@@ -63,6 +63,24 @@ public class ProcessService(ILogger logger)
         }
     }
 
+    public ExecutionResult OpenUri(Uri uri)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+
+            return ExecutionResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, "Failure Opening URI: {Uri}", uri.AbsoluteUri);
+
+            return ExecutionResult.Failure($"Failed to open URI '{uri.AbsoluteUri}': {ex.Message}");
+        }
+    }
+
     #region Begin Static Container Registrations
 
     private static void Register(ContainerBuilder builder)

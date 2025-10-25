@@ -26,7 +26,7 @@ using MahApps.Metro.Controls.Dialogs;
 
 using Papercut.AppLayer.LogSinks;
 using Papercut.AppLayer.NewVersionCheck;
-using Papercut.AppLayer.Uris;
+using Papercut.AppLayer.Processes;
 using Papercut.Core;
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Infrastructure.Async;
@@ -73,6 +73,8 @@ public class MainViewModel : Conductor<object>,
 
     private readonly WebView2Information _webView2Information;
 
+    readonly ProcessService _processService;
+
     bool _isDeactivated;
 
     private bool _isDeleteAllConfirmOpen;
@@ -101,6 +103,7 @@ public class MainViewModel : Conductor<object>,
         ILogger logger,
         UpdateManager updateManager,
         WebView2Information webView2Information,
+        ProcessService processService,
         ForwardRuleDispatch forwardRuleDispatch,
         Func<MessageListViewModel> messageListViewModelFactory,
         Func<MessageDetailViewModel> messageDetailViewModelFactory,
@@ -114,6 +117,7 @@ public class MainViewModel : Conductor<object>,
         this._logger = logger;
         this._updateManager = updateManager;
         this._webView2Information = webView2Information;
+        this._processService = processService;
         this._forwardRuleDispatch = forwardRuleDispatch;
 
         this.MessageListViewModel = messageListViewModelFactory();
@@ -533,7 +537,7 @@ public class MainViewModel : Conductor<object>,
 
     public void GoToSite()
     {
-        new Uri("https://github.com/ChangemakerStudios/Papercut-SMTP").OpenUri();
+        this._processService.OpenUri(new Uri("https://github.com/ChangemakerStudios/Papercut-SMTP"));
     }
 
     public void ShowRulesConfiguration()
