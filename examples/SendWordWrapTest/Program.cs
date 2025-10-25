@@ -73,7 +73,6 @@ async Task SendWordWrapTestEmailAsync()
     message.Priority = MessagePriority.Normal;
 
     await smtpClient.SendAsync(message);
-    await smtpClient.DisconnectAsync(true);
 
     Console.WriteLine("✓ Word-wrap test email sent successfully!");
     Console.WriteLine($"  Subject: {message.Subject}");

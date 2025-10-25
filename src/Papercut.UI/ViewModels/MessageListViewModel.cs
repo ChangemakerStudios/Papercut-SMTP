@@ -48,7 +48,7 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
 
     readonly IMimeMessageLoader _mimeMessageLoader;
 
-    private readonly ExplorerProcessService _explorerProcessService;
+    private readonly ProcessService _processService;
 
     private readonly IUiCommandHub _uiCommandHub;
 
@@ -63,7 +63,7 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
         IMessageRepository messageRepository,
         MessageWatcher messageWatcher,
         IMimeMessageLoader mimeMessageLoader,
-        ExplorerProcessService explorerProcessService,
+        ProcessService processService,
         ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(messageRepository);
@@ -74,7 +74,7 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
         this._messageRepository = messageRepository;
         this._messageWatcher = messageWatcher;
         this._mimeMessageLoader = mimeMessageLoader;
-        this._explorerProcessService = explorerProcessService;
+        this._processService = processService;
         this._logger = logger;
 
         this.SetupMessages();
@@ -301,7 +301,7 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
 
         foreach (var folder in folders)
         {
-            this._explorerProcessService.OpenFolder(folder);
+            this._processService.OpenFolder(folder);
         }
     }
 

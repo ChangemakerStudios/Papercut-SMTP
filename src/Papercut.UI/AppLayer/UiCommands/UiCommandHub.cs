@@ -26,13 +26,13 @@ namespace Papercut.AppLayer.UiCommands;
 
 public class UiCommandHub : Disposable, IUiCommandHub, IEventHandler<ShowMainWindowCommand>
 {
-    private readonly Subject<ShowBalloonTipCommand> _onShowBalloonTip = new Subject<ShowBalloonTipCommand>();
+    private readonly Subject<ShowBalloonTipCommand> _onShowBalloonTip = new();
 
-    private readonly Subject<ShowMainWindowCommand> _onShowMainWindow = new Subject<ShowMainWindowCommand>();
+    private readonly Subject<ShowMainWindowCommand> _onShowMainWindow = new();
 
-    private readonly Subject<ShowMessageCommand> _onShowMessage = new Subject<ShowMessageCommand>();
+    private readonly Subject<ShowMessageCommand> _onShowMessage = new();
 
-    private readonly Subject<ShowOptionWindowCommand> _onShowOptionWindow = new Subject<ShowOptionWindowCommand>();
+    private readonly Subject<ShowOptionWindowCommand> _onShowOptionWindow = new();
 
     public IObservable<ShowBalloonTipCommand> OnShowBalloonTip => this._onShowBalloonTip;
 

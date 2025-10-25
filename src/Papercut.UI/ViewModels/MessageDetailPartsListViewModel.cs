@@ -20,6 +20,9 @@ using System.Collections.ObjectModel;
 
 using Microsoft.Win32;
 
+using Papercut.AppLayer.Attachments;
+using Papercut.AppLayer.Processes;
+using Papercut.Domain.UiCommands;
 using Papercut.Message;
 using Papercut.Message.Helpers;
 
@@ -33,17 +36,32 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
 
     readonly IViewModelWindowManager _viewModelWindowManager;
 
+    readonly AttachmentFileService _attachmentFileService;
+
+    readonly ProcessService _processService;
+
+    readonly IUiCommandHub _uiCommandHub;
+
     bool _hasSelectedPart;
 
     MimeMessage? _mimeMessage;
 
     MimeEntity? _selectedPart;
 
-    public MessageDetailPartsListViewModel(IMessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
+    public MessageDetailPartsListViewModel(
+        IMessageRepository messageRepository,
+        IViewModelWindowManager viewModelWindowManager,
+        AttachmentFileService attachmentFileService,
+        ProcessService processService,
+        IUiCommandHub uiCommandHub,
+        ILogger logger)
     {
         this.DisplayName = "Sections";
         this._messageRepository = messageRepository;
         this._viewModelWindowManager = viewModelWindowManager;
+        this._attachmentFileService = attachmentFileService;
+        this._processService = processService;
+        this._uiCommandHub = uiCommandHub;
         this._logger = logger;
         this.Parts = new ObservableCollection<MimeEntity>();
     }
@@ -103,45 +121,26 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
         }
         else if (part is MimePart mimePart)
         {
-            string tempFileName;
-
-            if (mimePart.FileName.IsSet())
-            {
-                tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), mimePart.FileName);
-            }
-            else
-            {
-                tempFileName = Path.GetTempFileName();
-                string extension = part.ContentType.GetExtension();
-
-                if (extension.IsSet())
-                    tempFileName = Path.ChangeExtension(tempFileName, extension);
-            }
-
             try
             {
-                using (FileStream outputFile = File.Open(tempFileName, FileMode.Create))
+                string tempFileName = this._attachmentFileService.CreateTempFileForAttachment(mimePart);
+                this._attachmentFileService.WriteAttachmentToFile(mimePart, tempFileName);
+
+                var result = this._processService.OpenFile(tempFileName);
+
+                if (result.IsFailed)
                 {
-                    mimePart.Content.DecodeTo(outputFile);
+                    this._uiCommandHub.ShowMessage(
+                        string.Join(Environment.NewLine, result.Errors),
+                        "Unable to Open Attachment");
                 }
-
-                // Set WorkingDirectory to file's directory to avoid path resolution issues on Windows 11
-                // Explicitly set Verb to "open" for reliability with shell file associations
-                var directory = Path.GetDirectoryName(tempFileName) ?? Path.GetTempPath();
-                var processStartInfo = new ProcessStartInfo(tempFileName)
-                {
-                    UseShellExecute = true,
-                    WorkingDirectory = directory,
-                    Verb = "open"
-                };
-
-                Process.Start(processStartInfo);
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, "Failure Creating and Opening Up Attachment File: {TempFileName}", tempFileName);
-                MessageBox.Show($"Failed to Open Attachment File: {ex.Message}",
-                    "Unable to Open Attachment");
+                this._logger.Error(ex, "Failure Creating Attachment File for {FileName}", mimePart.FileName);
+                this._uiCommandHub.ShowMessage(
+                    $"Failed to Create Attachment File: {ex.Message}",
+                    "Unable to Create Attachment");
             }
         }
     }

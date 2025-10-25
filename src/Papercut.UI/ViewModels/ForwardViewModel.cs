@@ -19,6 +19,7 @@
 using System.Text.RegularExpressions;
 
 using Papercut.Core;
+using Papercut.Domain.UiCommands;
 
 namespace Papercut.ViewModels;
 
@@ -29,6 +30,8 @@ public class ForwardViewModel : Screen
             @"(\A(\s*)\Z)|(\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z)",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    readonly IUiCommandHub _uiCommandHub;
+
     string _from;
 
     bool _fromSetting;
@@ -38,6 +41,11 @@ public class ForwardViewModel : Screen
     string _to;
 
     string _windowTitle = "Forward Message";
+
+    public ForwardViewModel(IUiCommandHub uiCommandHub)
+    {
+        _uiCommandHub = uiCommandHub;
+    }
 
     public bool FromSetting
     {
@@ -114,21 +122,17 @@ public class ForwardViewModel : Screen
         if (string.IsNullOrEmpty(this.Server) || string.IsNullOrEmpty(this.From)
                                               || string.IsNullOrEmpty(this.To))
         {
-            MessageBox.Show(
+            _uiCommandHub.ShowMessage(
                 "All the text boxes are required, fill them in please.",
-                AppConstants.ApplicationName,
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                AppConstants.ApplicationName);
             return;
         }
 
         if (!_emailRegex.IsMatch(this.From) || !_emailRegex.IsMatch(this.To))
         {
-            MessageBox.Show(
+            _uiCommandHub.ShowMessage(
                 "You need to enter valid email addresses.",
-                AppConstants.ApplicationName,
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                AppConstants.ApplicationName);
             return;
         }
 
