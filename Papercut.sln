@@ -53,6 +53,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Rules.Tests", "test\Papercut.Rules.Tests\Papercut.Rules.Tests.csproj", "{DBD09AAF-2367-CC97-CF28-164BF3E6B721}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		examples\Directory.Build.props = examples\Directory.Build.props
+		examples\README.md = examples\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendEmailTest", "examples\SendEmailTest\SendEmailTest.csproj", "{F2C325DA-4FC3-4879-4DFB-4CA6AE68A172}"
 EndProject

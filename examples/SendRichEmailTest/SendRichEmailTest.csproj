@@ -1,9 +1,3 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <UseBogus>true</UseBogus>
-    <UseConfiguration>true</UseConfiguration>
-    <UseMailKit>true</UseMailKit>
-  </PropertyGroup>
-
 </Project>

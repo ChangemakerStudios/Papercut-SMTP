@@ -51,7 +51,7 @@ public class SaveSettingsOnExitService(ILogger logger) : IAppLifecyclePreExit
     /// </summary>
     /// <param name="builder"></param>
     [UsedImplicitly]
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

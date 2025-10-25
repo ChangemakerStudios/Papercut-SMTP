@@ -10,22 +10,22 @@
   <!-- Centralized NuGet package versions -->
   <ItemGroup Label="Common Packages">
     <!-- Fake data generation for test emails -->
-    <PackageReference Include="Bogus" Version="35.6.1" Condition="'$(UseBogus)' == 'true'" />
+    <PackageReference Include="Bogus" Version="35.6.4" />
 
     <!-- Modern SMTP/MIME libraries (MailKit) -->
-    <PackageReference Include="MailKit" Version="4.9.0" Condition="'$(UseMailKit)' == 'true'" />
-    <PackageReference Include="MimeKit" Version="4.9.0" Condition="'$(UseMailKit)' == 'true'" />
+    <PackageReference Include="MailKit" Version="4.14.1" />
+    <PackageReference Include="MimeKit" Version="4.14.0" />
 
     <!-- Configuration support -->
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" Condition="'$(UseConfiguration)' == 'true'" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" Condition="'$(UseConfiguration)' == 'true'" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" Condition="'$(UseConfiguration)' == 'true'" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.10" />
   </ItemGroup>
 
   <!-- Shared code files -->
   <ItemGroup>
-    <Compile Include="..\SmtpSendOptions.cs" Link="SmtpSendOptions.cs" Condition="'$(UseConfiguration)' == 'true'" />
-    <Compile Include="..\SmtpClientHelper.cs" Link="SmtpClientHelper.cs" Condition="'$(UseMailKit)' == 'true'" />
+    <Compile Include="..\SmtpSendOptions.cs" Link="SmtpSendOptions.cs" />
+    <Compile Include="..\SmtpClientHelper.cs" Link="SmtpClientHelper.cs" />
   </ItemGroup>
 
   <!-- Shared resources -->
@@ -33,7 +33,7 @@
     <None Include="..\resources\**\*.*" Link="resources\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\appsettings.json" Link="appsettings.json" Condition="'$(UseConfiguration)' == 'true'">
+    <None Include="..\appsettings.json" Link="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

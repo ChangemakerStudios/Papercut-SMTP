@@ -1,3 +1,5 @@
+using MailKit.Security;
+
 namespace Papercut.Examples;
 
 /// <summary>
@@ -19,7 +21,7 @@ public class SmtpSendOptions
     /// <summary>
     /// Security mode for SMTP connection
     /// </summary>
-    public SmtpSecurityMode Security { get; set; } = SmtpSecurityMode.None;
+    public SecureSocketOptions Security { get; set; } = SecureSocketOptions.None;
 
     /// <summary>
     /// Username for SMTP authentication (optional)
@@ -30,25 +32,4 @@ public class SmtpSendOptions
     /// Password for SMTP authentication (optional)
     /// </summary>
     public string? Password { get; set; }
-}
-
-/// <summary>
-/// SMTP security modes
-/// </summary>
-public enum SmtpSecurityMode
-{
-    /// <summary>
-    /// No encryption (plain SMTP on port 25)
-    /// </summary>
-    None,
-
-    /// <summary>
-    /// STARTTLS - Start with plain connection, upgrade to TLS (port 587)
-    /// </summary>
-    StartTls,
-
-    /// <summary>
-    /// Immediate TLS/SSL connection (port 465)
-    /// </summary>
-    SslOnConnect
 }

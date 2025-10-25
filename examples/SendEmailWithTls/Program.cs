@@ -1,24 +1,43 @@
-// Papercut SMTP - TLS/STARTTLS Test Application
-// Example console application demonstrating SMTP authentication and TLS/STARTTLS
-// connections to Papercut SMTP server (issue #102)
+// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2025 Jaben Cargman
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 
 using MailKit.Net.Smtp;
-using MailKit.Security;
+
+using Microsoft.Extensions.Configuration;
+
 using MimeKit;
 
-// Configuration - modify these values to match your setup
-const string SmtpHost = "localhost";
-const int SmtpPort = 587;  // 25=plain, 587=STARTTLS, 465=TLS
-const SecureSocketOptions Security = SecureSocketOptions.StartTls;  // None, StartTls, SslOnConnect
-const string Username = "testuser";
-const string Password = "testpass";
+using Papercut.Examples;
+
+var config = new ConfigurationBuilder()
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json")
+    .Build();
+
+var options = new SmtpSendOptions();
+config.GetSection("SmtpSend").Bind(options);
 
 Console.WriteLine("=============================================================");
 Console.WriteLine("Papercut SMTP - TLS/STARTTLS Connection Test");
 Console.WriteLine("=============================================================");
-Console.WriteLine($"Server: {SmtpHost}:{SmtpPort}");
-Console.WriteLine($"Security: {Security}");
-Console.WriteLine($"Authentication: {Username}");
+Console.WriteLine($"Server: {options.Host}:{options.Port}");
+Console.WriteLine($"Security: {options.Security}");
+Console.WriteLine($"Authentication: {options.Username}");
 Console.WriteLine("=============================================================\n");
 
 try
@@ -56,8 +75,8 @@ async Task TestConnectionAsync()
         return true; // Accept all certificates for testing
     };
 
-    Console.WriteLine($"  Connecting to {SmtpHost}:{SmtpPort}...");
-    await client.ConnectAsync(SmtpHost, SmtpPort, Security);
+    Console.WriteLine($"  Connecting to {options.Host}:{options.Port}...");
+    await client.ConnectAsync(options.Host, options.Port, options.Security);
     Console.WriteLine("  ✓ Connection established");
 
     Console.WriteLine("\n  Server Capabilities:");
@@ -66,8 +85,8 @@ async Task TestConnectionAsync()
         Console.WriteLine($"    - {capability.Trim()}");
     }
 
-    Console.WriteLine($"\n  Authenticating as '{Username}'...");
-    await client.AuthenticateAsync(Username, Password);
+    Console.WriteLine($"\n  Authenticating as '{options.Username}'...");
+    await client.AuthenticateAsync(options.Username, options.Password);
     Console.WriteLine($"  ✓ Authentication successful (IsAuthenticated: {client.IsAuthenticated})");
 
     await client.DisconnectAsync(true);
@@ -101,9 +120,9 @@ async Task SendTestEmailAsync()
         <p>Successfully sent via encrypted connection</p>
     </div>
     <div class='info-box'>
-        <strong>Server:</strong> {SmtpHost}:{SmtpPort}<br />
-        <strong>Security:</strong> {Security}<br />
-        <strong>Authenticated:</strong> {Username}<br />
+        <strong>Server:</strong> {options.Host}:{options.Port}<br />
+        <strong>Security:</strong> {options.Security}<br />
+        <strong>Authenticated:</strong> {options.Username}<br />
         <strong>Timestamp:</strong> {DateTime.Now:yyyy-MM-dd HH:mm:ss}<br />
         <strong>Test ID:</strong> {Guid.NewGuid()}
     </div>
@@ -121,9 +140,9 @@ async Task SendTestEmailAsync()
 TLS/STARTTLS Test Email
 ========================
 
-Server: {SmtpHost}:{SmtpPort}
-Security: {Security}
-Authenticated: {Username}
+Server: {options.Host}:{options.Port}
+Security: {options.Security}
+Authenticated: {options.Username}
 Timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss}
 
 This email was sent using TLS/STARTTLS encryption and SMTP authentication.
@@ -141,8 +160,8 @@ Features Tested:
     client.ServerCertificateValidationCallback = (s, cert, chain, errors) => true;
 
     Console.WriteLine("  Connecting and sending email...");
-    await client.ConnectAsync(SmtpHost, SmtpPort, Security);
-    await client.AuthenticateAsync(Username, Password);
+    await client.ConnectAsync(options.Host, options.Port, options.Security);
+    await client.AuthenticateAsync(options.Username, options.Password);
 
     var response = await client.SendAsync(message);
     Console.WriteLine($"  ✓ Email sent successfully");

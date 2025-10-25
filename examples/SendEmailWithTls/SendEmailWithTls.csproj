@@ -1,7 +1,2 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <UseMailKit>true</UseMailKit>
-  </PropertyGroup>
-
 </Project>
