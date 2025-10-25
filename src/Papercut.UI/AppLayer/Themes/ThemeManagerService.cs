@@ -16,46 +16,36 @@
 // limitations under the License.
 
 
+namespace Papercut.AppLayer.Themes;
+
 using ControlzEx.Theming;
 
 using Papercut.Infrastructure.Themes;
 
-namespace Papercut.AppLayer.Themes;
-
-public class ThemeManagerService : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
+public class ThemeManagerService(ILogger logger, ThemeColorRepository themeColorRepository) : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
 {
-    private readonly ILogger _logger;
-
-    private readonly ThemeColorRepository _themeColorRepository;
-
-    public ThemeManagerService(ILogger logger, ThemeColorRepository themeColorRepository)
-    {
-        this._logger = logger;
-        this._themeColorRepository = themeColorRepository;
-    }
-
     private static ThemeManager CurrentTheme => ThemeManager.Current;
 
     public Task<AppLifecycleActionResultType> OnPreStart()
     {
-        this.SetTheme();
+        SetTheme();
         return Task.FromResult(AppLifecycleActionResultType.Continue);
     }
 
     public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
     {
-        if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) this.SetTheme();
+        if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) SetTheme();
 
         return Task.CompletedTask;
     }
 
     private void SetTheme()
     {
-        var colorTheme = this._themeColorRepository.FirstOrDefaultByName(Properties.Settings.Default.Theme);
+        var colorTheme = themeColorRepository.FirstOrDefaultByName(Properties.Settings.Default.Theme);
 
         if (colorTheme == null)
         {
-            this._logger.Warning("Unable to find theme color {ThemeColor}. Setting to default: LightBlue.", Properties.Settings.Default.Theme);
+            logger.Warning("Unable to find theme color {ThemeColor}. Setting to default: LightBlue.", Properties.Settings.Default.Theme);
             Properties.Settings.Default.Theme = "LightBlue";
             return;
         }
@@ -89,7 +79,7 @@ public class ThemeManagerService : IAppLifecyclePreStart, IEventHandler<Settings
     /// </summary>
     /// <param name="builder"></param>
     [UsedImplicitly]
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

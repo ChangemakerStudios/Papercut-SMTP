@@ -1,14 +1,14 @@
 // Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
-//
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,20 +16,12 @@
 // limitations under the License.
 
 
-using Papercut.Message;
-using Papercut.Message.Helpers;
-
 namespace Papercut.AppLayer.Attachments;
 
-public class AttachmentFileService
+using Papercut.Message.Helpers;
+
+public class AttachmentFileService()
 {
-    readonly ILogger _logger;
-
-    public AttachmentFileService(ILogger logger)
-    {
-        this._logger = logger;
-    }
-
     public string CreateTempFileForAttachment(MimePart mimePart)
     {
         string tempFileName;
@@ -62,7 +54,7 @@ public class AttachmentFileService
         mimePart.Content.DecodeTo(outputFile);
     }
 
-    string CreateTempFileWithExtension(string extension)
+    private string CreateTempFileWithExtension(string extension)
     {
         string tempFileName = Path.GetTempFileName();
 
@@ -76,7 +68,7 @@ public class AttachmentFileService
 
     #region Begin Static Container Registrations
 
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         builder.RegisterType<AttachmentFileService>().AsSelf();
     }
