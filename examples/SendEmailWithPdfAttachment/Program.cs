@@ -326,7 +326,8 @@ async Task SendInvoiceEmailAsync()
 
     if (File.Exists(pdfPath))
     {
-        bodyBuilder.Attachments.Add(pdfPath, ContentType.Parse("application/pdf"));
+        var pdfBytes = await File.ReadAllBytesAsync(pdfPath);
+        bodyBuilder.Attachments.Add($"Invoice-{invoiceNumber}.pdf", pdfBytes, ContentType.Parse("application/pdf"));
         Console.WriteLine($"✓ PDF attachment added: {pdfPath}");
     }
     else
