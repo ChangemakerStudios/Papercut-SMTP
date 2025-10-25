@@ -61,7 +61,21 @@ public sealed class MessageDetailAttachmentsViewModel : PropertyChangedBase
 
         if (mimePart.FileName.IsSet())
         {
-            tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), mimePart.FileName);
+            string? originalFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), mimePart.FileName);
+
+            if (originalFileName != null)
+            {
+                tempFileName = originalFileName;
+            }
+            else
+            {
+                // Fall back to temp file with extension if GetOriginalFileName returns null
+                tempFileName = Path.GetTempFileName();
+                string extension = mimePart.ContentType.GetExtension();
+
+                if (extension.IsSet())
+                    tempFileName = Path.ChangeExtension(tempFileName, extension);
+            }
         }
         else
         {
