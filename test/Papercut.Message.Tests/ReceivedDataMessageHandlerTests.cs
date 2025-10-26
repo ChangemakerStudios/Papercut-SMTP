@@ -225,4 +225,95 @@ public class ReceivedDataMessageHandlerTests
     }
 
     #endregion
+
+    #region Non-Standard Email Address Tests (Issue #284)
+
+    [Test]
+    public async Task HandleReceivedAsync_WithDoubleUnderscoreDomain_HandlesSuccessfully()
+    {
+        // Arrange: Create a message with standard recipient
+        var messageData = CreateTestMessage("recipient@test.com");
+        // Include a BCC with non-standard @__ domain (Issue #284)
+        var recipients = new[] { "recipient@test.com", "testuser@__" };
+
+        _mockRepository
+            .Setup(x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()))
+            .ReturnsAsync("test.eml");
+
+        // Act
+        await _handler.HandleReceivedAsync(messageData, recipients);
+
+        // Assert: Message should be saved without throwing
+        _mockRepository.Verify(
+            x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task HandleReceivedAsync_WithUnderscorePrefixedDomain_HandlesSuccessfully()
+    {
+        // Arrange
+        var messageData = CreateTestMessage("recipient@test.com");
+        var recipients = new[] { "recipient@test.com", "testuser@_test" };
+
+        _mockRepository
+            .Setup(x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()))
+            .ReturnsAsync("test.eml");
+
+        // Act
+        await _handler.HandleReceivedAsync(messageData, recipients);
+
+        // Assert
+        _mockRepository.Verify(
+            x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task HandleReceivedAsync_WithLooseParser_AcceptsMostFormats()
+    {
+        // Arrange: The loose parser is very permissive and will accept most email-like strings
+        var messageData = CreateTestMessage("recipient@test.com");
+        var recipients = new[] { "recipient@test.com", "user@__", "test@_domain" };
+
+        _mockRepository
+            .Setup(x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()))
+            .ReturnsAsync("test.eml");
+
+        // Act
+        await _handler.HandleReceivedAsync(messageData, recipients);
+
+        // Assert: Should handle without warnings - loose parser is permissive
+        _mockRepository.Verify(
+            x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task HandleReceivedAsync_WithMultipleNonStandardDomains_HandlesAllSuccessfully()
+    {
+        // Arrange
+        var messageData = CreateTestMessage("recipient@test.com");
+        var recipients = new[]
+        {
+            "recipient@test.com",
+            "user1@__",
+            "user2@_test",
+            "user3@localhost"
+        };
+
+        _mockRepository
+            .Setup(x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()))
+            .ReturnsAsync("test.eml");
+
+        // Act
+        await _handler.HandleReceivedAsync(messageData, recipients);
+
+        // Assert: All non-standard addresses should be handled
+        _mockRepository.Verify(
+            x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()),
+            Times.Once);
+    }
+
+    #endregion
 }
