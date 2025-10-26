@@ -178,7 +178,7 @@ internal class HtmlPreviewVisitor : MimeVisitor
     {
         ctx.WriteTag(htmlWriter, false);
 
-        // add and/or replace oncontextmenu="return false;"
+        // Remove any existing oncontextmenu attribute to allow WebView2 custom context menus
         foreach (var attribute in ctx.Attributes)
         {
             if (attribute.Name.ToLowerInvariant() == "oncontextmenu")
@@ -187,7 +187,8 @@ internal class HtmlPreviewVisitor : MimeVisitor
             htmlWriter.WriteAttribute(attribute);
         }
 
-        htmlWriter.WriteAttribute("oncontextmenu", "return false;");
+        // Note: We no longer add oncontextmenu="return false;" here
+        // This allows WebView2's ContextMenuRequested event to fire and show custom context menus
     }
 
     private void LinkImageTag(HtmlTagContext ctx, HtmlWriter htmlWriter)

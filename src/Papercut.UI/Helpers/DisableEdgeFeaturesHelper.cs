@@ -26,7 +26,9 @@ public static class DisableEdgeFeaturesHelper
     {
         ArgumentNullException.ThrowIfNull(coreWeb);
 
-        coreWeb.Settings.AreDefaultContextMenusEnabled = false;
+        // Note: AreDefaultContextMenusEnabled is kept TRUE to allow ContextMenuRequested event to fire
+        // We customize the context menu via ContextMenuRequested handler instead
+        // coreWeb.Settings.AreDefaultContextMenusEnabled = false;
         coreWeb.Settings.IsZoomControlEnabled = false;
         coreWeb.Settings.AreDevToolsEnabled = false;
         coreWeb.Settings.AreDefaultScriptDialogsEnabled = false;
