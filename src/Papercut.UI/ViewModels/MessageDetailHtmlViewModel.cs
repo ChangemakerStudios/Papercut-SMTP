@@ -180,7 +180,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         return false;
     }
 
-    private record ZoomInfoFromJavascript(string Type, string Direction);
+    private sealed record ZoomInfoFromJavascript(string Type, string Direction);
 
     protected override void OnViewLoaded(object view)
     {
@@ -368,7 +368,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
         await coreWebView.AddScriptToExecuteOnDocumentCreatedAsync(@"
             window.addEventListener('wheel', function(e) {
-                if (e.ctrlKey) {
+                if (e.ctrlKey && window?.chrome?.webview?.postMessage) {
                     e.preventDefault();
                     window.chrome.webview.postMessage(JSON.stringify({
                         Type: 'zoom',

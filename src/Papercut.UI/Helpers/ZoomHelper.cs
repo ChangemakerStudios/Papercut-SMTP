@@ -44,7 +44,7 @@ public static class ZoomHelper
     /// </summary>
     public static bool IsZoomModifierPressed()
     {
-        return Keyboard.Modifiers == ModifierKeys.Control;
+        return (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
     }
 
     /// <summary>
