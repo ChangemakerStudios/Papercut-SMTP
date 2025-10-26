@@ -355,27 +355,56 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
         coreWebView.WebMessageReceived += async (sender, args) =>
         {
-            var json = args.TryGetWebMessageAsString();
-            var data = JsonSerializer.Deserialize<ZoomInfoFromJavascript>(json);
-
-            if (data is { Type: "zoom" })
+            try
             {
-                double zoomDelta = data.Direction == "in" ? ZoomHelper.WebView2Zoom.Increment : -ZoomHelper.WebView2Zoom.Increment;
-                double newZoom = typedViewHtmlView.ZoomFactor + zoomDelta;
+                var json = args.TryGetWebMessageAsString();
 
-                newZoom = Math.Max(ZoomHelper.WebView2Zoom.MinZoom, Math.Min(ZoomHelper.WebView2Zoom.MaxZoom, newZoom));
-                typedViewHtmlView.ZoomFactor = newZoom;
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    _logger.Warning("Received empty or null web message");
+                    return;
+                }
 
-                // Save zoom setting
-                Settings.Default.HtmlViewZoomFactor = newZoom;
-                Settings.Default.Save();
+                var data = JsonSerializer.Deserialize<ZoomInfoFromJavascript>(json);
 
-                // Show zoom indicator in WebView2
-                var percentage = (int)Math.Round(newZoom * 100);
-                await coreWebView.ExecuteScriptAsync($"window.showPapercutZoom && window.showPapercutZoom({percentage});");
+                if (data is null)
+                {
+                    _logger.Warning("Failed to deserialize web message: {Json}", json);
+                    return;
+                }
+
+                _logger.Verbose("Received Web Message {@Message}", data);
+
+                if (data.Type == "zoom")
+                {
+                    double zoomDelta = data.Direction == "in"
+                        ? ZoomHelper.WebView2Zoom.Increment
+                        : -ZoomHelper.WebView2Zoom.Increment;
+                    double newZoom = typedViewHtmlView.ZoomFactor + zoomDelta;
+
+                    newZoom = Math.Max(
+                        ZoomHelper.WebView2Zoom.MinZoom,
+                        Math.Min(ZoomHelper.WebView2Zoom.MaxZoom, newZoom));
+
+                    typedViewHtmlView.ZoomFactor = newZoom;
+
+                    // Save zoom setting
+                    Settings.Default.HtmlViewZoomFactor = newZoom;
+                    Settings.Default.Save();
+
+                    // Show zoom indicator in WebView2
+                    var percentage = (int)Math.Round(newZoom * 100);
+                    await coreWebView.ExecuteScriptAsync($"window.showPapercutZoom && window.showPapercutZoom({percentage});");
+                }
             }
-
-            _logger.Verbose("Received Web Message {@Message}", data);
+            catch (JsonException ex)
+            {
+                _logger.Error(ex, "Failed to parse web message as JSON");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Unexpected error handling web message");
+            }
         };
 
         await coreWebView.AddScriptToExecuteOnDocumentCreatedAsync(@"
