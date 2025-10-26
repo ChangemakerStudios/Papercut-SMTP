@@ -30,6 +30,8 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
 
     string? _headers;
 
+    ZoomIndicator? _zoomIndicator;
+
     public MessageDetailHeaderViewModel(ILogger logger)
     {
         this._logger = logger;
@@ -56,6 +58,12 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
             return;
         }
 
+        // Store reference to zoom indicator
+        _zoomIndicator = typedView.zoomIndicator;
+
+        // Restore saved zoom level
+        typedView.HeaderEdit.FontSize = Settings.Default.TextViewZoomFontSize;
+
         this.GetPropertyValues(p => p.Headers)
             .Subscribe(
                 t => { typedView.HeaderEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
@@ -73,6 +81,13 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
                     ZoomHelper.AvalonEditZoom.MinFontSize,
                     ZoomHelper.AvalonEditZoom.MaxFontSize);
                 typedView.HeaderEdit.FontSize = newFontSize;
+
+                // Save zoom setting
+                Settings.Default.TextViewZoomFontSize = newFontSize;
+                Settings.Default.Save();
+
+                // Show zoom indicator
+                _zoomIndicator?.ShowZoomFromFontSize(newFontSize, ZoomHelper.AvalonEditZoom.DefaultFontSize);
             }
         };
     }

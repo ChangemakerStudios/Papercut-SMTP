@@ -39,6 +39,8 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
 
     string? _raw;
 
+    ZoomIndicator? _zoomIndicator;
+
     public MessageDetailRawViewModel(ILogger logger)
     {
         this.DisplayName = "Raw";
@@ -123,6 +125,12 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
             return;
         }
 
+        // Store reference to zoom indicator
+        _zoomIndicator = typedView.zoomIndicator;
+
+        // Restore saved zoom level
+        typedView.rawEdit.FontSize = Settings.Default.TextViewZoomFontSize;
+
         this.GetPropertyValues(p => p.Raw)
             .ObserveOn(Dispatcher.CurrentDispatcher)
             .Subscribe(s =>
@@ -144,6 +152,13 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
                     ZoomHelper.AvalonEditZoom.MinFontSize,
                     ZoomHelper.AvalonEditZoom.MaxFontSize);
                 typedView.rawEdit.FontSize = newFontSize;
+
+                // Save zoom setting
+                Settings.Default.TextViewZoomFontSize = newFontSize;
+                Settings.Default.Save();
+
+                // Show zoom indicator
+                _zoomIndicator?.ShowZoomFromFontSize(newFontSize, ZoomHelper.AvalonEditZoom.DefaultFontSize);
             }
         };
     }

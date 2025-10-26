@@ -205,6 +205,9 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             {
                 _coreWebView = typedView.htmlView.CoreWebView2;
                 await SetupWebView(_coreWebView, typedView.htmlView);
+
+                // Restore saved zoom level
+                typedView.htmlView.ZoomFactor = Settings.Default.HtmlViewZoomFactor;
             }
         };
 
@@ -350,21 +353,56 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             }
         };
 
-        coreWebView.WebMessageReceived += (sender, args) =>
+        coreWebView.WebMessageReceived += async (sender, args) =>
         {
             var json = args.TryGetWebMessageAsString();
             var data = JsonSerializer.Deserialize<ZoomInfoFromJavascript>(json);
-    
+
             if (data is { Type: "zoom" })
             {
-                double zoomDelta = data.Direction == "in" ? 0.1 : -0.1;
+                double zoomDelta = data.Direction == "in" ? ZoomHelper.WebView2Zoom.Increment : -ZoomHelper.WebView2Zoom.Increment;
                 double newZoom = typedViewHtmlView.ZoomFactor + zoomDelta;
 
-                typedViewHtmlView.ZoomFactor = Math.Max(0.25, Math.Min(5.0, newZoom));
+                newZoom = Math.Max(ZoomHelper.WebView2Zoom.MinZoom, Math.Min(ZoomHelper.WebView2Zoom.MaxZoom, newZoom));
+                typedViewHtmlView.ZoomFactor = newZoom;
+
+                // Save zoom setting
+                Settings.Default.HtmlViewZoomFactor = newZoom;
+                Settings.Default.Save();
+
+                // Show zoom indicator in WebView2
+                var percentage = (int)Math.Round(newZoom * 100);
+                await coreWebView.ExecuteScriptAsync($"window.showPapercutZoom && window.showPapercutZoom({percentage});");
             }
 
             _logger.Verbose("Received Web Message {@Message}", data);
         };
+
+        await coreWebView.AddScriptToExecuteOnDocumentCreatedAsync(@"
+            document.addEventListener('DOMContentLoaded', function() {
+                var style = document.createElement('style');
+                style.textContent = '#papercut-zoom-indicator { position: fixed; top: 50%; left: 50%; background: rgba(0, 0, 0, 0.88); color: white; font-size: 24px; font-weight: 600; padding: 16px 24px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); z-index: 999999; opacity: 0; transition: opacity 0.15s ease-out; pointer-events: none; font-family: sans-serif; }';
+                document.head.appendChild(style);
+
+                var indicator = document.createElement('div');
+                indicator.id = 'papercut-zoom-indicator';
+                document.body.appendChild(indicator);
+
+                var fadeTimeout;
+                window.showPapercutZoom = function(percentage) {
+                    var currentZoom = percentage / 100;
+                    var inverseZoom = 1 / currentZoom;
+                    indicator.style.transform = 'translate(-50%, -50%) scale(' + inverseZoom + ')';
+                    indicator.textContent = percentage + '%';
+                    indicator.style.opacity = '1';
+                    clearTimeout(fadeTimeout);
+                    fadeTimeout = setTimeout(function() {
+                        indicator.style.transition = 'opacity 0.3s ease-in';
+                        indicator.style.opacity = '0';
+                    }, 800);
+                };
+            });
+        ");
 
         await coreWebView.AddScriptToExecuteOnDocumentCreatedAsync(@"
             window.addEventListener('wheel', function(e) {
@@ -416,7 +454,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = "explorer.exe",
-                        Arguments = $"\"{localPath}\"",
+                        Arguments = $@"""{localPath}""",
                         UseShellExecute = true
                     });
 

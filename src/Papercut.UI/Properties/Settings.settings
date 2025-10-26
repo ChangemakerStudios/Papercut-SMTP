@@ -56,5 +56,11 @@
     <Setting Name="IgnoreSslCertificateErrors" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="HtmlViewZoomFactor" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">1.0</Value>
+    </Setting>
+    <Setting Name="TextViewZoomFontSize" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">12.0</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

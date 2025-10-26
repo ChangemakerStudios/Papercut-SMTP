@@ -55,7 +55,7 @@ public static class ZoomHelper
         public const double DefaultZoom = 1.0;
         public const double MinZoom = 0.25;
         public const double MaxZoom = 5.0;
-        public const double Increment = 0.1;
+        public const double Increment = 0.05;
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public static class ZoomHelper
     /// </summary>
     public static class AvalonEditZoom
     {
-        public const double DefaultFontSize = 9.0;
+        public const double DefaultFontSize = 12.0;
         public const double MinFontSize = 6.0;
         public const double MaxFontSize = 48.0;
         public const double Increment = 1.0;

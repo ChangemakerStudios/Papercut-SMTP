@@ -29,6 +29,7 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
     readonly ILogger _logger;
 
     string? _body;
+    ZoomIndicator? _zoomIndicator;
 
     public MessageDetailBodyViewModel(ILogger logger)
     {
@@ -56,6 +57,12 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
             return;
         }
 
+        // Store reference to zoom indicator
+        _zoomIndicator = typedView.zoomIndicator;
+
+        // Restore saved zoom level
+        typedView.BodyEdit.FontSize = Settings.Default.TextViewZoomFontSize;
+
         this.GetPropertyValues(p => p.Body)
             .Subscribe(
                 t => { typedView.BodyEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
@@ -73,6 +80,13 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
                     ZoomHelper.AvalonEditZoom.MinFontSize,
                     ZoomHelper.AvalonEditZoom.MaxFontSize);
                 typedView.BodyEdit.FontSize = newFontSize;
+
+                // Save zoom setting
+                Settings.Default.TextViewZoomFontSize = newFontSize;
+                Settings.Default.Save();
+
+                // Show zoom indicator
+                _zoomIndicator?.ShowZoomFromFontSize(newFontSize, ZoomHelper.AvalonEditZoom.DefaultFontSize);
             }
         };
     }
