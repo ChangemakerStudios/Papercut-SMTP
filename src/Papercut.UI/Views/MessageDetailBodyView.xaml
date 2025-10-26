@@ -19,8 +19,5 @@
                 FontFamily="Consolas"
                 FontSize="9pt" IsReadOnly="True" />
         </Border>
-
-        <!-- Attachments Section -->
-        <ContentControl Grid.Row="1" cal:View.Model="{Binding AttachmentsViewModel}" />
     </Grid>
 </UserControl>

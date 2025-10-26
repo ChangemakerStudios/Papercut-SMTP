@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Windows.Input;
+
 using ICSharpCode.AvalonEdit.Document;
 
 using Papercut.Views;
@@ -44,9 +46,6 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
         }
     }
 
-    public MessageDetailAttachmentsViewModel? AttachmentsViewModel =>
-        (this.Parent as MessageDetailViewModel)?.AttachmentsViewModel;
-
     protected override void OnViewLoaded(object view)
     {
         base.OnViewLoaded(view);
@@ -60,5 +59,21 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
         this.GetPropertyValues(p => p.Body)
             .Subscribe(
                 t => { typedView.BodyEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
+
+        // Hook up zoom functionality
+        typedView.BodyEdit.PreviewMouseWheel += (sender, e) =>
+        {
+            if (ZoomHelper.IsZoomModifierPressed())
+            {
+                e.Handled = true;
+                var newFontSize = ZoomHelper.CalculateNewZoom(
+                    typedView.BodyEdit.FontSize,
+                    e.Delta,
+                    ZoomHelper.AvalonEditZoom.Increment,
+                    ZoomHelper.AvalonEditZoom.MinFontSize,
+                    ZoomHelper.AvalonEditZoom.MaxFontSize);
+                typedView.BodyEdit.FontSize = newFontSize;
+            }
+        };
     }
 }

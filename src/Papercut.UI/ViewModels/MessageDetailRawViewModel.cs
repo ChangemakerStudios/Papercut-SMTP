@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Windows.Input;
+
 using ICSharpCode.AvalonEdit.Document;
 
 using Papercut.Message.Helpers;
@@ -128,6 +130,22 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
                 typedView.rawEdit.Document = new TextDocument(new StringTextSource(s ?? string.Empty));
                 this.IsLoading = false;
             });
+
+        // Hook up zoom functionality
+        typedView.rawEdit.PreviewMouseWheel += (sender, e) =>
+        {
+            if (ZoomHelper.IsZoomModifierPressed())
+            {
+                e.Handled = true;
+                var newFontSize = ZoomHelper.CalculateNewZoom(
+                    typedView.rawEdit.FontSize,
+                    e.Delta,
+                    ZoomHelper.AvalonEditZoom.Increment,
+                    ZoomHelper.AvalonEditZoom.MinFontSize,
+                    ZoomHelper.AvalonEditZoom.MaxFontSize);
+                typedView.rawEdit.FontSize = newFontSize;
+            }
+        };
     }
 
     protected override Task OnActivateAsync(CancellationToken token)

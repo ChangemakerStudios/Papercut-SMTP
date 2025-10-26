@@ -17,8 +17,7 @@
                                Source="about:blank" />
         </Border>
         <RichTextBox Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto" BorderBrush="LightGray" BorderThickness="1"
-
-                     Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfTrue}}">
+            Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfTrue}}">
             <FlowDocument>
                 <Paragraph FontSize="14pt">A required component (WebView2) that renders emails is not installed on this computer.</Paragraph>
                 <Paragraph>

@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+using System.Windows.Input;
 
 using ICSharpCode.AvalonEdit.Document;
 
@@ -57,5 +59,21 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
         this.GetPropertyValues(p => p.Headers)
             .Subscribe(
                 t => { typedView.HeaderEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
+
+        // Hook up zoom functionality
+        typedView.HeaderEdit.PreviewMouseWheel += (sender, e) =>
+        {
+            if (ZoomHelper.IsZoomModifierPressed())
+            {
+                e.Handled = true;
+                var newFontSize = ZoomHelper.CalculateNewZoom(
+                    typedView.HeaderEdit.FontSize,
+                    e.Delta,
+                    ZoomHelper.AvalonEditZoom.Increment,
+                    ZoomHelper.AvalonEditZoom.MinFontSize,
+                    ZoomHelper.AvalonEditZoom.MaxFontSize);
+                typedView.HeaderEdit.FontSize = newFontSize;
+            }
+        };
     }
 }
