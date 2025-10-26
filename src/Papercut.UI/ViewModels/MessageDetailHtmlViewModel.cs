@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Runtime.InteropServices;
+
 using Microsoft.Web.WebView2.Core;
 
 using Papercut.AppLayer.Processes;
@@ -228,10 +230,8 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
                 }
             });
 
-        typedView.htmlView.ContextMenuOpening += (_, args) =>
-        {
-            args.Handled = true;
-        };
+        // Context menu is now handled by CoreWebView2.ContextMenuRequested in SetupWebView
+        // Removed the ContextMenuOpening handler that was blocking all context menus
     }
 
     private void SetupWebView(CoreWebView2 coreWebView)
@@ -280,6 +280,79 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             };
         }
 
+        // Handle context menu for links
+        coreWebView.ContextMenuRequested += (sender, args) =>
+        {
+            var deferral = args.GetDeferral();
+            try
+            {
+                // Check if the context menu is for a link
+                string? linkUrl = null;
+
+                try
+                {
+                    linkUrl = args.ContextMenuTarget.LinkUri;
+                }
+                catch (COMException ex) when (ex.HResult == unchecked((int)0x8000000E))
+                {
+                    // The ContextMenuTarget became invalid (race condition if user moved quickly)
+                    _logger.Debug("Context menu target became invalid (user moved quickly)");
+                    args.MenuItems.Clear();
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(linkUrl))
+                {
+                    // Remove default menu items
+                    args.MenuItems.Clear();
+
+                    // Add "Open Link" menu item
+                    var openLinkItem = coreWebView.Environment.CreateContextMenuItem(
+                        "Open Link",
+                        null,
+                        CoreWebView2ContextMenuItemKind.Command);
+
+                    openLinkItem.CustomItemSelected += async (_, __) =>
+                    {
+                        try
+                        {
+                            await HandleLinkNavigationAsync(new Uri(linkUrl));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex, "Failed to open link from context menu: {Url}", linkUrl);
+                        }
+                    };
+
+                    args.MenuItems.Add(openLinkItem);
+
+                    // Add "Copy Link" menu item
+                    var copyLinkItem = coreWebView.Environment.CreateContextMenuItem(
+                        "Copy Link",
+                        null,
+                        CoreWebView2ContextMenuItemKind.Command);
+
+                    copyLinkItem.CustomItemSelected += (_, __) =>
+                    {
+                        CopyLinkToClipboard(linkUrl);
+                    };
+
+                    args.MenuItems.Add(copyLinkItem);
+
+                    _logger.Debug("Context menu shown for link: {Url}", linkUrl);
+                }
+                else
+                {
+                    // For non-links, remove all menu items (no context menu)
+                    args.MenuItems.Clear();
+                }
+            }
+            finally
+            {
+                deferral.Complete();
+            }
+        };
+
         coreWebView.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
         var externalNavigation = new List<string>();
@@ -313,7 +386,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
             try
             {
-                await DoInternalNavigationAsync(new Uri(args.Uri));
+                await HandleLinkNavigationAsync(new Uri(args.Uri));
             }
             catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to External Url {Url}", args.Uri))
             {
@@ -339,7 +412,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
             try
             {
-                await DoInternalNavigationAsync(new Uri(uri));
+                await HandleLinkNavigationAsync(new Uri(uri));
             }
             catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to External Url {Url}", uri))
             {
@@ -364,7 +437,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             );
     }
 
-    private async Task DoInternalNavigationAsync(Uri navigateToUri)
+    private async Task HandleLinkNavigationAsync(Uri navigateToUri)
     {
         if (navigateToUri.Scheme == Uri.UriSchemeHttp || navigateToUri.Scheme == Uri.UriSchemeHttps)
         {
@@ -372,54 +445,54 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         }
         else if (navigateToUri.Scheme == Uri.UriSchemeFile)
         {
-            // Handle file:/// links - open with shell/explorer
+            // Handle file:/// links - open with shell/explorer using ProcessService
             var localPath = navigateToUri.LocalPath;
 
-            try
+            // Check if the path is a directory
+            if (Directory.Exists(localPath))
             {
-                // Check if the path is a directory
-                if (Directory.Exists(localPath))
+                _processService.OpenFolder(localPath);
+                _logger.Information("Opened directory in Explorer: {Path}", localPath);
+            }
+            else if (File.Exists(localPath))
+            {
+                var result = _processService.OpenFile(localPath);
+                if (result.IsSuccess)
                 {
-                    // Open directory in Windows Explorer
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "explorer.exe",
-                        Arguments = $"\"{localPath}\"",
-                        UseShellExecute = true
-                    });
-
-                    _logger.Information("Opened directory in Explorer: {Path}", localPath);
-                }
-                else if (File.Exists(localPath))
-                {
-                    // Open file with associated application
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = localPath,
-                        UseShellExecute = true
-                    });
-
                     _logger.Information("Opened file with associated application: {Path}", localPath);
                 }
                 else
                 {
-                    _logger.Warning("File or directory not found: {Path}", localPath);
+                    _logger.Error("Failed to open file: {Path}. Errors: {Errors}", localPath, string.Join(", ", result.Errors));
                 }
             }
-            catch (Exception ex)
+            else
             {
-                _logger.Error(ex, "Failed to open file:/// link: {Path}", localPath);
+                _logger.Warning("File or directory not found: {Path}", localPath);
             }
         }
         else if (navigateToUri.Scheme.Equals("cid", StringComparison.OrdinalIgnoreCase))
         {
-            // direct to the parts area...
+            // Navigate to the attachment in the parts view
             var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
             var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
             if (part != null)
             {
                 model.SelectedPart = part;
             }
+        }
+    }
+
+    private void CopyLinkToClipboard(string linkUrl)
+    {
+        try
+        {
+            Clipboard.SetText(linkUrl);
+            _logger.Information("Copied link to clipboard: {Url}", linkUrl);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Failed to copy link to clipboard: {Url}", linkUrl);
         }
     }
 }
