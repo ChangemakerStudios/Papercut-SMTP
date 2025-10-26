@@ -26,6 +26,8 @@ using Papercut.Views;
 
 namespace Papercut.ViewModels;
 
+using System.Text.Json;
+
 public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<SettingsUpdatedEvent>
 {
     private readonly ILogger _logger;
@@ -178,6 +180,8 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         return false;
     }
 
+    private record ZoomInfoFromJavascript(string Type, string Direction);
+
     protected override void OnViewLoaded(object view)
     {
         base.OnViewLoaded(view);
@@ -188,7 +192,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             return;
         }
 
-        typedView.htmlView.CoreWebView2InitializationCompleted += (_, args) =>
+        typedView.htmlView.CoreWebView2InitializationCompleted += async (_, args) =>
         {
             if (!args.IsSuccess)
             {
@@ -200,7 +204,23 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             else
             {
                 _coreWebView = typedView.htmlView.CoreWebView2;
-                SetupWebView(_coreWebView);
+                await SetupWebView(_coreWebView);
+
+                _coreWebView.WebMessageReceived += (sender, args) =>
+                {
+                    var json = args.TryGetWebMessageAsString();
+                    var data = JsonSerializer.Deserialize<ZoomInfoFromJavascript>(json);
+    
+                    if (data is { Type: "zoom" })
+                    {
+                        double zoomDelta = data.Direction == "in" ? 0.1 : -0.1;
+                        double newZoom = typedView.htmlView.ZoomFactor + zoomDelta;
+
+                        typedView.htmlView.ZoomFactor = Math.Max(0.25, Math.Min(5.0, newZoom));
+                    }
+
+                    _logger.Verbose("Received Web Message {@Message}", data);
+                };
             }
         };
 
@@ -234,7 +254,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         };
     }
 
-    private void SetupWebView(CoreWebView2 coreWebView)
+    private async Task SetupWebView(CoreWebView2 coreWebView)
     {
         // Handle SSL certificate errors if the setting is enabled
         _logger.Information("WebView2 SSL Certificate Error Handling: {Enabled}", Settings.Default.IgnoreSslCertificateErrors ? "Enabled" : "Disabled");
@@ -345,6 +365,18 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             {
             }
         };
+
+        await coreWebView.AddScriptToExecuteOnDocumentCreatedAsync(@"
+            window.addEventListener('wheel', function(e) {
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    window.chrome.webview.postMessage(JSON.stringify({
+                        Type: 'zoom',
+                        Direction: e.deltaY < 0 ? 'in' : 'out'
+                    }));
+                }
+            }, { passive: false });
+        ");
 
         coreWebView.DisableEdgeFeatures();
 
