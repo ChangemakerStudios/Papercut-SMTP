@@ -204,23 +204,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             else
             {
                 _coreWebView = typedView.htmlView.CoreWebView2;
-                await SetupWebView(_coreWebView);
-
-                _coreWebView.WebMessageReceived += (sender, args) =>
-                {
-                    var json = args.TryGetWebMessageAsString();
-                    var data = JsonSerializer.Deserialize<ZoomInfoFromJavascript>(json);
-    
-                    if (data is { Type: "zoom" })
-                    {
-                        double zoomDelta = data.Direction == "in" ? 0.1 : -0.1;
-                        double newZoom = typedView.htmlView.ZoomFactor + zoomDelta;
-
-                        typedView.htmlView.ZoomFactor = Math.Max(0.25, Math.Min(5.0, newZoom));
-                    }
-
-                    _logger.Verbose("Received Web Message {@Message}", data);
-                };
+                await SetupWebView(_coreWebView, typedView.htmlView);
             }
         };
 
@@ -254,7 +238,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         };
     }
 
-    private async Task SetupWebView(CoreWebView2 coreWebView)
+    private async Task SetupWebView(CoreWebView2 coreWebView, WebView2Base typedViewHtmlView)
     {
         // Handle SSL certificate errors if the setting is enabled
         _logger.Information("WebView2 SSL Certificate Error Handling: {Enabled}", Settings.Default.IgnoreSslCertificateErrors ? "Enabled" : "Disabled");
@@ -364,6 +348,22 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             catch (Exception ex) when (_logger.ErrorWithContext(ex, "Failure Navigating to External Url {Url}", uri))
             {
             }
+        };
+
+        coreWebView.WebMessageReceived += (sender, args) =>
+        {
+            var json = args.TryGetWebMessageAsString();
+            var data = JsonSerializer.Deserialize<ZoomInfoFromJavascript>(json);
+    
+            if (data is { Type: "zoom" })
+            {
+                double zoomDelta = data.Direction == "in" ? 0.1 : -0.1;
+                double newZoom = typedViewHtmlView.ZoomFactor + zoomDelta;
+
+                typedViewHtmlView.ZoomFactor = Math.Max(0.25, Math.Min(5.0, newZoom));
+            }
+
+            _logger.Verbose("Received Web Message {@Message}", data);
         };
 
         await coreWebView.AddScriptToExecuteOnDocumentCreatedAsync(@"
