@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 
 using Microsoft.Web.WebView2.Core;
@@ -46,6 +48,9 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
     private bool _isWebViewInstalled = false;
 
+    private readonly Subject<double> _zoomChangeSubject = new();
+    private IDisposable? _zoomSubscription;
+
     public MessageDetailHtmlViewModel(
         ILogger logger,
         WebView2Information webView2Information,
@@ -58,6 +63,16 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         _processService = processService;
         _previewGenerator = previewGenerator;
         IsWebViewInstalled = _webView2Information.IsInstalled;
+
+        // Set up debounced zoom save using Rx
+        _zoomSubscription = _zoomChangeSubject
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .ObserveOn(System.Reactive.Concurrency.Scheduler.CurrentThread)
+            .Subscribe(newZoom =>
+            {
+                Settings.Default.HtmlViewZoomFactor = newZoom;
+                Settings.Default.Save();
+            });
     }
 
     public bool IsWebViewInstalled
@@ -461,9 +476,8 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
                     typedViewHtmlView.ZoomFactor = newZoom;
 
-                    // Save zoom setting
-                    Settings.Default.HtmlViewZoomFactor = newZoom;
-                    Settings.Default.Save();
+                    // Debounce settings save via Rx to reduce I/O during rapid zoom changes
+                    _zoomChangeSubject.OnNext(newZoom);
 
                     // Show zoom indicator in WebView2
                     var percentage = (int)Math.Round(newZoom * 100);

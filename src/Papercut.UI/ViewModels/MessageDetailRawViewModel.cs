@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Windows.Input;
 
 using ICSharpCode.AvalonEdit.Document;
@@ -41,10 +43,23 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
 
     ZoomIndicator? _zoomIndicator;
 
+    readonly Subject<double> _zoomChangeSubject = new();
+    IDisposable? _zoomSubscription;
+
     public MessageDetailRawViewModel(ILogger logger)
     {
         this.DisplayName = "Raw";
         this._logger = logger;
+
+        // Set up debounced zoom save using Rx
+        _zoomSubscription = _zoomChangeSubject
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .ObserveOn(System.Reactive.Concurrency.Scheduler.CurrentThread)
+            .Subscribe(newFontSize =>
+            {
+                Settings.Default.TextViewZoomFontSize = newFontSize;
+                Settings.Default.Save();
+            });
     }
 
     public string? Raw
@@ -153,9 +168,8 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
                     ZoomHelper.AvalonEditZoom.MaxFontSize);
                 typedView.rawEdit.FontSize = newFontSize;
 
-                // Save zoom setting
-                Settings.Default.TextViewZoomFontSize = newFontSize;
-                Settings.Default.Save();
+                // Debounce settings save via Rx to reduce I/O during rapid zoom changes
+                _zoomChangeSubject.OnNext(newFontSize);
 
                 // Show zoom indicator
                 _zoomIndicator?.ShowZoomFromFontSize(newFontSize, ZoomHelper.AvalonEditZoom.DefaultFontSize);
