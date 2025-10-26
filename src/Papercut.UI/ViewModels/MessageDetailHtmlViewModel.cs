@@ -16,8 +16,6 @@
 // limitations under the License.
 
 
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 
 using Microsoft.Web.WebView2.Core;
@@ -25,6 +23,7 @@ using Microsoft.Web.WebView2.Core;
 using Papercut.AppLayer.Processes;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Domain.HtmlPreviews;
+using Papercut.Helpers;
 using Papercut.Infrastructure.WebView;
 using Papercut.Views;
 
@@ -48,8 +47,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
     private bool _isWebViewInstalled = false;
 
-    private readonly Subject<double> _zoomChangeSubject = new();
-    private IDisposable? _zoomSubscription;
+    private readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
 
     public MessageDetailHtmlViewModel(
         ILogger logger,
@@ -64,15 +62,12 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         _previewGenerator = previewGenerator;
         IsWebViewInstalled = _webView2Information.IsInstalled;
 
-        // Set up debounced zoom save using Rx
-        _zoomSubscription = _zoomChangeSubject
-            .Throttle(TimeSpan.FromMilliseconds(500))
-            .ObserveOn(System.Reactive.Concurrency.Scheduler.CurrentThread)
-            .Subscribe(newZoom =>
-            {
-                Settings.Default.HtmlViewZoomFactor = newZoom;
-                Settings.Default.Save();
-            });
+        // Set up debounced zoom save to reduce I/O during rapid zoom changes
+        _zoomSaveDebouncer = new SettingsSaveDebouncer<double>(newZoom =>
+        {
+            Settings.Default.HtmlViewZoomFactor = newZoom;
+            Settings.Default.Save();
+        });
     }
 
     public bool IsWebViewInstalled
@@ -476,8 +471,8 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
                     typedViewHtmlView.ZoomFactor = newZoom;
 
-                    // Debounce settings save via Rx to reduce I/O during rapid zoom changes
-                    _zoomChangeSubject.OnNext(newZoom);
+                    // Debounce settings save to reduce I/O during rapid zoom changes
+                    _zoomSaveDebouncer.OnValueChanged(newZoom);
 
                     // Show zoom indicator in WebView2
                     var percentage = (int)Math.Round(newZoom * 100);
