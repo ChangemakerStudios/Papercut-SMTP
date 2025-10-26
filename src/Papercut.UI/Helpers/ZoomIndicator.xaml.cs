@@ -117,6 +117,14 @@ public partial class ZoomIndicator : UserControl
     /// <param name="defaultSize">Default/base font size</param>
     public void ShowZoomFromFontSize(double fontSize, double defaultSize)
     {
+        // Guard against division by zero or near-zero default size
+        if (defaultSize <= double.Epsilon)
+        {
+            Log.Warning("ShowZoomFromFontSize called with invalid defaultSize: {DefaultSize}. Using 100% as fallback.", defaultSize);
+            ShowZoom(100);
+            return;
+        }
+
         var percentage = (int)Math.Round((fontSize / defaultSize) * 100);
         ShowZoom(percentage);
     }
