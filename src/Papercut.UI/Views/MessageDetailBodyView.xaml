@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="http://www.caliburnproject.org"
+             xmlns:helpers="clr-namespace:Papercut.Helpers"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
@@ -12,15 +13,15 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="1">
-            <avalonEdit:TextEditor
-                xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
-                Name="BodyEdit"
-                Padding="4"
-                FontFamily="Consolas"
-                FontSize="9pt" IsReadOnly="True" />
+            <Grid>
+                <avalonEdit:TextEditor
+                    xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+                    Name="BodyEdit"
+                    Padding="4"
+                    FontFamily="Consolas"
+                    FontSize="12pt" IsReadOnly="True" />
+                <helpers:ZoomIndicator x:Name="zoomIndicator" />
+            </Grid>
         </Border>
-
-        <!-- Attachments Section -->
-        <ContentControl Grid.Row="1" cal:View.Model="{Binding AttachmentsViewModel}" />
     </Grid>
 </UserControl>

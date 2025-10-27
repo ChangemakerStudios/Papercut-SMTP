@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
 // limitations under the License.
 
 
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Windows.Input;
+
 using ICSharpCode.AvalonEdit.Document;
 
 using Papercut.Views;
@@ -28,10 +32,24 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
 
     string? _headers;
 
+    ZoomIndicator? _zoomIndicator;
+    readonly Subject<double> _zoomChangeSubject = new();
+    IDisposable? _zoomSubscription;
+
     public MessageDetailHeaderViewModel(ILogger logger)
     {
         this._logger = logger;
         this.DisplayName = "Headers";
+
+        // Set up debounced zoom save using Rx
+        _zoomSubscription = _zoomChangeSubject
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .ObserveOn(System.Reactive.Concurrency.Scheduler.CurrentThread)
+            .Subscribe(newFontSize =>
+            {
+                Settings.Default.TextViewZoomFontSize = newFontSize;
+                Settings.Default.Save();
+            });
     }
 
     public string? Headers
@@ -54,8 +72,36 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
             return;
         }
 
+        // Store reference to zoom indicator
+        _zoomIndicator = typedView.zoomIndicator;
+
+        // Restore saved zoom level
+        typedView.HeaderEdit.FontSize = Settings.Default.TextViewZoomFontSize;
+
         this.GetPropertyValues(p => p.Headers)
             .Subscribe(
                 t => { typedView.HeaderEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
+
+        // Hook up zoom functionality
+        typedView.HeaderEdit.PreviewMouseWheel += (sender, e) =>
+        {
+            if (ZoomHelper.IsZoomModifierPressed())
+            {
+                e.Handled = true;
+                var newFontSize = ZoomHelper.CalculateNewZoom(
+                    typedView.HeaderEdit.FontSize,
+                    e.Delta,
+                    ZoomHelper.AvalonEditZoom.Increment,
+                    ZoomHelper.AvalonEditZoom.MinFontSize,
+                    ZoomHelper.AvalonEditZoom.MaxFontSize);
+                typedView.HeaderEdit.FontSize = newFontSize;
+
+                // Debounce settings save via Rx to reduce I/O during rapid zoom changes
+                _zoomChangeSubject.OnNext(newFontSize);
+
+                // Show zoom indicator
+                _zoomIndicator?.ShowZoomFromFontSize(newFontSize, ZoomHelper.AvalonEditZoom.DefaultFontSize);
+            }
+        };
     }
 }

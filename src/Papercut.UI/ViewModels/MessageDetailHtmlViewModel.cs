@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 
 using Microsoft.Web.WebView2.Core;
@@ -27,6 +29,8 @@ using Papercut.Infrastructure.WebView;
 using Papercut.Views;
 
 namespace Papercut.ViewModels;
+
+using System.Text.Json;
 
 public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<SettingsUpdatedEvent>
 {
@@ -44,6 +48,9 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
     private bool _isWebViewInstalled = false;
 
+    private readonly Subject<double> _zoomChangeSubject = new();
+    private IDisposable? _zoomSubscription;
+
     public MessageDetailHtmlViewModel(
         ILogger logger,
         WebView2Information webView2Information,
@@ -56,6 +63,16 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         _processService = processService;
         _previewGenerator = previewGenerator;
         IsWebViewInstalled = _webView2Information.IsInstalled;
+
+        // Set up debounced zoom save using Rx
+        _zoomSubscription = _zoomChangeSubject
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .ObserveOn(System.Reactive.Concurrency.Scheduler.CurrentThread)
+            .Subscribe(newZoom =>
+            {
+                Settings.Default.HtmlViewZoomFactor = newZoom;
+                Settings.Default.Save();
+            });
     }
 
     public bool IsWebViewInstalled
@@ -180,6 +197,8 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         return false;
     }
 
+    private sealed record ZoomInfoFromJavascript(string Type, string Direction);
+
     protected override void OnViewLoaded(object view)
     {
         base.OnViewLoaded(view);
@@ -190,7 +209,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             return;
         }
 
-        typedView.htmlView.CoreWebView2InitializationCompleted += (_, args) =>
+        typedView.htmlView.CoreWebView2InitializationCompleted += async (_, args) =>
         {
             if (!args.IsSuccess)
             {
@@ -202,7 +221,10 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             else
             {
                 _coreWebView = typedView.htmlView.CoreWebView2;
-                SetupWebView(_coreWebView);
+                await SetupWebView(_coreWebView, typedView.htmlView);
+
+                // Restore saved zoom level
+                typedView.htmlView.ZoomFactor = Settings.Default.HtmlViewZoomFactor;
             }
         };
 
@@ -234,7 +256,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         // Removed the ContextMenuOpening handler that was blocking all context menus
     }
 
-    private void SetupWebView(CoreWebView2 coreWebView)
+    private async Task SetupWebView(CoreWebView2 coreWebView, WebView2Base typedViewHtmlView)
     {
         // Handle SSL certificate errors if the setting is enabled
         _logger.Information("WebView2 SSL Certificate Error Handling: {Enabled}", Settings.Default.IgnoreSslCertificateErrors ? "Enabled" : "Disabled");
@@ -418,6 +440,97 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             {
             }
         };
+
+        coreWebView.WebMessageReceived += async (sender, args) =>
+        {
+            try
+            {
+                var json = args.TryGetWebMessageAsString();
+
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    _logger.Warning("Received empty or null web message");
+                    return;
+                }
+
+                var data = JsonSerializer.Deserialize<ZoomInfoFromJavascript>(json);
+
+                if (data is null)
+                {
+                    _logger.Warning("Failed to deserialize web message: {Json}", json);
+                    return;
+                }
+
+                _logger.Verbose("Received Web Message {@Message}", data);
+
+                if (data.Type == "zoom")
+                {
+                    double zoomDelta = data.Direction == "in"
+                        ? ZoomHelper.WebView2Zoom.Increment
+                        : -ZoomHelper.WebView2Zoom.Increment;
+                    double newZoom = typedViewHtmlView.ZoomFactor + zoomDelta;
+
+                    newZoom = Math.Max(
+                        ZoomHelper.WebView2Zoom.MinZoom,
+                        Math.Min(ZoomHelper.WebView2Zoom.MaxZoom, newZoom));
+
+                    typedViewHtmlView.ZoomFactor = newZoom;
+
+                    // Debounce settings save via Rx to reduce I/O during rapid zoom changes
+                    _zoomChangeSubject.OnNext(newZoom);
+
+                    // Show zoom indicator in WebView2
+                    var percentage = (int)Math.Round(newZoom * 100);
+                    await coreWebView.ExecuteScriptAsync($"window.showPapercutZoom && window.showPapercutZoom({percentage});");
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.Error(ex, "Failed to parse web message as JSON");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Unexpected error handling web message");
+            }
+        };
+
+        await coreWebView.AddScriptToExecuteOnDocumentCreatedAsync(@"
+            document.addEventListener('DOMContentLoaded', function() {
+                var style = document.createElement('style');
+                style.textContent = '#papercut-zoom-indicator { position: fixed; top: 50%; left: 50%; background: rgba(0, 0, 0, 0.88); color: white; font-size: 24px; font-weight: 600; padding: 16px 24px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); z-index: 999999; opacity: 0; transition: opacity 0.15s ease-out; pointer-events: none; font-family: sans-serif; }';
+                document.head.appendChild(style);
+
+                var indicator = document.createElement('div');
+                indicator.id = 'papercut-zoom-indicator';
+                document.body.appendChild(indicator);
+
+                var fadeTimeout;
+                window.showPapercutZoom = function(percentage) {
+                    var currentZoom = percentage / 100;
+                    var inverseZoom = 1 / currentZoom;
+                    indicator.style.transform = 'translate(-50%, -50%) scale(' + inverseZoom + ')';
+                    indicator.textContent = percentage + '%';
+                    indicator.style.opacity = '1';
+                    clearTimeout(fadeTimeout);
+                    fadeTimeout = setTimeout(function() {
+                        indicator.style.transition = 'opacity 0.3s ease-in';
+                        indicator.style.opacity = '0';
+                    }, 800);
+                };
+            });
+        ");
+
+        await coreWebView.AddScriptToExecuteOnDocumentCreatedAsync(@"
+            window.addEventListener('wheel', function(e) {
+                if (e.ctrlKey && window?.chrome?.webview?.postMessage) {
+                    e.preventDefault();
+                    window.chrome.webview.postMessage(JSON.stringify({
+                        Type: 'zoom',
+                        Direction: e.deltaY < 0 ? 'in' : 'out'
+                    }));
+                }
+            }, { passive: false });
+        ");
 
         coreWebView.DisableEdgeFeatures();
 

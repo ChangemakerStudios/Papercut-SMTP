@@ -16,6 +16,10 @@
 // limitations under the License.
 
 
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Windows.Input;
+
 using ICSharpCode.AvalonEdit.Document;
 
 using Papercut.Message.Helpers;
@@ -37,10 +41,25 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
 
     string? _raw;
 
+    ZoomIndicator? _zoomIndicator;
+
+    readonly Subject<double> _zoomChangeSubject = new();
+    IDisposable? _zoomSubscription;
+
     public MessageDetailRawViewModel(ILogger logger)
     {
         this.DisplayName = "Raw";
         this._logger = logger;
+
+        // Set up debounced zoom save using Rx
+        _zoomSubscription = _zoomChangeSubject
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .ObserveOn(System.Reactive.Concurrency.Scheduler.CurrentThread)
+            .Subscribe(newFontSize =>
+            {
+                Settings.Default.TextViewZoomFontSize = newFontSize;
+                Settings.Default.Save();
+            });
     }
 
     public string? Raw
@@ -121,6 +140,12 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
             return;
         }
 
+        // Store reference to zoom indicator
+        _zoomIndicator = typedView.zoomIndicator;
+
+        // Restore saved zoom level
+        typedView.rawEdit.FontSize = Settings.Default.TextViewZoomFontSize;
+
         this.GetPropertyValues(p => p.Raw)
             .ObserveOn(Dispatcher.CurrentDispatcher)
             .Subscribe(s =>
@@ -128,6 +153,28 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
                 typedView.rawEdit.Document = new TextDocument(new StringTextSource(s ?? string.Empty));
                 this.IsLoading = false;
             });
+
+        // Hook up zoom functionality
+        typedView.rawEdit.PreviewMouseWheel += (sender, e) =>
+        {
+            if (ZoomHelper.IsZoomModifierPressed())
+            {
+                e.Handled = true;
+                var newFontSize = ZoomHelper.CalculateNewZoom(
+                    typedView.rawEdit.FontSize,
+                    e.Delta,
+                    ZoomHelper.AvalonEditZoom.Increment,
+                    ZoomHelper.AvalonEditZoom.MinFontSize,
+                    ZoomHelper.AvalonEditZoom.MaxFontSize);
+                typedView.rawEdit.FontSize = newFontSize;
+
+                // Debounce settings save via Rx to reduce I/O during rapid zoom changes
+                _zoomChangeSubject.OnNext(newFontSize);
+
+                // Show zoom indicator
+                _zoomIndicator?.ShowZoomFromFontSize(newFontSize, ZoomHelper.AvalonEditZoom.DefaultFontSize);
+            }
+        };
     }
 
     protected override Task OnActivateAsync(CancellationToken token)
