@@ -13,7 +13,7 @@
                     Name="HeaderEdit"
                     Padding="4"
                     FontFamily="Consolas"
-                    FontSize="12pt" IsReadOnly="True" />
+                    FontSize="10.5pt" IsReadOnly="True" />
                 <helpers:ZoomIndicator x:Name="zoomIndicator" />
             </Grid>
         </Border>

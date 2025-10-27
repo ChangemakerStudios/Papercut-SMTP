@@ -60,13 +60,13 @@ public static class ZoomHelper
 
     /// <summary>
     /// Constants for AvalonEdit zoom (font size-based, in DIPs)
-    /// Note: 12pt in XAML = 16 DIPs (1pt = 4/3 DIPs)
+    /// Note: Using even DIP values for consistency (14 DIPs ≈ 10.5pt)
     /// </summary>
     public static class AvalonEditZoom
     {
-        public const double DefaultFontSize = 16.0;
+        public const double DefaultFontSize = 14.0;
         public const double MinFontSize = 8.0;
-        public const double MaxFontSize = 64.0;
+        public const double MaxFontSize = 56.0;
         public const double Increment = 1.0;
     }
 }

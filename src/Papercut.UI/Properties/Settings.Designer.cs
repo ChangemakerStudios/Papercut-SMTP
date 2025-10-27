@@ -255,7 +255,7 @@ namespace Papercut.Properties {
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("16.0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("14.0")]
         public double TextViewZoomFontSize {
             get {
                 return ((double)(this["TextViewZoomFontSize"]));
