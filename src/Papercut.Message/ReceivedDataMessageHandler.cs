@@ -51,7 +51,11 @@ public class ReceivedDataMessageHandler : IReceivedDataHandler
 
         using (var ms = new MemoryStream(messageData))
         {
-            var message = await MimeMessage.LoadAsync(ParserOptions.Default, ms, true);
+            // Use a more lenient parser for development/testing scenarios
+            var parserOptions = ParserOptions.Default.Clone();
+            parserOptions.AddressParserComplianceMode = RfcComplianceMode.Loose;
+
+            var message = await MimeMessage.LoadAsync(parserOptions, ms, true);
 
             var lookup = recipients.ToHashSet(StringComparer.CurrentCultureIgnoreCase);
 
@@ -66,7 +70,17 @@ public class ReceivedDataMessageHandler : IReceivedDataHandler
                 // Bcc is remaining, add to message
                 foreach (var r in lookup)
                 {
-                    message.Bcc.Add(MailboxAddress.Parse(r));
+                    // Try to parse the email address using loose validation
+                    // This supports non-standard domains like @__ that developers use
+                    // to prevent accidental real email sends in test environments (Issue #284)
+                    if (MailboxAddress.TryParse(parserOptions, r, out var mailboxAddress))
+                    {
+                        message.Bcc.Add(mailboxAddress);
+                    }
+                    else
+                    {
+                        _logger.Warning("Could not parse recipient address: {Address}", r);
+                    }
                 }
             }
 
