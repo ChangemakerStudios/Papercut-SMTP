@@ -302,8 +302,6 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
             return default;
         }
 
-        this.ResetMessage();
-
         if (mailMessageEx != null)
         {
             this.HeaderViewModel.Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
@@ -311,6 +309,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
             var parts = mailMessageEx.BodyParts.OfType<MimePart>().ToList();
             var mainBody = parts.GetMainBodyTextPart();
 
+            // Set new values BEFORE clearing old ones to prevent flicker
             this.From = mailMessageEx.From?.ToString() ?? string.Empty;
             this.To = mailMessageEx.To?.ToString() ?? string.Empty;
             this.CC = mailMessageEx.Cc?.ToString() ?? string.Empty;
@@ -338,7 +337,23 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
                     var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
                     if (textPartNotHtml != null) this.TextBody = textPartNotHtml.GetText(Encoding.UTF8);
                 }
+                else
+                {
+                    this.TextBody = null;
+                }
             }
+            else
+            {
+                this.IsHtml = false;
+                this.HtmlFile = null;
+                this.TextBody = null;
+                this.HtmlViewModel.HtmlFile = null;
+            }
+        }
+        else
+        {
+            // Only reset when there's no message to display
+            this.ResetMessage();
         }
 
         this.SelectedTabIndex = 0;
