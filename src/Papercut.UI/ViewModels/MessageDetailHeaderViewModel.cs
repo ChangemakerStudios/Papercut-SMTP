@@ -73,6 +73,9 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
         // Restore saved zoom level
         typedView.HeaderEdit.FontSize = Settings.Default.TextViewZoomFontSize;
 
+        // Install modern search panel for Ctrl+F support
+        ModernSearchPanel.Install(typedView.HeaderEdit);
+
         this.GetPropertyValues(p => p.Headers)
             .Subscribe(
                 t => { typedView.HeaderEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });

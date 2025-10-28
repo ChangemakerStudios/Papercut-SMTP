@@ -72,6 +72,9 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
         // Restore saved zoom level
         typedView.BodyEdit.FontSize = Settings.Default.TextViewZoomFontSize;
 
+        // Install modern search panel for Ctrl+F support
+        ModernSearchPanel.Install(typedView.BodyEdit);
+
         this.GetPropertyValues(p => p.Body)
             .Subscribe(
                 t => { typedView.BodyEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
