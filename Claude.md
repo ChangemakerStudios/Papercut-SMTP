@@ -78,7 +78,7 @@ The Papercut UI uses **MahApps.Metro** for modern, consistent styling:
   - `MahApps.Brushes.ThemeForeground` - Text color
   - `MahApps.Brushes.Control.Background` - Control backgrounds
   - `MahApps.Brushes.Gray8` - Light gray for borders/hover states
-- **Documentation**: https://mahapps.com/docs/themes/thememanager
+- **Documentation**: [MahApps.Metro Theme Manager](https://mahapps.com/docs/themes/thememanager)
 - **Custom Controls**: Custom UI elements should use MahApps brushes for consistent theming
 
 ## Build and Test
