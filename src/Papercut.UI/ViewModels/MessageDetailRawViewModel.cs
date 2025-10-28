@@ -141,6 +141,9 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
         // Restore saved zoom level
         typedView.rawEdit.FontSize = Settings.Default.TextViewZoomFontSize;
 
+        // Install modern search panel for Ctrl+F support
+        ModernSearchPanel.Install(typedView.rawEdit);
+
         this.GetPropertyValues(p => p.Raw)
             .ObserveOn(Dispatcher.CurrentDispatcher)
             .Subscribe(s =>

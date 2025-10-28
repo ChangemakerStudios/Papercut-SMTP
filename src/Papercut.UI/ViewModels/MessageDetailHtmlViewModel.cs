@@ -253,6 +253,9 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
     private async Task SetupWebView(CoreWebView2 coreWebView, WebView2Base typedViewHtmlView)
     {
+        // Enable browser accelerator keys (Ctrl+F, Ctrl+P, etc.) for better UX
+        coreWebView.Settings.AreBrowserAcceleratorKeysEnabled = true;
+
         // Handle SSL certificate errors if the setting is enabled
         _logger.Information("WebView2 SSL Certificate Error Handling: {Enabled}", Settings.Default.IgnoreSslCertificateErrors ? "Enabled" : "Disabled");
 
