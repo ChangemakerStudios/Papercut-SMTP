@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ using System.ComponentModel;
 
 using Autofac;
 
-using MimeKit;
-
 using Papercut.Common.Extensions;
 using Papercut.Core.Domain.Rules;
 using Papercut.Rules.Domain.Rules;
@@ -29,7 +27,7 @@ using Papercut.Rules.Domain.Rules;
 namespace Papercut.Rules.Domain.Invoking;
 
 [Serializable]
-public class InvokeProcessRule : RuleBase
+public class InvokeProcessRule : NewMessageRuleBase
 {
     private string? _processToRun;
     private string? _processCommandLine = @"""%e""";

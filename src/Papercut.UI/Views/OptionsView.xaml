@@ -11,7 +11,7 @@
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:OptionsViewModel}"
-                      Title="{Binding WindowTitle}" Width="313" Height="310" Icon="/Papercut;component/App.ico"
+                      Title="{Binding WindowTitle}" Width="480" Height="335" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="NoResize"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner"
@@ -24,11 +24,10 @@
             <Button Width="75" Margin="2" Name="Cancel" IsCancel="True">Cancel</Button>
             <Button Width="75" Margin="2" Name="Save" IsDefault="True">Save</Button>
         </StackPanel>
-        <Grid Width="310">
+        <Grid Width="470">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="466*" />
-                <ColumnDefinition Width="97*"/>
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -40,24 +39,25 @@
             </Grid.RowDefinitions>
             <Label Grid.Column="0" Grid.Row="0" Margin="0,2,0,29" Grid.RowSpan="2">IP Address:</Label>
             <Label Grid.Column="0" Grid.Row="1" Margin="0,2,10,0" Grid.RowSpan="3">Port:</Label>
-            <ComboBox Grid.Column="1" Grid.Row="0" Margin="2,2,0,2" Width="170" HorizontalAlignment="Left"
-                      Name="IPs" SelectedItem="{Binding IP}" Grid.ColumnSpan="2" />
-            <Grid Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2">
+            <ComboBox Grid.Column="1" Grid.Row="0" Margin="2,2,0,2" Width="300" HorizontalAlignment="Left"
+                      Name="IPs" SelectedItem="{Binding IP}" />
+            <Grid Grid.Column="1" Grid.Row="1">
                 <TextBox Margin="2,2,0,2" Width="100" HorizontalAlignment="Left" Name="Port" />
-                <Label Margin="102,0,-0.2,0.4">(default is 25)</Label>
+                <Label Margin="102,0,0,0.4" HorizontalAlignment="Left">(default is 25)</Label>
             </Grid>
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-116" Name="RunOnStartup" VerticalAlignment="Bottom"
-                      Content="Run on startup" Grid.ColumnSpan="2" Height="18" />
-            <CheckBox Grid.Row="4" Margin="5,0,5,-47" Name="StartMinimized" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Grid.Column="1">Start minimized</CheckBox>
-            <CheckBox Grid.Row="5" Margin="5,0,5,-139" Name="ShowNotifications" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Grid.Column="1">Show Notifications</CheckBox>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-93" Name="MinimizeOnClose" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18">Minimize on close</CheckBox>
+                      Content="Run on startup" Height="18" />
+            <CheckBox Grid.Row="4" Grid.Column="1" Margin="5,0,5,-47" Name="StartMinimized" VerticalAlignment="Bottom" Height="18">Start minimized</CheckBox>
+            <CheckBox Grid.Row="5" Grid.Column="1" Margin="5,0,5,-139" Name="ShowNotifications" VerticalAlignment="Bottom" Height="18">Show Notifications</CheckBox>
+            <CheckBox Grid.Row="5" Grid.Column="1" Margin="5,0,5,-162" Name="IgnoreSslCertificateErrors" VerticalAlignment="Bottom" Height="18">Ignore SSL Certificate Errors (Requires Restart)</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-93" Name="MinimizeOnClose" VerticalAlignment="Bottom" Height="18">Minimize on close</CheckBox>
             <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,2.6,0,7.4"
-                x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2" />
+                x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="300" />
             <Label Grid.Column="0" Grid.Row="4" Content="Message Sort Order:" Margin="0,3,3,4"/>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-70" Name="MinimizeToTray" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Height="18" Content="Minimize to tray"/>
+            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-70" Name="MinimizeToTray" VerticalAlignment="Bottom" Height="18" Content="Minimize to tray"/>
             <Label Grid.Column="0" Grid.Row="4" Content="Theme:" Margin="0,33,3,-26"/>
             <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,33.6,0,-23.6"
-                x:Name="Themes" SelectedItem="{Binding ThemeColor}" HorizontalAlignment="Left" Width="170" Grid.ColumnSpan="2">
+                x:Name="Themes" SelectedItem="{Binding ThemeColor}" HorizontalAlignment="Left" Width="300">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">

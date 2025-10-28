@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="Papercut.Views.MessageDetailAttachmentsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d"
+             d:DesignHeight="100" d:DesignWidth="600">
+    <Grid Visibility="{Binding HasAttachments, Converter={StaticResource CollapsedIfFalse}}" Margin="0,8,0,8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Label Grid.Column="0" Content="Attachments" HorizontalAlignment="Right" FontSize="16" VerticalAlignment="Center" Margin="0,0,0,0" />
+        <ItemsControl Grid.Column="1" ItemsSource="{Binding Attachments}" Margin="2,2,2,2">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Margin="2"
+                            Padding="8,4"
+                            Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                            cal:Message.Attach="[Event Click] = [Action OpenAttachment($dataContext)]">
+                        <Button.ToolTip>
+                            <TextBlock>
+                                <Run Text="Click to open '" /><Run Text="{Binding FileName, Mode=OneWay}" /><Run Text="'" />
+                            </TextBlock>
+                        </Button.ToolTip>
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal" Margin="1,1,1,1">
+                                <iconPacks:PackIconMaterial Kind="Attachment"
+                                                           Width="16"
+                                                           Height="16"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,4,0"/>
+                                <TextBlock Text="{Binding FileName}"
+                                          VerticalAlignment="Center"
+                                          TextTrimming="CharacterEllipsis"
+                                          MaxWidth="200"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

@@ -16,16 +16,13 @@
 // limitations under the License.
 
 
-using System.Diagnostics;
+namespace Papercut.Core.Domain.BackgroundTasks;
 
-namespace Papercut.AppLayer.Uris;
-
-public static class UriHelper
+public interface IBackgroundTaskRunner
 {
-    public static Process? OpenUri(this Uri uri)
-    {
-        if (uri == null) throw new ArgumentNullException(nameof(uri));
-
-        return Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
-    }
+    /// <summary>
+    /// Queues a background task to be executed.
+    /// </summary>
+    /// <param name="taskFunc">An asynchronous function representing the task.</param>
+    void QueueBackgroundTask(Func<CancellationToken, Task> taskFunc);
 }

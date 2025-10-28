@@ -10,7 +10,7 @@
 #tool "dotnet:?package=GitVersion.Tool&version=6.4.0"
 #tool "dotnet:?package=vpk&version=0.0.1298"
 
-#addin "nuget:?package=Cake.FileHelpers&version=6.1.3"
+#addin "nuget:?package=Cake.FileHelpers&version=7.0.0"
 #addin "nuget:?package=Cake.Incubator&version=8.0.0"
 
 #nullable enable
@@ -21,6 +21,7 @@
 
 #load "./build/ReleaseNotes.cake"
 #load "./build/Velopack.cake"
+#load "./build/WinGet.cake"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -159,10 +160,15 @@ Task("PackageUI64")
         PublishDirectory = publishDirectory,
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
-        Framework = "net8.0-x64-desktop,webview2"
+        Framework = "net8.0-x64-desktop,webview2",
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
     };
 
     Velopack.Pack(Context, packParams);
+
+    // Copy installation helper files alongside Setup.exe
+    CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
+    CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
 })
 .OnError(exception => Error(exception));
 
@@ -201,10 +207,15 @@ Task("PackageUI32")
         PublishDirectory = publishDirectory,
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
-        Framework = "net8.0-x86-desktop,webview2"
+        Framework = "net8.0-x86-desktop,webview2",
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
     };
 
     Velopack.Pack(Context, packParams);
+
+    // Copy installation helper files alongside Setup.exe
+    CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
+    CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
 })
 .OnError(exception => Error(exception));
 
@@ -242,10 +253,15 @@ Task("PackageUIArm64")
         PublishDirectory = publishDirectory,
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
-        Framework = "net8.0-arm64-desktop,webview2"
+        Framework = "net8.0-arm64-desktop,webview2",
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
     };
 
     Velopack.Pack(Context, packParams);
+
+    // Copy installation helper files alongside Setup.exe
+    CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
+    CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
 })
 .OnError(exception => Error(exception));
 
@@ -254,6 +270,7 @@ Task("DeployReleases")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
     .IsDependentOn("BuildAndPackServiceWinArm64")
+    .IsDependentOn("PrepareWinGetRelease")
     .Does(() =>
     {
         var releaseType = isMasterBranch ? "Release" : "Pre-release";
@@ -319,6 +336,31 @@ Task("DeployReleases")
                 }
             });
         }
+
+        // Attach WinGet manifests to the release (master branch only)
+        if (isMasterBranch)
+        {
+            Information($"Attaching WinGet manifests to release {releaseTag}");
+
+            var wingetFiles = GetFiles(releasesDirectory.ToString() + "/winget/*.yaml");
+            foreach (var file in wingetFiles)
+            {
+                Information($"Uploading {file.GetFilename()}");
+                StartProcess("gh", new ProcessSettings
+                {
+                    Arguments = new ProcessArgumentBuilder()
+                        .Append("release").Append("upload")
+                        .Append(releaseTag)
+                        .AppendQuoted(file.FullPath)
+                        .Append("--clobber")
+                        .Append("--repo").Append("ChangemakerStudios/Papercut-SMTP"),
+                    EnvironmentVariables = new Dictionary<string, string>
+                    {
+                        { "GH_TOKEN", githubToken ?? "" }
+                    }
+                });
+            }
+        }
     })
 .OnError(exception => Error(exception));
 
@@ -343,8 +385,8 @@ Task("BuildAndPackServiceWin64")
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
-    CopyFiles("./extras/*.ps1", publishDirectory);
-    CopyFiles("./extras/*.bat", publishDirectory);
+    CopyFiles("./installation/service/*.ps1", publishDirectory);
+    CopyFiles("./installation/service/*.bat", publishDirectory);
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
@@ -372,8 +414,8 @@ Task("BuildAndPackServiceWin32")
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
-    CopyFiles("./extras/*.ps1", publishDirectory);
-    CopyFiles("./extras/*.bat", publishDirectory);
+    CopyFiles("./installation/service/*.ps1", publishDirectory);
+    CopyFiles("./installation/service/*.bat", publishDirectory);
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
@@ -401,11 +443,29 @@ Task("BuildAndPackServiceWinArm64")
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
-    CopyFiles("./extras/*.ps1", publishDirectory);
-    CopyFiles("./extras/*.bat", publishDirectory);
+    CopyFiles("./installation/service/*.ps1", publishDirectory);
+    CopyFiles("./installation/service/*.bat", publishDirectory);
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
+})
+.OnError(exception => Error(exception));
+
+///////////////////////////////////////////////////////////////////////////////
+// WINGET
+Task("PrepareWinGetRelease")
+    .WithCriteria(isMasterBranch)
+    .Does(() =>
+{
+    var wingetParams = new WinGetReleaseParams
+    {
+        Version = versionInfo.SemVer,
+        ChannelPostfix = channelPostfix,
+        ReleasesDirectory = releasesDirectory,
+        OutputDirectory = releasesDirectory + Directory("winget")
+    };
+
+    WinGet.PrepareRelease(Context, wingetParams);
 })
 .OnError(exception => Error(exception));
 
@@ -421,6 +481,7 @@ Task("All")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
     .IsDependentOn("BuildAndPackServiceWinArm64")
+    .IsDependentOn("PrepareWinGetRelease")
     .IsDependentOn("DeployReleases")
     .OnError(exception => Error(exception));
 

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,30 +19,15 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Threading;
-
-using Caliburn.Micro;
-
-using MimeKit;
 
 using Papercut.AppLayer.Processes;
-using Papercut.Common.Domain;
-using Papercut.Common.Extensions;
-using Papercut.Common.Helper;
 using Papercut.Core.Domain.Message;
-using Papercut.Domain.Events;
 using Papercut.Domain.UiCommands;
-using Papercut.Helpers;
 using Papercut.Message;
 using Papercut.Message.Helpers;
-using Papercut.Properties;
 using Papercut.Views;
 
 using ListBox = System.Windows.Controls.ListBox;
@@ -57,13 +42,13 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
 {
     readonly ILogger _logger;
 
-    readonly MessageRepository _messageRepository;
+    readonly IMessageRepository _messageRepository;
 
     readonly MessageWatcher _messageWatcher;
 
-    readonly MimeMessageLoader _mimeMessageLoader;
+    readonly IMimeMessageLoader _mimeMessageLoader;
 
-    private readonly ExplorerProcessService _explorerProcessService;
+    private readonly ProcessService _processService;
 
     private readonly IUiCommandHub _uiCommandHub;
 
@@ -75,10 +60,10 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
 
     public MessageListViewModel(
         IUiCommandHub uiCommandHub,
-        MessageRepository messageRepository,
+        IMessageRepository messageRepository,
         MessageWatcher messageWatcher,
-        MimeMessageLoader mimeMessageLoader,
-        ExplorerProcessService explorerProcessService,
+        IMimeMessageLoader mimeMessageLoader,
+        ProcessService processService,
         ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(messageRepository);
@@ -89,7 +74,7 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
         this._messageRepository = messageRepository;
         this._messageWatcher = messageWatcher;
         this._mimeMessageLoader = mimeMessageLoader;
-        this._explorerProcessService = explorerProcessService;
+        this._processService = processService;
         this._logger = logger;
 
         this.SetupMessages();
@@ -218,6 +203,7 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
                     this.NotifyOfPropertyChange(() => this.SelectedMessageCount);
                     this.NotifyOfPropertyChange(() => this.SelectedMessage);
                     this.NotifyOfPropertyChange(() => this.DeleteText);
+                    this.NotifyOfPropertyChange(() => this.HasMessages);
                 });
 
             if (args.NewItems != null)
@@ -315,7 +301,7 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
 
         foreach (var folder in folders)
         {
-            this._explorerProcessService.OpenFolder(folder);
+            this._processService.OpenFolder(folder);
         }
     }
 

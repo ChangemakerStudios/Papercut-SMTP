@@ -51,8 +51,14 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 # HTTP (non-privileged port)
 EXPOSE 8080
 
-# SMTP (non-privileged port)
+# SMTP (non-privileged port - use 587 for STARTTLS)
 EXPOSE 2525
+
+# Optional STARTTLS port (requires certificate configuration)
+# EXPOSE 587
+
+# Optional TLS/SSL port (requires certificate configuration)
+# EXPOSE 465
 
 # optional -- should only be used locally: IPComm
 # EXPOSE 37403

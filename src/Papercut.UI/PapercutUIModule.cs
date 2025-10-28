@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,15 @@
 // limitations under the License.
 
 
-using Autofac;
-using Autofac.Core;
+using System.Runtime.InteropServices;
 
-using Caliburn.Micro;
+using Autofac.Core;
 
 using Microsoft.Extensions.Logging;
 
 using Papercut.Core;
 using Papercut.Core.Domain.Application;
 using Papercut.Core.Infrastructure.Container;
-using Papercut.Helpers;
 using Papercut.Infrastructure.IPComm;
 using Papercut.Infrastructure.Smtp;
 using Papercut.Message;
@@ -34,6 +32,8 @@ using Papercut.Rules;
 
 using Velopack;
 using Velopack.Sources;
+
+using Module = Autofac.Module;
 
 namespace Papercut
 {
@@ -66,10 +66,33 @@ namespace Papercut
 
             builder.Register(c =>
             {
-                var updateOptions = new UpdateOptions();
+                var logger = c.Resolve<Serilog.ILogger>();
+
+                // Determine the correct channel based on the runtime identifier
+                // Channel format: win-{arch}-stable (e.g., win-x64-stable, win-x86-stable, win-arm64-stable)
+                // RuntimeInformation.RuntimeIdentifier returns the platform for which the runtime was built (e.g., "win-x64")
+                string runtimeId = RuntimeInformation.RuntimeIdentifier;
+
+                // Validate that we're running on Windows since this is a Windows-only application
+                if (!runtimeId.StartsWith("win-", StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.Warning("Papercut SMTP is a Windows-only application but detected RuntimeIdentifier: {RuntimeId}. Update checks will be disabled.", runtimeId);
+                    throw new PlatformNotSupportedException(
+                        $"Papercut SMTP is designed for Windows only. Detected platform: {runtimeId}");
+                }
+
+                string channel = $"{runtimeId}-stable";
+
+                var updateOptions = new UpdateOptions()
+                {
+                    ExplicitChannel = channel
+                };
+
+                logger.Information("Initializing UpdateManager with URL: {UpgradeUrl}, Channel: {Channel}, RuntimeId: {RuntimeId}",
+                    AppConstants.UpgradeUrl, channel, runtimeId);
 
                 return new UpdateManager(new GithubSource(AppConstants.UpgradeUrl, null, false), updateOptions);
-            });
+            }).SingleInstance();
 
             builder.RegisterType<ViewModelWindowManager>()
                 .As<IViewModelWindowManager>()

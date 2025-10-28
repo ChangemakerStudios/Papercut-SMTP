@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,7 @@ using Papercut.Common.Domain;
 
 namespace Papercut.Core.Domain.Rules;
 
-public class RulesUpdatedEvent : IEvent
+public class RulesUpdatedEvent(IRule[] rules) : IEvent
 {
-    public RulesUpdatedEvent(IRule[] rules)
-    {
-        this.Rules = rules;
-    }
-
-    public IRule[] Rules { get; set; }
+    public IRule[] Rules { get; set; } = rules;
 }
