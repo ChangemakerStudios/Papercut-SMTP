@@ -10,6 +10,16 @@ public static class WinGet
             throw new ArgumentNullException(nameof(context));
         }
 
+        if (string.IsNullOrWhiteSpace(@params.Version))
+        {
+            throw new ArgumentException("WinGet: Version is required.", nameof(@params));
+        }
+
+        if (@params.ReleasesDirectory == null || @params.OutputDirectory == null)
+        {
+            throw new ArgumentException("WinGet: ReleasesDirectory and OutputDirectory are required.", nameof(@params));
+        }
+
         context.Information($"Preparing WinGet manifests for version {@params.Version}");
 
         // Ensure output directory exists
@@ -78,7 +88,7 @@ public static class WinGet
             PackageUrl = "https://github.com/ChangemakerStudios/Papercut-SMTP",
             License = "Apache-2.0",
             LicenseUrl = "https://github.com/ChangemakerStudios/Papercut-SMTP/blob/develop/LICENSE",
-            Copyright = "Copyright © 2008 - 2024 Ken Robertson & Jaben Cargman",
+            Copyright = $"Copyright © 2008 - {DateTime.UtcNow.Year} Ken Robertson & Jaben Cargman",
             ShortDescription = "Standalone SMTP server designed for viewing received messages",
             Description = "Papercut SMTP is a 2-in-1 quick email viewer AND built-in SMTP server designed for development.\n" +
                          "It allows developers to safely test email functionality without risk of emails being sent to real recipients.\n\n" +
@@ -88,7 +98,7 @@ public static class WinGet
                          "- Full email inspection (body, HTML, headers, attachments, raw encoded bits)\n" +
                          "- Support for running as a minimized tray application with notifications\n" +
                          "- WebView2-based HTML email rendering",
-            Moniker = "papercut",
+            Moniker = "papercut-smtp",
             Tags = new List<string>
             {
                 "smtp",
@@ -117,7 +127,7 @@ public static class WinGet
             MinimumOSVersion = "10.0.17763.0",
             InstallerType = "exe",
             Scope = "user",
-            InstallModes = new List<string> { "silent" },
+            InstallModes = new List<string> { "interactive", "silent", "silentWithProgress" },
             InstallerSwitches = new WinGetInstallerSwitches
             {
                 Silent = "--silent",
