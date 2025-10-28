@@ -59,7 +59,7 @@ You can also manually trigger the winget publishing workflow:
 
 ```bash
 # Via GitHub CLI
-gh workflow run winget-publish.yml --ref master -f version=7.0.2
+gh workflow run winget-publish.yml --ref master -f version=7.5.0
 
 # Or use the GitHub Actions UI and select "Run workflow"
 ```
@@ -116,7 +116,7 @@ If automated publishing is not configured, you can manually submit to winget:
 #### Option B: Use wingetcreate Tool
 
 ```powershell
-$version = "7.0.2"
+$version = "7.5.0"
 wingetcreate update ChangemakerStudios.PapercutSMTP `
   --version $version `
   --urls `
