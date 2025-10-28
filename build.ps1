@@ -6,5 +6,6 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet tool install --global vpk --version 0.0.1298
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-dotnet-cake --configuration=Release
+# Pass all script arguments to dotnet-cake
+dotnet-cake --configuration=Release @args
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
