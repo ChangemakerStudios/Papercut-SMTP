@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+namespace Papercut.AppLayer.Rules;
+
 using Papercut.Core.Domain.Rules;
 using Papercut.Core.Infrastructure.Async;
 using Papercut.Domain.BackendService;
@@ -23,42 +25,20 @@ using Papercut.Message;
 using Papercut.Rules.App;
 using Papercut.Rules.Domain.Rules;
 
-namespace Papercut.AppLayer.Rules;
-
-public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecyclePreExit, IEventHandler<PapercutServiceStatusEvent>
+public class RuleService(
+    IRuleRepository ruleRepository,
+    ILogger logger,
+    IBackendServiceStatus backendServiceStatus,
+    MessageWatcher messageWatcher,
+    IRulesRunner rulesRunner,
+    IMessageBus messageBus)
+    : RuleServiceBase(ruleRepository, logger), IAppLifecycleStarted, IAppLifecyclePreExit, IEventHandler<PapercutServiceStatusEvent>
 {
-    readonly IBackendServiceStatus _backendServiceStatus;
-
-    readonly IMessageBus _messageBus;
-
-    readonly MessageWatcher _messageWatcher;
-
-    readonly IRulesRunner _rulesRunner;
-
-    private IDisposable? _newMessageRuleSubscription;
-
-    private IDisposable? _periodicRuleSubscription;
-
-    private IDisposable? _ruleChangedObservable;
-
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private static readonly TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);
 
     private readonly Stack<IDisposable> _ruleDisposables = new();
 
-    public RuleService(
-        IRuleRepository ruleRepository,
-        ILogger logger,
-        IBackendServiceStatus backendServiceStatus,
-        MessageWatcher messageWatcher,
-        IRulesRunner rulesRunner,
-        IMessageBus messageBus)
-        : base(ruleRepository, logger)
-    {
-        _backendServiceStatus = backendServiceStatus;
-        _messageWatcher = messageWatcher;
-        _rulesRunner = rulesRunner;
-        _messageBus = messageBus;
-    }
+    private readonly Stack<IDisposable> _ruleObservableDisposables = new();
 
     public Task<AppLifecycleActionResultType> OnPreExit()
     {
@@ -68,6 +48,18 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
     }
 
     public async Task OnStartedAsync()
+    {
+        await LoadRules();
+    }
+
+    public async Task HandleAsync(PapercutServiceStatusEvent @event, CancellationToken token = default)
+    {
+        _logger.Information("Papercut Service is {NewStatus}", @event.PapercutServiceStatus);
+
+        await SyncRuleObservables();
+    }
+
+    private async Task LoadRules()
     {
         _logger.Information("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
 
@@ -90,47 +82,25 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
         await SetupPropertyChangeObservablesForAllRules();
 
         // rules loaded/updated event
-        await _messageBus.PublishAsync(new RulesUpdatedEvent(Rules.ToArray()));
-
-        // the backend service handles rules running if it's online
-        if (!_backendServiceStatus.IsOnline)
-        {
-            await SetupRuleObservables();
-        }
+        await messageBus.PublishAsync(new RulesUpdatedEvent(Rules.ToArray()));
     }
 
-    public async Task HandleAsync(PapercutServiceStatusEvent @event, CancellationToken token = default)
+    private async Task SyncRuleObservables()
     {
-        this._logger.Information("Papercut Service is now {NewStatus}",
-            @event.PapercutServiceStatus);
+        await CleanupRuleSubscriptions();
 
-        // Always cleanup existing subscriptions first to ensure rules only run in ONE place
-        await this.CleanupRuleSubscriptions();
-        await this.SetupPropertyChangeObservablesForAllRules();
-
-        // Re-establish rule subscriptions when service goes offline so UI continues running rules
-        // When service is online, subscriptions remain cleaned up - service handles rule execution
-        if (@event.PapercutServiceStatus == PapercutServiceStatusType.Offline)
-        {
-            _logger.Information("Re-establishing rule subscriptions in UI since backend service is offline");
-            await SetupRuleObservables();
-        }
-        else
+        if (backendServiceStatus.IsOnline)
         {
             _logger.Information("Backend service is online - rule execution delegated to service");
-        }
-    }
-
-    private static TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);
-
-    private Task SetupRuleObservables()
-    {
-        if (_backendServiceStatus.IsOnline)
-        {
-            return Task.CompletedTask;
+            return;
         }
 
-        _ruleChangedObservable = GetRuleChangedObservable(TaskPoolScheduler.Default)
+        _logger.Information("Rule subscriptions will be run in UI since backend service is offline");
+
+        var cancellationSource = new CancellationTokenSource();
+        _ruleObservableDisposables.Push(cancellationSource);
+
+        _ruleObservableDisposables.Push(GetRuleChangedObservable(TaskPoolScheduler.Default)
             .SubscribeAsync(
                 async args =>
                 {
@@ -139,37 +109,51 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
                         await SetupPropertyChangeObservablesForAllRules();
                     }
 
-                    await _messageBus.PublishAsync(new RulesUpdatedEvent(Rules.ToArray()), _cancellationTokenSource.Token);
+                    await messageBus.PublishAsync(new RulesUpdatedEvent(Rules.ToArray()), cancellationSource.Token);
                 },
-                ex => _logger.Error(ex, "Failure Publishing Rules"));
+                ex => _logger.Error(ex, "Failure Publishing Rules")));
 
         _logger.Debug("Setting up Rule Dispatcher Observable");
 
         // observe message watcher and run rules when a new message arrives
-        _newMessageRuleSubscription = _messageWatcher.GetNewMessageObservable(TaskPoolScheduler.Default)
+        _ruleObservableDisposables.Push(messageWatcher.GetNewMessageObservable(TaskPoolScheduler.Default)
             .DelaySubscription(TimeSpan.FromSeconds(1))
             .SubscribeAsync(
-                async e => await _rulesRunner.RunNewMessageRules(
+                async e => await rulesRunner.RunNewMessageRules(
                     Rules.OfType<INewMessageRule>().ToArray(),
-                    e.EventArgs.NewMessage, _cancellationTokenSource.Token),
-                ex => _logger.Error(ex, "Error Running Rules on New Message"));
+                    e.EventArgs.NewMessage,
+                    cancellationSource.Token),
+                ex =>
+                {
+                    _logger.Error(ex, "Error Running Rules on New Message");
+                }));
 
         _logger.Debug("Setting up Periodic Rule Observable {RunInterval}", PeriodicRunInterval);
 
-        _periodicRuleSubscription = Observable.Interval(PeriodicRunInterval, TaskPoolScheduler.Default)
+        _ruleObservableDisposables.Push(Observable.Interval(PeriodicRunInterval, TaskPoolScheduler.Default)
             .SubscribeAsync(
-                async e => await _rulesRunner.RunPeriodicBackgroundRules(
-                    Rules.OfType<IPeriodicBackgroundRule>().ToArray(), CancellationToken.None),
+                async e => await rulesRunner.RunPeriodicBackgroundRules(
+                    Rules.OfType<IPeriodicBackgroundRule>().ToArray(),
+                    cancellationSource.Token),
                 ex =>
                 {
-                    // Only log if it's not a cancellation exception (which happens during shutdown)
-                    if (ex is not OperationCanceledException and not TaskCanceledException)
-                    {
-                        _logger.Error(ex, "Error Running Periodic Rules");
-                    }
-                });
+                    _logger.Error(ex, "Error Running Periodic Rules");
+                }));
+    }
 
-        return Task.CompletedTask;
+    private async Task SetupPropertyChangeObservablesForAllRules()
+    {
+        await CleanupPropertyChangeSubscriptions();
+
+        foreach (var m in Rules)
+        {
+            _ruleDisposables.Push(m.GetPropertyChangedEvents(TaskPoolScheduler.Default)
+                .SubscribeAsync(
+                    async (_) =>
+                        await messageBus.PublishAsync(
+                            new RulesUpdatedEvent(Rules.ToArray())),
+                    ex => _logger.Error(ex, "Error Publishing Rules Updated Event")));
+        }
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
@@ -178,7 +162,7 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
 
         try
         {
-            await (this.CleanupRuleSubscriptions(), this.CleanupPropertyChangeSubscriptions());
+            await (CleanupRuleSubscriptions(), CleanupPropertyChangeSubscriptions());
         }
         catch (ObjectDisposedException)
         {
@@ -186,31 +170,11 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
         }
     }
 
-    private async Task CleanupRuleSubscriptions()
+    private Task CleanupRuleSubscriptions()
     {
         try
         {
-            await _cancellationTokenSource.CancelAsync();
-
-            _ruleChangedObservable?.Dispose();
-            _newMessageRuleSubscription?.Dispose();
-            _periodicRuleSubscription?.Dispose();
-        }
-        catch (ObjectDisposedException)
-        {
-            // ignore
-        }
-        finally
-        {
-            _cancellationTokenSource.TryReset();
-        }
-    }
-
-    private Task CleanupPropertyChangeSubscriptions()
-    {
-        try
-        {
-            while (this._ruleDisposables.TryPop(out var disposable))
+            while (_ruleObservableDisposables.TryPop(out var disposable))
             {
                 disposable.Dispose();
             }
@@ -223,19 +187,21 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
         return Task.CompletedTask;
     }
 
-    private async Task SetupPropertyChangeObservablesForAllRules()
+    private Task CleanupPropertyChangeSubscriptions()
     {
-        await CleanupPropertyChangeSubscriptions();
-
-        foreach (var m in this.Rules)
+        try
         {
-            _ruleDisposables.Push(m.GetPropertyChangedEvents(TaskPoolScheduler.Default)
-                .SubscribeAsync(
-                    async (_) =>
-                        await _messageBus.PublishAsync(
-                            new RulesUpdatedEvent(Rules.ToArray())),
-                    ex => _logger.Error(ex, "Error Publishing Rules Updated Event")));
+            while (_ruleDisposables.TryPop(out var disposable))
+            {
+                disposable.Dispose();
+            }
         }
+        catch (ObjectDisposedException)
+        {
+            // ignore
+        }
+
+        return Task.CompletedTask;
     }
 
     #region Begin Static Container Registrations
@@ -245,7 +211,7 @@ public class RuleService : RuleServiceBase, IAppLifecycleStarted, IAppLifecycleP
     /// </summary>
     /// <param name="builder"></param>
     [UsedImplicitly]
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

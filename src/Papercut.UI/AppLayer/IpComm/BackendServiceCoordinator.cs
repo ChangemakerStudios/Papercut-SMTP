@@ -79,6 +79,8 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
         await this.AttemptExchangeAsync();
     }
 
+    private bool IsOnlineUnknown => _isOnline is null;
+
     public bool IsOnline
     {
         get => this._isOnline ?? false;
@@ -119,7 +121,7 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
 
     private async Task SetOnlineStatus(bool newStatus, CancellationToken token = default)
     {
-        if (this._isOnline != newStatus)
+        if (IsOnlineUnknown || this.IsOnline != newStatus)
         {
             this.IsOnline = newStatus;
 
