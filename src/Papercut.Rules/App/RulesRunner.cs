@@ -65,8 +65,6 @@ public class RulesRunner : IRulesRunner
 
         foreach (var rule in rules.Where(r => r.IsEnabled))
         {
-            token.ThrowIfCancellationRequested();
-
             var invoke = _dispatchRuleMethod.MakeGenericMethod(rule.GetType()).Invoke(
                 this,
                 [rule, messageEntry, token]);
@@ -88,8 +86,6 @@ public class RulesRunner : IRulesRunner
 
         foreach (var rule in rules.Where(r => r.IsEnabled))
         {
-            token.ThrowIfCancellationRequested();
-
             var invoke = _dispatchRuleMethod.MakeGenericMethod(rule.GetType()).Invoke(
                 this,
                 [rule, null, token]);

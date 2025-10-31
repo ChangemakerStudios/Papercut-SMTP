@@ -38,12 +38,16 @@ public static class RelayRuleExtensions
     {
         if (forwardRule == null) throw new ArgumentNullException(nameof(forwardRule));
 
-        var client = new SmtpClient();
+        var client = new SmtpClient
+        {
+            // Set reasonable timeout (default is 100 seconds, set to 30 seconds)
+            Timeout = 30000
+        };
 
         await client.ConnectAsync(
             forwardRule.SmtpServer,
             forwardRule.SmtpPort,
-            forwardRule.SmtpUseSSL ? SecureSocketOptions.Auto : SecureSocketOptions.None,
+            forwardRule.SmtpUseSSL ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.Auto,
             token);
 
         // Note: since we don't have an OAuth2 token, disable
