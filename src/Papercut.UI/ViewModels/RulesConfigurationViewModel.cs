@@ -25,45 +25,45 @@ namespace Papercut.ViewModels;
 
 public class RulesConfigurationViewModel : Screen
 {
-    IRule? _selectedRule;
+    private IRule? _selectedRule;
 
-    string _windowTitle = "Rules Configuration";
+    private string _windowTitle = "Rules Configuration";
 
     public RulesConfigurationViewModel(RuleService ruleService, IEnumerable<IRule> registeredRules)
     {
-        this.RegisteredRules = new ObservableCollection<IRule>(registeredRules);
-        this.Rules = ruleService.Rules;
-        this.Rules.CollectionChanged += (_, _) =>
+        RegisteredRules = new ObservableCollection<IRule>(registeredRules);
+        Rules = ruleService.Rules;
+        Rules.CollectionChanged += (_, _) =>
         {
-            if (!this.Rules.Contains(this.SelectedRule))
+            if (!Rules.Contains(SelectedRule))
             {
-                this.SelectedRule = null;
+                SelectedRule = null;
             }
         };
     }
 
     public string WindowTitle
     {
-        get => this._windowTitle;
+        get => _windowTitle;
         set
         {
-            this._windowTitle = value;
-            this.NotifyOfPropertyChange(() => this.WindowTitle);
+            _windowTitle = value;
+            NotifyOfPropertyChange(() => WindowTitle);
         }
     }
 
     public IRule? SelectedRule
     {
-        get => this._selectedRule;
+        get => _selectedRule;
         set
         {
-            this._selectedRule = value;
-            this.NotifyOfPropertyChange(() => this.SelectedRule);
-            this.NotifyOfPropertyChange(() => this.HasSelectedRule);
+            _selectedRule = value;
+            NotifyOfPropertyChange(() => SelectedRule);
+            NotifyOfPropertyChange(() => HasSelectedRule);
         }
     }
 
-    public bool HasSelectedRule => this._selectedRule != null;
+    public bool HasSelectedRule => _selectedRule != null;
 
     public ObservableCollection<IRule> RegisteredRules { get; private set; }
 
@@ -75,13 +75,13 @@ public class RulesConfigurationViewModel : Screen
 
         if (Activator.CreateInstance(rule.GetType()) is IRule newRule)
         {
-            this.Rules.Add(newRule);
-            this.SelectedRule = newRule;
+            Rules.Add(newRule);
+            SelectedRule = newRule;
         }
     }
 
     public void DeleteRule()
     {
-        if (this.SelectedRule != null) this.Rules.Remove(this.SelectedRule);
+        if (SelectedRule != null) Rules.Remove(SelectedRule);
     }
 }

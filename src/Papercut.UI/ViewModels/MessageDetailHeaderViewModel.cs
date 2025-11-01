@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright � 2008 - 2012 Ken Robertson
-// Copyright � 2013 - 2025 Jaben Cargman
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,32 +16,30 @@
 // limitations under the License.
 
 
-using System.Windows.Input;
-
 using ICSharpCode.AvalonEdit.Document;
 
-using Papercut.Domain.Events;
-using Papercut.Helpers;
 using Papercut.Views;
 
 namespace Papercut.ViewModels;
 
 public class MessageDetailHeaderViewModel : Screen,
     IMessageDetailItem,
-    IEventHandler<ThemeChangedEvent>
+    IHandle<ThemeChangedEvent>
 {
-    readonly ILogger _logger;
+    private readonly ILogger _logger;
 
-    string? _headers;
+    private readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
 
-    ZoomIndicator? _zoomIndicator;
-    MessageDetailHeaderView? _view;
-    readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
+    private string? _headers;
+
+    private MessageDetailHeaderView? _view;
+
+    private ZoomIndicator? _zoomIndicator;
 
     public MessageDetailHeaderViewModel(ILogger logger)
     {
-        this._logger = logger;
-        this.DisplayName = "Headers";
+        _logger = logger;
+        DisplayName = "Headers";
 
         // Set up debounced zoom save to reduce I/O during rapid zoom changes
         _zoomSaveDebouncer = new SettingsSaveDebouncer<double>(newFontSize =>
@@ -49,6 +47,16 @@ public class MessageDetailHeaderViewModel : Screen,
             Settings.Default.TextViewZoomFontSize = newFontSize;
             Settings.Default.Save();
         });
+    }
+
+    public string? Headers
+    {
+        get => _headers;
+        set
+        {
+            _headers = value;
+            NotifyOfPropertyChange(() => Headers);
+        }
     }
 
     public Task HandleAsync(ThemeChangedEvent @event, CancellationToken token)
@@ -61,23 +69,13 @@ public class MessageDetailHeaderViewModel : Screen,
         return Task.CompletedTask;
     }
 
-    public string? Headers
-    {
-        get => this._headers;
-        set
-        {
-            this._headers = value;
-            this.NotifyOfPropertyChange(() => this.Headers);
-        }
-    }
-
     protected override void OnViewLoaded(object view)
     {
         base.OnViewLoaded(view);
 
         if (view is not MessageDetailHeaderView typedView)
         {
-            this._logger.Error("Unable to locate the MessageDetailHeaderView to hook the Text Control");
+            _logger.Error("Unable to locate the MessageDetailHeaderView to hook the Text Control");
             return;
         }
 

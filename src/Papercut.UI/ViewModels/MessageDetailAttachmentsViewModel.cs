@@ -26,7 +26,8 @@ using Papercut.Message.Helpers;
 
 namespace Papercut.ViewModels;
 
-public sealed class MessageDetailAttachmentsViewModel : PropertyChangedBase
+public sealed class MessageDetailAttachmentsViewModel : PropertyChangedBase,
+    IHandle<ThemeChangedEvent>
 {
     readonly ILogger _logger;
 
@@ -47,6 +48,13 @@ public sealed class MessageDetailAttachmentsViewModel : PropertyChangedBase
         this._processService = processService;
         this._uiCommandHub = uiCommandHub;
         this.Attachments = new ObservableCollection<MimePart>();
+    }
+
+    public Task HandleAsync(ThemeChangedEvent @event, CancellationToken token)
+    {
+        // Force refresh of the attachments list to update button styles
+        NotifyOfPropertyChange(() => Attachments);
+        return Task.CompletedTask;
     }
 
     public ObservableCollection<MimePart> Attachments { get; }

@@ -142,7 +142,7 @@ public class ThemeManagerService(
             .Where(e => e.EventArgs.Category == UserPreferenceCategory.General)
             .Select(_ => SystemThemeRegistryHelper.IsSystemDarkMode())
             .DistinctUntilChanged()
-            .ObserveOn(RxApp.TaskpoolScheduler)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .SubscribeAsync(
                 async isDarkMode =>
                 {

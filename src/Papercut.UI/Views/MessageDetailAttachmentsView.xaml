@@ -23,7 +23,7 @@
                 <DataTemplate>
                     <Button Margin="2"
                             Padding="8,4"
-                            Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                            Style="{DynamicResource MahApps.Styles.Button.Square}"
                             cal:Message.Attach="[Event Click] = [Action OpenAttachment($dataContext)]">
                         <Button.ToolTip>
                             <TextBlock>

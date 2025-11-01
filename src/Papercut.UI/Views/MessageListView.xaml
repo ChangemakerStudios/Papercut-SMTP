@@ -38,26 +38,31 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!-- Subject line with attachment icon -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal"
-                                Visibility="{Binding Subject, Converter={StaticResource CollapsedIfFalse}}">
-                        <TextBlock Text="{Binding Subject}"
+                    <!-- Subject line -->
+                    <TextBlock Grid.Row="0"
+                               Text="{Binding Subject}"
+                               TextTrimming="CharacterEllipsis"
+                               FontSize="14"
+                               Visibility="{Binding Subject, Converter={StaticResource CollapsedIfFalse}}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasBeenSeen}" Value="True">
+                                        <Setter Property="FontWeight" Value="Normal"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasBeenSeen}" Value="False">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- Display text (From/To/Date) with attachment icon -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock Text="{Binding DisplayText}"
                                    TextTrimming="CharacterEllipsis"
-                                   FontSize="14"
-                                   VerticalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasBeenSeen}" Value="True">
-                                            <Setter Property="FontWeight" Value="Normal"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding HasBeenSeen}" Value="False">
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                                   VerticalAlignment="Center" />
                         <iconPacks:PackIconMaterial
                             Kind="Attachment"
                             Width="12"
@@ -67,10 +72,6 @@
                             Foreground="{DynamicResource MahApps.Brushes.Gray1}"
                             Visibility="{Binding Path=HasAttachments, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
-
-                    <!-- Display text (From/To) -->
-                    <TextBlock Grid.Row="1" Text="{Binding DisplayText}"
-                               TextTrimming="CharacterEllipsis" />
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>

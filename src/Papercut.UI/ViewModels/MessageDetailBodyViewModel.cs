@@ -16,31 +16,30 @@
 // limitations under the License.
 
 
-using System.Windows.Input;
-
 using ICSharpCode.AvalonEdit.Document;
 
-using Papercut.Domain.Events;
-using Papercut.Helpers;
 using Papercut.Views;
 
 namespace Papercut.ViewModels;
 
 public sealed class MessageDetailBodyViewModel : Screen,
     IMessageDetailItem,
-    IEventHandler<ThemeChangedEvent>
+    IHandle<ThemeChangedEvent>
 {
-    readonly ILogger _logger;
+    private readonly ILogger _logger;
 
-    string? _body;
-    ZoomIndicator? _zoomIndicator;
-    MessageDetailBodyView? _view;
-    readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
+    private readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
+
+    private string? _body;
+
+    private MessageDetailBodyView? _view;
+
+    private ZoomIndicator? _zoomIndicator;
 
     public MessageDetailBodyViewModel(ILogger logger)
     {
-        this._logger = logger;
-        this.DisplayName = "Body";
+        _logger = logger;
+        DisplayName = "Body";
 
         // Set up debounced zoom save to reduce I/O during rapid zoom changes
         _zoomSaveDebouncer = new SettingsSaveDebouncer<double>(newFontSize =>
@@ -48,6 +47,16 @@ public sealed class MessageDetailBodyViewModel : Screen,
             Settings.Default.TextViewZoomFontSize = newFontSize;
             Settings.Default.Save();
         });
+    }
+
+    public string? Body
+    {
+        get => _body;
+        set
+        {
+            _body = value;
+            NotifyOfPropertyChange(() => Body);
+        }
     }
 
     public Task HandleAsync(ThemeChangedEvent @event, CancellationToken token)
@@ -60,23 +69,13 @@ public sealed class MessageDetailBodyViewModel : Screen,
         return Task.CompletedTask;
     }
 
-    public string? Body
-    {
-        get => this._body;
-        set
-        {
-            this._body = value;
-            this.NotifyOfPropertyChange(() => this.Body);
-        }
-    }
-
     protected override void OnViewLoaded(object view)
     {
         base.OnViewLoaded(view);
 
         if (!(view is MessageDetailBodyView typedView))
         {
-            this._logger.Error("Unable to locate the MessageDetailBodyView to hook the Text Control");
+            _logger.Error("Unable to locate the MessageDetailBodyView to hook the Text Control");
             return;
         }
 
