@@ -16,9 +16,13 @@
 // limitations under the License.
 
 
+using System.Windows.Media;
+
 namespace Papercut.Domain.Events;
 
-public class SystemThemeChangedEvent(bool isDarkMode) : IEvent
+public class ThemeChangedEvent(bool isDarkMode, Color themeColor) : IEvent
 {
     public bool IsDarkMode { get; } = isDarkMode;
+
+    public Color ThemeColor { get; } = themeColor;
 }

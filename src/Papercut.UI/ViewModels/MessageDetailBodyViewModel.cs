@@ -64,7 +64,7 @@ public sealed class MessageDetailBodyViewModel : Screen,
         return Task.CompletedTask;
     }
 
-    public Task HandleAsync(SystemThemeChangedEvent @event, CancellationToken token)
+    public Task HandleAsync(ThemeChangedEvent @event, CancellationToken token)
     {
         if (_view != null)
         {
