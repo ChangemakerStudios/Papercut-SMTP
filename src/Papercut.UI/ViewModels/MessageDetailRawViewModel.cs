@@ -29,8 +29,7 @@ namespace Papercut.ViewModels;
 
 public class MessageDetailRawViewModel : Screen,
     IMessageDetailItem,
-    IEventHandler<SettingsUpdatedEvent>,
-    IEventHandler<SystemThemeChangedEvent>
+    IEventHandler<ThemeChangedEvent>
 {
     readonly ILogger _logger;
 
@@ -62,20 +61,7 @@ public class MessageDetailRawViewModel : Screen,
         });
     }
 
-    public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
-    {
-        var themeChanged = @event.PreviousSettings.Theme != @event.NewSettings.Theme ||
-                          @event.PreviousSettings.BaseTheme != @event.NewSettings.BaseTheme;
-
-        if (themeChanged && _view != null)
-        {
-            AvalonEditThemeHelper.ApplyTheme(_view.rawEdit);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task HandleAsync(SystemThemeChangedEvent @event, CancellationToken token)
+    public Task HandleAsync(ThemeChangedEvent @event, CancellationToken token)
     {
         if (_view != null)
         {

@@ -28,8 +28,7 @@ namespace Papercut.ViewModels;
 
 public sealed class MessageDetailBodyViewModel : Screen,
     IMessageDetailItem,
-    IEventHandler<SettingsUpdatedEvent>,
-    IEventHandler<SystemThemeChangedEvent>
+    IEventHandler<ThemeChangedEvent>
 {
     readonly ILogger _logger;
 
@@ -49,19 +48,6 @@ public sealed class MessageDetailBodyViewModel : Screen,
             Settings.Default.TextViewZoomFontSize = newFontSize;
             Settings.Default.Save();
         });
-    }
-
-    public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
-    {
-        var themeChanged = @event.PreviousSettings.Theme != @event.NewSettings.Theme ||
-                          @event.PreviousSettings.BaseTheme != @event.NewSettings.BaseTheme;
-
-        if (themeChanged && _view != null)
-        {
-            AvalonEditThemeHelper.ApplyTheme(_view.BodyEdit);
-        }
-
-        return Task.CompletedTask;
     }
 
     public Task HandleAsync(ThemeChangedEvent @event, CancellationToken token)
