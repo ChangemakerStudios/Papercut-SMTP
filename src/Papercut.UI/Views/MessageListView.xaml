@@ -15,10 +15,6 @@
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="200"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
-    <UserControl.Resources>
-        <BitmapImage x:Key="AttachmentIconImageSource" UriSource="./../Resources/attachment-icon.png" />
-    </UserControl.Resources>
-
     <ListBox Name="MessagesList" Width="Auto" Height="Auto" SelectionMode="Extended"
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Padding="0" Margin="2"
@@ -87,12 +83,14 @@
                         <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding DisplayText}"
                                    TextTrimming="CharacterEllipsis" />
                     </Grid>
-                    <StackPanel 
+                    <StackPanel
                         VerticalAlignment="Center"
                         Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
-                        <Image
-                            Stretch="None"
-                            Source="{StaticResource AttachmentIconImageSource}"
+                        <iconPacks:PackIconMaterial
+                            Kind="Attachment"
+                            Width="16"
+                            Height="16"
+                            Foreground="{DynamicResource MahApps.Brushes.Gray1}"
                             Visibility="{Binding Path=HasAttachments, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
                 </Grid>
