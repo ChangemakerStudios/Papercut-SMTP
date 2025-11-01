@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright Â© 2008 - 2012 Ken Robertson
+// Copyright Â© 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -79,8 +79,20 @@ public class PathTemplateHelper
         {
             if (_templateDictionary.TryGetValue(pathKeyName, out var path))
             {
-                renderedPath = renderedPath.Replace($"%{pathKeyName}%", path).Replace(@"\\", @"\");
+                renderedPath = renderedPath.Replace($"%{pathKeyName}%", path);
             }
+        }
+
+        // Normalize all path separators to OS-appropriate separator
+        // Replace both forward and backslashes, then deduplicate
+        renderedPath = renderedPath.Replace('\\', Path.DirectorySeparatorChar)
+                                   .Replace('/', Path.DirectorySeparatorChar);
+
+        // Remove duplicate separators
+        string duplicateSeparator = new string(Path.DirectorySeparatorChar, 2);
+        while (renderedPath.Contains(duplicateSeparator))
+        {
+            renderedPath = renderedPath.Replace(duplicateSeparator, Path.DirectorySeparatorChar.ToString());
         }
 
         return isUncPath ? $@"\\{renderedPath}" : renderedPath;

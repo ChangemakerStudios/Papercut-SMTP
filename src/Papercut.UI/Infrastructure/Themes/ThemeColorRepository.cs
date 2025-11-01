@@ -18,8 +18,6 @@
 
 using System.Windows.Media;
 
-using Autofac;
-
 using Papercut.Domain.Themes;
 
 namespace Papercut.Infrastructure.Themes;

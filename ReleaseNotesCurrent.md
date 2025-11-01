@@ -1,10 +1,14 @@
 # Release Notes
 
-## Papercut SMTP v7.0.0 [2024-05-17]
+## Papercut SMTP v7.5.1 [2025-10-31]
 
-_NOTE: Uninstall any existing Papercut SMTP installations BEFORE installing this new version._
+### Bug Fixes
 
-- Upgraded to .NET 8
-- Upgraded to latest dependencies (Caliburn Micro, Autofac, MahApps) and associated systems to support .NET 8.
-- Switched to [Velopack](https://github.com/velopack/velopack) auto-upgradable installation system. Great project! (Thanks, [caesay](https://github.com/caesay)!)
-- Fix for log updating constantly causing unnecessary WebView2 loading. (PR thanks to [arthurzaczek](https://github.com/arthurzaczek))
+- **Forwarding Rules Failing** - Fixed critical bug where email forwarding rules were completely broken due to TaskCanceledException. Fixes [#331](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/331) (Thanks, [wcwhitehead](https://github.com/wcwhitehead)!)
+- **SSL/TLS Connection Mode** - Fixed SSL/TLS connection mode to use SslOnConnect for port 465 and Auto for STARTTLS
+- **SMTP Timeout** - Set proper SMTP timeout of 30 seconds for forwarding rules
+- **Backend Service Status** - Fixed initial status detection for backend service
+
+### Contributors
+
+Special thanks to [wcwhitehead](https://github.com/wcwhitehead) for reporting the critical forwarding rules bug!

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public static class StringHelpers
         return string.Format(str, args);
     }
 
-    public static bool IsSet(this string? str)
+    public static bool IsSet([NotNullWhen(true)] this string? str)
     {
         return !string.IsNullOrWhiteSpace(str);
     }
@@ -49,6 +49,7 @@ public static class StringHelpers
         return string.Join(separator, strings.IfNullEmpty());
     }
 
+    [return: NotNullIfNotNull(nameof(str))]
     public static string? ToTitleCase(this string? str, CultureInfo? culture = null)
     {
         if (str.IsNullOrWhiteSpace())
@@ -64,7 +65,8 @@ public static class StringHelpers
         return string.IsNullOrWhiteSpace(str);
     }
 
-    public static string CamelCaseToSeparated(this string str)
+    [return: NotNullIfNotNull(nameof(str))]
+    public static string? CamelCaseToSeparated(this string? str)
     {
         if (str.IsNullOrWhiteSpace())
         {
@@ -73,7 +75,7 @@ public static class StringHelpers
 
         var lines = new List<string>();
         var lastIndex = 0;
-	
+
         foreach (var match in UpperCaseWordRegex.Matches(str).ToList())
         {
             if (match.Index > lastIndex)
@@ -84,7 +86,7 @@ public static class StringHelpers
             lines.Add(match.Captures[0].Value);
             lastIndex = match.Index + match.Length + 1;
         }
-	
+
         if (lastIndex < str.Length) {
             lines.Add(str.Substring(lastIndex, str.Length-lastIndex).Trim());
         }

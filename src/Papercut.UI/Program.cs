@@ -16,10 +16,9 @@
 // limitations under the License.
 
 
-using Autofac;
-
 using Papercut.Core.Infrastructure.Container;
 using Papercut.Core.Infrastructure.Logging;
+using Papercut.Infrastructure;
 
 using Velopack;
 
@@ -40,6 +39,7 @@ public class Program
 
             // It's important to Run() the VelopackApp as early as possible in app startup.
             VelopackApp.Build()
+                .SetLogger(new VelopackBridgeLogger(Log.Logger))
                 .Run();
 
             Log.Information("Launching Papercut SMTP App...");

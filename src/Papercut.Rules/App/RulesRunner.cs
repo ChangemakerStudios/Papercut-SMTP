@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 
 
 using System.Reflection;
+
 using Autofac;
 
+using Papercut.Core.Domain.BackgroundTasks;
 using Papercut.Core.Domain.Message;
 using Papercut.Core.Domain.Rules;
 
@@ -26,19 +28,23 @@ namespace Papercut.Rules.App;
 
 public class RulesRunner : IRulesRunner
 {
+    readonly IBackgroundTaskRunner _backgroundTaskRunner;
+
     readonly MethodInfo _dispatchRuleMethod;
 
     readonly ILifetimeScope _lifetimeScope;
 
     readonly ILogger _logger;
 
-    public RulesRunner(ILifetimeScope lifetimeScope, ILogger logger)
+    public RulesRunner(ILifetimeScope lifetimeScope, IBackgroundTaskRunner backgroundTaskRunner, ILogger logger)
     {
-        this._lifetimeScope = lifetimeScope;
-        this._logger = logger;
-        var dispatchRuleMethod = this.GetType()
+        _lifetimeScope = lifetimeScope;
+        _backgroundTaskRunner = backgroundTaskRunner;
+        _logger = logger;
+
+        var dispatchRuleMethod = GetType()
             .GetMethod(
-                nameof(this.DispatchRuleAsync),
+                nameof(DispatchRuleAsync),
                 BindingFlags.NonPublic | BindingFlags.Instance);
 
         if (dispatchRuleMethod == null)
@@ -46,21 +52,20 @@ public class RulesRunner : IRulesRunner
             throw new ArgumentNullException(nameof(dispatchRuleMethod), "Dispatch rule method is null");
         }
 
-        this._dispatchRuleMethod = dispatchRuleMethod;
+        _dispatchRuleMethod = dispatchRuleMethod;
     }
 
-    public async Task RunAsync(IRule[] rules, MessageEntry messageEntry, CancellationToken token)
+    public async Task RunNewMessageRules(INewMessageRule[] rules, MessageEntry messageEntry,
+        CancellationToken token = default)
     {
         if (rules == null) throw new ArgumentNullException(nameof(rules));
         if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
         var ruleTasks = new List<Task>();
 
-        foreach (IRule rule in rules.Where(r => r.IsEnabled))
+        foreach (var rule in rules.Where(r => r.IsEnabled))
         {
-            token.ThrowIfCancellationRequested();
-
-            var invoke = this._dispatchRuleMethod.MakeGenericMethod(rule.GetType()).Invoke(
+            var invoke = _dispatchRuleMethod.MakeGenericMethod(rule.GetType()).Invoke(
                 this,
                 [rule, messageEntry, token]);
 
@@ -73,25 +78,58 @@ public class RulesRunner : IRulesRunner
         await Task.WhenAll(ruleTasks).WaitAsync(token);
     }
 
+    public Task RunPeriodicBackgroundRules(IPeriodicBackgroundRule[] rules, CancellationToken token = default)
+    {
+        if (rules == null) throw new ArgumentNullException(nameof(rules));
+
+        var ruleTasks = new List<Task>();
+
+        foreach (var rule in rules.Where(r => r.IsEnabled))
+        {
+            var invoke = _dispatchRuleMethod.MakeGenericMethod(rule.GetType()).Invoke(
+                this,
+                [rule, null, token]);
+
+            if (invoke is Task invokeTask)
+            {
+                ruleTasks.Add(invokeTask);
+            }
+        }
+
+        _backgroundTaskRunner.QueueBackgroundTask(
+            async (t) => await Task.WhenAll(ruleTasks).WaitAsync(t));
+
+        return Task.CompletedTask;
+    }
+
     [UsedImplicitly]
-    async Task DispatchRuleAsync<TRule>(TRule rule, MessageEntry messageEntry, CancellationToken token)
+    async Task DispatchRuleAsync<TRule>(TRule rule, MessageEntry? messageEntry, CancellationToken token)
         where TRule : IRule
     {
-        this._logger.Information(
-            "Running Rule Dispatch for Rule {Rule} on Message {@MessageEntry}",
-            rule,
-            messageEntry);
+        if (rule is INewMessageRule)
+        {
+            _logger.Information(
+                "Running Rule Dispatch for Rule {Rule} on Message {@MessageEntry}",
+                rule,
+                messageEntry);
+        }
+        else if (rule is IPeriodicBackgroundRule)
+        {
+            _logger.Debug(
+                "Running Periodic Background for Rule {Rule}",
+                rule);
+        }
 
         try
         {
-            var ruleDispatcher = this._lifetimeScope.Resolve<IRuleDispatcher<TRule>>();
+            var ruleDispatcher = _lifetimeScope.Resolve<IRuleDispatcher<TRule>>();
             await ruleDispatcher.DispatchAsync(rule, messageEntry, token);
         }
         catch (Exception ex)
         {
-            this._logger.Warning(
+            _logger.Warning(
                 ex,
-                "Failure Dispatching Rule {Rule} for Message {@MessageEntry}",
+                "Failure Dispatching Rule {Rule} on Message {@MessageEntry}",
                 rule,
                 messageEntry);
         }

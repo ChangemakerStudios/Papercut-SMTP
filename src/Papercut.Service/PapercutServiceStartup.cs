@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 using Papercut.Rules;
+using Papercut.Service.Infrastructure.Configuration;
 using Papercut.Service.Infrastructure.Servers;
 
 namespace Papercut.Service;
@@ -51,6 +52,7 @@ internal class PapercutServiceStartup
         services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
 
         // hosted services
+        services.AddHostedService<SmtpServerOptionsInitializer>();
         services.AddHostedService<PapercutServerHostedService>();
     }
 

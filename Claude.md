@@ -67,6 +67,20 @@ The solution is organized into several projects with clear separation of concern
 - **Code analysis**: JetBrains.Annotations used for nullability hints
 - ReSharper settings in Papercut.sln.DotSettings
 
+### WPF UI Styling
+
+The Papercut UI uses **MahApps.Metro** for modern, consistent styling:
+
+- **Theme**: Light.Blue theme (configured in App.xaml)
+- **Theme Resources**: Access MahApps brushes via `Application.Current.TryFindResource("MahApps.Brushes.*")`
+- **Common Brushes**:
+  - `MahApps.Brushes.Accent` - Accent color (blue in Light.Blue theme)
+  - `MahApps.Brushes.ThemeForeground` - Text color
+  - `MahApps.Brushes.Control.Background` - Control backgrounds
+  - `MahApps.Brushes.Gray8` - Light gray for borders/hover states
+- **Documentation**: [MahApps.Metro Theme Manager](https://mahapps.com/docs/themes/thememanager)
+- **Custom Controls**: Custom UI elements should use MahApps brushes for consistent theming
+
 ## Build and Test
 
 ### Build
@@ -96,8 +110,9 @@ docker run -d -p 8080:80 -p 25:25 papercut-smtp:latest
 
 ### Versioning
 - Uses GitVersion for semantic versioning
-- Version info stored in src/GlobalAssemblyInfo.cs (auto-generated)
+- Version properties defined in Directory.Build.props (populated by GitVersion during build)
 - GitVersion.yml configures versioning strategy
+- All version info (Version, AssemblyVersion, FileVersion, InformationalVersion) passed as MSBuild properties
 
 ## Common Tasks
 

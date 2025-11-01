@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,7 @@
 // limitations under the License.
 
 
-using System.Reactive.Linq;
-using System.Windows.Threading;
-
-using Caliburn.Micro;
-
-using MimeKit;
-
 using Papercut.Core.Domain.Message;
-using Papercut.Helpers;
 using Papercut.Message;
 using Papercut.Message.Helpers;
 
@@ -32,7 +24,7 @@ namespace Papercut.ViewModels;
 
 public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.OneActive
 {
-    readonly MimeMessageLoader _mimeMessageLoader;
+    readonly IMimeMessageLoader _mimeMessageLoader;
 
     int _attachmentCount;
 
@@ -43,6 +35,8 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
     string? _date;
 
     string? _from;
+
+    bool _hasAnyMessages;
 
     string? _htmlFile;
 
@@ -70,7 +64,8 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         Func<MessageDetailRawViewModel> rawViewModelFactory,
         Func<MessageDetailHeaderViewModel> headerViewModelFactory,
         Func<MessageDetailBodyViewModel> bodyViewModelFactory,
-        MimeMessageLoader mimeMessageLoader)
+        Func<MessageDetailAttachmentsViewModel> attachmentsViewModelFactory,
+        IMimeMessageLoader mimeMessageLoader)
     {
         this._mimeMessageLoader = mimeMessageLoader;
 
@@ -79,6 +74,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         this.RawViewModel = rawViewModelFactory();
         this.HeaderViewModel = headerViewModelFactory();
         this.BodyViewModel = bodyViewModelFactory();
+        this.AttachmentsViewModel = attachmentsViewModelFactory();
 
         this.Items.Add(this.HtmlViewModel);
         this.Items.Add(this.HeaderViewModel);
@@ -94,6 +90,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         {
             this._subject = value;
             this.NotifyOfPropertyChange(() => this.Subject);
+            this.NotifyOfPropertyChange(() => this.HasMessage);
         }
     }
 
@@ -154,6 +151,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         {
             this._from = value;
             this.NotifyOfPropertyChange(() => this.From);
+            this.NotifyOfPropertyChange(() => this.HasMessage);
         }
     }
 
@@ -220,6 +218,18 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
     public bool HasAttachments => this.AttachmentCount > 0;
 
+    public bool HasMessage => !string.IsNullOrEmpty(this.From) || !string.IsNullOrEmpty(this.Subject);
+
+    public bool HasAnyMessages
+    {
+        get => this._hasAnyMessages;
+        set
+        {
+            this._hasAnyMessages = value;
+            this.NotifyOfPropertyChange(() => this.HasAnyMessages);
+        }
+    }
+
     public string? HtmlFile
     {
         get => this._htmlFile;
@@ -239,6 +249,8 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
     public MessageDetailHeaderViewModel HeaderViewModel { get; }
 
     public MessageDetailBodyViewModel BodyViewModel { get; }
+
+    public MessageDetailAttachmentsViewModel AttachmentsViewModel { get; }
 
     public void LoadMessageEntry(MessageEntry? messageEntry)
     {
@@ -290,8 +302,6 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
             return default;
         }
 
-        this.ResetMessage();
-
         if (mailMessageEx != null)
         {
             this.HeaderViewModel.Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
@@ -299,6 +309,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
             var parts = mailMessageEx.BodyParts.OfType<MimePart>().ToList();
             var mainBody = parts.GetMainBodyTextPart();
 
+            // Set new values BEFORE clearing old ones to prevent flicker
             this.From = mailMessageEx.From?.ToString() ?? string.Empty;
             this.To = mailMessageEx.To?.ToString() ?? string.Empty;
             this.CC = mailMessageEx.Cc?.ToString() ?? string.Empty;
@@ -313,6 +324,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
             this.RawViewModel.MimeMessage = mailMessageEx;
             this.PartsListViewModel.MimeMessage = mailMessageEx;
+            this.AttachmentsViewModel.LoadAttachments(mailMessageEx);
 
             this.BodyViewModel.Body = mainBody != null ? mainBody.GetText(Encoding.UTF8) : string.Empty;
 
@@ -325,7 +337,23 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
                     var textPartNotHtml = parts.OfType<TextPart>().Except(new[] { mainBody }).FirstOrDefault();
                     if (textPartNotHtml != null) this.TextBody = textPartNotHtml.GetText(Encoding.UTF8);
                 }
+                else
+                {
+                    this.TextBody = null;
+                }
             }
+            else
+            {
+                this.IsHtml = false;
+                this.HtmlFile = null;
+                this.TextBody = null;
+                this.HtmlViewModel.HtmlFile = null;
+            }
+        }
+        else
+        {
+            // Only reset when there's no message to display
+            this.ResetMessage();
         }
 
         this.SelectedTabIndex = 0;
@@ -333,6 +361,14 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
     void ResetMessage()
     {
+        this.From = null;
+        this.Subject = null;
+        this.To = null;
+        this.CC = null;
+        this.Bcc = null;
+        this.Date = null;
+        this.Priority = null;
+        this.PriorityColor = null;
         this.AttachmentCount = 0;
         this.IsHtml = false;
         this.HtmlFile = null;

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,12 +23,23 @@ using Papercut.Core.Domain.Message;
 
 namespace Papercut.Message;
 
-public class ReceivedDataMessageHandler(
-    MessageRepository messageRepository,
-    IMessageBus messageBus,
-    ILogger logger)
-    : IReceivedDataHandler
+public class ReceivedDataMessageHandler : IReceivedDataHandler
 {
+    private readonly IMessageRepository _messageRepository;
+
+    private readonly IMessageBus _messageBus;
+
+    private readonly ILogger _logger;
+
+    public ReceivedDataMessageHandler(IMessageRepository messageRepository,
+        IMessageBus messageBus,
+        ILogger logger)
+    {
+        _messageRepository = messageRepository;
+        _messageBus = messageBus;
+        _logger = logger;
+    }
+
     public async Task HandleReceivedAsync(
         byte[] messageData,
         string[] recipients)
@@ -40,7 +51,11 @@ public class ReceivedDataMessageHandler(
 
         using (var ms = new MemoryStream(messageData))
         {
-            var message = await MimeMessage.LoadAsync(ParserOptions.Default, ms, true);
+            // Use a more lenient parser for development/testing scenarios
+            var parserOptions = ParserOptions.Default.Clone();
+            parserOptions.AddressParserComplianceMode = RfcComplianceMode.Loose;
+
+            var message = await MimeMessage.LoadAsync(parserOptions, ms, true);
 
             var lookup = recipients.ToHashSet(StringComparer.CurrentCultureIgnoreCase);
 
@@ -55,21 +70,31 @@ public class ReceivedDataMessageHandler(
                 // Bcc is remaining, add to message
                 foreach (var r in lookup)
                 {
-                    message.Bcc.Add(MailboxAddress.Parse(r));
+                    // Try to parse the email address using loose validation
+                    // This supports non-standard domains like @__ that developers use
+                    // to prevent accidental real email sends in test environments (Issue #284)
+                    if (MailboxAddress.TryParse(parserOptions, r, out var mailboxAddress))
+                    {
+                        message.Bcc.Add(mailboxAddress);
+                    }
+                    else
+                    {
+                        _logger.Warning("Could not parse recipient address: {Address}", r);
+                    }
                 }
             }
 
-            file = await messageRepository.SaveMessage(message.Subject, async fs => await message.WriteToAsync(fs));
+            file = await _messageRepository.SaveMessage(message.Subject ?? string.Empty, async fs => await message.WriteToAsync(fs));
         }
 
         try
         {
-            if (!string.IsNullOrWhiteSpace(file))
-                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
+            if (!string.IsNullOrWhiteSpace(file) && File.Exists(file))
+                await _messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
         }
         catch (Exception ex)
         {
-            logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
+            _logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
         }
     }
 }

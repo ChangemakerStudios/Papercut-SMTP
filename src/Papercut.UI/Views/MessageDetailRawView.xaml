@@ -5,24 +5,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
-             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+             xmlns:helpers="clr-namespace:Papercut.Helpers"
+             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
     <Grid IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
           ShowGridLines="False" Width="Auto">
         <Grid x:Name="Overlay" Panel.ZIndex="1000"
               Visibility="{Binding IsLoading,Converter={StaticResource CollapsedIfFalse}}">
-            <TextBlock Text="Loading Raw..." FontSize="30" Foreground="{DynamicResource MahApps.Brushes.Accent}" Opacity="0.75" TextAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock Text="Loading Raw..." FontSize="30" Foreground="DarkGray" Opacity="0.75" TextAlignment="Center" VerticalAlignment="Center" />
         </Grid>
         <Grid>
-            <Border BorderBrush="{DynamicResource MahApps.Brushes.Control.Border}" BorderThickness="1">
-                <avalonEdit:TextEditor
-                xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
-                Name="rawEdit"
-                Foreground="{DynamicResource MahApps.Brushes.Text}"
-                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
-                Padding="4"
-                FontFamily="Consolas"
-                FontSize="9pt" IsReadOnly="True" />
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <Grid>
+                    <avalonEdit:TextEditor
+                    xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+                    Name="rawEdit"
+                    Padding="4"
+                    FontFamily="Consolas"
+                    FontSize="10.5pt" IsReadOnly="True" />
+                    <helpers:ZoomIndicator x:Name="zoomIndicator" />
+                </Grid>
             </Border>
         </Grid>
     </Grid>

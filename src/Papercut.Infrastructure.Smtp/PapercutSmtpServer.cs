@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public class PapercutSmtpServer : Disposable, IServer
             .ServerName(this._applicationMetaData.AppName)
             .Endpoint(
                 new EndpointDefinitionBuilder()
-                    .Endpoint(smtpEndpoint.ToIPEndPoint())
+                    .WithEndpoint(smtpEndpoint)
                     .IsSecure(false)
                     .AllowUnsecureAuthentication(false)
                     .Build());
@@ -145,7 +145,8 @@ public class PapercutSmtpServer : Disposable, IServer
 
     private void OnSessionCompleted(object? sender, SessionEventArgs e)
     {
-        this._logger.Information("Completed SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
+        var remoteEndPoint = this.GetRemoteEndPoint(e.Context);
+        this._logger.Information("Completed SMTP connection from {EndpointAddress}", remoteEndPoint);
     }
 
     private void OnSessionCreated(object? sender, SessionEventArgs e)
@@ -155,7 +156,21 @@ public class PapercutSmtpServer : Disposable, IServer
             this._logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
         };
 
-        this._logger.Information("New SMTP connection from {EndpointAddress}", e.Context.EndpointDefinition.Endpoint.Address.ToString());
+        var remoteEndPoint = this.GetRemoteEndPoint(e.Context);
+        this._logger.Information("New SMTP connection from {EndpointAddress}", remoteEndPoint);
+    }
+
+    private string GetRemoteEndPoint(ISessionContext context)
+    {
+        const string remoteEndPointKey = "EndpointListener:RemoteEndPoint";
+
+        if (context.Properties.TryGetValue(remoteEndPointKey, out var endpointObj)
+            && endpointObj is IPEndPoint remoteEndPoint)
+        {
+            return remoteEndPoint.Address.ToString();
+        }
+
+        return "unknown";
     }
 
     private bool IgnoreCertificateValidationFailureForTestingOnly(

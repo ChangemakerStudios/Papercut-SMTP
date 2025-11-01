@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,12 @@
 // limitations under the License.
 
 
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 
 using Papercut.Core.Domain.Paths;
-using Papercut.Properties;
 
 namespace Papercut.Helpers;
 
@@ -33,8 +31,20 @@ public class WebView2Base : WebView2
     {
         var webViewUserDataFolder = PathTemplateHelper.RenderPathTemplate(Settings.Default.WebView2UserFolder);
 
-        this.CreationProperties = new CoreWebView2CreationProperties()
-            { UserDataFolder = webViewUserDataFolder };
+        var creationProperties = new CoreWebView2CreationProperties()
+        {
+            UserDataFolder = webViewUserDataFolder
+        };
+
+        // Add browser arguments to ignore SSL certificate errors if enabled
+        // Note: This requires application restart to take effect
+        if (Settings.Default.IgnoreSslCertificateErrors)
+        {
+            creationProperties.AdditionalBrowserArguments = "--ignore-certificate-errors";
+            Log.Information("WebView2 configured to ignore SSL certificate errors (restart required for changes)");
+        }
+
+        this.CreationProperties = creationProperties;
 
         Log.Information("Setting WebView2 User Data Folder: {UserDataFolder}", webViewUserDataFolder);
     }

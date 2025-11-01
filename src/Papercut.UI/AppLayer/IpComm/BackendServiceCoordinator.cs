@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,23 +16,18 @@
 // limitations under the License.
 
 
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 
-using Autofac;
-
-using Papercut.Common.Domain;
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Domain.Rules;
 using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Lifecycle;
 using Papercut.Core.Infrastructure.Network;
 using Papercut.Domain.BackendService;
-using Papercut.Domain.Events;
-using Papercut.Domain.LifecycleHooks;
 using Papercut.Infrastructure.IPComm;
 using Papercut.Infrastructure.IPComm.Network;
+
+using Disposable = System.Reactive.Disposables.Disposable;
 
 namespace Papercut.AppLayer.IpComm;
 
@@ -84,6 +79,8 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
         await this.AttemptExchangeAsync();
     }
 
+    private bool IsOnlineUnknown => _isOnline is null;
+
     public bool IsOnline
     {
         get => this._isOnline ?? false;
@@ -124,7 +121,7 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
 
     private async Task SetOnlineStatus(bool newStatus, CancellationToken token = default)
     {
-        if (this._isOnline != newStatus)
+        if (IsOnlineUnknown || this.IsOnline != newStatus)
         {
             this.IsOnline = newStatus;
 
@@ -162,7 +159,7 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
                     ? "Successfully pushed new Smtp Server Binding to Backend Service"
                     : "Papercut Backend Service Failed to Update. Could be offline.");
         }
-        catch (Exception ex) when (ex is TaskCanceledException || ex is ObjectDisposedException)
+        catch (Exception ex) when (ex is TaskCanceledException or ObjectDisposedException)
         {
             // do nothing
         }
@@ -225,7 +222,7 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
                     ? "Successfully Updated Rules on Backend Service"
                     : "Papercut Backend Service Failed to Update Rules. Could be offline.");
         }
-        catch (Exception ex) when (ex is TaskCanceledException || ex is ObjectDisposedException)
+        catch (Exception ex) when (ex is TaskCanceledException or ObjectDisposedException)
         {
             // do nothing
         }

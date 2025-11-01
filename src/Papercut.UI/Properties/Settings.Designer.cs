@@ -228,7 +228,7 @@ namespace Papercut.Properties {
                 this["ShowNotifications"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
@@ -238,6 +238,42 @@ namespace Papercut.Properties {
             }
             set {
                 this["DarkMode"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IgnoreSslCertificateErrors {
+            get {
+                return ((bool)(this["IgnoreSslCertificateErrors"]));
+            }
+            set {
+                this["IgnoreSslCertificateErrors"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.0")]
+        public double HtmlViewZoomFactor {
+            get {
+                return ((double)(this["HtmlViewZoomFactor"]));
+            }
+            set {
+                this["HtmlViewZoomFactor"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("14.0")]
+        public double TextViewZoomFontSize {
+            get {
+                return ((double)(this["TextViewZoomFontSize"]));
+            }
+            set {
+                this["TextViewZoomFontSize"] = value;
             }
         }
     }

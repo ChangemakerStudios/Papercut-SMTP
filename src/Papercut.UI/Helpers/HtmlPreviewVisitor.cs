@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,13 +16,8 @@
 // limitations under the License.
 
 
-using System.IO;
-
-using MimeKit;
 using MimeKit.Text;
 using MimeKit.Tnef;
-
-using Papercut.Properties;
 
 namespace Papercut.Helpers;
 
@@ -183,7 +178,7 @@ internal class HtmlPreviewVisitor : MimeVisitor
     {
         ctx.WriteTag(htmlWriter, false);
 
-        // add and/or replace oncontextmenu="return false;"
+        // Remove any existing oncontextmenu attribute to allow WebView2 custom context menus
         foreach (var attribute in ctx.Attributes)
         {
             if (attribute.Name.ToLowerInvariant() == "oncontextmenu")
@@ -192,7 +187,8 @@ internal class HtmlPreviewVisitor : MimeVisitor
             htmlWriter.WriteAttribute(attribute);
         }
 
-        htmlWriter.WriteAttribute("oncontextmenu", "return false;");
+        // Note: We no longer add oncontextmenu="return false;" here
+        // This allows WebView2's ContextMenuRequested event to fire and show custom context menus
     }
 
     private void LinkImageTag(HtmlTagContext ctx, HtmlWriter htmlWriter)

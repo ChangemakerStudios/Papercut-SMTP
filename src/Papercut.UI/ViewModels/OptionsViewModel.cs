@@ -20,16 +20,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net;
 
-using Caliburn.Micro;
-
-using Papercut.Common.Domain;
-using Papercut.Common.Extensions;
-using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Network;
-using Papercut.Domain.Events;
 using Papercut.Domain.Themes;
+using Papercut.Infrastructure.Networking;
 using Papercut.Infrastructure.Themes;
-using Papercut.Properties;
 
 namespace Papercut.ViewModels;
 
@@ -60,6 +54,8 @@ public class OptionsViewModel : Screen
     private bool _showNotifications;
 
     private bool _startMinimized;
+
+    private bool _ignoreSslCertificateErrors;
 
     private ThemeColor _themeColor;
 
@@ -182,6 +178,16 @@ public class OptionsViewModel : Screen
         {
             _darkMode = value;
             NotifyOfPropertyChange(() => DarkMode);
+        }
+    }
+
+    public bool IgnoreSslCertificateErrors
+    {
+        get => this._ignoreSslCertificateErrors;
+        set
+        {
+            this._ignoreSslCertificateErrors = value;
+            this.NotifyOfPropertyChange(() => this.IgnoreSslCertificateErrors);
         }
     }
 
