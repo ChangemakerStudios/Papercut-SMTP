@@ -20,18 +20,23 @@ using System.Windows.Input;
 
 using ICSharpCode.AvalonEdit.Document;
 
+using Papercut.Domain.Events;
 using Papercut.Helpers;
 using Papercut.Views;
 
 namespace Papercut.ViewModels;
 
-public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
+public class MessageDetailHeaderViewModel : Screen,
+    IMessageDetailItem,
+    IEventHandler<SettingsUpdatedEvent>,
+    IEventHandler<SystemThemeChangedEvent>
 {
     readonly ILogger _logger;
 
     string? _headers;
 
     ZoomIndicator? _zoomIndicator;
+    MessageDetailHeaderView? _view;
     readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
 
     public MessageDetailHeaderViewModel(ILogger logger)
@@ -45,6 +50,29 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
             Settings.Default.TextViewZoomFontSize = newFontSize;
             Settings.Default.Save();
         });
+    }
+
+    public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
+    {
+        var themeChanged = @event.PreviousSettings.Theme != @event.NewSettings.Theme ||
+                          @event.PreviousSettings.BaseTheme != @event.NewSettings.BaseTheme;
+
+        if (themeChanged && _view != null)
+        {
+            AvalonEditThemeHelper.ApplyTheme(_view.HeaderEdit);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task HandleAsync(SystemThemeChangedEvent @event, CancellationToken token)
+    {
+        if (_view != null)
+        {
+            AvalonEditThemeHelper.ApplyTheme(_view.HeaderEdit);
+        }
+
+        return Task.CompletedTask;
     }
 
     public string? Headers
@@ -67,8 +95,12 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
             return;
         }
 
-        // Store reference to zoom indicator
+        // Store references
+        _view = typedView;
         _zoomIndicator = typedView.zoomIndicator;
+
+        // Apply theme colors
+        AvalonEditThemeHelper.ApplyTheme(typedView.HeaderEdit);
 
         // Restore saved zoom level
         typedView.HeaderEdit.FontSize = Settings.Default.TextViewZoomFontSize;
