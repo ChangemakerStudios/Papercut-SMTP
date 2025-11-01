@@ -18,13 +18,7 @@
 
 namespace Papercut.Domain.Events;
 
-public class PapercutServiceStatusEvent(PapercutServiceStatusType papercutServiceStatus) : IEvent
+public class SystemThemeChangedEvent(bool isDarkMode) : IEvent
 {
-    public PapercutServiceStatusType PapercutServiceStatus { get; } = papercutServiceStatus;
-}
-
-public enum PapercutServiceStatusType
-{
-    Offline = 0,
-    Online = 1
+    public bool IsDarkMode { get; } = isDarkMode;
 }

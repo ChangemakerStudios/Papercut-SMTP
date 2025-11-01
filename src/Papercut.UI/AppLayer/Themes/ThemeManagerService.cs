@@ -1,14 +1,14 @@
 // Papercut
-//
-// Copyright � 2008 - 2012 Ken Robertson
-// Copyright � 2013 - 2025 Jaben Cargman
-//
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2025 Jaben Cargman
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,40 +16,24 @@
 // limitations under the License.
 
 
-namespace Papercut.AppLayer.Themes;
-
 using ControlzEx.Theming;
 
 using Papercut.Domain.Themes;
 using Papercut.Infrastructure.Themes;
 
+namespace Papercut.AppLayer.Themes;
+
 public class ThemeManagerService(
     ILogger logger,
-    ThemeColorRepository themeColorRepository,
-    SystemThemeMonitor systemThemeMonitor)
-    : IAppLifecyclePreStart, IAppLifecyclePreExit, IEventHandler<SettingsUpdatedEvent>
+    SystemThemeMonitor systemThemeMonitor,
+    ThemeColorRepository themeColorRepository)
+    : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>, IEventHandler<SystemThemeChangedEvent>
 {
     private static ThemeManager CurrentTheme => ThemeManager.Current;
 
     public Task<AppLifecycleActionResultType> OnPreStart()
     {
-        // Subscribe to system theme changes
-        systemThemeMonitor.SystemThemeChanged += OnSystemThemeChanged;
-
-        // Start monitoring if set to System mode
-        if (IsSystemThemeMode())
-        {
-            systemThemeMonitor.StartMonitoring(TimeSpan.FromSeconds(2));
-        }
-
         SetTheme();
-        return Task.FromResult(AppLifecycleActionResultType.Continue);
-    }
-
-    public Task<AppLifecycleActionResultType> OnPreExit()
-    {
-        systemThemeMonitor.SystemThemeChanged -= OnSystemThemeChanged;
-        systemThemeMonitor.StopMonitoring();
         return Task.FromResult(AppLifecycleActionResultType.Continue);
     }
 
@@ -60,29 +44,21 @@ public class ThemeManagerService(
 
         if (themeChanged || baseThemeChanged)
         {
-            // Update monitoring based on new base theme setting
-            if (IsSystemThemeMode())
-            {
-                systemThemeMonitor.StartMonitoring(TimeSpan.FromSeconds(2));
-            }
-            else
-            {
-                systemThemeMonitor.StopMonitoring();
-            }
-
             SetTheme();
         }
 
         return Task.CompletedTask;
     }
 
-    private void OnSystemThemeChanged(object? sender, bool isDarkMode)
+    public Task HandleAsync(SystemThemeChangedEvent @event, CancellationToken token = default)
     {
         if (IsSystemThemeMode())
         {
-            logger.Information("System theme changed, updating application theme to: {Theme}", isDarkMode ? "Dark" : "Light");
+            logger.Information("System theme changed, updating application theme to: {Theme}", @event.IsDarkMode ? "Dark" : "Light");
             SetTheme();
         }
+
+        return Task.CompletedTask;
     }
 
     private bool IsSystemThemeMode()
@@ -98,7 +74,7 @@ public class ThemeManagerService(
         if (colorTheme == null)
         {
             logger.Warning(
-                "Unable to find theme color {ThemeColor}. Setting to default: {DefaultTheme}.",
+                "Unable to find theme accent color {ThemeColor}. Setting to default: {DefaultTheme}.",
                 Properties.Settings.Default.Theme, ThemeColorRepository.Default.Name);
 
             Properties.Settings.Default.Theme = ThemeColorRepository.Default.Name;
@@ -140,7 +116,7 @@ public class ThemeManagerService(
 
         return baseTheme switch
         {
-            BaseTheme.System => systemThemeMonitor.IsSystemDarkMode,
+            BaseTheme.System => systemThemeMonitor.IsDarkMode(),
             BaseTheme.Dark => true,
             BaseTheme.Light => false,
             _ => false
