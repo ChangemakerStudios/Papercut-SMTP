@@ -11,7 +11,7 @@
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:OptionsViewModel}"
-                      Title="{Binding WindowTitle}" Width="480" Height="335" Icon="/Papercut;component/App.ico"
+                      Title="{Binding WindowTitle}" Width="480" Height="420" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="NoResize"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner"
@@ -36,31 +36,38 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Label Grid.Column="0" Grid.Row="0" Margin="0,2,0,29" Grid.RowSpan="2">IP Address:</Label>
-            <Label Grid.Column="0" Grid.Row="1" Margin="0,2,10,0" Grid.RowSpan="3">Port:</Label>
-            <ComboBox Grid.Column="1" Grid.Row="0" Margin="2,2,0,2" Width="300" HorizontalAlignment="Left"
+            <!-- IP Address -->
+            <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" VerticalAlignment="Center">IP Address:</Label>
+            <ComboBox Grid.Column="1" Grid.Row="0" Margin="5" Width="300" HorizontalAlignment="Left"
                       Name="IPs" SelectedItem="{Binding IP}" />
-            <Grid Grid.Column="1" Grid.Row="1">
-                <TextBox Margin="2,2,0,2" Width="100" HorizontalAlignment="Left" Name="Port" />
-                <Label Margin="102,0,0,0.4" HorizontalAlignment="Left">(default is 25)</Label>
-            </Grid>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-116" Name="RunOnStartup" VerticalAlignment="Bottom"
-                      Content="Run on startup" Height="18" />
-            <CheckBox Grid.Row="4" Grid.Column="1" Margin="5,0,5,-47" Name="StartMinimized" VerticalAlignment="Bottom" Height="18">Start minimized</CheckBox>
-            <CheckBox Grid.Row="5" Grid.Column="1" Margin="5,0,5,-139" Name="ShowNotifications" VerticalAlignment="Bottom" Height="18">Show Notifications</CheckBox>
-            <CheckBox Grid.Row="5" Grid.Column="1" Margin="5,0,5,-162" Name="IgnoreSslCertificateErrors" VerticalAlignment="Bottom" Height="18">Ignore SSL Certificate Errors (Requires Restart)</CheckBox>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-93" Name="MinimizeOnClose" VerticalAlignment="Bottom" Height="18">Minimize on close</CheckBox>
-            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,2.6,0,7.4"
-                x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="300" />
-            <Label Grid.Column="0" Grid.Row="4" Content="Message Sort Order:" Margin="0,3,3,4"/>
-            <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-70" Name="MinimizeToTray" VerticalAlignment="Bottom" Height="18" Content="Minimize to tray"/>
-            <Label Grid.Column="0" Grid.Row="4" Content="Theme:" Margin="0,33,3,-26"/>
-            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,33.6,0,-23.6"
-                x:Name="BaseThemes" SelectedItem="{Binding BaseTheme}" HorizontalAlignment="Left" Width="300" />
-            <Label Grid.Column="0" Grid.Row="4" Content="Theme Accent:" Margin="0,63,3,-56"/>
-            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,63.6,0,-53.6"
-                x:Name="ThemeAccents" SelectedItem="{Binding ThemeAccent}" HorizontalAlignment="Left" Width="300">
+
+            <!-- Port -->
+            <Label Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" VerticalAlignment="Center">Port:</Label>
+            <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" Margin="5">
+                <TextBox Width="100" Name="Port" Margin="0,0,5,0" />
+                <TextBlock VerticalAlignment="Center" Text="(default is 25)" />
+            </StackPanel>
+
+            <!-- Message Sort Order -->
+            <Label Grid.Column="0" Grid.Row="2" Margin="5,5,5,5" VerticalAlignment="Center">Message Sort Order:</Label>
+            <ComboBox Grid.Column="1" Grid.Row="2" Margin="5" Width="300" HorizontalAlignment="Left"
+                x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" />
+
+            <!-- Theme -->
+            <Label Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" VerticalAlignment="Center">Theme:</Label>
+            <ComboBox Grid.Column="1" Grid.Row="3" Margin="5" Width="300" HorizontalAlignment="Left"
+                x:Name="BaseThemes" SelectedItem="{Binding BaseTheme}" />
+
+            <!-- Theme Accent -->
+            <Label Grid.Column="0" Grid.Row="4" Margin="5,5,5,5" VerticalAlignment="Center">Theme Accent:</Label>
+            <ComboBox Grid.Column="1" Grid.Row="4" Margin="5" Width="300" HorizontalAlignment="Left"
+                x:Name="ThemeAccents" SelectedItem="{Binding ThemeAccent}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -70,6 +77,14 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+
+            <!-- Checkboxes -->
+            <CheckBox Grid.Column="1" Grid.Row="5" Margin="5" Name="RunOnStartup" Content="Run on startup" />
+            <CheckBox Grid.Column="1" Grid.Row="6" Margin="5" Name="StartMinimized">Start minimized</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="7" Margin="5" Name="MinimizeOnClose">Minimize on close</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="8" Margin="5" Name="MinimizeToTray" Content="Minimize to tray"/>
+            <CheckBox Grid.Column="1" Grid.Row="9" Margin="5" Name="ShowNotifications">Show Notifications</CheckBox>
+            <CheckBox Grid.Column="1" Grid.Row="10" Margin="5" Name="IgnoreSslCertificateErrors">Ignore SSL Certificate Errors (Requires Restart)</CheckBox>
         </Grid>
     </DockPanel>
 </controls:MetroWindow>

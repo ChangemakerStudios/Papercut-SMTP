@@ -16,7 +16,12 @@
 // limitations under the License.
 
 
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+
 using Microsoft.Win32;
+
+using ReactiveUI;
 
 namespace Papercut.AppLayer.Themes;
 
@@ -28,13 +33,11 @@ public class SystemThemeMonitor : IDisposable
     private const string RegistryKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
     private const string RegistryValueName = "AppsUseLightTheme";
     private readonly ILogger _logger;
-    private readonly SynchronizationContext _syncContext;
-    private Timer? _pollingTimer;
+    private IDisposable? _monitoringSubscription;
 
     public SystemThemeMonitor(ILogger logger)
     {
         _logger = logger;
-        _syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
     }
 
     public event EventHandler<bool>? SystemThemeChanged;
@@ -48,50 +51,27 @@ public class SystemThemeMonitor : IDisposable
         var currentTheme = IsSystemDarkMode;
         _logger.Information("Current system theme at startup: {Theme}", currentTheme ? "Dark" : "Light");
 
-        // Use polling to check for theme changes
-        _pollingTimer = new Timer(
-            _ => CheckThemeChange(),
-            null,
-            pollingInterval,
-            pollingInterval);
+        // Use Rx to poll for theme changes
+        _monitoringSubscription = Observable
+            .Interval(pollingInterval)
+            .Select(_ => IsSystemDarkMode)
+            .DistinctUntilChanged()
+            .Skip(1) // Skip the first value since we already logged the initial theme
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(
+                isDarkMode =>
+                {
+                    _logger.Information("System theme changed to: {Theme}", isDarkMode ? "Dark" : "Light");
+                    SystemThemeChanged?.Invoke(this, isDarkMode);
+                },
+                ex => _logger.Warning(ex, "Error checking system theme change"));
     }
 
     public void StopMonitoring()
     {
         _logger.Information("Stopping system theme monitoring");
-        _pollingTimer?.Dispose();
-        _pollingTimer = null;
-    }
-
-    private bool _lastKnownDarkMode;
-    private bool _isFirstCheck = true;
-
-    private void CheckThemeChange()
-    {
-        try
-        {
-            var isDarkMode = IsSystemDarkMode;
-
-            if (_isFirstCheck)
-            {
-                _lastKnownDarkMode = isDarkMode;
-                _isFirstCheck = false;
-                return;
-            }
-
-            if (isDarkMode != _lastKnownDarkMode)
-            {
-                _logger.Information("System theme changed to: {Theme}", isDarkMode ? "Dark" : "Light");
-                _lastKnownDarkMode = isDarkMode;
-
-                // Raise event on UI thread
-                _syncContext.Post(_ => SystemThemeChanged?.Invoke(this, isDarkMode), null);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.Warning(ex, "Error checking system theme change");
-        }
+        _monitoringSubscription?.Dispose();
+        _monitoringSubscription = null;
     }
 
     private static bool IsLightThemeEnabled()
