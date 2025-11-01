@@ -231,13 +231,13 @@ namespace Papercut.Properties {
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool DarkMode {
+        [global::System.Configuration.DefaultSettingValueAttribute("System")]
+        public string BaseTheme {
             get {
-                return ((bool)(this["DarkMode"]));
+                return ((string)(this["BaseTheme"]));
             }
             set {
-                this["DarkMode"] = value;
+                this["BaseTheme"] = value;
             }
         }
 

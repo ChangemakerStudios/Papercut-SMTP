@@ -50,7 +50,6 @@
             <CheckBox Grid.Row="4" Grid.Column="1" Margin="5,0,5,-47" Name="StartMinimized" VerticalAlignment="Bottom" Height="18">Start minimized</CheckBox>
             <CheckBox Grid.Row="5" Grid.Column="1" Margin="5,0,5,-139" Name="ShowNotifications" VerticalAlignment="Bottom" Height="18">Show Notifications</CheckBox>
             <CheckBox Grid.Row="5" Grid.Column="1" Margin="5,0,5,-162" Name="IgnoreSslCertificateErrors" VerticalAlignment="Bottom" Height="18">Ignore SSL Certificate Errors (Requires Restart)</CheckBox>
-            <CheckBox Grid.Row="5" Grid.Column="1" Margin="5,0,5,-185" Name="DarkMode" VerticalAlignment="Bottom" Height="18">Dark Mode</CheckBox>
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-93" Name="MinimizeOnClose" VerticalAlignment="Bottom" Height="18">Minimize on close</CheckBox>
             <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,2.6,0,7.4"
                 x:Name="SortOrders" SelectedItem="{Binding MessageListSortOrder}" HorizontalAlignment="Left" Width="300" />
@@ -58,7 +57,10 @@
             <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,0,5,-70" Name="MinimizeToTray" VerticalAlignment="Bottom" Height="18" Content="Minimize to tray"/>
             <Label Grid.Column="0" Grid.Row="4" Content="Theme:" Margin="0,33,3,-26"/>
             <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,33.6,0,-23.6"
-                x:Name="Themes" SelectedItem="{Binding ThemeColor}" HorizontalAlignment="Left" Width="300">
+                x:Name="BaseThemes" SelectedItem="{Binding BaseTheme}" HorizontalAlignment="Left" Width="300" />
+            <Label Grid.Column="0" Grid.Row="4" Content="Theme Accent:" Margin="0,63,3,-56"/>
+            <ComboBox Grid.Column="1" Grid.Row="4" Margin="2.4,63.6,0,-53.6"
+                x:Name="ThemeAccents" SelectedItem="{Binding ThemeAccent}" HorizontalAlignment="Left" Width="300">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">

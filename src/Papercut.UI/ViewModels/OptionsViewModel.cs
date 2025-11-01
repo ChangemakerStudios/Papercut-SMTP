@@ -37,7 +37,7 @@ public class OptionsViewModel : Screen
 
     private readonly ThemeColorRepository _themeColorRepository;
 
-    private bool _darkMode;
+    private string _baseTheme = nameof(Domain.Themes.BaseTheme.System);
 
     private string _ip = "Any";
 
@@ -67,7 +67,8 @@ public class OptionsViewModel : Screen
         _themeColorRepository = themeColorRepository;
         IPs = new ObservableCollection<string>(_ipList.Value);
         SortOrders = new ObservableCollection<string>(EnumHelpers.GetNames<ListSortDirection>());
-        Themes = new ObservableCollection<ThemeColor>(themeColorRepository.GetAll());
+        BaseThemes = new ObservableCollection<string>(EnumHelpers.GetNames<Domain.Themes.BaseTheme>());
+        ThemeAccents = new ObservableCollection<ThemeColor>(themeColorRepository.GetAll());
         Load();
     }
 
@@ -91,13 +92,23 @@ public class OptionsViewModel : Screen
         }
     }
 
-    public ThemeColor ThemeColor
+    public string BaseTheme
+    {
+        get => _baseTheme;
+        set
+        {
+            _baseTheme = value;
+            NotifyOfPropertyChange(() => BaseTheme);
+        }
+    }
+
+    public ThemeColor ThemeAccent
     {
         get => _themeColor;
         set
         {
             _themeColor = value;
-            NotifyOfPropertyChange(() => ThemeColor);
+            NotifyOfPropertyChange(() => ThemeAccent);
         }
     }
 
@@ -171,16 +182,6 @@ public class OptionsViewModel : Screen
         }
     }
 
-    public bool DarkMode
-    {
-        get => _darkMode;
-        set
-        {
-            _darkMode = value;
-            NotifyOfPropertyChange(() => DarkMode);
-        }
-    }
-
     public bool IgnoreSslCertificateErrors
     {
         get => this._ignoreSslCertificateErrors;
@@ -195,15 +196,20 @@ public class OptionsViewModel : Screen
 
     public ObservableCollection<string> SortOrders { get; }
 
-    public ObservableCollection<ThemeColor> Themes { get; }
+    public ObservableCollection<string> BaseThemes { get; }
+
+    public ObservableCollection<ThemeColor> ThemeAccents { get; }
 
     public void Load()
     {
         Settings.Default.CopyTo(this);
 
-        // set the theme color
-        ThemeColor =
+        // set the theme accent color
+        ThemeAccent =
             _themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme) ?? ThemeColorRepository.Default;
+
+        // set the base theme
+        BaseTheme = Settings.Default.BaseTheme;
     }
 
     private static IList<string> GetIPs()
@@ -228,8 +234,8 @@ public class OptionsViewModel : Screen
 
         this.CopyTo(Settings.Default);
 
-        Settings.Default.Theme = ThemeColor.Name;
-        Settings.Default.DarkMode = DarkMode;
+        Settings.Default.Theme = ThemeAccent.Name;
+        Settings.Default.BaseTheme = BaseTheme;
 
         Settings.Default.Save();
 

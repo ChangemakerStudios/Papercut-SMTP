@@ -53,8 +53,8 @@
     <Setting Name="ShowNotifications" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="DarkMode" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+    <Setting Name="BaseTheme" Type="System.String" Scope="User">
+      <Value Profile="(Default)">System</Value>
     </Setting>
     <Setting Name="IgnoreSslCertificateErrors" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

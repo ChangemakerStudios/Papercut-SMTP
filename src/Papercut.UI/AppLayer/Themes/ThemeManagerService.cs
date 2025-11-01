@@ -20,28 +20,75 @@ namespace Papercut.AppLayer.Themes;
 
 using ControlzEx.Theming;
 
+using Papercut.Domain.Themes;
 using Papercut.Infrastructure.Themes;
 
-public class ThemeManagerService(ILogger logger, ThemeColorRepository themeColorRepository)
-    : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
+public class ThemeManagerService(
+    ILogger logger,
+    ThemeColorRepository themeColorRepository,
+    SystemThemeMonitor systemThemeMonitor)
+    : IAppLifecyclePreStart, IAppLifecyclePreExit, IEventHandler<SettingsUpdatedEvent>
 {
     private static ThemeManager CurrentTheme => ThemeManager.Current;
 
     public Task<AppLifecycleActionResultType> OnPreStart()
     {
+        // Subscribe to system theme changes
+        systemThemeMonitor.SystemThemeChanged += OnSystemThemeChanged;
+
+        // Start monitoring if set to System mode
+        if (IsSystemThemeMode())
+        {
+            systemThemeMonitor.StartMonitoring(TimeSpan.FromSeconds(2));
+        }
+
         SetTheme();
+        return Task.FromResult(AppLifecycleActionResultType.Continue);
+    }
+
+    public Task<AppLifecycleActionResultType> OnPreExit()
+    {
+        systemThemeMonitor.SystemThemeChanged -= OnSystemThemeChanged;
+        systemThemeMonitor.StopMonitoring();
         return Task.FromResult(AppLifecycleActionResultType.Continue);
     }
 
     public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
     {
-        if (@event.PreviousSettings.Theme != @event.NewSettings.Theme
-            || @event.PreviousSettings.DarkMode != @event.NewSettings.DarkMode)
+        var themeChanged = @event.PreviousSettings.Theme != @event.NewSettings.Theme;
+        var baseThemeChanged = @event.PreviousSettings.BaseTheme != @event.NewSettings.BaseTheme;
+
+        if (themeChanged || baseThemeChanged)
         {
+            // Update monitoring based on new base theme setting
+            if (IsSystemThemeMode())
+            {
+                systemThemeMonitor.StartMonitoring(TimeSpan.FromSeconds(2));
+            }
+            else
+            {
+                systemThemeMonitor.StopMonitoring();
+            }
+
             SetTheme();
         }
 
         return Task.CompletedTask;
+    }
+
+    private void OnSystemThemeChanged(object? sender, bool isDarkMode)
+    {
+        if (IsSystemThemeMode())
+        {
+            logger.Information("System theme changed, updating application theme to: {Theme}", isDarkMode ? "Dark" : "Light");
+            SetTheme();
+        }
+    }
+
+    private bool IsSystemThemeMode()
+    {
+        return Enum.TryParse<BaseTheme>(Properties.Settings.Default.BaseTheme, out var baseTheme)
+            && baseTheme == BaseTheme.System;
     }
 
     private void SetTheme()
@@ -59,8 +106,12 @@ public class ThemeManagerService(ILogger logger, ThemeColorRepository themeColor
         }
 
         var themeColor = colorTheme.Color;
-        var isDarkMode = Properties.Settings.Default.DarkMode;
+
+        // Determine if we should use dark mode
+        var isDarkMode = ShouldUseDarkMode();
         var baseColorScheme = isDarkMode ? "Dark" : "Light";
+
+        logger.Debug("Applying theme: BaseScheme={BaseScheme}, AccentColor={AccentColor}", baseColorScheme, themeColor);
 
         var generateRuntimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(baseColorScheme, themeColor);
         if (generateRuntimeTheme != null)
@@ -77,6 +128,23 @@ public class ThemeManagerService(ILogger logger, ThemeColorRepository themeColor
         }
 
         Application.Current?.MainWindow?.Activate();
+    }
+
+    private bool ShouldUseDarkMode()
+    {
+        if (!Enum.TryParse<BaseTheme>(Properties.Settings.Default.BaseTheme, out var baseTheme))
+        {
+            logger.Warning("Unable to parse BaseTheme setting: {BaseTheme}. Defaulting to System.", Properties.Settings.Default.BaseTheme);
+            baseTheme = BaseTheme.System;
+        }
+
+        return baseTheme switch
+        {
+            BaseTheme.System => systemThemeMonitor.IsSystemDarkMode,
+            BaseTheme.Dark => true,
+            BaseTheme.Light => false,
+            _ => false
+        };
     }
 
     #region Begin Static Container Registrations
