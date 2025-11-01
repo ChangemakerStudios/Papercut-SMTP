@@ -1,0 +1,55 @@
+﻿<controls:MetroWindow x:Class="Papercut.Views.RuleTypeSelectionView"
+                      xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                      xmlns:cal="http://www.caliburnproject.org"
+                      mc:Ignorable="d"
+                      Title="Select Rule Type" Width="400" Height="450"
+                      WindowStyle="ToolWindow"
+                      ResizeMode="NoResize"
+                      ShowIconOnTitleBar="false"
+                      WindowStartupLocation="CenterOwner"
+                      BorderThickness="{DynamicResource AccentBorderThickness}"
+                      GlowBrush="{DynamicResource AccentGlowBrush}"
+                      BorderBrush="{DynamicResource AccentBorderBrush}">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Select a rule to add:"
+                   FontSize="25"
+                   Margin="0,0,0,12" />
+
+        <ListBox Grid.Row="1"
+                 x:Name="RuleTypesList"
+                 ItemsSource="{Binding AvailableRuleTypes}"
+                 SelectedItem="{Binding SelectedRuleType, Mode=TwoWay}"
+                 Margin="0,0,0,16">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="4">
+                        <iconPacks:PackIconMaterial Width="20" Height="20"
+                                                   Kind="ArrowRightBoldBox"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,12,0" />
+                        <TextBlock Text="{Binding Type}"
+                                  VerticalAlignment="Center"
+                                  FontSize="13" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Width="75" Margin="2" Name="Add" IsDefault="True" IsEnabled="{Binding CanAdd}" cal:Message.Attach="Add">Add</Button>
+            <Button Width="75" Margin="2" Name="Cancel" IsCancel="True" cal:Message.Attach="Cancel">Cancel</Button>
+        </StackPanel>
+    </Grid>
+</controls:MetroWindow>

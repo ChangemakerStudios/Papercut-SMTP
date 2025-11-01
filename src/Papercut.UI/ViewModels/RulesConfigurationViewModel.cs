@@ -25,12 +25,15 @@ namespace Papercut.ViewModels;
 
 public class RulesConfigurationViewModel : Screen
 {
+    private readonly IWindowManager _windowManager;
+
     private IRule? _selectedRule;
 
     private string _windowTitle = "Rules Configuration";
 
-    public RulesConfigurationViewModel(RuleService ruleService, IEnumerable<IRule> registeredRules)
+    public RulesConfigurationViewModel(RuleService ruleService, IEnumerable<IRule> registeredRules, IWindowManager windowManager)
     {
+        _windowManager = windowManager;
         RegisteredRules = new ObservableCollection<IRule>(registeredRules);
         Rules = ruleService.Rules;
         Rules.CollectionChanged += (_, _) =>
@@ -69,14 +72,18 @@ public class RulesConfigurationViewModel : Screen
 
     public ObservableCollection<IRule> Rules { get; }
 
-    public void AddRule(IRule rule)
+    public async Task AddRule()
     {
-        ArgumentNullException.ThrowIfNull(rule);
+        var dialog = new RuleTypeSelectionViewModel(RegisteredRules);
+        var result = await _windowManager.ShowDialogAsync(dialog);
 
-        if (Activator.CreateInstance(rule.GetType()) is IRule newRule)
+        if (result == true && dialog.SelectedRuleType != null)
         {
-            Rules.Add(newRule);
-            SelectedRule = newRule;
+            if (Activator.CreateInstance(dialog.SelectedRuleType.GetType()) is IRule newRule)
+            {
+                Rules.Add(newRule);
+                SelectedRule = newRule;
+            }
         }
     }
 

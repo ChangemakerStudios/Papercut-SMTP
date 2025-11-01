@@ -21,293 +21,49 @@
                       BorderThickness="{DynamicResource AccentBorderThickness}" 
                       GlowBrush="{DynamicResource AccentGlowBrush}"
                       BorderBrush="{DynamicResource AccentBorderBrush}"
-                      Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
-                      Foreground="{DynamicResource MahApps.Brushes.Text}">
+>
     <controls:MetroWindow.Resources>
-        <!-- Override ContextMenu/Popup colors used by MenuItem submenus -->
-        <StaticResource x:Key="{x:Static SystemColors.MenuBrushKey}" ResourceKey="MahApps.Brushes.ThemeBackground" />
-        <StaticResource x:Key="{x:Static SystemColors.MenuTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
-
-        <!-- Override Menu default colors -->
-        <StaticResource x:Key="Menu.Static.Background" ResourceKey="MahApps.Brushes.Control.Background" />
-        <StaticResource x:Key="Menu.Static.Border" ResourceKey="MahApps.Brushes.Control.Border" />
-
-        <Style TargetType="ToolBar" BasedOn="{StaticResource {x:Type ToolBar}}">
-            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
-            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-        </Style>
-        <Style TargetType="Menu" BasedOn="{StaticResource {x:Type Menu}}">
-            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
-            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-        </Style>
-        <Style TargetType="MenuItem">
-            <Setter Property="OverridesDefaultStyle" Value="True" />
-            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="MenuItem">
-                        <Grid>
-                            <!-- Top Level MenuItem (on toolbar) -->
-                            <Border x:Name="TopLevelBorder"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    CornerRadius="2"
-                                    Padding="8,4"
-                                    Visibility="Visible">
-                                <ContentPresenter ContentSource="Header" />
-                            </Border>
-                            <!-- Submenu Popup -->
-                            <Popup x:Name="PART_Popup"
-                                   IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
-                                   Placement="Bottom"
-                                   AllowsTransparency="True"
-                                   Focusable="False"
-                                   PopupAnimation="Fade">
-                                <Border Background="{DynamicResource MahApps.Brushes.Control.Background}"
-                                        BorderBrush="{DynamicResource MahApps.Brushes.Control.Border}"
-                                        BorderThickness="1"
-                                        Padding="0"
-                                        CornerRadius="4">
-                                    <StackPanel IsItemsHost="True"
-                                                Background="{DynamicResource MahApps.Brushes.Control.Background}"
-                                                KeyboardNavigation.DirectionalNavigation="Cycle" />
-                                </Border>
-                            </Popup>
-                            <!-- Submenu Item -->
-                            <Border x:Name="SubMenuBorder"
-                                    Background="{TemplateBinding Background}"
-                                    BorderThickness="0"
-                                    Padding="24,4,8,4"
-                                    Visibility="Collapsed">
-                                <ContentPresenter ContentSource="Header" />
-                            </Border>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <!-- Show submenu item style when this is a submenu item -->
-                            <Trigger Property="Role" Value="SubmenuItem">
-                                <Setter TargetName="TopLevelBorder" Property="Visibility" Value="Collapsed" />
-                                <Setter TargetName="SubMenuBorder" Property="Visibility" Value="Visible" />
-                            </Trigger>
-                            <!-- Hover on top level -->
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="Role" Value="TopLevelHeader" />
-                                    <Condition Property="IsHighlighted" Value="True" />
-                                </MultiTrigger.Conditions>
-                                <Setter TargetName="TopLevelBorder" Property="Background" Value="{DynamicResource MahApps.Brushes.Gray5}" />
-                            </MultiTrigger>
-                            <!-- Hover on submenu item -->
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="Role" Value="SubmenuItem" />
-                                    <Condition Property="IsHighlighted" Value="True" />
-                                </MultiTrigger.Conditions>
-                                <Setter TargetName="SubMenuBorder" Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}" />
-                                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}" />
-                            </MultiTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
-            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
-            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Control.Border}" />
-            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource MahApps.Brushes.Control.Border}" />
-            <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource MahApps.Brushes.Control.Border}" />
-        </Style>
-        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
-            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Control.Border}" />
-        </Style>
-        <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
-            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
-            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Control.Border}" />
-        </Style>
-        <Style TargetType="pg:PropertyItem">
-            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
-            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Gray5}" />
-                    <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}" />
-                    <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        <Style TargetType="xctk:PropertyGrid">
-            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
-            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Control.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="4" />
-            <Setter Property="PropertyContainerStyle">
-                <Setter.Value>
-                    <Style TargetType="pg:PropertyItemBase" BasedOn="{StaticResource {x:Type pg:PropertyItemBase}}">
-                        <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
-                        <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Control.Border}" />
-                        <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Control.Background}" />
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}" />
-                                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}" />
-                                <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Accent}" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type xctk:PropertyGrid}">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                SnapsToDevicePixels="True">
-                            <Grid Margin="{TemplateBinding Padding}">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="{TemplateBinding NameColumnWidth}" MinWidth="120" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <Border Grid.ColumnSpan="2"
-                                            Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
-                                        <ScrollViewer Focusable="False"
-                                                      Padding="0"
-                                                      HorizontalScrollBarVisibility="Disabled"
-                                                      VerticalScrollBarVisibility="Auto"
-                                                      CanContentScroll="{Binding IsVirtualizing, RelativeSource={RelativeSource TemplatedParent}}"
-                                                      Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
-                                            <pg:PropertyItemsControl x:Name="PART_PropertyItemsControl"
-                                                                      Focusable="False"
-                                                                      ItemsSource="{Binding Properties, RelativeSource={RelativeSource TemplatedParent}}"
-                                                                      ItemContainerStyle="{TemplateBinding PropertyContainerStyle}"
-                                                                      VirtualizingStackPanel.IsVirtualizing="{Binding IsVirtualizing, RelativeSource={RelativeSource TemplatedParent}}"
-                                                                      VirtualizingStackPanel.VirtualizationMode="Recycling"
-                                                                      ScrollViewer.CanContentScroll="{Binding IsVirtualizing, RelativeSource={RelativeSource TemplatedParent}}"
-                                                                      Foreground="{TemplateBinding Foreground}"
-                                                                      Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
-                                                <pg:PropertyItemsControl.GroupStyle>
-                                                    <GroupStyle>
-                                                        <GroupStyle.HeaderTemplate>
-                                                            <DataTemplate>
-                                                                <Border Background="{DynamicResource MahApps.Brushes.Control.Background}"
-                                                                        BorderBrush="{DynamicResource MahApps.Brushes.Control.Border}"
-                                                                        BorderThickness="0,0,0,1"
-                                                                        Padding="6,4"
-                                                                        Margin="0,8,0,0">
-                                                                    <Border.Style>
-                                                                        <Style TargetType="Border">
-                                                                            <Setter Property="Visibility" Value="Visible" />
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding Name}" Value="">
-                                                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Border.Style>
-                                                                    <TextBlock Text="{Binding Name}"
-                                                                               FontWeight="SemiBold"
-                                                                               Foreground="{DynamicResource MahApps.Brushes.Text}" />
-                                                                </Border>
-                                                            </DataTemplate>
-                                                        </GroupStyle.HeaderTemplate>
-                                                    </GroupStyle>
-                                                </pg:PropertyItemsControl.GroupStyle>
-                                            </pg:PropertyItemsControl>
-                                        </ScrollViewer>
-                                    </Border>
-
-                                    <Thumb x:Name="PART_DragThumb"
-                                           Grid.Column="0"
-                                           Width="2"
-                                           Margin="0"
-                                           HorizontalAlignment="Right"
-                                           Cursor="SizeWE">
-                                        <Thumb.Template>
-                                            <ControlTemplate TargetType="Thumb">
-                                                <Border Background="{DynamicResource MahApps.Brushes.Control.Border}" />
-                                            </ControlTemplate>
-                                        </Thumb.Template>
-                                    </Thumb>
-                                </Grid>
-                            </Grid>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!-- Minimal SystemColors overrides for Xceed PropertyGrid to work with themes -->
+        <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="{DynamicResource MahApps.Colors.ThemeBackground}" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource MahApps.Colors.ThemeBackground}" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="{DynamicResource MahApps.Colors.ThemeForeground}" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource MahApps.Colors.ThemeForeground}" />
     </controls:MetroWindow.Resources>
     <DockPanel>
-        <ToolBarTray Height="Auto" DockPanel.Dock="Top" Background="{DynamicResource MahApps.Brushes.Control.Background}">
+        <ToolBarTray Height="Auto" DockPanel.Dock="Top">
             <ToolBar Width="Auto" Margin="2">
-                <Menu>
-                    <MenuItem x:Name="RegisteredRules" Margin="1" Padding="8,4,8,4" cal:Message.Attach="AddRule($originalsourcecontext)">
-                        <MenuItem.HeaderTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <iconPacks:PackIconMaterial Width="20"
-                                                                Height="20"
-                                                                Kind="LayersPlus" />
-                                    <TextBlock Margin="4 0 0 0"
-                               VerticalAlignment="Center"
-                               Text="Add Rule" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </MenuItem.HeaderTemplate>
-                        <MenuItem.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <iconPacks:PackIconMaterial Width="20"
-                                                                Height="20"
-                                                                Kind="ArrowRightBoldBox" />
-                                    <TextBlock Margin="4 0 0 0" VerticalAlignment="Center" Text="{Binding Type}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </MenuItem.ItemTemplate>
-                    </MenuItem>
-                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="4,2,4,2" />
-                    <MenuItem Padding="8,4,8,4" Margin="1" cal:Message.Attach="DeleteRule" IsEnabled="{Binding HasSelectedRule}">
-                        <MenuItem.HeaderTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <iconPacks:PackIconMaterial Width="20"
-                                                                Height="20"
-                                                                Kind="LayersMinus" />
-                                    <TextBlock Margin="4 0 0 0"
-                               VerticalAlignment="Center"
-                               Text="Delete Rule" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </MenuItem.HeaderTemplate>
-                    </MenuItem>
-                </Menu>
+                <Button Padding="8,4"
+                        Style="{DynamicResource MahApps.Styles.Button.ToolBar}"
+                        cal:Message.Attach="AddRule">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Width="16" Height="16"
+                                                   Kind="LayersPlus"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,4,0" />
+                        <TextBlock Text="Add Rule" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="4,2,4,2" />
+
+                <Button Padding="8,4"
+                        Style="{DynamicResource MahApps.Styles.Button.ToolBar}"
+                        cal:Message.Attach="DeleteRule"
+                        IsEnabled="{Binding HasSelectedRule}">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Width="16" Height="16"
+                                                   Kind="LayersMinus"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,4,0" />
+                        <TextBlock Text="Delete Rule" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
             </ToolBar>
         </ToolBarTray>
-        <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto" 
+        <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto"
                   SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
                   ItemsSource="{Binding Rules}" AutoGenerateColumns="False" IsReadOnly="True"
-                  AlternationCount="2"
-                  AlternatingRowBackground="{DynamicResource MahApps.Brushes.Control.Background}"
-                  RowBackground="{DynamicResource MahApps.Brushes.Control.Background}"
-                  HorizontalGridLinesBrush="{DynamicResource MahApps.Brushes.Control.Border}"
-                  VerticalGridLinesBrush="{DynamicResource MahApps.Brushes.Control.Border}">
+                  AlternationCount="2">
             <DataGrid.Columns>
                 <DataGridTemplateColumn>
                     <DataGridTemplateColumn.CellTemplate>
@@ -333,159 +89,44 @@
             <Border Grid.Row="0"
                     Margin="0,0,0,8"
                     Padding="8"
-                    Background="{DynamicResource MahApps.Brushes.Control.Background}"
-                    BorderBrush="{DynamicResource MahApps.Brushes.Control.Border}"
                     BorderThickness="1"
                     CornerRadius="4">
                 <StackPanel>
                     <TextBlock Text="Filters"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource MahApps.Brushes.Text}" />
+                               FontWeight="SemiBold" />
                     <Grid Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBox x:Name="RulesFilterTextBox"
-                                 Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
-                                 Foreground="{DynamicResource MahApps.Brushes.Text}"
-                                 BorderBrush="{DynamicResource MahApps.Brushes.Control.Border}"
                                  Text="{Binding ElementName=RulesPropertyGrid, Path=Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  controls:TextBoxHelper.Watermark="Search rules" />
                         <Button Grid.Column="1"
                                 Margin="8,0,0,0"
                                 Padding="6"
                                 ToolTip="Clear filter"
-                                Background="Transparent"
-                                BorderBrush="{DynamicResource MahApps.Brushes.Control.Border}"
-                                BorderThickness="1"
                                 Command="pgc:PropertyGridCommands.ClearFilter"
                                 CommandTarget="{Binding ElementName=RulesPropertyGrid}">
                             <iconPacks:PackIconMaterial Width="16"
                                                         Height="16"
-                                                        Kind="CloseCircleOutline"
-                                                        Foreground="{DynamicResource MahApps.Brushes.Text}" />
+                                                        Kind="CloseCircleOutline" />
                         </Button>
                     </Grid>
                     <CheckBox Margin="0,10,0,0"
                               Content="Group by category"
-                              IsChecked="{Binding ElementName=RulesPropertyGrid, Path=IsCategorized, Mode=TwoWay}"
-                              Foreground="{DynamicResource MahApps.Brushes.Text}" />
+                              IsChecked="{Binding ElementName=RulesPropertyGrid, Path=IsCategorized, Mode=TwoWay}" />
                 </StackPanel>
             </Border>
             <Border Grid.Row="1"
                     BorderThickness="1"
-                    BorderBrush="{DynamicResource MahApps.Brushes.Control.Border}"
-                    Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
                     CornerRadius="4">
                 <xctk:PropertyGrid x:Name="RulesPropertyGrid"
                                    Margin="0"
                                    ShowPreview="False"
                                    ShowSearchBox="False"
                                    ShowSortOptions="False"
-                                   SelectedObject="{Binding SelectedRule}">
-                    <xctk:PropertyGrid.EditorDefinitions>
-                        <xctk:EditorTemplateDefinition TargetProperties="System.String">
-                            <xctk:EditorTemplateDefinition.EditingTemplate>
-                                <DataTemplate>
-                                    <TextBox Style="{DynamicResource MahApps.Styles.TextBox}"
-                                             Padding="0"
-                                             BorderThickness="0"
-                                             Background="Transparent"
-                                             Foreground="{DynamicResource MahApps.Brushes.Text}"
-                                             Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
-                                </DataTemplate>
-                            </xctk:EditorTemplateDefinition.EditingTemplate>
-                        </xctk:EditorTemplateDefinition>
-                        <xctk:EditorTemplateDefinition TargetProperties="System.Boolean">
-                            <xctk:EditorTemplateDefinition.EditingTemplate>
-                                <DataTemplate>
-                                    <CheckBox Style="{DynamicResource MahApps.Styles.CheckBox}"
-                                              HorizontalAlignment="Left"
-                                              VerticalAlignment="Center"
-                                              Background="Transparent"
-                                              Foreground="{DynamicResource MahApps.Brushes.Text}"
-                                              IsChecked="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                </DataTemplate>
-                            </xctk:EditorTemplateDefinition.EditingTemplate>
-                        </xctk:EditorTemplateDefinition>
-                        <xctk:EditorTemplateDefinition TargetProperties="System.Int32,System.Int16,System.Int64">
-                            <xctk:EditorTemplateDefinition.EditingTemplate>
-                                <DataTemplate>
-                                    <xctk:IntegerUpDown Style="{DynamicResource MahApps.Styles.NumericUpDown}"
-                                                        BorderThickness="0"
-                                                        Background="Transparent"
-                                                        Foreground="{DynamicResource MahApps.Brushes.Text}"
-                                                        Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                </DataTemplate>
-                            </xctk:EditorTemplateDefinition.EditingTemplate>
-                        </xctk:EditorTemplateDefinition>
-                        <xctk:EditorTemplateDefinition TargetProperties="System.Decimal,System.Double,System.Single">
-                            <xctk:EditorTemplateDefinition.EditingTemplate>
-                                <DataTemplate>
-                                    <xctk:DecimalUpDown Style="{DynamicResource MahApps.Styles.NumericUpDown}"
-                                                        BorderThickness="0"
-                                                        Background="Transparent"
-                                                        Foreground="{DynamicResource MahApps.Brushes.Text}"
-                                                        Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                </DataTemplate>
-                            </xctk:EditorTemplateDefinition.EditingTemplate>
-                        </xctk:EditorTemplateDefinition>
-                    </xctk:PropertyGrid.EditorDefinitions>
-                    <xctk:PropertyGrid.Resources>
-                        <!-- Override System Colors to use MahApps Theme Brushes -->
-                        <StaticResource x:Key="{x:Static SystemColors.WindowBrushKey}" ResourceKey="MahApps.Brushes.ThemeBackground" />
-                        <StaticResource x:Key="{x:Static SystemColors.ControlBrushKey}" ResourceKey="MahApps.Brushes.ThemeBackground" />
-                        <StaticResource x:Key="{x:Static SystemColors.ControlTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
-                        <StaticResource x:Key="{x:Static SystemColors.WindowTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
-                        <StaticResource x:Key="{x:Static SystemColors.HighlightBrushKey}" ResourceKey="MahApps.Brushes.Accent" />
-                        <StaticResource x:Key="{x:Static SystemColors.HighlightTextBrushKey}" ResourceKey="MahApps.Brushes.IdealForeground" />
-                        <StaticResource x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" ResourceKey="MahApps.Brushes.Gray5" />
-                        <StaticResource x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
-                        <StaticResource x:Key="{x:Static SystemColors.GrayTextBrushKey}" ResourceKey="MahApps.Brushes.Gray" />
-                        <StaticResource x:Key="{x:Static SystemColors.InfoBrushKey}" ResourceKey="MahApps.Brushes.ThemeBackground" />
-                        <StaticResource x:Key="{x:Static SystemColors.InfoTextBrushKey}" ResourceKey="MahApps.Brushes.ThemeForeground" />
-
-                        <Style TargetType="TextBox">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                            <Setter Property="BorderBrush" Value="Transparent" />
-                        </Style>
-                        <Style TargetType="ComboBox">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                            <Setter Property="BorderBrush" Value="Transparent" />
-                        </Style>
-                        <Style TargetType="PasswordBox">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                            <Setter Property="BorderBrush" Value="Transparent" />
-                        </Style>
-                        <Style TargetType="CheckBox">
-                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                        </Style>
-                        <Style TargetType="xctk:IntegerUpDown">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                            <Setter Property="BorderBrush" Value="Transparent" />
-                        </Style>
-                        <Style TargetType="xctk:DoubleUpDown">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                            <Setter Property="BorderBrush" Value="Transparent" />
-                        </Style>
-                        <Style TargetType="xctk:DecimalUpDown">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                            <Setter Property="BorderBrush" Value="Transparent" />
-                        </Style>
-                        <Style TargetType="xctk:WatermarkTextBox">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                            <Setter Property="BorderBrush" Value="Transparent" />
-                        </Style>
-                    </xctk:PropertyGrid.Resources>
-                </xctk:PropertyGrid>
+                                   SelectedObject="{Binding SelectedRule}" />
             </Border>
         </Grid>
     </DockPanel>
