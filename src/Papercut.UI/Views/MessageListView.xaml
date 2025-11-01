@@ -33,66 +33,44 @@
             <DataTemplate DataType="{x:Type Helpers:MimeMessageEntry}">
                 <Grid ToolTip="{Binding File}" Margin="2"
                       Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition
-                            Width="*" />
-                        <ColumnDefinition>
-                            <ColumnDefinition.Style>
-                                <Style TargetType="ColumnDefinition">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Subject line with attachment icon -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal"
+                                Visibility="{Binding Subject, Converter={StaticResource CollapsedIfFalse}}">
+                        <TextBlock Text="{Binding Subject}"
+                                   TextTrimming="CharacterEllipsis"
+                                   FontSize="14"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasAttachments}" Value="True">
-                                            <Setter Property="ColumnDefinition.Width" Value="50"/>
+                                        <DataTrigger Binding="{Binding HasBeenSeen}" Value="True">
+                                            <Setter Property="FontWeight" Value="Normal"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding HasAttachments}" Value="False">
-                                            <Setter Property="ColumnDefinition.Width" Value="0"/>
+                                        <DataTrigger Binding="{Binding HasBeenSeen}" Value="False">
+                                            <Setter Property="FontWeight" Value="Bold"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </ColumnDefinition.Style>
-                        </ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Subject}"
-						TextTrimming="CharacterEllipsis"
-						Visibility="{Binding Subject, Converter={StaticResource CollapsedIfFalse}}" FontSize="14">
-
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasBeenSeen}" Value="True">
-                                        <Setter Property="FontWeight" Value="Normal"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding HasBeenSeen}" Value="False">
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-
-                    </TextBlock>
-                    <Grid Grid.Column="0" Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="{Binding Path=ViewportWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding DisplayText}"
-                                   TextTrimming="CharacterEllipsis" />
-                    </Grid>
-                    <StackPanel
-                        VerticalAlignment="Center"
-                        Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
+                            </TextBlock.Style>
+                        </TextBlock>
                         <iconPacks:PackIconMaterial
                             Kind="Attachment"
-                            Width="16"
-                            Height="16"
+                            Width="12"
+                            Height="12"
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
                             Foreground="{DynamicResource MahApps.Brushes.Gray1}"
                             Visibility="{Binding Path=HasAttachments, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
+
+                    <!-- Display text (From/To) -->
+                    <TextBlock Grid.Row="1" Text="{Binding DisplayText}"
+                               TextTrimming="CharacterEllipsis" />
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>
