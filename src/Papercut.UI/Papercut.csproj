@@ -2,12 +2,13 @@
 	<PropertyGroup>
 		<Title>Papercut SMTP</Title>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net8.0-windows</TargetFramework>
+		<TargetFramework>net9.0-windows10.0.19041</TargetFramework>
 		<ApplicationIcon>App.ico</ApplicationIcon>
 		<SignManifests>false</SignManifests>
 		<UseWPF>true</UseWPF>
 		<StartupObject>Papercut.Program</StartupObject>
 		<NoWin32Manifest>true</NoWin32Manifest>
+		<NoWarn>$(NoWarn);WPF0001</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Resources\LogClientSink.html" />
@@ -60,7 +61,7 @@
 		<PackageReference Include="MahApps.Metro" Version="2.4.11" />
 		<PackageReference Include="MahApps.Metro.IconPacks" Version="6.1.0" />
 		<PackageReference Include="MimeKit" Version="4.14.0" />
-		<PackageReference Include="ReactiveUI.WPF" Version="21.0.1" />
+		<PackageReference Include="ReactiveUI.WPF" Version="22.2.1" />
 		<PackageReference Include="Serilog.Sinks.Observable" Version="3.0.0" />
 		<PackageReference Include="Handlebars.Net" Version="2.1.6" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />

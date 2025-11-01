@@ -27,29 +27,45 @@
                    FontSize="25"
                    Margin="0,0,0,12" />
 
-        <ListBox Grid.Row="1"
-                 x:Name="RuleTypesList"
-                 ItemsSource="{Binding AvailableRuleTypes}"
-                 SelectedItem="{Binding SelectedRuleType, Mode=TwoWay}"
-                 Margin="0,0,0,16">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Margin="4">
-                        <iconPacks:PackIconMaterial Width="20" Height="20"
-                                                   Kind="ArrowRightBoldBox"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,12,0" />
-                        <TextBlock Text="{Binding Type}"
-                                  VerticalAlignment="Center"
-                                  FontSize="13" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <DataGrid Grid.Row="1"
+                  x:Name="RuleTypesList"
+                  ItemsSource="{Binding AvailableRuleTypes}"
+                  SelectedItem="{Binding SelectedRuleType, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  HeadersVisibility="None"
+                  GridLinesVisibility="None"
+                  Margin="0,0,0,16">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="4">
+                                <iconPacks:PackIconMaterial Width="20" Height="20"
+                                                           Kind="ArrowRightBoldBox"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,12,0" />
+                                <TextBlock Text="{Binding Type}"
+                                          VerticalAlignment="Center"
+                                          FontSize="13" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Width="75" Margin="2" Name="Add" IsDefault="True" IsEnabled="{Binding CanAdd}" cal:Message.Attach="Add">Add</Button>
-            <Button Width="75" Margin="2" Name="Cancel" IsCancel="True" cal:Message.Attach="Cancel">Cancel</Button>
+            <Button Width="100" Height="35" Margin="0,0,8,0"
+                    Name="Add" IsDefault="True"
+                    Content="ADD"
+                    IsEnabled="{Binding CanAdd}"
+                    cal:Message.Attach="Add" />
+            <Button Width="100" Height="35"
+                    Name="Cancel" IsCancel="True"
+                    Content="CANCEL"
+                    cal:Message.Attach="Cancel" />
         </StackPanel>
     </Grid>
 </controls:MetroWindow>

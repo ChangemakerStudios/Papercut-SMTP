@@ -60,27 +60,35 @@
                 </Button>
             </ToolBar>
         </ToolBarTray>
-        <DataGrid x:Name="MessagesList" Width="Auto" Height="Auto"
-                  SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
-                  ItemsSource="{Binding Rules}" AutoGenerateColumns="False" IsReadOnly="True"
-                  AlternationCount="2">
-            <DataGrid.Columns>
-                <DataGridTemplateColumn>
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
+        <Border BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray5}"
+                Margin="4,8,4,4">
+            <DataGrid x:Name="RuleList" Width="Auto" Height="Auto"
+                      SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
+                      ItemsSource="{Binding Rules}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      AlternationCount="2"
+                      SelectionMode="Single"
+                      GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="40">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
                                 <iconPacks:PackIconMaterial Width="20"
                                                             Height="20"
-                                                            Kind="ArrowRightBoldBox" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" />
-                <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" />
-                <DataGridTextColumn Header="Description" Binding="{Binding Description}" />
-            </DataGrid.Columns>
-        </DataGrid>
+                                                            Kind="ArrowRightBoldBox"
+                                                            VerticalAlignment="Center"
+                                                            HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" Width="80" />
+                    <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" Width="200" />
+                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
         <Grid DockPanel.Dock="Right" MinWidth="280" Margin="4,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
