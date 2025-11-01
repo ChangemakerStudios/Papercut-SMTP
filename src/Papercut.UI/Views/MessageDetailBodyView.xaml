@@ -12,7 +12,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="1">
+        <Border Grid.Row="0" BorderBrush="{DynamicResource MahApps.Brushes.Gray5}" BorderThickness="1">
             <Grid>
                 <avalonEdit:TextEditor
                     xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
