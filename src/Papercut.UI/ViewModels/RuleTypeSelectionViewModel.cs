@@ -22,16 +22,11 @@ using Papercut.Core.Domain.Rules;
 
 namespace Papercut.ViewModels;
 
-public class RuleTypeSelectionViewModel : Screen
+public class RuleTypeSelectionViewModel(IEnumerable<IRule> availableRuleTypes) : Screen
 {
     private IRule? _selectedRuleType;
 
-    public RuleTypeSelectionViewModel(IEnumerable<IRule> availableRuleTypes)
-    {
-        AvailableRuleTypes = new ObservableCollection<IRule>(availableRuleTypes);
-    }
-
-    public ObservableCollection<IRule> AvailableRuleTypes { get; }
+    public ObservableCollection<IRule> AvailableRuleTypes { get; } = new(availableRuleTypes);
 
     public IRule? SelectedRuleType
     {
