@@ -1,14 +1,14 @@
 // Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
-//
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,6 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Reflection;
 
 using Papercut.Core.Domain.Rules;
 
@@ -56,7 +55,7 @@ public class RuleEditorViewModel : PropertyChangedBase
 
         var categorizedProperties = properties
             .GroupBy(p => p.Category ?? "General")
-            .OrderBy(g => g.Key == "Information" ? 0 : g.Key == "Settings" ? 1 : 2);
+            .OrderBy(g => GetOrderForCategory(g.Key));
 
         foreach (var category in categorizedProperties)
         {
@@ -71,6 +70,17 @@ public class RuleEditorViewModel : PropertyChangedBase
             PropertyCategories.Add(categoryVm);
         }
     }
+
+    int GetOrderForCategory(string category)
+    {
+        return category switch
+        {
+            "State" => 0,
+            "Information" => 1,
+            "Settings" => 2,
+            _ => 3
+        };
+    }
 }
 
 public class PropertyCategoryViewModel(string categoryName)
@@ -83,6 +93,7 @@ public class PropertyCategoryViewModel(string categoryName)
 public class PropertyViewModel : PropertyChangedBase
 {
     private readonly object _instance;
+
     private readonly PropertyDescriptor _property;
 
     public PropertyViewModel(object instance, PropertyDescriptor property)
@@ -158,10 +169,10 @@ public class PropertyViewModel : PropertyChangedBase
 
             object? convertedValue = PropertyType switch
             {
-                Type t when t == typeof(int) => (int)value.Value,
-                Type t when t == typeof(long) => (long)value.Value,
-                Type t when t == typeof(double) => value.Value,
-                Type t when t == typeof(float) => (float)value.Value,
+                { } t when t == typeof(int) => (int)value.Value,
+                { } t when t == typeof(long) => (long)value.Value,
+                { } t when t == typeof(double) => value.Value,
+                { } t when t == typeof(float) => (float)value.Value,
                 _ => null
             };
 
