@@ -43,7 +43,12 @@ public class RulesConfigurationViewModel : Screen
                 SelectedRule = null;
             }
         };
+
+        // Create the rule editor view model
+        RuleEditor = new RuleEditorViewModel();
     }
+
+    public RuleEditorViewModel RuleEditor { get; }
 
     public string WindowTitle
     {
@@ -63,6 +68,9 @@ public class RulesConfigurationViewModel : Screen
             _selectedRule = value;
             NotifyOfPropertyChange(() => SelectedRule);
             NotifyOfPropertyChange(() => HasSelectedRule);
+
+            // Update the rule editor
+            RuleEditor.SelectedRule = value;
         }
     }
 

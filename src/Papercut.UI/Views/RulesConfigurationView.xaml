@@ -1,36 +1,66 @@
 ﻿<controls:MetroWindow x:Class="Papercut.Views.RulesConfigurationView"
-                      xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
                       xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                      xmlns:model="clr-namespace:Papercut.ViewModels"
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-                      xmlns:ViewModels="clr-namespace:Papercut.ViewModels"
-                      xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-                      xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                       xmlns:cal="http://www.caliburnproject.org"
-                      xmlns:pgc="clr-namespace:Xceed.Wpf.Toolkit.PropertyGrid.Commands;assembly=Xceed.Wpf.Toolkit"
-                      xmlns:pg="clr-namespace:Xceed.Wpf.Toolkit.PropertyGrid;assembly=Xceed.Wpf.Toolkit"
+                      xmlns:helpers="clr-namespace:Papercut.Helpers"
                       mc:Ignorable="d"
                       Title="{Binding WindowTitle}" Width="773" Height="400" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
                       ResizeMode="CanResizeWithGrip"
                       ShowIconOnTitleBar="false" WindowStartupLocation="CenterOwner"
-                      BorderThickness="{DynamicResource AccentBorderThickness}" 
+                      BorderThickness="{DynamicResource AccentBorderThickness}"
                       GlowBrush="{DynamicResource AccentGlowBrush}"
                       BorderBrush="{DynamicResource AccentBorderBrush}"
 >
     <controls:MetroWindow.Resources>
-        <!-- Minimal SystemColors overrides for Xceed PropertyGrid to work with themes -->
-        <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="{DynamicResource MahApps.Colors.ThemeBackground}" />
-        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource MahApps.Colors.ThemeBackground}" />
-        <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="{DynamicResource MahApps.Colors.ThemeForeground}" />
-        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource MahApps.Colors.ThemeForeground}" />
+        <!-- Property Editor Templates -->
+        <DataTemplate x:Key="StringEditorTemplate">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                     controls:TextBoxHelper.ClearTextButton="True"
+                     IsReadOnly="{Binding IsReadOnly}"
+                     MinWidth="250" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="PasswordEditorTemplate">
+            <PasswordBox controls:PasswordBoxHelper.CapsLockWarningToolTip="Caps lock is on"
+                         controls:PasswordBoxHelper.RevealButtonContent="👁"
+                         controls:TextBoxHelper.UseFloatingWatermark="False"
+                         MinWidth="250" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="IntegerEditorTemplate">
+            <controls:NumericUpDown Value="{Binding NumericValue, Mode=TwoWay}"
+                                    Minimum="0"
+                                    Maximum="999999"
+                                    MinWidth="150"
+                                    IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
+                                    HideUpDownButtons="False" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="BooleanEditorTemplate">
+            <controls:ToggleSwitch IsOn="{Binding Value, Mode=TwoWay}"
+                                   IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
+                                   OffContent="No"
+                                   OnContent="Yes" />
+        </DataTemplate>
+
+        <helpers:PropertyEditorTemplateSelector x:Key="PropertyEditorTemplateSelector"
+                                                 StringTemplate="{StaticResource StringEditorTemplate}"
+                                                 PasswordTemplate="{StaticResource PasswordEditorTemplate}"
+                                                 IntegerTemplate="{StaticResource IntegerEditorTemplate}"
+                                                 BooleanTemplate="{StaticResource BooleanEditorTemplate}" />
     </controls:MetroWindow.Resources>
-    <DockPanel>
-        <ToolBarTray Height="Auto" DockPanel.Dock="Top">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ToolBarTray Grid.Row="0" Height="Auto">
             <ToolBar Width="Auto" Margin="2">
                 <Button Padding="8,4"
                         Style="{DynamicResource MahApps.Styles.Button.ToolBar}"
@@ -60,82 +90,127 @@
                 </Button>
             </ToolBar>
         </ToolBarTray>
-        <Border BorderThickness="0,1,0,0"
-                BorderBrush="{DynamicResource MahApps.Brushes.Gray5}"
-                Margin="4,8,4,4">
-            <DataGrid x:Name="RuleList" Width="Auto" Height="Auto"
-                      SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
-                      ItemsSource="{Binding Rules}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      AlternationCount="2"
-                      SelectionMode="Single"
-                      GridLinesVisibility="Horizontal">
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn Width="40">
-                        <DataGridTemplateColumn.CellTemplate>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="450" MinWidth="350" MaxWidth="600" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="300" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Margin="2,2,0,2"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource MahApps.Brushes.Gray5}"
+                    Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
+                <DataGrid x:Name="RuleList" Width="Auto" Height="Auto"
+                          SelectedItem="{Binding SelectedRule,Mode=TwoWay}"
+                          ItemsSource="{Binding Rules}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          AlternationCount="2"
+                          SelectionMode="Single"
+                          GridLinesVisibility="Horizontal">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Width="40">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <iconPacks:PackIconMaterial Width="20"
+                                                                Height="20"
+                                                                Kind="ArrowRightBoldBox"
+                                                                VerticalAlignment="Center"
+                                                                HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" Width="80" />
+                        <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" Width="200" />
+                        <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <GridSplitter Grid.Column="1"
+                          Width="3"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Stretch"
+                          Background="{DynamicResource MahApps.Brushes.Gray5}"
+                          ShowsPreview="True" />
+
+            <Border Grid.Column="2"
+                    Margin="0,2,2,2"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource MahApps.Brushes.Gray5}"
+                    Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
+            <Grid Margin="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <TextBlock Grid.Row="0"
+                           Text="Rule Properties"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Margin="8,8,8,8" />
+
+                <!-- Scrollable Property Editor -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding RuleEditor.PropertyCategories}">
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <iconPacks:PackIconMaterial Width="20"
-                                                            Height="20"
-                                                            Kind="ArrowRightBoldBox"
-                                                            VerticalAlignment="Center"
-                                                            HorizontalAlignment="Center" />
+                                <StackPanel Margin="8,8,8,24">
+                                    <!-- Category Header -->
+                                    <TextBlock Text="{Binding CategoryName}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Margin="0,0,0,8"
+                                               Foreground="{DynamicResource MahApps.Brushes.Accent}" />
+
+                                    <!-- Properties in Category -->
+                                    <ItemsControl ItemsSource="{Binding Properties}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,12">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- Property Label -->
+                                                    <TextBlock Grid.Row="0"
+                                                               Text="{Binding DisplayName}"
+                                                               Margin="0,0,0,4"
+                                                               FontWeight="Medium" />
+
+                                                    <!-- Property Editor (Dynamic based on type) -->
+                                                    <ContentControl Grid.Row="1"
+                                                                    Content="{Binding}"
+                                                                    ContentTemplateSelector="{StaticResource PropertyEditorTemplateSelector}" />
+
+                                                    <!-- Description (if available) -->
+                                                    <TextBlock Grid.Row="2"
+                                                               Text="{Binding Description}"
+                                                               Visibility="{Binding HasDescription, Converter={StaticResource CollapsedIfFalse}}"
+                                                               FontSize="11"
+                                                               Opacity="0.7"
+                                                               Margin="0,4,0,0"
+                                                               TextWrapping="Wrap" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" Width="80" />
-                    <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" Width="200" />
-                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
-                </DataGrid.Columns>
-            </DataGrid>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
-        <Grid DockPanel.Dock="Right" MinWidth="280" Margin="4,0,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Border Grid.Row="0"
-                    Margin="0,0,0,8"
-                    Padding="8"
-                    BorderThickness="1"
-                    CornerRadius="4">
-                <StackPanel>
-                    <TextBlock Text="Filters"
-                               FontWeight="SemiBold" />
-                    <Grid Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBox x:Name="RulesFilterTextBox"
-                                 Text="{Binding ElementName=RulesPropertyGrid, Path=Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 controls:TextBoxHelper.Watermark="Search rules" />
-                        <Button Grid.Column="1"
-                                Margin="8,0,0,0"
-                                Padding="6"
-                                ToolTip="Clear filter"
-                                Command="pgc:PropertyGridCommands.ClearFilter"
-                                CommandTarget="{Binding ElementName=RulesPropertyGrid}">
-                            <iconPacks:PackIconMaterial Width="16"
-                                                        Height="16"
-                                                        Kind="CloseCircleOutline" />
-                        </Button>
-                    </Grid>
-                    <CheckBox Margin="0,10,0,0"
-                              Content="Group by category"
-                              IsChecked="{Binding ElementName=RulesPropertyGrid, Path=IsCategorized, Mode=TwoWay}" />
-                </StackPanel>
-            </Border>
-            <Border Grid.Row="1"
-                    BorderThickness="1"
-                    CornerRadius="4">
-                <xctk:PropertyGrid x:Name="RulesPropertyGrid"
-                                   Margin="0"
-                                   ShowPreview="False"
-                                   ShowSearchBox="False"
-                                   ShowSortOptions="False"
-                                   SelectedObject="{Binding SelectedRule}" />
-            </Border>
         </Grid>
-    </DockPanel>
+    </Grid>
 </controls:MetroWindow>
