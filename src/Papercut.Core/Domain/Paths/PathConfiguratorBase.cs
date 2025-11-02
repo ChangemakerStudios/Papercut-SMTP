@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ public abstract class PathConfiguratorBase : IPathConfigurator
 
     readonly IPathTemplatesProvider _pathTemplateProvider;
 
-    readonly string _defaultSavePath;
+    string _defaultSavePath = string.Empty;
 
     protected PathConfiguratorBase(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
     {
@@ -68,7 +68,7 @@ public abstract class PathConfiguratorBase : IPathConfigurator
 
     public IReadOnlyCollection<string> LoadPaths { get; }
 
-    public event EventHandler RefreshLoadPath;
+    public event EventHandler? RefreshLoadPath;
 
     private string GetValidDefaultSavePath(IEnumerable<string> possiblePaths)
     {
@@ -112,7 +112,7 @@ public abstract class PathConfiguratorBase : IPathConfigurator
         return false;
     }
 
-    void PathTemplatesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    void PathTemplatesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         this.RenderLoadPaths();
         this.OnRefreshLoadPath();

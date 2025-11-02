@@ -190,8 +190,8 @@ public class OptionsViewModel : Screen
         Settings.Default.CopyTo(this);
 
         // set the theme color
-        this.ThemeColor =
-            this._themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme);
+        var themeColor = this._themeColorRepository.FirstOrDefaultByName(Settings.Default.Theme);
+        if (themeColor != null) this.ThemeColor = themeColor;
     }
 
     static IList<string> GetIPs()

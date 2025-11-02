@@ -16,6 +16,7 @@
 // limitations under the License.
 
 
+using System;
 using System.Windows.Resources;
 
 namespace Papercut.Infrastructure.Resources;
@@ -35,10 +36,17 @@ public class AppResourceLocator(ILogger logger)
                 .GetManifestResourceNames()
                 .FirstOrDefault(s => s.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));
 
-        using var streamReader = new StreamReader(
-            Assembly.GetExecutingAssembly().GetManifestResourceStream(resource),
-            Encoding.Default);
-        return streamReader.ReadToEnd();
+        if (resource != null)
+        {
+            var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource);
+            if (stream != null)
+            {
+                using var streamReader = new StreamReader(stream, Encoding.Default);
+                return streamReader.ReadToEnd();
+            }
+        }
+
+        throw new ArgumentNullException(nameof(resourceName), $"Resource '{resourceName}' does not exist");
     }
 
     public StreamResourceInfo? GetResource(string resourceName)

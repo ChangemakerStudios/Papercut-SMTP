@@ -21,38 +21,33 @@ using MimeKit.Tnef;
 
 namespace Papercut.Helpers;
 
-internal class HtmlPreviewVisitor : MimeVisitor
+internal class HtmlPreviewVisitor(string? tempDirectory = null) : MimeVisitor
 {
-    const int IndexNotFound = -1;
+    private const int IndexNotFound = -1;
 
     private static readonly Dictionary<string, string> _mimeLookup
-        = new Dictionary<string, string>()
+        = new()
         {
             { "image/jpeg", "jpg" },
             { "image/svg+xml", "svg" }
         };
 
-    readonly List<MimeEntity> _attachments = new List<MimeEntity>();
+    private readonly List<MimeEntity> _attachments = new();
 
-    readonly List<MultipartRelated> _stack = new List<MultipartRelated>();
+    private readonly List<MultipartRelated> _stack = new();
 
-    string _body;
+    private string? _body;
 
-    public HtmlPreviewVisitor(string? tempDirectory = null)
-    {
-        this.TempDirectory = tempDirectory;
-    }
+    public string? TempDirectory { get; } = tempDirectory;
 
-    public string? TempDirectory { get; }
+    public IList<MimeEntity> Attachments => _attachments;
 
-    public IList<MimeEntity> Attachments => this._attachments;
-
-    public string HtmlBody => this._body ?? string.Empty;
+    public string HtmlBody => _body ?? string.Empty;
 
     protected override void VisitMultipartAlternative(MultipartAlternative alternative)
     {
         // walk the multipart/alternative children backwards from the greatest level of faithfulness to the least faithful
-        for (int i = alternative.Count - 1; i >= 0 && this._body == null; i--)
+        for (int i = alternative.Count - 1; i >= 0 && _body == null; i--)
         {
             alternative[i].Accept(this);
         }
@@ -61,12 +56,12 @@ internal class HtmlPreviewVisitor : MimeVisitor
     protected override void VisitMultipartRelated(MultipartRelated related)
     {
         var root = related.Root;
-        this._stack.Add(related);
+        _stack.Add(related);
         root.Accept(this);
-        this._stack.RemoveAt(this._stack.Count - 1);
+        _stack.RemoveAt(_stack.Count - 1);
     }
 
-    bool TryGetImage(string url, out MimePart? image)
+    private bool TryGetImage(string url, out MimePart? image)
     {
         image = null;
 
@@ -89,7 +84,7 @@ internal class HtmlPreviewVisitor : MimeVisitor
             return false;
         }
 
-        foreach (var item in this._stack.ToArray().Reverse())
+        foreach (var item in _stack.ToArray().Reverse())
         {
             int index = item.IndexOf(uri);
 
@@ -104,12 +99,12 @@ internal class HtmlPreviewVisitor : MimeVisitor
         return false;
     }
 
-    string SaveImage(MimePart image, string url)
+    private string SaveImage(MimePart image, string url)
     {
         string fileName = url.Replace(':', '_').Replace('\\', '_').Replace('/', '_');
         var mimeExt = GetExtensionFromMimeType(image.ContentType.MimeType);
 
-        string path = Path.Combine(this.TempDirectory, $"{fileName}.{mimeExt}");
+        string path = Path.Combine(TempDirectory ?? string.Empty, $"{fileName}.{mimeExt}");
 
         if (!File.Exists(path))
         {
@@ -120,7 +115,7 @@ internal class HtmlPreviewVisitor : MimeVisitor
         return $"file://{path.Replace('\\', '/')}";
     }
 
-    private static string GetExtensionFromMimeType(string mimeType)
+    private static string? GetExtensionFromMimeType(string mimeType)
     {
         // try to add a file extension for niceness
         mimeType = mimeType.ToLowerInvariant();
@@ -135,7 +130,7 @@ internal class HtmlPreviewVisitor : MimeVisitor
         return mimeType.Split('/').LastOrDefault();
     }
 
-    void HtmlTagCallback(HtmlTagContext ctx, HtmlWriter htmlWriter)
+    private void HtmlTagCallback(HtmlTagContext ctx, HtmlWriter htmlWriter)
     {
         void WriteTagAsIs()
         {
@@ -147,12 +142,12 @@ internal class HtmlPreviewVisitor : MimeVisitor
         {
             case HtmlTagId.Head when !ctx.IsEndTag:
                 ctx.WriteTag(htmlWriter, false);
-                this.AddMetaCompatibleIEEdge(htmlWriter);
+                AddMetaCompatibleIeEdge(htmlWriter);
 
                 break;
                     
-            case HtmlTagId.Image when !ctx.IsEndTag && this._stack.Count > 0:
-                this.LinkImageTag(ctx, htmlWriter);
+            case HtmlTagId.Image when !ctx.IsEndTag && _stack.Count > 0:
+                LinkImageTag(ctx, htmlWriter);
 
                 break;
             case HtmlTagId.Body when !ctx.IsEndTag:
@@ -166,7 +161,7 @@ internal class HtmlPreviewVisitor : MimeVisitor
         }
     }
 
-    private void AddMetaCompatibleIEEdge(HtmlWriter htmlWriter)
+    private void AddMetaCompatibleIeEdge(HtmlWriter htmlWriter)
     {
         htmlWriter.WriteStartTag(HtmlTagId.Meta);
         htmlWriter.WriteAttribute("http-equiv", "X-UA-Compatible");
@@ -200,50 +195,53 @@ internal class HtmlPreviewVisitor : MimeVisitor
         {
             if (attribute.Id == HtmlAttributeId.Src)
             {
-                if (!this.TryGetImage(attribute.Value, out MimePart image))
+                if (!TryGetImage(attribute.Value, out var image))
                 {
                     htmlWriter.WriteAttribute(attribute);
                     continue;
                 }
 
-                var url = this.SaveImage(image, attribute.Value);
+                if (image != null)
+                {
+                    var url = SaveImage(image, attribute.Value);
 
-                htmlWriter.WriteAttributeName(attribute.Name);
-                htmlWriter.WriteAttributeValue(url);
+                    htmlWriter.WriteAttributeName(attribute.Name);
+                    htmlWriter.WriteAttributeValue(url);
+                }
             }
             else
                 htmlWriter.WriteAttribute(attribute);
         }
     }
 
-    static (string Before,string After) GetBeforeAfterFormatWrapper(string formatWrapper)
+    private static (string Before,string After) GetBeforeAfterFormatWrapper(string formatWrapper)
     {
         //var format = UIStrings.TextToHtmlFormatWrapper;
-        int index = formatWrapper.IndexOf("{0}");
+        int index = formatWrapper.IndexOf("{0}", StringComparison.Ordinal);
 
         return (formatWrapper.Substring(0, index), formatWrapper.Substring(index + 3));
     }
 
     protected override void VisitTextPart(TextPart entity)
     {
-        if (this._body != null)
+        if (_body != null)
         {
             // since we've already found the body, treat this as an attachment
-            this._attachments.Add(entity);
+            _attachments.Add(entity);
             return;
         }
 
         if (entity.IsHtml)
         {
-            this.SetHtmlToBody(entity);
+            SetHtmlToBody(entity);
         }
         else if (entity.IsFlowed)
         {
-            this.SetFlowedHtmlToBody(entity);
+            SetFlowedHtmlToBody(entity);
         }
         else
         {
-            this.SetTextToHtml(entity);
+            SetTextToHtml(entity);
         }
     }
 
@@ -259,7 +257,7 @@ internal class HtmlPreviewVisitor : MimeVisitor
             FooterFormat = HeaderFooterFormat.Html
         };
 
-        this._body = converter.Convert(entity.Text);
+        _body = converter.Convert(entity.Text);
     }
 
     private void SetFlowedHtmlToBody(TextPart entity)
@@ -279,7 +277,7 @@ internal class HtmlPreviewVisitor : MimeVisitor
             convertor.DeleteSpace = delsp.ToLowerInvariant() == "yes";
         }
 
-        this._body = convertor.Convert(entity.Text);
+        _body = convertor.Convert(entity.Text);
     }
 
     private void SetHtmlToBody(TextPart entity)
@@ -288,7 +286,7 @@ internal class HtmlPreviewVisitor : MimeVisitor
         {
             Header = $"{UIStrings.MarkOfTheWeb}{Environment.NewLine}",
             HeaderFormat = HeaderFooterFormat.Html,
-            HtmlTagCallback = this.HtmlTagCallback
+            HtmlTagCallback = HtmlTagCallback
         };
 
         var html = entity.Text;
@@ -297,28 +295,28 @@ internal class HtmlPreviewVisitor : MimeVisitor
         {
             var beforeAfter = GetBeforeAfterFormatWrapper(UIStrings.HtmlToHtmlFormatWrapper);
 
-            this._body = converter.Convert(beforeAfter.Before + html + beforeAfter.After);
+            _body = converter.Convert(beforeAfter.Before + html + beforeAfter.After);
 
         }
-        else this._body = converter.Convert(html);
+        else _body = converter.Convert(html);
     }
 
     protected override void VisitTnefPart(TnefPart entity)
     {
         // extract any attachments in the MS-TNEF part
-        this._attachments.AddRange(entity.ExtractAttachments());
+        _attachments.AddRange(entity.ExtractAttachments());
     }
 
     protected override void VisitMessagePart(MessagePart entity)
     {
         // treat message/rfc822 parts as attachments
-        this._attachments.Add(entity);
+        _attachments.Add(entity);
     }
 
     protected override void VisitMimePart(MimePart entity)
     {
         // realistically, if we've gotten this far, then we can treat this as an attachment
         // even if the IsAttachment property is false.
-        this._attachments.Add(entity);
+        _attachments.Add(entity);
     }
 }

@@ -35,7 +35,7 @@ public class PapercutIPCommProtocol : StringCommandProtocol
         this._messageBus = messageBus;
     }
 
-    public Connection Connection { get; protected set; }
+    public required Connection Connection { get; set; }
 
     public override async Task BeginAsync(
         Connection connection,
@@ -65,6 +65,8 @@ public class PapercutIPCommProtocol : StringCommandProtocol
                     PapercutIPCommCommandType.Exchange))
             {
                 var remoteObjectBuffer = await this.Connection.ReceiveDataAsync();
+
+                if (remoteObjectBuffer == null) return;
 
                 var remoteEvent = PapercutIPCommSerializer.FromJson(
                     request.Type,

@@ -53,20 +53,19 @@ public static class NetworkHelper
         {
             var ips = new List<string>();
 
-            using (var managementObjectSearcher = new ManagementObjectSearcher(NetworkAdapterQuery))
-            using (var mgtObjects = managementObjectSearcher.Get())
-            {
-                IEnumerable<PropertyData> addresses =
-                    mgtObjects.OfType<ManagementObject>()
-                        .Select(mo => mo.Properties["IPAddress"])
-                        .Where(ip => ip.IsLocal)
-                        .ToList();
+            using var managementObjectSearcher = new ManagementObjectSearcher(NetworkAdapterQuery);
+            using var mgtObjects = managementObjectSearcher.Get();
 
-                foreach (PropertyData ipAddress in addresses)
-                {
-                    if (ipAddress.IsArray) ips.AddRange((string[])ipAddress.Value);
-                    else if (ipAddress.Value != null) ips.Add(ipAddress.Value.ToString()!);
-                }
+            var addresses =
+                mgtObjects.OfType<ManagementObject>()
+                    .Select(mo => mo.Properties["IPAddress"])
+                    .Where(ip => ip.IsLocal)
+                    .ToList();
+
+            foreach (var ipAddress in addresses)
+            {
+                if (ipAddress is { IsArray: true, Value: string[] ipAddressStringArray }) ips.AddRange(ipAddressStringArray);
+                else if (ipAddress.Value != null) ips.Add(ipAddress.Value.ToString()!);
             }
 
             return ips.Where(address => address.IsValidIP()).ToList();

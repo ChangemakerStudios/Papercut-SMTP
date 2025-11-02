@@ -16,8 +16,6 @@
 // limitations under the License.
 
 
-using System.Reactive.Disposables;
-
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Domain.Rules;
 using Papercut.Core.Infrastructure.Async;
@@ -38,75 +36,75 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
     IEventHandler<PapercutServiceReadyEvent>,
     IEventHandler<PapercutServiceExitEvent>, IOrderable
 {
-    const string BackendServiceFailureMessage =
+    private const string BackendServiceFailureMessage =
         "Papercut Backend Service Exception Attempting to Contact";
 
-    readonly PapercutIPCommClientFactory _ipCommClientFactory;
+    private readonly PapercutIPCommClientFactory _ipCommClientFactory;
 
-    readonly ILogger _logger;
+    private readonly ILogger _logger;
 
-    readonly IMessageBus _messageBus;
+    private readonly IMessageBus _messageBus;
 
     private bool? _isOnline = null;
 
-    Action<RulesUpdatedEvent> _nextUpdateEvent;
+    private Action<RulesUpdatedEvent>? _nextUpdateEvent;
 
     public BackendServiceCoordinator(
         ILogger logger,
         IMessageBus messageBus,
         PapercutIPCommClientFactory ipCommClientFactory)
     {
-        this._logger = logger;
-        this._messageBus = messageBus;
-        this._ipCommClientFactory = ipCommClientFactory;
+        _logger = logger;
+        _messageBus = messageBus;
+        _ipCommClientFactory = ipCommClientFactory;
 
         IObservable<RulesUpdatedEvent> rulesUpdateObservable = Observable
             .Create<RulesUpdatedEvent>(
                 o =>
                 {
-                    this._nextUpdateEvent = o.OnNext;
+                    _nextUpdateEvent = o.OnNext;
                     return Disposable.Empty;
                 }).SubscribeOn(TaskPoolScheduler.Default);
 
         // flush rules every 10 seconds
         rulesUpdateObservable.Buffer(TimeSpan.FromSeconds(10))
             .Where(e => e.Any())
-            .SubscribeAsync(async events => await this.PublishUpdateEvent(events.Last()));
-    }
-
-    public async Task OnStartedAsync()
-    {
-        await this.AttemptExchangeAsync();
+            .SubscribeAsync(async events => await PublishUpdateEvent(events.Last()));
     }
 
     private bool IsOnlineUnknown => _isOnline is null;
 
+    public async Task OnStartedAsync()
+    {
+        await AttemptExchangeAsync();
+    }
+
     public bool IsOnline
     {
-        get => this._isOnline ?? false;
-        private set => this._isOnline = value;
+        get => _isOnline ?? false;
+        private set => _isOnline = value;
     }
 
     public async Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token)
     {
-        await this.SetOnlineStatus(false, token);
+        await SetOnlineStatus(false, token);
     }
 
     public async Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token)
     {
-        await this.SetOnlineStatus(true, token);
+        await SetOnlineStatus(true, token);
     }
 
     public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token)
     {
-        await this.SetOnlineStatus(true, token);
+        await SetOnlineStatus(true, token);
     }
 
     public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token)
     {
-        if (this.IsOnline)
+        if (IsOnline)
         {
-            this._nextUpdateEvent(@event);
+            _nextUpdateEvent?.Invoke(@event);
         }
 
         return Task.CompletedTask;
@@ -114,20 +112,20 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
 
     public async Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
     {
-        await this.PublishSmtpUpdatedAsync(@event, token);
+        await PublishSmtpUpdatedAsync(@event, token);
     }
 
     public int Order => 10;
 
     private async Task SetOnlineStatus(bool newStatus, CancellationToken token = default)
     {
-        if (IsOnlineUnknown || this.IsOnline != newStatus)
+        if (IsOnlineUnknown || IsOnline != newStatus)
         {
-            this.IsOnline = newStatus;
+            IsOnline = newStatus;
 
-            await this._messageBus.PublishAsync(
+            await _messageBus.PublishAsync(
                 new PapercutServiceStatusEvent(
-                    this.IsOnline
+                    IsOnline
                         ? PapercutServiceStatusType.Online
                         : PapercutServiceStatusType.Offline),
                 token);
@@ -136,14 +134,14 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
 
     public async Task PublishSmtpUpdatedAsync(SettingsUpdatedEvent @event, CancellationToken token)
     {
-        if (!this.IsOnline) return;
+        if (!IsOnline) return;
 
         // check if the setting changed
         if (@event.PreviousSettings.IP == @event.NewSettings.IP && @event.PreviousSettings.Port == @event.NewSettings.Port) return;
 
         try
         {
-            var messenger = this.GetClient();
+            var messenger = GetClient();
 
             // update the backend service with the new ip/port settings...
             var smtpServerBindEvent = new SmtpServerBindEvent(
@@ -154,7 +152,7 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
                 smtpServerBindEvent,
                 TimeSpan.FromSeconds(1));
 
-            this._logger.Information(
+            _logger.Information(
                 successfulPublish
                     ? "Successfully pushed new Smtp Server Binding to Backend Service"
                     : "Papercut Backend Service Failed to Update. Could be offline.");
@@ -165,7 +163,7 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
         }
         catch (Exception ex)
         {
-            this._logger.Warning(ex, BackendServiceFailureMessage);
+            _logger.Warning(ex, BackendServiceFailureMessage);
         }
     }
 
@@ -176,7 +174,7 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
             var sendEvent = new AppProcessExchangeEvent();
 
             // attempt to connect to the backend server...
-            var ipCommClient = this.GetClient();
+            var ipCommClient = GetClient();
 
             var receivedEvent = await ipCommClient.ExchangeEventServer(sendEvent, TimeSpan.FromSeconds(1));
 
@@ -184,14 +182,14 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
             {
                 if (!string.IsNullOrWhiteSpace(receivedEvent.MessageWritePath))
                 {
-                    this._logger.Debug(
+                    _logger.Debug(
                         "Background Process Returned {@Event} -- Publishing",
                         receivedEvent);
 
-                    await this._messageBus.PublishAsync(receivedEvent, token);
+                    await _messageBus.PublishAsync(receivedEvent, token);
                 }
 
-                await this.SetOnlineStatus(true, token);
+                await SetOnlineStatus(true, token);
 
                 return;
             }
@@ -202,22 +200,22 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
         }
         catch (Exception ex)
         {
-            this._logger.Warning(ex, BackendServiceFailureMessage);
+            _logger.Warning(ex, BackendServiceFailureMessage);
         }
 
         // publish status message regardless
-        await this.SetOnlineStatus(false, token);
+        await SetOnlineStatus(false, token);
     }
 
-    async Task PublishUpdateEvent(RulesUpdatedEvent @event)
+    private async Task PublishUpdateEvent(RulesUpdatedEvent @event)
     {
         try
         {
-            var ipCommClient = this.GetClient();
+            var ipCommClient = GetClient();
 
             bool successfulPublish = await ipCommClient.PublishEventServer(@event, TimeSpan.FromSeconds(1));
 
-            this._logger.Information(
+            _logger.Information(
                 successfulPublish
                     ? "Successfully Updated Rules on Backend Service"
                     : "Papercut Backend Service Failed to Update Rules. Could be offline.");
@@ -228,13 +226,13 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
         }
         catch (Exception ex)
         {
-            this._logger.Warning(ex, BackendServiceFailureMessage);
+            _logger.Warning(ex, BackendServiceFailureMessage);
         }
     }
 
-    PapercutIPCommClient GetClient()
+    private PapercutIPCommClient GetClient()
     {
-        return this._ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.Service);
+        return _ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.Service);
     }
 
     #region Begin Static Container Registrations
@@ -244,7 +242,7 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
     /// </summary>
     /// <param name="builder"></param>
     [UsedImplicitly]
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

@@ -18,7 +18,7 @@
 
 namespace Papercut.Core.Domain.Settings;
 
-public interface ISettingStore : IReadValue<string>, IWriteValue<string>
+public interface ISettingStore : IReadValue<string?>, IWriteValue<string?>
 {
     void Load();
 

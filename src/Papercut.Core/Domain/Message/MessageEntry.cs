@@ -39,37 +39,37 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
 
     protected DateTime? _created;
 
-    bool _hasBeenSeen;
+    private bool _hasBeenSeen;
 
-    bool _isSelected;
+    private bool _isSelected;
 
     public MessageEntry(FileInfo fileInfo)
     {
-        this._info = fileInfo;
+        _info = fileInfo;
 
-        var firstBit = this._info.Name.Split(' ').FirstOrDefault();
+        var firstBit = _info.Name.Split(' ').FirstOrDefault();
 
         if (firstBit?.Length == DateTimeFormat.Length)
         {
-            this._created = DateTime.ParseExact(
+            _created = DateTime.ParseExact(
                 firstBit,
                 DateTimeFormat,
                 CultureInfo.InvariantCulture);
         }
         else
         {
-            this._created = this._info.CreationTime;
+            _created = _info.CreationTime;
         }
 
-        if (this._created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
+        if (_created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
         {
             // anything under 5 minutes old is "new" still by default
-            this._hasBeenSeen = false;
+            _hasBeenSeen = false;
         }
         else
         {
             // everything else has been seen by default
-            this._hasBeenSeen = true;
+            _hasBeenSeen = true;
         }
     }
 
@@ -78,74 +78,77 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
     {
     }
 
-    public DateTime ModifiedDate => this._info.LastWriteTime;
+    public DateTime ModifiedDate => _info.LastWriteTime;
 
-    public long SortTicks => (this._created ?? this.ModifiedDate).Ticks;
+    public long SortTicks => (_created ?? ModifiedDate).Ticks;
 
-    public string Name => this._info.Name;
+    public string Name => _info.Name;
 
-    public string FileSize => this._info.Length.ToFileSizeFormat();
+    public string FileSize => _info.Length.ToFileSizeFormat();
 
-    public string DisplayText => $"{this._created?.ToString("G") ?? this._info.Name} ({this.FileSize})";
+    public string DisplayText => $"{_created?.ToString("G") ?? _info.Name} ({FileSize})";
 
     public bool IsSelected
     {
-        get => this._isSelected;
+        get => _isSelected;
         set
         {
-            this._isSelected = value;
+            _isSelected = value;
 
             if (value)
             {
-                this.HasBeenSeen = true;
+                HasBeenSeen = true;
             }
-            this.OnPropertyChanged(nameof(this.IsSelected));
+            OnPropertyChanged(nameof(IsSelected));
         }
     }
 
     public bool HasBeenSeen
     {
-        get => this._hasBeenSeen;
+        get => _hasBeenSeen;
         set
         {
-            this._hasBeenSeen = value;
-            this.OnPropertyChanged(nameof(this.HasBeenSeen));
+            _hasBeenSeen = value;
+            OnPropertyChanged(nameof(HasBeenSeen));
         }
     }
 
     public bool Equals(MessageEntry? other)
     {
-        return Equals(this.File, other?.File);
+        return Equals(File, other?.File);
     }
 
-    public string File => this._info.FullName;
+    public string File => _info.FullName;
 
-    public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public override string ToString()
     {
-        return this.DisplayText;
+        return DisplayText;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;
 
         if (obj is MessageEntry entry)
         {
-            return this.Equals(entry);
+            return Equals(entry);
         }
 
         return false;
     }
 
-    public override int GetHashCode() => this.File?.GetHashCode() ?? 0;
+    public override int GetHashCode() => File.GetHashCode();
 
     [NotifyPropertyChangedInvocator]
     protected virtual void OnPropertyChanged(string propertyName)
     {
-        PropertyChangedEventHandler handler = this.PropertyChanged;
-        handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        var propertyChangedEventHandler = PropertyChanged;
+        if (propertyChangedEventHandler != null)
+        {
+            propertyChangedEventHandler.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

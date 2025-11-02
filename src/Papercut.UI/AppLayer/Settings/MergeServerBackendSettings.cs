@@ -16,6 +16,7 @@
 // limitations under the License.
 
 
+using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Domain.Paths;
 using Papercut.Core.Infrastructure.Network;
 
@@ -44,8 +45,12 @@ public class MergeServerBackendSettings(
         Properties.Settings.Default.CopyTo(previousSettings);
 
         // save ip:port bindings as our own to keep in sync...
-        Properties.Settings.Default.IP = @event.IP;
-        Properties.Settings.Default.Port = @event.Port;
+        if (@event.IP.IsSet() && @event.Port.HasValue)
+        {
+            Properties.Settings.Default.IP = @event.IP;
+            Properties.Settings.Default.Port = @event.Port.Value;
+        }
+
         Properties.Settings.Default.Save();
 
         await messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings), token);
