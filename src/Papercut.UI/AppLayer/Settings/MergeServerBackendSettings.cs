@@ -16,7 +16,6 @@
 // limitations under the License.
 
 
-using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Core.Domain.Paths;
 using Papercut.Core.Infrastructure.Network;
 

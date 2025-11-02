@@ -45,6 +45,6 @@ public static class MessageDetailItemHelper
             return (T)item;
         }
 
-        throw new ArgumentNullException(nameof(item), $"Cannot activate view model of type {typeof(T)?.Name}");
+        throw new InvalidOperationException($"Cannot activate view model of type {typeof(T).Name}");
     }
 }

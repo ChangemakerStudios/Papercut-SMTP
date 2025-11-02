@@ -216,8 +216,13 @@ internal class HtmlPreviewVisitor(string? tempDirectory = null) : MimeVisitor
 
     private static (string Before,string After) GetBeforeAfterFormatWrapper(string formatWrapper)
     {
-        //var format = UIStrings.TextToHtmlFormatWrapper;
+        if (string.IsNullOrEmpty(formatWrapper))
+            return (string.Empty, string.Empty);
+
         int index = formatWrapper.IndexOf("{0}", StringComparison.Ordinal);
+
+        if (index < 0)
+            return (formatWrapper, string.Empty);
 
         return (formatWrapper.Substring(0, index), formatWrapper.Substring(index + 3));
     }

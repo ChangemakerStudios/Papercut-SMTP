@@ -46,7 +46,7 @@ public class AppResourceLocator(ILogger logger)
             }
         }
 
-        throw new ArgumentNullException(nameof(resourceName), $"Resource '{resourceName}' does not exist");
+        throw new FileNotFoundException($"Resource '{resourceName}' does not exist", resourceName);
     }
 
     public StreamResourceInfo? GetResource(string resourceName)

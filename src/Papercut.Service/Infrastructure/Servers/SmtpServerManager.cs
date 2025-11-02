@@ -53,14 +53,25 @@ public class SmtpServerManager(
         // persist the settings to Settings.json so they survive restarts
         try
         {
-            settingStore.Set("IP", @event.IP);
-            settingStore.Set("Port", @event.Port.ToString());
-            settingStore.Save();
+            var persistedFields = new List<string>();
 
-            logger.Information(
-                "Persisted SMTP Server settings: IP={IP}, Port={Port}",
-                @event.IP,
-                @event.Port);
+            if (@event.IP.IsSet())
+            {
+                settingStore.Set("IP", @event.IP);
+                persistedFields.Add($"IP={@event.IP}");
+            }
+
+            if (@event.Port.HasValue)
+            {
+                settingStore.Set("Port", @event.Port.ToString());
+                persistedFields.Add($"Port={@event.Port}");
+            }
+
+            if (persistedFields.Count > 0)
+            {
+                settingStore.Save();
+                logger.Information("Persisted SMTP Server settings: {Settings}", string.Join(", ", persistedFields));
+            }
         }
         catch (Exception ex)
         {
