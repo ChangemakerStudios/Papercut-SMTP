@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ namespace Papercut.Infrastructure.IPComm.Network;
 public static class PapercutIPCommSerializer
 {
     private static readonly JsonSerializerSettings _ipCommJsonSerializerSettings
-        = new JsonSerializerSettings
+        = new()
         {
             TypeNameHandling = TypeNameHandling.Auto,
             Formatting = Formatting.None,
@@ -32,27 +32,27 @@ public static class PapercutIPCommSerializer
                 TypeNameAssemblyFormatHandling.Simple
         };
 
-    public static string ToJson<TObject>(TObject @object)
+    public static string? ToJson<TObject>(TObject @object)
     {
         return
             JsonConvert.SerializeObject(@object, Formatting.None, _ipCommJsonSerializerSettings);
     }
 
-    public static object FromJson(Type type, string json)
+    public static object? FromJson(Type type, string json)
     {
         return
-            JsonConvert.DeserializeObject(json, type, _ipCommJsonSerializerSettings);
+            JsonConvert.DeserializeObject(json, type, _ipCommJsonSerializerSettings)!;
     }
 
-    public static string ToJson(Type type, object @object)
+    public static string? ToJson(Type type, object @object)
     {
         return
             JsonConvert.SerializeObject(@object, type, Formatting.None, _ipCommJsonSerializerSettings);
     }
 
-    public static TObject FromJson<TObject>(string json)
+    public static TObject? FromJson<TObject>(string json)
     {
         return
-            JsonConvert.DeserializeObject<TObject>(json, _ipCommJsonSerializerSettings);
+            JsonConvert.DeserializeObject<TObject>(json, _ipCommJsonSerializerSettings)!;
     }
 }

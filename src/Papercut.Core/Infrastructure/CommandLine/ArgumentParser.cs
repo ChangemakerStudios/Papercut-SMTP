@@ -41,7 +41,7 @@ public static class ArgumentParser
                 if (cleanedValues.Count % 2 == 1)
                 {
                     // odd, add an empty value/pair
-                    cleanedValues.Add(null);
+                    cleanedValues.Add(string.Empty);
                 }
 
             }

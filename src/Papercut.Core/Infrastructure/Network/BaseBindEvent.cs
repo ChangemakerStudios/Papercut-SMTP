@@ -22,7 +22,7 @@ namespace Papercut.Core.Infrastructure.Network;
 
 public class BaseBindEvent : IEvent
 {
-    public string IP { get; set; }
+    public string? IP { get; set; }
 
-    public int Port { get; set; }
+    public int? Port { get; set; }
 }

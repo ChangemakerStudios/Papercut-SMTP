@@ -25,7 +25,11 @@ public static class MessageDetailItemHelper
     public static Conductor<IMessageDetailItem>.Collection.OneActive GetConductor<T>(this T messageDetailItem)
         where T : Screen, IMessageDetailItem
     {
-        return messageDetailItem.Parent as Conductor<IMessageDetailItem>.Collection.OneActive;
+        var parent = messageDetailItem.Parent as Conductor<IMessageDetailItem>.Collection.OneActive;
+
+        ArgumentNullException.ThrowIfNull(parent, nameof(messageDetailItem.Parent));
+
+        return parent;
     }
 
     public static async Task<T> ActivateViewModelOf<T>(
@@ -33,7 +37,7 @@ public static class MessageDetailItemHelper
     {
         ArgumentNullException.ThrowIfNull(conductor);
 
-        var item = conductor?.Items.FirstOrDefault(s => s.GetType() == typeof(T));
+        var item = conductor.Items.FirstOrDefault(s => s.GetType() == typeof(T));
 
         if (item != null)
         {
@@ -41,6 +45,6 @@ public static class MessageDetailItemHelper
             return (T)item;
         }
 
-        return default(T);
+        throw new InvalidOperationException($"Cannot activate view model of type {typeof(T).Name}");
     }
 }

@@ -377,7 +377,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
         var externalNavigation = new List<string>();
 
-        coreWebView.WebResourceRequested += async (_, args) =>
+        coreWebView.WebResourceRequested += (_, args) =>
         {
             if (externalNavigation.Contains(args.Request.Uri))
             {
@@ -586,6 +586,7 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
         {
             // Navigate to the attachment in the parts view
             var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
+
             var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
             if (part != null)
             {

@@ -20,5 +20,5 @@ namespace Papercut.Service.Web.Hosting;
 
 public class PapercutWebServerReadyEvent : IEvent
 {
-    public HttpClient HttpClient { get; set; }
+    public HttpClient? HttpClient { get; set; }
 }
