@@ -371,6 +371,10 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
                         {
                             this._logger.Debug("Deleted Message {@Entry}", entry);
                         }
+                        else
+                        {
+                            this._logger.Debug("Message deletion skipped (file not found): {@Entry}", entry);
+                        }
 
                         return null;
                     }

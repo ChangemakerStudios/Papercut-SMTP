@@ -59,11 +59,9 @@
                     </TextBlock>
 
                     <!-- Display text (From/To/Date) with attachment icon -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <TextBlock Text="{Binding DisplayText}"
-                                   TextTrimming="CharacterEllipsis"
-                                   VerticalAlignment="Center" />
+                    <DockPanel Grid.Row="1" LastChildFill="True">
                         <iconPacks:PackIconMaterial
+                            DockPanel.Dock="Right"
                             Kind="Attachment"
                             Width="12"
                             Height="12"
@@ -71,7 +69,11 @@
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource MahApps.Brushes.Gray1}"
                             Visibility="{Binding Path=HasAttachments, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                    </StackPanel>
+                        <TextBlock Text="{Binding DisplayText}"
+                                   TextTrimming="CharacterEllipsis"
+                                   TextWrapping="NoWrap"
+                                   VerticalAlignment="Center" />
+                    </DockPanel>
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>

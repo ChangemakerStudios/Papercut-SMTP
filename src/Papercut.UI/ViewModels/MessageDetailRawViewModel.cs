@@ -117,13 +117,21 @@ public class MessageDetailRawViewModel : Screen,
         if (MessageLoaded)
             return;
 
-        IsLoading = true;
-
         if (_messageLoader != null)
         {
             _messageLoader.Dispose();
             _messageLoader = null;
         }
+
+        if (_mimeMessage == null)
+        {
+            IsLoading = false;
+            MessageLoaded = false;
+            Raw = string.Empty;
+            return;
+        }
+
+        IsLoading = true;
 
         _messageLoader =
             Observable.Start(() => _mimeMessage.GetStringDump())

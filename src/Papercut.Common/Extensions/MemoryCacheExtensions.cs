@@ -65,7 +65,20 @@ public static class MemoryCacheExtensions
 
         int lockItemId = keyHash % LockObjectCount;
 
-        return LockCacheItems[lockItemId] ?? (LockCacheItems[lockItemId] = new SemaphoreSlim(1));
+        var existingLock = LockCacheItems[lockItemId];
+        if (existingLock != null) return existingLock;
+
+        var newLock = new SemaphoreSlim(1);
+        var original = Interlocked.CompareExchange(ref LockCacheItems[lockItemId], newLock, null);
+
+        if (original != null)
+        {
+            // Another thread won the race, dispose our unused instance
+            newLock.Dispose();
+            return original;
+        }
+
+        return newLock;
     }
 
     #endregion

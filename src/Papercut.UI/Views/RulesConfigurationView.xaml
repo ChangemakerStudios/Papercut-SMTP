@@ -7,6 +7,7 @@
                       xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                       xmlns:cal="http://www.caliburnproject.org"
                       xmlns:helpers="clr-namespace:Papercut.Helpers"
+                      xmlns:behaviors="clr-namespace:MahApps.Metro.Behaviors;assembly=MahApps.Metro"
                       mc:Ignorable="d"
                       Title="{Binding WindowTitle}" Width="773" Height="400" Icon="/Papercut;component/App.ico"
                       WindowStyle="ToolWindow"
@@ -29,6 +30,8 @@
             <PasswordBox controls:PasswordBoxHelper.CapsLockWarningToolTip="Caps lock is on"
                          controls:PasswordBoxHelper.RevealButtonContent="👁"
                          controls:TextBoxHelper.UseFloatingWatermark="False"
+                         behaviors:PasswordBoxBindingBehavior.Password="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
                          MinWidth="250" />
         </DataTemplate>
 

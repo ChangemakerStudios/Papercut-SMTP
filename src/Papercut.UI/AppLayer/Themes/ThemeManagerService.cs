@@ -79,7 +79,7 @@ public class ThemeManagerService(
                 Properties.Settings.Default.Theme, ThemeColorRepository.Default.Name);
 
             Properties.Settings.Default.Theme = ThemeColorRepository.Default.Name;
-            return;
+            colorTheme = ThemeColorRepository.Default;
         }
 
         var themeColor = colorTheme.Color;

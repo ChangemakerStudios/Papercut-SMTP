@@ -104,14 +104,16 @@ public class PropertyViewModel : PropertyChangedBase
         // Subscribe to property changes if the instance implements INotifyPropertyChanged
         if (instance is INotifyPropertyChanged notifyPropertyChanged)
         {
-            notifyPropertyChanged.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == _property.Name)
-                {
-                    NotifyOfPropertyChange(() => Value);
-                    NotifyOfPropertyChange(() => NumericValue);
-                }
-            };
+            PropertyChangedEventManager.AddHandler(notifyPropertyChanged, OnSourcePropertyChanged, string.Empty);
+        }
+    }
+
+    private void OnSourcePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == _property.Name)
+        {
+            NotifyOfPropertyChange(() => Value);
+            NotifyOfPropertyChange(() => NumericValue);
         }
     }
 
