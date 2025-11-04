@@ -1,6 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-// https://raw.githubusercontent.com/aspnet/Hosting/rel/1.1.2/src/Microsoft.AspNetCore.TestHost/TestServer.cs
+﻿// Papercut
+// 
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2025 Jaben Cargman
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 
 using Microsoft.AspNetCore.Hosting.Server;
@@ -9,28 +22,20 @@ namespace Papercut.Service.Web.Hosting.InProcess;
 
 public class HttpServer : IServer
 {
-    private readonly IWebHost _hostInstance;
     private bool _disposed;
 
     public HttpServer(IWebHostBuilder builder)
     {
         var host = builder.UseServer(this).Build();
         host.Start();
-        _hostInstance = host;
+        Host = host;
     }
 
-    public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
+    public Uri BaseAddress { get; set; } = new("http://localhost/");
 
-    public IWebHost Host
-    {
-        get
-        {
-            return _hostInstance;
-        }
-    }
+    public IWebHost Host { get; }
 
-
-    IFeatureCollection IServer.Features { get; }
+    IFeatureCollection IServer.Features { get; } = new FeatureCollection();
 
     //public HttpMessageHandler CreateHandler()
     //{
@@ -48,7 +53,7 @@ public class HttpServer : IServer
         if (!_disposed)
         {
             _disposed = true;
-            _hostInstance.Dispose();
+            Host.Dispose();
         }
     }
 
@@ -64,37 +69,36 @@ public class HttpServer : IServer
         return Task.FromResult(0);
     }
 
-        
     Task IServer.StopAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult(0);
     }
-        
-    private class ApplicationWrapper<TContext> : IHttpApplication<TContext>
-    {
-        private readonly IHttpApplication<TContext> _application;
-        private readonly Action _preProcessRequestAsync;
 
-        public ApplicationWrapper(IHttpApplication<TContext> application, Action preProcessRequestAsync)
-        {
-            _application = application;
-            _preProcessRequestAsync = preProcessRequestAsync;
-        }
+    //private class ApplicationWrapper<TContext> : IHttpApplication<TContext>
+    //{
+    //    private readonly IHttpApplication<TContext> _application;
+    //    private readonly Action _preProcessRequestAsync;
 
-        public TContext CreateContext(IFeatureCollection contextFeatures)
-        {
-            return _application.CreateContext(contextFeatures);
-        }
+    //    public ApplicationWrapper(IHttpApplication<TContext> application, Action preProcessRequestAsync)
+    //    {
+    //        _application = application;
+    //        _preProcessRequestAsync = preProcessRequestAsync;
+    //    }
 
-        public void DisposeContext(TContext context, Exception exception)
-        {
-            _application.DisposeContext(context, exception);
-        }
+    //    public TContext CreateContext(IFeatureCollection contextFeatures)
+    //    {
+    //        return _application.CreateContext(contextFeatures);
+    //    }
 
-        public Task ProcessRequestAsync(TContext context)
-        {
-            _preProcessRequestAsync();
-            return _application.ProcessRequestAsync(context);
-        }
-    }
+    //    public void DisposeContext(TContext context, Exception exception)
+    //    {
+    //        _application.DisposeContext(context, exception);
+    //    }
+
+    //    public Task ProcessRequestAsync(TContext context)
+    //    {
+    //        _preProcessRequestAsync();
+    //        return _application.ProcessRequestAsync(context);
+    //    }
+    //}
 }

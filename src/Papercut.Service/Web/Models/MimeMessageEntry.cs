@@ -18,31 +18,25 @@
 
 namespace Papercut.Service.Web.Models;
 
-public class MimeMessageEntry : MessageEntry
+public class MimeMessageEntry(MessageEntry entry, MimeMessage message) : MessageEntry(entry.File)
 {
-    public MimeMessageEntry(MessageEntry entry, MimeMessage message)
-        : base(entry.File)
-    {
-        this.MailMessage = message;
-    }
+    public string? Subject => MailMessage?.Subject;
 
-    public string Subject => this.MailMessage?.Subject;
+    public DateTime? Created => _created;
 
-    public DateTime? Created => this._created;
+    public string Id => Name;
 
-    public string Id => this.Name;
-
-    public MimeMessage MailMessage { get; }
+    public MimeMessage MailMessage { get; } = message;
 
     public class RefDto
     {
-        public string Size { get; set; }
+        public string? Size { get; set; }
 
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 
-        public string Subject { get; set; }
+        public string? Subject { get; set; }
 
         public static RefDto CreateFrom(MimeMessageEntry messageEntry)
         {
@@ -58,11 +52,11 @@ public class MimeMessageEntry : MessageEntry
 
     public class DetailDto
     {
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 
-        public string Subject { get; set; }
+        public string? Subject { get; set; }
 
         public List<EmailAddressDto> From { get; set; } = [];
 
@@ -72,83 +66,83 @@ public class MimeMessageEntry : MessageEntry
 
         public List<EmailAddressDto> BCc { get; set; } = [];
 
-        public string HtmlBody { get; set; }
+        public string? HtmlBody { get; set; }
 
-        public string TextBody { get; set; }
+        public string? TextBody { get; set; }
 
-        public List<HeaderDto> Headers { get; set; }
+        public List<HeaderDto> Headers { get; set; } = [];
 
-        public List<EmailAttachmentDto> Sections { get; set; }
+        public List<EmailAttachmentDto> Sections { get; set; } = [];
 
         public static DetailDto CreateFrom(MimeMessageEntry messageEntry)
         {
-                var mail = messageEntry.MailMessage;
+            var mail = messageEntry.MailMessage;
 
-                return new DetailDto
-                {
-                    Subject = messageEntry.Subject,
-                    CreatedAt = messageEntry.Created?.ToUniversalTime(),
-                    Id = messageEntry.Id,
-                    From = ToAddressList(mail?.From),
-                    To = ToAddressList(mail?.To),
-                    Cc = ToAddressList(mail?.Cc),
-                    BCc = ToAddressList(mail?.Bcc),
-                    HtmlBody = mail?.HtmlBody,
-                    TextBody = mail?.TextBody,
-                    Headers = (mail?.Headers ?? []).Select(h => new HeaderDto { Name = h.Field, Value = h.Value}).ToList(),
-                    Sections = ToSectionDtos(mail?.BodyParts)
-                };
-            }
+            return new DetailDto
+            {
+                Subject = messageEntry.Subject,
+                CreatedAt = messageEntry.Created?.ToUniversalTime(),
+                Id = messageEntry.Id,
+                From = ToAddressList(mail?.From),
+                To = ToAddressList(mail?.To),
+                Cc = ToAddressList(mail?.Cc),
+                BCc = ToAddressList(mail?.Bcc),
+                HtmlBody = mail?.HtmlBody,
+                TextBody = mail?.TextBody,
+                Headers = (mail?.Headers ?? []).Select(h => new HeaderDto { Name = h.Field, Value = h.Value }).ToList(),
+                Sections = ToSectionDtos(mail?.BodyParts)
+            };
+        }
 
-        static List<EmailAttachmentDto> ToSectionDtos(IEnumerable<MimeEntity> bodyParts)
+        private static List<EmailAttachmentDto> ToSectionDtos(IEnumerable<MimeEntity>? bodyParts)
         {
 
-                if (bodyParts == null) return [];
+            if (bodyParts == null) return [];
 
-                return bodyParts
-                    .OfType<MimePart>()
-                    .Select(e => new EmailAttachmentDto
-                    {
-                        Id = e.ContentId,
-                        MediaType = $"{e.ContentType.MediaType}/{e.ContentType.MediaSubtype}",
-                        FileName = e.FileName
-                    }).ToList();
-            }
-
-        static List<EmailAddressDto> ToAddressList(IList<InternetAddress> mailAddresses)
-        {
-                if (mailAddresses == null)
+            return bodyParts
+                .OfType<MimePart>()
+                .Select(e => new EmailAttachmentDto
                 {
-                    return [];
-                }
+                    Id = e.ContentId,
+                    MediaType = $"{e.ContentType.MediaType}/{e.ContentType.MediaSubtype}",
+                    FileName = e.FileName
+                }).ToList();
+        }
 
-                return mailAddresses
-                    .OfType<MailboxAddress>()
-                    .Select(f => new EmailAddressDto {Address = f.Address, Name = f.Name})
-                    .ToList();
+        private static List<EmailAddressDto> ToAddressList(IEnumerable<InternetAddress>? mailAddresses)
+        {
+            if (mailAddresses == null)
+            {
+                return [];
             }
+
+            return mailAddresses
+                .OfType<MailboxAddress>()
+                .Select(f => new EmailAddressDto { Address = f.Address, Name = f.Name })
+                .ToList();
+        }
     }
 
     public class EmailAddressDto
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public string Address { get; set; }
+        public string? Address { get; set; }
     }
 
     public class HeaderDto
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 
     public class EmailAttachmentDto
     {
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
-        public string MediaType { get; set; }
+        public string? MediaType { get; set; }
 
-        public string FileName { get; set; }
+        public string? FileName { get; set; }
     }
 }

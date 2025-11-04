@@ -38,9 +38,10 @@ public static class NameValueCollectionExtensions
         return nameValueCollection.AllKeys.SelectMany(
             k =>
             {
-                string[] values = nameValueCollection.GetValues(k);
+                string[] values = nameValueCollection.GetValues(k) ?? [];
 
-                if (values != null && values.Any()) return values.Select(s => new KeyValuePair<string, string>(k, s));
+                if (values.Any() && !string.IsNullOrEmpty(k))
+                    return values.Select(s => new KeyValuePair<string, string>(k, s));
 
                 return [];
             });

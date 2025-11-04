@@ -38,7 +38,8 @@ public class RulesConfigurationViewModel : Screen
         Rules = ruleService.Rules;
         Rules.CollectionChanged += (_, _) =>
         {
-            if (!Rules.Contains(SelectedRule))
+            var selectedRule = this.SelectedRule;
+            if (selectedRule != null && !this.Rules.Contains(selectedRule))
             {
                 SelectedRule = null;
             }
