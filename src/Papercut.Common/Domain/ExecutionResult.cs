@@ -32,7 +32,7 @@ public class ExecutionResult<T> : ExecutionResult
         }
     }
 
-    public T Value { get; init; }
+    public T Value { get; private init; }
 }
 
 public class ExecutionResult
@@ -47,7 +47,7 @@ public class ExecutionResult
         }
     }
 
-    public IReadOnlyCollection<string> Errors { get; init; } = [];
+    public IReadOnlyCollection<string> Errors { get; private init; } = [];
 
     public bool IsSuccess { get; }
 
