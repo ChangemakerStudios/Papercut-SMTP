@@ -61,4 +61,12 @@ public class SmtpServerOptions
     /// Base path where logs are written.
     /// </summary>
     public string LoggingPath { get; set; } = @"%DataDirectory%\Logs;%BaseDirectory%\Logs";
+
+    /// <summary>
+    /// Comma-separated list of allowed client IP addresses or CIDR ranges for SMTP connections.
+    /// Use "*" to allow all hosts (default).
+    /// Examples: "192.168.1.0/24,10.0.0.0/8" or "127.0.0.1,192.168.1.100"
+    /// Environment variable: SmtpServer__AllowedHosts
+    /// </summary>
+    public string AllowedHosts { get; set; } = "*";
 }

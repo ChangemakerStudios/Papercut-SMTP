@@ -34,7 +34,8 @@ using ILogger = Serilog.ILogger;
 public class PapercutSmtpServer(
     IAppMeta applicationMetaData,
     ILogger logger,
-    Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory)
+    Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory,
+    Service.Domain.SmtpServer.SmtpServerOptions smtpServerOptions)
     : Disposable, IServer
 {
     private EndpointDefinition _currentEndpoint = null!;
@@ -42,6 +43,8 @@ public class PapercutSmtpServer(
     private SmtpServer.SmtpServer? _server;
 
     private CancellationTokenSource? _tokenSource;
+
+    private readonly IpAllowlistValidator _ipAllowlistValidator = new(smtpServerOptions.AllowedHosts);
 
     public bool IsActive => _server != null;
 
@@ -144,8 +147,19 @@ public class PapercutSmtpServer(
             logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
         };
 
-        var remoteEndPoint = GetRemoteEndPoint(e.Context);
-        logger.Information("New SMTP connection from {EndpointAddress}", remoteEndPoint);
+        var remoteEndPointAddress = GetRemoteEndPoint(e.Context);
+        logger.Information("New SMTP connection from {EndpointAddress}", remoteEndPointAddress);
+
+        // Validate IP address against allowlist
+        if (TryGetRemoteIPAddress(e.Context, out var remoteIp) && !_ipAllowlistValidator.IsAllowed(remoteIp))
+        {
+            logger.Warning(
+                "Rejected SMTP connection from {EndpointAddress} - IP not in allowlist",
+                remoteEndPointAddress);
+
+            // Abort the session by throwing an exception
+            throw new InvalidOperationException($"Connection from {remoteEndPointAddress} is not allowed");
+        }
     }
 
     private string GetRemoteEndPoint(ISessionContext context)
@@ -159,6 +173,21 @@ public class PapercutSmtpServer(
         }
 
         return "unknown";
+    }
+
+    private bool TryGetRemoteIPAddress(ISessionContext context, out IPAddress ipAddress)
+    {
+        const string RemoteEndPointKey = "EndpointListener:RemoteEndPoint";
+
+        if (context.Properties.TryGetValue(RemoteEndPointKey, out var endpointObj)
+            && endpointObj is IPEndPoint remoteEndPoint)
+        {
+            ipAddress = remoteEndPoint.Address;
+            return true;
+        }
+
+        ipAddress = IPAddress.None;
+        return false;
     }
 
     private bool IgnoreCertificateValidationFailureForTestingOnly(
