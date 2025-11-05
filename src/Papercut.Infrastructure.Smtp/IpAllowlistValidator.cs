@@ -168,27 +168,42 @@ public class IpAllowlistValidator
             var startBytes = Start.GetAddressBytes();
             var endBytes = End.GetAddressBytes();
 
-            // Check if address is within range
-            for (int i = 0; i < addressBytes.Length; i++)
+            // Perform lexicographic comparison: Start <= address <= End
+            // Compare address with Start
+            int compareWithStart = CompareBytes(addressBytes, startBytes);
+            if (compareWithStart < 0)
             {
-                if (addressBytes[i] < startBytes[i])
-                {
-                    return false;
-                }
-
-                if (addressBytes[i] > endBytes[i])
-                {
-                    return false;
-                }
-
-                // If this byte is strictly between start and end, we're definitely in range
-                if (addressBytes[i] > startBytes[i] && addressBytes[i] < endBytes[i])
-                {
-                    return true;
-                }
+                return false; // address < Start
             }
 
-            return true;
+            // Compare address with End
+            int compareWithEnd = CompareBytes(addressBytes, endBytes);
+            if (compareWithEnd > 0)
+            {
+                return false; // address > End
+            }
+
+            return true; // Start <= address <= End
+        }
+
+        /// <summary>
+        /// Lexicographically compares two byte arrays.
+        /// Returns: -1 if a < b, 0 if a == b, 1 if a > b
+        /// </summary>
+        private static int CompareBytes(byte[] a, byte[] b)
+        {
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] < b[i])
+                {
+                    return -1;
+                }
+                if (a[i] > b[i])
+                {
+                    return 1;
+                }
+            }
+            return 0; // Arrays are equal
         }
     }
 }
