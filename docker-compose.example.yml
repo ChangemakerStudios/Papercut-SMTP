@@ -19,7 +19,7 @@ services:
       # Basic SMTP configuration
       - SmtpServer__IP=Any
       - SmtpServer__Port=2525
-      # IP Allowlist for HTTP web interface (optional)
+      # IP Allowlist for SMTP connections (optional)
       # Use "*" to allow all IPs (default), or specify CIDR ranges
       # Examples:
       # - SmtpServer__AllowedHosts=192.168.1.0/24,10.0.0.0/8  # Allow specific networks
@@ -112,7 +112,7 @@ volumes:
 # IP Allowlist Configuration:
 #
 # The SmtpServer__AllowedHosts environment variable controls which IP addresses
-# can access the Papercut web interface. This provides additional security.
+# can connect to the SMTP server. This provides additional security.
 #
 # Syntax:
 #   - SmtpServer__AllowedHosts=*                           # Allow all IPs (default)
@@ -122,8 +122,8 @@ volumes:
 #   - SmtpServer__AllowedHosts=192.168.1.100,192.168.1.101 # Allow multiple IPs
 #
 # Notes:
-#   - Localhost (127.0.0.1/::1) is always allowed
+#   - Applies only to SMTP connections, not HTTP web UI access
+#   - Localhost (127.0.0.1/::1) is always allowed for SMTP
 #   - IPv4 and IPv6 are both supported
 #   - CIDR notation allows efficient network range specification
 #   - Changes require container restart
-#   - This is separate from the root "AllowedHosts" setting (used for HTTP Host header filtering)

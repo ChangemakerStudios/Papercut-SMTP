@@ -84,11 +84,11 @@ docker run -d \
 - `SmtpServer__Port` - SMTP listening port (default: 2525, use 587 for STARTTLS)
 - `SmtpServer__MessagePath` - Path where emails are stored (default: /app/Incoming)
 - `SmtpServer__LoggingPath` - Path for log files (default: /app/logs)
-- `SmtpServer__AllowedHosts` - IP allowlist for web UI access (default: "*" = all IPs allowed)
+- `SmtpServer__AllowedHosts` - IP allowlist for SMTP connections (default: "*" = all IPs allowed)
 - `Urls` - HTTP server URLs (default: http://0.0.0.0:8080)
 
-**Security - IP Allowlist Configuration:**
-- `SmtpServer__AllowedHosts` - Comma-separated list of allowed IP addresses or CIDR ranges for HTTP web interface access
+**Security - SMTP IP Allowlist Configuration:**
+- `SmtpServer__AllowedHosts` - Comma-separated list of allowed IP addresses or CIDR ranges for SMTP connections
   - `*` - Allow all IPs (default, backward compatible)
   - `192.168.1.0/24` - Allow single CIDR range
   - `192.168.1.0/24,10.0.0.0/8` - Allow multiple CIDR ranges
@@ -96,7 +96,7 @@ docker run -d \
   - `192.168.1.100,192.168.1.101` - Allow multiple specific IPs
   - Localhost (127.0.0.1/::1) is always allowed
   - Supports both IPv4 and IPv6
-  - Note: This is separate from the root `AllowedHosts` setting (used for HTTP Host header filtering)
+  - Note: This restricts SMTP connections only, not HTTP web UI access
 
 **TLS/STARTTLS Configuration (Optional):**
 - `SmtpServer__CertificateFindType` - Certificate search method (default: "FindBySubjectName")
@@ -378,9 +378,9 @@ Error: Multiple certificates (3) found matching...
 
 ## Advanced Examples
 
-### IP Allowlist / Access Control
+### SMTP IP Allowlist / Access Control
 
-Restrict web UI access to specific IP addresses or networks using the `SmtpServer__AllowedHosts` environment variable:
+Restrict SMTP connections to specific IP addresses or networks using the `SmtpServer__AllowedHosts` environment variable:
 
 **Allow specific network:**
 ```bash
@@ -426,13 +426,13 @@ services:
 ```
 
 **Notes:**
-- The IP allowlist applies only to HTTP web UI access, not SMTP connections
-- Localhost (127.0.0.1 and ::1) is always allowed
+- The IP allowlist applies only to SMTP connections, not HTTP web UI access
+- Localhost (127.0.0.1 and ::1) is always allowed for SMTP
 - Supports CIDR notation for efficient network range specification
 - Supports both IPv4 and IPv6 addresses
 - Use `SmtpServer__AllowedHosts=*` to allow all IPs (default behavior)
 - Changes require container restart
-- This setting is separate from the root `AllowedHosts` setting (which is used by ASP.NET Core for HTTP Host header filtering)
+- HTTP web UI access is not restricted by this setting
 
 ### IPv6 Support
 
