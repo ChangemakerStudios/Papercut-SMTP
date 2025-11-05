@@ -85,6 +85,17 @@ docker run -d \
 - `SmtpServer__MessagePath` - Path where emails are stored (default: /app/Incoming)
 - `SmtpServer__LoggingPath` - Path for log files (default: /app/logs)
 - `Urls` - HTTP server URLs (default: http://0.0.0.0:8080)
+- `AllowedHosts` - IP allowlist for web UI access (default: "*" = all IPs allowed)
+
+**Security - IP Allowlist Configuration:**
+- `AllowedHosts` - Comma-separated list of allowed IP addresses or CIDR ranges for HTTP web interface access
+  - `*` - Allow all IPs (default, backward compatible)
+  - `192.168.1.0/24` - Allow single CIDR range
+  - `192.168.1.0/24,10.0.0.0/8` - Allow multiple CIDR ranges
+  - `192.168.1.100` - Allow single IP
+  - `192.168.1.100,192.168.1.101` - Allow multiple specific IPs
+  - Localhost (127.0.0.1/::1) is always allowed
+  - Supports both IPv4 and IPv6
 
 **TLS/STARTTLS Configuration (Optional):**
 - `SmtpServer__CertificateFindType` - Certificate search method (default: "FindBySubjectName")
@@ -365,6 +376,61 @@ Error: Multiple certificates (3) found matching...
 ---
 
 ## Advanced Examples
+
+### IP Allowlist / Access Control
+
+Restrict web UI access to specific IP addresses or networks using the `AllowedHosts` environment variable:
+
+**Allow specific network:**
+```bash
+docker run -d \
+  --name papercut \
+  -e AllowedHosts=192.168.1.0/24 \
+  -p 8080:8080 \
+  -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Allow multiple networks:**
+```bash
+docker run -d \
+  --name papercut \
+  -e AllowedHosts=192.168.1.0/24,10.0.0.0/8,172.16.0.0/12 \
+  -p 8080:8080 \
+  -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Allow specific IPs only:**
+```bash
+docker run -d \
+  --name papercut \
+  -e AllowedHosts=192.168.1.100,192.168.1.101 \
+  -p 8080:8080 \
+  -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Docker Compose with IP filtering:**
+```yaml
+services:
+  papercut:
+    image: changemakerstudiosus/papercut-smtp:latest
+    ports:
+      - "8080:8080"
+      - "2525:2525"
+    environment:
+      - AllowedHosts=192.168.1.0/24,10.0.0.0/8
+    restart: unless-stopped
+```
+
+**Notes:**
+- The IP allowlist applies only to HTTP web UI access, not SMTP connections
+- Localhost (127.0.0.1 and ::1) is always allowed
+- Supports CIDR notation for efficient network range specification
+- Supports both IPv4 and IPv6 addresses
+- Use `AllowedHosts=*` to allow all IPs (default behavior)
+- Changes require container restart
 
 ### IPv6 Support
 
