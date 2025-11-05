@@ -22,9 +22,9 @@ services:
       # IP Allowlist for HTTP web interface (optional)
       # Use "*" to allow all IPs (default), or specify CIDR ranges
       # Examples:
-      # - AllowedHosts=192.168.1.0/24,10.0.0.0/8  # Allow specific networks
-      # - AllowedHosts=192.168.1.100,192.168.1.101  # Allow specific IPs
-      - AllowedHosts=*
+      # - SmtpServer__AllowedHosts=192.168.1.0/24,10.0.0.0/8  # Allow specific networks
+      # - SmtpServer__AllowedHosts=192.168.1.100,192.168.1.101  # Allow specific IPs
+      - SmtpServer__AllowedHosts=*
     restart: unless-stopped
 
   # Example: Papercut with TLS/STARTTLS support
@@ -44,7 +44,7 @@ services:
     environment:
       - SmtpServer__IP=Any
       - SmtpServer__Port=587
-      - AllowedHosts=*
+      - SmtpServer__AllowedHosts=*
       # TLS/STARTTLS Configuration
       # Uncomment and configure these to enable TLS
       # Simple approach - use certificate by name (most common):
@@ -111,18 +111,19 @@ volumes:
 
 # IP Allowlist Configuration:
 #
-# The AllowedHosts environment variable controls which IP addresses can access
-# the Papercut web interface. This provides an additional layer of security.
+# The SmtpServer__AllowedHosts environment variable controls which IP addresses
+# can access the Papercut web interface. This provides additional security.
 #
 # Syntax:
-#   - AllowedHosts=*                           # Allow all IPs (default)
-#   - AllowedHosts=192.168.1.0/24              # Allow single CIDR range
-#   - AllowedHosts=192.168.1.0/24,10.0.0.0/8   # Allow multiple CIDR ranges
-#   - AllowedHosts=192.168.1.100               # Allow single IP
-#   - AllowedHosts=192.168.1.100,192.168.1.101 # Allow multiple IPs
+#   - SmtpServer__AllowedHosts=*                           # Allow all IPs (default)
+#   - SmtpServer__AllowedHosts=192.168.1.0/24              # Allow single CIDR range
+#   - SmtpServer__AllowedHosts=192.168.1.0/24,10.0.0.0/8   # Allow multiple CIDR ranges
+#   - SmtpServer__AllowedHosts=192.168.1.100               # Allow single IP
+#   - SmtpServer__AllowedHosts=192.168.1.100,192.168.1.101 # Allow multiple IPs
 #
 # Notes:
 #   - Localhost (127.0.0.1/::1) is always allowed
 #   - IPv4 and IPv6 are both supported
 #   - CIDR notation allows efficient network range specification
 #   - Changes require container restart
+#   - This is separate from the root "AllowedHosts" setting (used for HTTP Host header filtering)

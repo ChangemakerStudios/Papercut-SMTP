@@ -84,9 +84,10 @@ internal class PapercutServiceStartup
 
     public void Configure(IApplicationBuilder app)
     {
-        // Get AllowedHosts configuration for IP filtering
-        // Can be set via environment variable: AllowedHosts=192.168.1.0/24,10.0.0.0/8
-        var allowedHosts = _configuration?.GetValue<string>("AllowedHosts") ?? "*";
+        // Get IP allowlist configuration for web UI filtering
+        // Use SmtpServer:AllowedHosts to avoid conflict with ASP.NET Core's root AllowedHosts (HostFiltering)
+        // Can be set via environment variable: SmtpServer__AllowedHosts=192.168.1.0/24,10.0.0.0/8
+        var allowedHosts = _configuration?.GetValue<string>("SmtpServer:AllowedHosts") ?? "*";
         var logger = Log.ForContext<PapercutServiceStartup>();
 
         // Apply IP allowlist filtering before routing
