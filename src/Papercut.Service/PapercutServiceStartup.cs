@@ -22,14 +22,19 @@ using Microsoft.Extensions.Options;
 
 using Papercut.Rules;
 using Papercut.Service.Infrastructure.Configuration;
+using Papercut.Service.Infrastructure.Middleware;
 using Papercut.Service.Infrastructure.Servers;
 
 namespace Papercut.Service;
 
 internal class PapercutServiceStartup
 {
+    private IConfiguration? _configuration;
+
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
+        _configuration = configuration;
+
         services.AddLogging();
         services.AddMemoryCache();
 
@@ -79,6 +84,14 @@ internal class PapercutServiceStartup
 
     public void Configure(IApplicationBuilder app)
     {
+        // Get AllowedHosts configuration for IP filtering
+        // Can be set via environment variable: AllowedHosts=192.168.1.0/24,10.0.0.0/8
+        var allowedHosts = _configuration?.GetValue<string>("AllowedHosts") ?? "*";
+        var logger = Log.ForContext<PapercutServiceStartup>();
+
+        // Apply IP allowlist filtering before routing
+        app.UseIpAllowlist(allowedHosts, logger);
+
         app.UseRouting();
 
         app.UseSerilogRequestLogging();
