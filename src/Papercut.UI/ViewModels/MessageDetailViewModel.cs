@@ -356,7 +356,7 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
             this.ResetMessage();
         }
 
-        this.SelectedTabIndex = 0;
+        // Don't reset SelectedTabIndex - preserve user's tab selection when switching messages (Issue #227)
     }
 
     void ResetMessage()
