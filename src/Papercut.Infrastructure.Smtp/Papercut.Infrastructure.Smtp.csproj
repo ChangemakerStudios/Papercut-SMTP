@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +12,11 @@
     <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
     <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
     <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="JetBrains.Annotations" Version="2024.3.0" />
+    <PackageReference Update="Serilog" Version="4.3.0" />
   </ItemGroup>
 
 </Project>

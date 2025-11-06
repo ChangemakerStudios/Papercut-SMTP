@@ -587,10 +587,13 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             // Navigate to the attachment in the parts view
             var model = await this.GetConductor().ActivateViewModelOf<MessageDetailPartsListViewModel>();
 
-            var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
-            if (part != null)
+            if (model != null)
             {
-                model.SelectedPart = part;
+                var part = model.Parts.FirstOrDefault(s => s.ContentId == navigateToUri.AbsolutePath);
+                if (part != null)
+                {
+                    model.SelectedPart = part;
+                }
             }
         }
     }

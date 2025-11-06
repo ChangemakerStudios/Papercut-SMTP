@@ -32,7 +32,7 @@ public static class MessageDetailItemHelper
         return parent;
     }
 
-    public static async Task<T> ActivateViewModelOf<T>(
+    public static async Task<T?> ActivateViewModelOf<T>(
         this Conductor<IMessageDetailItem>.Collection.OneActive conductor)
     {
         ArgumentNullException.ThrowIfNull(conductor);

@@ -1,14 +1,14 @@
-﻿// Papercut
-// 
+// Papercut
+//
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,15 +16,25 @@
 // limitations under the License.
 
 
-namespace Papercut.Domain.Events;
+namespace Papercut.Domain.Themes;
 
-public class PapercutServiceStatusEvent(PapercutServiceStatusType papercutServiceStatus) : IEvent
+/// <summary>
+/// Represents the base theme (light/dark) selection mode
+/// </summary>
+public enum BaseTheme
 {
-    public PapercutServiceStatusType PapercutServiceStatus { get; } = papercutServiceStatus;
-}
+    /// <summary>
+    /// Synchronize with system theme
+    /// </summary>
+    System,
 
-public enum PapercutServiceStatusType
-{
-    Offline = 0,
-    Online = 1
+    /// <summary>
+    /// Always use light theme
+    /// </summary>
+    Light,
+
+    /// <summary>
+    /// Always use dark theme
+    /// </summary>
+    Dark
 }

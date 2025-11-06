@@ -31,6 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Build", ".Build", "{8661B3
 		build-docker.sh = build-docker.sh
 		build.cake = build.cake
 		build.ps1 = build.ps1
+		.github\workflows\build.yml = .github\workflows\build.yml
 		Directory.Build.props = Directory.Build.props
 		Dockerfile = Dockerfile
 		GitVersion.yml = GitVersion.yml

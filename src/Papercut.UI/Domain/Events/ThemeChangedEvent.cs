@@ -16,15 +16,13 @@
 // limitations under the License.
 
 
+using System.Windows.Media;
+
 namespace Papercut.Domain.Events;
 
-public class PapercutServiceStatusEvent(PapercutServiceStatusType papercutServiceStatus) : IEvent
+public class ThemeChangedEvent(bool isDarkMode, Color themeColor) : IEvent
 {
-    public PapercutServiceStatusType PapercutServiceStatus { get; } = papercutServiceStatus;
-}
+    public bool IsDarkMode { get; } = isDarkMode;
 
-public enum PapercutServiceStatusType
-{
-    Offline = 0,
-    Online = 1
+    public Color ThemeColor { get; } = themeColor;
 }

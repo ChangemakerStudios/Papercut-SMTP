@@ -8,7 +8,8 @@
              xmlns:cal="http://www.caliburnproject.org"
              xmlns:Behaviors="clr-namespace:Papercut.AppLayer.Behaviors"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White"
+             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600"
+             Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
     <Grid>
         <!-- Empty State Placeholder - Has messages but none selected -->
@@ -87,7 +88,9 @@
                     <ColumnDefinition Width="150*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="From" HorizontalAlignment="Right" />
-                <TextBox Grid.Column="1" Margin="2" Name="From" IsReadOnly="True" />
+                <TextBox Grid.Column="1" Margin="2" Name="From" IsReadOnly="True"
+                         Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                         Foreground="{DynamicResource MahApps.Brushes.Text}" />
             </Grid>
             <Grid Visibility="{Binding To,Converter={StaticResource CollapsedIfFalse}}">
                 <Grid.ColumnDefinitions>
@@ -95,7 +98,9 @@
                     <ColumnDefinition Width="150*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="To" HorizontalAlignment="Right" />
-                <TextBox Grid.Column="1" Margin="2" Name="To" IsReadOnly="True" />
+                <TextBox Grid.Column="1" Margin="2" Name="To" IsReadOnly="True"
+                         Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                         Foreground="{DynamicResource MahApps.Brushes.Text}" />
             </Grid>
             <Grid Visibility="{Binding CC,Converter={StaticResource CollapsedIfFalse}}">
                 <Grid.ColumnDefinitions>
@@ -103,7 +108,9 @@
                     <ColumnDefinition Width="150*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="CC" HorizontalAlignment="Right" />
-                <TextBox Grid.Column="1" Name="CC" Margin="2" IsReadOnly="True" />
+                <TextBox Grid.Column="1" Name="CC" Margin="2" IsReadOnly="True"
+                         Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                         Foreground="{DynamicResource MahApps.Brushes.Text}" />
             </Grid>
             <Grid Visibility="{Binding Bcc,Converter={StaticResource CollapsedIfFalse}}">
                 <Grid.ColumnDefinitions>
@@ -111,7 +118,9 @@
                     <ColumnDefinition Width="150*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="Bcc" HorizontalAlignment="Right" />
-                <TextBox Grid.Column="1" Name="Bcc" Margin="2" IsReadOnly="True" />
+                <TextBox Grid.Column="1" Name="Bcc" Margin="2" IsReadOnly="True"
+                         Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                         Foreground="{DynamicResource MahApps.Brushes.Text}" />
             </Grid>
             <Grid Visibility="{Binding Date,Converter={StaticResource CollapsedIfFalse}}">
                 <Grid.ColumnDefinitions>
@@ -119,7 +128,9 @@
                     <ColumnDefinition Width="150*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="Date" HorizontalAlignment="Right" />
-                <TextBox Grid.Column="1" Name="Date" Margin="2" IsReadOnly="True" />
+                <TextBox Grid.Column="1" Name="Date" Margin="2" IsReadOnly="True"
+                         Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                         Foreground="{DynamicResource MahApps.Brushes.Text}" />
             </Grid>
             <Grid Visibility="{Binding Priority,Converter={StaticResource CollapsedIfFalse}}">
                 <Grid.ColumnDefinitions>
@@ -127,7 +138,8 @@
                     <ColumnDefinition Width="150*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="Priority" HorizontalAlignment="Right" />
-                <TextBox Grid.Column="1" Name="Priority" FontWeight="Bold" Foreground="{Binding PriorityColor}" Margin="2" IsReadOnly="True" />
+                <TextBox Grid.Column="1" Name="Priority" FontWeight="Bold" Foreground="{Binding PriorityColor}" Margin="2" IsReadOnly="True"
+                         Background="{DynamicResource MahApps.Brushes.Control.Background}" />
             </Grid>
             <Grid Visibility="{Binding Subject,Converter={StaticResource CollapsedIfFalse}}">
                 <Grid.ColumnDefinitions>
@@ -135,7 +147,9 @@
                     <ColumnDefinition Width="150*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="Subject" HorizontalAlignment="Right" />
-                <TextBox Grid.Column="1" Name="Subject" Margin="2" FontWeight="Bold" IsReadOnly="True" />
+                <TextBox Grid.Column="1" Name="Subject" Margin="2" FontWeight="Bold" IsReadOnly="True"
+                         Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                         Foreground="{DynamicResource MahApps.Brushes.Text}" />
             </Grid>
         </StackPanel>
         <TabControl Grid.Row="1" Width="Auto" Height="Auto" SelectedIndex="{Binding SelectedTabIndex}" Name="Items" />
