@@ -110,7 +110,7 @@ public class PropertyViewModel : PropertyChangedBase
 
     private void OnSourcePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == _property.Name)
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == _property.Name)
         {
             NotifyOfPropertyChange(() => Value);
             NotifyOfPropertyChange(() => NumericValue);

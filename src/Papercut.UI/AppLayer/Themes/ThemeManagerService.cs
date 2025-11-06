@@ -79,6 +79,7 @@ public class ThemeManagerService(
                 Properties.Settings.Default.Theme, ThemeColorRepository.Default.Name);
 
             Properties.Settings.Default.Theme = ThemeColorRepository.Default.Name;
+            Properties.Settings.Default.Save();
             colorTheme = ThemeColorRepository.Default;
         }
 
