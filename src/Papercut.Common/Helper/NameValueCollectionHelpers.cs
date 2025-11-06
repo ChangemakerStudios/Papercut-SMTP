@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,9 +38,10 @@ public static class NameValueCollectionExtensions
         return nameValueCollection.AllKeys.SelectMany(
             k =>
             {
-                string[] values = nameValueCollection.GetValues(k);
+                string[] values = nameValueCollection.GetValues(k) ?? [];
 
-                if (values != null && values.Any()) return values.Select(s => new KeyValuePair<string, string>(k, s));
+                if (values.Any() && !string.IsNullOrEmpty(k))
+                    return values.Select(s => new KeyValuePair<string, string>(k, s));
 
                 return [];
             });

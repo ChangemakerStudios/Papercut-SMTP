@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,100 +16,91 @@
 // limitations under the License.
 
 
-using System.Windows;
-using System.Windows.Threading;
-
-using Autofac;
-
-using Caliburn.Micro;
-
-using Papercut.Domain.LifecycleHooks;
 using Papercut.Infrastructure.LifecycleHooks;
 using Papercut.ViewModels;
 
-namespace Papercut
+namespace Papercut;
+
+public class AppBootstrapper : BootstrapperBase
 {
-    public class AppBootstrapper : BootstrapperBase
+    public AppBootstrapper()
     {
-        public AppBootstrapper()
+        this.Initialize();
+    }
+
+    protected ILifetimeScope Container => ((App)Application.Current).Container;
+
+    protected override void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        e.Handled = true;
+        Container.Resolve<ILogger>().Error(e.Exception, "Caught Unhandled Exception");
+
+        MessageBox.Show($"Error: {e.Exception?.Message}", "Unhandled Exception");
+    }
+
+    protected override async void OnStartup(object sender, StartupEventArgs e)
+    {
+        try
         {
-            this.Initialize();
-        }
-
-        protected ILifetimeScope Container => ((App)Application.Current).Container;
-
-        protected override void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-            e.Handled = true;
-            Container.Resolve<ILogger>().Error(e.Exception, "Caught Unhandled Exception");
-
-            MessageBox.Show($"Error: {e.Exception?.Message}", "Unhandled Exception");
-        }
-
-        protected override async void OnStartup(object sender, StartupEventArgs e)
-        {
-            try
+            // run prestart
+            if (await this.Container.RunPreStart() == AppLifecycleActionResultType.Cancel)
             {
-                // run prestart
-                if (await this.Container.RunPreStart() == AppLifecycleActionResultType.Cancel)
-                {
-                    this.Application.Shutdown();
-                    return;
-                }
-
-                base.OnStartup(sender, e);
-
-                await this.DisplayRootViewForAsync(typeof(MainViewModel));
-
-                await this.Container.RunStarted();
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Fatal Error Starting Papercut");
-            }
-        }
-
-        protected override void Configure()
-        {
-            MessageBinder.SpecialValues.Add(
-                "$originalsourcecontext",
-                context =>
-                {
-                    var args = context.EventArgs as RoutedEventArgs;
-                    var fe = args?.OriginalSource as FrameworkElement;
-
-                    return fe?.DataContext;
-                });
-
-            base.Configure();
-        }
-
-        protected override IEnumerable<object> GetAllInstances(Type service)
-        {
-            return this.Container.Resolve(
-                    typeof(IEnumerable<>)
-                    .MakeGenericType(service)) as IEnumerable<object> ?? [];
-        }
-
-        protected override object GetInstance(Type service, string? named)
-        {
-            ArgumentNullException.ThrowIfNull(service);
-
-            if (string.IsNullOrWhiteSpace(named))
-            {
-                if (this.Container.TryResolve(service, out var result)) return result;
-            }
-            else
-            {
-                if (this.Container.TryResolveNamed(named, service, out var result)) return result;
+                this.Application.Shutdown();
+                return;
             }
 
-            throw new Exception($"Could not locate any instances of contract {named ?? service.Name}.");
+            base.OnStartup(sender, e);
+
+            await this.DisplayRootViewForAsync(typeof(MainViewModel));
+
+            await this.Container.RunStarted();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Fatal Error Starting Papercut");
+        }
+    }
+
+    protected override void Configure()
+    {
+        MessageBinder.SpecialValues.TryAdd(
+            "$originalsourcecontext",
+            context =>
+            {
+                var args = context.EventArgs as RoutedEventArgs;
+                var fe = args?.OriginalSource as FrameworkElement;
+
+                return fe?.DataContext;
+            });
+
+        base.Configure();
+    }
+
+    protected override IEnumerable<object> GetAllInstances(Type service)
+    {
+        return this.Container.Resolve(
+                typeof(IEnumerable<>)
+                .MakeGenericType(service)) as IEnumerable<object> ?? [];
+    }
+
+    protected override object GetInstance(Type service, string? named)
+    {
+        ArgumentNullException.ThrowIfNull(service);
+
+        if (string.IsNullOrWhiteSpace(named))
+        {
+            if (this.Container.TryResolve(service, out var result)) return result;
+        }
+        else
+        {
+            if (this.Container.TryResolveNamed(named, service, out var result)) return result;
         }
 
-        protected override void BuildUp(object instance)
-        {
-            this.Container.InjectProperties(instance);
-        }
+        throw new Exception($"Could not locate any instances of contract {named ?? service.Name}.");
+    }
+
+    protected override void BuildUp(object instance)
+    {
+        this.Container.InjectProperties(instance);
     }
 }

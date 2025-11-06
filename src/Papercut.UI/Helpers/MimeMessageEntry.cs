@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 // limitations under the License.
 
 
-using MimeKit;
-
 using Papercut.Core.Domain.Message;
 using Papercut.Message;
 
@@ -31,7 +29,7 @@ public class MimeMessageEntry : MessageEntry
 
     string _subject;
 
-    public MimeMessageEntry(MessageEntry entry, MimeMessageLoader loader)
+    public MimeMessageEntry(MessageEntry entry, IMimeMessageLoader loader)
         : base(entry.File)
     {
         this.IsSelected = entry.IsSelected;

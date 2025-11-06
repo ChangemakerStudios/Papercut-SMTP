@@ -1,0 +1,29 @@
+<UserControl x:Class="Papercut.Helpers.ZoomIndicator"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="80" d:DesignWidth="120"
+             IsHitTestVisible="False">
+    <Grid>
+        <Border x:Name="IndicatorBorder"
+                Background="#E0000000"
+                CornerRadius="8"
+                Padding="16,12"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Opacity="0">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.5"/>
+            </Border.Effect>
+            <TextBlock x:Name="ZoomText"
+                       Foreground="White"
+                       FontSize="24"
+                       FontWeight="SemiBold"
+                       Text="100%"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Border>
+    </Grid>
+</UserControl>

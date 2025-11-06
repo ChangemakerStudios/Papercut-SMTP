@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,19 +17,12 @@
 
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Windows;
-
-using Caliburn.Micro;
 
 using Microsoft.Win32;
 
-using MimeKit;
-
-using Papercut.Common.Extensions;
-using Papercut.Common.Helper;
-using Papercut.Helpers;
+using Papercut.AppLayer.Attachments;
+using Papercut.AppLayer.Processes;
+using Papercut.Domain.UiCommands;
 using Papercut.Message;
 using Papercut.Message.Helpers;
 
@@ -39,9 +32,15 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
 {
     readonly ILogger _logger;
 
-    private readonly MessageRepository _messageRepository;
+    private readonly IMessageRepository _messageRepository;
 
     readonly IViewModelWindowManager _viewModelWindowManager;
+
+    readonly AttachmentFileService _attachmentFileService;
+
+    readonly ProcessService _processService;
+
+    readonly IUiCommandHub _uiCommandHub;
 
     bool _hasSelectedPart;
 
@@ -49,11 +48,20 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
 
     MimeEntity? _selectedPart;
 
-    public MessageDetailPartsListViewModel(MessageRepository messageRepository, IViewModelWindowManager viewModelWindowManager, ILogger logger)
+    public MessageDetailPartsListViewModel(
+        IMessageRepository messageRepository,
+        IViewModelWindowManager viewModelWindowManager,
+        AttachmentFileService attachmentFileService,
+        ProcessService processService,
+        IUiCommandHub uiCommandHub,
+        ILogger logger)
     {
         this.DisplayName = "Sections";
         this._messageRepository = messageRepository;
         this._viewModelWindowManager = viewModelWindowManager;
+        this._attachmentFileService = attachmentFileService;
+        this._processService = processService;
+        this._uiCommandHub = uiCommandHub;
         this._logger = logger;
         this.Parts = new ObservableCollection<MimeEntity>();
     }
@@ -113,35 +121,26 @@ public sealed class MessageDetailPartsListViewModel : Screen, IMessageDetailItem
         }
         else if (part is MimePart mimePart)
         {
-            string tempFileName;
-
-            if (mimePart.FileName.IsSet())
-            {
-                tempFileName = GeneralExtensions.GetOriginalFileName(Path.GetTempPath(), mimePart.FileName);
-            }
-            else
-            {
-                tempFileName = Path.GetTempFileName();
-                string extension = part.ContentType.GetExtension();
-
-                if (extension.IsSet())
-                    tempFileName = Path.ChangeExtension(tempFileName, extension);
-            }
-
             try
             {
-                using (FileStream outputFile = File.Open(tempFileName, FileMode.Create))
-                {
-                    mimePart.Content.DecodeTo(outputFile);
-                }
+                string tempFileName = this._attachmentFileService.CreateTempFileForAttachment(mimePart);
+                this._attachmentFileService.WriteAttachmentToFile(mimePart, tempFileName);
 
-                Process.Start(new ProcessStartInfo(tempFileName));
+                var result = this._processService.OpenFile(tempFileName);
+
+                if (result.IsFailed)
+                {
+                    this._uiCommandHub.ShowMessage(
+                        string.Join(Environment.NewLine, result.Errors),
+                        "Unable to Open Attachment");
+                }
             }
             catch (Exception ex)
             {
-                this._logger.Error(ex, "Failure Creating and Opening Up Attachment File: {TempFileName}", tempFileName);
-                MessageBox.Show($"Failed to Open Attachment File: {ex.Message}",
-                    "Unable to Open Attachment");
+                this._logger.Error(ex, "Failure Creating Attachment File for {FileName}", mimePart.FileName);
+                this._uiCommandHub.ShowMessage(
+                    $"Failed to Create Attachment File: {ex.Message}",
+                    "Unable to Create Attachment");
             }
         }
     }

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-using Caliburn.Micro;
+using System.Windows.Input;
 
 using ICSharpCode.AvalonEdit.Document;
 
@@ -30,11 +30,20 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
     readonly ILogger _logger;
 
     string? _body;
+    ZoomIndicator? _zoomIndicator;
+    readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
 
     public MessageDetailBodyViewModel(ILogger logger)
     {
         this._logger = logger;
         this.DisplayName = "Body";
+
+        // Set up debounced zoom save to reduce I/O during rapid zoom changes
+        _zoomSaveDebouncer = new SettingsSaveDebouncer<double>(newFontSize =>
+        {
+            Settings.Default.TextViewZoomFontSize = newFontSize;
+            Settings.Default.Save();
+        });
     }
 
     public string? Body
@@ -57,8 +66,39 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
             return;
         }
 
+        // Store reference to zoom indicator
+        _zoomIndicator = typedView.zoomIndicator;
+
+        // Restore saved zoom level
+        typedView.BodyEdit.FontSize = Settings.Default.TextViewZoomFontSize;
+
+        // Install modern search panel for Ctrl+F support
+        ModernSearchPanel.Install(typedView.BodyEdit);
+
         this.GetPropertyValues(p => p.Body)
             .Subscribe(
                 t => { typedView.BodyEdit.Document = new TextDocument(new StringTextSource(t ?? string.Empty)); });
+
+        // Hook up zoom functionality
+        typedView.BodyEdit.PreviewMouseWheel += (sender, e) =>
+        {
+            if (ZoomHelper.IsZoomModifierPressed())
+            {
+                e.Handled = true;
+                var newFontSize = ZoomHelper.CalculateNewZoom(
+                    typedView.BodyEdit.FontSize,
+                    e.Delta,
+                    ZoomHelper.AvalonEditZoom.Increment,
+                    ZoomHelper.AvalonEditZoom.MinFontSize,
+                    ZoomHelper.AvalonEditZoom.MaxFontSize);
+                typedView.BodyEdit.FontSize = newFontSize;
+
+                // Debounce settings save to reduce I/O during rapid zoom changes
+                _zoomSaveDebouncer.OnValueChanged(newFontSize);
+
+                // Show zoom indicator
+                _zoomIndicator?.ShowZoomFromFontSize(newFontSize, ZoomHelper.AvalonEditZoom.DefaultFontSize);
+            }
+        };
     }
 }

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 
 using Serilog.Core;
 using Serilog.Events;
@@ -43,7 +44,9 @@ public class EnvironmentEnricher : ILogEventEnricher
             this._cachedProperties.GetOrAdd("OSVersion", k => propertyFactory.CreateProperty(k, Environment.OSVersion)),
             this._cachedProperties.GetOrAdd("ProcessorCount",
                 k => propertyFactory.CreateProperty(k, Environment.ProcessorCount)),
-            this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, Environment.Version))
+            this._cachedProperties.GetOrAdd(".NETVersion", k => propertyFactory.CreateProperty(k, Environment.Version)),
+            this._cachedProperties.GetOrAdd("RuntimeIdentifier",
+                k => propertyFactory.CreateProperty(k, RuntimeInformation.RuntimeIdentifier))
         };
 
         foreach (var p in properties)

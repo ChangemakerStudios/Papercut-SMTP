@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,10 +19,6 @@
 using System.Reactive.Subjects;
 using System.Windows.Forms;
 
-using Autofac;
-using Autofac.Util;
-
-using Papercut.Common.Domain;
 using Papercut.Domain.UiCommands;
 using Papercut.Domain.UiCommands.Commands;
 
@@ -30,13 +26,13 @@ namespace Papercut.AppLayer.UiCommands;
 
 public class UiCommandHub : Disposable, IUiCommandHub, IEventHandler<ShowMainWindowCommand>
 {
-    private readonly Subject<ShowBalloonTipCommand> _onShowBalloonTip = new Subject<ShowBalloonTipCommand>();
+    private readonly Subject<ShowBalloonTipCommand> _onShowBalloonTip = new();
 
-    private readonly Subject<ShowMainWindowCommand> _onShowMainWindow = new Subject<ShowMainWindowCommand>();
+    private readonly Subject<ShowMainWindowCommand> _onShowMainWindow = new();
 
-    private readonly Subject<ShowMessageCommand> _onShowMessage = new Subject<ShowMessageCommand>();
+    private readonly Subject<ShowMessageCommand> _onShowMessage = new();
 
-    private readonly Subject<ShowOptionWindowCommand> _onShowOptionWindow = new Subject<ShowOptionWindowCommand>();
+    private readonly Subject<ShowOptionWindowCommand> _onShowOptionWindow = new();
 
     public IObservable<ShowBalloonTipCommand> OnShowBalloonTip => this._onShowBalloonTip;
 

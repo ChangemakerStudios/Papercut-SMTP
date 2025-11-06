@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,56 +25,52 @@ using Papercut.Infrastructure.IPComm.Protocols;
 
 namespace Papercut.Infrastructure.IPComm.Network;
 
-public class PapercutIPCommProtocol : StringCommandProtocol
+public class PapercutIPCommProtocol(ILogger logger, IMessageBus messageBus) : StringCommandProtocol(logger)
 {
-    readonly IMessageBus _messageBus;
-
-    public PapercutIPCommProtocol(ILogger logger, IMessageBus messageBus)
-        : base(logger)
-    {
-        this._messageBus = messageBus;
-    }
-
-    public Connection Connection { get; protected set; }
+    public Connection? Connection { get; protected set; }
 
     public override async Task BeginAsync(
         Connection connection,
         CancellationToken token = default)
     {
-        this.Connection = connection;
-        this.Logger.ForContext("ConnectionId", this.Connection.Id);
-        await this.Connection.SendLineAsync(AppConstants.ApplicationName.ToUpper());
-        var response = await this.Connection.ReceiveDataAsync();
-        await this.ProcessIncomingBufferAsync(response, Encoding.UTF8, token);
+        Connection = connection;
+        Logger.ForContext("ConnectionId", Connection.Id);
+        await Connection.SendLineAsync(AppConstants.ApplicationName.ToUpper());
+        var response = await Connection.ReceiveDataAsync();
+        await ProcessIncomingBufferAsync(response, Encoding.UTF8, token);
     }
 
     protected override async Task ProcessRequest(
         string incomingRequest,
         CancellationToken token = default)
     {
+        ArgumentNullException.ThrowIfNull(Connection, nameof(Connection));
+
         try
         {
             var request = incomingRequest.FromJson<PapercutIPCommRequest>();
 
-            this.Logger.Verbose("Incoming Request Received {@Request}", request);
+            Logger.Verbose("Incoming Request Received {@Request}", request);
 
-            await this.Connection.SendAsync("ACK");
+            await Connection.SendAsync("ACK");
 
             if (request.CommandType.IsAny(
                     PapercutIPCommCommandType.Publish,
                     PapercutIPCommCommandType.Exchange))
             {
-                var remoteObjectBuffer = await this.Connection.ReceiveDataAsync();
+                var remoteObjectBuffer = await Connection.ReceiveDataAsync();
+
+                if (remoteObjectBuffer == null) return;
 
                 var remoteEvent = PapercutIPCommSerializer.FromJson(
                     request.Type,
                     Encoding.UTF8.GetString(remoteObjectBuffer));
 
-                this.Logger.Information(
+                Logger.Information(
                     "Publishing Event Received {@Event} from Remote",
                     remoteEvent);
 
-                await this._messageBus.PublishObjectAsync(
+                await messageBus.PublishObjectAsync(
                     remoteEvent,
                     request.Type,
                     token: token);
@@ -82,18 +78,18 @@ public class PapercutIPCommProtocol : StringCommandProtocol
                 if (request.CommandType == PapercutIPCommCommandType.Exchange)
                 {
                     // send response back...
-                    this.Logger.Information(
+                    Logger.Information(
                         "Exchanging Event {@Event} -- Pushing to Remote",
                         remoteEvent);
 
-                    await this.Connection.SendJsonAsync(request.Type, remoteEvent);
+                    await Connection.SendJsonAsync(request.Type, remoteEvent);
                 }
             }
         }
         catch (IOException e)
         {
-            this.Logger.Error(e, "IOException received. Closing this connection.");
-            this.Connection.Close();
+            Logger.Error(e, "IOException received. Closing this connection.");
+            Connection.Close();
         }
     }
 }

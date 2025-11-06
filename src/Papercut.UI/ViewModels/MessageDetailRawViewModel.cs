@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,9 @@
 // limitations under the License.
 
 
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Windows.Threading;
-
-using Caliburn.Micro;
+using System.Windows.Input;
 
 using ICSharpCode.AvalonEdit.Document;
-
-using MimeKit;
 
 using Papercut.Helpers;
 using Papercut.Message.Helpers;
@@ -46,10 +40,21 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
 
     string? _raw;
 
+    ZoomIndicator? _zoomIndicator;
+
+    readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
+
     public MessageDetailRawViewModel(ILogger logger)
     {
         this.DisplayName = "Raw";
         this._logger = logger;
+
+        // Set up debounced zoom save to reduce I/O during rapid zoom changes
+        _zoomSaveDebouncer = new SettingsSaveDebouncer<double>(newFontSize =>
+        {
+            Settings.Default.TextViewZoomFontSize = newFontSize;
+            Settings.Default.Save();
+        });
     }
 
     public string? Raw
@@ -130,6 +135,15 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
             return;
         }
 
+        // Store reference to zoom indicator
+        _zoomIndicator = typedView.zoomIndicator;
+
+        // Restore saved zoom level
+        typedView.rawEdit.FontSize = Settings.Default.TextViewZoomFontSize;
+
+        // Install modern search panel for Ctrl+F support
+        ModernSearchPanel.Install(typedView.rawEdit);
+
         this.GetPropertyValues(p => p.Raw)
             .ObserveOn(Dispatcher.CurrentDispatcher)
             .Subscribe(s =>
@@ -137,6 +151,28 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
                 typedView.rawEdit.Document = new TextDocument(new StringTextSource(s ?? string.Empty));
                 this.IsLoading = false;
             });
+
+        // Hook up zoom functionality
+        typedView.rawEdit.PreviewMouseWheel += (sender, e) =>
+        {
+            if (ZoomHelper.IsZoomModifierPressed())
+            {
+                e.Handled = true;
+                var newFontSize = ZoomHelper.CalculateNewZoom(
+                    typedView.rawEdit.FontSize,
+                    e.Delta,
+                    ZoomHelper.AvalonEditZoom.Increment,
+                    ZoomHelper.AvalonEditZoom.MinFontSize,
+                    ZoomHelper.AvalonEditZoom.MaxFontSize);
+                typedView.rawEdit.FontSize = newFontSize;
+
+                // Debounce settings save to reduce I/O during rapid zoom changes
+                _zoomSaveDebouncer.OnValueChanged(newFontSize);
+
+                // Show zoom indicator
+                _zoomIndicator?.ShowZoomFromFontSize(newFontSize, ZoomHelper.AvalonEditZoom.DefaultFontSize);
+            }
+        };
     }
 
     protected override Task OnActivateAsync(CancellationToken token)

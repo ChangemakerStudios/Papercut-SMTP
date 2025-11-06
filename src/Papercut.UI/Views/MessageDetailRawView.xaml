@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:helpers="clr-namespace:Papercut.Helpers"
              mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
     <Grid IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
@@ -15,12 +16,15 @@
         </Grid>
         <Grid>
             <Border BorderBrush="LightGray" BorderThickness="1">
-                <avalonEdit:TextEditor
-                xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
-                Name="rawEdit"
-                Padding="4"
-                FontFamily="Consolas"
-                FontSize="9pt" IsReadOnly="True" />
+                <Grid>
+                    <avalonEdit:TextEditor
+                    xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+                    Name="rawEdit"
+                    Padding="4"
+                    FontFamily="Consolas"
+                    FontSize="10.5pt" IsReadOnly="True" />
+                    <helpers:ZoomIndicator x:Name="zoomIndicator" />
+                </Grid>
             </Border>
         </Grid>
     </Grid>

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,7 +56,8 @@ public static class MessageHelper
         return textPart.ContentType.IsMimeType("text", "html");
     }
 
-    public static string GetExtension(this ContentType contentType)
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public static string? GetExtension(this ContentType contentType)
     {
         ArgumentNullException.ThrowIfNull(contentType);
 
@@ -64,11 +65,8 @@ public static class MessageHelper
             Registry.ClassesRoot.OpenSubKey(
                     $@"MIME\Database\Content Type\{contentType.MediaType}/{contentType.MediaSubtype}",
                     false)
-                .ToEnumerable()
-                .Select(k => k.GetValue("Extension", null))
-                .Where(v => v != null)
-                .Select(v => v.ToString())
-                .FirstOrDefault();
+                ?.GetValue("Extension", null)
+                ?.ToString();
     }
 
     public static IEnumerable<MimePart> GetImages(this IEnumerable<MimePart> prefilteredMimeParts)

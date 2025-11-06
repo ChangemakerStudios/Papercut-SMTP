@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@ namespace Papercut.Rules.Domain.Conditional.Forwarding;
 [Serializable]
 public class ConditionalForwardRule : ForwardRule, IConditionalRule
 {
-    string _regexBodyMatch;
+    string _regexBodyMatch = string.Empty;
 
-    string _regexHeaderMatch;
+    string _regexHeaderMatch = string.Empty;
 
     [Category("Information")]
     public override string Type => "Conditional Forward";
@@ -45,7 +45,7 @@ public class ConditionalForwardRule : ForwardRule, IConditionalRule
         {
             if (value == _regexHeaderMatch)
                 return;
-            _regexHeaderMatch = value.IsSet() && value.IsValidRegex() ? value : null; ;
+            _regexHeaderMatch = value.IsSet() && value.IsValidRegex() ? value : string.Empty;
             OnPropertyChanged(nameof(RegexHeaderMatch));
         }
     }
@@ -59,14 +59,14 @@ public class ConditionalForwardRule : ForwardRule, IConditionalRule
             if (value == _regexBodyMatch)
                 return;
 
-            _regexBodyMatch = value.IsSet() && value.IsValidRegex() ? value : null;
+            _regexBodyMatch = value.IsSet() && value.IsValidRegex() ? value : string.Empty;
             OnPropertyChanged(nameof(RegexBodyMatch));
         }
     }
 
     protected override IEnumerable<KeyValuePair<string, Lazy<object>>> GetPropertiesForDescription()
     {
-        return base.GetPropertiesForDescription().Concat(this.GetProperties());
+        return base.GetPropertiesForDescription().Concat(this.GetProperties()!);
     }
 
     #region Begin Static Container Registrations

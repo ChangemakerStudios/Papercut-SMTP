@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,13 +16,8 @@
 // limitations under the License.
 
 
-using Autofac;
-
-using Papercut.Common.Domain;
-using Papercut.Common.Extensions;
 using Papercut.Core.Domain.Paths;
 using Papercut.Core.Infrastructure.Network;
-using Papercut.Domain.Events;
 
 namespace Papercut.AppLayer.Settings;
 
@@ -49,8 +44,12 @@ public class MergeServerBackendSettings(
         Properties.Settings.Default.CopyTo(previousSettings);
 
         // save ip:port bindings as our own to keep in sync...
-        Properties.Settings.Default.IP = @event.IP;
-        Properties.Settings.Default.Port = @event.Port;
+        if (@event.IP.IsSet() && @event.Port.HasValue)
+        {
+            Properties.Settings.Default.IP = @event.IP;
+            Properties.Settings.Default.Port = @event.Port.Value;
+        }
+
         Properties.Settings.Default.Save();
 
         await messageBus.PublishAsync(new SettingsUpdatedEvent(previousSettings), token);

@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,12 +38,16 @@ public static class RelayRuleExtensions
     {
         if (forwardRule == null) throw new ArgumentNullException(nameof(forwardRule));
 
-        var client = new SmtpClient();
+        var client = new SmtpClient
+        {
+            // Set reasonable timeout (default is 100 seconds, set to 30 seconds)
+            Timeout = 30000
+        };
 
         await client.ConnectAsync(
             forwardRule.SmtpServer,
             forwardRule.SmtpPort,
-            forwardRule.SmtpUseSSL ? SecureSocketOptions.Auto : SecureSocketOptions.None,
+            forwardRule.SmtpUseSSL ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.Auto,
             token);
 
         // Note: since we don't have an OAuth2 token, disable

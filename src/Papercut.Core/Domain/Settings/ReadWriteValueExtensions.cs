@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public static class ReadWriteValueExtensions
         if (writeValue == null) throw new ArgumentNullException(nameof(writeValue));
         if (key == null) throw new ArgumentNullException(nameof(key));
 
-        writeValue.Set(key, value.ToType<string>());
+        writeValue.Set(key, value.ToType<string>() ?? string.Empty);
     }
 
     public static T GetOrSet<T>(this ISettingStore settings, string key, T defaultValue, string description)
@@ -42,18 +42,18 @@ public static class ReadWriteValueExtensions
     {
         T returnValue;
 
-        string keyValue = settings.Get(key);
+        string? keyValue = settings.Get(key);
 
         if (keyValue.IsNullOrWhiteSpace())
         {
             returnValue = getDefaultValue();
 
             // set default
-            settings.Set(key, returnValue);
+            settings.Set(key, returnValue!);
         }
         else
         {
-            returnValue = keyValue.ToType<T>();
+            returnValue = keyValue.ToType<T>()!;
         }
 
         var descriptionKey = $"{key}_Description";
@@ -76,17 +76,17 @@ public static class ReadWriteValueExtensions
         if (getDefaultValue == null) throw new ArgumentNullException(nameof(getDefaultValue));
 
         string value = readValue.Get(key);
-        return value.IsNullOrWhiteSpace() ? getDefaultValue() : value.ToType<T>();
+        return value.IsNullOrWhiteSpace() ? getDefaultValue() : value.ToType<T>()!;
     }
 
     public static T Get<T>(
         this IReadValue<string> readValue,
         string key,
-        [CanBeNull] T defaultValue = default(T))
+        T? defaultValue = default!)
     {
         if (readValue == null) throw new ArgumentNullException(nameof(readValue));
         if (key == null) throw new ArgumentNullException(nameof(key));
 
-        return readValue.Get(key, () => defaultValue);
+        return readValue.Get(key, () => defaultValue!);
     }
 }

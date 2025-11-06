@@ -1,365 +1,387 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-// https://raw.githubusercontent.com/aspnet/Hosting/rel/1.1.2/src/Microsoft.AspNetCore.TestHost/ResponseStream.cs
+﻿//// Papercut
+////
+//// Copyright © 2008 - 2012 Ken Robertson
+//// Copyright © 2013 - 2025 Jaben Cargman
+////
+//// Licensed under the Apache License, Version 2.0 (the "License");
+//// you may not use this file except in compliance with the License.
+//// You may obtain a copy of the License at
+////
+//// http://www.apache.org/licenses/LICENSE-2.0
+////
+//// Unless required by applicable law or agreed to in writing, software
+//// distributed under the License is distributed on an "AS IS" BASIS,
+//// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//// See the License for the specific language governing permissions and
+//// limitations under the License.
 
+//using System.Collections.Concurrent;
+//using System.Diagnostics.Contracts;
 
-namespace Papercut.Service.Infrastructure.Hosting.InProcess;
+//namespace Papercut.Service.Infrastructure.Hosting.InProcess;
 
-using System.Collections.Concurrent;
-using System.Diagnostics.Contracts;
+//// This steam accepts writes from the server/app, buffers them internally, and returns the data via Reads
+//// when requested by the client.
+//internal class ResponseStream : Stream
+//{
+//    private bool _aborted;
 
-// This steam accepts writes from the server/app, buffers them internally, and returns the data via Reads
-// when requested by the client.
-internal class ResponseStream : Stream
-{
-    private bool _complete;
-    private bool _aborted;
-    private Exception _abortException;
-    private ConcurrentQueue<byte[]> _bufferedData;
-    private ArraySegment<byte> _topBuffer;
-    private SemaphoreSlim _readLock;
-    private SemaphoreSlim _writeLock;
-    private TaskCompletionSource<object> _readWaitingForData;
-    private object _signalReadLock;
+//    private Exception _abortException;
 
-    private Func<Task> _onFirstWriteAsync;
-    private bool _firstWrite;
-    private Action _abortRequest;
+//    private readonly Action _abortRequest;
 
-    internal ResponseStream(Func<Task> onFirstWriteAsync, Action abortRequest)
-    {
-            if (onFirstWriteAsync == null)
-            {
-                throw new ArgumentNullException(nameof(onFirstWriteAsync));
-            }
+//    private readonly ConcurrentQueue<byte[]> _bufferedData;
 
-            if (abortRequest == null)
-            {
-                throw new ArgumentNullException(nameof(abortRequest));
-            }
+//    private bool _complete;
 
-            _onFirstWriteAsync = onFirstWriteAsync;
-            _firstWrite = true;
-            _abortRequest = abortRequest;
+//    private bool _firstWrite;
 
-            _readLock = new SemaphoreSlim(1, 1);
-            _writeLock = new SemaphoreSlim(1, 1);
-            _bufferedData = new ConcurrentQueue<byte[]>();
-            _readWaitingForData = new TaskCompletionSource<object>();
-            _signalReadLock = new object();
-        }
+//    private readonly Func<Task> _onFirstWriteAsync;
 
-    public override bool CanRead
-    {
-        get { return true; }
-    }
+//    private readonly SemaphoreSlim _readLock;
 
-    public override bool CanSeek
-    {
-        get { return false; }
-    }
+//    private TaskCompletionSource<object> _readWaitingForData;
 
-    public override bool CanWrite
-    {
-        get { return true; }
-    }
+//    private readonly object _signalReadLock;
 
-    #region NotSupported
+//    private ArraySegment<byte> _topBuffer;
 
-    public override long Length
-    {
-        get { throw new NotSupportedException(); }
-    }
+//    private readonly SemaphoreSlim _writeLock;
 
-    public override long Position
-    {
-        get { throw new NotSupportedException(); }
-        set { throw new NotSupportedException(); }
-    }
+//    internal ResponseStream(Func<Task> onFirstWriteAsync, Action abortRequest)
+//    {
+//            if (onFirstWriteAsync == null)
+//            {
+//                throw new ArgumentNullException(nameof(onFirstWriteAsync));
+//            }
 
-    public override long Seek(long offset, SeekOrigin origin)
-    {
-            throw new NotSupportedException();
-        }
+//            if (abortRequest == null)
+//            {
+//                throw new ArgumentNullException(nameof(abortRequest));
+//            }
 
-    public override void SetLength(long value)
-    {
-            throw new NotSupportedException();
-        }
+//            _onFirstWriteAsync = onFirstWriteAsync;
+//            _firstWrite = true;
+//            _abortRequest = abortRequest;
 
-    #endregion NotSupported
+//            _readLock = new SemaphoreSlim(1, 1);
+//            _writeLock = new SemaphoreSlim(1, 1);
+//            _bufferedData = new ConcurrentQueue<byte[]>();
+//            _readWaitingForData = new TaskCompletionSource<object>();
+//            _signalReadLock = new object();
+//        }
 
-    public override void Flush()
-    {
-            CheckNotComplete();
+//    public override bool CanRead
+//    {
+//        get { return true; }
+//    }
 
-            _writeLock.Wait();
-            try
-            {
-                FirstWriteAsync().GetAwaiter().GetResult();
-            }
-            finally
-            {
-                _writeLock.Release();
-            }
+//    public override bool CanSeek
+//    {
+//        get { return false; }
+//    }
 
-            // TODO: Wait for data to drain?
-        }
+//    public override bool CanWrite
+//    {
+//        get { return true; }
+//    }
 
-    public override Task FlushAsync(CancellationToken cancellationToken)
-    {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-                tcs.TrySetCanceled();
-                return tcs.Task;
-            }
+//    public override void Flush()
+//    {
+//            CheckNotComplete();
 
-            Flush();
+//            _writeLock.Wait();
+//            try
+//            {
+//                FirstWriteAsync().GetAwaiter().GetResult();
+//            }
+//            finally
+//            {
+//                _writeLock.Release();
+//            }
 
-            // TODO: Wait for data to drain?
+//            // TODO: Wait for data to drain?
+//        }
 
-            return Task.FromResult<object>(null);
-        }
+//    public override Task FlushAsync(CancellationToken cancellationToken)
+//    {
+//            if (cancellationToken.IsCancellationRequested)
+//            {
+//                TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+//                tcs.TrySetCanceled();
+//                return tcs.Task;
+//            }
 
-    public override int Read(byte[] buffer, int offset, int count)
-    {
-            VerifyBuffer(buffer, offset, count, allowEmpty: false);
-            _readLock.Wait();
-            try
-            {
-                int totalRead = 0;
-                do
-                {
-                    // Don't drain buffered data when signaling an abort.
-                    CheckAborted();
-                    if (_topBuffer.Count <= 0)
-                    {
-                        byte[] topBuffer = null;
-                        while (!_bufferedData.TryDequeue(out topBuffer))
-                        {
-                            if (_complete)
-                            {
-                                CheckAborted();
-                                // Graceful close
-                                return totalRead;
-                            }
-                            WaitForDataAsync().Wait();
-                        }
-                        _topBuffer = new ArraySegment<byte>(topBuffer);
-                    }
-                    int actualCount = Math.Min(count, _topBuffer.Count);
-                    Buffer.BlockCopy(_topBuffer.Array, _topBuffer.Offset, buffer, offset, actualCount);
-                    _topBuffer = new ArraySegment<byte>(_topBuffer.Array,
-                        _topBuffer.Offset + actualCount,
-                        _topBuffer.Count - actualCount);
-                    totalRead += actualCount;
-                    offset += actualCount;
-                    count -= actualCount;
-                }
-                while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
-                // Keep reading while there is more data available and we have more space to put it in.
-                return totalRead;
-            }
-            finally
-            {
-                _readLock.Release();
-            }
-        }
+//            Flush();
 
-    public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
-        VerifyBuffer(buffer, offset, count, allowEmpty: false);
-        CancellationTokenRegistration registration = cancellationToken.Register(Abort);
-        await _readLock.WaitAsync(cancellationToken);
-        try
-        {
-            int totalRead = 0;
-            do
-            {
-                // Don't drained buffered data on abort.
-                CheckAborted();
-                if (_topBuffer.Count <= 0)
-                {
-                    byte[] topBuffer = null;
-                    while (!_bufferedData.TryDequeue(out topBuffer))
-                    {
-                        if (_complete)
-                        {
-                            CheckAborted();
-                            // Graceful close
-                            return totalRead;
-                        }
-                        await WaitForDataAsync();
-                    }
-                    _topBuffer = new ArraySegment<byte>(topBuffer);
-                }
-                int actualCount = Math.Min(count, _topBuffer.Count);
-                Buffer.BlockCopy(_topBuffer.Array, _topBuffer.Offset, buffer, offset, actualCount);
-                _topBuffer = new ArraySegment<byte>(_topBuffer.Array,
-                    _topBuffer.Offset + actualCount,
-                    _topBuffer.Count - actualCount);
-                totalRead += actualCount;
-                offset += actualCount;
-                count -= actualCount;
-            }
-            while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
-            // Keep reading while there is more data available and we have more space to put it in.
-            return totalRead;
-        }
-        finally
-        {
-            registration.Dispose();
-            _readLock.Release();
-        }
-    }
+//            // TODO: Wait for data to drain?
 
-    // Called under write-lock.
-    private Task FirstWriteAsync()
-    {
-            if (_firstWrite)
-            {
-                _firstWrite = false;
-                return _onFirstWriteAsync();
-            }
-            return Task.FromResult(true);
-        }
+//            return Task.FromResult<object>(null);
+//        }
 
-    // Write with count 0 will still trigger OnFirstWrite
-    public override void Write(byte[] buffer, int offset, int count)
-    {
-            VerifyBuffer(buffer, offset, count, allowEmpty: true);
-            CheckNotComplete();
+//    public override int Read(byte[] buffer, int offset, int count)
+//    {
+//            VerifyBuffer(buffer, offset, count, allowEmpty: false);
+//            _readLock.Wait();
+//            try
+//            {
+//                int totalRead = 0;
+//                do
+//                {
+//                    // Don't drain buffered data when signaling an abort.
+//                    CheckAborted();
+//                    if (_topBuffer.Count <= 0)
+//                    {
+//                        byte[] topBuffer = null;
+//                        while (!_bufferedData.TryDequeue(out topBuffer))
+//                        {
+//                            if (_complete)
+//                            {
+//                                CheckAborted();
+//                                // Graceful close
+//                                return totalRead;
+//                            }
+//                            WaitForDataAsync().Wait();
+//                        }
+//                        _topBuffer = new ArraySegment<byte>(topBuffer);
+//                    }
+//                    int actualCount = Math.Min(count, _topBuffer.Count);
+//                    Buffer.BlockCopy(_topBuffer.Array, _topBuffer.Offset, buffer, offset, actualCount);
+//                    _topBuffer = new ArraySegment<byte>(_topBuffer.Array,
+//                        _topBuffer.Offset + actualCount,
+//                        _topBuffer.Count - actualCount);
+//                    totalRead += actualCount;
+//                    offset += actualCount;
+//                    count -= actualCount;
+//                }
+//                while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
+//                // Keep reading while there is more data available and we have more space to put it in.
+//                return totalRead;
+//            }
+//            finally
+//            {
+//                _readLock.Release();
+//            }
+//        }
 
-            _writeLock.Wait();
-            try
-            {
-                FirstWriteAsync().GetAwaiter().GetResult();
-                if (count == 0)
-                {
-                    return;
-                }
-                // Copies are necessary because we don't know what the caller is going to do with the buffer afterwards.
-                byte[] internalBuffer = new byte[count];
-                Buffer.BlockCopy(buffer, offset, internalBuffer, 0, count);
-                _bufferedData.Enqueue(internalBuffer);
+//    public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+//    {
+//        VerifyBuffer(buffer, offset, count, allowEmpty: false);
+//        CancellationTokenRegistration registration = cancellationToken.Register(Abort);
+//        await _readLock.WaitAsync(cancellationToken);
+//        try
+//        {
+//            int totalRead = 0;
+//            do
+//            {
+//                // Don't drained buffered data on abort.
+//                CheckAborted();
+//                if (_topBuffer.Count <= 0)
+//                {
+//                    byte[] topBuffer = null;
+//                    while (!_bufferedData.TryDequeue(out topBuffer))
+//                    {
+//                        if (_complete)
+//                        {
+//                            CheckAborted();
+//                            // Graceful close
+//                            return totalRead;
+//                        }
+//                        await WaitForDataAsync();
+//                    }
+//                    _topBuffer = new ArraySegment<byte>(topBuffer);
+//                }
+//                int actualCount = Math.Min(count, _topBuffer.Count);
+//                Buffer.BlockCopy(_topBuffer.Array, _topBuffer.Offset, buffer, offset, actualCount);
+//                _topBuffer = new ArraySegment<byte>(_topBuffer.Array,
+//                    _topBuffer.Offset + actualCount,
+//                    _topBuffer.Count - actualCount);
+//                totalRead += actualCount;
+//                offset += actualCount;
+//                count -= actualCount;
+//            }
+//            while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
+//            // Keep reading while there is more data available and we have more space to put it in.
+//            return totalRead;
+//        }
+//        finally
+//        {
+//            registration.Dispose();
+//            _readLock.Release();
+//        }
+//    }
 
-                SignalDataAvailable();
-            }
-            finally
-            {
-                _writeLock.Release();
-            }
-        }
+//    // Called under write-lock.
+//    private Task FirstWriteAsync()
+//    {
+//            if (_firstWrite)
+//            {
+//                _firstWrite = false;
+//                return _onFirstWriteAsync();
+//            }
+//            return Task.FromResult(true);
+//        }
 
-    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
-            VerifyBuffer(buffer, offset, count, allowEmpty: true);
-            if (cancellationToken.IsCancellationRequested)
-            {
-                TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-                tcs.TrySetCanceled();
-                return tcs.Task;
-            }
+//    // Write with count 0 will still trigger OnFirstWrite
+//    public override void Write(byte[] buffer, int offset, int count)
+//    {
+//            VerifyBuffer(buffer, offset, count, allowEmpty: true);
+//            CheckNotComplete();
 
-            Write(buffer, offset, count);
-            return Task.FromResult<object>(null);
-        }
+//            _writeLock.Wait();
+//            try
+//            {
+//                FirstWriteAsync().GetAwaiter().GetResult();
+//                if (count == 0)
+//                {
+//                    return;
+//                }
+//                // Copies are necessary because we don't know what the caller is going to do with the buffer afterwards.
+//                byte[] internalBuffer = new byte[count];
+//                Buffer.BlockCopy(buffer, offset, internalBuffer, 0, count);
+//                _bufferedData.Enqueue(internalBuffer);
 
-    private static void VerifyBuffer(byte[] buffer, int offset, int count, bool allowEmpty)
-    {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("buffer");
-            }
-            if (offset < 0 || offset > buffer.Length)
-            {
-                throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
-            }
-            if (count < 0 || count > buffer.Length - offset
-                || !allowEmpty && count == 0)
-            {
-                throw new ArgumentOutOfRangeException("count", count, string.Empty);
-            }
-        }
+//                SignalDataAvailable();
+//            }
+//            finally
+//            {
+//                _writeLock.Release();
+//            }
+//        }
 
-    private void SignalDataAvailable()
-    {
-            // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
-            Task.Factory.StartNew(() => _readWaitingForData.TrySetResult(null));
-        }
+//    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+//    {
+//            VerifyBuffer(buffer, offset, count, allowEmpty: true);
+//            if (cancellationToken.IsCancellationRequested)
+//            {
+//                TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+//                tcs.TrySetCanceled();
+//                return tcs.Task;
+//            }
 
-    private Task WaitForDataAsync()
-    {
-            // Prevent race with Dispose
-            lock (_signalReadLock)
-            {
-                _readWaitingForData = new TaskCompletionSource<object>();
+//            Write(buffer, offset, count);
+//            return Task.FromResult<object>(null);
+//        }
 
-                if (!_bufferedData.IsEmpty || _complete)
-                {
-                    // Race, data could have arrived before we created the TCS.
-                    _readWaitingForData.TrySetResult(null);
-                }
+//    private static void VerifyBuffer(byte[] buffer, int offset, int count, bool allowEmpty)
+//    {
+//            if (buffer == null)
+//            {
+//                throw new ArgumentNullException("buffer");
+//            }
+//            if (offset < 0 || offset > buffer.Length)
+//            {
+//                throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
+//            }
+//            if (count < 0 || count > buffer.Length - offset
+//                || (!allowEmpty && count == 0))
+//            {
+//                throw new ArgumentOutOfRangeException("count", count, string.Empty);
+//            }
+//        }
 
-                return _readWaitingForData.Task;
-            }
-        }
+//    private void SignalDataAvailable()
+//    {
+//            // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
+//            Task.Factory.StartNew(() => _readWaitingForData.TrySetResult(null));
+//        }
 
-    internal void Abort()
-    {
-            Abort(new OperationCanceledException());
-        }
+//    private Task WaitForDataAsync()
+//    {
+//            // Prevent race with Dispose
+//            lock (_signalReadLock)
+//            {
+//                _readWaitingForData = new TaskCompletionSource<object>();
 
-    internal void Abort(Exception innerException)
-    {
-            Contract.Requires(innerException != null);
-            _aborted = true;
-            _abortException = innerException;
-            Complete();
-        }
+//                if (!_bufferedData.IsEmpty || _complete)
+//                {
+//                    // Race, data could have arrived before we created the TCS.
+//                    _readWaitingForData.TrySetResult(null);
+//                }
 
-    internal void Complete()
-    {
-            // If HttpClient.Dispose gets called while HttpClient.SetTask...() is called
-            // there is a chance that this method will be called twice and hang on the lock
-            // to prevent this we can check if there is already a thread inside the lock
-            if (_complete)
-            {
-                return;
-            }
+//                return _readWaitingForData.Task;
+//            }
+//        }
 
-            // Prevent race with WaitForDataAsync
-            lock (_signalReadLock)
-            {
-                // Throw for further writes, but not reads.  Allow reads to drain the buffered data and then return 0 for further reads.
-                _complete = true;
-                _readWaitingForData.TrySetResult(null);
-            }
-        }
+//    internal void Abort()
+//    {
+//            Abort(new OperationCanceledException());
+//        }
 
-    private void CheckAborted()
-    {
-            if (_aborted)
-            {
-                throw new IOException(string.Empty, _abortException);
-            }
-        }
+//    internal void Abort(Exception innerException)
+//    {
+//            Contract.Requires(innerException != null);
+//            _aborted = true;
+//            _abortException = innerException;
+//            Complete();
+//        }
 
-    protected override void Dispose(bool disposing)
-    {
-            if (disposing)
-            {
-                _abortRequest();
-            }
-            base.Dispose(disposing);
-        }
+//    internal void Complete()
+//    {
+//            // If HttpClient.Dispose gets called while HttpClient.SetTask...() is called
+//            // there is a chance that this method will be called twice and hang on the lock
+//            // to prevent this we can check if there is already a thread inside the lock
+//            if (_complete)
+//            {
+//                return;
+//            }
 
-    private void CheckNotComplete()
-    {
-            if (_complete)
-            {
-                throw new IOException("The request was aborted or the pipeline has finished");
-            }
-        }
-}
+//            // Prevent race with WaitForDataAsync
+//            lock (_signalReadLock)
+//            {
+//                // Throw for further writes, but not reads.  Allow reads to drain the buffered data and then return 0 for further reads.
+//                _complete = true;
+//                _readWaitingForData.TrySetResult(null);
+//            }
+//        }
+
+//    private void CheckAborted()
+//    {
+//            if (_aborted)
+//            {
+//                throw new IOException(string.Empty, _abortException);
+//            }
+//        }
+
+//    protected override void Dispose(bool disposing)
+//    {
+//            if (disposing)
+//            {
+//                _abortRequest();
+//            }
+//            base.Dispose(disposing);
+//        }
+
+//    private void CheckNotComplete()
+//    {
+//            if (_complete)
+//            {
+//                throw new IOException("The request was aborted or the pipeline has finished");
+//            }
+//        }
+
+//    #region NotSupported
+
+//    public override long Length
+//    {
+//        get { throw new NotSupportedException(); }
+//    }
+
+//    public override long Position
+//    {
+//        get { throw new NotSupportedException(); }
+//        set { throw new NotSupportedException(); }
+//    }
+
+//    public override long Seek(long offset, SeekOrigin origin)
+//    {
+//            throw new NotSupportedException();
+//        }
+
+//    public override void SetLength(long value)
+//    {
+//            throw new NotSupportedException();
+//        }
+
+//    #endregion NotSupported
+//}

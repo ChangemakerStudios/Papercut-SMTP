@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,15 +23,13 @@ using Papercut.Core.Domain.Paths;
 
 namespace Papercut.Message;
 
-public class MessageRepository(ILogger logger, MessagePathConfigurator messagePathConfigurator)
+public class MessageRepository(IPathConfigurator pathConfigurator, ILogger logger) : IMessageRepository
 {
-    public const string MessageFileSearchPattern = "*.eml";
-
     private const string EmptyStringReplacement = "_";
 
-    static char[]? _invalidFileNameChars;
+    protected static char[]? _invalidFileNameChars;
 
-    public bool DeleteMessage(MessageEntry entry)
+    public virtual bool DeleteMessage(MessageEntry entry)
     {
         // Delete the file and remove the entry
         if (!File.Exists(entry.File))
@@ -58,7 +56,7 @@ public class MessageRepository(ILogger logger, MessagePathConfigurator messagePa
         return true;
     }
 
-    public async Task<byte[]> GetMessage(string? file)
+    public virtual async Task<byte[]> GetMessage(string? file)
     {
         if (!File.Exists(file))
             throw new IOException($"File {file} Does Not Exist");
@@ -87,13 +85,13 @@ public class MessageRepository(ILogger logger, MessagePathConfigurator messagePa
     /// <summary>
     /// Loads all messages
     /// </summary>
-    public IEnumerable<MessageEntry> LoadMessages()
+    public virtual IEnumerable<MessageEntry> LoadMessages()
     {
-        return messagePathConfigurator.LoadPaths.SelectMany(
-            p => Directory.GetFiles(p, MessageFileSearchPattern)).Select(file => new MessageEntry(file));
+        return pathConfigurator.LoadPaths.SelectMany(
+            p => Directory.GetFiles(p, IMessageRepository.MessageFileSearchPattern)).Select(file => new MessageEntry(file));
     }
 
-    public string GetFullMailFilename(string mailSubject)
+    public virtual string GetFullMailFilename(string mailSubject)
     {
         var validPart = MakeValidFileName(mailSubject.Truncate(40)!, "subject unknown");
 
@@ -101,13 +99,13 @@ public class MessageRepository(ILogger logger, MessagePathConfigurator messagePa
 
         // the file must not exist:  the resolution of DataTime.Now may be slow w.r.t. the speed of the received files
         return Path.Combine(
-            messagePathConfigurator.DefaultSavePath,
+            pathConfigurator.DefaultSavePath,
             $"{dateTimeFormatted} {validPart} {StringHelpers.SmallRandomString()}.eml");
     }
 
-    public async Task<string> SaveMessage(string mailSubject, Func<FileStream, Task> writeTo)
+    public virtual async Task<string> SaveMessage(string mailSubject, Func<FileStream, Task> writeTo)
     {
-        var fileName = this.GetFullMailFilename(mailSubject);
+        var fileName = GetFullMailFilename(mailSubject);
 
         try
         {

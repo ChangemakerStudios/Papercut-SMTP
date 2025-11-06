@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ namespace Papercut.Core.Infrastructure.MessageBus;
 [PublicAPI]
 public static class PublishEventExtensions
 {
-    static readonly MethodInfo _publishAsyncMethodInfo = typeof(IMessageBus).GetMethod(nameof(IMessageBus.PublishAsync));
+    static readonly MethodInfo? _publishAsyncMethodInfo = typeof(IMessageBus).GetMethod(nameof(IMessageBus.PublishAsync));
 
     public static Task PublishObjectAsync(
         this IMessageBus messageBus,
@@ -34,9 +34,10 @@ public static class PublishEventExtensions
         CancellationToken token = default)
     {
         if (messageBus == null) throw new ArgumentNullException(nameof(messageBus));
+        if (_publishAsyncMethodInfo == null) throw new InvalidOperationException("PublishAsync method not found");
 
         MethodInfo publishMethod = _publishAsyncMethodInfo.MakeGenericMethod(eventType);
 
-        return (Task)publishMethod.Invoke(messageBus, new[] { @event, token });
+        return (Task)publishMethod.Invoke(messageBus, [@event, token])!;
     }
 }

@@ -1,7 +1,7 @@
 // Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,16 +18,11 @@
 
 namespace Papercut.Infrastructure.IPComm.Protocols;
 
-public abstract class StringCommandProtocol : IProtocol
+public abstract class StringCommandProtocol(ILogger logger) : IProtocol
 {
-    StringBuilder _stringBuffer = new StringBuilder();
+    StringBuilder _stringBuffer = new();
 
-    protected StringCommandProtocol(ILogger logger)
-    {
-        this.Logger = logger;
-    }
-
-    protected ILogger Logger { get; set; }
+    protected ILogger Logger { get; set; } = logger;
 
     public abstract Task BeginAsync(Connection connection, CancellationToken token = default);
 

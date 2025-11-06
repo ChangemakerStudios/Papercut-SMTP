@@ -1,7 +1,7 @@
 ﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,12 +16,8 @@
 // limitations under the License.
 
 
-using System.IO;
-using System.Reflection;
-using System.Windows;
+using System;
 using System.Windows.Resources;
-
-using Autofac;
 
 namespace Papercut.Infrastructure.Resources;
 
@@ -40,10 +36,17 @@ public class AppResourceLocator(ILogger logger)
                 .GetManifestResourceNames()
                 .FirstOrDefault(s => s.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));
 
-        using var streamReader = new StreamReader(
-            Assembly.GetExecutingAssembly().GetManifestResourceStream(resource),
-            Encoding.Default);
-        return streamReader.ReadToEnd();
+        if (resource != null)
+        {
+            var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource);
+            if (stream != null)
+            {
+                using var streamReader = new StreamReader(stream, Encoding.Default);
+                return streamReader.ReadToEnd();
+            }
+        }
+
+        throw new FileNotFoundException($"Resource '{resourceName}' does not exist", resourceName);
     }
 
     public StreamResourceInfo? GetResource(string resourceName)

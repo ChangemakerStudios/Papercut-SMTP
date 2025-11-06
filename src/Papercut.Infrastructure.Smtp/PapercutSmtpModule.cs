@@ -53,10 +53,10 @@ public class PapercutSmtpModule : Module
             ctx =>
             {
                 return new DelegatingMailboxFilterFactory(
-                    context => new DelegatingMailboxFilter(mailbox => true));
+                    _ => new DelegatingMailboxFilter(_ => true));
             }).As<IMailboxFilterFactory>();
 
-        builder.Register(
+        builder.Register<SmtpServer.SmtpServer>(
             (ctx, p) =>
             {
                 var c = ctx.Resolve<IComponentContext>();
@@ -73,7 +73,7 @@ public class PapercutSmtpModule : Module
                         .Error(ex, "Failure Loading Smtp Server");
                 }
 
-                return null;
+                throw new ArgumentNullException(nameof(SmtpServer.SmtpServer), "Failed to Initialize the Smtp Server");
             }).As<SmtpServer.SmtpServer>();
     }
 }

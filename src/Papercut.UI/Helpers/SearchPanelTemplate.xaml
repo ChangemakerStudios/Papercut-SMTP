@@ -1,0 +1,188 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit">
+
+    <!-- Modern Search Panel Template -->
+    <ControlTemplate x:Key="ModernSearchPanelTemplate" TargetType="{x:Type avalonedit:SearchPanel}">
+        <Border Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                BorderThickness="0,0,0,1"
+                Padding="8,6,8,6"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.15" Color="Black"/>
+            </Border.Effect>
+
+            <StackPanel Orientation="Horizontal">
+                <!-- Search TextBox -->
+                <TextBox Name="PART_searchTextBox"
+                         Width="240"
+                         Height="32"
+                         Padding="8,6"
+                         FontSize="14"
+                         VerticalContentAlignment="Center"
+                         BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
+                         BorderThickness="2"
+                         Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                         Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                         Text="{Binding SearchPattern, RelativeSource={RelativeSource TemplatedParent}, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Gray8}"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Accent}"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+
+                <!-- Match Case CheckBox -->
+                <CheckBox Content="Match case"
+                          IsChecked="{Binding MatchCase, RelativeSource={RelativeSource TemplatedParent}}"
+                          Margin="8,0,0,0"
+                          VerticalAlignment="Center"
+                          Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                          FontSize="13"/>
+
+                <!-- Whole Words CheckBox -->
+                <CheckBox Content="Whole words"
+                          IsChecked="{Binding WholeWords, RelativeSource={RelativeSource TemplatedParent}}"
+                          Margin="8,0,0,0"
+                          VerticalAlignment="Center"
+                          Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                          FontSize="13"/>
+
+                <!-- Use Regex CheckBox -->
+                <CheckBox Content="Regex"
+                          IsChecked="{Binding UseRegex, RelativeSource={RelativeSource TemplatedParent}}"
+                          Margin="8,0,0,0"
+                          VerticalAlignment="Center"
+                          Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                          FontSize="13"/>
+
+                <!-- Previous Button -->
+                <Button Command="avalonedit:SearchCommands.FindPrevious"
+                        Margin="8,0,2,0"
+                        Width="32"
+                        Height="32"
+                        ToolTip="Find Previous (Shift+F3)"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="3"
+                                                Padding="6">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Gray8}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Path Data="M 0,5 L 5,0 L 10,5"
+                          Stroke="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                          StrokeThickness="2"
+                          Stretch="Uniform"
+                          Width="12"
+                          Height="12"/>
+                </Button>
+
+                <!-- Next Button -->
+                <Button Command="avalonedit:SearchCommands.FindNext"
+                        Margin="2,0,2,0"
+                        Width="32"
+                        Height="32"
+                        ToolTip="Find Next (F3)"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="3"
+                                                Padding="6">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Gray8}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Path Data="M 0,0 L 5,5 L 10,0"
+                          Stroke="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                          StrokeThickness="2"
+                          Stretch="Uniform"
+                          Width="12"
+                          Height="12"/>
+                </Button>
+
+                <!-- Close Button -->
+                <Button Command="avalonedit:SearchCommands.CloseSearchPanel"
+                        Margin="8,0,0,0"
+                        Width="32"
+                        Height="32"
+                        ToolTip="Close (Esc)"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="3"
+                                                Padding="6">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Gray8}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Path Data="M 0,0 L 10,10 M 10,0 L 0,10"
+                          Stroke="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                          StrokeThickness="2"
+                          Stretch="Uniform"
+                          Width="12"
+                          Height="12"/>
+                </Button>
+            </StackPanel>
+        </Border>
+    </ControlTemplate>
+
+</ResourceDictionary>
