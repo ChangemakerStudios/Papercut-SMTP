@@ -83,6 +83,13 @@ public class PathTemplateHelper
             }
         }
 
+        renderedPath = renderedPath
+            .Replace($"\\", $@"{Path.DirectorySeparatorChar}")
+            .Replace($"//", $@"{Path.DirectorySeparatorChar}")
+            .Replace("/", $@"{Path.DirectorySeparatorChar}")
+            .Replace(@"\", $@"{Path.DirectorySeparatorChar}");
+
+
         // Normalize all path separators to OS-appropriate separator
         // Replace both forward and backslashes, then deduplicate
         renderedPath = renderedPath.Replace('\\', Path.DirectorySeparatorChar)
