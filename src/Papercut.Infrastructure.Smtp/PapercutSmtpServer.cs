@@ -133,7 +133,7 @@ public class PapercutSmtpServer(
 
     private void OnSessionCompleted(object? sender, SessionEventArgs e)
     {
-        logger.Information("Completed SMTP connection from {RemoteIp}", GetRemoteEndPoint(e.Context));
+        logger.Information("Completed SMTP connection from {RemoteIp}", e.Context.GetRemoteIpAddress());
     }
 
     private void OnSessionCreated(object? sender, SessionEventArgs e)
@@ -143,25 +143,12 @@ public class PapercutSmtpServer(
             logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
         };
 
-        var remoteIp = GetRemoteEndPoint(e.Context);
+        var remoteIp = e.Context.GetRemoteIpAddress();
 
         logger.Information("New SMTP connection from {RemoteIp}", remoteIp);
 
         // IP validation is now handled by IpAllowlistMailboxFilter via IMailboxFilter interface
         // This provides proper rejection semantics and prevents socket resource leaks
-    }
-
-    private IPAddress GetRemoteEndPoint(ISessionContext context)
-    {
-        const string RemoteEndPointKey = "EndpointListener:RemoteEndPoint";
-
-        if (context.Properties.TryGetValue(RemoteEndPointKey, out var endpointObj)
-            && endpointObj is IPEndPoint remoteEndPoint)
-        {
-            return remoteEndPoint.Address;
-        }
-
-        return IPAddress.None;
     }
 
     private bool IgnoreCertificateValidationFailureForTestingOnly(

@@ -39,7 +39,7 @@ internal sealed class IpAllowlistMailboxFilter(IPAllowedList ipAllowedList, ILog
         int size,
         CancellationToken cancellationToken)
     {
-        var remoteIp = GetRemoteEndPoint(context);
+        var remoteIp = context.GetRemoteIpAddress();
 
         // Skip validation if we couldn't determine the remote IP (IPAddress.None)
         if (remoteIp.Equals(IPAddress.None))
@@ -71,18 +71,5 @@ internal sealed class IpAllowlistMailboxFilter(IPAllowedList ipAllowedList, ILog
         // IP validation only applies to the connection, not individual recipients
         // Once MAIL FROM is accepted, allow delivery to any recipient
         return Task.FromResult(true);
-    }
-
-    private IPAddress GetRemoteEndPoint(ISessionContext context)
-    {
-        const string RemoteEndPointKey = "EndpointListener:RemoteEndPoint";
-
-        if (context.Properties.TryGetValue(RemoteEndPointKey, out var endpointObj)
-            && endpointObj is IPEndPoint remoteEndPoint)
-        {
-            return remoteEndPoint.Address;
-        }
-
-        return IPAddress.None;
     }
 }
