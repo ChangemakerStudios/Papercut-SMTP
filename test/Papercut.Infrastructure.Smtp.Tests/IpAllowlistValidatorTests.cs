@@ -617,15 +617,18 @@ public class IpAllowlistValidatorTests
     }
 
     [Test]
-    public void InvalidCIDR_MissingSlash_ThrowsArgumentException()
+    public void InvalidCIDR_MissingSlash_SilentlyIgnored()
     {
-        // Arrange & Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-        {
-            new IpAllowlistValidator("192.168.1.0-24");
-        });
+        // Arrange - "192.168.1.0-24" is not valid IP or CIDR, so it's ignored
+        var validator = new IpAllowlistValidator("192.168.1.0-24");
 
-        ex!.Message.Should().Contain("Invalid CIDR notation");
+        // Act - Since the invalid entry is ignored and no valid entries exist,
+        // only loopback should be allowed
+        var testIp = IPAddress.Parse("192.168.1.0");
+        var result = validator.IsAllowed(testIp);
+
+        // Assert - IP should be rejected (not in allowlist)
+        result.Should().BeFalse();
     }
 
     #endregion

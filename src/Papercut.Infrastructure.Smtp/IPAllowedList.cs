@@ -1,14 +1,14 @@
 // Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
-//
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,18 +19,24 @@
 using System.Net;
 using System.Net.Sockets;
 
+using Papercut.Common.Domain;
+using Papercut.Common.Helper;
+
 namespace Papercut.Infrastructure.Smtp;
 
-public class IpAllowlistValidator
+/// <summary>
+/// Domain object representing an IP allowlist for SMTP connections.
+/// Immutable value object that encapsulates IP validation logic.
+/// </summary>
+public sealed class IPAllowedList
 {
-    private readonly List<IpRange> _allowedRanges = new();
-    private readonly bool _allowAll;
+    private readonly HashSet<IpRange> _allowedRanges = new();
 
-    public IpAllowlistValidator(string allowedHosts)
+    private IPAllowedList(string allowedHosts)
     {
         if (string.IsNullOrWhiteSpace(allowedHosts) || allowedHosts.Trim() == "*")
         {
-            _allowAll = true;
+            IsAllowAll = true;
             return;
         }
 
@@ -41,7 +47,7 @@ public class IpAllowlistValidator
         {
             if (entry == "*")
             {
-                _allowAll = true;
+                IsAllowAll = true;
                 _allowedRanges.Clear();
                 return;
             }
@@ -62,9 +68,45 @@ public class IpAllowlistValidator
         }
     }
 
+    /// <summary>
+    /// Creates an IPAllowedList that allows all connections.
+    /// </summary>
+    public static IPAllowedList AllowAll => new("*");
+
+    /// <summary>
+    /// Creates an IPAllowedList that only allows localhost connections.
+    /// </summary>
+    public static IPAllowedList LocalhostOnly => new("127.0.0.1,::1");
+
+    public bool IsAllowAll { get; }
+
+    /// <summary>
+    /// Creates an IPAllowedList from a string specification.
+    /// </summary>
+    /// <param name="allowedHostsSpec">
+    /// Comma-separated list of allowed client IP addresses or CIDR ranges.
+    /// Use "*" to allow all hosts (default).
+    /// Examples: "192.168.1.0/24,10.0.0.0/8" or "127.0.0.1,192.168.1.100"
+    /// </param>
+    /// <returns>ExecutionResult containing the IPAllowedList or error details</returns>
+    public static ExecutionResult<IPAllowedList> Create(string? allowedHostsSpec)
+    {
+        // Normalize null or empty to "*" (allow all)
+        allowedHostsSpec = string.IsNullOrWhiteSpace(allowedHostsSpec) ? "*" : allowedHostsSpec.Trim();
+
+        try
+        {
+            return ExecutionResult.Success(new IPAllowedList(allowedHostsSpec));
+        }
+        catch (ArgumentException ex)
+        {
+            return ExecutionResult.Failure<IPAllowedList>($"Invalid IP allowlist specification '{allowedHostsSpec}': {ex.Message}");
+        }
+    }
+
     public bool IsAllowed(IPAddress ipAddress)
     {
-        if (_allowAll)
+        if (IsAllowAll)
         {
             return true;
         }
@@ -154,6 +196,11 @@ public class IpAllowlistValidator
         return maskBytes;
     }
 
+    public override string ToString()
+    {
+        return IsAllowAll ? "All" : _allowedRanges.Select(ipRange => ipRange.ToString()).Join(", ");
+    }
+
     private readonly record struct IpRange(IPAddress Start, IPAddress End)
     {
         public bool Contains(IPAddress address)
@@ -204,6 +251,11 @@ public class IpAllowlistValidator
                 }
             }
             return 0; // Arrays are equal
+        }
+
+        public override string ToString()
+        {
+            return $"{Start}-{End}";
         }
     }
 }

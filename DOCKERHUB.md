@@ -84,11 +84,11 @@ docker run -d \
 - `SmtpServer__Port` - SMTP listening port (default: 2525, use 587 for STARTTLS)
 - `SmtpServer__MessagePath` - Path where emails are stored (default: /app/Incoming)
 - `SmtpServer__LoggingPath` - Path for log files (default: /app/logs)
-- `SmtpServer__AllowedHosts` - IP allowlist for SMTP connections (default: "*" = all IPs allowed)
+- `SmtpServer__AllowedIps` - IP allowlist for SMTP connections (default: "*" = all IPs allowed)
 - `Urls` - HTTP server URLs (default: http://0.0.0.0:8080)
 
 **Security - SMTP IP Allowlist Configuration:**
-- `SmtpServer__AllowedHosts` - Comma-separated list of allowed IP addresses or CIDR ranges for SMTP connections
+- `SmtpServer__AllowedIps` - Comma-separated list of allowed IP addresses or CIDR ranges for SMTP connections
   - `*` - Allow all IPs (default, backward compatible)
   - `192.168.1.0/24` - Allow single CIDR range
   - `192.168.1.0/24,10.0.0.0/8` - Allow multiple CIDR ranges
@@ -380,13 +380,13 @@ Error: Multiple certificates (3) found matching...
 
 ### SMTP IP Allowlist / Access Control
 
-Restrict SMTP connections to specific IP addresses or networks using the `SmtpServer__AllowedHosts` environment variable:
+Restrict SMTP connections to specific IP addresses or networks using the `SmtpServer__AllowedIps` environment variable:
 
 **Allow specific network:**
 ```bash
 docker run -d \
   --name papercut \
-  -e SmtpServer__AllowedHosts=192.168.1.0/24 \
+  -e SmtpServer__AllowedIps=192.168.1.0/24 \
   -p 8080:8080 \
   -p 2525:2525 \
   changemakerstudiosus/papercut-smtp:latest
@@ -396,7 +396,7 @@ docker run -d \
 ```bash
 docker run -d \
   --name papercut \
-  -e SmtpServer__AllowedHosts=192.168.1.0/24,10.0.0.0/8,172.16.0.0/12 \
+  -e SmtpServer__AllowedIps=192.168.1.0/24,10.0.0.0/8,172.16.0.0/12 \
   -p 8080:8080 \
   -p 2525:2525 \
   changemakerstudiosus/papercut-smtp:latest
@@ -406,7 +406,7 @@ docker run -d \
 ```bash
 docker run -d \
   --name papercut \
-  -e SmtpServer__AllowedHosts=192.168.1.100,192.168.1.101 \
+  -e SmtpServer__AllowedIps=192.168.1.100,192.168.1.101 \
   -p 8080:8080 \
   -p 2525:2525 \
   changemakerstudiosus/papercut-smtp:latest
@@ -421,7 +421,7 @@ services:
       - "8080:8080"
       - "2525:2525"
     environment:
-      - SmtpServer__AllowedHosts=192.168.1.0/24,10.0.0.0/8
+      - SmtpServer__AllowedIps=192.168.1.0/24,10.0.0.0/8
     restart: unless-stopped
 ```
 
@@ -430,7 +430,7 @@ services:
 - Localhost (127.0.0.1 and ::1) is always allowed for SMTP
 - Supports CIDR notation for efficient network range specification
 - Supports both IPv4 and IPv6 addresses
-- Use `SmtpServer__AllowedHosts=*` to allow all IPs (default behavior)
+- Use `SmtpServer__AllowedIps=*` to allow all IPs (default behavior)
 - Changes require container restart
 - HTTP web UI access is not restricted by this setting
 

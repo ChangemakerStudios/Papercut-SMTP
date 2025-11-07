@@ -109,6 +109,11 @@ namespace Papercut
 
             builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
 
+            // Register IPAllowedList - UI defaults to allow all for development convenience
+            builder.Register(_ => IPAllowedList.AllowAll)
+                .AsSelf()
+                .SingleInstance();
+
             builder.RegisterStaticMethods(ThisAssembly);
 
             base.Load(builder);

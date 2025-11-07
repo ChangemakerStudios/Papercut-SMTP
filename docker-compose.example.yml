@@ -22,9 +22,9 @@ services:
       # IP Allowlist for SMTP connections (optional)
       # Use "*" to allow all IPs (default), or specify CIDR ranges
       # Examples:
-      # - SmtpServer__AllowedHosts=192.168.1.0/24,10.0.0.0/8  # Allow specific networks
-      # - SmtpServer__AllowedHosts=192.168.1.100,192.168.1.101  # Allow specific IPs
-      - SmtpServer__AllowedHosts=*
+      # - SmtpServer__AllowedIps=192.168.1.0/24,10.0.0.0/8  # Allow specific networks
+      # - SmtpServer__AllowedIps=192.168.1.100,192.168.1.101  # Allow specific IPs
+      - SmtpServer__AllowedIps=*
     restart: unless-stopped
 
   # Example: Papercut with TLS/STARTTLS support
@@ -44,7 +44,7 @@ services:
     environment:
       - SmtpServer__IP=Any
       - SmtpServer__Port=587
-      - SmtpServer__AllowedHosts=*
+      - SmtpServer__AllowedIps=*
       # TLS/STARTTLS Configuration
       # Uncomment and configure these to enable TLS
       # Simple approach - use certificate by name (most common):
@@ -111,15 +111,15 @@ volumes:
 
 # IP Allowlist Configuration:
 #
-# The SmtpServer__AllowedHosts environment variable controls which IP addresses
+# The SmtpServer__AllowedIps environment variable controls which IP addresses
 # can connect to the SMTP server. This provides additional security.
 #
 # Syntax:
-#   - SmtpServer__AllowedHosts=*                           # Allow all IPs (default)
-#   - SmtpServer__AllowedHosts=192.168.1.0/24              # Allow single CIDR range
-#   - SmtpServer__AllowedHosts=192.168.1.0/24,10.0.0.0/8   # Allow multiple CIDR ranges
-#   - SmtpServer__AllowedHosts=192.168.1.100               # Allow single IP
-#   - SmtpServer__AllowedHosts=192.168.1.100,192.168.1.101 # Allow multiple IPs
+#   - SmtpServer__AllowedIps=*                           # Allow all IPs (default)
+#   - SmtpServer__AllowedIps=192.168.1.0/24              # Allow single CIDR range
+#   - SmtpServer__AllowedIps=192.168.1.0/24,10.0.0.0/8   # Allow multiple CIDR ranges
+#   - SmtpServer__AllowedIps=192.168.1.100               # Allow single IP
+#   - SmtpServer__AllowedIps=192.168.1.100,192.168.1.101 # Allow multiple IPs
 #
 # Notes:
 #   - Applies only to SMTP connections, not HTTP web UI access

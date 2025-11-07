@@ -35,7 +35,7 @@ public class PapercutSmtpServer(
     IAppMeta applicationMetaData,
     ILogger logger,
     Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory,
-    Service.Domain.SmtpServer.SmtpServerOptions smtpServerOptions)
+    IPAllowedList ipAllowedList)
     : Disposable, IServer
 {
     private EndpointDefinition _currentEndpoint = null!;
@@ -43,8 +43,6 @@ public class PapercutSmtpServer(
     private SmtpServer.SmtpServer? _server;
 
     private CancellationTokenSource? _tokenSource;
-
-    private readonly IpAllowlistValidator _ipAllowlistValidator = new(smtpServerOptions.AllowedHosts);
 
     public bool IsActive => _server != null;
 
@@ -136,8 +134,7 @@ public class PapercutSmtpServer(
 
     private void OnSessionCompleted(object? sender, SessionEventArgs e)
     {
-        var remoteEndPoint = GetRemoteEndPoint(e.Context);
-        logger.Information("Completed SMTP connection from {EndpointAddress}", remoteEndPoint);
+        logger.Information("Completed SMTP connection from {RemoteIp}", GetRemoteEndPoint(e.Context));
     }
 
     private void OnSessionCreated(object? sender, SessionEventArgs e)
@@ -147,47 +144,33 @@ public class PapercutSmtpServer(
             logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
         };
 
-        var remoteEndPointAddress = GetRemoteEndPoint(e.Context);
-        logger.Information("New SMTP connection from {EndpointAddress}", remoteEndPointAddress);
+        var remoteIp = GetRemoteEndPoint(e.Context);
+
+        logger.Information("New SMTP connection from {RemoteIp}", remoteIp);
 
         // Validate IP address against allowlist
-        if (TryGetRemoteIPAddress(e.Context, out var remoteIp) && !_ipAllowlistValidator.IsAllowed(remoteIp))
+        if (remoteIp.ToString() != IPAddress.None.ToString() && !ipAllowedList.IsAllowed(remoteIp))
         {
             logger.Warning(
-                "Rejected SMTP connection from {EndpointAddress} - IP not in allowlist",
-                remoteEndPointAddress);
+                "Rejected SMTP connection from {RemoteIp} - IP not in allowlist",
+                remoteIp);
 
             // Abort the session by throwing an exception
-            throw new InvalidOperationException($"Connection from {remoteEndPointAddress} is not allowed");
+            throw new InvalidOperationException($"Connection from {remoteIp} is not allowed");
         }
     }
 
-    private string GetRemoteEndPoint(ISessionContext context)
+    private IPAddress GetRemoteEndPoint(ISessionContext context)
     {
         const string RemoteEndPointKey = "EndpointListener:RemoteEndPoint";
 
         if (context.Properties.TryGetValue(RemoteEndPointKey, out var endpointObj)
             && endpointObj is IPEndPoint remoteEndPoint)
         {
-            return remoteEndPoint.Address.ToString();
+            return remoteEndPoint.Address;
         }
 
-        return "unknown";
-    }
-
-    private bool TryGetRemoteIPAddress(ISessionContext context, out IPAddress ipAddress)
-    {
-        const string RemoteEndPointKey = "EndpointListener:RemoteEndPoint";
-
-        if (context.Properties.TryGetValue(RemoteEndPointKey, out var endpointObj)
-            && endpointObj is IPEndPoint remoteEndPoint)
-        {
-            ipAddress = remoteEndPoint.Address;
-            return true;
-        }
-
-        ipAddress = IPAddress.None;
-        return false;
+        return IPAddress.None;
     }
 
     private bool IgnoreCertificateValidationFailureForTestingOnly(
