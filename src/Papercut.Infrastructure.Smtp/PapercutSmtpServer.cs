@@ -34,8 +34,7 @@ using ILogger = Serilog.ILogger;
 public class PapercutSmtpServer(
     IAppMeta applicationMetaData,
     ILogger logger,
-    Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory,
-    IPAllowedList ipAllowedList)
+    Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory)
     : Disposable, IServer
 {
     private EndpointDefinition _currentEndpoint = null!;
@@ -148,16 +147,8 @@ public class PapercutSmtpServer(
 
         logger.Information("New SMTP connection from {RemoteIp}", remoteIp);
 
-        // Validate IP address against allowlist
-        if (remoteIp.ToString() != IPAddress.None.ToString() && !ipAllowedList.IsAllowed(remoteIp))
-        {
-            logger.Warning(
-                "Rejected SMTP connection from {RemoteIp} - IP not in allowlist",
-                remoteIp);
-
-            // Abort the session by throwing an exception
-            throw new InvalidOperationException($"Connection from {remoteIp} is not allowed");
-        }
+        // IP validation is now handled by IpAllowlistMailboxFilter via IMailboxFilter interface
+        // This provides proper rejection semantics and prevents socket resource leaks
     }
 
     private IPAddress GetRemoteEndPoint(ISessionContext context)

@@ -59,11 +59,13 @@ public sealed class IPAllowedList
             }
             else
             {
-                // Single IP address
-                if (IPAddress.TryParse(entry, out var ip))
+                // Single IP address - fail fast on invalid entries
+                if (!IPAddress.TryParse(entry, out var ip))
                 {
-                    _allowedRanges.Add(new IpRange(ip, ip));
+                    throw new ArgumentException($"Invalid IP address in allowlist: '{entry}'. Expected valid IPv4/IPv6 address or CIDR notation.");
                 }
+
+                _allowedRanges.Add(new IpRange(ip, ip));
             }
         }
     }

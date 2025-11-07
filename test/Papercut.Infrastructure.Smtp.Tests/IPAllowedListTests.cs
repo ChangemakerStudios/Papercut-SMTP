@@ -126,6 +126,36 @@ public class IPAllowedListTests
         result.Errors.Should().Contain(e => e.Contains("Invalid IP allowlist specification"));
     }
 
+    [Test]
+    public void Create_WithMalformedIP_ReturnsFailed()
+    {
+        // Arrange
+        var spec = "192.168.1.256"; // Invalid - octet out of range
+
+        // Act
+        var result = IPAllowedList.Create(spec);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Contains("Invalid IP allowlist specification"));
+        result.Errors.Should().Contain(e => e.Contains("192.168.1.256"));
+    }
+
+    [Test]
+    public void Create_WithMalformedIPInList_ReturnsFailed()
+    {
+        // Arrange
+        var spec = "192.168.1.100,192.168.1.999,10.0.0.1"; // Middle entry is invalid
+
+        // Act
+        var result = IPAllowedList.Create(spec);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Contains("Invalid IP allowlist specification"));
+        result.Errors.Should().Contain(e => e.Contains("192.168.1.999"));
+    }
+
     #endregion
 
     #region Static Factory Properties
