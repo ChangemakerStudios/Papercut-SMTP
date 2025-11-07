@@ -114,7 +114,7 @@ public static class CollectionExtensions
         if (predicate == null) throw new ArgumentNullException(nameof(predicate));
 
         int index = 0;
-        foreach (T item in items)
+        foreach (var item in items)
         {
             if (predicate(item)) return index;
             index++;

@@ -16,27 +16,30 @@
 // limitations under the License.
 
 
-using System.Windows.Input;
-
 using ICSharpCode.AvalonEdit.Document;
 
-using Papercut.Helpers;
 using Papercut.Views;
 
 namespace Papercut.ViewModels;
 
-public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
+public sealed class MessageDetailBodyViewModel : Screen,
+    IMessageDetailItem,
+    IHandle<ThemeChangedEvent>
 {
-    readonly ILogger _logger;
+    private readonly ILogger _logger;
 
-    string? _body;
-    ZoomIndicator? _zoomIndicator;
-    readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
+    private readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
+
+    private string? _body;
+
+    private MessageDetailBodyView? _view;
+
+    private ZoomIndicator? _zoomIndicator;
 
     public MessageDetailBodyViewModel(ILogger logger)
     {
-        this._logger = logger;
-        this.DisplayName = "Body";
+        _logger = logger;
+        DisplayName = "Body";
 
         // Set up debounced zoom save to reduce I/O during rapid zoom changes
         _zoomSaveDebouncer = new SettingsSaveDebouncer<double>(newFontSize =>
@@ -48,12 +51,22 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
 
     public string? Body
     {
-        get => this._body;
+        get => _body;
         set
         {
-            this._body = value;
-            this.NotifyOfPropertyChange(() => this.Body);
+            _body = value;
+            NotifyOfPropertyChange(() => Body);
         }
+    }
+
+    public Task HandleAsync(ThemeChangedEvent @event, CancellationToken token)
+    {
+        if (_view != null)
+        {
+            AvalonEditThemeHelper.ApplyTheme(_view.BodyEdit);
+        }
+
+        return Task.CompletedTask;
     }
 
     protected override void OnViewLoaded(object view)
@@ -62,12 +75,16 @@ public sealed class MessageDetailBodyViewModel : Screen, IMessageDetailItem
 
         if (!(view is MessageDetailBodyView typedView))
         {
-            this._logger.Error("Unable to locate the MessageDetailBodyView to hook the Text Control");
+            _logger.Error("Unable to locate the MessageDetailBodyView to hook the Text Control");
             return;
         }
 
-        // Store reference to zoom indicator
+        // Store references
+        _view = typedView;
         _zoomIndicator = typedView.zoomIndicator;
+
+        // Apply theme colors
+        AvalonEditThemeHelper.ApplyTheme(typedView.BodyEdit);
 
         // Restore saved zoom level
         typedView.BodyEdit.FontSize = Settings.Default.TextViewZoomFontSize;
