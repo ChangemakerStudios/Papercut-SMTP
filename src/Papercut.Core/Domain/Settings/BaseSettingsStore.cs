@@ -22,35 +22,30 @@ namespace Papercut.Core.Domain.Settings;
 
 public abstract class BaseSettingsStore : ISettingStore
 {
-    protected BaseSettingsStore()
-    {
-        this.CurrentSettings = new ConcurrentDictionary<string, string>();
-    }
+    protected ConcurrentDictionary<string, string> CurrentSettings { get; set; } = new();
 
-    protected ConcurrentDictionary<string, string> CurrentSettings { get; set; }
-
-    public string this[string key]
+    public string? this[string key]
     {
         get
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return this.CurrentSettings.TryGetValue(key, out var value) ? value : null;
+            return CurrentSettings.GetValueOrDefault(key);
         }
         set
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            this.CurrentSettings.AddOrUpdate(key, value, (k, v) => value);
+            CurrentSettings.AddOrUpdate(key, value ?? string.Empty, (k, v) => value ?? string.Empty);
         }
     }
 
-    public string Get(string key)
+    public string? Get(string key)
     {
         return this[key];
     }
 
-    public void Set(string key, string value)
+    public void Set(string key, string? value)
     {
         this[key] = value;
     }
@@ -61,12 +56,12 @@ public abstract class BaseSettingsStore : ISettingStore
 
     protected Dictionary<string, string> GetSettingSnapshot()
     {
-        return new Dictionary<string, string>(this.CurrentSettings);
+        return new Dictionary<string, string>(CurrentSettings);
     }
 
     protected void LoadSettings(IEnumerable<KeyValuePair<string, string>>? settings = null)
     {
-        if (settings != null) this.CurrentSettings = new ConcurrentDictionary<string, string>(settings);
-        else this.CurrentSettings.Clear();
+        if (settings != null) CurrentSettings = new ConcurrentDictionary<string, string>(settings);
+        else CurrentSettings.Clear();
     }
 }

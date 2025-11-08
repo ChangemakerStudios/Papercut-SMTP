@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class ExecutionResult<T> : ExecutionResult
         }
     }
 
-    public T Value { get; }
+    public T Value { get; private init; }
 }
 
 public class ExecutionResult
@@ -47,7 +47,7 @@ public class ExecutionResult
         }
     }
 
-    public IReadOnlyCollection<string> Errors { get; }
+    public IReadOnlyCollection<string> Errors { get; private init; } = [];
 
     public bool IsSuccess { get; }
 

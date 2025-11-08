@@ -52,11 +52,13 @@ public class PapercutSmtpModule : Module
         builder.Register(
             ctx =>
             {
+                var ipAllowedList = ctx.Resolve<IPAllowedList>();
+                var logger = ctx.Resolve<ILogger>().ForContext<IpAllowlistMailboxFilter>();
                 return new DelegatingMailboxFilterFactory(
-                    context => new DelegatingMailboxFilter(mailbox => true));
+                    _ => new IpAllowlistMailboxFilter(ipAllowedList, logger));
             }).As<IMailboxFilterFactory>();
 
-        builder.Register(
+        builder.Register<SmtpServer.SmtpServer>(
             (ctx, p) =>
             {
                 var c = ctx.Resolve<IComponentContext>();
@@ -73,7 +75,7 @@ public class PapercutSmtpModule : Module
                         .Error(ex, "Failure Loading Smtp Server");
                 }
 
-                return null;
+                throw new ArgumentNullException(nameof(SmtpServer.SmtpServer), "Failed to Initialize the Smtp Server");
             }).As<SmtpServer.SmtpServer>();
     }
 }

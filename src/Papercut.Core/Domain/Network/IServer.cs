@@ -27,7 +27,7 @@ public interface IServer : IDisposable, IAsyncDisposable
 {
     bool IsActive { get; }
 
-    IPAddress ListenIpAddress { get; }
+    IPAddress? ListenIpAddress { get; }
 
     int ListenPort { get; }
 

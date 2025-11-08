@@ -44,13 +44,13 @@ public class SmtpServerOptions
     /// Certificate store location (LocalMachine or CurrentUser).
     /// Default: LocalMachine
     /// </summary>
-    public string CertificateStoreLocation { get; set; } = StoreLocation.LocalMachine.ToString();
+    public string CertificateStoreLocation { get; set; } = nameof(StoreLocation.LocalMachine);
 
     /// <summary>
     /// Certificate store name (My, Root, TrustedPeople, etc.).
     /// Default: My (Personal certificates)
     /// </summary>
-    public string CertificateStoreName { get; set; } = StoreName.My.ToString();
+    public string CertificateStoreName { get; set; } = nameof(StoreName.My);
 
     /// <summary>
     /// Base path where messages are written
@@ -61,4 +61,12 @@ public class SmtpServerOptions
     /// Base path where logs are written.
     /// </summary>
     public string LoggingPath { get; set; } = @"%DataDirectory%\Logs;%BaseDirectory%\Logs";
+
+    /// <summary>
+    /// Comma-separated list of allowed client IP addresses or CIDR ranges for SMTP connections.
+    /// Use "*" to allow all hosts (default).
+    /// Examples: "192.168.1.0/24,10.0.0.0/8" or "127.0.0.1,192.168.1.100"
+    /// Environment variable: SmtpServer__AllowedIps
+    /// </summary>
+    public string AllowedIps { get; set; } = "*";
 }

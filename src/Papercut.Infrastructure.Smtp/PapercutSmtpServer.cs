@@ -31,75 +31,63 @@ namespace Papercut.Infrastructure.Smtp;
 
 using ILogger = Serilog.ILogger;
 
-public class PapercutSmtpServer : Disposable, IServer
+public class PapercutSmtpServer(
+    IAppMeta applicationMetaData,
+    ILogger logger,
+    Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory)
+    : Disposable, IServer
 {
-    readonly IAppMeta _applicationMetaData;
-
-    readonly ILogger _logger;
-
-    private readonly Func<ISmtpServerOptions, SmtpServer.SmtpServer> _smtpServerFactory;
-
-    private EndpointDefinition _currentEndpoint;
+    private EndpointDefinition _currentEndpoint = null!;
 
     private SmtpServer.SmtpServer? _server;
 
     private CancellationTokenSource? _tokenSource;
 
-    public PapercutSmtpServer(
-        IAppMeta applicationMetaData,
-        ILogger logger,
-        Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory)
-    {
-        this._applicationMetaData = applicationMetaData;
-        this._logger = logger;
-        this._smtpServerFactory = smtpServerFactory;
-    }
+    public bool IsActive => _server != null;
 
-    public bool IsActive => this._server != null;
+    public IPAddress? ListenIpAddress => _currentEndpoint?.Address;
 
-    public IPAddress? ListenIpAddress => this._currentEndpoint?.Address;
-
-    public int ListenPort => this._currentEndpoint?.Port ?? 0;
+    public int ListenPort => _currentEndpoint?.Port ?? 0;
 
     public async Task StopAsync()
     {
         try
         {
-            if (this._tokenSource != null)
-                await this._tokenSource.CancelAsync();
+            if (_tokenSource != null)
+                await _tokenSource.CancelAsync();
 
-            if (this._server != null)
+            if (_server != null)
             {
-                this._logger.Information("Stopping Smtp Server");
+                logger.Information("Stopping Smtp Server");
 
-                await this._server.ShutdownTask;
+                await _server.ShutdownTask;
             }
 
-            this._tokenSource?.Dispose();
+            _tokenSource?.Dispose();
         }
         catch (Exception ex) when (ex is AggregateException or TaskCanceledException or OperationCanceledException)
         {
         }
         finally
         {
-            this._tokenSource = null;
-            this._server = null;
+            _tokenSource = null;
+            _server = null;
         }
     }
 
     public Task StartAsync(EndpointDefinition smtpEndpoint)
     {
-        if (this.IsActive)
+        if (IsActive)
         {
             return Task.CompletedTask;
         }
 
-        ServicePointManager.ServerCertificateValidationCallback = this.IgnoreCertificateValidationFailureForTestingOnly;
+        ServicePointManager.ServerCertificateValidationCallback = IgnoreCertificateValidationFailureForTestingOnly;
 
-        this._currentEndpoint = smtpEndpoint;
+        _currentEndpoint = smtpEndpoint;
 
         var options = new SmtpServerOptionsBuilder()
-            .ServerName(this._applicationMetaData.AppName)
+            .ServerName(applicationMetaData.AppName)
             .Endpoint(
                 new EndpointDefinitionBuilder()
                     .WithEndpoint(smtpEndpoint)
@@ -107,13 +95,13 @@ public class PapercutSmtpServer : Disposable, IServer
                     .AllowUnsecureAuthentication(false)
                     .Build());
 
-        this._server = this._smtpServerFactory(options.Build());
+        _server = smtpServerFactory(options.Build());
 
-        this._server.SessionCreated += this.OnSessionCreated;
-        this._server.SessionCompleted += this.OnSessionCompleted;
+        _server.SessionCreated += OnSessionCreated;
+        _server.SessionCompleted += OnSessionCompleted;
 
-        this._logger.Information("Starting Smtp Server on {IP}:{Port}...", this.ListenIpAddress, this.ListenPort);
-        this._tokenSource = new CancellationTokenSource();
+        logger.Information("Starting Smtp Server on {IP}:{Port}...", ListenIpAddress, ListenPort);
+        _tokenSource = new CancellationTokenSource();
 
 #pragma warning disable 4014
         // server will block -- just let it run
@@ -122,14 +110,14 @@ public class PapercutSmtpServer : Disposable, IServer
             {
                 try
                 {
-                    await this._server.StartAsync(this._tokenSource.Token);
+                    await _server.StartAsync(_tokenSource.Token);
                 }
                 catch (Exception ex)
                 {
-                    this._logger.Error(ex, "Smtp Server Error");
+                    logger.Error(ex, "Smtp Server Error");
                 }
             },
-            this._tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            _tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 #pragma warning restore 4014
 
         return Task.CompletedTask;
@@ -139,44 +127,34 @@ public class PapercutSmtpServer : Disposable, IServer
     {
         if (disposing)
         {
-            await this.StopAsync();
+            await StopAsync();
         }
     }
 
     private void OnSessionCompleted(object? sender, SessionEventArgs e)
     {
-        var remoteEndPoint = this.GetRemoteEndPoint(e.Context);
-        this._logger.Information("Completed SMTP connection from {EndpointAddress}", remoteEndPoint);
+        logger.Information("Completed SMTP connection from {RemoteIp}", e.Context.GetRemoteIpAddress());
     }
 
     private void OnSessionCreated(object? sender, SessionEventArgs e)
     {
-        e.Context.CommandExecuting += (o, args) =>
+        e.Context.CommandExecuting += (_, args) =>
         {
-            this._logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
+            logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
         };
 
-        var remoteEndPoint = this.GetRemoteEndPoint(e.Context);
-        this._logger.Information("New SMTP connection from {EndpointAddress}", remoteEndPoint);
-    }
+        var remoteIp = e.Context.GetRemoteIpAddress();
 
-    private string GetRemoteEndPoint(ISessionContext context)
-    {
-        const string remoteEndPointKey = "EndpointListener:RemoteEndPoint";
+        logger.Information("New SMTP connection from {RemoteIp}", remoteIp);
 
-        if (context.Properties.TryGetValue(remoteEndPointKey, out var endpointObj)
-            && endpointObj is IPEndPoint remoteEndPoint)
-        {
-            return remoteEndPoint.Address.ToString();
-        }
-
-        return "unknown";
+        // IP validation is now handled by IpAllowlistMailboxFilter via IMailboxFilter interface
+        // This provides proper rejection semantics and prevents socket resource leaks
     }
 
     private bool IgnoreCertificateValidationFailureForTestingOnly(
         object sender,
-        X509Certificate certificate,
-        X509Chain chain,
+        X509Certificate? certificate,
+        X509Chain? chain,
         SslPolicyErrors sslPolicyErrors)
     {
         return true;

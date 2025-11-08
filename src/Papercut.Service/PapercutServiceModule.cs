@@ -26,6 +26,27 @@ public class PapercutServiceModule : Module
     {
         builder.RegisterLogger();
 
-        builder.RegisterStaticMethods(this.ThisAssembly);
+        builder.RegisterStaticMethods(ThisAssembly);
+
+        // Register IPAllowedList from SmtpServerOptions
+        builder.Register(ctx =>
+            {
+                var smtpServerOptions = ctx.Resolve<SmtpServerOptions>();
+                var result = IPAllowedList.Create(smtpServerOptions.AllowedIps);
+
+                if (!result.IsSuccess)
+                {
+                    var logger = ctx.Resolve<ILogger>().ForContext<PapercutServiceModule>();
+
+                    logger.Warning(
+                        "Invalid IP allowlist configuration: {Errors}. Falling back to allow all.",
+                        string.Join(", ", result.Errors));
+                    return IPAllowedList.AllowAll;
+                }
+
+                return result.Value!;
+            })
+            .AsSelf()
+            .SingleInstance();
     }
 }

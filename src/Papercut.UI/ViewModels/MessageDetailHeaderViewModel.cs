@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright � 2008 - 2012 Ken Robertson
-// Copyright � 2013 - 2025 Jaben Cargman
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,28 +16,30 @@
 // limitations under the License.
 
 
-using System.Windows.Input;
-
 using ICSharpCode.AvalonEdit.Document;
 
-using Papercut.Helpers;
 using Papercut.Views;
 
 namespace Papercut.ViewModels;
 
-public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
+public class MessageDetailHeaderViewModel : Screen,
+    IMessageDetailItem,
+    IHandle<ThemeChangedEvent>
 {
-    readonly ILogger _logger;
+    private readonly ILogger _logger;
 
-    string? _headers;
+    private readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
 
-    ZoomIndicator? _zoomIndicator;
-    readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
+    private string? _headers;
+
+    private MessageDetailHeaderView? _view;
+
+    private ZoomIndicator? _zoomIndicator;
 
     public MessageDetailHeaderViewModel(ILogger logger)
     {
-        this._logger = logger;
-        this.DisplayName = "Headers";
+        _logger = logger;
+        DisplayName = "Headers";
 
         // Set up debounced zoom save to reduce I/O during rapid zoom changes
         _zoomSaveDebouncer = new SettingsSaveDebouncer<double>(newFontSize =>
@@ -49,12 +51,22 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
 
     public string? Headers
     {
-        get => this._headers;
+        get => _headers;
         set
         {
-            this._headers = value;
-            this.NotifyOfPropertyChange(() => this.Headers);
+            _headers = value;
+            NotifyOfPropertyChange(() => Headers);
         }
+    }
+
+    public Task HandleAsync(ThemeChangedEvent @event, CancellationToken token)
+    {
+        if (_view != null)
+        {
+            AvalonEditThemeHelper.ApplyTheme(_view.HeaderEdit);
+        }
+
+        return Task.CompletedTask;
     }
 
     protected override void OnViewLoaded(object view)
@@ -63,12 +75,16 @@ public class MessageDetailHeaderViewModel : Screen, IMessageDetailItem
 
         if (view is not MessageDetailHeaderView typedView)
         {
-            this._logger.Error("Unable to locate the MessageDetailHeaderView to hook the Text Control");
+            _logger.Error("Unable to locate the MessageDetailHeaderView to hook the Text Control");
             return;
         }
 
-        // Store reference to zoom indicator
+        // Store references
+        _view = typedView;
         _zoomIndicator = typedView.zoomIndicator;
+
+        // Apply theme colors
+        AvalonEditThemeHelper.ApplyTheme(typedView.HeaderEdit);
 
         // Restore saved zoom level
         typedView.HeaderEdit.FontSize = Settings.Default.TextViewZoomFontSize;

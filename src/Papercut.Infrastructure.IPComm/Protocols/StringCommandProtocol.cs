@@ -18,16 +18,11 @@
 
 namespace Papercut.Infrastructure.IPComm.Protocols;
 
-public abstract class StringCommandProtocol : IProtocol
+public abstract class StringCommandProtocol(ILogger logger) : IProtocol
 {
-    StringBuilder _stringBuffer = new StringBuilder();
+    StringBuilder _stringBuffer = new();
 
-    protected StringCommandProtocol(ILogger logger)
-    {
-        this.Logger = logger;
-    }
-
-    protected ILogger Logger { get; set; }
+    protected ILogger Logger { get; set; } = logger;
 
     public abstract Task BeginAsync(Connection connection, CancellationToken token = default);
 

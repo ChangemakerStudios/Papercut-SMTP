@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright Â© 2008 - 2012 Ken Robertson
+// Copyright Â© 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,60 +16,162 @@
 // limitations under the License.
 
 
-namespace Papercut.AppLayer.Themes;
-
 using ControlzEx.Theming;
 
+using Microsoft.Win32;
+
+using Papercut.Core.Infrastructure.Async;
+using Papercut.Domain.Themes;
 using Papercut.Infrastructure.Themes;
 
-public class ThemeManagerService(ILogger logger, ThemeColorRepository themeColorRepository) : IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
+using ReactiveUI;
+
+using IMessageBus = Papercut.Common.Domain.IMessageBus;
+
+namespace Papercut.AppLayer.Themes;
+
+public class ThemeManagerService(
+    ILogger logger,
+    ThemeColorRepository themeColorRepository, IMessageBus messageBus)
+    : Disposable, IAppLifecyclePreStart, IEventHandler<SettingsUpdatedEvent>
 {
+    private bool _lastDarkModeState;
+
+    private System.Windows.Media.Color _lastThemeColorState;
+
+    private IDisposable? _monitoringSubscription;
+
     private static ThemeManager CurrentTheme => ThemeManager.Current;
 
-    public Task<AppLifecycleActionResultType> OnPreStart()
+    public async Task<AppLifecycleActionResultType> OnPreStart()
     {
-        SetTheme();
-        return Task.FromResult(AppLifecycleActionResultType.Continue);
+        await SetTheme(false);
+        SetupThemeMonitoringObservable();
+
+        return AppLifecycleActionResultType.Continue;
     }
 
-    public Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
+    public async Task HandleAsync(SettingsUpdatedEvent @event, CancellationToken token)
     {
-        if (@event.PreviousSettings.Theme != @event.NewSettings.Theme) SetTheme();
+        var themeChanged = @event.PreviousSettings.Theme != @event.NewSettings.Theme;
+        var baseThemeChanged = @event.PreviousSettings.BaseTheme != @event.NewSettings.BaseTheme;
 
-        return Task.CompletedTask;
+        if (themeChanged || baseThemeChanged)
+        {
+            await SetTheme();
+        }
     }
 
-    private void SetTheme()
+    private bool IsSystemThemeMode()
+    {
+        return Enum.TryParse<BaseTheme>(Properties.Settings.Default.BaseTheme, out var baseTheme)
+            && baseTheme == BaseTheme.System;
+    }
+
+    private async Task SetTheme(bool sendThemeChangedEvent = true)
     {
         var colorTheme = themeColorRepository.FirstOrDefaultByName(Properties.Settings.Default.Theme);
 
         if (colorTheme == null)
         {
-            logger.Warning("Unable to find theme color {ThemeColor}. Setting to default: LightBlue.", Properties.Settings.Default.Theme);
-            Properties.Settings.Default.Theme = "LightBlue";
-            return;
+            logger.Warning(
+                "Unable to find theme accent color {ThemeColor}. Setting to default: {DefaultTheme}.",
+                Properties.Settings.Default.Theme, ThemeColorRepository.Default.Name);
+
+            Properties.Settings.Default.Theme = ThemeColorRepository.Default.Name;
+            Properties.Settings.Default.Save();
+            colorTheme = ThemeColorRepository.Default;
         }
 
         var themeColor = colorTheme.Color;
 
-        var theme = CurrentTheme.DetectTheme(Application.Current);
-        if (theme != null)
-        {
-            var inverseTheme = CurrentTheme.GetInverseTheme(theme);
-            if (inverseTheme != null)
-            {
-                var runtimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(inverseTheme.BaseColorScheme, themeColor);
-                if (runtimeTheme != null) CurrentTheme.AddTheme(runtimeTheme);
-            }
+        // Determine if we should use dark mode
+        var isDarkMode = GetCurrentIsDarkMode();
+        var baseColorScheme = isDarkMode ? "Dark" : "Light";
 
-            var generateRuntimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(theme.BaseColorScheme, themeColor);
-            if (generateRuntimeTheme != null)
-                CurrentTheme.ChangeTheme(
-                    Application.Current,
-                    CurrentTheme.AddTheme(generateRuntimeTheme));
+        logger.Debug("Applying theme: BaseScheme={BaseScheme}, AccentColor={AccentColor}", baseColorScheme, themeColor);
+
+        var generateRuntimeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(baseColorScheme, themeColor);
+        if (generateRuntimeTheme != null)
+        {
+            CurrentTheme.AddTheme(generateRuntimeTheme);
+            CurrentTheme.ChangeTheme(
+                Application.Current,
+                generateRuntimeTheme
+            );
+        }
+        else
+        {
+            logger.Error("Failed to generate theme for {Scheme}.{Color} -- theme not changed", baseColorScheme, themeColor);
+        }
+
+        bool hasThemeColorChanged = themeColor != _lastThemeColorState;
+        bool hasDarkModeChanged = isDarkMode != _lastDarkModeState;
+
+        _lastDarkModeState = isDarkMode;
+        _lastThemeColorState = themeColor;
+
+        if (sendThemeChangedEvent && (hasThemeColorChanged || hasDarkModeChanged))
+        {
+            await messageBus.PublishAsync(new ThemeChangedEvent(isDarkMode, themeColor));
         }
 
         Application.Current?.MainWindow?.Activate();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (!disposing) return;
+
+        if (_monitoringSubscription is null) return;
+
+        logger.Debug("Stopping system theme monitoring");
+        _monitoringSubscription?.Dispose();
+        _monitoringSubscription = null;
+    }
+
+    private void SetupThemeMonitoringObservable()
+    {
+        logger.Information("Current system theme at startup: {Theme}", SystemThemeRegistryHelper.IsSystemDarkMode() ? "Dark" : "Light");
+
+        _monitoringSubscription = Observable
+            .FromEventPattern<UserPreferenceChangedEventHandler, UserPreferenceChangedEventArgs>(
+                h => SystemEvents.UserPreferenceChanged += h,
+                h => SystemEvents.UserPreferenceChanged -= h)
+            .Where(e => e.EventArgs.Category == UserPreferenceCategory.General)
+            .Select(_ => SystemThemeRegistryHelper.IsSystemDarkMode())
+            .DistinctUntilChanged()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .SubscribeAsync(
+                async isDarkMode =>
+                {
+                    logger.Information("System theme changed, updating application theme to: {Theme}", isDarkMode ? "Dark" : "Light");
+
+                    if (IsSystemThemeMode())
+                    {
+                        await SetTheme(true);
+                    }
+                },
+                ex => logger.Warning(ex, "Error checking system theme change"));
+    }
+
+    private bool GetCurrentIsDarkMode()
+    {
+        if (!Enum.TryParse<BaseTheme>(Properties.Settings.Default.BaseTheme, out var baseTheme))
+        {
+            logger.Warning("Unable to parse BaseTheme setting: {BaseTheme}. Defaulting to System.", Properties.Settings.Default.BaseTheme);
+            baseTheme = BaseTheme.System;
+        }
+
+        return baseTheme switch
+        {
+            BaseTheme.System => SystemThemeRegistryHelper.IsSystemDarkMode(),
+            BaseTheme.Dark => true,
+            BaseTheme.Light => false,
+            _ => false
+        };
     }
 
     #region Begin Static Container Registrations

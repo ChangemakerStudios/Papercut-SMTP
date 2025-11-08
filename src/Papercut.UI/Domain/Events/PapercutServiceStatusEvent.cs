@@ -18,14 +18,9 @@
 
 namespace Papercut.Domain.Events;
 
-public class PapercutServiceStatusEvent : IEvent
+public class PapercutServiceStatusEvent(PapercutServiceStatusType papercutServiceStatus) : IEvent
 {
-    public PapercutServiceStatusEvent(PapercutServiceStatusType papercutServiceStatus)
-    {
-        this.PapercutServiceStatus = papercutServiceStatus;
-    }
-
-    public PapercutServiceStatusType PapercutServiceStatus { get; }
+    public PapercutServiceStatusType PapercutServiceStatus { get; } = papercutServiceStatus;
 }
 
 public enum PapercutServiceStatusType

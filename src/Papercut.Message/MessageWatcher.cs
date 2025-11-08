@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class MessageWatcher : IDisposable
 
     readonly MessagePathConfigurator _messagePathConfigurator;
 
-    List<FileSystemWatcher> _watchers;
+    List<FileSystemWatcher> _watchers = [];
 
     public MessageWatcher(ILogger logger, MessagePathConfigurator messagePathConfigurator)
     {
@@ -60,20 +60,19 @@ public class MessageWatcher : IDisposable
     {
         if (!disposing) return;
 
-        foreach (FileSystemWatcher watch in this._watchers)
+        foreach (var watch in this._watchers)
         {
-            if (watch != null)
-                DisposeWatch(watch);
+            DisposeWatch(watch);
         }
     }
 
-    void OnRefreshLoadPaths(object sender, EventArgs eventArgs)
+    void OnRefreshLoadPaths(object? sender, EventArgs eventArgs)
     {
         List<string> existingPaths = this._watchers.Select(s => s.Path).ToList();
         List<string> removePaths = existingPaths.Except(this._messagePathConfigurator.LoadPaths).ToList();
         List<string> addPaths = this._messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
 
-        foreach (FileSystemWatcher watch in this._watchers.Where(s => removePaths.Contains(s.Path)).ToList())
+        foreach (var watch in this._watchers.Where(s => removePaths.Contains(s.Path)).ToList())
         {
             DisposeWatch(watch);
             this._watchers.Remove(watch);
@@ -93,8 +92,9 @@ public class MessageWatcher : IDisposable
             watch.EnableRaisingEvents = false;
             watch.Dispose();
         }
-        catch (Exception)
+        catch
         {
+            // ignored
         }
     }
 
@@ -169,19 +169,25 @@ public class MessageWatcher : IDisposable
             });
     }
 
-    public event EventHandler<NewMessageEventArgs> NewMessage;
+    public event EventHandler<NewMessageEventArgs>? NewMessage;
 
-    public event EventHandler RefreshNeeded;
+    public event EventHandler? RefreshNeeded;
 
     protected virtual void OnRefreshNeeded()
     {
-        EventHandler handler = this.RefreshNeeded;
-        handler?.Invoke(this, EventArgs.Empty);
+        var eventHandler = this.RefreshNeeded;
+        if (eventHandler != null)
+        {
+            eventHandler.Invoke(this, EventArgs.Empty);
+        }
     }
 
     protected virtual void OnNewMessage(NewMessageEventArgs e)
     {
-        EventHandler<NewMessageEventArgs> handler = this.NewMessage;
-        handler?.Invoke(this, e);
+        var eventHandler = this.NewMessage;
+        if (eventHandler != null)
+        {
+            eventHandler.Invoke(this, e);
+        }
     }
 }

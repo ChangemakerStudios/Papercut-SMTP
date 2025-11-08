@@ -43,7 +43,7 @@ public class RelayRule : NewMessageRuleBase
 
     private string _toBcc;
 
-    [Category("Settings")]
+    [Category("Authentication")]
     [DisplayName("SMTP Password")]
     [PasswordPropertyText]
     public string SmtpPassword
@@ -57,7 +57,7 @@ public class RelayRule : NewMessageRuleBase
         }
     }
 
-    [Category("Settings")]
+    [Category("Authentication")]
     [DisplayName("SMTP Username")]
     public string SmtpUsername
     {
@@ -135,7 +135,7 @@ public class RelayRule : NewMessageRuleBase
             return;
         }
 
-        foreach (var bcc in this.ToBcc.Split(new[] { ',', '|', ';' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()))
+        foreach (var bcc in this.ToBcc.Split([',', '|', ';'], StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()))
         {
             message.Bcc.Add(new MailboxAddress(bcc, bcc));
         }

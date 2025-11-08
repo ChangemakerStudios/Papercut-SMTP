@@ -154,7 +154,7 @@ public class Connection
         return false;
     }
 
-    public async Task<byte[]> ReceiveDataAsync()
+    public async Task<byte[]?> ReceiveDataAsync()
     {
         if (!this.IsValidConnection()) return null;
 
