@@ -41,11 +41,11 @@ internal sealed class IpAllowlistMailboxFilter(IPAllowedList ipAllowedList, ILog
     {
         var remoteIp = context.GetRemoteIpAddress();
 
-        // Skip validation if we couldn't determine the remote IP (IPAddress.None)
+        // Fail closed: reject connections with unknown remote IP for security
         if (remoteIp.Equals(IPAddress.None))
         {
-            logger.Verbose("SMTP connection remote IP unknown, allowing");
-            return Task.FromResult(true);
+            logger.Warning("Rejected SMTP MAIL FROM command - remote IP unknown (fail-closed security policy)");
+            return Task.FromResult(false);
         }
 
         // Validate IP address against allowlist
