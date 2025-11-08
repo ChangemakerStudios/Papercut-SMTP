@@ -36,10 +36,11 @@ public static class SessionContextExtensions
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
 
-        // RemoteEndPoint is stored in the Properties dictionary by SmtpServer
-        return context.Properties.TryGetValue("EndpointListener:RemoteEndPoint", out var endpoint)
-            && endpoint is IPEndPoint remoteEndPoint
-                ? remoteEndPoint.Address
-                : IPAddress.None;
+        if (context.RemoteEndPoint is IPEndPoint remoteEndPoint)
+        {
+            return remoteEndPoint.Address;
+        }
+
+        return IPAddress.None;
     }
 }
