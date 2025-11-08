@@ -80,13 +80,51 @@ Edit `Papercut.Service.Settings.json` and set:
 }
 ```
 
-**Change HTTP Port:**
-Use the `Urls` setting in `appsettings.json` or environment variable:
+**Change HTTP Port and Binding Address:**
+
+The web interface binding can be configured using the `Urls` setting in `appsettings.json` or `appsettings.Production.json`:
+
+**Localhost only (default, most secure):**
 ```json
 {
   "Urls": "http://localhost:8080"
 }
 ```
+
+**Bind to all network interfaces (accessible from any IP):**
+```json
+{
+  "Urls": "http://0.0.0.0:8080"
+}
+```
+Alternatively, use wildcard syntax:
+```json
+{
+  "Urls": "http://+:8080"
+}
+```
+or
+```json
+{
+  "Urls": "http://*:8080"
+}
+```
+
+**Bind to a specific IP address:**
+```json
+{
+  "Urls": "http://192.168.1.100:8080"
+}
+```
+
+**Multiple bindings (listen on multiple addresses):**
+```json
+{
+  "Urls": "http://localhost:8080;http://192.168.1.100:8080"
+}
+```
+
+**Security Note:** ⚠️ When binding to `0.0.0.0`, `+`, `*`, or a non-localhost IP address, the web interface becomes accessible from other machines on the network. Ensure proper firewall rules and network security are in place, as Papercut does not include built-in authentication.
 
 **Change SMTP IP Address:**
 Edit `Papercut.Service.Settings.json`:
