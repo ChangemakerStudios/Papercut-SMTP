@@ -36,12 +36,11 @@ public static class SessionContextExtensions
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
 
-        // The SmtpServer library stores the remote endpoint in the session properties
-        const string remoteEndPointKey = "EndpointListener:RemoteEndPoint";
+        if (context.RemoteEndPoint is IPEndPoint remoteEndPoint)
+        {
+            return remoteEndPoint.Address;
+        }
 
-        return context.Properties.TryGetValue(remoteEndPointKey, out var endpointObj)
-            && endpointObj is IPEndPoint remoteEndPoint
-                ? remoteEndPoint.Address
-                : IPAddress.None;
+        return IPAddress.None;
     }
 }
