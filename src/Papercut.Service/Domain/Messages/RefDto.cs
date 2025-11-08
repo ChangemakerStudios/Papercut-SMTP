@@ -49,7 +49,7 @@ public class RefDto
             Name = messageEntry.Name,
             Subject = messageEntry.Subject,
             CreatedAt = messageEntry.Created?.ToUniversalTime(),
-            Size = messageEntry.FileSize,
+            Size = messageEntry.FileSizeBytes,
             From = (messageEntry.MailMessage?.From).ToAddressList(),
             AttachmentCount = messageEntry.MailMessage?.Attachments.Count() ?? 0,
             Priority = (messageEntry.MailMessage?.Priority ?? MessagePriority.Normal).ToString(),

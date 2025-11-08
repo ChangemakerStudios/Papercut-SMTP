@@ -89,6 +89,8 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
 
     public string Id { get; }
 
+    public long FileSizeBytes => _info.Length;
+
     public string FileSize => _info.Length.ToFileSizeFormat();
 
     public string DisplayText => $"{_created?.ToString("G") ?? _info.Name} ({FileSize})";
