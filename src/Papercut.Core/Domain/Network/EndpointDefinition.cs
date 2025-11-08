@@ -85,7 +85,7 @@ public class EndpointDefinition
                 normalizedFindValue = findValue.Replace(" ", "").Replace(":", "").ToUpperInvariant();
             }
 
-            using var certificates = store.Certificates.Find(findType, normalizedFindValue, validOnly: false);
+            var certificates = store.Certificates.Find(findType, normalizedFindValue, validOnly: false);
 
             if (certificates.Count == 0)
             {
