@@ -1,14 +1,14 @@
 // Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
-//
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,6 @@
 
 
 using Microsoft.Extensions.Hosting;
-using Papercut.Core.Domain.Settings;
 
 namespace Papercut.Service.Infrastructure.Configuration;
 
@@ -28,22 +27,29 @@ namespace Papercut.Service.Infrastructure.Configuration;
 /// </summary>
 public class SmtpServerOptionsInitializer : IHostedService
 {
-    private readonly SmtpServerOptions _smtpServerOptions;
-    private readonly ISettingStore _settingStore;
+    private readonly IPAllowedList _ipAllowedList;
+
     private readonly ILogger _logger;
+
+    private readonly ISettingStore _settingStore;
+
+    private readonly SmtpServerOptions _smtpServerOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SmtpServerOptionsInitializer"/> class.
     /// </summary>
     /// <param name="smtpServerOptions">The SMTP server options to initialize from appsettings.json.</param>
+    /// <param name="ipAllowedList"></param>
     /// <param name="settingStore">The setting store for persisted user settings.</param>
     /// <param name="logger">The logger instance.</param>
     public SmtpServerOptionsInitializer(
         SmtpServerOptions smtpServerOptions,
+        IPAllowedList ipAllowedList,
         ISettingStore settingStore,
         ILogger logger)
     {
         _smtpServerOptions = smtpServerOptions;
+        _ipAllowedList = ipAllowedList;
         _settingStore = settingStore;
         _logger = logger;
     }
@@ -120,10 +126,11 @@ public class SmtpServerOptionsInitializer : IHostedService
                 : $"Enabled (Cert: {_smtpServerOptions.CertificateFindValue})";
 
             _logger.Information(
-                "SMTP Server Configuration Initialized: IP={IP}, Port={Port}, TLS={TlsStatus}",
+                "SMTP Server Configuration Initialized: IP={IP}, Port={Port}, TLS={TlsStatus}, Allow={AllowList}",
                 _smtpServerOptions.IP,
                 _smtpServerOptions.Port,
-                tlsStatus);
+                tlsStatus,
+                _ipAllowedList);
         }
         catch (Exception ex)
         {
