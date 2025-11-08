@@ -27,8 +27,6 @@ namespace Papercut.Infrastructure.Smtp;
 /// </summary>
 public static class SessionContextExtensions
 {
-    private const string RemoteEndPointKey = "EndpointListener:RemoteEndPoint";
-
     /// <summary>
     /// Gets the remote IP address from the session context.
     /// </summary>
@@ -38,8 +36,7 @@ public static class SessionContextExtensions
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
 
-        if (context.Properties.TryGetValue(RemoteEndPointKey, out var endpointObj)
-            && endpointObj is IPEndPoint remoteEndPoint)
+        if (context.RemoteEndPoint is IPEndPoint remoteEndPoint)
         {
             return remoteEndPoint.Address;
         }
