@@ -52,7 +52,7 @@ public class PapercutSmtpModule : Module
         builder.Register(
             ctx =>
             {
-                var ipAllowedList = ctx.Resolve<IPAllowedList>();
+                var ipAllowedList = ctx.ResolveOptional<IPAllowedList>() ?? IPAllowedList.AllowAll;
                 var logger = ctx.Resolve<ILogger>().ForContext<IpAllowlistMailboxFilter>();
                 return new DelegatingMailboxFilterFactory(
                     _ => new IpAllowlistMailboxFilter(ipAllowedList, logger));
