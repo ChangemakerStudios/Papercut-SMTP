@@ -35,6 +35,8 @@ public class MessageDetailRawViewModel : Screen,
 
     private bool _messageLoaded;
 
+    private MimeMessage? _loadedMimeMessage;
+
     private IDisposable? _messageLoader;
 
     private MimeMessage? _mimeMessage;
@@ -114,9 +116,11 @@ public class MessageDetailRawViewModel : Screen,
 
     private void RefreshDump()
     {
-        if (MessageLoaded)
+        // Don't reload if this exact message instance is already loaded
+        if (MessageLoaded && ReferenceEquals(_loadedMimeMessage, _mimeMessage))
             return;
 
+        // Cancel any in-progress load
         if (_messageLoader != null)
         {
             _messageLoader.Dispose();
@@ -127,20 +131,24 @@ public class MessageDetailRawViewModel : Screen,
         {
             IsLoading = false;
             MessageLoaded = false;
+            _loadedMimeMessage = null;
             Raw = string.Empty;
             return;
         }
 
         IsLoading = true;
+        var messageToLoad = _mimeMessage;
 
         _messageLoader =
-            Observable.Start(() => _mimeMessage.GetStringDump())
+            Observable.Start(() => messageToLoad.GetStringDump())
                 .SubscribeOn(TaskPoolScheduler.Default)
                 .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(h =>
                 {
                     Raw = h;
+                    _loadedMimeMessage = messageToLoad;
                     MessageLoaded = true;
+                    IsLoading = false;
                 });
     }
 
@@ -174,6 +182,10 @@ public class MessageDetailRawViewModel : Screen,
                 typedView.rawEdit.Document = new TextDocument(new StringTextSource(s ?? string.Empty));
                 IsLoading = false;
             });
+
+        // Observe MimeMessage changes and refresh when it changes
+        this.GetPropertyValues(p => p.MimeMessage)
+            .Subscribe(_ => RefreshDump());
 
         // Hook up zoom functionality
         typedView.rawEdit.PreviewMouseWheel += (sender, e) =>
