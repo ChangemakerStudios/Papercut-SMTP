@@ -1,6 +1,8 @@
 # Release Notes
 
-## Papercut SMTP v7.6.1 [2025-11-08]
+## Papercut SMTP v7.6.2 [2025-11-11]
+
+*Release replaces 7.6.1 which had a major issue with email receiving in the UI.*
 
 ### New Features
 
