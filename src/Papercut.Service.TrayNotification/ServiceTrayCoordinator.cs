@@ -244,22 +244,32 @@ public class ServiceTrayCoordinator : IDisposable
                 controller.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(30));
                 _serviceCommunicator.InvalidateCache(); // Re-detect web URL after start
 
-                // Give service a moment to initialize IPComm
-                Task.Run(async () =>
-                {
-                    await Task.Delay(2000); // Wait 2 seconds for service to fully initialize
-                    var isResponding = await _serviceCommunicator.IsServiceRespondingAsync();
-                    Log.Information("Service IPComm responding after start: {IsResponding}", isResponding);
-                });
-
                 ShowBalloonTip("Service Started", "Papercut SMTP Service is now running.", ToolTipIcon.Info);
             }
         }
+        catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 5) // Access Denied
+        {
+            MessageBox.Show(
+                "This application must be run as Administrator to control the Papercut SMTP Service.\n\n" +
+                "Please close this application and restart it by right-clicking and selecting 'Run as administrator'.",
+                "Administrator Privileges Required",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+        catch (InvalidOperationException)
+        {
+            MessageBox.Show(
+                $"The service '{ServiceName}' could not be found or accessed.\n\n" +
+                "Please ensure the Papercut SMTP Service is installed.",
+                "Service Not Found",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
         catch (Exception ex)
         {
-            Log.Error(ex, "Failed to start service");
             MessageBox.Show(
-                $"Failed to start service: {ex.Message}\n\nMake sure you have administrator privileges.",
+                $"Failed to start service: {ex.Message}\n\n" +
+                "Make sure you have administrator privileges and the service is installed.",
                 "Error Starting Service",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -280,11 +290,29 @@ public class ServiceTrayCoordinator : IDisposable
                 ShowBalloonTip("Service Stopped", "Papercut SMTP Service has been stopped.", ToolTipIcon.Info);
             }
         }
+        catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 5) // Access Denied
+        {
+            MessageBox.Show(
+                "This application must be run as Administrator to control the Papercut SMTP Service.\n\n" +
+                "Please close this application and restart it by right-clicking and selecting 'Run as administrator'.",
+                "Administrator Privileges Required",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+        catch (InvalidOperationException)
+        {
+            MessageBox.Show(
+                $"The service '{ServiceName}' could not be found or accessed.\n\n" +
+                "Please ensure the Papercut SMTP Service is installed.",
+                "Service Not Found",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
         catch (Exception ex)
         {
-            Log.Error(ex, "Failed to stop service");
             MessageBox.Show(
-                $"Failed to stop service: {ex.Message}\n\nMake sure you have administrator privileges.",
+                $"Failed to stop service: {ex.Message}\n\n" +
+                "Make sure you have administrator privileges and the service is installed.",
                 "Error Stopping Service",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -306,22 +334,32 @@ public class ServiceTrayCoordinator : IDisposable
                 controller.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(30));
                 _serviceCommunicator.InvalidateCache(); // Re-detect web URL after restart
 
-                // Give service a moment to initialize IPComm
-                Task.Run(async () =>
-                {
-                    await Task.Delay(2000); // Wait 2 seconds for service to fully initialize
-                    var isResponding = await _serviceCommunicator.IsServiceRespondingAsync();
-                    Log.Information("Service IPComm responding after restart: {IsResponding}", isResponding);
-                });
-
                 ShowBalloonTip("Service Restarted", "Papercut SMTP Service has been restarted.", ToolTipIcon.Info);
             }
         }
+        catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 5) // Access Denied
+        {
+            MessageBox.Show(
+                "This application must be run as Administrator to control the Papercut SMTP Service.\n\n" +
+                "Please close this application and restart it by right-clicking and selecting 'Run as administrator'.",
+                "Administrator Privileges Required",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+        catch (InvalidOperationException)
+        {
+            MessageBox.Show(
+                $"The service '{ServiceName}' could not be found or accessed.\n\n" +
+                "Please ensure the Papercut SMTP Service is installed.",
+                "Service Not Found",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
         catch (Exception ex)
         {
-            Log.Error(ex, "Failed to restart service");
             MessageBox.Show(
-                $"Failed to restart service: {ex.Message}\n\nMake sure you have administrator privileges.",
+                $"Failed to restart service: {ex.Message}\n\n" +
+                "Make sure you have administrator privileges and the service is installed.",
                 "Error Restarting Service",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);

@@ -27,11 +27,11 @@ namespace Papercut.Service.TrayNotification;
 /// <summary>
 /// Handles communication with the Papercut SMTP Service via IPComm protocol
 /// </summary>
-public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory)
+public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory) : IStartable
 {
     private const string FallbackWebUrl = "http://localhost:37408";
 
-    private readonly TimeSpan _urlCacheExpiration = TimeSpan.FromMinutes(1);
+    private readonly TimeSpan _urlCacheExpiration = TimeSpan.FromMinutes(10);
 
     private string? _cachedWebUrl;
 
@@ -74,6 +74,13 @@ public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory
         return FallbackWebUrl;
     }
 
+    public void Start()
+    {
+        var webUrl = Task.Run(async () => await this.GetWebUIUrlAsync()).Result;
+        _cachedWebUrl = webUrl;
+    }
+
+
     /// <summary>
     /// Clears the cached web URL, forcing a re-check on next access
     /// </summary>
@@ -94,7 +101,7 @@ public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory
     {
         if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-        builder.RegisterType<ServiceCommunicator>().AsSelf().SingleInstance();
+        builder.RegisterType<ServiceCommunicator>().AsSelf().AsImplementedInterfaces().SingleInstance();
     }
 
     #endregion

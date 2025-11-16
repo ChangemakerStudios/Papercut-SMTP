@@ -28,14 +28,13 @@ public class BasicPathTemplateProvider : IPathTemplatesProvider
 {
     public ObservableCollection<string> MessagePathTemplates { get; } = new([]);
 
-    public ObservableCollection<string> LoggingPathTemplates { get; } = new(["%LocalApplicationData%\\Logs"]);
+    public ObservableCollection<string> LoggingPathTemplates { get; } = new(["%DataDirectory%\\Logs"]);
 
     #region Begin Static Container Registrations
 
     private static void Register(ContainerBuilder builder)
     {
-        builder.RegisterType<BasicPathTemplateProvider>().AsImplementedInterfaces().AsSelf()
-            .InstancePerLifetimeScope();
+        builder.RegisterType<BasicPathTemplateProvider>().As<IPathTemplatesProvider>().SingleInstance();
     }
 
     #endregion
