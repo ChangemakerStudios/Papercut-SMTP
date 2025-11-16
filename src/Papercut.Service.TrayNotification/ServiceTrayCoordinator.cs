@@ -1,14 +1,14 @@
 // Papercut
-//
+// 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
-//
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,20 +21,28 @@ using System.ServiceProcess;
 
 using Autofac;
 
+using Papercut.Core.Domain.Paths;
+
 namespace Papercut.Service.TrayNotification;
 
 public class ServiceTrayCoordinator : IDisposable
 {
     private const string ServiceName = "Papercut.SMTP.Service";
 
+    private readonly LoggingPathConfigurator _loggingPathConfigurator;
+
     private readonly NotifyIcon _notifyIcon;
-    private readonly System.Windows.Forms.Timer _statusUpdateTimer;
+
     private readonly ServiceCommunicator _serviceCommunicator;
+
+    private readonly System.Windows.Forms.Timer _statusUpdateTimer;
+
     private ServiceControllerStatus? _lastStatus;
 
-    public ServiceTrayCoordinator()
+    public ServiceTrayCoordinator(LoggingPathConfigurator loggingPathConfigurator, ServiceCommunicator serviceCommunicator)
     {
-        _serviceCommunicator = new ServiceCommunicator();
+        _loggingPathConfigurator = loggingPathConfigurator;
+        _serviceCommunicator = serviceCommunicator;
 
         _notifyIcon = new NotifyIcon
         {
@@ -58,6 +66,13 @@ public class ServiceTrayCoordinator : IDisposable
         UpdateServiceStatus();
 
         Log.Information("Service Tray Coordinator initialized");
+    }
+
+    public void Dispose()
+    {
+        _statusUpdateTimer?.Stop();
+        _statusUpdateTimer?.Dispose();
+        _notifyIcon?.Dispose();
     }
 
     private Icon LoadIcon()
@@ -174,12 +189,9 @@ public class ServiceTrayCoordinator : IDisposable
 
     private void UpdateMenuState(ContextMenuStrip menu)
     {
-        var statusLabel = menu.Items["statusLabel"] as ToolStripLabel;
-        var startItem = menu.Items["startService"] as ToolStripMenuItem;
-        var stopItem = menu.Items["stopService"] as ToolStripMenuItem;
-        var restartItem = menu.Items["restartService"] as ToolStripMenuItem;
-
-        if (statusLabel == null || startItem == null || stopItem == null || restartItem == null)
+        if (menu.Items["statusLabel"] is not ToolStripLabel statusLabel || menu.Items["startService"] is not ToolStripMenuItem startItem
+                                                                        || menu.Items["stopService"] is not ToolStripMenuItem stopItem
+                                                                        || menu.Items["restartService"] is not ToolStripMenuItem restartItem)
             return;
 
         try
@@ -344,9 +356,7 @@ public class ServiceTrayCoordinator : IDisposable
     {
         try
         {
-            var logsPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Papercut", "Logs");
+            var logsPath = _loggingPathConfigurator.DefaultSavePath;
 
             if (!Directory.Exists(logsPath))
             {
@@ -354,6 +364,7 @@ public class ServiceTrayCoordinator : IDisposable
             }
 
             Log.Information("Opening logs folder at {LogsPath}", logsPath);
+
             Process.Start(new ProcessStartInfo
             {
                 FileName = logsPath,
@@ -382,13 +393,6 @@ public class ServiceTrayCoordinator : IDisposable
         _notifyIcon.ShowBalloonTip(3000, title, text, icon);
     }
 
-    public void Dispose()
-    {
-        _statusUpdateTimer?.Stop();
-        _statusUpdateTimer?.Dispose();
-        _notifyIcon?.Dispose();
-    }
-
     #region Begin Static Container Registrations
 
     /// <summary>
@@ -396,7 +400,7 @@ public class ServiceTrayCoordinator : IDisposable
     /// </summary>
     /// <param name="builder"></param>
     [UsedImplicitly]
-    static void Register([NotNull] ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         if (builder == null) throw new ArgumentNullException(nameof(builder));
 

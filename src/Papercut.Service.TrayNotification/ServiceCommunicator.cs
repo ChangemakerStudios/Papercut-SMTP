@@ -16,18 +16,20 @@
 // limitations under the License.
 
 
-using Papercut.Core.Domain.Network;
+using Autofac;
+
+using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Network;
-using Papercut.Infrastructure.IPComm.Network;
+using Papercut.Infrastructure.IPComm;
 
 namespace Papercut.Service.TrayNotification;
 
 /// <summary>
 /// Handles communication with the Papercut SMTP Service via IPComm protocol
 /// </summary>
-public class ServiceCommunicator
+public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory)
 {
-    private const string FallbackWebUrl = "http://localhost:8080";
+    private const string FallbackWebUrl = "http://localhost:37408";
 
     private readonly TimeSpan _urlCacheExpiration = TimeSpan.FromMinutes(1);
 
@@ -35,15 +37,6 @@ public class ServiceCommunicator
 
     private DateTime _lastUrlCheck = DateTime.MinValue;
 
-    /// <summary>
-    /// Gets the web UI URL from the service using IPComm, or returns fallback if service is not available
-    /// </summary>
-    /// <remarks>
-    /// TODO: Currently uses HTTP probing to find the web UI port.
-    /// Need to add a new IPComm exchange event to the service that returns web server configuration.
-    /// AppProcessExchangeEvent only returns SMTP server bindings (port 25), not web UI bindings.
-    /// PapercutWebServerReadyEvent is only published on startup, can't be requested on demand.
-    /// </remarks>
     public async Task<string> GetWebUIUrlAsync()
     {
         // Return cached URL if still valid
@@ -51,70 +44,34 @@ public class ServiceCommunicator
         {
             return _cachedWebUrl;
         }
-
+        
         try
         {
-            // Try common web UI ports via HTTP probing
-            var portsToTry = new[] { 8080, 80, 5000, 37404 };
+            var serviceClient = ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.Service);
 
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(1) };
+            var exchangeEvent = new ServiceWebUISettingsExchangeEvent();
 
-            foreach (var port in portsToTry)
+            var serviceWebUiSettings = await serviceClient.ExchangeEventServer(exchangeEvent, TimeSpan.FromSeconds(10));
+
+            if (serviceWebUiSettings != null && serviceWebUiSettings.IP.IsSet() && serviceWebUiSettings.Port.HasValue)
             {
-                var testUrl = $"http://localhost:{port}";
-                try
-                {
-                    var response = await client.GetAsync(testUrl);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        _cachedWebUrl = testUrl;
-                        _lastUrlCheck = DateTime.Now;
-                        Log.Debug("Found web UI at {Url} via HTTP probe", testUrl);
-                        return testUrl;
-                    }
-                }
-                catch
-                {
-                    // Continue to next port
-                }
+                _cachedWebUrl = $"http://{serviceWebUiSettings.IP}:{serviceWebUiSettings.Port}";
+                _lastUrlCheck = DateTime.Now;
+
+                return _cachedWebUrl;
             }
         }
         catch (Exception ex)
         {
-            Log.Debug(ex, "Failed to probe for web URL");
+            Log.Warning(ex, "Failed to probe for web URL");
         }
 
         // Fallback to default
         Log.Debug("Using fallback web URL: {Url}", FallbackWebUrl);
         _cachedWebUrl = FallbackWebUrl;
         _lastUrlCheck = DateTime.Now;
+
         return FallbackWebUrl;
-    }
-
-    /// <summary>
-    /// Checks if the service is responding via IPComm
-    /// </summary>
-    public async Task<bool> IsServiceRespondingAsync()
-    {
-        try
-        {
-            var endpoint = new EndpointDefinition(
-                PapercutIPCommConstants.Localhost,
-                PapercutIPCommConstants.ServiceListeningPort);
-
-            var ipCommClient = new PapercutIPCommClient(endpoint, Log.Logger);
-            var requestEvent = new AppProcessExchangeEvent();
-
-            var responseEvent = await ipCommClient.ExchangeEventServer(
-                requestEvent,
-                TimeSpan.FromSeconds(1));
-
-            return responseEvent != null;
-        }
-        catch
-        {
-            return false;
-        }
     }
 
     /// <summary>
@@ -125,4 +82,20 @@ public class ServiceCommunicator
         _cachedWebUrl = null;
         _lastUrlCheck = DateTime.MinValue;
     }
+
+    #region Begin Static Container Registrations
+
+    /// <summary>
+    /// Called dynamically from the RegisterStaticMethods() call in the container module.
+    /// </summary>
+    /// <param name="builder"></param>
+    [UsedImplicitly]
+    private static void Register(ContainerBuilder builder)
+    {
+        if (builder == null) throw new ArgumentNullException(nameof(builder));
+
+        builder.RegisterType<ServiceCommunicator>().AsSelf().SingleInstance();
+    }
+
+    #endregion
 }

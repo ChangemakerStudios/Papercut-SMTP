@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -16,9 +16,6 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Web.Hosting;
+namespace Papercut.Core.Infrastructure.Network;
 
-public class PapercutWebServerReadyEvent : IEvent
-{
-    public HttpClient? HttpClient { get; set; }
-}
+public class ServiceWebUISettingsExchangeEvent : BaseBindEvent;

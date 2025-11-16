@@ -26,9 +26,9 @@ namespace Papercut.Service.TrayNotification;
 
 public class BasicPathTemplateProvider : IPathTemplatesProvider
 {
-    public ObservableCollection<string> MessagePathTemplates { get; } = new(["%BaseDirectory%\\Incoming"]);
+    public ObservableCollection<string> MessagePathTemplates { get; } = new([]);
 
-    public ObservableCollection<string> LoggingPathTemplates { get; } = new(["%BaseDirectory%\\Logs"]);
+    public ObservableCollection<string> LoggingPathTemplates { get; } = new(["%LocalApplicationData%\\Logs"]);
 
     #region Begin Static Container Registrations
 
