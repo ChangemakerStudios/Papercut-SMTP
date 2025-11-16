@@ -29,22 +29,26 @@ public class PapercutIPCommEndpoints
 
         var uiAddress = settingStore.GetOrSet("IPCommUIAddress", PapercutIPCommConstants.Localhost,
             $"The IP Comm UI IP address (Defaults to {PapercutIPCommConstants.Localhost}).");
-
         var uiPort = settingStore.GetOrSet("IPCommUIPort", PapercutIPCommConstants.UiListeningPort,
             $"The IP Comm UI listening port (Defaults to {PapercutIPCommConstants.UiListeningPort}).");
-
-        this.UI = new EndpointDefinition(uiAddress, uiPort);
+        UI = new EndpointDefinition(uiAddress, uiPort);
 
         var serviceAddress = settingStore.GetOrSet("IPCommServiceAddress", PapercutIPCommConstants.Localhost,
             $"The IP Comm Service IP address (Defaults to {PapercutIPCommConstants.Localhost}).");
-
         var servicePort = settingStore.GetOrSet("IPCommServicePort", PapercutIPCommConstants.ServiceListeningPort,
             $"The IP Comm Service UI listening port (Defaults to {PapercutIPCommConstants.ServiceListeningPort}).");
+        Service = new EndpointDefinition(serviceAddress, servicePort);
 
-        this.Service = new EndpointDefinition(serviceAddress, servicePort);
+        var trayServiceAddress = settingStore.GetOrSet("IPCommTrayServiceAddress", PapercutIPCommConstants.Localhost,
+            $"The IP Comm Service IP address (Defaults to {PapercutIPCommConstants.Localhost}).");
+        var trayServicePort = settingStore.GetOrSet("IPCommTrayServicePort", PapercutIPCommConstants.TrayServiceListeningPort,
+            $"The IP Comm Service UI listening port (Defaults to {PapercutIPCommConstants.TrayServiceListeningPort}).");
+        TrayService = new EndpointDefinition(trayServiceAddress, trayServicePort);
     }
 
     public EndpointDefinition UI { get; }
 
     public EndpointDefinition Service { get; }
+
+    public EndpointDefinition TrayService { get; }
 }

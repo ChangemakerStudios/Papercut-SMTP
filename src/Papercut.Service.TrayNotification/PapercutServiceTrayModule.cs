@@ -16,15 +16,31 @@
 // limitations under the License.
 
 
-namespace Papercut.Infrastructure.IPComm.Network;
+using Autofac;
 
-public static class PapercutIPCommConstants
+using AutofacSerilogIntegration;
+
+using Papercut.Core.Infrastructure.Container;
+using Papercut.Infrastructure.IPComm;
+
+namespace Papercut.Service.TrayNotification;
+
+public class PapercutServiceTrayModule : Module
 {
-    public const ushort UiListeningPort = 37402;
+    protected override void Load(ContainerBuilder builder)
+    {
+        foreach (var module in GetPapercutServiceModules())
+        {
+            builder.RegisterModule(module);
+        }
 
-    public const ushort ServiceListeningPort = 37403;
+        builder.RegisterLogger();
 
-    public const ushort TrayServiceListeningPort = 37404;
+        builder.RegisterStaticMethods(ThisAssembly);
+    }
 
-    public const string Localhost = "127.0.0.1";
+    private IEnumerable<Module> GetPapercutServiceModules()
+    {
+        yield return new PapercutIPCommModule();
+    }
 }

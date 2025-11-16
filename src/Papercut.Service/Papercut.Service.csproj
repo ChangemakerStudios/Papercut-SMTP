@@ -33,7 +33,6 @@
 		<PackageReference Include="Serilog.ExceptionalLogContext" Version="1.1.0" />
 		<PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
 		<PackageReference Include="Serilog.Expressions" Version="5.0.0" />
-		<PackageReference Include="SmtpServer" Version="11.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />

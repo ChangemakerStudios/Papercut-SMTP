@@ -21,16 +21,11 @@ using Papercut.Core.Infrastructure.Json;
 
 namespace Papercut.Core.Domain.Settings;
 
-public class JsonSettingStore : BaseSettingsStore
+public class JsonSettingStore(IAppMeta appMeta) : BaseSettingsStore
 {
-    public JsonSettingStore(IAppMeta appMeta)
-    {
-        this.SettingsFilePath = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            $"{appMeta.AppName}.Settings.json");
-    }
-
-    protected string SettingsFilePath { get; set; }
+    protected string SettingsFilePath { get; set; } = Path.Combine(
+        AppDomain.CurrentDomain.BaseDirectory,
+        $"{appMeta.AppName}.Settings.json");
 
     public override void Load()
     {
