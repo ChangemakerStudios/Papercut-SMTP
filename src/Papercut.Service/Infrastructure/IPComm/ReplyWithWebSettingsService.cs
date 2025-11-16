@@ -42,7 +42,9 @@ public class ReplyWithWebSettingsService(IServer server, ILogger logger)
                 var uri = new Uri(firstAddress);
 
                 @event.IP = uri.Host is "+" or "*" or "[::]" ? Localhost : uri.Host;
-                @event.Port = uri.Port;
+
+                // Validate port: Uri.Port returns -1 when no explicit port is specified
+                @event.Port = uri.Port != -1 ? uri.Port : 8080;
 
                 logger.Debug(
                     "Replying to ServiceWebUISettingsExchangeEvent with IP: {IP}, Port: {Port}",
