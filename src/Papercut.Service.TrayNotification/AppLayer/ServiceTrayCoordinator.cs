@@ -22,29 +22,34 @@ using System.ServiceProcess;
 using Autofac;
 
 using Papercut.Core.Domain.Paths;
+using Papercut.Service.TrayNotification.Infrastructure;
 
-namespace Papercut.Service.TrayNotification;
+namespace Papercut.Service.TrayNotification.AppLayer;
 
 public class ServiceTrayCoordinator : IDisposable
 {
+    private readonly AppRunOnStartupService _appRunOnStartupService;
+
     private readonly LoggingPathConfigurator _loggingPathConfigurator;
 
     private readonly NotifyIcon _notifyIcon;
 
     private readonly ServiceStatusService _serviceStatusService;
 
-    private readonly AppRunOnStartupService _appRunOnStartupService;
+    private readonly NewMessageNotificationService _notificationService;
 
     private readonly System.Windows.Forms.Timer _statusUpdateTimer;
 
     public ServiceTrayCoordinator(
         LoggingPathConfigurator loggingPathConfigurator,
         ServiceStatusService serviceStatusService,
-        AppRunOnStartupService appRunOnStartupService)
+        AppRunOnStartupService appRunOnStartupService,
+        NewMessageNotificationService notificationService)
     {
         _loggingPathConfigurator = loggingPathConfigurator;
         _serviceStatusService = serviceStatusService;
         _appRunOnStartupService = appRunOnStartupService;
+        _notificationService = notificationService;
 
         _notifyIcon = new NotifyIcon
         {
@@ -58,6 +63,9 @@ public class ServiceTrayCoordinator : IDisposable
 
         // Subscribe to status changes
         _serviceStatusService.StatusChanged += OnServiceStatusChanged;
+
+        // Subscribe to new message notifications
+        _notificationService.NewMessageReceived += OnNewMessageReceived;
 
         // Update service status every 2 seconds
         _statusUpdateTimer = new System.Windows.Forms.Timer
@@ -76,9 +84,38 @@ public class ServiceTrayCoordinator : IDisposable
     public void Dispose()
     {
         _serviceStatusService.StatusChanged -= OnServiceStatusChanged;
+        _notificationService.NewMessageReceived -= OnNewMessageReceived;
         _statusUpdateTimer?.Stop();
         _statusUpdateTimer?.Dispose();
         _notifyIcon?.Dispose();
+    }
+
+    private void OnNewMessageReceived(object? sender, Core.Domain.Message.NewMessageEvent e)
+    {
+        if (!_notificationService.NotificationsEnabled)
+            return;
+
+        try
+        {
+            // Extract subject from filename format: {timestamp} {subject} {randomstring}.eml
+            var fileName = Path.GetFileNameWithoutExtension(e.NewMessage.Name);
+            var parts = fileName.Split(' ', 3); // Split into timestamp, subject, random
+            var subject = parts.Length >= 2
+                ? string.Join(" ", parts.Skip(1).Take(parts.Length - 2))
+                : "(No Subject)";
+
+            if (string.IsNullOrWhiteSpace(subject))
+                subject = "(No Subject)";
+
+            ShowBalloonTip(
+                "New Email Received",
+                $"Subject: {subject}",
+                ToolTipIcon.Info);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to show new message notification");
+        }
     }
 
     private async void OnServiceStatusChanged(object? sender, ServiceControllerStatus status)
@@ -167,6 +204,14 @@ public class ServiceTrayCoordinator : IDisposable
         };
         menu.Items.Add(runOnStartupItem);
 
+        var showNotificationsItem = new ToolStripMenuItem("Show Notifications", null, OnToggleNotifications)
+        {
+            Name = "showNotifications",
+            CheckOnClick = true,
+            Checked = true // Default to enabled
+        };
+        menu.Items.Add(showNotificationsItem);
+
         menu.Items.Add(new ToolStripSeparator());
 
         menu.Items.Add("Exit", null, OnExit);
@@ -193,11 +238,15 @@ public class ServiceTrayCoordinator : IDisposable
             || menu.Items["stopService"] is not ToolStripMenuItem stopItem
             || menu.Items["restartService"] is not ToolStripMenuItem restartItem
             || menu.Items["openWebUI"] is not ToolStripMenuItem openWebUIItem
-            || menu.Items["runOnStartup"] is not ToolStripMenuItem runOnStartupItem)
+            || menu.Items["runOnStartup"] is not ToolStripMenuItem runOnStartupItem
+            || menu.Items["showNotifications"] is not ToolStripMenuItem showNotificationsItem)
             return;
 
         // Update Run on Startup checkbox
         runOnStartupItem.Checked = _appRunOnStartupService.IsRunOnStartupEnabled();
+
+        // Update Show Notifications checkbox
+        showNotificationsItem.Checked = _notificationService.NotificationsEnabled;
 
         if (!_serviceStatusService.IsServiceInstalled)
         {
@@ -448,6 +497,24 @@ public class ServiceTrayCoordinator : IDisposable
         catch (Exception ex)
         {
             Log.Error(ex, "Failed to toggle run on startup");
+            // Revert the checkbox
+            menuItem.Checked = !menuItem.Checked;
+        }
+    }
+
+    private void OnToggleNotifications(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem menuItem)
+            return;
+
+        try
+        {
+            _notificationService.NotificationsEnabled = menuItem.Checked;
+            Log.Information("Notifications {Status}", menuItem.Checked ? "enabled" : "disabled");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to toggle notifications");
             // Revert the checkbox
             menuItem.Checked = !menuItem.Checked;
         }

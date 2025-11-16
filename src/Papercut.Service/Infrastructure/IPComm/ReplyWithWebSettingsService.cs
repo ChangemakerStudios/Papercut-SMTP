@@ -48,11 +48,11 @@ public class ReplyWithWebSettingsService(IServer server, ILogger logger)
                     "Replying to ServiceWebUISettingsExchangeEvent with IP: {IP}, Port: {Port}",
                     @event.IP,
                     @event.Port);
+
+                return Task.CompletedTask;
             }
-            else
-            {
-                logger.Warning("No server addresses found, using fallback");
-            }
+
+            logger.Warning("No server addresses found, using fallback");
         }
         catch (Exception ex)
         {

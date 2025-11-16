@@ -17,6 +17,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj" />
 		<ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
+		<ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="icons\Papercut-icon.ico">

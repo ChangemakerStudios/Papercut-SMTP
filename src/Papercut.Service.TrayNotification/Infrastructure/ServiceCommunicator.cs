@@ -17,13 +17,12 @@
 
 
 using Autofac;
-
 using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Network;
 using Papercut.Infrastructure.IPComm;
 
-namespace Papercut.Service.TrayNotification;
+namespace Papercut.Service.TrayNotification.Infrastructure;
 
 /// <summary>
 /// Handles communication with the Papercut SMTP Service via IPComm protocol
@@ -86,13 +85,8 @@ public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory
 
     public void Start()
     {
-        logger.Debug("Startup: Attempting to IPComm to Service to get the Web UI...");
-
-        var webUrl = this.GetWebUIUrlAsync().RunAsync();
-
-        logger.Debug("Received WebUrl {WebUrl}", webUrl);
-
-        _cachedWebUrl = webUrl;
+        logger.Debug("Startup: Attempting to IPComm to Service to get the Web UI Url...");
+        this.GetWebUIUrlAsync().RunAsync();
     }
 
 

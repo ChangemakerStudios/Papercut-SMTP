@@ -16,26 +16,27 @@
 // limitations under the License.
 
 
-using System.Collections.ObjectModel;
-
 using Autofac;
-
 using Papercut.Core.Domain.Paths;
+using Papercut.Core.Infrastructure.Container;
+using Papercut.Infrastructure.IPComm;
 
-namespace Papercut.Service.TrayNotification;
+namespace Papercut.Service.TrayNotification.Infrastructure;
 
-public class TrayLoggingPathConfigurator : IPathTemplatesProvider
+public class PapercutServiceTrayModule : Module
 {
-    public ObservableCollection<string> PathTemplates { get; } = new(["%DataDirectory%\\\\Logs"]);
-
-    public PathTemplateType Type => PathTemplateType.Logging;
-
-    #region Begin Static Container Registrations
-
-    private static void Register(ContainerBuilder builder)
+    protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterType<TrayLoggingPathConfigurator>().Keyed<IPathTemplatesProvider>(PathTemplateType.Logging).SingleInstance();
+        foreach (var module in GetPapercutServiceModules())
+        {
+            builder.RegisterModule(module);
+        }
+
+        builder.RegisterStaticMethods(ThisAssembly);
     }
 
-    #endregion
+    private IEnumerable<Module> GetPapercutServiceModules()
+    {
+        yield return new PapercutIPCommModule();
+    }
 }

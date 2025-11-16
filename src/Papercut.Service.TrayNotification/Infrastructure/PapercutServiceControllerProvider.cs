@@ -20,7 +20,7 @@ using System.ServiceProcess;
 
 using Autofac;
 
-namespace Papercut.Service.TrayNotification;
+namespace Papercut.Service.TrayNotification.Infrastructure;
 
 /// <summary>
 /// Provides access to the Papercut SMTP Service via ServiceController

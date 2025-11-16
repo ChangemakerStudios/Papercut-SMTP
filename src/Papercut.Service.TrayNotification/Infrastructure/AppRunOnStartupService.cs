@@ -21,10 +21,9 @@ using System.Security;
 using Autofac;
 
 using Microsoft.Win32;
-
 using Papercut.Core.Domain.Application;
 
-namespace Papercut.Service.TrayNotification;
+namespace Papercut.Service.TrayNotification.Infrastructure;
 
 /// <summary>
 /// Manages the "Run at Startup" functionality for the tray notification app

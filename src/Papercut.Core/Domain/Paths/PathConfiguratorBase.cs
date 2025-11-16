@@ -22,11 +22,11 @@ namespace Papercut.Core.Domain.Paths;
 
 public abstract class PathConfiguratorBase : IPathConfigurator
 {
+    private string _defaultSavePath = string.Empty;
+
     private readonly ILogger _logger;
 
     private readonly IPathTemplatesProvider _pathTemplateProvider;
-
-    private readonly string _defaultSavePath = string.Empty;
 
     protected PathConfiguratorBase(IPathTemplatesProvider pathTemplateProvider, ILogger logger)
     {
@@ -64,10 +64,10 @@ public abstract class PathConfiguratorBase : IPathConfigurator
 
             return _defaultSavePath;
         }
-        private init => _defaultSavePath = value;
+        private set => _defaultSavePath = value;
     }
 
-    public IReadOnlyCollection<string> LoadPaths { get; }
+    public IReadOnlyCollection<string> LoadPaths { get; private set; }
 
     public event EventHandler? RefreshLoadPath;
 
@@ -115,7 +115,8 @@ public abstract class PathConfiguratorBase : IPathConfigurator
 
     private void PathTemplatesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        RenderLoadPaths();
+        LoadPaths = RenderLoadPaths().Where(PathExists).ToList();
+        DefaultSavePath = GetValidDefaultSavePath(LoadPaths);
         OnRefreshLoadPath();
     }
 

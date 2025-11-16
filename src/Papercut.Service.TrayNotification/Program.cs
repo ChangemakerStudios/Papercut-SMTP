@@ -16,14 +16,18 @@
 // limitations under the License.
 
 
+using System.Reflection;
+
 using Autofac;
+
 using Papercut.Common.Helper;
 using Papercut.Core.Domain.Application;
 using Papercut.Core.Domain.Paths;
 using Papercut.Core.Infrastructure.Consoles;
 using Papercut.Core.Infrastructure.Container;
 using Papercut.Core.Infrastructure.Logging;
-using System.Reflection;
+using Papercut.Service.TrayNotification.AppLayer;
+using Papercut.Service.TrayNotification.Infrastructure;
 
 namespace Papercut.Service.TrayNotification;
 
