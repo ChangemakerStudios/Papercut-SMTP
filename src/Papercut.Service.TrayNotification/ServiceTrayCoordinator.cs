@@ -33,14 +33,18 @@ public class ServiceTrayCoordinator : IDisposable
 
     private readonly ServiceStatusService _serviceStatusService;
 
+    private readonly AppRunOnStartupService _appRunOnStartupService;
+
     private readonly System.Windows.Forms.Timer _statusUpdateTimer;
 
     public ServiceTrayCoordinator(
         LoggingPathConfigurator loggingPathConfigurator,
-        ServiceStatusService serviceStatusService)
+        ServiceStatusService serviceStatusService,
+        AppRunOnStartupService appRunOnStartupService)
     {
         _loggingPathConfigurator = loggingPathConfigurator;
         _serviceStatusService = serviceStatusService;
+        _appRunOnStartupService = appRunOnStartupService;
 
         _notifyIcon = new NotifyIcon
         {
@@ -156,6 +160,15 @@ public class ServiceTrayCoordinator : IDisposable
 
         menu.Items.Add(new ToolStripSeparator());
 
+        var runOnStartupItem = new ToolStripMenuItem("Run at Startup", null, OnToggleRunOnStartup)
+        {
+            Name = "runOnStartup",
+            CheckOnClick = true
+        };
+        menu.Items.Add(runOnStartupItem);
+
+        menu.Items.Add(new ToolStripSeparator());
+
         menu.Items.Add("Exit", null, OnExit);
 
         // Update menu state before showing
@@ -179,8 +192,12 @@ public class ServiceTrayCoordinator : IDisposable
             || menu.Items["startService"] is not ToolStripMenuItem startItem
             || menu.Items["stopService"] is not ToolStripMenuItem stopItem
             || menu.Items["restartService"] is not ToolStripMenuItem restartItem
-            || menu.Items["openWebUI"] is not ToolStripMenuItem openWebUIItem)
+            || menu.Items["openWebUI"] is not ToolStripMenuItem openWebUIItem
+            || menu.Items["runOnStartup"] is not ToolStripMenuItem runOnStartupItem)
             return;
+
+        // Update Run on Startup checkbox
+        runOnStartupItem.Checked = _appRunOnStartupService.IsRunOnStartupEnabled();
 
         if (!_serviceStatusService.IsServiceInstalled)
         {
@@ -406,6 +423,33 @@ public class ServiceTrayCoordinator : IDisposable
                 "Error",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
+        }
+    }
+
+    private void OnToggleRunOnStartup(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem menuItem)
+            return;
+
+        try
+        {
+            bool success = _appRunOnStartupService.SetRunOnStartup(menuItem.Checked);
+
+            if (success)
+            {
+                Log.Information("Run on startup set to {Enabled}", menuItem.Checked);
+            }
+            else
+            {
+                // Revert the checkbox if the operation failed
+                menuItem.Checked = !menuItem.Checked;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to toggle run on startup");
+            // Revert the checkbox
+            menuItem.Checked = !menuItem.Checked;
         }
     }
 
