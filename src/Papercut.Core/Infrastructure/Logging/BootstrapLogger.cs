@@ -16,10 +16,14 @@
 // limitations under the License.
 
 
+using System.Diagnostics;
+
+using Papercut.Core.Domain.Application;
 using Papercut.Core.Infrastructure.CommandLine;
 
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Papercut.Core.Infrastructure.Logging;
 
@@ -38,13 +42,13 @@ public static class BootstrapLogger
         args.SetObserved();
     }
 
-    public static ILogger CreateBootstrapLogger(string[] args)
+    public static ILogger CreateBootstrapLogger(IAppMeta appMeta, string[] args)
     {
         string logFilePath = Path.Combine(AppConstants.AppDataDirectory,
             "Logs",
-            "PapercutSmtpFailure.json");
+            $"{appMeta.AppName.Replace(".", "-")}-Startup-Failure.log");
 
-        var logger =
+        var logConfiguration =
             new LoggerConfiguration()
 #if DEBUG
                 .MinimumLevel.Verbose()
@@ -52,10 +56,24 @@ public static class BootstrapLogger
                 .MinimumLevel.Information()
 #endif
                 .Enrich.With<EnvironmentEnricher>()
-                .WriteTo.Console()
-                .WriteTo.File(new CompactJsonFormatter(), logFilePath, LogEventLevel.Information)
-                .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(args))
-                .CreateLogger();
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("AppName", appMeta.AppName)
+                .Enrich.WithProperty("AppVersion", appMeta.AppVersion);
+
+        if (Debugger.IsAttached)
+        {
+            logConfiguration.WriteTo.Trace();
+        }
+
+        if (Environment.UserInteractive)
+        {
+            logConfiguration.WriteTo.Console(theme: AnsiConsoleTheme.Literate);
+        }
+
+        var logger = logConfiguration
+            .WriteTo.File(new CompactJsonFormatter(), logFilePath, LogEventLevel.Information)
+            .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(args))
+            .CreateLogger();
 
         logger.Debug("JSON Bootstrap Log File: {LogFilePathName}", logFilePath);
 

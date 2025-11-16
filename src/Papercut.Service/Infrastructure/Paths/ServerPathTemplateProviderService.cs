@@ -22,31 +22,32 @@ namespace Papercut.Service.Infrastructure.Paths;
 
 public class ServerPathTemplateProviderService : IPathTemplatesProvider
 {
-    public ServerPathTemplateProviderService(SmtpServerOptions smtpServerOptions)
+    public ServerPathTemplateProviderService(PathTemplateType type, SmtpServerOptions smtpServerOptions)
     {
-        var messagePaths = smtpServerOptions.MessagePath.Split(';')
+        Type = type;
+
+        var paths = type == PathTemplateType.Message ? smtpServerOptions.MessagePath : smtpServerOptions.LoggingPath;
+
+        var messagePaths = paths.Split(';')
             .Select(s => s.Trim())
             .Where(s => !string.IsNullOrWhiteSpace(s));
 
-        this.MessagePathTemplates = new ObservableCollection<string>(messagePaths);
-
-        var loggingPaths = smtpServerOptions.LoggingPath.Split(';')
-            .Select(s => s.Trim())
-            .Where(s => !string.IsNullOrWhiteSpace(s));
-
-        this.LoggingPathTemplates = new ObservableCollection<string>(loggingPaths);
+        PathTemplates = new ObservableCollection<string>(messagePaths);
     }
 
-    public ObservableCollection<string> MessagePathTemplates { get; }
+    public PathTemplateType Type { get; }
 
-    public ObservableCollection<string> LoggingPathTemplates { get; }
+    public ObservableCollection<string> PathTemplates { get; }
 
     #region Begin Static Container Registrations
 
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
-        builder.RegisterType<ServerPathTemplateProviderService>().AsImplementedInterfaces().AsSelf()
-            .InstancePerLifetimeScope();
+        builder.Register(p => new ServerPathTemplateProviderService(PathTemplateType.Message, p.Resolve<SmtpServerOptions>()))
+            .Keyed<IPathTemplatesProvider>(PathTemplateType.Message).SingleInstance();
+
+        builder.Register(p => new ServerPathTemplateProviderService(PathTemplateType.Logging, p.Resolve<SmtpServerOptions>()))
+            .Keyed<IPathTemplatesProvider>(PathTemplateType.Logging).SingleInstance();
     }
 
     #endregion

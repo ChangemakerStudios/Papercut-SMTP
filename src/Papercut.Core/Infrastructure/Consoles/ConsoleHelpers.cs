@@ -16,26 +16,25 @@
 // limitations under the License.
 
 
-using System.Collections.ObjectModel;
+namespace Papercut.Core.Infrastructure.Consoles;
 
-using Autofac;
-
-using Papercut.Core.Domain.Paths;
-
-namespace Papercut.Service.TrayNotification;
-
-public class BasicPathTemplateProvider : IPathTemplatesProvider
+public static class ConsoleHelpers
 {
-    public ObservableCollection<string> MessagePathTemplates { get; } = new([]);
-
-    public ObservableCollection<string> LoggingPathTemplates { get; } = new(["%DataDirectory%\\Logs"]);
-
-    #region Begin Static Container Registrations
-
-    private static void Register(ContainerBuilder builder)
+    public static bool HasConsole()
     {
-        builder.RegisterType<BasicPathTemplateProvider>().As<IPathTemplatesProvider>().SingleInstance();
-    }
+        if (!Environment.UserInteractive)
+        {
+            return false;
+        }
 
-    #endregion
+        try
+        {
+            _ = Console.WindowHeight;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

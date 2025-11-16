@@ -16,14 +16,14 @@
 // limitations under the License.
 
 
-using System.Reflection;
-
 using Autofac;
-
 using Papercut.Common.Helper;
 using Papercut.Core.Domain.Application;
+using Papercut.Core.Domain.Paths;
+using Papercut.Core.Infrastructure.Consoles;
 using Papercut.Core.Infrastructure.Container;
 using Papercut.Core.Infrastructure.Logging;
+using System.Reflection;
 
 namespace Papercut.Service.TrayNotification;
 
@@ -36,7 +36,12 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
+        Log.Logger = BootstrapLogger.CreateBootstrapLogger(AppMeta, args);
+
+        if (ConsoleHelpers.HasConsole())
+        {
+            Console.Title = AppMeta.AppName;
+        }
 
         try
         {
@@ -44,6 +49,8 @@ internal static class Program
 
             using (Container = new SimpleContainer<PapercutServiceTrayModule>().Build())
             {
+                Log.Logger.Information("Logging to Path {Path}", Container.Resolve<LoggingPathConfigurator>().DefaultSavePath);
+
                 var coordinator = Container.Resolve<ServiceTrayCoordinator>();
                 Application.Run();
             }

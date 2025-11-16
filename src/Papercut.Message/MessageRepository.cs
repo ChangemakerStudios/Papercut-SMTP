@@ -23,14 +23,16 @@ using Papercut.Core.Domain.Paths;
 
 namespace Papercut.Message;
 
-public class MessageRepository(IPathConfigurator pathConfigurator, ILogger logger) : IMessageRepository
+public class MessageRepository(MessagePathConfigurator pathConfigurator, ILogger logger) : IMessageRepository
 {
     private const string EmptyStringReplacement = "_";
 
-    protected static char[]? _invalidFileNameChars;
+    protected static char[]? InvalidFileNameChars;
 
     public virtual bool DeleteMessage(MessageEntry entry)
     {
+        if (entry == null) throw new ArgumentNullException(nameof(entry));
+
         // Delete the file and remove the entry
         if (!File.Exists(entry.File))
             return false;
@@ -142,7 +144,7 @@ public class MessageRepository(IPathConfigurator pathConfigurator, ILogger logge
     {
         var text = inputText ?? string.Empty;
 
-        var invalids = _invalidFileNameChars ??= Path.GetInvalidFileNameChars();
+        var invalids = InvalidFileNameChars ??= Path.GetInvalidFileNameChars();
 
         emptyText = emptyText ?? string.Empty;
         if (!string.IsNullOrEmpty(emptyText) && emptyText != EmptyStringReplacement)

@@ -27,22 +27,20 @@ namespace Papercut.Service.TrayNotification;
 
 public class ServiceTrayCoordinator : IDisposable
 {
-    private const string ServiceName = "Papercut.SMTP.Service";
-
     private readonly LoggingPathConfigurator _loggingPathConfigurator;
 
     private readonly NotifyIcon _notifyIcon;
 
-    private readonly ServiceCommunicator _serviceCommunicator;
+    private readonly ServiceStatusService _serviceStatusService;
 
     private readonly System.Windows.Forms.Timer _statusUpdateTimer;
 
-    private ServiceControllerStatus? _lastStatus;
-
-    public ServiceTrayCoordinator(LoggingPathConfigurator loggingPathConfigurator, ServiceCommunicator serviceCommunicator)
+    public ServiceTrayCoordinator(
+        LoggingPathConfigurator loggingPathConfigurator,
+        ServiceStatusService serviceStatusService)
     {
         _loggingPathConfigurator = loggingPathConfigurator;
-        _serviceCommunicator = serviceCommunicator;
+        _serviceStatusService = serviceStatusService;
 
         _notifyIcon = new NotifyIcon
         {
@@ -54,25 +52,48 @@ public class ServiceTrayCoordinator : IDisposable
         _notifyIcon.DoubleClick += OnTrayIconDoubleClick;
         _notifyIcon.ContextMenuStrip = CreateContextMenu();
 
+        // Subscribe to status changes
+        _serviceStatusService.StatusChanged += OnServiceStatusChanged;
+
         // Update service status every 2 seconds
         _statusUpdateTimer = new System.Windows.Forms.Timer
         {
             Interval = 2000
         };
-        _statusUpdateTimer.Tick += (_, _) => UpdateServiceStatus();
+        _statusUpdateTimer.Tick += (_, _) => _serviceStatusService.UpdateStatus();
         _statusUpdateTimer.Start();
 
         // Initial status update
-        UpdateServiceStatus();
+        _serviceStatusService.UpdateStatus();
 
         Log.Information("Service Tray Coordinator initialized");
     }
 
     public void Dispose()
     {
+        _serviceStatusService.StatusChanged -= OnServiceStatusChanged;
         _statusUpdateTimer?.Stop();
         _statusUpdateTimer?.Dispose();
         _notifyIcon?.Dispose();
+    }
+
+    private async void OnServiceStatusChanged(object? sender, ServiceControllerStatus status)
+    {
+        UpdateTrayIcon();
+
+        // Pre-fetch web URL when service becomes running to warm the cache
+        if (status == ServiceControllerStatus.Running)
+        {
+            try
+            {
+                await _serviceStatusService.GetWebUIUrlAsync();
+                Log.Debug("Pre-fetched web UI URL for cache");
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Failed to pre-fetch web URL");
+            }
+        }
     }
 
     private Icon LoadIcon()
@@ -126,7 +147,11 @@ public class ServiceTrayCoordinator : IDisposable
 
         menu.Items.Add(new ToolStripSeparator());
 
-        menu.Items.Add("Open Web UI", null, OnOpenWebUI);
+        var openWebUIItem = new ToolStripMenuItem("Open Web UI", null, OnOpenWebUI)
+        {
+            Name = "openWebUI"
+        };
+        menu.Items.Add(openWebUIItem);
         menu.Items.Add("View Logs Folder", null, OnViewLogs);
 
         menu.Items.Add(new ToolStripSeparator());
@@ -139,48 +164,9 @@ public class ServiceTrayCoordinator : IDisposable
         return menu;
     }
 
-    private void UpdateServiceStatus()
+    private void UpdateTrayIcon()
     {
-        try
-        {
-            using var controller = new ServiceController(ServiceName);
-            var status = controller.Status;
-
-            if (_lastStatus != status)
-            {
-                _lastStatus = status;
-                UpdateTrayIcon(status);
-                Log.Debug("Service status changed to {Status}", status);
-            }
-        }
-        catch (InvalidOperationException)
-        {
-            // Service not found/installed
-            if (_lastStatus != null)
-            {
-                _lastStatus = null;
-                _notifyIcon.Text = "Papercut SMTP Service (Not Installed)";
-                _notifyIcon.Icon = LoadIcon();
-                Log.Warning("Service '{ServiceName}' not found or not installed", ServiceName);
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to check service status");
-        }
-    }
-
-    private void UpdateTrayIcon(ServiceControllerStatus status)
-    {
-        var statusText = status switch
-        {
-            ServiceControllerStatus.Running => "Running",
-            ServiceControllerStatus.Stopped => "Stopped",
-            ServiceControllerStatus.StartPending => "Starting...",
-            ServiceControllerStatus.StopPending => "Stopping...",
-            _ => status.ToString()
-        };
-
+        var statusText = _serviceStatusService.GetStatusText();
         _notifyIcon.Text = $"Papercut SMTP Service ({statusText})";
 
         // Could add different icons or overlays based on status in the future
@@ -189,40 +175,51 @@ public class ServiceTrayCoordinator : IDisposable
 
     private void UpdateMenuState(ContextMenuStrip menu)
     {
-        if (menu.Items["statusLabel"] is not ToolStripLabel statusLabel || menu.Items["startService"] is not ToolStripMenuItem startItem
-                                                                        || menu.Items["stopService"] is not ToolStripMenuItem stopItem
-                                                                        || menu.Items["restartService"] is not ToolStripMenuItem restartItem)
+        if (menu.Items["statusLabel"] is not ToolStripLabel statusLabel
+            || menu.Items["startService"] is not ToolStripMenuItem startItem
+            || menu.Items["stopService"] is not ToolStripMenuItem stopItem
+            || menu.Items["restartService"] is not ToolStripMenuItem restartItem
+            || menu.Items["openWebUI"] is not ToolStripMenuItem openWebUIItem)
             return;
 
-        try
-        {
-            using var controller = new ServiceController(ServiceName);
-            var status = controller.Status;
-
-            statusLabel.Text = status switch
-            {
-                ServiceControllerStatus.Running => "● Service Running",
-                ServiceControllerStatus.Stopped => "○ Service Stopped",
-                ServiceControllerStatus.StartPending => "◐ Service Starting...",
-                ServiceControllerStatus.StopPending => "◑ Service Stopping...",
-                _ => $"◌ Service {status}"
-            };
-
-            startItem.Enabled = status == ServiceControllerStatus.Stopped;
-            stopItem.Enabled = status == ServiceControllerStatus.Running;
-            restartItem.Enabled = status == ServiceControllerStatus.Running;
-        }
-        catch (InvalidOperationException)
+        if (!_serviceStatusService.IsServiceInstalled)
         {
             statusLabel.Text = "✗ Service Not Installed";
             startItem.Enabled = false;
             stopItem.Enabled = false;
             restartItem.Enabled = false;
+            openWebUIItem.Enabled = false;
+            openWebUIItem.Text = "Open Web UI";
+            return;
         }
-        catch (Exception ex)
+
+        var status = _serviceStatusService.CurrentStatus;
+        statusLabel.Text = status switch
         {
-            Log.Warning(ex, "Failed to update menu state");
-            statusLabel.Text = "? Service Status Unknown";
+            ServiceControllerStatus.Running => "● Service Running",
+            ServiceControllerStatus.Stopped => "○ Service Stopped",
+            ServiceControllerStatus.StartPending => "◐ Service Starting...",
+            ServiceControllerStatus.StopPending => "◑ Service Stopping...",
+            null => "? Service Status Unknown",
+            _ => $"◌ Service {status}"
+        };
+
+        startItem.Enabled = _serviceStatusService.CanStart();
+        stopItem.Enabled = _serviceStatusService.CanStop();
+        restartItem.Enabled = _serviceStatusService.CanRestart();
+
+        // Update Open Web UI menu item with URL and enable only when service is running
+        var isRunning = status == ServiceControllerStatus.Running;
+        openWebUIItem.Enabled = isRunning;
+
+        var cachedUrl = _serviceStatusService.CachedWebUIUrl;
+        if (!isRunning || string.IsNullOrEmpty(cachedUrl))
+        {
+            openWebUIItem.Text = "Open Web UI";
+        }
+        else
+        {
+            openWebUIItem.Text = $"Open Web UI ({cachedUrl})";
         }
     }
 
@@ -235,17 +232,8 @@ public class ServiceTrayCoordinator : IDisposable
     {
         try
         {
-            Log.Information("Starting service {ServiceName}", ServiceName);
-            using var controller = new ServiceController(ServiceName);
-
-            if (controller.Status == ServiceControllerStatus.Stopped)
-            {
-                controller.Start();
-                controller.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(30));
-                _serviceCommunicator.InvalidateCache(); // Re-detect web URL after start
-
-                ShowBalloonTip("Service Started", "Papercut SMTP Service is now running.", ToolTipIcon.Info);
-            }
+            _serviceStatusService.StartService();
+            ShowBalloonTip("Service Started", "Papercut SMTP Service is now running.", ToolTipIcon.Info);
         }
         catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 5) // Access Denied
         {
@@ -259,8 +247,8 @@ public class ServiceTrayCoordinator : IDisposable
         catch (InvalidOperationException)
         {
             MessageBox.Show(
-                $"The service '{ServiceName}' could not be found or accessed.\n\n" +
-                "Please ensure the Papercut SMTP Service is installed.",
+                "The Papercut SMTP Service could not be found or accessed.\n\n" +
+                "Please ensure the service is installed.",
                 "Service Not Found",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -280,15 +268,8 @@ public class ServiceTrayCoordinator : IDisposable
     {
         try
         {
-            Log.Information("Stopping service {ServiceName}", ServiceName);
-            using var controller = new ServiceController(ServiceName);
-
-            if (controller.Status == ServiceControllerStatus.Running)
-            {
-                controller.Stop();
-                controller.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30));
-                ShowBalloonTip("Service Stopped", "Papercut SMTP Service has been stopped.", ToolTipIcon.Info);
-            }
+            _serviceStatusService.StopService();
+            ShowBalloonTip("Service Stopped", "Papercut SMTP Service has been stopped.", ToolTipIcon.Info);
         }
         catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 5) // Access Denied
         {
@@ -302,8 +283,8 @@ public class ServiceTrayCoordinator : IDisposable
         catch (InvalidOperationException)
         {
             MessageBox.Show(
-                $"The service '{ServiceName}' could not be found or accessed.\n\n" +
-                "Please ensure the Papercut SMTP Service is installed.",
+                "The Papercut SMTP Service could not be found or accessed.\n\n" +
+                "Please ensure the service is installed.",
                 "Service Not Found",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -323,19 +304,8 @@ public class ServiceTrayCoordinator : IDisposable
     {
         try
         {
-            Log.Information("Restarting service {ServiceName}", ServiceName);
-            using var controller = new ServiceController(ServiceName);
-
-            if (controller.Status == ServiceControllerStatus.Running)
-            {
-                controller.Stop();
-                controller.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30));
-                controller.Start();
-                controller.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(30));
-                _serviceCommunicator.InvalidateCache(); // Re-detect web URL after restart
-
-                ShowBalloonTip("Service Restarted", "Papercut SMTP Service has been restarted.", ToolTipIcon.Info);
-            }
+            _serviceStatusService.RestartService();
+            ShowBalloonTip("Service Restarted", "Papercut SMTP Service has been restarted.", ToolTipIcon.Info);
         }
         catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 5) // Access Denied
         {
@@ -349,8 +319,8 @@ public class ServiceTrayCoordinator : IDisposable
         catch (InvalidOperationException)
         {
             MessageBox.Show(
-                $"The service '{ServiceName}' could not be found or accessed.\n\n" +
-                "Please ensure the Papercut SMTP Service is installed.",
+                "The Papercut SMTP Service could not be found or accessed.\n\n" +
+                "Please ensure the service is installed.",
                 "Service Not Found",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -370,8 +340,7 @@ public class ServiceTrayCoordinator : IDisposable
     {
         try
         {
-            var webUrl = await _serviceCommunicator.GetWebUIUrlAsync();
-            Log.Information("Opening web UI at {WebUIUrl}", webUrl);
+            var webUrl = await _serviceStatusService.GetWebUIUrlAsync();
 
             Process.Start(new ProcessStartInfo
             {
@@ -381,7 +350,6 @@ public class ServiceTrayCoordinator : IDisposable
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Failed to open web UI");
             MessageBox.Show(
                 $"Failed to open web UI: {ex.Message}\n\nMake sure the service is running and accessible.",
                 "Error Opening Web UI",

@@ -19,6 +19,7 @@
 using Autofac;
 
 using Papercut.Common.Helper;
+using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Network;
 using Papercut.Infrastructure.IPComm;
 
@@ -27,15 +28,24 @@ namespace Papercut.Service.TrayNotification;
 /// <summary>
 /// Handles communication with the Papercut SMTP Service via IPComm protocol
 /// </summary>
-public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory) : IStartable
+public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory, ILogger logger) : IStartable
 {
-    private const string FallbackWebUrl = "http://localhost:37408";
+    private const string FallbackWebUrl = "http://localhost:8080";
 
-    private readonly TimeSpan _urlCacheExpiration = TimeSpan.FromMinutes(10);
+    private readonly TimeSpan _urlCacheExpiration = TimeSpan.FromMinutes(5);
 
     private string? _cachedWebUrl;
 
     private DateTime _lastUrlCheck = DateTime.MinValue;
+
+    /// <summary>
+    /// Gets the cached web URL without making an async call.
+    /// Returns null if not yet cached or cache expired.
+    /// </summary>
+    public string? CachedWebUrl =>
+        _cachedWebUrl != null && DateTime.Now - _lastUrlCheck < _urlCacheExpiration
+            ? _cachedWebUrl
+            : null;
 
     public async Task<string> GetWebUIUrlAsync()
     {
@@ -51,7 +61,7 @@ public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory
 
             var exchangeEvent = new ServiceWebUISettingsExchangeEvent();
 
-            var serviceWebUiSettings = await serviceClient.ExchangeEventServer(exchangeEvent, TimeSpan.FromSeconds(10));
+            var serviceWebUiSettings = await serviceClient.ExchangeEventServer(exchangeEvent, TimeSpan.FromSeconds(2));
 
             if (serviceWebUiSettings != null && serviceWebUiSettings.IP.IsSet() && serviceWebUiSettings.Port.HasValue)
             {
@@ -63,7 +73,7 @@ public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Failed to probe for web URL");
+            Log.Warning(ex, "Failed to probe for Papercut Service Listening Web Url");
         }
 
         // Fallback to default
@@ -76,7 +86,12 @@ public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory
 
     public void Start()
     {
-        var webUrl = Task.Run(async () => await this.GetWebUIUrlAsync()).Result;
+        logger.Debug("Startup: Attempting to IPComm to Service to get the Web UI...");
+
+        var webUrl = this.GetWebUIUrlAsync().RunAsync();
+
+        logger.Debug("Received WebUrl {WebUrl}", webUrl);
+
         _cachedWebUrl = webUrl;
     }
 
