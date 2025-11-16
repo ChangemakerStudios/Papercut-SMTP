@@ -338,6 +338,27 @@ public class ServiceTrayCoordinator : IDisposable
 
     private async void OnOpenWebUI(object? sender, EventArgs e)
     {
+        // Check if service is running before attempting to open web UI
+        if (!_serviceStatusService.IsServiceInstalled)
+        {
+            MessageBox.Show(
+                "The Papercut SMTP Service is not installed.\n\nPlease install the service first.",
+                "Service Not Installed",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
+        if (_serviceStatusService.CurrentStatus != ServiceControllerStatus.Running)
+        {
+            MessageBox.Show(
+                "The Papercut SMTP Service is not running.\n\nPlease start the service first.",
+                "Service Not Running",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
         try
         {
             var webUrl = await _serviceStatusService.GetWebUIUrlAsync();
