@@ -40,6 +40,8 @@ public class ServiceTrayCoordinator : IDisposable
 
     private readonly System.Windows.Forms.Timer _statusUpdateTimer;
 
+    private readonly Icon _trayIcon;
+
     public ServiceTrayCoordinator(
         LoggingPathConfigurator loggingPathConfigurator,
         ServiceStatusService serviceStatusService,
@@ -51,9 +53,12 @@ public class ServiceTrayCoordinator : IDisposable
         _appRunOnStartupService = appRunOnStartupService;
         _notificationService = notificationService;
 
+        // Load icon once to avoid GDI handle leaks
+        _trayIcon = LoadIcon();
+
         _notifyIcon = new NotifyIcon
         {
-            Icon = LoadIcon(),
+            Icon = _trayIcon,
             Text = "Papercut SMTP Service Manager",
             Visible = true
         };
@@ -88,6 +93,7 @@ public class ServiceTrayCoordinator : IDisposable
         _statusUpdateTimer?.Stop();
         _statusUpdateTimer?.Dispose();
         _notifyIcon?.Dispose();
+        _trayIcon?.Dispose();
     }
 
     private void OnNewMessageReceived(object? sender, Core.Domain.Message.NewMessageEvent e)
@@ -227,8 +233,8 @@ public class ServiceTrayCoordinator : IDisposable
         var statusText = _serviceStatusService.GetStatusText();
         _notifyIcon.Text = $"Papercut SMTP Service ({statusText})";
 
+        // Icon is already set during construction and reused to avoid GDI handle leaks
         // Could add different icons or overlays based on status in the future
-        _notifyIcon.Icon = LoadIcon();
     }
 
     private void UpdateMenuState(ContextMenuStrip menu)
