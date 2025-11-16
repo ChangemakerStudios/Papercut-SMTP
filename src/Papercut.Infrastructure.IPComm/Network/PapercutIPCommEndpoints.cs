@@ -40,9 +40,9 @@ public class PapercutIPCommEndpoints
         Service = new EndpointDefinition(serviceAddress, servicePort);
 
         var trayServiceAddress = settingStore.GetOrSet("IPCommTrayServiceAddress", PapercutIPCommConstants.Localhost,
-            $"The IP Comm Service IP address (Defaults to {PapercutIPCommConstants.Localhost}).");
+            $"The IP Comm Tray Service IP address (Defaults to {PapercutIPCommConstants.Localhost}).");
         var trayServicePort = settingStore.GetOrSet("IPCommTrayServicePort", PapercutIPCommConstants.TrayServiceListeningPort,
-            $"The IP Comm Service UI listening port (Defaults to {PapercutIPCommConstants.TrayServiceListeningPort}).");
+            $"The IP Comm Tray Service UI listening port (Defaults to {PapercutIPCommConstants.TrayServiceListeningPort}).");
         TrayService = new EndpointDefinition(trayServiceAddress, trayServicePort);
     }
 
