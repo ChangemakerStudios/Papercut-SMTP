@@ -89,7 +89,9 @@ public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory
     public void Start()
     {
         logger.Debug("Startup: Attempting to IPComm to Service to get the Web UI Url...");
-        this.GetWebUIUrlAsync().RunAsync();
+
+        // fire and forget the initial warm-up
+        _ = Task.Run(async () => await this.GetWebUIUrlAsync());
     }
 
     public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
