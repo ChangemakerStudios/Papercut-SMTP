@@ -27,19 +27,18 @@ namespace Papercut.Service.Infrastructure.Servers;
 
 public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandler<PapercutServiceReadyEvent>
 {
-    private readonly PapercutSmtpServer _smtpServer;
-
-    private readonly SmtpServerOptionsProvider _settingsProvider;
-
     private readonly IPAllowedList _ipAllowedList;
-
-    private readonly ISettingStore _settingStore;
 
     private readonly ILogger _logger;
 
+    private readonly SmtpServerOptionsProvider _settingsProvider;
+
+    private readonly ISettingStore _settingStore;
+
+    private readonly PapercutSmtpServer _smtpServer;
+
     public SmtpServerManager(PapercutSmtpServer smtpServer,
         SmtpServerOptionsProvider settingsProvider,
-        SmtpServerOptions smtpServerOptions,
         IPAllowedList ipAllowedList,
         ISettingStore settingStore,
         ILogger logger)
@@ -50,8 +49,6 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
         _settingStore = settingStore;
         _logger = logger;
     }
-
-    private SmtpServerSettings GetSmtpServerSettings() => _settingsProvider.Settings;
 
     public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
     {
@@ -97,6 +94,8 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
         await BindSMTPServer();
     }
 
+    private SmtpServerSettings GetSmtpServerSettings() => _settingsProvider.Settings;
+
     private async Task BindSMTPServer()
     {
         var smtpServerSettings = GetSmtpServerSettings();
@@ -112,8 +111,9 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
                 : $"Enabled (Cert: {smtpServerSettings.CertificateFindValue})";
 
             _logger.Information(
-                "SMTP Server Configuration: Address={Address}, TLS={TlsStatus}, Allow={AllowList}",
+                "SMTP Server Configuration: Address={Address}, Port={Port} TLS={TlsStatus}, Allow={AllowList}",
                 endpoint.Address,
+                endpoint.Port,
                 tlsStatus,
                 _ipAllowedList);
 
