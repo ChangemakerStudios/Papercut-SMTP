@@ -35,8 +35,6 @@ internal static class Program
 {
     private static readonly IAppMeta AppMeta = new ApplicationMeta("Papercut.Service.TrayNotification", Assembly.GetExecutingAssembly().GetVersion());
 
-    internal static IContainer Container { get; private set; }
-
     [STAThread]
     public static void Main(string[] args)
     {
@@ -51,11 +49,11 @@ internal static class Program
         {
             ApplicationConfiguration.Initialize();
 
-            using (Container = new SimpleContainer<PapercutServiceTrayModule>().Build())
-            {
-                var coordinator = Container.Resolve<ServiceTrayCoordinator>();
-                Application.Run();
-            }
+            using var container = new SimpleContainer<PapercutServiceTrayModule>().Build();
+
+            _ = container.Resolve<ServiceTrayCoordinator>();
+
+            Application.Run();
         }
         catch (Exception ex) when (ex is not TaskCanceledException and not ObjectDisposedException)
         {
