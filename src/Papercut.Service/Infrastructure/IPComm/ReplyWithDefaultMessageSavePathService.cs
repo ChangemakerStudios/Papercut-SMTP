@@ -20,7 +20,7 @@ using Papercut.Core.Infrastructure.Network;
 
 namespace Papercut.Service.Infrastructure.IPComm;
 
-public class ReplyWithDefaultMessageSavePathService(MessagePathConfigurator messagePathConfigurator, SmtpServerOptions smtpServerOptions)
+public class ReplyWithDefaultMessageSavePathService(MessagePathConfigurator messagePathConfigurator, SmtpServerSettings smtpServerSettings)
     : IEventHandler<AppProcessExchangeEvent>
 {
     public Task HandleAsync(AppProcessExchangeEvent @event, CancellationToken token = default)
@@ -29,8 +29,8 @@ public class ReplyWithDefaultMessageSavePathService(MessagePathConfigurator mess
         @event.MessageWritePath = messagePathConfigurator.DefaultSavePath;
 
         // share our current ip and port binding for the SMTP server.
-        @event.IP = smtpServerOptions.IP;
-        @event.Port = smtpServerOptions.Port;
+        @event.IP = smtpServerSettings.IP;
+        @event.Port = smtpServerSettings.Port;
 
         return Task.CompletedTask;
     }

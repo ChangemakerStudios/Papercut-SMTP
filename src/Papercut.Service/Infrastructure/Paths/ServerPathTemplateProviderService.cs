@@ -22,11 +22,11 @@ namespace Papercut.Service.Infrastructure.Paths;
 
 public class ServerPathTemplateProviderService : IPathTemplatesProvider
 {
-    public ServerPathTemplateProviderService(PathTemplateType type, SmtpServerOptions smtpServerOptions)
+    public ServerPathTemplateProviderService(PathTemplateType type, SmtpServerSettings smtpServerSettings)
     {
         Type = type;
 
-        var paths = type == PathTemplateType.Message ? smtpServerOptions.MessagePath : smtpServerOptions.LoggingPath;
+        var paths = type == PathTemplateType.Message ? smtpServerSettings.MessagePath : smtpServerSettings.LoggingPath;
 
         var messagePaths = paths.Split(';')
             .Select(s => s.Trim())
@@ -43,10 +43,10 @@ public class ServerPathTemplateProviderService : IPathTemplatesProvider
 
     private static void Register(ContainerBuilder builder)
     {
-        builder.Register(p => new ServerPathTemplateProviderService(PathTemplateType.Message, p.Resolve<SmtpServerOptions>()))
+        builder.Register(p => new ServerPathTemplateProviderService(PathTemplateType.Message, p.Resolve<SmtpServerSettings>()))
             .Keyed<IPathTemplatesProvider>(PathTemplateType.Message).SingleInstance();
 
-        builder.Register(p => new ServerPathTemplateProviderService(PathTemplateType.Logging, p.Resolve<SmtpServerOptions>()))
+        builder.Register(p => new ServerPathTemplateProviderService(PathTemplateType.Logging, p.Resolve<SmtpServerSettings>()))
             .Keyed<IPathTemplatesProvider>(PathTemplateType.Logging).SingleInstance();
     }
 

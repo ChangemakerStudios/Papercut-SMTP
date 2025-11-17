@@ -29,9 +29,7 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
 {
     private readonly PapercutSmtpServer _smtpServer;
 
-    private readonly SmtpServerOptionsMerger _settingsMerger;
-
-    private SmtpServerOptions _smtpServerOptions;
+    private readonly SmtpServerOptionsProvider _settingsProvider;
 
     private readonly IPAllowedList _ipAllowedList;
 
@@ -40,19 +38,20 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
     private readonly ILogger _logger;
 
     public SmtpServerManager(PapercutSmtpServer smtpServer,
-        SmtpServerOptionsMerger settingsMerger,
+        SmtpServerOptionsProvider settingsProvider,
         SmtpServerOptions smtpServerOptions,
         IPAllowedList ipAllowedList,
         ISettingStore settingStore,
         ILogger logger)
     {
         _smtpServer = smtpServer;
-        _settingsMerger = settingsMerger;
-        _smtpServerOptions = smtpServerOptions;
+        _settingsProvider = settingsProvider;
         _ipAllowedList = ipAllowedList;
         _settingStore = settingStore;
         _logger = logger;
     }
+
+    private SmtpServerSettings GetSmtpServerSettings() => _settingsProvider.Settings;
 
     public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
     {
@@ -66,13 +65,6 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
             "Received New Smtp Server Binding Settings from UI {@Event}",
             @event);
 
-        // update settings...
-        if (@event.IP.IsSet() && @event.Port.HasValue)
-        {
-            _smtpServerOptions.IP = @event.IP;
-            _smtpServerOptions.Port = @event.Port.Value;
-        }
-
         // persist the settings to Settings.json so they survive restarts
         try
         {
@@ -81,14 +73,12 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
             if (@event.IP.IsSet())
             {
                 _settingStore.Set("IP", @event.IP);
-                _smtpServerOptions.IP = @event.IP;
                 persistedFields.Add($"IP={@event.IP}");
             }
 
             if (@event.Port.HasValue)
             {
                 _settingStore.Set("Port", @event.Port.ToString());
-                _smtpServerOptions.Port = @event.Port.Value;
                 persistedFields.Add($"Port={@event.Port}");
             }
 
@@ -109,15 +99,17 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
 
     private async Task BindSMTPServer()
     {
+        var smtpServerSettings = GetSmtpServerSettings();
+
         try
         {
             await _smtpServer.StopAsync();
 
             var endpoint = GetSmtpEndpoint();
 
-            var tlsStatus = string.IsNullOrWhiteSpace(_smtpServerOptions.CertificateFindValue)
+            var tlsStatus = string.IsNullOrWhiteSpace(smtpServerSettings.CertificateFindValue)
                 ? "Disabled"
-                : $"Enabled (Cert: {_smtpServerOptions.CertificateFindValue})";
+                : $"Enabled (Cert: {smtpServerSettings.CertificateFindValue})";
 
             _logger.Information(
                 "SMTP Server Configuration: Address={Address}, TLS={TlsStatus}, Allow={AllowList}",
@@ -132,15 +124,17 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
             _logger.Warning(
                 ex,
                 "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                _smtpServerOptions.IP,
-                _smtpServerOptions.Port);
+                smtpServerSettings.IP,
+                smtpServerSettings.Port);
         }
     }
 
     private EndpointDefinition GetSmtpEndpoint()
     {
+        var smtpServerSettings = GetSmtpServerSettings();
+
         // Check if TLS/STARTTLS should be enabled via certificate configuration
-        if (string.IsNullOrWhiteSpace(_smtpServerOptions.CertificateFindValue))
+        if (string.IsNullOrWhiteSpace(smtpServerSettings.CertificateFindValue))
         {
             _logger.Debug("SMTP server configured without TLS (plain text mode)");
         }
@@ -148,31 +142,31 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
         {
             _logger.Debug(
                 "Configuring SMTP server with TLS certificate: {FindType}={FindValue} from {StoreLocation}\\{StoreName}",
-                _smtpServerOptions.CertificateFindType,
-                _smtpServerOptions.CertificateFindValue,
-                _smtpServerOptions.CertificateStoreLocation,
-                _smtpServerOptions.CertificateStoreName);
+                smtpServerSettings.CertificateFindType,
+                smtpServerSettings.CertificateFindValue,
+                smtpServerSettings.CertificateStoreLocation,
+                smtpServerSettings.CertificateStoreName);
 
             try
             {
                 // Parse certificate configuration with safe TryParse
-                if (!Enum.TryParse<X509FindType>(_smtpServerOptions.CertificateFindType, ignoreCase: true, out var findType))
+                if (!Enum.TryParse<X509FindType>(smtpServerSettings.CertificateFindType, ignoreCase: true, out var findType))
                 {
                     _logger.Warning(
                         "Invalid CertificateFindType '{FindType}'. Falling back to plain SMTP without TLS.",
-                        _smtpServerOptions.CertificateFindType);
+                        smtpServerSettings.CertificateFindType);
                 }
-                else if (!Enum.TryParse<StoreLocation>(_smtpServerOptions.CertificateStoreLocation, ignoreCase: true, out var storeLocation))
+                else if (!Enum.TryParse<StoreLocation>(smtpServerSettings.CertificateStoreLocation, ignoreCase: true, out var storeLocation))
                 {
                     _logger.Warning(
                         "Invalid CertificateStoreLocation '{StoreLocation}'. Falling back to plain SMTP without TLS.",
-                        _smtpServerOptions.CertificateStoreLocation);
+                        smtpServerSettings.CertificateStoreLocation);
                 }
-                else if (!Enum.TryParse<StoreName>(_smtpServerOptions.CertificateStoreName, ignoreCase: true, out var storeName))
+                else if (!Enum.TryParse<StoreName>(smtpServerSettings.CertificateStoreName, ignoreCase: true, out var storeName))
                 {
                     _logger.Warning(
                         "Invalid CertificateStoreName '{StoreName}'. Falling back to plain SMTP without TLS.",
-                        _smtpServerOptions.CertificateStoreName);
+                        smtpServerSettings.CertificateStoreName);
                 }
                 else
                 {
@@ -180,10 +174,10 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
                     try
                     {
                         var endpoint = new EndpointDefinition(
-                            _smtpServerOptions.IP,
-                            _smtpServerOptions.Port,
+                            smtpServerSettings.IP,
+                            smtpServerSettings.Port,
                             findType,
-                            _smtpServerOptions.CertificateFindValue,
+                            smtpServerSettings.CertificateFindValue,
                             storeLocation,
                             storeName);
 
@@ -197,7 +191,7 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
                             certEx,
                             "Failed to load TLS certificate ({FindType}={FindValue} from {StoreLocation}\\{StoreName}). Falling back to plain SMTP without TLS.",
                             findType,
-                            _smtpServerOptions.CertificateFindValue,
+                            smtpServerSettings.CertificateFindValue,
                             storeLocation,
                             storeName);
                     }
@@ -209,7 +203,7 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
             }
         }
 
-        return new EndpointDefinition(_smtpServerOptions.IP, _smtpServerOptions.Port);
+        return new EndpointDefinition(smtpServerSettings.IP, smtpServerSettings.Port);
     }
 
     #region Begin Static Container Registrations

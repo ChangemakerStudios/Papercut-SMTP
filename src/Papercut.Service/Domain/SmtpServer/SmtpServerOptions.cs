@@ -69,4 +69,14 @@ public class SmtpServerOptions
     /// Environment variable: SmtpServer__AllowedIps
     /// </summary>
     public string AllowedIps { get; set; } = "*";
+
+    public SmtpServerSettings GetSettings(string ipOverride, int portOverride) => new(ipOverride,
+        portOverride,
+        CertificateFindType,
+        CertificateFindValue,
+        CertificateStoreLocation,
+        CertificateStoreName,
+        MessagePath,
+        LoggingPath,
+        AllowedIps);
 }
