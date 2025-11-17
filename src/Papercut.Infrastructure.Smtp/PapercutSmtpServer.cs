@@ -49,7 +49,7 @@ public class PapercutSmtpServer(
 
     public int ListenPort => _currentEndpoint?.Port ?? 0;
 
-    public async Task StopAsync()
+    public async Task StopAsync(CancellationToken token = default)
     {
         try
         {
@@ -75,7 +75,7 @@ public class PapercutSmtpServer(
         }
     }
 
-    public Task StartAsync(EndpointDefinition smtpEndpoint)
+    public Task StartAsync(EndpointDefinition smtpEndpoint, CancellationToken token = default)
     {
         if (IsActive)
         {

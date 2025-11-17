@@ -17,11 +17,10 @@
 
 
 using Autofac;
-
 using Papercut.Common.Domain;
 using Papercut.Core.Domain.Message;
 
-namespace Papercut.Service.TrayNotification;
+namespace Papercut.Service.TrayNotification.AppLayer;
 
 /// <summary>
 /// Handles new message notifications and displays balloon tips

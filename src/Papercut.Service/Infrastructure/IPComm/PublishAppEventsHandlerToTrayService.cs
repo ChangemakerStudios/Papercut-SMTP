@@ -1,4 +1,4 @@
-﻿// Papercut
+// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -15,23 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 namespace Papercut.Service.Infrastructure.IPComm;
 
-public class PublishAppEventsHandlerToClientService(
+/// <summary>
+/// Forwards NewMessageEvent to connected tray notification clients via IPComm
+/// </summary>
+public class PublishAppEventsHandlerToTrayService(
     PapercutIPCommClientFactory ipCommClientFactory,
-    ILogger logger) : PublishAppEventBase(ipCommClientFactory, logger), IEventHandler<PapercutServiceExitEvent>,
-    IEventHandler<PapercutServiceReadyEvent>,
-    IEventHandler<PapercutServicePreStartEvent>
+    ILogger logger) : PublishAppEventBase(ipCommClientFactory, logger), IEventHandler<NewMessageEvent>, IEventHandler<PapercutServiceReadyEvent>
 {
-    protected override PapercutIPCommClientConnectTo ConnectTo => PapercutIPCommClientConnectTo.UI;
+    protected override PapercutIPCommClientConnectTo ConnectTo => PapercutIPCommClientConnectTo.ServiceTray;
 
-    public Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token = default)
-    {
-        return PublishAsync(@event, token);
-    }
-
-    public Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token = default)
+    public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
     {
         return PublishAsync(@event, token);
     }
@@ -43,9 +38,10 @@ public class PublishAppEventsHandlerToClientService(
 
     #region Begin Static Container Registrations
 
+    [UsedImplicitly]
     private static void Register(ContainerBuilder builder)
     {
-        builder.RegisterType<PublishAppEventsHandlerToClientService>().AsImplementedInterfaces().AsSelf()
+        builder.RegisterType<PublishAppEventsHandlerToTrayService>().AsImplementedInterfaces().AsSelf()
             .InstancePerLifetimeScope();
     }
 

@@ -31,7 +31,7 @@ public interface IServer : IDisposable, IAsyncDisposable
 
     int ListenPort { get; }
 
-    Task StartAsync(EndpointDefinition endpoint);
+    Task StartAsync(EndpointDefinition endpoint, CancellationToken token = default);
 
-    Task StopAsync();
+    Task StopAsync(CancellationToken token = default);
 }

@@ -23,7 +23,7 @@ using Papercut.Core.Domain.Paths;
 
 namespace Papercut.Message;
 
-public class MessageRepository(MessagePathConfigurator pathConfigurator, ILogger logger) : IMessageRepository
+public class MessageRepository(IPathConfigurator pathConfigurator, ILogger logger) : IMessageRepository
 {
     private const string EmptyStringReplacement = "_";
 

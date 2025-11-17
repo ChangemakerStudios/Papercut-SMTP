@@ -27,7 +27,9 @@ public class PapercutMessageModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterType<MessageRepository>().As<IMessageRepository>().SingleInstance();
+        builder.Register<MessageRepository>(p =>
+                new MessageRepository(p.ResolveKeyed<IPathConfigurator>(PathTemplateType.Message), p.Resolve<ILogger>().ForContext<MessageRepository>()))
+            .As<IMessageRepository>().SingleInstance();
         builder.RegisterType<MimeMessageLoader>().As<IMimeMessageLoader>().SingleInstance();
         builder.RegisterType<ReceivedDataMessageHandler>().As<IReceivedDataHandler>().SingleInstance();
     }

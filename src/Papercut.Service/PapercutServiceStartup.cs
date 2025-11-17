@@ -49,10 +49,9 @@ internal class PapercutServiceStartup
             });
 
         services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
-        services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
+        services.AddTransient(s => s.GetRequiredService<SmtpServerOptionsMerger>().GetSettings(s.GetRequiredService<IOptions<SmtpServerOptions>>().Value));
 
         // hosted services
-        services.AddHostedService<SmtpServerOptionsInitializer>();
         services.AddHostedService<PapercutServerHostedService>();
     }
 
