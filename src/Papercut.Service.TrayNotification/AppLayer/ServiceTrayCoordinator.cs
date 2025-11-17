@@ -127,20 +127,6 @@ public class ServiceTrayCoordinator : IDisposable
     private async void OnServiceStatusChanged(object? sender, ServiceControllerStatus status)
     {
         UpdateTrayIcon();
-
-        // Pre-fetch web URL when service becomes running to warm the cache
-        if (status == ServiceControllerStatus.Running)
-        {
-            try
-            {
-                await _serviceStatusService.GetWebUIUrlAsync();
-                Log.Debug("Pre-fetched web UI URL for cache");
-            }
-            catch (Exception ex)
-            {
-                Log.Debug(ex, "Failed to pre-fetch web URL");
-            }
-        }
     }
 
     private Icon LoadIcon()

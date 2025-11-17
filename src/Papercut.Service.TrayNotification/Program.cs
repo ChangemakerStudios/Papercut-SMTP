@@ -53,8 +53,6 @@ internal static class Program
 
             using (Container = new SimpleContainer<PapercutServiceTrayModule>().Build())
             {
-                Log.Logger.Information("Logging to Path {Path}", Container.Resolve<LoggingPathConfigurator>().DefaultSavePath);
-
                 var coordinator = Container.Resolve<ServiceTrayCoordinator>();
                 Application.Run();
             }

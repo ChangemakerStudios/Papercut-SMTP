@@ -17,8 +17,11 @@
 
 
 using Autofac;
+
+using Papercut.Common.Domain;
 using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Async;
+using Papercut.Core.Infrastructure.Lifecycle;
 using Papercut.Core.Infrastructure.Network;
 using Papercut.Infrastructure.IPComm;
 
@@ -27,7 +30,7 @@ namespace Papercut.Service.TrayNotification.Infrastructure;
 /// <summary>
 /// Handles communication with the Papercut SMTP Service via IPComm protocol
 /// </summary>
-public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory, ILogger logger) : IStartable
+public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory, ILogger logger) : IEventHandler<PapercutServiceReadyEvent>, IStartable
 {
     private const string FallbackWebUrl = "http://localhost:8080";
 
@@ -87,6 +90,14 @@ public class ServiceCommunicator(PapercutIPCommClientFactory ipCommClientFactory
     {
         logger.Debug("Startup: Attempting to IPComm to Service to get the Web UI Url...");
         this.GetWebUIUrlAsync().RunAsync();
+    }
+
+    public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
+    {
+        this.InvalidateCache();
+
+        // warm up the cache
+        var _ = await this.GetWebUIUrlAsync();
     }
 
 

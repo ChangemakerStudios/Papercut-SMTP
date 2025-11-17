@@ -69,7 +69,7 @@ public class PapercutServiceTrayServer(
     /// </summary>
     /// <param name="builder"></param>
     [UsedImplicitly]
-    private static void Register([NotNull] ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         if (builder == null) throw new ArgumentNullException(nameof(builder));
 
