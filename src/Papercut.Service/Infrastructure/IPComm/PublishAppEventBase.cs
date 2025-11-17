@@ -34,8 +34,9 @@ public abstract class PublishAppEventBase(
         try
         {
             logger.Information(
-                "Publishing {{@{@event.GetType().Name}}} to the Papercut {ConnectTo}",
-                @event, ConnectTo);
+                "Publishing {EventName} to the Papercut {ConnectTo}",
+                @event.GetType().Name,
+                ConnectTo);
 
             await ipCommClient.PublishEventServer(@event, PublishTimeout, token);
         }
