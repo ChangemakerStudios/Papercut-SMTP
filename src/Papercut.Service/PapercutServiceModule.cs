@@ -15,8 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-using AutofacSerilogIntegration;
+using Papercut.Service.Domain;
 
 namespace Papercut.Service;
 
@@ -24,14 +23,9 @@ public class PapercutServiceModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterLogger();
-
-        builder.RegisterStaticMethods(ThisAssembly);
-
-        // Register IPAllowedList from SmtpServerOptions
         builder.Register(ctx =>
             {
-                var smtpServerOptions = ctx.Resolve<SmtpServerOptions>();
+                var smtpServerOptions = ctx.Resolve<SmtpServerSettings>();
                 var result = IPAllowedList.Create(smtpServerOptions.AllowedIps);
 
                 if (!result.IsSuccess)
@@ -48,5 +42,8 @@ public class PapercutServiceModule : Module
             })
             .AsSelf()
             .SingleInstance();
+
+
+        builder.RegisterStaticMethods(ThisAssembly);
     }
 }

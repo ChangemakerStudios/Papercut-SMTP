@@ -15,57 +15,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 namespace Papercut.Service.Infrastructure.IPComm;
 
 public class PublishAppEventsHandlerToClientService(
     PapercutIPCommClientFactory ipCommClientFactory,
-    ILogger logger) : IEventHandler<PapercutServiceExitEvent>,
+    ILogger logger) : PublishAppEventBase(ipCommClientFactory, logger), IEventHandler<PapercutServiceExitEvent>,
     IEventHandler<PapercutServiceReadyEvent>,
     IEventHandler<PapercutServicePreStartEvent>
 {
+    protected override PapercutIPCommClientConnectTo ConnectTo => PapercutIPCommClientConnectTo.UI;
+
     public Task HandleAsync(PapercutServiceExitEvent @event, CancellationToken token = default)
     {
-        return this.PublishAsync(@event);
+        return PublishAsync(@event, token);
     }
 
     public Task HandleAsync(PapercutServicePreStartEvent @event, CancellationToken token = default)
     {
-        return this.PublishAsync(@event);
+        return PublishAsync(@event, token);
     }
 
     public Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
     {
-        return this.PublishAsync(@event);
-    }
-
-    public async Task PublishAsync<T>(T @event)
-        where T : IEvent
-    {
-        var ipCommClient = ipCommClientFactory.GetClient(PapercutIPCommClientConnectTo.UI);
-
-        try
-        {
-            logger.Information(
-                $"Publishing {{@{@event.GetType().Name}}} to the Papercut Client",
-                @event);
-
-            await ipCommClient.PublishEventServer(@event, TimeSpan.FromMilliseconds(500));
-        }
-        catch (TaskCanceledException)
-        {
-        }
-        catch (Exception ex)
-        {
-            logger.Warning(
-                ex,
-                "Failed to publish {Endpoint} specified. Papercut UI is most likely not running.",
-                ipCommClient.Endpoint);
-        }
+        return PublishAsync(@event, token);
     }
 
     #region Begin Static Container Registrations
 
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         builder.RegisterType<PublishAppEventsHandlerToClientService>().AsImplementedInterfaces().AsSelf()
             .InstancePerLifetimeScope();

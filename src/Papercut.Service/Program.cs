@@ -25,6 +25,8 @@ using Papercut.Common.Helper;
 using Papercut.Core.Infrastructure.Logging;
 using System.Reflection;
 
+using Papercut.Core.Infrastructure.Consoles;
+
 namespace Papercut.Service;
 
 public class Program
@@ -35,12 +37,12 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        if (Environment.UserInteractive)
+        if (ConsoleHelpers.HasConsole())
         {
             Console.Title = AppMeta.AppName;
         }
 
-        Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
+        Log.Logger = BootstrapLogger.CreateBootstrapLogger(AppMeta, args);
 
         await RunAsync(args);
     }

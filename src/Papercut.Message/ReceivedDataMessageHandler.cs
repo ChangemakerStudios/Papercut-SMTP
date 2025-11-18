@@ -23,23 +23,12 @@ using Papercut.Core.Domain.Message;
 
 namespace Papercut.Message;
 
-public class ReceivedDataMessageHandler : IReceivedDataHandler
+public class ReceivedDataMessageHandler(
+    IMessageRepository messageRepository,
+    IMessageBus messageBus,
+    ILogger logger)
+    : IReceivedDataHandler
 {
-    private readonly IMessageRepository _messageRepository;
-
-    private readonly IMessageBus _messageBus;
-
-    private readonly ILogger _logger;
-
-    public ReceivedDataMessageHandler(IMessageRepository messageRepository,
-        IMessageBus messageBus,
-        ILogger logger)
-    {
-        _messageRepository = messageRepository;
-        _messageBus = messageBus;
-        _logger = logger;
-    }
-
     public async Task HandleReceivedAsync(
         byte[] messageData,
         string[] recipients)
@@ -79,22 +68,22 @@ public class ReceivedDataMessageHandler : IReceivedDataHandler
                     }
                     else
                     {
-                        _logger.Warning("Could not parse recipient address: {Address}", r);
+                        logger.Warning("Could not parse recipient address: {Address}", r);
                     }
                 }
             }
 
-            file = await _messageRepository.SaveMessage(message.Subject ?? string.Empty, async fs => await message.WriteToAsync(fs));
+            file = await messageRepository.SaveMessage(message.Subject ?? string.Empty, async fs => await message.WriteToAsync(fs));
         }
 
         try
         {
             if (!string.IsNullOrWhiteSpace(file) && File.Exists(file))
-                await _messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file)));
+                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file).ToDto()));
         }
         catch (Exception ex)
         {
-            _logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
+            logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
         }
     }
 }

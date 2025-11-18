@@ -24,5 +24,7 @@ public static class PapercutIPCommConstants
 
     public const ushort ServiceListeningPort = 37403;
 
+    public const ushort TrayServiceListeningPort = 37404;
+
     public const string Localhost = "127.0.0.1";
 }

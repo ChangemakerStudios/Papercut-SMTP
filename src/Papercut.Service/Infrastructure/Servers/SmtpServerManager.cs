@@ -21,16 +21,35 @@ using System.Security.Cryptography.X509Certificates;
 using Papercut.Common.Helper;
 using Papercut.Core.Domain.Network;
 using Papercut.Core.Domain.Network.Smtp;
+using Papercut.Service.Infrastructure.Configuration;
 
 namespace Papercut.Service.Infrastructure.Servers;
 
-public class SmtpServerManager(
-    PapercutSmtpServer smtpServer,
-    SmtpServerOptions smtpServerOptions,
-    ISettingStore settingStore,
-    ILogger logger)
-    : IEventHandler<SmtpServerBindEvent>, IEventHandler<PapercutServiceReadyEvent>
+public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandler<PapercutServiceReadyEvent>
 {
+    private readonly IPAllowedList _ipAllowedList;
+
+    private readonly ILogger _logger;
+
+    private readonly SmtpServerOptionsProvider _settingsProvider;
+
+    private readonly ISettingStore _settingStore;
+
+    private readonly PapercutSmtpServer _smtpServer;
+
+    public SmtpServerManager(PapercutSmtpServer smtpServer,
+        SmtpServerOptionsProvider settingsProvider,
+        IPAllowedList ipAllowedList,
+        ISettingStore settingStore,
+        ILogger logger)
+    {
+        _smtpServer = smtpServer;
+        _settingsProvider = settingsProvider;
+        _ipAllowedList = ipAllowedList;
+        _settingStore = settingStore;
+        _logger = logger;
+    }
+
     public async Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
     {
         await Task.Delay(TimeSpan.FromMilliseconds(500), token);
@@ -39,16 +58,9 @@ public class SmtpServerManager(
 
     public async Task HandleAsync(SmtpServerBindEvent @event, CancellationToken token = default)
     {
-        logger.Information(
+        _logger.Information(
             "Received New Smtp Server Binding Settings from UI {@Event}",
             @event);
-
-        // update settings...
-        if (@event.IP.IsSet() && @event.Port.HasValue)
-        {
-            smtpServerOptions.IP = @event.IP;
-            smtpServerOptions.Port = @event.Port.Value;
-        }
 
         // persist the settings to Settings.json so they survive restarts
         try
@@ -57,126 +69,141 @@ public class SmtpServerManager(
 
             if (@event.IP.IsSet())
             {
-                settingStore.Set("IP", @event.IP);
+                _settingStore.Set("IP", @event.IP);
                 persistedFields.Add($"IP={@event.IP}");
             }
 
             if (@event.Port.HasValue)
             {
-                settingStore.Set("Port", @event.Port.ToString());
+                _settingStore.Set("Port", @event.Port.ToString());
                 persistedFields.Add($"Port={@event.Port}");
             }
 
             if (persistedFields.Count > 0)
             {
-                settingStore.Save();
-                logger.Information("Persisted SMTP Server settings: {Settings}", string.Join(", ", persistedFields));
+                _settingStore.Save();
+                _logger.Information("Persisted SMTP Server settings: {Settings}", string.Join(", ", persistedFields));
             }
         }
         catch (Exception ex)
         {
-            logger.Warning(ex, "Failed to persist SMTP server settings");
+            _logger.Warning(ex, "Failed to persist SMTP server settings");
         }
 
         // rebind the server...
         await BindSMTPServer();
     }
 
+    private SmtpServerSettings GetSmtpServerSettings() => _settingsProvider.Settings;
+
     private async Task BindSMTPServer()
     {
+        var smtpServerSettings = GetSmtpServerSettings();
+
         try
         {
-            await smtpServer.StopAsync();
+            await _smtpServer.StopAsync();
 
-            EndpointDefinition endpoint;
+            var endpoint = GetSmtpEndpoint();
 
-            // Check if TLS/STARTTLS should be enabled via certificate configuration
-            if (!string.IsNullOrWhiteSpace(smtpServerOptions.CertificateFindValue))
-            {
-                logger.Information(
-                    "Configuring SMTP server with TLS certificate: {FindType}={FindValue} from {StoreLocation}\\{StoreName}",
-                    smtpServerOptions.CertificateFindType,
-                    smtpServerOptions.CertificateFindValue,
-                    smtpServerOptions.CertificateStoreLocation,
-                    smtpServerOptions.CertificateStoreName);
+            var tlsStatus = string.IsNullOrWhiteSpace(smtpServerSettings.CertificateFindValue)
+                ? "Disabled"
+                : $"Enabled (Cert: {smtpServerSettings.CertificateFindValue})";
 
-                try
-                {
-                    // Parse certificate configuration with safe TryParse
-                    if (!Enum.TryParse<X509FindType>(smtpServerOptions.CertificateFindType, ignoreCase: true, out var findType))
-                    {
-                        logger.Warning(
-                            "Invalid CertificateFindType '{FindType}'. Falling back to plain SMTP without TLS.",
-                            smtpServerOptions.CertificateFindType);
-                        endpoint = new EndpointDefinition(smtpServerOptions.IP, smtpServerOptions.Port);
-                    }
-                    else if (!Enum.TryParse<StoreLocation>(smtpServerOptions.CertificateStoreLocation, ignoreCase: true, out var storeLocation))
-                    {
-                        logger.Warning(
-                            "Invalid CertificateStoreLocation '{StoreLocation}'. Falling back to plain SMTP without TLS.",
-                            smtpServerOptions.CertificateStoreLocation);
-                        endpoint = new EndpointDefinition(smtpServerOptions.IP, smtpServerOptions.Port);
-                    }
-                    else if (!Enum.TryParse<StoreName>(smtpServerOptions.CertificateStoreName, ignoreCase: true, out var storeName))
-                    {
-                        logger.Warning(
-                            "Invalid CertificateStoreName '{StoreName}'. Falling back to plain SMTP without TLS.",
-                            smtpServerOptions.CertificateStoreName);
-                        endpoint = new EndpointDefinition(smtpServerOptions.IP, smtpServerOptions.Port);
-                    }
-                    else
-                    {
-                        // Attempt to load certificate - wrapped in try/catch for defensive handling
-                        try
-                        {
-                            endpoint = new EndpointDefinition(
-                                smtpServerOptions.IP,
-                                smtpServerOptions.Port,
-                                findType,
-                                smtpServerOptions.CertificateFindValue,
-                                storeLocation,
-                                storeName);
+            _logger.Information(
+                "SMTP Server Configuration: Address={Address}, Port={Port} TLS={TlsStatus}, Allow={AllowList}",
+                endpoint.Address,
+                endpoint.Port,
+                tlsStatus,
+                _ipAllowedList);
 
-                            logger.Information("TLS/STARTTLS support enabled for SMTP server");
-                        }
-                        catch (Exception certEx)
-                        {
-                            logger.Warning(
-                                certEx,
-                                "Failed to load TLS certificate ({FindType}={FindValue} from {StoreLocation}\\{StoreName}). Falling back to plain SMTP without TLS.",
-                                findType,
-                                smtpServerOptions.CertificateFindValue,
-                                storeLocation,
-                                storeName);
-                            endpoint = new EndpointDefinition(smtpServerOptions.IP, smtpServerOptions.Port);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.Warning(
-                        ex,
-                        "Unexpected error during TLS configuration. Falling back to plain SMTP without TLS.");
-                    endpoint = new EndpointDefinition(smtpServerOptions.IP, smtpServerOptions.Port);
-                }
-            }
-            else
-            {
-                // No certificate configured - plain SMTP without TLS
-                endpoint = new EndpointDefinition(smtpServerOptions.IP, smtpServerOptions.Port);
-                logger.Information("SMTP server configured without TLS (plain text mode)");
-            }
-
-            await smtpServer.StartAsync(endpoint);
+            await _smtpServer.StartAsync(endpoint);
         }
         catch (Exception ex)
         {
-            logger.Warning(
+            _logger.Warning(
                 ex,
                 "Unable to Create SMTP Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                smtpServerOptions.IP,
-                smtpServerOptions.Port);
+                smtpServerSettings.IP,
+                smtpServerSettings.Port);
         }
+    }
+
+    private EndpointDefinition GetSmtpEndpoint()
+    {
+        var smtpServerSettings = GetSmtpServerSettings();
+
+        // Check if TLS/STARTTLS should be enabled via certificate configuration
+        if (string.IsNullOrWhiteSpace(smtpServerSettings.CertificateFindValue))
+        {
+            _logger.Debug("SMTP server configured without TLS (plain text mode)");
+        }
+        else
+        {
+            _logger.Debug(
+                "Configuring SMTP server with TLS certificate: {FindType}={FindValue} from {StoreLocation}\\{StoreName}",
+                smtpServerSettings.CertificateFindType,
+                smtpServerSettings.CertificateFindValue,
+                smtpServerSettings.CertificateStoreLocation,
+                smtpServerSettings.CertificateStoreName);
+
+            try
+            {
+                // Parse certificate configuration with safe TryParse
+                if (!Enum.TryParse<X509FindType>(smtpServerSettings.CertificateFindType, ignoreCase: true, out var findType))
+                {
+                    _logger.Warning(
+                        "Invalid CertificateFindType '{FindType}'. Falling back to plain SMTP without TLS.",
+                        smtpServerSettings.CertificateFindType);
+                }
+                else if (!Enum.TryParse<StoreLocation>(smtpServerSettings.CertificateStoreLocation, ignoreCase: true, out var storeLocation))
+                {
+                    _logger.Warning(
+                        "Invalid CertificateStoreLocation '{StoreLocation}'. Falling back to plain SMTP without TLS.",
+                        smtpServerSettings.CertificateStoreLocation);
+                }
+                else if (!Enum.TryParse<StoreName>(smtpServerSettings.CertificateStoreName, ignoreCase: true, out var storeName))
+                {
+                    _logger.Warning(
+                        "Invalid CertificateStoreName '{StoreName}'. Falling back to plain SMTP without TLS.",
+                        smtpServerSettings.CertificateStoreName);
+                }
+                else
+                {
+                    // Attempt to load certificate - wrapped in try/catch for defensive handling
+                    try
+                    {
+                        var endpoint = new EndpointDefinition(
+                            smtpServerSettings.IP,
+                            smtpServerSettings.Port,
+                            findType,
+                            smtpServerSettings.CertificateFindValue,
+                            storeLocation,
+                            storeName);
+
+                        _logger.Debug("TLS/STARTTLS support enabled for SMTP server");
+
+                        return endpoint;
+                    }
+                    catch (Exception certEx)
+                    {
+                        _logger.Warning(
+                            certEx,
+                            "Failed to load TLS certificate ({FindType}={FindValue} from {StoreLocation}\\{StoreName}). Falling back to plain SMTP without TLS.",
+                            findType,
+                            smtpServerSettings.CertificateFindValue,
+                            storeLocation,
+                            storeName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Unexpected error during TLS configuration. Falling back to plain SMTP without TLS.");
+            }
+        }
+
+        return new EndpointDefinition(smtpServerSettings.IP, smtpServerSettings.Port);
     }
 
     #region Begin Static Container Registrations

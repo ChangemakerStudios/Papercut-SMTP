@@ -39,8 +39,8 @@ namespace Papercut.Service.Infrastructure.Servers
 
             try
             {
-                await ipCommServer.StopAsync();
-                await ipCommServer.StartAsync(papercutIpCommEndpoints.Service);
+                await ipCommServer.StopAsync(cancellationToken);
+                await ipCommServer.StartAsync(papercutIpCommEndpoints.Service, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -58,7 +58,7 @@ namespace Papercut.Service.Infrastructure.Servers
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            await Task.WhenAll(smtpServer.StopAsync(), ipCommServer.StopAsync()).WaitAsync(cancellationToken);
+            await Task.WhenAll(smtpServer.StopAsync(cancellationToken), ipCommServer.StopAsync(cancellationToken)).WaitAsync(cancellationToken);
 
             await messageBus.PublishAsync(new PapercutServiceExitEvent { AppMeta = applicationMetaData }, cancellationToken);
         }
