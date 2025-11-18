@@ -16,8 +16,19 @@
 // limitations under the License.
 
 
-using Papercut.Common.Domain;
-
 namespace Papercut.Core.Domain.Message;
 
-public record NewMessageEvent(MessageEntryDto NewMessage) : IEvent;
+public class MessageEntryDto
+{
+    public DateTime ModifiedDate { get; init; }
+
+    public required string File { get; init; }
+
+    public string? Name { get; init; }
+
+    public string? FileSize { get; init; }
+
+    public string? DisplayText { get; init; }
+
+    public MessageEntry ToEntry() => new(File);
+}
