@@ -64,6 +64,7 @@ public class ServiceTrayCoordinator : IDisposable
         };
 
         _notifyIcon.DoubleClick += OnTrayIconDoubleClick;
+        _notifyIcon.BalloonTipClicked += OnBalloonTipClicked;
         _notifyIcon.ContextMenuStrip = CreateContextMenu();
 
         // Subscribe to status changes
@@ -282,6 +283,11 @@ public class ServiceTrayCoordinator : IDisposable
     }
 
     private void OnTrayIconDoubleClick(object? sender, EventArgs e)
+    {
+        OnOpenWebUI(sender, e);
+    }
+
+    private void OnBalloonTipClicked(object? sender, EventArgs e)
     {
         OnOpenWebUI(sender, e);
     }
