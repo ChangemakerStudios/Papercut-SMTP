@@ -68,7 +68,7 @@ Access at: **http://localhost:37408** | Send emails to: **localhost:2525**
 
 Papercut SMTP can be used for local email testing with Aspire projects. The integration exposes a connection string with the format `endpoint=smtp://<host>:<port>` which can be used to configure the SMTP client.
 
-**Setup**
+#### Setup
 
 Install the package `CommunityToolkit.Aspire.Hosting.PapercutSmtp` from NuGet and then configure the integration in your App Host as follows:
 
