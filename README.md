@@ -64,6 +64,26 @@ Access at: **http://localhost:37408** | Send emails to: **localhost:2525**
 
 > **Note:** Docker uses non-privileged ports by default (SMTP: 2525, HTTP: 8080). See the [Service README](src/Papercut.Service/Readme.md#option-3-run-in-docker) for configuration options, Docker Compose examples, and troubleshooting.
 
+### Aspire Integration
+
+Papercut SMTP can be used for local email testing with Aspire projects. The integration exposes a connection string with the format `endpoint=smtp://<host>:<port>` which can be used to configure the SMTP client.
+
+#### Setup
+
+Install the package `CommunityToolkit.Aspire.Hosting.PapercutSmtp` from NuGet and then configure the integration in your App Host as follows:
+
+```c#
+var builder = DistributedApplication.CreateBuilder(args);
+
+var papercut = builder.AddPapercutSmtp("papercut");
+
+builder.AddProject<Projects.ExampleProject>()
+    .WithReference(papercut)
+    .WaitFor(papercut);
+```
+
+After running, the ports for both the Papercut UI and the SMTP service are automatically assigned and accessible through the Aspire dashboard.
+
 ## SMTP Authentication and TLS/STARTTLS Support
 
 Papercut SMTP Server supports optional SMTP authentication and TLS/STARTTLS encryption for secure email testing.
