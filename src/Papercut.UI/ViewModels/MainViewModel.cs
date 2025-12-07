@@ -489,6 +489,29 @@ public class MainViewModel : Conductor<object>,
             return;
         }
 
+        // Get release notes from the update info
+        var releaseNotesHtml = this._updateInfo.TargetFullRelease.NotesHTML;
+        var currentVersion = this.GetVersion() ?? "Unknown";
+        var newVersion = this._updateInfo.TargetFullRelease.Version.ToString();
+
+        this._logger.Information("Showing upgrade dialog for version {NewVersion}", newVersion);
+
+        // Create upgrade dialog view model
+        var upgradeDialog = new UI.ViewModels.UpgradeDialogViewModel(currentVersion, newVersion, releaseNotesHtml);
+
+        // Get the window manager from DI and show the dialog manually
+        var windowManager = new Caliburn.Micro.WindowManager();
+        var dialogResult = await windowManager.ShowDialogAsync(upgradeDialog);
+
+        // Check user's choice
+        if (upgradeDialog.UserChoice != UI.ViewModels.UpgradeChoice.Upgrade)
+        {
+            this._logger.Information("User chose to ignore upgrade to version {Version}", newVersion);
+            return;
+        }
+
+        this._logger.Information("User chose to upgrade to version {Version}", newVersion);
+
         using var cancellationSource = new CancellationTokenSource();
 
         var progressDialog = await this.ShowProgress("Updating", "Downloading Updates...", true,
