@@ -191,7 +191,7 @@ internal class HtmlPreviewVisitor(string? tempDirectory = null) : MimeVisitor
     {
         ctx.WriteTag(htmlWriter, false);
 
-        // replace the src attribute with a file:// URL
+        // replace the src attribute with a file:/// URL
         foreach (var attribute in ctx.Attributes)
         {
             if (attribute.Id == HtmlAttributeId.Src)
