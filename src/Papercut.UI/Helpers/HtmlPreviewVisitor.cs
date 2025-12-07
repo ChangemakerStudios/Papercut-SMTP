@@ -110,9 +110,11 @@ internal class HtmlPreviewVisitor(string? tempDirectory = null) : MimeVisitor
         {
             using var output = File.Create(path);
             image.Content.DecodeTo(output);
+            output.Flush(flushToDisk: true); // Ensure file is fully written before WebView2 loads it
         }
 
-        return $"file://{path.Replace('\\', '/')}";
+        // Use proper file:/// URL format (three slashes for local files)
+        return $"file:///{path.Replace('\\', '/')}";
     }
 
     private static string? GetExtensionFromMimeType(string mimeType)
@@ -145,10 +147,9 @@ internal class HtmlPreviewVisitor(string? tempDirectory = null) : MimeVisitor
                 AddMetaCompatibleIeEdge(htmlWriter);
 
                 break;
-                    
+
             case HtmlTagId.Image when !ctx.IsEndTag && _stack.Count > 0:
                 LinkImageTag(ctx, htmlWriter);
-
                 break;
             case HtmlTagId.Body when !ctx.IsEndTag:
                 RemoveContextMenuFromBodyTag(ctx, htmlWriter);
@@ -190,7 +191,7 @@ internal class HtmlPreviewVisitor(string? tempDirectory = null) : MimeVisitor
     {
         ctx.WriteTag(htmlWriter, false);
 
-        // replace the src attribute with a file:// URL
+        // replace the src attribute with a file:/// URL
         foreach (var attribute in ctx.Attributes)
         {
             if (attribute.Id == HtmlAttributeId.Src)

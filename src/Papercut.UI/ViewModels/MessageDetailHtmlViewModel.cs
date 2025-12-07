@@ -542,7 +542,8 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
                     }
                     else
                     {
-                        coreWebView.Navigate($"file://{file.Replace("/", @"\")}");
+                        // Use proper file:/// URL format (three slashes for local files)
+                        coreWebView.Navigate($"file:///{file.Replace('\\', '/')}");
                     }
                 }
             );
