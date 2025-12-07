@@ -499,9 +499,8 @@ public class MainViewModel : Conductor<object>,
         // Create upgrade dialog view model
         var upgradeDialog = new UI.ViewModels.UpgradeDialogViewModel(currentVersion, newVersion, releaseNotesHtml);
 
-        // Get the window manager from DI and show the dialog manually
-        var windowManager = new Caliburn.Micro.WindowManager();
-        var dialogResult = await windowManager.ShowDialogAsync(upgradeDialog);
+        // Show the dialog using the injected window manager
+        var dialogResult = await this._viewModelWindowManager.ShowDialogAsync(upgradeDialog);
 
         // Check user's choice
         if (upgradeDialog.UserChoice != UI.ViewModels.UpgradeChoice.Upgrade)
