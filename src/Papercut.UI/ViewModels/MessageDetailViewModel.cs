@@ -306,6 +306,11 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
         {
             this.HeaderViewModel.Headers = string.Join("\r\n", mailMessageEx.Headers.Select(h => h.ToString()));
 
+            // IMPORTANT: Generate HTML preview FIRST before any other access to BodyParts
+            // This ensures the MimeVisitor sees the full multipart/related structure
+            // Accessing BodyParts can affect the internal state of cached MimeMessage objects
+            this.HtmlViewModel.ShowMessage(mailMessageEx);
+
             var parts = mailMessageEx.BodyParts.OfType<MimePart>().ToList();
             var mainBody = parts.GetMainBodyTextPart();
 
@@ -330,7 +335,6 @@ public class MessageDetailViewModel : Conductor<IMessageDetailItem>.Collection.O
 
             if (mainBody != null) {
                 this.IsHtml = mainBody.IsContentHtml();
-                this.HtmlViewModel.ShowMessage(mailMessageEx);
 
                 if (this.IsHtml)
                 {
