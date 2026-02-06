@@ -336,8 +336,9 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
 
     public void DeleteAll()
     {
+        var cutoff = DateTime.Now;
         this.ClearSelected();
-        this.DeleteMessages(this.Messages.ToList());
+        this.DeleteMessages(this.Messages.Where(m => m.ModifiedDate < cutoff).ToList());
     }
 
     public void DeleteSelected()
