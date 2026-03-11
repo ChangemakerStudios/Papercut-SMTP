@@ -496,6 +496,7 @@ a:focus, a:hover{
 #preview-headers,
 #preview-sections {
     border: solid 1px #ddd;
+    border-top: 0;
     background-color: #fefefe;
     padding: 8px;
 }
