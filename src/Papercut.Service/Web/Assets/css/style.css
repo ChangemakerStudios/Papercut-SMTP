@@ -332,7 +332,7 @@ a:focus, a:hover{
 /* Preview */
 #preview-plain, #preview-source {
   white-space: pre;
-  font-family: 'JetBrains Mono', 'Fira Code', Courier New, Courier, monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
   padding: 12px;
   font-size: 13px;
   line-height: 1.6;
