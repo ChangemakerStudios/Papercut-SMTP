@@ -89,18 +89,22 @@ a:focus, a:hover{
   padding-top: 16px;
 }
 
-.nav-pills > li.inbox > a {
+.nav-pills > li.inbox {
+    position: relative;
+}
+
+.nav-pills > li.inbox > a:first-child {
     color: #1a2332;
     font-weight: 600;
     font-size: 15px;
-    padding: 10px 15px;
+    padding: 10px 40px 10px 15px;
     border-radius: 6px;
     background: #fff;
     box-shadow: 0 1px 2px rgba(0,0,0,0.06);
     margin-bottom: 4px;
 }
 
-.nav-pills > li.inbox > a:hover {
+.nav-pills > li.inbox > a:first-child:hover {
     background: #edf0f4;
 }
 
@@ -114,15 +118,23 @@ a:focus, a:hover{
 
 .nav > li > a.btn-delete-all{
     position: absolute;
-    right: 0;
-    top: 5px;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     display: none;
     color: #a0aec0;
+    font-size: 14px;
+    padding: 4px;
+    z-index: 1;
 }
 
 .nav > li:hover > a.btn-delete-all{
   display: block;
   color: #e53e3e;
+}
+
+.nav > li > a.btn-delete-all:hover {
+  color: #c53030;
 }
 
 /***********/
