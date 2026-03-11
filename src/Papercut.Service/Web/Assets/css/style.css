@@ -159,21 +159,24 @@ a:focus, a:hover{
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
-    display: none;
+    opacity: 0;
+    pointer-events: none;
     color: #a0aec0;
-    font-size: 0;
-    line-height: 0;
     padding: 4px;
     z-index: 1;
 }
 
-.nav > li:hover > a.btn-delete-all{
-  display: block;
-  color: #e53e3e;
+.nav > li:hover > a.btn-delete-all,
+.nav > li:focus-within > a.btn-delete-all,
+.nav > li > a.btn-delete-all:focus {
+    opacity: 1;
+    pointer-events: auto;
+    color: #e53e3e;
 }
 
-.nav > li > a.btn-delete-all:hover {
-  color: #c53030;
+.nav > li > a.btn-delete-all:hover,
+.nav > li > a.btn-delete-all:focus {
+    color: #c53030;
 }
 
 /***********/

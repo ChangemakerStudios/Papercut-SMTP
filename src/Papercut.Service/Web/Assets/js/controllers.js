@@ -117,6 +117,8 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
       messageRepository.deleteMessage(message.id).then(function () {
           delete $scope.cache[message.id];
           $scope.refresh();
+      }, function () {
+          $scope.refresh();
       });
   };
 
