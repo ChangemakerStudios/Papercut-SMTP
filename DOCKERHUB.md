@@ -586,7 +586,7 @@ System.UnauthorizedAccessException: Access to the path '/app/Incoming/...' is de
 
 **Option 1 — Use a Docker named volume (simplest):**
 
-Named volumes are managed by Docker and permissions are handled automatically:
+Docker managed volumes handle permissions automatically:
 ```bash
 docker run -d \
   --name papercut \
