@@ -26,6 +26,10 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
                 hrefBase.target = '_blank';
                 head.append(hrefBase);
 
+                var fontStyle = document.createElement('style');
+                fontStyle.textContent = "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'); body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }";
+                head.append(fontStyle);
+
                 var body = $(element).contents().find('body');
                 body.empty().append( htmlContent );
                 
