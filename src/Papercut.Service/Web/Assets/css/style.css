@@ -173,6 +173,14 @@ a:focus, a:hover{
     padding: 5px;
 }
 
+#preview-html,
+#preview-headers,
+#preview-sections {
+    border: solid 1px #ccc;
+    background-color: #fefefe;
+    padding: 8px;
+}
+
 .preview .tab-content {
   overflow-y: visible;
 }
