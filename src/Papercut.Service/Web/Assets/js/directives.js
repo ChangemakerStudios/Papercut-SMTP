@@ -34,17 +34,53 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
                 body.empty().append( htmlContent );
 
                 var iframeDoc = body[0].ownerDocument;
+                var resizeObserver = null;
+                var measureRetries = 0;
+
                 function measureHeight() {
-                    element.css('height', $(iframeDoc.documentElement).height() + 100);
+                    var contentHeight = Math.max(
+                        iframeDoc.documentElement.scrollHeight || 0,
+                        iframeDoc.body.scrollHeight || 0,
+                        $(iframeDoc.documentElement).height() || 0
+                    );
+                    if (contentHeight > 0) {
+                        element.css('height', contentHeight + 100 + 'px');
+                    }
                 }
 
+                // Use ResizeObserver for dynamic content changes (e.g. images loading, fonts rendering)
+                if (typeof ResizeObserver !== 'undefined') {
+                    resizeObserver = new ResizeObserver(function () {
+                        measureHeight();
+                    });
+                    resizeObserver.observe(iframeDoc.documentElement);
+                }
+
+                // Measure after fonts load, with a timeout fallback in case fonts.ready stalls
+                var fontTimeout = $timeout(measureHeight, 500);
                 if (iframeDoc.fonts && iframeDoc.fonts.ready) {
                     iframeDoc.fonts.ready.then(function () {
+                        $timeout.cancel(fontTimeout);
                         $timeout(measureHeight);
                     });
-                } else {
-                    $timeout(measureHeight, 200);
                 }
+
+                // Retry measurements to catch late-rendering content
+                function retryMeasure() {
+                    measureRetries++;
+                    measureHeight();
+                    if (measureRetries < 5) {
+                        $timeout(retryMeasure, measureRetries * 200);
+                    }
+                }
+                $timeout(retryMeasure, 100);
+
+                // Clean up ResizeObserver when scope is destroyed
+                scope.$on('$destroy', function () {
+                    if (resizeObserver) {
+                        resizeObserver.disconnect();
+                    }
+                });
             });
 
 

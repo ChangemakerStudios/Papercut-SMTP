@@ -500,6 +500,10 @@ a:focus, a:hover{
     padding: 8px;
 }
 
+#preview-html {
+    min-height: 200px;
+}
+
 .preview .tab-content {
   overflow-y: visible;
 }
