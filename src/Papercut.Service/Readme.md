@@ -163,27 +163,3 @@ docker run -d \
 ```
 
 **Note:** Docker uses `appsettings.Production.json` which sets non-privileged ports by default (SMTP: 2525, HTTP: 8080).
-
-### Volume Permissions
-
-The container runs as a non-root user by default. If you get permission errors when mounting volumes (e.g., for `/app/Incoming` or `/app/Logs`), you can run as root:
-
-```bash
-docker run -d --user 0:0 \
-  -p 8080:8080 -p 2525:2525 \
-  -v papercut-data:/app/Incoming \
-  changemakerstudiosus/papercut-smtp:latest
-```
-
-Or in Docker Compose, add `user: "0:0"` to the service:
-
-```yaml
-services:
-  papercut-smtp:
-    image: changemakerstudiosus/papercut-smtp:latest
-    user: "0:0"
-    volumes:
-      - papercut-data:/app/Incoming
-```
-
-Alternatively, ensure host directories are writable by UID 1654 (the default non-root user).

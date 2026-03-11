@@ -625,6 +625,29 @@ docker run -d \
   changemakerstudiosus/papercut-smtp:latest
 ```
 
+**Option 4 — Run as root:**
+
+If other options aren't practical, you can run the container as root with `--user 0:0`:
+```bash
+docker run -d \
+  --name papercut \
+  --user 0:0 \
+  -p 37408:8080 \
+  -p 2525:2525 \
+  -v /path/on/host/messages:/app/Incoming \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+Or in Docker Compose, add `user: "0:0"` to the service:
+```yaml
+services:
+  papercut:
+    image: changemakerstudiosus/papercut-smtp:latest
+    user: "0:0"
+    volumes:
+      - /path/on/host/messages:/app/Incoming
+```
+
 ### Cannot Access Web UI
 
 **Symptoms:** Cannot connect to http://localhost:37408
