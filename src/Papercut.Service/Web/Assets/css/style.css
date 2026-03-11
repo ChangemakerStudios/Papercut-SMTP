@@ -334,8 +334,7 @@ a:focus, a:hover{
 .headers {
   margin-top: 0;
   background: #f8f9fb;
-  border: 1px solid #e2e6ea;
-  border-radius: 6px;
+  border-bottom: 1px solid #e2e6ea;
   padding: 16px 20px;
   margin-bottom: 4px;
 }
