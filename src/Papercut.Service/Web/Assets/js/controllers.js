@@ -21,6 +21,8 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   $scope.totalMessages = 0;
   $scope.messages = [];
   $scope.preview = null;
+  $scope.autoRefresh = true;
+  $scope.autoRefreshCountdown = 0;
 
   if(typeof(Storage) !== "undefined") {
       $scope.itemsPerPage = parseInt(localStorage.getItem("itemsPerPage"), 10)
@@ -37,17 +39,24 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
       return moment.utc(a, 'YYYY-MM-DDTHH:mm:ss.SSSZ').local();
   };
 
-  $scope.backToInbox = function () {
+  $scope.backToInbox = function (skipHistory) {
       $scope.preview = null;
+      if (!skipHistory) {
+          window.history.pushState({ view: 'inbox' }, '');
+      }
   };
-  $scope.backToInboxFirst = function () {
+  $scope.backToInboxFirst = function (skipHistory) {
       $scope.preview = null;
       $scope.startIndex = 0;
       $scope.startMessages = 0;
       $scope.refresh();
+      if (!skipHistory) {
+          window.history.pushState({ view: 'inbox' }, '');
+      }
   };
 
   $scope.refresh = function () {
+      $scope.autoRefreshCountdown = 10;
       var e = startEvent("Loading messages", null, "glyphicon-download");
       $scope.requetedMessageList = true;
 
@@ -86,6 +95,13 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
       $scope.refresh();
   };
 
+  $scope.toggleAutoRefresh = function () {
+      $scope.autoRefresh = !$scope.autoRefresh;
+      if ($scope.autoRefresh) {
+          $scope.autoRefreshCountdown = 10;
+      }
+  };
+
   $scope.deleteAll = function () {
       if(!window.confirm('Are you sure to delete all messages?')){
         return;
@@ -96,7 +112,29 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
      });
   };
 
+  $scope.pendingDeleteId = null;
+  var pendingDeleteTimer = null;
+
+  $scope.deleteMessage = function (message, $event) {
+      $event.stopPropagation();
+      if ($scope.pendingDeleteId === message.id) {
+          $scope.pendingDeleteId = null;
+          if (pendingDeleteTimer) { $timeout.cancel(pendingDeleteTimer); pendingDeleteTimer = null; }
+          messageRepository.deleteMessage(message.id).then(function () {
+              delete $scope.cache[message.id];
+              $scope.refresh();
+          }, function () {
+              $scope.refresh();
+          });
+      } else {
+          $scope.pendingDeleteId = message.id;
+          if (pendingDeleteTimer) { $timeout.cancel(pendingDeleteTimer); }
+          pendingDeleteTimer = $timeout(function () { $scope.pendingDeleteId = null; }, 2000);
+      }
+  };
+
   $scope.selectMessage = function (message) {
+      window.history.pushState({ view: 'message', id: message.id }, '');
       if ($scope.cache[message.id]) {
           $scope.preview = $scope.cache[message.id];
       } else {
@@ -290,11 +328,32 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   }
 
 
+    window.history.replaceState({ view: 'inbox' }, '');
+    window.addEventListener('popstate', function (event) {
+        $scope.$apply(function () {
+            var state = event.state;
+            if (!state || state.view === 'inbox') {
+                $scope.preview = null;
+            } else if (state.view === 'message' && state.id && $scope.cache[state.id]) {
+                $scope.preview = $scope.cache[state.id];
+            } else {
+                $scope.preview = null;
+            }
+        });
+    });
+
+    $scope.autoRefreshCountdown = 10;
     $scope.refresh();
     $interval(function () {
-        if ($scope.startIndex === 0) {
-            $scope.refresh();
+        if ($scope.autoRefresh && !$scope.preview) {
+            $scope.autoRefreshCountdown--;
+            if ($scope.autoRefreshCountdown <= 0) {
+                $scope.autoRefreshCountdown = 10;
+                $scope.refreshFlash = true;
+                $scope.refresh();
+                $timeout(function () { $scope.refreshFlash = false; }, 400);
+            }
         }
-    }, 8000);
+    }, 1000);
     setupNotification($scope);
 });

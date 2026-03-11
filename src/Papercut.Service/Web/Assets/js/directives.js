@@ -26,12 +26,25 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
                 hrefBase.target = '_blank';
                 head.append(hrefBase);
 
+                var fontStyle = document.createElement('style');
+                fontStyle.textContent = "@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap'); body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }";
+                head.append(fontStyle);
+
                 var body = $(element).contents().find('body');
                 body.empty().append( htmlContent );
-                
-                $timeout(function () {
-                    element.css('height', $(body[0].ownerDocument.documentElement).height() + 100);
-                }, 50);
+
+                var iframeDoc = body[0].ownerDocument;
+                function measureHeight() {
+                    element.css('height', $(iframeDoc.documentElement).height() + 100);
+                }
+
+                if (iframeDoc.fonts && iframeDoc.fonts.ready) {
+                    iframeDoc.fonts.ready.then(function () {
+                        $timeout(measureHeight);
+                    });
+                } else {
+                    $timeout(measureHeight, 200);
+                }
             });
 
 
