@@ -25,6 +25,8 @@ services:
       # - SmtpServer__AllowedIps=192.168.1.0/24,10.0.0.0/8  # Allow specific networks
       # - SmtpServer__AllowedIps=192.168.1.100,192.168.1.101  # Allow specific IPs
       - SmtpServer__AllowedIps=*
+    # Uncomment to run as root — fixes permission errors on mounted volumes
+    # user: "0:0"
     restart: unless-stopped
 
   # Example: Papercut with TLS/STARTTLS support
@@ -71,6 +73,21 @@ volumes:
     driver: local
   papercut-logs-tls:
     driver: local
+
+# Volume Permissions:
+#
+# The container runs as a non-root user by default. If you encounter
+# permission errors when using mounted volumes (e.g., "Permission denied"
+# writing to /app/Incoming or /app/Logs), you can run the container as
+# root by adding `user: "0:0"` to the service definition:
+#
+#   services:
+#     papercut-smtp:
+#       user: "0:0"
+#       ...
+#
+# Alternatively, ensure the host directories are writable by UID 1654
+# (the default non-root user in the container).
 
 # Usage:
 # 1. Basic (plain SMTP):

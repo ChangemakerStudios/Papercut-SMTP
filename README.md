@@ -64,6 +64,8 @@ Access at: **http://localhost:37408** | Send emails to: **localhost:2525**
 
 > **Note:** Docker uses non-privileged ports by default (SMTP: 2525, HTTP: 8080). See the [Service README](src/Papercut.Service/Readme.md#option-3-run-in-docker) for configuration options, Docker Compose examples, and troubleshooting.
 
+> **Volume Permissions:** The container runs as a non-root user. If you encounter permission errors with mounted volumes, add `--user 0:0` to `docker run` or `user: "0:0"` in Docker Compose. See the [Service README](src/Papercut.Service/Readme.md#volume-permissions) for details.
+
 ### Aspire Integration
 
 Papercut SMTP can be used for local email testing with Aspire projects. The integration exposes a connection string with the format `endpoint=smtp://<host>:<port>` which can be used to configure the SMTP client.
