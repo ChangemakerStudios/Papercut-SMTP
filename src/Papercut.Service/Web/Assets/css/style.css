@@ -176,7 +176,7 @@ a:focus, a:hover{
 #preview-html,
 #preview-headers,
 #preview-sections {
-    border: solid 1px #ccc;
+    border: solid 1px #ddd;
     background-color: #fefefe;
     padding: 8px;
 }
