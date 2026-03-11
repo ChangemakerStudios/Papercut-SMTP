@@ -1,5 +1,8 @@
 body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: #f5f6f8;
+    color: #2d3748;
+    font-size: 14px;
 }
 
 a:focus, a:hover{
@@ -8,7 +11,7 @@ a:focus, a:hover{
 .loading-overlay {
     width: 100%;
     height: 100%;
-    background: white;
+    background: #f5f6f8;
     position: fixed;
     top: 0;
     left: 0;
@@ -29,6 +32,26 @@ a:focus, a:hover{
 
 /*******/
 /* Nav */
+.navbar-default {
+    background-color: #1a2332;
+    border: none;
+    border-radius: 0;
+    margin-bottom: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.navbar-default .navbar-brand {
+    color: #fff;
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: rgba(255,255,255,0.7);
+}
+
+.navbar-default .navbar-nav > li > a:hover {
+    color: #fff;
+}
+
 .navbar .col-md-10 {
   padding-left: 0;
 }
@@ -62,7 +85,23 @@ a:focus, a:hover{
 /***************/
 /* Sidebar nav */
 .nav-stacked {
-  margin-top: 10px;
+  margin-top: 0;
+  padding-top: 16px;
+}
+
+.nav-pills > li.inbox > a {
+    color: #1a2332;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    margin-bottom: 4px;
+}
+
+.nav-pills > li.inbox > a:hover {
+    background: #edf0f4;
 }
 
 .has-event-source {
@@ -78,22 +117,36 @@ a:focus, a:hover{
     right: 0;
     top: 5px;
     display: none;
+    color: #a0aec0;
 }
 
 .nav > li:hover > a.btn-delete-all{
   display: block;
+  color: #e53e3e;
 }
 
 /***********/
 /* Toolbar */
 .toolbar {
-  padding: 5px;
-  border-bottom: 1px solid #ccc;
+  padding: 10px 5px;
+  border-bottom: 1px solid #e2e6ea;
+  background: #fff;
+  margin: 0 -15px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 .toolbar .btn {
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-radius: 6px;
+  border-color: #d1d5db;
+  color: #4a5568;
+}
+
+.toolbar .btn:hover {
+  background: #edf0f4;
+  border-color: #a0aec0;
 }
 
 .toolbar .spacer {
@@ -103,6 +156,21 @@ a:focus, a:hover{
 
 .message-count {
   padding-right: 10px;
+  color: #718096;
+  font-size: 13px;
+}
+
+.message-count strong {
+  color: #2d3748;
+}
+
+.message-count select {
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: #4a5568;
+  background: #fff;
 }
 
 /***********/
@@ -114,22 +182,40 @@ a:focus, a:hover{
   bottom: 0;
   overflow-y: scroll;
   padding-bottom: 80px;
+  background: #fff;
+  border-left: 1px solid #e2e6ea;
 }
 
 .mail-content {
   margin-top: 20px;
 }
 
+.messages {
+  background: #fff;
+}
+
 .msglist-message {
-  border-bottom: 1px solid #ccc;
-  margin: 5px 0;
-  padding: 5px 0;
+  border-bottom: 1px solid #edf0f4;
+  margin: 0;
+  padding: 12px 8px;
   cursor: pointer;
+  transition: background-color 0.15s ease;
+  border-radius: 0;
+}
+
+.msglist-message:hover {
+  background-color: #f0f4f8;
 }
 
 .msglist-message .subject.unread {
-  color: #666;
-  font-weight: bold;
+  color: #1a2332;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.msglist-message .col-md-4 {
+  color: #718096;
+  font-size: 13px;
 }
 
 .mail-content .download-raw{
@@ -141,8 +227,10 @@ a:focus, a:hover{
 /* Preview */
 #preview-plain, #preview-source {
   white-space: pre;
-  font-family: Courier New, Courier, System, fixed-width;
-  padding: 10px;
+  font-family: 'JetBrains Mono', 'Fira Code', Courier New, Courier, monospace;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 #preview-headers ul{
@@ -157,7 +245,7 @@ a:focus, a:hover{
 }
 
 #preview-headers ul li .header-name{
-    font-weight:bold;
+    font-weight: 600;
 }
 
 #preview-sections table {
@@ -166,7 +254,7 @@ a:focus, a:hover{
 }
 
 #preview-sections table tbody tr:hover {
-    background: #ebf1f5;
+    background: #f0f4f8;
 }
 
 #preview-sections table td {
@@ -185,6 +273,31 @@ a:focus, a:hover{
   overflow-y: visible;
 }
 
+.nav-tabs {
+  border-bottom-color: #e2e6ea;
+}
+
+.nav-tabs > li > a {
+  color: #718096;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 4px 4px 0 0;
+}
+
+.nav-tabs > li > a:hover {
+  border-color: #e2e6ea #e2e6ea #e2e6ea;
+  background: #f5f6f8;
+  color: #2d3748;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+  color: #1a2332;
+  font-weight: 600;
+  border-color: #e2e6ea #e2e6ea #fff;
+}
+
 .headers {
   margin-top: 10px;
 }
@@ -192,8 +305,9 @@ a:focus, a:hover{
 .headers tbody td.header-name {
   white-space: nowrap;
   text-align: right;
-  color: #666;
-  font-weight: normal;
+  color: #718096;
+  font-weight: 500;
+  font-size: 13px;
   width: 80px;
   padding-right: 10px;
 }
@@ -216,4 +330,9 @@ label.mail-address{
 
 a.click-to-download{
     cursor: pointer;
+    color: #3182ce;
+}
+
+a.click-to-download:hover {
+    color: #2c5282;
 }
