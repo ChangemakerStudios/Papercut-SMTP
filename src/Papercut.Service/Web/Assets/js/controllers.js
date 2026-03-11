@@ -37,14 +37,20 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
       return moment.utc(a, 'YYYY-MM-DDTHH:mm:ss.SSSZ').local();
   };
 
-  $scope.backToInbox = function () {
+  $scope.backToInbox = function (skipHistory) {
       $scope.preview = null;
+      if (!skipHistory) {
+          window.history.pushState({ view: 'inbox' }, '');
+      }
   };
-  $scope.backToInboxFirst = function () {
+  $scope.backToInboxFirst = function (skipHistory) {
       $scope.preview = null;
       $scope.startIndex = 0;
       $scope.startMessages = 0;
       $scope.refresh();
+      if (!skipHistory) {
+          window.history.pushState({ view: 'inbox' }, '');
+      }
   };
 
   $scope.refresh = function () {
@@ -105,6 +111,7 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   };
 
   $scope.selectMessage = function (message) {
+      window.history.pushState({ view: 'message', id: message.id }, '');
       if ($scope.cache[message.id]) {
           $scope.preview = $scope.cache[message.id];
       } else {
@@ -297,6 +304,20 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
           s4() + '-' + s4() + s4() + s4();
   }
 
+
+    window.history.replaceState({ view: 'inbox' }, '');
+    window.addEventListener('popstate', function (event) {
+        $scope.$apply(function () {
+            var state = event.state;
+            if (!state || state.view === 'inbox') {
+                $scope.preview = null;
+            } else if (state.view === 'message' && state.id && $scope.cache[state.id]) {
+                $scope.preview = $scope.cache[state.id];
+            } else {
+                $scope.preview = null;
+            }
+        });
+    });
 
     $scope.refresh();
     $interval(function () {
