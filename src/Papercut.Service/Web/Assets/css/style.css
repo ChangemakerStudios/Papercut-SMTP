@@ -218,9 +218,31 @@ a:focus, a:hover{
   font-size: 13px;
 }
 
+.mail-content {
+  margin-top: 16px;
+}
+
 .mail-content .download-raw{
     display:inline-block;
-    margin-top:5px;
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.mail-content .download-raw a {
+    font-size: 12px;
+    font-weight: 500;
+    color: #718096;
+    padding: 4px 10px;
+    border: 1px solid #e2e6ea;
+    border-radius: 4px;
+    background: #f8f9fb;
+    transition: all 0.15s ease;
+}
+
+.mail-content .download-raw a:hover {
+    background: #edf0f4;
+    color: #2d3748;
+    border-color: #cbd5e0;
 }
 
 /***********/
@@ -299,17 +321,45 @@ a:focus, a:hover{
 }
 
 .headers {
-  margin-top: 10px;
+  margin-top: 0;
+  background: #f8f9fb;
+  border: 1px solid #e2e6ea;
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 4px;
+}
+
+.headers table {
+  width: 100%;
+}
+
+.headers tbody td {
+  padding: 4px 0;
+  vertical-align: top;
+  line-height: 1.5;
 }
 
 .headers tbody td.header-name {
   white-space: nowrap;
   text-align: right;
-  color: #718096;
+  color: #a0aec0;
   font-weight: 500;
-  font-size: 13px;
-  width: 80px;
-  padding-right: 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  width: 70px;
+  padding-right: 14px;
+  padding-top: 5px;
+}
+
+.headers tbody td:last-child {
+  color: #2d3748;
+}
+
+.headers tbody td strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a2332;
 }
 
 .haeders table td, .headers table th {
