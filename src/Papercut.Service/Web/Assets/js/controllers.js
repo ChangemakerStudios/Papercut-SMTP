@@ -21,6 +21,8 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   $scope.totalMessages = 0;
   $scope.messages = [];
   $scope.preview = null;
+  $scope.autoRefresh = true;
+  $scope.autoRefreshCountdown = 0;
 
   if(typeof(Storage) !== "undefined") {
       $scope.itemsPerPage = parseInt(localStorage.getItem("itemsPerPage"), 10)
@@ -54,6 +56,7 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   };
 
   $scope.refresh = function () {
+      $scope.autoRefreshCountdown = 10;
       var e = startEvent("Loading messages", null, "glyphicon-download");
       $scope.requetedMessageList = true;
 
@@ -90,6 +93,13 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
   $scope.showOlder = function () {
       $scope.startIndex += $scope.itemsPerPage;
       $scope.refresh();
+  };
+
+  $scope.toggleAutoRefresh = function () {
+      $scope.autoRefresh = !$scope.autoRefresh;
+      if ($scope.autoRefresh) {
+          $scope.autoRefreshCountdown = 10;
+      }
   };
 
   $scope.deleteAll = function () {
@@ -319,11 +329,16 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
         });
     });
 
+    $scope.autoRefreshCountdown = 10;
     $scope.refresh();
     $interval(function () {
-        if ($scope.startIndex === 0) {
-            $scope.refresh();
+        if ($scope.autoRefresh && !$scope.preview) {
+            $scope.autoRefreshCountdown--;
+            if ($scope.autoRefreshCountdown <= 0) {
+                $scope.autoRefreshCountdown = 10;
+                $scope.refresh();
+            }
         }
-    }, 8000);
+    }, 1000);
     setupNotification($scope);
 });

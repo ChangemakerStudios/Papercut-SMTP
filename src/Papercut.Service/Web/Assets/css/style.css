@@ -67,12 +67,31 @@ a:focus, a:hover{
     margin-top: 14px;
 }
 
-.navbar-default .navbar-nav > li > a {
-    color: rgba(255,255,255,0.7);
+.navbar-flex {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.navbar-default .navbar-nav > li > a:hover {
+.navbar-flex .navbar-brand {
+    float: none;
+    margin-left: 0;
+}
+
+.navbar-flex::before,
+.navbar-flex::after {
+    display: none;
+}
+
+.navbar-github {
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    padding: 10px 15px;
+}
+
+.navbar-github:hover {
     color: #fff;
+    text-decoration: none;
 }
 
 .navbar .col-md-10 {
@@ -193,6 +212,42 @@ a:focus, a:hover{
   border-color: #a0aec0;
 }
 
+.btn-auto-refresh {
+  min-width: 34px !important;
+  width: auto !important;
+  padding: 0 8px !important;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #8a96a3;
+  border-color: #d1d5db !important;
+  background: transparent !important;
+}
+
+.btn-auto-refresh:hover {
+  background: #edf0f4 !important;
+  border-color: #d1d5db !important;
+  color: #4a5568;
+}
+
+.btn-auto-refresh.active {
+  opacity: 1;
+  color: #3478b2;
+  background: #e8f0fe !important;
+  border-color: #b6d4f0 !important;
+}
+
+.btn-auto-refresh svg {
+  flex-shrink: 0;
+}
+
+.auto-refresh-label {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  min-width: 18px;
+  text-align: center;
+}
+
 .toolbar .spacer {
   display: inline-block;
   width: 20px;
@@ -260,6 +315,7 @@ a:focus, a:hover{
   text-overflow: ellipsis;
   white-space: nowrap;
   padding-right: 16px;
+  letter-spacing: 0.25pt
 }
 
 .msglist-message .msg-subject.unread {
@@ -305,27 +361,18 @@ a:focus, a:hover{
   margin-top: 16px;
 }
 
-.mail-content .download-raw{
-    display:inline-block;
-    margin-top: 0;
-    margin-bottom: 8px;
+.nav-download-raw > a {
+    cursor: pointer;
+    color: #8a96a3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    line-height: 0;
 }
 
-.mail-content .download-raw a {
-    font-size: 12px;
-    font-weight: 500;
-    color: #718096;
-    padding: 4px 10px;
-    border: 1px solid #e2e6ea;
-    border-radius: 4px;
-    background: #f8f9fb;
-    transition: all 0.15s ease;
-}
-
-.mail-content .download-raw a:hover {
-    background: #edf0f4;
-    color: #2d3748;
-    border-color: #cbd5e0;
+.nav-download-raw > a:hover {
+    color: #3478b2;
 }
 
 /***********/
@@ -342,6 +389,8 @@ a:focus, a:hover{
     margin: 0;
     padding: 0;
     margin-top: 15px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
+    font-size: 13px;
 }
 
 #preview-headers ul li{
@@ -354,16 +403,60 @@ a:focus, a:hover{
 }
 
 #preview-sections table {
-    margin-top: 15px;
-    min-width: 450px;
+    margin-top: 8px;
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
+    font-size: 13px;
+}
+
+#preview-sections table thead th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8a96a3;
+    padding: 8px 12px;
+    border-bottom: 2px solid #e2e6ea;
+}
+
+#preview-sections table tbody tr {
+    border-bottom: 1px solid #eef1f4;
+}
+
+#preview-sections table tbody tr:last-child {
+    border-bottom: none;
 }
 
 #preview-sections table tbody tr:hover {
-    background: #f0f4f8;
+    background: #f5f7fa;
 }
 
 #preview-sections table td {
-    padding: 5px;
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+#preview-sections table td:last-child {
+    width: 48px;
+    text-align: center;
+}
+
+#preview-sections .click-to-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    color: #5a9bd5;
+    transition: background 0.15s, color 0.15s;
+}
+
+#preview-sections .click-to-download:hover {
+    background: #e8f0fe;
+    color: #3478b2;
 }
 
 #preview-html,
