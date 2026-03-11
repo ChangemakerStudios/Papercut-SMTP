@@ -96,6 +96,14 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
      });
   };
 
+  $scope.deleteMessage = function (message, $event) {
+      $event.stopPropagation();
+      messageRepository.deleteMessage(message.id).then(function () {
+          delete $scope.cache[message.id];
+          $scope.refresh();
+      });
+  };
+
   $scope.selectMessage = function (message) {
       if ($scope.cache[message.id]) {
           $scope.preview = $scope.cache[message.id];

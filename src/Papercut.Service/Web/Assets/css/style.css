@@ -42,6 +42,29 @@ a:focus, a:hover{
 
 .navbar-default .navbar-brand {
     color: #fff;
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: -0.01em;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.navbar-default .navbar-brand:hover {
+    color: #fff;
+}
+
+.navbar-default .navbar-brand .brand-cut {
+    color: #7ab0d4;
+}
+
+.navbar-default .navbar-brand .brand-smtp {
+    font-weight: 500;
+    font-size: 8px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.1em;
+    margin-left: 4px;
+    margin-top: 14px;
 }
 
 .navbar-default .navbar-nav > li > a {
@@ -54,10 +77,6 @@ a:focus, a:hover{
 
 .navbar .col-md-10 {
   padding-left: 0;
-}
-
-.navbar-brand > img {
-  display: inline-block;
 }
 
 .navbar-form {
@@ -123,7 +142,8 @@ a:focus, a:hover{
     transform: translateY(-50%);
     display: none;
     color: #a0aec0;
-    font-size: 14px;
+    font-size: 0;
+    line-height: 0;
     padding: 4px;
     z-index: 1;
 }
@@ -146,14 +166,26 @@ a:focus, a:hover{
   margin: 0 -15px;
   padding-left: 15px;
   padding-right: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .toolbar .btn {
-  padding-left: 16px;
-  padding-right: 16px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
   border-radius: 6px;
   border-color: #d1d5db;
   color: #4a5568;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.toolbar .btn svg {
+  display: block;
 }
 
 .toolbar .btn:hover {
@@ -183,6 +215,7 @@ a:focus, a:hover{
   font-size: 13px;
   color: #4a5568;
   background: #fff;
+  margin-right: 8px;
 }
 
 /***********/
@@ -207,6 +240,8 @@ a:focus, a:hover{
 }
 
 .msglist-message {
+  display: flex;
+  align-items: baseline;
   border-bottom: 1px solid #edf0f4;
   margin: 0 -15px;
   padding: 12px 23px;
@@ -218,15 +253,52 @@ a:focus, a:hover{
   background-color: #f0f4f8;
 }
 
-.msglist-message .subject.unread {
+.msglist-message .msg-subject {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 16px;
+}
+
+.msglist-message .msg-subject.unread {
   color: #1a2332;
   font-weight: 600;
   font-size: 14px;
 }
 
-.msglist-message .col-md-4 {
+.msglist-message .msg-meta {
+  flex-shrink: 0;
   color: #718096;
   font-size: 13px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.msglist-message .msg-size {
+  display: inline-block;
+  width: 65px;
+  text-align: right;
+  margin-left: 12px;
+}
+
+.msglist-message .msg-delete {
+  flex-shrink: 0;
+  margin-left: 12px;
+  color: #cbd5e0;
+  cursor: pointer;
+  font-size: 0;
+  line-height: 0;
+  visibility: hidden;
+}
+
+.msglist-message:hover .msg-delete {
+  visibility: visible;
+}
+
+.msglist-message .msg-delete:hover {
+  color: #e53e3e;
 }
 
 .mail-content {

@@ -32,10 +32,19 @@ papercutApp.directive('bodyHtml', ['$sce', '$timeout', function ($sce, $timeout)
 
                 var body = $(element).contents().find('body');
                 body.empty().append( htmlContent );
-                
-                $timeout(function () {
-                    element.css('height', $(body[0].ownerDocument.documentElement).height() + 100);
-                }, 50);
+
+                var iframeDoc = body[0].ownerDocument;
+                function measureHeight() {
+                    element.css('height', $(iframeDoc.documentElement).height() + 100);
+                }
+
+                if (iframeDoc.fonts && iframeDoc.fonts.ready) {
+                    iframeDoc.fonts.ready.then(function () {
+                        $timeout(measureHeight);
+                    });
+                } else {
+                    $timeout(measureHeight, 200);
+                }
             });
 
 

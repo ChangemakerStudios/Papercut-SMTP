@@ -20,7 +20,7 @@
         <div class="col-md-2 col-sm-3">
           <div class="navbar-header">
             <a class="navbar-brand" href="#">
-              <img src="images/papercut-logo.png" height="20" alt="Papercut">
+              <img src="images/Papercut-icon.png" height="24" alt="" style="vertical-align: -5px; margin-right: 7px;">Paper<span class="brand-cut">cut</span> <span class="brand-smtp">SMTP</span>
             </a>
           </div>
         </div>
@@ -29,7 +29,7 @@
           <ul class="nav navbar-nav navbar-right">
             <li>
               <a target="_blank" href="https://github.com/ChangemakerStudios/Papercut">
-                <img src="images/github.png" height="16" alt="GitHub"> GitHub
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: -2px; margin-right: 4px;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub
               </a>
             </li>
           </ul>
@@ -47,7 +47,7 @@
               <a href="#" ng-click="backToInboxFirst()">
                 Inbox ({{totalMessages}})
               </a>
-              <a title="Delete all messages" href="#" class="btn-delete-all glyphicon glyphicon-trash" ng-click="deleteAll()"></a>
+              <a title="Delete all messages" href="#" class="btn-delete-all" ng-click="deleteAll()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></a>
             </li>
           </ul>
         </div>
@@ -55,7 +55,7 @@
         <div class="col-md-10 col-sm-9 content">
           <div class="toolbar" ng-if="!preview">
   <button class="btn btn-default" ng-click="refresh()" title="Refresh">
-    <i class="glyphicon glyphicon-refresh"></i>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
   </button>
 
   <span class="pull-right">
@@ -72,37 +72,30 @@
       <strong>{{ totalMessages }}</strong>
     </span>
 
-    <button class="btn btn-default" ng-click="showNewer()" title="Newer" ng-class="{'disabled':startMessages<=0}">
-      <i class="glyphicon glyphicon-chevron-left"></i>
+    <button class="btn btn-default" ng-click="showNewer()" title="Newer" ng-disabled="startMessages<=0">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
 
-    <button class="btn btn-default" ng-click="showOlder()" title="Older" ng-class="{'disabled':startMessages+countMessages>=totalMessages}">
-      <i class="glyphicon glyphicon-chevron-right"></i>
+    <button class="btn btn-default" ng-click="showOlder()" title="Older" ng-disabled="startMessages+countMessages>=totalMessages">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
   </span>
 </div>
 
 <div class="messages container-fluid" ng-if="!preview">
-  <div class="msglist-message row" ng-repeat="message in messages" ng-click="selectMessage(message)">
-    <div class="col-md-5 col-sm-5">
-      <span class="subject unread">{{ message.subject }}</span>
-    </div>
-    <div class="col-md-4 col-sm-3">
-      <div class="row">
-        <div class="col-md-9 col-sm-12 text-right">
-            {{ getMoment(message.createdAt).fromNow() }}
-        </div>
-        <div class="col-md-3 col-sm-12 text-right">
-          {{ message.size }}
-        </div>
-      </div>
-    </div>
+  <div class="msglist-message" ng-repeat="message in messages" ng-click="selectMessage(message)">
+    <span class="msg-subject unread">{{ message.subject }}</span>
+    <span class="msg-meta">
+      <span class="msg-date" title="{{ getMoment(message.createdAt).format('LLLL') }}">{{ getMoment(message.createdAt).fromNow() }}</span>
+      <span class="msg-size">{{ message.size }}</span>
+    </span>
+    <a class="msg-delete" title="Delete message" ng-click="deleteMessage(message, $event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></a>
   </div>
 </div>
 
 <div class="toolbar" ng-if="preview">
   <button class="btn btn-default" ng-click="backToInbox()" title="Back to Inbox">
-    <i class="glyphicon glyphicon-arrow-left"></i>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
   </button>
 </div>
 
@@ -156,7 +149,7 @@
 
   <div class="mail-content">
   <span class="download-raw pull-right">
-    <a ng-click="downloadRawMessage(preview.id)" class="click-to-download"><span class="glyphicon glyphicon-cloud-download"></span> Save raw message</a>
+    <a ng-click="downloadRawMessage(preview.id)" class="click-to-download"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Save raw message</a>
   </span>
       <ul class="nav nav-tabs">
         <li ng-if="hasHTML(preview)" ng-class="{ active: hasHTML(preview) }"><a href="#preview-html" data-toggle="tab">HTML</a></li>
@@ -186,7 +179,7 @@
                 <tr ng-repeat="section in preview.sections">
                     <td>{{section.mediaType}}</td>
                     <td>{{section.fileName}}</td>
-                    <td><a title="Save section content as file" ng-click="downloadSection(preview.id, $index, section.fileName)" class="glyphicon glyphicon-download-alt click-to-download"></a></td>
+                    <td><a title="Save section content as file" ng-click="downloadSection(preview.id, $index, section.fileName)" class="click-to-download"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a></td>
                 </tr>
                 </tbody>
             </table>
