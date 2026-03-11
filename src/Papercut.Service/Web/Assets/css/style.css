@@ -196,11 +196,10 @@ a:focus, a:hover{
 
 .msglist-message {
   border-bottom: 1px solid #edf0f4;
-  margin: 0;
-  padding: 12px 8px;
+  margin: 0 -15px;
+  padding: 12px 23px;
   cursor: pointer;
   transition: background-color 0.15s ease;
-  border-radius: 0;
 }
 
 .msglist-message:hover {
