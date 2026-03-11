@@ -43,7 +43,7 @@
 
         <div class="col-md-10 col-sm-9 content">
           <div class="toolbar" ng-if="!preview">
-  <button class="btn btn-default" ng-click="refresh()" title="Refresh">
+  <button class="btn btn-default" ng-class="{'refresh-flash': refreshFlash}" ng-click="refresh()" title="Refresh">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
   </button>
   <button class="btn btn-auto-refresh" ng-class="{'active': autoRefresh}" ng-click="toggleAutoRefresh()" title="Auto-refresh">
@@ -82,7 +82,7 @@
       <span class="msg-date" title="{{ getMoment(message.createdAt).format('LLLL') }}">{{ getMoment(message.createdAt).fromNow() }}</span>
       <span class="msg-size">{{ message.size }}</span>
     </span>
-    <a class="msg-delete" title="Delete message" ng-click="deleteMessage(message, $event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></a>
+    <a class="msg-delete" ng-class="{'msg-delete-confirm': pendingDeleteId === message.id}" title="{{pendingDeleteId === message.id ? 'Click again to confirm' : 'Delete message'}}" ng-click="deleteMessage(message, $event)"><svg ng-if="pendingDeleteId !== message.id" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg><span ng-if="pendingDeleteId === message.id" class="msg-delete-confirm-label">Delete?</span></a>
   </div>
 </div>
 

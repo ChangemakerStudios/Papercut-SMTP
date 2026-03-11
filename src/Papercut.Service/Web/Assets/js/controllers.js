@@ -112,14 +112,25 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
      });
   };
 
+  $scope.pendingDeleteId = null;
+  var pendingDeleteTimer = null;
+
   $scope.deleteMessage = function (message, $event) {
       $event.stopPropagation();
-      messageRepository.deleteMessage(message.id).then(function () {
-          delete $scope.cache[message.id];
-          $scope.refresh();
-      }, function () {
-          $scope.refresh();
-      });
+      if ($scope.pendingDeleteId === message.id) {
+          $scope.pendingDeleteId = null;
+          if (pendingDeleteTimer) { $timeout.cancel(pendingDeleteTimer); pendingDeleteTimer = null; }
+          messageRepository.deleteMessage(message.id).then(function () {
+              delete $scope.cache[message.id];
+              $scope.refresh();
+          }, function () {
+              $scope.refresh();
+          });
+      } else {
+          $scope.pendingDeleteId = message.id;
+          if (pendingDeleteTimer) { $timeout.cancel(pendingDeleteTimer); }
+          pendingDeleteTimer = $timeout(function () { $scope.pendingDeleteId = null; }, 2000);
+      }
   };
 
   $scope.selectMessage = function (message) {
@@ -338,7 +349,9 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
             $scope.autoRefreshCountdown--;
             if ($scope.autoRefreshCountdown <= 0) {
                 $scope.autoRefreshCountdown = 10;
+                $scope.refreshFlash = true;
                 $scope.refresh();
+                $timeout(function () { $scope.refreshFlash = false; }, 400);
             }
         }
     }, 1000);

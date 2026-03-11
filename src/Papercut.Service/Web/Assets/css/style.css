@@ -210,6 +210,16 @@ a:focus, a:hover{
   display: block;
 }
 
+.toolbar .btn.refresh-flash {
+  color: #92400e;
+  border-color: #fbbf24;
+  background: #fef3c7;
+}
+
+.toolbar .btn {
+  transition: color 2s cubic-bezier(0.16, 1, 0.3, 1), border-color 2s cubic-bezier(0.16, 1, 0.3, 1), background 2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .toolbar .btn:hover {
   background: #edf0f4;
   border-color: #a0aec0;
@@ -358,6 +368,26 @@ a:focus, a:hover{
 
 .msglist-message .msg-delete:hover {
   color: #e53e3e;
+}
+
+.msglist-message .msg-delete.msg-delete-confirm {
+  visibility: visible;
+  color: #e53e3e;
+  background: #fee2e2;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: normal;
+}
+
+.msglist-message .msg-delete.msg-delete-confirm:hover {
+  background: #fecaca;
+  color: #c53030;
+}
+
+.msg-delete-confirm-label {
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .mail-content {
