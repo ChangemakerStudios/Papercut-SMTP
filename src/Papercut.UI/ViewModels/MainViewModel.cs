@@ -95,6 +95,10 @@ public class MainViewModel : Conductor<object>,
 
     public Deque<string> CurrentLogHistory = new();
 
+    private DateTime? _deleteAllCutoff;
+
+    private int _deleteAllCount;
+
     public MainViewModel(
         IViewModelWindowManager viewModelWindowManager,
         IAppCommandHub appCommandHub,
@@ -221,6 +225,19 @@ public class MainViewModel : Conductor<object>,
             {
                 this._isDeleteAllConfirmOpen = value;
                 this.NotifyOfPropertyChange(() => this.IsDeleteAllConfirmOpen);
+            }
+        }
+    }
+    
+    public int DeleteAllCount
+    {
+        get => this._deleteAllCount;
+        set
+        {
+            if (this._deleteAllCount != value)
+            {
+                this._deleteAllCount = value;
+                this.NotifyOfPropertyChange(() => this.DeleteAllCount);
             }
         }
     }
@@ -571,18 +588,23 @@ public class MainViewModel : Conductor<object>,
 
     public void DeleteAll()
     {
-        this.MessageListViewModel.DeleteAll();
+        if (this._deleteAllCutoff.HasValue)
+            this.MessageListViewModel.DeleteAll(this._deleteAllCutoff.Value);
+        this._deleteAllCutoff = null;
         this.IsDeleteAllConfirmOpen = false;
     }
 
     public void CancelDeleteAll()
     {
+        this._deleteAllCutoff = null;
         this.IsDeleteAllConfirmOpen = false;
     }
 
     public void ShowConfirmDeleteAll()
     {
         this.CloseFlyouts();
+        this._deleteAllCutoff = DateTime.Now;
+        this.DeleteAllCount = this.MessageListViewModel.Messages.Count;
         this.IsDeleteAllConfirmOpen = true;
     }
 
