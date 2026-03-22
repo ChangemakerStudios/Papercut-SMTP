@@ -334,10 +334,10 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
         }
     }
 
-    public void DeleteAll()
+    public void DeleteAll(DateTime cutoff)
     {
         this.ClearSelected();
-        this.DeleteMessages(this.Messages.ToList());
+        this.DeleteMessages(this.Messages.Where(m => m.ModifiedDate < cutoff).ToList());
     }
 
     public void DeleteSelected()
