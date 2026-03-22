@@ -16,8 +16,6 @@
 // limitations under the License.
 
 
-using NuGet.Versioning;
-
 using Papercut.Core.Infrastructure.Container;
 
 using Velopack;
