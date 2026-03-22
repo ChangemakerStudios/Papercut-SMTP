@@ -85,6 +85,32 @@ public class MessageWatcher : IDisposable
         }
     }
 
+    void OnWatcherError(object sender, ErrorEventArgs e)
+    {
+        var ex = e.GetException();
+        this._logger.Warning(ex, "FileSystemWatcher error, recreating watcher");
+
+        if (sender is FileSystemWatcher faulted)
+        {
+            var path = faulted.Path;
+
+            DisposeWatch(faulted);
+            this._watchers.Remove(faulted);
+
+            try
+            {
+                this.AddWatcher(path);
+            }
+            catch (Exception addEx)
+            {
+                this._logger.Error(addEx, "Failed to recreate FileSystemWatcher for {Path}", path);
+            }
+
+            // trigger a full refresh to pick up anything missed during the buffer overflow
+            this.OnRefreshNeeded();
+        }
+    }
+
     static void DisposeWatch(FileSystemWatcher watch)
     {
         try
@@ -115,14 +141,15 @@ public class MessageWatcher : IDisposable
 
         var watcher = new FileSystemWatcher(path, IMessageRepository.MessageFileSearchPattern)
         {
-            NotifyFilter =
-                NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName
+            NotifyFilter = NotifyFilters.FileName,
+            InternalBufferSize = 65536
         };
 
         // Add event handlers.
         watcher.Created += this.OnChanged;
         watcher.Deleted += this.OnDeleted;
         watcher.Renamed += this.OnRenamed;
+        watcher.Error += this.OnWatcherError;
 
         // Begin watching.
         watcher.EnableRaisingEvents = true;
@@ -142,31 +169,37 @@ public class MessageWatcher : IDisposable
 
     void OnChanged(object sender, FileSystemEventArgs e)
     {
-        Task.Factory.StartNew(
-            async () =>
+        _ = this.WaitForFileAndNotifyAsync(e.FullPath);
+    }
+
+    async Task WaitForFileAndNotifyAsync(string fullPath)
+    {
+        try
+        {
+            var info = new FileInfo(fullPath);
+            var retryCount = 0;
+
+            do
             {
-                var info = new FileInfo(e.FullPath);
-                var retryCount = 0;
-
-                do
+                var timeout = 500 + retryCount * 100;
+                await Task.Delay(timeout);
+                if (++retryCount > 30)
                 {
-                    var timeout = 500 + retryCount * 100;
-                    await Task.Delay(timeout);
-                    if (++retryCount > 30)
-                    {
-                        this._logger.Error(
-                            "Failed after {RetryCount} retries to Open File {FileInfo}",
-                            retryCount,
-                            info);
-                        break;
-                    }
+                    this._logger.Error(
+                        "Failed after {RetryCount} retries to Open File {FileInfo}",
+                        retryCount,
+                        info);
+                    return;
                 }
-                while (!await info.CanReadFile());
+            }
+            while (!await info.CanReadFile());
 
-                this.OnNewMessage(new NewMessageEventArgs(new MessageEntry(info)));
-
-                return info;
-            });
+            this.OnNewMessage(new NewMessageEventArgs(new MessageEntry(info)));
+        }
+        catch (Exception ex)
+        {
+            this._logger.Error(ex, "Error processing new message file {FullPath}", fullPath);
+        }
     }
 
     public event EventHandler<NewMessageEventArgs>? NewMessage;
