@@ -14,8 +14,6 @@
 		<PackageReference Include="NUnit" Version="4.4.0" />
 		<PackageReference Include="NUnit3TestAdapter" Version="5.2.0" />
 		<ProjectReference Include="..\..\src\Papercut.Rules\Papercut.Rules.csproj" />
-		<PackageReference Update="JetBrains.Annotations" Version="2025.2.2" />
-		<PackageReference Update="Serilog" Version="4.3.0" />
 	</ItemGroup>
 
 </Project>

@@ -30,11 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="JetBrains.Annotations" Version="2024.3.0" />
-    <PackageReference Update="Serilog" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Infrastructure\Consoles\" />
   </ItemGroup>
 
