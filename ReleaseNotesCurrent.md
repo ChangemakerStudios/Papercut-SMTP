@@ -1,44 +1,36 @@
 # Release Notes
 
-## Papercut SMTP v7.6.2 [2025-11-11]
-
-*Release replaces 7.6.1 which had a major issue with email receiving in the UI.*
+## Papercut SMTP v7.7.0 [2026-03-22]
 
 ### New Features
 
-- **Dark Theme Support** - Added full dark theme support with automatic Windows dark mode detection and synchronization. Fixes [#228](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/228) (Thanks, [wonea](https://github.com/wonea)!)
-  - System/Light/Dark base theme selection with accent color customization
-  - Automatic system dark mode detection with live theme updates
-  - AvalonEdit syntax highlighting supports both light and dark modes
-  - Theme-aware attachment icons and UI controls throughout the application
-- **IP Allowlist Support** - Added IP allowlist filtering for SMTP and HTTP connections with CIDR notation support. Fixes [#333](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/333) (Thanks, [mhkarimi1383](https://github.com/mhkarimi1383)!)
-  - Configurable via `SmtpServer:AllowedIps` setting
-  - Support for individual IPs (e.g., `192.168.1.100`) and CIDR ranges (e.g., `192.168.1.0/24`)
-  - Comprehensive unit tests for IP validation and range matching
-  - Fail-closed security - blocks all connections if validation fails
-- **Dynamic Property Editor for Rules** - Replaced legacy PropertyGrid with custom MahApps.Metro-compatible dynamic property editor
-  - Reflection-based property discovery using System.ComponentModel attributes
-  - Intelligent control selection (TextBox, NumericUpDown, ToggleSwitch, PasswordBox)
-  - Category-based property organization with smart ordering
-  - Resizable GridSplitter between rules list and property editor
-  - Full dark theme support in Rules Configuration dialog
+- **Service Tray Manager** - New Windows tray notification application for managing the Papercut SMTP Windows Service. Provides system tray icon with service status, start/stop/restart controls, quick access to the web UI, balloon notifications for new emails, and run-at-startup support. Fixes [#249](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/249)
+- **Upgrade Dialog with Release Notes** - When an update is available, a new dialog shows current vs. new version with rendered release notes so you can review changes before upgrading. Fixes [#344](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/344)
+- **System Accent Color** - Added a "System" option to the theme accent dropdown that reads and syncs with the Windows accent color in real-time. Now the default for new installs. Fixes [#343](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/343)
+- **Web UI Overhaul** - Completely refreshed the Papercut Service web interface:
+  - Replaced Glyphicons with inline SVGs for a cleaner, dependency-free icon set
+  - Per-message delete with confirmation via new `DELETE /api/messages/{id}` endpoint
+  - Auto-refresh toggle button and browser back-button navigation
+  - Modern visual design with Plus Jakarta Sans font, refined colors, and improved layout
+- **Delete All Confirmation** - "Delete All" now shows the message count and only deletes messages older than the confirmation timestamp, preventing accidental deletion of emails arriving during the confirmation dialog. Fixes [#349](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/349) (Thanks, [AntekOlszewski](https://github.com/AntekOlszewski)!)
+
+### Bug Fixes
+
+- **FileSystemWatcher Reliability** - Fixed emails silently stopping to appear in the UI. Root cause was FileSystemWatcher buffer overflows from excessive NotifyFilter events. Now uses FileName-only filter, 64KB buffer, auto-recreation on faults, and a 30-second periodic fallback refresh. Fixes [#352](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/352)
+- **Notification Title** - Fixed Windows toast notifications showing "velopack.PapercutSMTP" instead of "Papercut SMTP" by using Velopack's native `--aumid` flag at install time. Fixes [#350](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/350)
+- **CID Embedded Images** - Fixed intermittent failure to load Content-ID embedded images in the HTML viewer due to incorrect `file://` URL format and MimeMessage cache state issues
+- **HTML Email Preview (Web UI)** - Fixed iframe collapsing to ~8px and load event race conditions by switching to `$watch`-based rendering with direct document writing, ResizeObserver support, and retry-based height measurement
+- **Cross-Thread Theme Exception** - Fixed crash when Windows system theme changes while the app is running
 
 ### Improvements
 
-- **.NET 9.0 Upgrade** - Upgraded entire solution to .NET 9.0 for improved performance and latest framework features
-- **Theme Consistency** - Modernized UI to use dynamic theming with refreshed Options dialog and message list visuals
-- **Tab Preservation** - Selected message detail tab (Message/Body/Headers/Raw) now preserved when switching between messages
-- **Code Quality** - Fixed numerous compiler warnings and null-safety issues throughout the codebase
-- **Resource Management** - Fixed X509Certificate2Collection resource leak
-- **Docker Improvements** - Updated container and runtime images for .NET 9.0
-
-### Code Quality
-
-- Comprehensive unit tests for IP allowlist validation
-- More flexible SMTP/server startup wiring and options
-- Internal robustness improvements with clearer initialization and lifecycle handling
-- Better error handling across core components
+- **Security: jQuery & Frontend Library Upgrades** - Upgraded jQuery 1.11.0 to 3.7.1 and jQuery UI 1.10.4 to 1.14.1, mitigating CVE-2020-11022 and CVE-2020-11023 (XSS vulnerabilities). Also upgraded AngularJS 1.3.8 to 1.8.3 and Bootstrap 3.3.2 to 3.4.1. Fixes [#353](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/353)
+- **Aspire Integration Documentation** - Added documentation for using Papercut SMTP with .NET Aspire projects, including connection string format and setup examples. (Thanks, [mguinness](https://github.com/mguinness)!)
+- **Docker Documentation** - Added troubleshooting guide for volume permission errors when running with mounted volumes
+- **Dependencies** - Updated NuGet packages and Velopack to v0.0.1521
 
 ### Contributors
 
-Special thanks to [wonea](https://github.com/wonea) for requesting dark theme support and [mhkarimi1383](https://github.com/mhkarimi1383) for requesting IP allowlist functionality!
+Special thanks to [AntekOlszewski](https://github.com/AntekOlszewski) for fixing the Delete All race condition and [mguinness](https://github.com/mguinness) for documenting Aspire integration!
+
+Several features and fixes in this release were developed with the assistance of [Claude Code](https://claude.ai/claude-code).
