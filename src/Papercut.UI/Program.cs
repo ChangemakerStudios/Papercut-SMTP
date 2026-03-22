@@ -30,7 +30,7 @@ namespace Papercut;
 
 public class Program
 {
-    [DllImport("shell32.dll")]
+    [DllImport("shell32.dll", ExactSpelling = true)]
     private static extern int SetCurrentProcessExplicitAppUserModelId(
         [MarshalAs(UnmanagedType.LPWStr)] string appId);
 
@@ -56,10 +56,17 @@ public class Program
             // as the notification source name on Windows 10+. Override it so notifications
             // display "Papercut SMTP" instead. Can be replaced with VelopackApp.SetAppUserModelId()
             // once a Velopack NuGet release includes PR #777.
-            const string appUserModelId = "ChangemakerStudios.PapercutSMTP";
-            int hr = SetCurrentProcessExplicitAppUserModelId(appUserModelId);
-            if (hr != 0)
-                Log.Warning("Failed to set AppUserModelId, HRESULT: 0x{HResult:X8}", hr);
+            try
+            {
+                const string appUserModelId = "ChangemakerStudios.PapercutSMTP";
+                int hr = SetCurrentProcessExplicitAppUserModelId(appUserModelId);
+                if (hr != 0)
+                    Log.Warning("Failed to set AppUserModelId, HRESULT: 0x{HResult:X8}", hr);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Unable to set AppUserModelId");
+            }
 
             Log.Information("Launching Papercut SMTP App...");
 
