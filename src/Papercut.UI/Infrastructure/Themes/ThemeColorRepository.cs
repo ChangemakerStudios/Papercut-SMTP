@@ -1,7 +1,7 @@
 // Papercut
 // 
-// Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright ï¿½ 2008 - 2012 Ken Robertson
+// Copyright ï¿½ 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,21 +18,41 @@
 
 using System.Windows.Media;
 
+using Papercut.AppLayer.Themes;
 using Papercut.Domain.Themes;
 
 namespace Papercut.Infrastructure.Themes;
 
 public class ThemeColorRepository
 {
-    private static List<ThemeColor> ThemeColors { get; } = typeof(Colors)
-        .GetProperties()
-        .Where(s => !s.Name.Equals("Transparent"))
-        .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)!))
-        .ToList();
+    public const string SystemThemeName = "System";
+
+    private static List<ThemeColor> ThemeColors { get; } = BuildThemeColors();
+
+    private static List<ThemeColor> BuildThemeColors()
+    {
+        var colors = new List<ThemeColor>
+        {
+            new(SystemThemeName, GetSystemAccentColorOrDefault())
+        };
+
+        colors.AddRange(
+            typeof(Colors)
+                .GetProperties()
+                .Where(s => !s.Name.Equals("Transparent"))
+                .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)!)));
+
+        return colors;
+    }
+
+    private static Color GetSystemAccentColorOrDefault()
+    {
+        return SystemThemeRegistryHelper.GetSystemAccentColor() ?? Colors.SteelBlue;
+    }
 
     public IReadOnlyCollection<ThemeColor> GetAll() => ThemeColors;
 
-    public static readonly ThemeColor Default = new ThemeColor(nameof(Colors.LightBlue), Colors.LightBlue);
+    public static readonly ThemeColor Default = new(SystemThemeName, GetSystemAccentColorOrDefault());
 
     public ThemeColor? FirstOrDefaultByName(string nameOrDescription)
     {
@@ -41,6 +61,16 @@ public class ThemeColorRepository
         return GetAll().FirstOrDefault(
             s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
                  || s.Description.Equals(nameOrDescription, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public Color ResolveAccentColor(string themeName)
+    {
+        if (themeName.Equals(SystemThemeName, StringComparison.OrdinalIgnoreCase))
+        {
+            return GetSystemAccentColorOrDefault();
+        }
+
+        return FirstOrDefaultByName(themeName)?.Color ?? Default.Color;
     }
 
     #region Begin Static Container Registrations

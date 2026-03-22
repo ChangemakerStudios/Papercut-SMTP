@@ -68,22 +68,16 @@ public class ThemeManagerService(
             && baseTheme == BaseTheme.System;
     }
 
+    private bool IsSystemAccentMode()
+    {
+        return Properties.Settings.Default.Theme.Equals(
+            ThemeColorRepository.SystemThemeName, StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task SetTheme(bool sendThemeChangedEvent = true)
     {
-        var colorTheme = themeColorRepository.FirstOrDefaultByName(Properties.Settings.Default.Theme);
-
-        if (colorTheme == null)
-        {
-            logger.Warning(
-                "Unable to find theme accent color {ThemeColor}. Setting to default: {DefaultTheme}.",
-                Properties.Settings.Default.Theme, ThemeColorRepository.Default.Name);
-
-            Properties.Settings.Default.Theme = ThemeColorRepository.Default.Name;
-            Properties.Settings.Default.Save();
-            colorTheme = ThemeColorRepository.Default;
-        }
-
-        var themeColor = colorTheme.Color;
+        var themeName = Properties.Settings.Default.Theme;
+        var themeColor = themeColorRepository.ResolveAccentColor(themeName);
 
         // Determine if we should use dark mode
         var isDarkMode = GetCurrentIsDarkMode();
@@ -136,23 +130,33 @@ public class ThemeManagerService(
     {
         logger.Information("Current system theme at startup: {Theme}", SystemThemeRegistryHelper.IsSystemDarkMode() ? "Dark" : "Light");
 
-        _monitoringSubscription = Observable
+        var systemChanges = Observable
             .FromEventPattern<UserPreferenceChangedEventHandler, UserPreferenceChangedEventArgs>(
                 h => SystemEvents.UserPreferenceChanged += h,
                 h => SystemEvents.UserPreferenceChanged -= h)
-            .Where(e => e.EventArgs.Category == UserPreferenceCategory.General)
+            .Where(e => e.EventArgs.Category == UserPreferenceCategory.General);
+
+        // Monitor dark mode changes
+        var darkModeChanges = systemChanges
             .Select(_ => SystemThemeRegistryHelper.IsSystemDarkMode())
             .DistinctUntilChanged()
+            .Where(_ => IsSystemThemeMode())
+            .Select(_ => "dark mode");
+
+        // Monitor accent color changes
+        var accentColorChanges = systemChanges
+            .Select(_ => SystemThemeRegistryHelper.GetSystemAccentColor())
+            .DistinctUntilChanged()
+            .Where(_ => IsSystemAccentMode())
+            .Select(_ => "accent color");
+
+        _monitoringSubscription = darkModeChanges.Merge(accentColorChanges)
             .ObserveOn(RxApp.MainThreadScheduler)
             .SubscribeAsync(
-                async isDarkMode =>
+                async changeType =>
                 {
-                    logger.Information("System theme changed, updating application theme to: {Theme}", isDarkMode ? "Dark" : "Light");
-
-                    if (IsSystemThemeMode())
-                    {
-                        await SetTheme(true);
-                    }
+                    logger.Information("System {ChangeType} changed, updating application theme", changeType);
+                    await SetTheme(true);
                 },
                 ex => logger.Warning(ex, "Error checking system theme change"));
     }

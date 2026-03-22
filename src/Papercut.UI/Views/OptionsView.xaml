@@ -71,7 +71,11 @@
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0 2 5 2" />
+                            <Rectangle Width="16" Height="16" Margin="0 2 5 2">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{Binding Color}" />
+                                </Rectangle.Fill>
+                            </Rectangle>
                             <TextBlock Text="{Binding Description}" />
                         </StackPanel>
                     </DataTemplate>
