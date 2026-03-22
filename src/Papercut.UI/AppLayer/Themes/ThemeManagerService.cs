@@ -152,11 +152,11 @@ public class ThemeManagerService(
 
         _monitoringSubscription = darkModeChanges.Merge(accentColorChanges)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .SubscribeAsync(
-                async changeType =>
+            .Subscribe(
+                changeType =>
                 {
                     logger.Information("System {ChangeType} changed, updating application theme", changeType);
-                    await SetTheme(true);
+                    Execute.OnUIThreadAsync(async () => await SetTheme(true));
                 },
                 ex => logger.Warning(ex, "Error checking system theme change"));
     }
