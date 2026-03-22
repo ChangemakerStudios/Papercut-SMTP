@@ -27,30 +27,26 @@ public class ThemeColorRepository
 {
     public const string SystemThemeName = "System";
 
-    private static List<ThemeColor> ThemeColors { get; } = BuildThemeColors();
-
-    private static List<ThemeColor> BuildThemeColors()
-    {
-        var colors = new List<ThemeColor>
-        {
-            new(SystemThemeName, GetSystemAccentColorOrDefault())
-        };
-
-        colors.AddRange(
-            typeof(Colors)
-                .GetProperties()
-                .Where(s => !s.Name.Equals("Transparent"))
-                .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)!)));
-
-        return colors;
-    }
+    private static readonly List<ThemeColor> NamedColors = typeof(Colors)
+        .GetProperties()
+        .Where(s => !s.Name.Equals("Transparent"))
+        .Select(p => new ThemeColor(p.Name, (Color)p.GetValue(null)!))
+        .ToList();
 
     private static Color GetSystemAccentColorOrDefault()
     {
         return SystemThemeRegistryHelper.GetSystemAccentColor() ?? Colors.SteelBlue;
     }
 
-    public IReadOnlyCollection<ThemeColor> GetAll() => ThemeColors;
+    public IReadOnlyCollection<ThemeColor> GetAll()
+    {
+        var colors = new List<ThemeColor>(NamedColors.Count + 1)
+        {
+            new(SystemThemeName, GetSystemAccentColorOrDefault())
+        };
+        colors.AddRange(NamedColors);
+        return colors;
+    }
 
     public static readonly ThemeColor Default = new(SystemThemeName, GetSystemAccentColorOrDefault());
 
