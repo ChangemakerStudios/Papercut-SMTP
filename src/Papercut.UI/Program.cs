@@ -30,7 +30,7 @@ namespace Papercut;
 
 public class Program
 {
-    [DllImport("shell32.dll", SetLastError = true)]
+    [DllImport("shell32.dll")]
     private static extern int SetCurrentProcessExplicitAppUserModelId(
         [MarshalAs(UnmanagedType.LPWStr)] string appId);
 
