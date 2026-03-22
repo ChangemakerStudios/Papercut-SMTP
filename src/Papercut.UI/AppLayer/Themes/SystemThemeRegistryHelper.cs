@@ -16,22 +16,28 @@
 // limitations under the License.
 
 
+using System.Windows.Media;
+
 using Microsoft.Win32;
 
 namespace Papercut.AppLayer.Themes;
 
 public static class SystemThemeRegistryHelper
 {
-    private const string RegistryKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+    private const string PersonalizeKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
 
-    private const string RegistryValueName = "AppsUseLightTheme";
+    private const string AppsUseLightThemeValue = "AppsUseLightTheme";
+
+    private const string DwmKeyPath = @"Software\Microsoft\Windows\DWM";
+
+    private const string ColorizationColorValue = "ColorizationColor";
 
     internal static bool IsSystemDarkMode()
     {
         try
         {
-            using var key = Registry.CurrentUser.OpenSubKey(RegistryKeyPath);
-            var value = key?.GetValue(RegistryValueName);
+            using var key = Registry.CurrentUser.OpenSubKey(PersonalizeKeyPath);
+            var value = key?.GetValue(AppsUseLightThemeValue);
 
             if (value is int intValue)
             {
@@ -45,5 +51,30 @@ public static class SystemThemeRegistryHelper
 
         // Default to light theme on error
         return false;
+    }
+
+    internal static Color? GetSystemAccentColor()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(DwmKeyPath);
+            var value = key?.GetValue(ColorizationColorValue);
+
+            if (value is int intValue)
+            {
+                var argb = unchecked((uint)intValue);
+                return Color.FromArgb(
+                    byte.MaxValue, // Force full opacity
+                    (byte)((argb >> 16) & 0xFF),
+                    (byte)((argb >> 8) & 0xFF),
+                    (byte)(argb & 0xFF));
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to read system accent color from registry");
+        }
+
+        return null;
     }
 }
