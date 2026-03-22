@@ -20,9 +20,4 @@
     </PackageReference>
     <PackageReference Include="System.Reactive" Version="6.0.1" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="JetBrains.Annotations" Version="2024.3.0" />
-    <PackageReference Update="Serilog" Version="4.3.0" />
-  </ItemGroup>
 </Project>

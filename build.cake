@@ -8,7 +8,7 @@
 #tool "nuget:?package=OpenCover&version=4.7.1221"
 
 #tool "dotnet:?package=GitVersion.Tool&version=6.4.0"
-#tool "dotnet:?package=vpk&version=0.0.1298"
+#tool "dotnet:?package=vpk&version=0.0.1521-gf115f70&prerelease"
 
 #addin "nuget:?package=Cake.FileHelpers&version=7.0.0"
 #addin "nuget:?package=Cake.Incubator&version=8.0.0"
@@ -161,7 +161,8 @@ Task("PackageUI64")
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
         Framework = "net8.0-x64-desktop,webview2",
-        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png"),
+        Aumid = "ChangemakerStudios.PapercutSMTP"
     };
 
     Velopack.Pack(Context, packParams);
@@ -208,7 +209,8 @@ Task("PackageUI32")
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
         Framework = "net8.0-x86-desktop,webview2",
-        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png"),
+        Aumid = "ChangemakerStudios.PapercutSMTP"
     };
 
     Velopack.Pack(Context, packParams);
@@ -254,7 +256,8 @@ Task("PackageUIArm64")
         ReleaseDirectory = releasesDirectory,
         ExeName = "Papercut.exe",
         Framework = "net8.0-arm64-desktop,webview2",
-        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png")
+        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png"),
+        Aumid = "ChangemakerStudios.PapercutSMTP"
     };
 
     Velopack.Pack(Context, packParams);

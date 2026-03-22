@@ -572,6 +572,59 @@ docker run -d -p 25:2525 -p 80:8080 changemakerstudiosus/papercut-smtp:latest
 docker run -d --sysctl net.ipv4.ip_unprivileged_port_start=0 changemakerstudiosus/papercut-smtp:latest
 ```
 
+### Volume Permission Errors (Permission Denied)
+
+**Error:**
+```
+System.UnauthorizedAccessException: Access to the path '/app/Incoming/...' is denied.
+---> System.IO.IOException: Permission denied
+```
+
+**Cause:** Papercut runs as a non-root user inside the container (UID 1654). When you mount a host directory with `-v /path/on/host:/app/Incoming`, the host directory may be owned by root or your host user, which the container process cannot write to.
+
+**Solutions:**
+
+**Option 1 — Use a Docker named volume (simplest):**
+
+Named volumes are managed by Docker and permissions are handled automatically:
+```bash
+docker run -d \
+  --name papercut \
+  -p 37408:8080 \
+  -p 2525:2525 \
+  -v papercut-messages:/app/Incoming \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Option 2 — Fix host directory ownership:**
+
+Set the host directory owner to UID 1654 (the `app` user inside the container):
+```bash
+# Create the directory and set ownership
+mkdir -p /path/on/host/messages
+chown -R 1654:1654 /path/on/host/messages
+
+docker run -d \
+  --name papercut \
+  -p 37408:8080 \
+  -p 2525:2525 \
+  -v /path/on/host/messages:/app/Incoming \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Option 3 — Run the container with a matching user:**
+
+Use `--user` to run the container as your host user so it can write to your directories:
+```bash
+docker run -d \
+  --name papercut \
+  --user "$(id -u):$(id -g)" \
+  -p 37408:8080 \
+  -p 2525:2525 \
+  -v /path/on/host/messages:/app/Incoming \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
 ### Cannot Access Web UI
 
 **Symptoms:** Cannot connect to http://localhost:37408

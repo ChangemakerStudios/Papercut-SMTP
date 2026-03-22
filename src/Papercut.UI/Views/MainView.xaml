@@ -88,7 +88,7 @@
             <controls:Flyout Header="Delete All" IsOpen="{Binding IsDeleteAllConfirmOpen}" Width="225" Name="DeleteAllFlyout" Position="Left">
                 <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Margin="4 4 4 4">
                     <TextBlock FontSize="16" TextAlignment="Center" Margin="0 8 0 0">
-                        Delete all <TextBlock FontWeight="Bold" Text="{Binding Path=MessageListViewModel.Messages.Count}" /> Message(s)?
+                        Delete all <TextBlock FontWeight="Bold" Text="{Binding DeleteAllCount}" /> Message(s)?
                     </TextBlock>
                     <Button Margin="4 32 4 0" Style="{StaticResource  MahApps.Styles.Button.Square.Accent}"
                             controls:ControlsHelper.ContentCharacterCasing="Normal" 

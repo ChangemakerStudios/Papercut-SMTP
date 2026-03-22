@@ -20,6 +20,10 @@ papercutApp.factory('messageRepository', function($http, $q){
           });
     }
 
+    function deleteMessage(id){
+        return $http.delete('/api/messages/' + encodeURIComponent(id));
+    }
+
     function onNewMessage(){
         // not implemented yet...
     }
@@ -28,6 +32,7 @@ papercutApp.factory('messageRepository', function($http, $q){
         list: listMessages,
         get: getMessage,
         deleteAll: deleteAllMessages,
+        deleteMessage: deleteMessage,
         onNewMessage: onNewMessage
     };
 });

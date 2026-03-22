@@ -241,7 +241,7 @@ public class RulesRunnerTests
         var rule = new TestRule { IsEnabled = true };
         var rules = new INewMessageRule[] { rule };
         var cts = new CancellationTokenSource();
-        cts.Cancel();
+        await cts.CancelAsync();
 
         var action = async () => await _runner.RunNewMessageRules(rules, _testMessageEntry, cts.Token);
         await action.Should().ThrowAsync<OperationCanceledException>();
@@ -258,7 +258,7 @@ public class RulesRunnerTests
         _testDispatcher.DispatchAction = async (r, m, t) =>
         {
             await Task.Delay(50, t);
-            cts.Cancel();
+            await cts.CancelAsync();
         };
 
         var action = async () => await _runner.RunNewMessageRules(rules, _testMessageEntry, cts.Token);

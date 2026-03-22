@@ -72,7 +72,7 @@ public class PapercutIPCommServer : Disposable, IServer
 
     public int ListenPort => this._currentEndpoint?.Port ?? 0;
 
-    public async Task StopAsync()
+    public async Task StopAsync(CancellationToken token = default)
     {
         await Task.CompletedTask;
 
@@ -97,7 +97,7 @@ public class PapercutIPCommServer : Disposable, IServer
         }
     }
 
-    public async Task StartAsync(EndpointDefinition endpoint)
+    public async Task StartAsync(EndpointDefinition endpoint, CancellationToken token = default)
     {
         await Task.CompletedTask;
 
@@ -114,7 +114,7 @@ public class PapercutIPCommServer : Disposable, IServer
             this.IsActive = true;
 
             // Create and start new listener socket
-            this.CreateListener();
+            this.CreateListener(token);
         }
         catch
         {
@@ -157,7 +157,7 @@ public class PapercutIPCommServer : Disposable, IServer
         this._listener = null;
     }
 
-    protected void CreateListener()
+    protected void CreateListener(CancellationToken token = default)
     {
         // If the listener isn't null, close before rebinding
         this.CleanupListener();

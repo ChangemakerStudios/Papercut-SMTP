@@ -58,6 +58,28 @@ public class MessagesController(IMessageRepository messageRepository, IMimeMessa
         }
     }
 
+    [HttpDelete("{id}")]
+    public ActionResult Delete(string id)
+    {
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
+        if (messageEntry == null)
+        {
+            return this.NotFound();
+        }
+
+        try
+        {
+            messageRepository.DeleteMessage(messageEntry);
+        }
+        catch (Exception ex)
+        {
+            logger.Warning(ex, "Failure Deleting Message File {MessageFile}", messageEntry.File);
+            return this.StatusCode(500);
+        }
+
+        return this.NoContent();
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<MimeMessageEntry.DetailDto>> Get(string id)
     {

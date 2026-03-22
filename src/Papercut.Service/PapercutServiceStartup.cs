@@ -21,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 using Papercut.Rules;
+using Papercut.Service.Domain;
 using Papercut.Service.Infrastructure.Configuration;
 using Papercut.Service.Infrastructure.Servers;
 
@@ -49,10 +50,8 @@ internal class PapercutServiceStartup
             });
 
         services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
-        services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
 
         // hosted services
-        services.AddHostedService<SmtpServerOptionsInitializer>();
         services.AddHostedService<PapercutServerHostedService>();
     }
 

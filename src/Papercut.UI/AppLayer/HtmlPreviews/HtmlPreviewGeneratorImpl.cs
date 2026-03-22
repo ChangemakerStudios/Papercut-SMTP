@@ -44,7 +44,15 @@ public class HtmlPreviewGeneratorImpl(ILogger logger, IAppMeta appMeta) : IHtmlP
 
         logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
 
-        File.WriteAllText(htmlFile, htmlPreview, Encoding.Unicode);
+        // Use explicit FileStream with flush to ensure file is fully written to disk
+        // before WebView2 navigates to it (prevents timing issues with CID images)
+        using (var fs = new FileStream(htmlFile, FileMode.Create, FileAccess.Write, FileShare.None))
+        using (var writer = new StreamWriter(fs, Encoding.Unicode))
+        {
+            writer.Write(htmlPreview);
+            writer.Flush();
+            fs.Flush(flushToDisk: true);
+        }
 
         return htmlFile;
     }

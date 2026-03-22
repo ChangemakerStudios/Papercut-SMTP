@@ -1,26 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Papercut.Infrastructure.Smtp.Tests" />
-  </ItemGroup>
+	<ItemGroup>
+		<InternalsVisibleTo Include="Papercut.Infrastructure.Smtp.Tests" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SmtpServer" Version="11.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="SmtpServer" Version="11.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
-    <ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
-    <ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="JetBrains.Annotations" Version="2024.3.0" />
-    <PackageReference Update="Serilog" Version="4.3.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
+		<ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
+		<ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
+	</ItemGroup>
 
 </Project>
