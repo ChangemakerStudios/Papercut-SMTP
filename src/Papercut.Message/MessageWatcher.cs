@@ -32,6 +32,8 @@ public class MessageWatcher : IDisposable
 
     readonly MessagePathConfigurator _messagePathConfigurator;
 
+    readonly object _watchersLock = new();
+
     List<FileSystemWatcher> _watchers = [];
 
     public MessageWatcher(ILogger logger, MessagePathConfigurator messagePathConfigurator)
@@ -60,28 +62,36 @@ public class MessageWatcher : IDisposable
     {
         if (!disposing) return;
 
-        foreach (var watch in this._watchers)
+        lock (this._watchersLock)
         {
-            DisposeWatch(watch);
+            foreach (var watch in this._watchers)
+            {
+                DisposeWatch(watch);
+            }
+
+            this._watchers.Clear();
         }
     }
 
     void OnRefreshLoadPaths(object? sender, EventArgs eventArgs)
     {
-        List<string> existingPaths = this._watchers.Select(s => s.Path).ToList();
-        List<string> removePaths = existingPaths.Except(this._messagePathConfigurator.LoadPaths).ToList();
-        List<string> addPaths = this._messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
-
-        foreach (var watch in this._watchers.Where(s => removePaths.Contains(s.Path)).ToList())
+        lock (this._watchersLock)
         {
-            DisposeWatch(watch);
-            this._watchers.Remove(watch);
-        }
+            List<string> existingPaths = this._watchers.Select(s => s.Path).ToList();
+            List<string> removePaths = existingPaths.Except(this._messagePathConfigurator.LoadPaths).ToList();
+            List<string> addPaths = this._messagePathConfigurator.LoadPaths.Except(existingPaths).ToList();
 
-        // setup new ones...
-        foreach (string newPath in addPaths)
-        {
-            this.AddWatcher(newPath);
+            foreach (var watch in this._watchers.Where(s => removePaths.Contains(s.Path)).ToList())
+            {
+                DisposeWatch(watch);
+                this._watchers.Remove(watch);
+            }
+
+            // setup new ones...
+            foreach (string newPath in addPaths)
+            {
+                this.AddWatcher(newPath);
+            }
         }
     }
 
@@ -94,16 +104,19 @@ public class MessageWatcher : IDisposable
         {
             var path = faulted.Path;
 
-            DisposeWatch(faulted);
-            this._watchers.Remove(faulted);
+            lock (this._watchersLock)
+            {
+                DisposeWatch(faulted);
+                this._watchers.Remove(faulted);
 
-            try
-            {
-                this.AddWatcher(path);
-            }
-            catch (Exception addEx)
-            {
-                this._logger.Error(addEx, "Failed to recreate FileSystemWatcher for {Path}", path);
+                try
+                {
+                    this.AddWatcher(path);
+                }
+                catch (Exception addEx)
+                {
+                    this._logger.Error(addEx, "Failed to recreate FileSystemWatcher for {Path}", path);
+                }
             }
 
             // trigger a full refresh to pick up anything missed during the buffer overflow
@@ -126,12 +139,15 @@ public class MessageWatcher : IDisposable
 
     void SetupMessageWatchers()
     {
-        this._watchers = new List<FileSystemWatcher>();
-
-        // setup watcher for each path...
-        foreach (string path in this._messagePathConfigurator.LoadPaths)
+        lock (this._watchersLock)
         {
-            this.AddWatcher(path);
+            this._watchers = new List<FileSystemWatcher>();
+
+            // setup watcher for each path...
+            foreach (string path in this._messagePathConfigurator.LoadPaths)
+            {
+                this.AddWatcher(path);
+            }
         }
     }
 
