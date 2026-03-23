@@ -1,6 +1,6 @@
 # Release Notes
 
-## Papercut SMTP v7.7.1 [2026-03-22]
+## Papercut SMTP v7.7.2 [2026-03-22]
 
 ### New Features
 
