@@ -36,7 +36,6 @@ using Papercut.Domain.UiCommands.Commands;
 using Papercut.Infrastructure.Resources;
 using Papercut.Infrastructure.WebView;
 using Papercut.Rules.App.Forwarding;
-using Papercut.Rules.App.Relaying;
 using Papercut.Rules.Domain.Forwarding;
 using Papercut.Views;
 
@@ -697,10 +696,13 @@ public class MainViewModel : Conductor<object>,
             var forwardRule = new ForwardRule
             {
                 FromEmail = forwardViewModel.From,
-                ToEmail = forwardViewModel.To
+                ToEmail = forwardViewModel.To,
+                SmtpServer = forwardViewModel.Server.Trim(),
+                SmtpPort = forwardViewModel.Port,
+                SmtpUseSSL = forwardViewModel.UseSsl,
+                SmtpUsername = forwardViewModel.Username,
+                SmtpPassword = forwardViewModel.Password
             };
-
-            forwardRule.PopulateServerFromUri(forwardViewModel.Server);
 
             // send message using relay dispatcher...
             await this._forwardRuleDispatch.DispatchAsync(

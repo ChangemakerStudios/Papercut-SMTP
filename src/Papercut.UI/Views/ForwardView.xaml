@@ -1,4 +1,4 @@
-﻿<controls:MetroWindow x:Class="Papercut.Views.ForwardView"
+<controls:MetroWindow x:Class="Papercut.Views.ForwardView"
                       xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,19 +9,20 @@
                       xmlns:Helpers="clr-namespace:Papercut.Helpers"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
+                      xmlns:behaviors="clr-namespace:MahApps.Metro.Behaviors;assembly=MahApps.Metro"
                       mc:Ignorable="d"
                       d:DataContext="{x:Type ViewModels:ForwardViewModel}"
                       Title="{Binding WindowTitle}"
-                      ResizeMode="NoResize" Width="243" Height="162.333"
+                      ResizeMode="NoResize" Width="340" Height="360"
                       WindowStyle="ToolWindow"
                       ShowIconOnTitleBar="false"
-                      WindowStartupLocation="CenterOwner" 
-                      BorderThickness="{DynamicResource AccentBorderThickness}" 
+                      WindowStartupLocation="CenterOwner"
+                      BorderThickness="{DynamicResource AccentBorderThickness}"
                       GlowBrush="{DynamicResource AccentGlowBrush}"
                       BorderBrush="{DynamicResource AccentBorderBrush}">
-    <Grid>
+    <Grid Margin="8">
         <DockPanel>
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="2"
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0"
                         FrameworkElement.FlowDirection="RightToLeft" Height="30">
                 <Button Width="75" Margin="2" Name="Cancel">Cancel</Button>
                 <Button Width="75" Margin="2" Name="Send" IsDefault="True">
@@ -37,15 +38,57 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0" Content="SMTP Server:" Height="24"/>
-                <Label Grid.Column="0" Grid.Row="1" Content="From:" Margin="0,2,0,0"/>
-                <Label Grid.Column="0" Grid.Row="2" Content="To:"/>
-                <TextBox Grid.Column="1" Grid.Row="0" Margin="2,2,0,3" Width="150" TabIndex="0" HorizontalAlignment="Left"
+
+                <!-- Use Rule dropdown -->
+                <Label Grid.Column="0" Grid.Row="0" Content="Use Rule:" Height="28" VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="1" Grid.Row="0" Margin="2" Height="26"
+                          ItemsSource="{Binding AvailableRules}"
+                          SelectedItem="{Binding SelectedRule}"
+                          DisplayMemberPath="DisplayName"
+                          controls:TextBoxHelper.Watermark="(manual entry)" />
+
+                <!-- Separator -->
+                <Separator Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Margin="0,4" />
+
+                <!-- Server settings -->
+                <Label Grid.Column="0" Grid.Row="2" Content="SMTP Server:" Height="24"/>
+                <TextBox Grid.Column="1" Grid.Row="2" Margin="2" TabIndex="0"
                          x:Name="Server" />
-                <TextBox Grid.Column="1" Grid.Row="1" Margin="2" Width="150" TabIndex="1" HorizontalAlignment="Left"
+
+                <Label Grid.Column="0" Grid.Row="3" Content="Port:" Height="24"/>
+                <controls:NumericUpDown Grid.Column="1" Grid.Row="3" Margin="2" TabIndex="1"
+                         Value="{Binding Port, Mode=TwoWay}"
+                         Minimum="1" Maximum="65535"
+                         HideUpDownButtons="False"
+                         Width="100" HorizontalAlignment="Left" />
+
+                <Label Grid.Column="0" Grid.Row="4" Content="Use SSL:" Height="24"/>
+                <CheckBox Grid.Column="1" Grid.Row="4" Margin="2,5,2,2" TabIndex="2"
+                          IsChecked="{Binding UseSsl}" />
+
+                <!-- Authentication -->
+                <Label Grid.Column="0" Grid.Row="5" Content="Username:" Height="24"/>
+                <TextBox Grid.Column="1" Grid.Row="5" Margin="2" TabIndex="3"
+                         x:Name="Username" />
+
+                <Label Grid.Column="0" Grid.Row="6" Content="Password:" Height="24"/>
+                <PasswordBox Grid.Column="1" Grid.Row="6" Margin="2" TabIndex="4"
+                             behaviors:PasswordBoxBindingBehavior.Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Email addresses -->
+                <Label Grid.Column="0" Grid.Row="7" Content="From:" Margin="0,2,0,0"/>
+                <TextBox Grid.Column="1" Grid.Row="7" Margin="2" TabIndex="5"
                          x:Name="From" />
-                <TextBox Grid.Column="1" Grid.Row="2" Margin="2" Width="150" TabIndex="2" HorizontalAlignment="Left"
+
+                <Label Grid.Column="0" Grid.Row="8" Content="To:"/>
+                <TextBox Grid.Column="1" Grid.Row="8" Margin="2" TabIndex="6"
                          x:Name="To" />
             </Grid>
         </DockPanel>
