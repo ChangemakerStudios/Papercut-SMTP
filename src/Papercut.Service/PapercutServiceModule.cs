@@ -15,18 +15,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Papercut.Service.Domain;
 
 namespace Papercut.Service;
-
-using AutofacSerilogIntegration;
 
 public class PapercutServiceModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterLogger();
+        builder.Register(ctx =>
+            {
+                var smtpServerOptions = ctx.Resolve<SmtpServerSettings>();
+                var result = IPAllowedList.Create(smtpServerOptions.AllowedIps);
 
-        builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance().ExternallyOwned();
+                if (!result.IsSuccess)
+                {
+                    var logger = ctx.Resolve<ILogger>().ForContext<PapercutServiceModule>();
+
+                    logger.Warning(
+                        "Invalid IP allowlist configuration: {Errors}. Falling back to allow all.",
+                        string.Join(", ", result.Errors));
+                    return IPAllowedList.AllowAll;
+                }
+
+                return result.Value!;
+            })
+            .AsSelf()
+            .SingleInstance();
+
 
         builder.RegisterStaticMethods(ThisAssembly);
     }

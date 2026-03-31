@@ -6,17 +6,21 @@
              xmlns:cal="http://www.caliburnproject.org"
              xmlns:wv2b="clr-namespace:Papercut.Helpers"
              mc:Ignorable="d"
-             d:DesignHeight="400" d:DesignWidth="400" Background="White">
+             d:DesignHeight="400" d:DesignWidth="400"
+             Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="1" Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfFalse}}">
+        <Border Grid.Row="0" BorderBrush="{DynamicResource MahApps.Brushes.Gray5}" BorderThickness="1" Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfFalse}}">
             <wv2b:WebView2Base x:Name="htmlView" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto" Height="Auto"
                                Source="about:blank" />
         </Border>
-        <RichTextBox Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto" BorderBrush="LightGray" BorderThickness="1"
+        <RichTextBox Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto"
+            BorderBrush="{DynamicResource MahApps.Brushes.Gray5}" BorderThickness="1"
+            Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+            Foreground="{DynamicResource MahApps.Brushes.Text}"
             Visibility="{Binding IsWebViewInstalled, Converter={StaticResource HiddenIfTrue}}">
             <FlowDocument>
                 <Paragraph FontSize="14pt">A required component (WebView2) that renders emails is not installed on this computer.</Paragraph>

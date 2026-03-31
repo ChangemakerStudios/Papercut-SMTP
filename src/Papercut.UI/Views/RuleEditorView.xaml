@@ -1,0 +1,115 @@
+<UserControl x:Class="Papercut.Views.RuleEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:helpers="clr-namespace:Papercut.Helpers"
+             xmlns:viewModels="clr-namespace:Papercut.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="400"
+             d:DataContext="{d:DesignInstance viewModels:RuleEditorViewModel}">
+    <UserControl.Resources>
+        <!-- Property Editor Templates -->
+        <DataTemplate x:Key="StringEditorTemplate">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                     controls:TextBoxHelper.ClearTextButton="True"
+                     MinWidth="250" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="PasswordEditorTemplate">
+            <PasswordBox controls:PasswordBoxHelper.CapsLockWarningToolTip="Caps lock is on"
+                         controls:PasswordBoxHelper.RevealButtonContent="👁"
+                         controls:TextBoxHelper.UseFloatingWatermark="False"
+                         MinWidth="250" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="IntegerEditorTemplate">
+            <controls:NumericUpDown Value="{Binding Value, Mode=TwoWay}"
+                                    Minimum="0"
+                                    Maximum="999999"
+                                    MinWidth="150"
+                                    HideUpDownButtons="False" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="BooleanEditorTemplate">
+            <controls:ToggleSwitch IsOn="{Binding Value, Mode=TwoWay}"
+                                   OffContent="No"
+                                   OnContent="Yes" />
+        </DataTemplate>
+
+        <helpers:PropertyEditorTemplateSelector x:Key="PropertyEditorTemplateSelector"
+                                                 StringTemplate="{StaticResource StringEditorTemplate}"
+                                                 PasswordTemplate="{StaticResource PasswordEditorTemplate}"
+                                                 IntegerTemplate="{StaticResource IntegerEditorTemplate}"
+                                                 BooleanTemplate="{StaticResource BooleanEditorTemplate}" />
+    </UserControl.Resources>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="Rule Properties"
+                   FontSize="20"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,16" />
+
+        <!-- Scrollable Property Editor -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding PropertyCategories}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,0,0,24">
+                            <!-- Category Header -->
+                            <TextBlock Text="{Binding CategoryName}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,8"
+                                       Foreground="{DynamicResource MahApps.Brushes.Accent}" />
+
+                            <!-- Properties in Category -->
+                            <ItemsControl ItemsSource="{Binding Properties}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Property Label -->
+                                            <TextBlock Grid.Row="0"
+                                                       Text="{Binding DisplayName}"
+                                                       Margin="0,0,0,4"
+                                                       FontWeight="Medium" />
+
+                                            <!-- Property Editor (Dynamic based on type) -->
+                                            <ContentControl Grid.Row="1"
+                                                            Content="{Binding}"
+                                                            ContentTemplateSelector="{StaticResource PropertyEditorTemplateSelector}" />
+
+                                            <!-- Description (if available) -->
+                                            <TextBlock Grid.Row="2"
+                                                       Text="{Binding Description}"
+                                                       Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                       FontSize="11"
+                                                       Opacity="0.7"
+                                                       Margin="0,4,0,0"
+                                                       TextWrapping="Wrap" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

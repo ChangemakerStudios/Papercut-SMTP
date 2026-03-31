@@ -18,9 +18,4 @@
 
 namespace Papercut.Core.Domain.Paths;
 
-public class MessagePathConfigurator : PathConfiguratorBase
-{
-    public MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger) : base(pathTemplateProvider, logger)
-    {
-    }
-}
+public class MessagePathConfigurator(IPathTemplatesProvider pathTemplateProvider, ILogger logger) : PathConfiguratorBase(pathTemplateProvider, logger);

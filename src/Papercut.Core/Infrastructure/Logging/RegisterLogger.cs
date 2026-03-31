@@ -47,11 +47,11 @@ internal sealed class RegisterLogging
         builder.Register(c =>
             {
                 var appMeta = c.Resolve<IAppMeta>();
-                var loggingPathConfigurator = c.Resolve<LoggingPathConfigurator>();
 
+                var loggingPathConfigurator = c.Resolve<LoggingPathConfigurator>();
                 string logFilePath = Path.Combine(
                     loggingPathConfigurator.DefaultSavePath,
-                    $"{appMeta.AppName}.log");
+                    $"{appMeta.AppName.Replace(".", "-")}.log");
 
                 // support self-logging
                 SelfLog.Enable(s => Console.Error.WriteLine(s));
@@ -68,18 +68,17 @@ internal sealed class RegisterLogging
                         .Enrich.WithProperty("AppName", appMeta.AppName)
                         .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
                         .Filter.ByExcluding(ExcludeTcpClientDisposeBugException)
-
-                        .WriteTo.File(logFilePath)
-                        .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(Environment.GetCommandLineArgs().ToArray()));
+                        .WriteTo.Async(x => x.File(logFilePath))
+                        .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(Environment.GetCommandLineArgs()));
 
                 if (Debugger.IsAttached)
                 {
-                    logConfiguration.WriteTo.Trace();
+                    logConfiguration.WriteTo.Async(x => x.Trace());
                 }
 
                 if (Environment.UserInteractive)
                 {
-                    logConfiguration.WriteTo.Console(theme: AnsiConsoleTheme.Literate);
+                    logConfiguration.WriteTo.Async(x => x.Console(theme: AnsiConsoleTheme.Literate));
                 }
 
                 foreach (var configureInstance in c.Resolve<IEnumerable<ILoggerSettings>>().ToList())

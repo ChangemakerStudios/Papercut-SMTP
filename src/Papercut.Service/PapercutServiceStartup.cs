@@ -28,6 +28,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 using Rules;
+using Papercut.Service.Domain;
 using Papercut.Service.Infrastructure.Configuration;
 
 internal class PapercutServiceStartup
@@ -57,10 +58,8 @@ internal class PapercutServiceStartup
         services.AddSignalR();
 
         services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
-        services.AddSingleton(s => s.GetRequiredService<IOptions<SmtpServerOptions>>().Value);
 
         // hosted services
-        services.AddHostedService<SmtpServerOptionsInitializer>();
         services.AddHostedService<PapercutServerHostedService>();
         services.AddHostedService<MessageWatcherHostedService>();
     }

@@ -25,64 +25,79 @@ namespace Papercut.ViewModels;
 
 public class RulesConfigurationViewModel : Screen
 {
-    IRule? _selectedRule;
+    private readonly IWindowManager _windowManager;
 
-    string _windowTitle = "Rules Configuration";
+    private IRule? _selectedRule;
 
-    public RulesConfigurationViewModel(RuleService ruleService, IEnumerable<IRule> registeredRules)
+    private string _windowTitle = "Rules Configuration";
+
+    public RulesConfigurationViewModel(RuleService ruleService, IEnumerable<IRule> registeredRules, IWindowManager windowManager)
     {
-        this.RegisteredRules = new ObservableCollection<IRule>(registeredRules);
-        this.Rules = ruleService.Rules;
-        this.Rules.CollectionChanged += (_, _) =>
+        _windowManager = windowManager;
+        RegisteredRules = new ObservableCollection<IRule>(registeredRules);
+        Rules = ruleService.Rules;
+        Rules.CollectionChanged += (_, _) =>
         {
             var selectedRule = this.SelectedRule;
             if (selectedRule != null && !this.Rules.Contains(selectedRule))
             {
-                this.SelectedRule = null;
+                SelectedRule = null;
             }
         };
+
+        // Create the rule editor view model
+        RuleEditor = new RuleEditorViewModel();
     }
+
+    public RuleEditorViewModel RuleEditor { get; }
 
     public string WindowTitle
     {
-        get => this._windowTitle;
+        get => _windowTitle;
         set
         {
-            this._windowTitle = value;
-            this.NotifyOfPropertyChange(() => this.WindowTitle);
+            _windowTitle = value;
+            NotifyOfPropertyChange(() => WindowTitle);
         }
     }
 
     public IRule? SelectedRule
     {
-        get => this._selectedRule;
+        get => _selectedRule;
         set
         {
-            this._selectedRule = value;
-            this.NotifyOfPropertyChange(() => this.SelectedRule);
-            this.NotifyOfPropertyChange(() => this.HasSelectedRule);
+            _selectedRule = value;
+            NotifyOfPropertyChange(() => SelectedRule);
+            NotifyOfPropertyChange(() => HasSelectedRule);
+
+            // Update the rule editor
+            RuleEditor.SelectedRule = value;
         }
     }
 
-    public bool HasSelectedRule => this._selectedRule != null;
+    public bool HasSelectedRule => _selectedRule != null;
 
     public ObservableCollection<IRule> RegisteredRules { get; private set; }
 
     public ObservableCollection<IRule> Rules { get; }
 
-    public void AddRule(IRule rule)
+    public async Task AddRule()
     {
-        ArgumentNullException.ThrowIfNull(rule);
+        var dialog = new RuleTypeSelectionViewModel(RegisteredRules);
+        var result = await _windowManager.ShowDialogAsync(dialog);
 
-        if (Activator.CreateInstance(rule.GetType()) is IRule newRule)
+        if (result == true && dialog.SelectedRuleType != null)
         {
-            this.Rules.Add(newRule);
-            this.SelectedRule = newRule;
+            if (Activator.CreateInstance(dialog.SelectedRuleType.GetType()) is IRule newRule)
+            {
+                Rules.Add(newRule);
+                SelectedRule = newRule;
+            }
         }
     }
 
     public void DeleteRule()
     {
-        if (this.SelectedRule != null) this.Rules.Remove(this.SelectedRule);
+        if (SelectedRule != null) Rules.Remove(SelectedRule);
     }
 }

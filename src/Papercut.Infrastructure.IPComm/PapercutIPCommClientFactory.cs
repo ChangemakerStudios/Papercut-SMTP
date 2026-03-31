@@ -23,7 +23,8 @@ namespace Papercut.Infrastructure.IPComm;
 public enum PapercutIPCommClientConnectTo
 {
     UI,
-    Service
+    Service,
+    ServiceTray
 }
 
 public class PapercutIPCommClientFactory(PapercutIPCommEndpoints endpoints, ILogger logger)
@@ -36,6 +37,8 @@ public class PapercutIPCommClientFactory(PapercutIPCommEndpoints endpoints, ILog
                 return new PapercutIPCommClient(endpoints.Service, logger.ForContext<PapercutIPCommClient>());
             case PapercutIPCommClientConnectTo.UI:
                 return new PapercutIPCommClient(endpoints.UI, logger.ForContext<PapercutIPCommClient>());
+            case PapercutIPCommClientConnectTo.ServiceTray:
+                return new PapercutIPCommClient(endpoints.TrayService, logger.ForContext<PapercutIPCommClient>());
         }
 
         throw new ArgumentOutOfRangeException($"Connect to is unknown: {connectTo}");

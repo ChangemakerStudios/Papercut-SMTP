@@ -189,6 +189,11 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
             .ObserveOn(Dispatcher.CurrentDispatcher)
             .Subscribe(_ => this.RefreshMessageList());
 
+        // Periodic fallback refresh in case FileSystemWatcher stops raising events
+        Observable.Interval(TimeSpan.FromSeconds(30))
+            .ObserveOn(Dispatcher.CurrentDispatcher)
+            .Subscribe(_ => this.RefreshMessageList());
+
         this.Messages.CollectionChanged += this.CollectionChanged;
     }
 
@@ -334,10 +339,10 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
         }
     }
 
-    public void DeleteAll()
+    public void DeleteAll(DateTime cutoff)
     {
         this.ClearSelected();
-        this.DeleteMessages(this.Messages.ToList());
+        this.DeleteMessages(this.Messages.Where(m => m.ModifiedDate < cutoff).ToList());
     }
 
     public void DeleteSelected()
@@ -367,7 +372,15 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
                 {
                     try
                     {
-                        this._messageRepository.DeleteMessage(entry);
+                        if (this._messageRepository.DeleteMessage(entry))
+                        {
+                            this._logger.Debug("Deleted Message {@Entry}", entry);
+                        }
+                        else
+                        {
+                            this._logger.Debug("Message deletion skipped (file not found): {@Entry}", entry);
+                        }
+
                         return null;
                     }
                     catch (Exception ex)

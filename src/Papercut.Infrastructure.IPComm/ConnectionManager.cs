@@ -34,7 +34,7 @@ public class ConnectionManager(
 {
     readonly ConcurrentDictionary<int, Connection> _connections = new();
 
-    readonly CompositeDisposable _disposables = new CompositeDisposable();
+    readonly CompositeDisposable _disposables = new();
 
     int _connectionId;
 

@@ -49,7 +49,7 @@ public class PapercutSmtpServer(
 
     public int ListenPort => _currentEndpoint?.Port ?? 0;
 
-    public async Task StopAsync()
+    public async Task StopAsync(CancellationToken token = default)
     {
         try
         {
@@ -75,7 +75,7 @@ public class PapercutSmtpServer(
         }
     }
 
-    public Task StartAsync(EndpointDefinition smtpEndpoint)
+    public Task StartAsync(EndpointDefinition smtpEndpoint, CancellationToken token = default)
     {
         if (IsActive)
         {
@@ -133,8 +133,7 @@ public class PapercutSmtpServer(
 
     private void OnSessionCompleted(object? sender, SessionEventArgs e)
     {
-        var remoteEndPoint = GetRemoteEndPoint(e.Context);
-        logger.Information("Completed SMTP connection from {EndpointAddress}", remoteEndPoint);
+        logger.Information("Completed SMTP connection from {RemoteIp}", e.Context.GetRemoteIpAddress());
     }
 
     private void OnSessionCreated(object? sender, SessionEventArgs e)
@@ -144,21 +143,12 @@ public class PapercutSmtpServer(
             logger.Verbose("SMTP Command {@SmtpCommand}", args.Command);
         };
 
-        var remoteEndPoint = GetRemoteEndPoint(e.Context);
-        logger.Information("New SMTP connection from {EndpointAddress}", remoteEndPoint);
-    }
+        var remoteIp = e.Context.GetRemoteIpAddress();
 
-    private string GetRemoteEndPoint(ISessionContext context)
-    {
-        const string RemoteEndPointKey = "EndpointListener:RemoteEndPoint";
+        logger.Information("New SMTP connection from {RemoteIp}", remoteIp);
 
-        if (context.Properties.TryGetValue(RemoteEndPointKey, out var endpointObj)
-            && endpointObj is IPEndPoint remoteEndPoint)
-        {
-            return remoteEndPoint.Address.ToString();
-        }
-
-        return "unknown";
+        // IP validation is now handled by IpAllowlistMailboxFilter via IMailboxFilter interface
+        // This provides proper rejection semantics and prevents socket resource leaks
     }
 
     private bool IgnoreCertificateValidationFailureForTestingOnly(

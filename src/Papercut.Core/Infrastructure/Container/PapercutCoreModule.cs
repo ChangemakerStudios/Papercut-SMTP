@@ -49,12 +49,16 @@ public class PapercutCoreModule : Module
             .InstancePerLifetimeScope()
             .PreserveExistingDefaults();
 
-        builder.RegisterType<MessagePathConfigurator>()
+        builder.Register(p => new MessagePathConfigurator(p.ResolveKeyed<IPathTemplatesProvider>(PathTemplateType.Message),
+                p.Resolve<ILogger>().ForContext<MessagePathConfigurator>()))
             .AsSelf()
+            .Keyed<IPathConfigurator>(PathTemplateType.Message)
             .SingleInstance();
 
-        builder.RegisterType<LoggingPathConfigurator>()
+        builder.Register(p => new LoggingPathConfigurator(p.ResolveKeyed<IPathTemplatesProvider>(PathTemplateType.Logging),
+                p.Resolve<ILogger>().ForContext<LoggingPathConfigurator>()))
             .AsSelf()
+            .Keyed<IPathConfigurator>(PathTemplateType.Logging)
             .SingleInstance();
 
         builder.RegisterType<JsonSettingStore>()

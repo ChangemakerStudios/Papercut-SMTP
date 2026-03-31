@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
@@ -19,8 +19,6 @@
 			<Version>5.2.0</Version>
 		</PackageReference>
 		<ProjectReference Include="..\..\src\Papercut.Core\Papercut.Core.csproj" />
-		<PackageReference Update="JetBrains.Annotations" Version="2025.2.2" />
-		<PackageReference Update="Serilog" Version="4.3.0" />
 	</ItemGroup>
 
 </Project>

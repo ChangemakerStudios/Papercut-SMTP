@@ -29,6 +29,11 @@ public static class Velopack
             arguments.Append("--splashImage").AppendQuoted(@params.SplashImage);
         }
 
+        if (!string.IsNullOrEmpty(@params.Aumid))
+        {
+            arguments.Append("--aumid").AppendQuoted(@params.Aumid);
+        }
+
         //Information("Running Vpk Pack with arguments: " + arguments.Render());
         context.StartProcess("vpk", new ProcessSettings
         {
@@ -90,4 +95,5 @@ public class VpkPackParams
     public string? ExeName { get; set; }
     public string? Framework { get; set; }
     public string? SplashImage { get; set; }
+    public string? Aumid { get; set; }
 }

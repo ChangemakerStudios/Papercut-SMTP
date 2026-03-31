@@ -20,9 +20,15 @@ using System.Collections.ObjectModel;
 
 namespace Papercut.Core.Domain.Paths;
 
+public enum PathTemplateType
+{
+    Message,
+    Logging
+}
+
 public interface IPathTemplatesProvider
 {
-    ObservableCollection<string> MessagePathTemplates { get; }
+    ObservableCollection<string> PathTemplates { get; }
 
-    ObservableCollection<string> LoggingPathTemplates { get; }
+    PathTemplateType Type { get; }
 }

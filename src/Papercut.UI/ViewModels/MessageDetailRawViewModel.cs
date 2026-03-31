@@ -16,38 +16,41 @@
 // limitations under the License.
 
 
-using System.Windows.Input;
-
 using ICSharpCode.AvalonEdit.Document;
 
-using Papercut.Helpers;
 using Papercut.Message.Helpers;
 using Papercut.Views;
 
 namespace Papercut.ViewModels;
 
-public class MessageDetailRawViewModel : Screen, IMessageDetailItem
+public class MessageDetailRawViewModel : Screen,
+    IMessageDetailItem,
+    IHandle<ThemeChangedEvent>
 {
-    readonly ILogger _logger;
+    private readonly ILogger _logger;
 
-    bool _isLoading;
+    private readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
 
-    bool _messageLoaded;
+    private bool _isLoading;
 
-    IDisposable? _messageLoader;
+    private bool _messageLoaded;
 
-    MimeMessage? _mimeMessage;
+    private MimeMessage? _loadedMimeMessage;
 
-    string? _raw;
+    private IDisposable? _messageLoader;
 
-    ZoomIndicator? _zoomIndicator;
+    private MimeMessage? _mimeMessage;
 
-    readonly SettingsSaveDebouncer<double> _zoomSaveDebouncer;
+    private string? _raw;
+
+    private MessageDetailRawView? _view;
+
+    private ZoomIndicator? _zoomIndicator;
 
     public MessageDetailRawViewModel(ILogger logger)
     {
-        this.DisplayName = "Raw";
-        this._logger = logger;
+        DisplayName = "Raw";
+        _logger = logger;
 
         // Set up debounced zoom save to reduce I/O during rapid zoom changes
         _zoomSaveDebouncer = new SettingsSaveDebouncer<double>(newFontSize =>
@@ -59,69 +62,93 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
 
     public string? Raw
     {
-        get => this._raw;
+        get => _raw;
         set
         {
-            this._raw = value;
-            this.NotifyOfPropertyChange(() => this.Raw);
+            _raw = value;
+            NotifyOfPropertyChange(() => Raw);
         }
     }
 
     public MimeMessage? MimeMessage
     {
-        get => this._mimeMessage;
+        get => _mimeMessage;
         set
         {
-            this._mimeMessage = value;
-            this.NotifyOfPropertyChange(() => this.MimeMessage);
-            this.MessageLoaded = false;
+            _mimeMessage = value;
+            NotifyOfPropertyChange(() => MimeMessage);
+            MessageLoaded = false;
         }
     }
 
     public bool MessageLoaded
     {
-        get => this._messageLoaded;
+        get => _messageLoaded;
         set
         {
-            this._messageLoaded = value;
-            if (!this._messageLoaded)
+            _messageLoaded = value;
+            if (!_messageLoaded)
             {
-                this.Raw = null;
+                Raw = null;
             }
         }
     }
 
     public bool IsLoading
     {
-        get => this._isLoading;
+        get => _isLoading;
         set
         {
-            this._isLoading = value;
-            this.NotifyOfPropertyChange(() => this.IsLoading);
+            _isLoading = value;
+            NotifyOfPropertyChange(() => IsLoading);
         }
     }
 
-    void RefreshDump()
+    public Task HandleAsync(ThemeChangedEvent @event, CancellationToken token)
     {
-        if (this.MessageLoaded)
-            return;
-
-        this.IsLoading = true;
-
-        if (this._messageLoader != null)
+        if (_view != null)
         {
-            this._messageLoader.Dispose();
-            this._messageLoader = null;
+            AvalonEditThemeHelper.ApplyTheme(_view.rawEdit);
         }
 
-        this._messageLoader =
-            Observable.Start(() => this._mimeMessage.GetStringDump())
+        return Task.CompletedTask;
+    }
+
+    private void RefreshDump()
+    {
+        // Don't reload if this exact message instance is already loaded
+        if (MessageLoaded && ReferenceEquals(_loadedMimeMessage, _mimeMessage))
+            return;
+
+        // Cancel any in-progress load
+        if (_messageLoader != null)
+        {
+            _messageLoader.Dispose();
+            _messageLoader = null;
+        }
+
+        if (_mimeMessage == null)
+        {
+            IsLoading = false;
+            MessageLoaded = false;
+            _loadedMimeMessage = null;
+            Raw = string.Empty;
+            return;
+        }
+
+        IsLoading = true;
+        var messageToLoad = _mimeMessage;
+
+        _messageLoader =
+            Observable.Start(() => messageToLoad.GetStringDump())
                 .SubscribeOn(TaskPoolScheduler.Default)
                 .ObserveOn(Dispatcher.CurrentDispatcher)
                 .Subscribe(h =>
                 {
-                    this.Raw = h;
-                    this.MessageLoaded = true;
+                    Raw = h;
+                    _loadedMimeMessage = messageToLoad;
+                    MessageLoaded = true;
+                    IsLoading = false;
                 });
     }
 
@@ -131,12 +158,16 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
 
         if (view is not MessageDetailRawView typedView)
         {
-            this._logger.Error("Unable to locate the MessageDetailRawView to hook the Text Control");
+            _logger.Error("Unable to locate the MessageDetailRawView to hook the Text Control");
             return;
         }
 
-        // Store reference to zoom indicator
+        // Store references
+        _view = typedView;
         _zoomIndicator = typedView.zoomIndicator;
+
+        // Apply theme colors
+        AvalonEditThemeHelper.ApplyTheme(typedView.rawEdit);
 
         // Restore saved zoom level
         typedView.rawEdit.FontSize = Settings.Default.TextViewZoomFontSize;
@@ -149,8 +180,12 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
             .Subscribe(s =>
             {
                 typedView.rawEdit.Document = new TextDocument(new StringTextSource(s ?? string.Empty));
-                this.IsLoading = false;
+                IsLoading = false;
             });
+
+        // Observe MimeMessage changes and refresh when it changes
+        this.GetPropertyValues(p => p.MimeMessage)
+            .Subscribe(_ => RefreshDump());
 
         // Hook up zoom functionality
         typedView.rawEdit.PreviewMouseWheel += (sender, e) =>
@@ -177,7 +212,7 @@ public class MessageDetailRawViewModel : Screen, IMessageDetailItem
 
     protected override Task OnActivateAsync(CancellationToken token)
     {
-        this.RefreshDump();
+        RefreshDump();
         return base.OnActivateAsync(token);
     }
 }

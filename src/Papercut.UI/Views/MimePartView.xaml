@@ -9,7 +9,7 @@
                       xmlns:Helpers="clr-namespace:Papercut.Helpers"
                       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                       xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
-                      mc:Ignorable="d" Background="White"
+                      mc:Ignorable="d" Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
                       d:DataContext="{x:Type ViewModels:MimePartViewModel}"
                       Title="{Binding WindowTitle}" MinWidth="300" MinHeight="200"
                       ResizeMode="CanResizeWithGrip" Width="500" Height="400"
@@ -17,11 +17,8 @@
                       ShowIconOnTitleBar="false"
                       WindowStartupLocation="CenterOwner"
                       VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                      d:DesignHeight="300" d:DesignWidth="300"
-                      BorderThickness="{DynamicResource AccentBorderThickness}" 
-                      GlowBrush="{DynamicResource AccentGlowBrush}"
-                      BorderBrush="{DynamicResource AccentBorderBrush}">
-    <DockPanel>
+                      d:DesignHeight="300" d:DesignWidth="300">
+    <DockPanel Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="2"
                     FrameworkElement.FlowDirection="RightToLeft">
             <Button Width="75" Margin="20 2" x:Name="Close" IsDefault="True" Content="Close" />

@@ -4,9 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:helpers="clr-namespace:Papercut.Helpers"
-             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White">
+             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600"
+             Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
     <Grid>
-        <Border BorderBrush="LightGray" BorderThickness="1">
+        <Border BorderBrush="{DynamicResource MahApps.Brushes.Gray5}" BorderThickness="1">
             <Grid>
                 <avalonEdit:TextEditor
                     xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"

@@ -17,8 +17,14 @@ services:
       - papercut-logs:/app/Logs
     environment:
       # Basic SMTP configuration
-      - IP=Any
-      - Port=2525
+      - SmtpServer__IP=Any
+      - SmtpServer__Port=2525
+      # IP Allowlist for SMTP connections (optional)
+      # Use "*" to allow all IPs (default), or specify CIDR ranges
+      # Examples:
+      # - SmtpServer__AllowedIps=192.168.1.0/24,10.0.0.0/8  # Allow specific networks
+      # - SmtpServer__AllowedIps=192.168.1.100,192.168.1.101  # Allow specific IPs
+      - SmtpServer__AllowedIps=*
     restart: unless-stopped
 
   # Example: Papercut with TLS/STARTTLS support
@@ -36,19 +42,20 @@ services:
       # Mount certificate directory (adjust path to your cert location)
       # - /path/to/certs:/certs:ro
     environment:
-      - IP=Any
-      - Port=587
+      - SmtpServer__IP=Any
+      - SmtpServer__Port=587
+      - SmtpServer__AllowedIps=*
       # TLS/STARTTLS Configuration
       # Uncomment and configure these to enable TLS
       # Simple approach - use certificate by name (most common):
-      - CertificateFindType=FindBySubjectName
-      - CertificateFindValue=localhost
-      # - CertificateStoreLocation=LocalMachine
-      # - CertificateStoreName=My
+      - SmtpServer__CertificateFindType=FindBySubjectName
+      - SmtpServer__CertificateFindValue=localhost
+      # - SmtpServer__CertificateStoreLocation=LocalMachine
+      # - SmtpServer__CertificateStoreName=My
       #
       # Alternative - use thumbprint (more specific but harder to use):
-      # - CertificateFindType=FindByThumbprint
-      # - CertificateFindValue=YOUR_CERT_THUMBPRINT_HERE
+      # - SmtpServer__CertificateFindType=FindByThumbprint
+      # - SmtpServer__CertificateFindValue=YOUR_CERT_THUMBPRINT_HERE
     restart: unless-stopped
 
   # Example: Multiple ports (plain SMTP + STARTTLS)
@@ -101,3 +108,22 @@ volumes:
 # Testing TLS:
 #   openssl s_client -connect localhost:587 -starttls smtp
 #   # Should show STARTTLS in EHLO response
+
+# IP Allowlist Configuration:
+#
+# The SmtpServer__AllowedIps environment variable controls which IP addresses
+# can connect to the SMTP server. This provides additional security.
+#
+# Syntax:
+#   - SmtpServer__AllowedIps=*                           # Allow all IPs (default)
+#   - SmtpServer__AllowedIps=192.168.1.0/24              # Allow single CIDR range
+#   - SmtpServer__AllowedIps=192.168.1.0/24,10.0.0.0/8   # Allow multiple CIDR ranges
+#   - SmtpServer__AllowedIps=192.168.1.100               # Allow single IP
+#   - SmtpServer__AllowedIps=192.168.1.100,192.168.1.101 # Allow multiple IPs
+#
+# Notes:
+#   - Applies only to SMTP connections, not HTTP web UI access
+#   - Localhost (127.0.0.1/::1) is always allowed for SMTP
+#   - IPv4 and IPv6 are both supported
+#   - CIDR notation allows efficient network range specification
+#   - Changes require container restart

@@ -95,6 +95,10 @@ public class MainViewModel : Conductor<object>,
 
     public Deque<string> CurrentLogHistory = new();
 
+    private DateTime? _deleteAllCutoff;
+
+    private int _deleteAllCount;
+
     public MainViewModel(
         IViewModelWindowManager viewModelWindowManager,
         IAppCommandHub appCommandHub,
@@ -221,6 +225,19 @@ public class MainViewModel : Conductor<object>,
             {
                 this._isDeleteAllConfirmOpen = value;
                 this.NotifyOfPropertyChange(() => this.IsDeleteAllConfirmOpen);
+            }
+        }
+    }
+    
+    public int DeleteAllCount
+    {
+        get => this._deleteAllCount;
+        set
+        {
+            if (this._deleteAllCount != value)
+            {
+                this._deleteAllCount = value;
+                this.NotifyOfPropertyChange(() => this.DeleteAllCount);
             }
         }
     }
@@ -489,6 +506,28 @@ public class MainViewModel : Conductor<object>,
             return;
         }
 
+        // Get release notes from the update info
+        var releaseNotesHtml = this._updateInfo.TargetFullRelease.NotesHTML;
+        var currentVersion = this.GetVersion() ?? "Unknown";
+        var newVersion = this._updateInfo.TargetFullRelease.Version.ToString();
+
+        this._logger.Information("Showing upgrade dialog for version {NewVersion}", newVersion);
+
+        // Create upgrade dialog view model
+        var upgradeDialog = new UI.ViewModels.UpgradeDialogViewModel(currentVersion, newVersion, releaseNotesHtml);
+
+        // Show the dialog using the injected window manager
+        var dialogResult = await this._viewModelWindowManager.ShowDialogAsync(upgradeDialog);
+
+        // Check user's choice
+        if (upgradeDialog.UserChoice != UI.ViewModels.UpgradeChoice.Upgrade)
+        {
+            this._logger.Information("User chose to ignore upgrade to version {Version}", newVersion);
+            return;
+        }
+
+        this._logger.Information("User chose to upgrade to version {Version}", newVersion);
+
         using var cancellationSource = new CancellationTokenSource();
 
         var progressDialog = await this.ShowProgress("Updating", "Downloading Updates...", true,
@@ -549,18 +588,23 @@ public class MainViewModel : Conductor<object>,
 
     public void DeleteAll()
     {
-        this.MessageListViewModel.DeleteAll();
+        if (this._deleteAllCutoff.HasValue)
+            this.MessageListViewModel.DeleteAll(this._deleteAllCutoff.Value);
+        this._deleteAllCutoff = null;
         this.IsDeleteAllConfirmOpen = false;
     }
 
     public void CancelDeleteAll()
     {
+        this._deleteAllCutoff = null;
         this.IsDeleteAllConfirmOpen = false;
     }
 
     public void ShowConfirmDeleteAll()
     {
         this.CloseFlyouts();
+        this._deleteAllCutoff = DateTime.Now;
+        this.DeleteAllCount = this.MessageListViewModel.Messages.Count;
         this.IsDeleteAllConfirmOpen = true;
     }
 

@@ -150,7 +150,8 @@ public class BackendServiceCoordinator : IBackendServiceStatus, IAppLifecycleSta
 
             bool successfulPublish = await messenger.PublishEventServer(
                 smtpServerBindEvent,
-                TimeSpan.FromSeconds(1));
+                TimeSpan.FromSeconds(1),
+                token);
 
             _logger.Information(
                 successfulPublish

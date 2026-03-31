@@ -51,7 +51,7 @@ public static class GeneralExtensions
     /// <returns></returns>
     public static string ToFileSizeFormat(this long bytes)
     {
-        string[] suffixes = { "B", "KB", "MB", "GB", "TB", "PB" };
+        string[] suffixes = ["B", "KB", "MB", "GB", "TB", "PB"];
 
         if (bytes == 0) return $"0{suffixes[0]}";
 

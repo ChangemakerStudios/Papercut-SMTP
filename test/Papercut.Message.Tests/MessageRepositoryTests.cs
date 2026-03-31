@@ -42,7 +42,7 @@ public class MessageRepositoryTests
         Directory.CreateDirectory(_testDirectory);
 
         _mockPathConfigurator.Setup(x => x.DefaultSavePath).Returns(_testDirectory);
-        _mockPathConfigurator.Setup(x => x.LoadPaths).Returns(new[] { _testDirectory });
+        _mockPathConfigurator.Setup(x => x.LoadPaths).Returns([_testDirectory]);
 
         _repository = new MessageRepository(_mockPathConfigurator.Object, _mockLogger.Object);
     }

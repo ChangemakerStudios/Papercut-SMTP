@@ -21,23 +21,13 @@ using Papercut.Domain.HtmlPreviews;
 
 namespace Papercut.AppLayer.HtmlPreviews;
 
-public class HtmlPreviewGeneratorImpl : IHtmlPreviewGenerator
+public class HtmlPreviewGeneratorImpl(ILogger logger, IAppMeta appMeta) : IHtmlPreviewGenerator
 {
-    readonly IAppMeta _appMeta;
-
-    readonly ILogger _logger;
-
-    public HtmlPreviewGeneratorImpl(ILogger logger, IAppMeta appMeta)
-    {
-        this._logger = logger;
-        this._appMeta = appMeta;
-    }
-
     public string GetHtmlPreview(MimeMessage? mailMessageEx, string? tempDir = null)
     {
         ArgumentNullException.ThrowIfNull(mailMessageEx);
 
-        tempDir = tempDir ?? this.CreateUniqueTempDirectory();
+        tempDir ??= this.CreateUniqueTempDirectory();
         var visitor = new HtmlPreviewVisitor(tempDir);
         mailMessageEx.Accept(visitor);
 
@@ -46,15 +36,23 @@ public class HtmlPreviewGeneratorImpl : IHtmlPreviewGenerator
 
     public string? GetHtmlPreviewFile(MimeMessage? mailMessageEx, string? tempDir = null)
     {
-        tempDir = tempDir ?? this.CreateUniqueTempDirectory();
+        tempDir ??= this.CreateUniqueTempDirectory();
 
         var htmlPreview = this.GetHtmlPreview(mailMessageEx, tempDir);
 
         string? htmlFile = Path.Combine(tempDir, "index.html");
 
-        this._logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
+        logger.Verbose("Writing HTML Preview file {HtmlFile}", htmlFile);
 
-        File.WriteAllText(htmlFile, htmlPreview, Encoding.Unicode);
+        // Use explicit FileStream with flush to ensure file is fully written to disk
+        // before WebView2 navigates to it (prevents timing issues with CID images)
+        using (var fs = new FileStream(htmlFile, FileMode.Create, FileAccess.Write, FileShare.None))
+        using (var writer = new StreamWriter(fs, Encoding.Unicode))
+        {
+            writer.Write(htmlPreview);
+            writer.Flush();
+            fs.Flush(flushToDisk: true);
+        }
 
         return htmlFile;
     }
@@ -65,7 +63,7 @@ public class HtmlPreviewGeneratorImpl : IHtmlPreviewGenerator
         do
         {
             // find unique temp directory
-            tempDir = Path.Combine(Path.GetTempPath(), $"{this._appMeta.AppName}-{Guid.NewGuid().ToString().Truncate(6)}");
+            tempDir = Path.Combine(Path.GetTempPath(), $"{appMeta.AppName}-{Guid.NewGuid().ToString().Truncate(6)}");
         }
         while (Directory.Exists(tempDir));
 

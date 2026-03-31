@@ -28,25 +28,21 @@ using Papercut.Rules.Domain.Rules;
 
 namespace Papercut.Service.Infrastructure.Rules;
 
-public class RuleService : RuleServiceBase,
-    IEventHandler<RulesUpdatedEvent>,
-    IEventHandler<PapercutClientReadyEvent>,
-    IEventHandler<NewMessageEvent>,
-    IAsyncDisposable
+public class RuleService(
+    IRuleRepository ruleRepository,
+    IBackgroundTaskRunner backgroundTaskRunner,
+    ILogger logger,
+    IRulesRunner rulesRunner)
+    : RuleServiceBase(ruleRepository, logger),
+        IEventHandler<RulesUpdatedEvent>,
+        IEventHandler<PapercutClientReadyEvent>,
+        IEventHandler<NewMessageEvent>
 {
-    private readonly IBackgroundTaskRunner _backgroundTaskRunner;
-    private readonly IRulesRunner _rulesRunner;
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private IDisposable? _periodicRuleSubscription;
+    private static readonly TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);
 
-    public RuleService(IRuleRepository ruleRepository,
-        IBackgroundTaskRunner backgroundTaskRunner,
-        ILogger logger,
-        IRulesRunner rulesRunner) : base(ruleRepository, logger)
-    {
-        _backgroundTaskRunner = backgroundTaskRunner;
-        _rulesRunner = rulesRunner;
-    }
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+
+    private IDisposable? _periodicRuleSubscription;
 
     public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
     {
@@ -54,15 +50,15 @@ public class RuleService : RuleServiceBase,
             "New Message {MessageFile} Arrived -- Running Rules",
             @event.NewMessage);
 
-        _backgroundTaskRunner.QueueBackgroundTask(
+        backgroundTaskRunner.QueueBackgroundTask(
             async (t) =>
             {
                 try
                 {
                     await Task.Delay(2000, t);
-                    await _rulesRunner.RunNewMessageRules(
+                    await rulesRunner.RunNewMessageRules(
                         Rules.OfType<INewMessageRule>().ToArray(),
-                        @event.NewMessage,
+                        @event.NewMessage.ToEntry(),
                         t);
                 }
                 catch (ObjectDisposedException)
@@ -103,27 +99,6 @@ public class RuleService : RuleServiceBase,
         return Task.CompletedTask;
     }
 
-    private static TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);
-
-    private void SetupPeriodicRuleObservable()
-    {
-        _logger.Debug("Setting up Periodic Rule Observable {RunInterval}", PeriodicRunInterval);
-
-        _periodicRuleSubscription = Observable.Interval(PeriodicRunInterval, TaskPoolScheduler.Default)
-            .SubscribeAsync(
-                async e => await _rulesRunner.RunPeriodicBackgroundRules(
-                    Rules.OfType<IPeriodicBackgroundRule>().ToArray(),
-                    CancellationToken.None),
-                ex =>
-                {
-                    // Only log if it's not a cancellation exception (which happens during shutdown)
-                    if (ex is not OperationCanceledException and not TaskCanceledException)
-                    {
-                        _logger.Error(ex, "Error Running Periodic Rules");
-                    }
-                });
-    }
-
     public Task HandleAsync(RulesUpdatedEvent @event, CancellationToken token = default)
     {
         Rules.Clear();
@@ -133,8 +108,12 @@ public class RuleService : RuleServiceBase,
         return Task.CompletedTask;
     }
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
+        await base.DisposeAsync(disposing);
+
+        if (!disposing) return;
+
         try
         {
             await _cancellationTokenSource.CancelAsync();
@@ -148,13 +127,30 @@ public class RuleService : RuleServiceBase,
         {
             _cancellationTokenSource.Dispose();
         }
+    }
 
-        GC.SuppressFinalize(this);
+    private void SetupPeriodicRuleObservable()
+    {
+        _logger.Debug("Setting up Periodic Rule Observable {RunInterval}", PeriodicRunInterval);
+
+        _periodicRuleSubscription = Observable.Interval(PeriodicRunInterval, TaskPoolScheduler.Default)
+            .SubscribeAsync(
+                async e => await rulesRunner.RunPeriodicBackgroundRules(
+                    Rules.OfType<IPeriodicBackgroundRule>().ToArray(),
+                    CancellationToken.None),
+                ex =>
+                {
+                    // Only log if it's not a cancellation exception (which happens during shutdown)
+                    if (ex is not OperationCanceledException and not TaskCanceledException)
+                    {
+                        _logger.Error(ex, "Error Running Periodic Rules");
+                    }
+                });
     }
 
     #region Begin Static Container Registrations
 
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
         builder.RegisterType<RuleService>().AsImplementedInterfaces().AsSelf()
             .InstancePerLifetimeScope();

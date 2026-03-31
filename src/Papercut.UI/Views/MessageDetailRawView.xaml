@@ -6,7 +6,8 @@
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:helpers="clr-namespace:Papercut.Helpers"
-             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600" Background="White"
+             mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600"
+             Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
              IsEnabled="{Binding Path=IsLoading,Converter={StaticResource InverseBooleanConverter}}">
     <Grid IsSharedSizeScope="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
           ShowGridLines="False" Width="Auto">
@@ -15,7 +16,7 @@
             <TextBlock Text="Loading Raw..." FontSize="30" Foreground="DarkGray" Opacity="0.75" TextAlignment="Center" VerticalAlignment="Center" />
         </Grid>
         <Grid>
-            <Border BorderBrush="LightGray" BorderThickness="1">
+            <Border BorderBrush="{DynamicResource MahApps.Brushes.Gray5}" BorderThickness="1">
                 <Grid>
                     <avalonEdit:TextEditor
                     xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"

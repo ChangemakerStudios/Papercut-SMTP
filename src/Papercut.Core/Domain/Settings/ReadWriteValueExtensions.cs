@@ -60,14 +60,14 @@ public static class ReadWriteValueExtensions
 
         if (!description.IsNullOrWhiteSpace() && settings.Get(descriptionKey).IsNullOrWhiteSpace())
         {
-            settings.Set(descriptionKey, $@"## {description}");
+            settings.Set(descriptionKey, $"## {description}");
         }
 
         return returnValue;
     }
 
     public static T Get<T>(
-        this IReadValue<string> readValue,
+        this IReadValue<string?> readValue,
         string key,
         Func<T> getDefaultValue)
     {
@@ -75,12 +75,12 @@ public static class ReadWriteValueExtensions
         if (key == null) throw new ArgumentNullException(nameof(key));
         if (getDefaultValue == null) throw new ArgumentNullException(nameof(getDefaultValue));
 
-        string value = readValue.Get(key);
+        var value = readValue?.Get(key);
         return value.IsNullOrWhiteSpace() ? getDefaultValue() : value.ToType<T>()!;
     }
 
     public static T Get<T>(
-        this IReadValue<string> readValue,
+        this IReadValue<string?> readValue,
         string key,
         T? defaultValue = default!)
     {

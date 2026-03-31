@@ -42,7 +42,7 @@
       <Value Profile="(Default)">%ApplicationData%\Changemaker Studios\Papercut SMTP;%ApplicationData%\Papercut;%BaseDirectory%\Incoming;%AppDataDirectory%\Incoming</Value>
     </Setting>
     <Setting Name="Theme" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Steel Blue</Value>
+      <Value Profile="(Default)">System</Value>
     </Setting>
     <Setting Name="WebView2UserFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)">%UserAppDataDirectory%\WebView2</Value>
@@ -52,6 +52,9 @@
     </Setting>
     <Setting Name="ShowNotifications" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="BaseTheme" Type="System.String" Scope="User">
+      <Value Profile="(Default)">System</Value>
     </Setting>
     <Setting Name="IgnoreSslCertificateErrors" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

@@ -60,7 +60,7 @@ namespace Papercut
             // message watcher is needed for watching
             builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance();
 
-            builder.Register(_ => new ApplicationMeta(AppConstants.ApplicationName))
+            builder.Register(_ => Program.AppMeta)
                 .As<IAppMeta>()
                 .SingleInstance();
 
@@ -102,10 +102,6 @@ namespace Papercut
             builder.RegisterType<EventAggregator>()
                 .As<IEventAggregator>()
                 .InstancePerLifetimeScope();
-
-            builder.RegisterType<SettingPathTemplateProvider>()
-                .AsImplementedInterfaces()
-                .SingleInstance();
 
             builder.RegisterType<WireupLogBridge>().AsImplementedInterfaces().SingleInstance();
 

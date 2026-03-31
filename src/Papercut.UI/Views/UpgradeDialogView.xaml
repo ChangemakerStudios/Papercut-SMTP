@@ -1,0 +1,88 @@
+<mah:MetroWindow x:Class="Papercut.UI.Views.UpgradeDialogView"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+                xmlns:viewModels="clr-namespace:Papercut.UI.ViewModels"
+                mc:Ignorable="d"
+                d:DataContext="{d:DesignInstance Type=viewModels:UpgradeDialogViewModel}"
+                Title="Upgrade Available"
+                Width="700"
+                Height="600"
+                WindowStartupLocation="CenterOwner"
+                ResizeMode="CanResizeWithGrip"
+                ShowInTaskbar="False"
+                BorderThickness="1"
+                GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
+                BorderBrush="{DynamicResource MahApps.Brushes.Accent}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Upgrade Available"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <TextBlock Text="Current Version: "
+                           FontSize="14"
+                           Foreground="{DynamicResource MahApps.Brushes.Gray1}" />
+                <TextBlock Text="{Binding CurrentVersion}"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <TextBlock Text="New Version: "
+                           FontSize="14"
+                           Foreground="{DynamicResource MahApps.Brushes.Gray1}" />
+                <TextBlock Text="{Binding NewVersion}"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource MahApps.Brushes.Accent}" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Separator -->
+        <Separator Grid.Row="1" Margin="0,0,0,15" />
+
+        <!-- Release Notes -->
+        <Border Grid.Row="2"
+                BorderThickness="1"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                Background="{DynamicResource MahApps.Brushes.Control.Background}">
+            <wpf:WebView2 x:Name="ReleaseNotesWebView"
+                          DefaultBackgroundColor="White" />
+        </Border>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,20,0,0">
+            <Button x:Name="Ignore"
+                    Content="Ignore"
+                    Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Style="{DynamicResource MahApps.Styles.Button}" />
+
+            <Button x:Name="Upgrade"
+                    Content="Upgrade"
+                    Width="100"
+                    Height="35"
+                    Style="{DynamicResource MahApps.Styles.Button.Accent}" />
+        </StackPanel>
+    </Grid>
+</mah:MetroWindow>

@@ -84,7 +84,19 @@ docker run -d \
 - `SmtpServer__Port` - SMTP listening port (default: 2525, use 587 for STARTTLS)
 - `SmtpServer__MessagePath` - Path where emails are stored (default: /app/Incoming)
 - `SmtpServer__LoggingPath` - Path for log files (default: /app/logs)
+- `SmtpServer__AllowedIps` - IP allowlist for SMTP connections (default: "*" = all IPs allowed)
 - `Urls` - HTTP server URLs (default: http://0.0.0.0:8080)
+
+**Security - SMTP IP Allowlist Configuration:**
+- `SmtpServer__AllowedIps` - Comma-separated list of allowed IP addresses or CIDR ranges for SMTP connections
+  - `*` - Allow all IPs (default, backward compatible)
+  - `192.168.1.0/24` - Allow single CIDR range
+  - `192.168.1.0/24,10.0.0.0/8` - Allow multiple CIDR ranges
+  - `192.168.1.100` - Allow single IP
+  - `192.168.1.100,192.168.1.101` - Allow multiple specific IPs
+  - Localhost (127.0.0.1/::1) is always allowed
+  - Supports both IPv4 and IPv6
+  - Note: This restricts SMTP connections only, not HTTP web UI access
 
 **TLS/STARTTLS Configuration (Optional):**
 - `SmtpServer__CertificateFindType` - Certificate search method (default: "FindBySubjectName")
@@ -366,6 +378,62 @@ Error: Multiple certificates (3) found matching...
 
 ## Advanced Examples
 
+### SMTP IP Allowlist / Access Control
+
+Restrict SMTP connections to specific IP addresses or networks using the `SmtpServer__AllowedIps` environment variable:
+
+**Allow specific network:**
+```bash
+docker run -d \
+  --name papercut \
+  -e SmtpServer__AllowedIps=192.168.1.0/24 \
+  -p 8080:8080 \
+  -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Allow multiple networks:**
+```bash
+docker run -d \
+  --name papercut \
+  -e SmtpServer__AllowedIps=192.168.1.0/24,10.0.0.0/8,172.16.0.0/12 \
+  -p 8080:8080 \
+  -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Allow specific IPs only:**
+```bash
+docker run -d \
+  --name papercut \
+  -e SmtpServer__AllowedIps=192.168.1.100,192.168.1.101 \
+  -p 8080:8080 \
+  -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Docker Compose with IP filtering:**
+```yaml
+services:
+  papercut:
+    image: changemakerstudiosus/papercut-smtp:latest
+    ports:
+      - "8080:8080"
+      - "2525:2525"
+    environment:
+      - SmtpServer__AllowedIps=192.168.1.0/24,10.0.0.0/8
+    restart: unless-stopped
+```
+
+**Notes:**
+- The IP allowlist applies only to SMTP connections, not HTTP web UI access
+- Localhost (127.0.0.1 and ::1) is always allowed for SMTP
+- Supports CIDR notation for efficient network range specification
+- Supports both IPv4 and IPv6 addresses
+- Use `SmtpServer__AllowedIps=*` to allow all IPs (default behavior)
+- Changes require container restart
+- HTTP web UI access is not restricted by this setting
+
 ### IPv6 Support
 
 To listen on IPv6:
@@ -502,6 +570,59 @@ docker run -d -p 25:2525 -p 80:8080 changemakerstudiosus/papercut-smtp:latest
 
 # Avoid - requires special permissions
 docker run -d --sysctl net.ipv4.ip_unprivileged_port_start=0 changemakerstudiosus/papercut-smtp:latest
+```
+
+### Volume Permission Errors (Permission Denied)
+
+**Error:**
+```
+System.UnauthorizedAccessException: Access to the path '/app/Incoming/...' is denied.
+---> System.IO.IOException: Permission denied
+```
+
+**Cause:** Papercut runs as a non-root user inside the container (UID 1654). When you mount a host directory with `-v /path/on/host:/app/Incoming`, the host directory may be owned by root or your host user, which the container process cannot write to.
+
+**Solutions:**
+
+**Option 1 — Use a Docker named volume (simplest):**
+
+Named volumes are managed by Docker and permissions are handled automatically:
+```bash
+docker run -d \
+  --name papercut \
+  -p 37408:8080 \
+  -p 2525:2525 \
+  -v papercut-messages:/app/Incoming \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Option 2 — Fix host directory ownership:**
+
+Set the host directory owner to UID 1654 (the `app` user inside the container):
+```bash
+# Create the directory and set ownership
+mkdir -p /path/on/host/messages
+chown -R 1654:1654 /path/on/host/messages
+
+docker run -d \
+  --name papercut \
+  -p 37408:8080 \
+  -p 2525:2525 \
+  -v /path/on/host/messages:/app/Incoming \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Option 3 — Run the container with a matching user:**
+
+Use `--user` to run the container as your host user so it can write to your directories:
+```bash
+docker run -d \
+  --name papercut \
+  --user "$(id -u):$(id -g)" \
+  -p 37408:8080 \
+  -p 2525:2525 \
+  -v /path/on/host/messages:/app/Incoming \
+  changemakerstudiosus/papercut-smtp:latest
 ```
 
 ### Cannot Access Web UI

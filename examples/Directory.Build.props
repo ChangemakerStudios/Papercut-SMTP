@@ -2,7 +2,7 @@
   <!-- Common properties for all example projects -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -10,16 +10,16 @@
   <!-- Centralized NuGet package versions -->
   <ItemGroup Label="Common Packages">
     <!-- Fake data generation for test emails -->
-    <PackageReference Include="Bogus" Version="35.6.4" />
+    <PackageReference Include="Bogus" Version="35.*" />
 
     <!-- Modern SMTP/MIME libraries (MailKit) -->
-    <PackageReference Include="MailKit" Version="4.14.1" />
-    <PackageReference Include="MimeKit" Version="4.14.0" />
+    <PackageReference Include="MailKit" Version="4.*" />
+    <PackageReference Include="MimeKit" Version="4.*" />
 
     <!-- Configuration support -->
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.*" />
   </ItemGroup>
 
   <!-- Shared code files -->

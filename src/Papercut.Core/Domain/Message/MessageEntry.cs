@@ -40,9 +40,9 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
 
     protected DateTime? _created;
 
-    private bool _hasBeenSeen;
+    protected bool _hasBeenSeen;
 
-    private bool _isSelected;
+    protected bool _isSelected;
 
     public MessageEntry(FileInfo fileInfo)
     {
@@ -50,30 +50,7 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
 
         Id = HashHelpers.GenerateUniqueId(_info.Name);
 
-        var firstBit = _info.Name.Split(' ').FirstOrDefault();
-
-        if (firstBit?.Length == DateTimeFormat.Length)
-        {
-            _created = DateTime.ParseExact(
-                firstBit,
-                DateTimeFormat,
-                CultureInfo.InvariantCulture);
-        }
-        else
-        {
-            _created = _info.CreationTime;
-        }
-
-        if (_created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
-        {
-            // anything under 5 minutes old is "new" still by default
-            _hasBeenSeen = false;
-        }
-        else
-        {
-            // everything else has been seen by default
-            _hasBeenSeen = true;
-        }
+        InitializeFromFileInfo();
     }
 
     public MessageEntry(string file)
@@ -129,6 +106,31 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    private void InitializeFromFileInfo()
+    {
+        var firstBit = _info.Name.Split(' ').FirstOrDefault();
+        if (firstBit?.Length == DateTimeFormat.Length)
+        {
+            _created = DateTime.ParseExact(
+                firstBit,
+                DateTimeFormat,
+                CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            _created = _info.CreationTime;
+        }
+
+        if (_created > DateTime.Now.Add(-TimeSpan.FromMinutes(5)))
+        {
+            _hasBeenSeen = false;
+        }
+        else
+        {
+            _hasBeenSeen = true;
+        }
+    }
+
     public override string ToString()
     {
         return DisplayText;
@@ -157,5 +159,17 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
         {
             propertyChangedEventHandler.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
+
+    public MessageEntryDto ToDto()
+    {
+        return new MessageEntryDto
+        {
+            ModifiedDate = ModifiedDate,
+            File = File,
+            Name = Name,
+            FileSize = FileSize,
+            DisplayText = DisplayText,
+        };
     }
 }

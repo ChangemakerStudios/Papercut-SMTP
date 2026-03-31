@@ -16,37 +16,38 @@
 // limitations under the License.
 
 
-namespace Papercut.Service.Infrastructure.Paths;
-
 using System.Collections.ObjectModel;
+
+namespace Papercut.Service.Infrastructure.Paths;
 
 public class ServerPathTemplateProviderService : IPathTemplatesProvider
 {
-    public ServerPathTemplateProviderService(SmtpServerOptions smtpServerOptions)
+    public ServerPathTemplateProviderService(PathTemplateType type, SmtpServerSettings smtpServerSettings)
     {
-        var messagePaths = smtpServerOptions.MessagePath.Split(';')
+        Type = type;
+
+        var paths = type == PathTemplateType.Message ? smtpServerSettings.MessagePath : smtpServerSettings.LoggingPath;
+
+        var messagePaths = paths.Split(';')
             .Select(s => s.Trim())
             .Where(s => !string.IsNullOrWhiteSpace(s));
 
-        MessagePathTemplates = new ObservableCollection<string>(messagePaths);
-
-        var loggingPaths = smtpServerOptions.LoggingPath.Split(';')
-            .Select(s => s.Trim())
-            .Where(s => !string.IsNullOrWhiteSpace(s));
-
-        LoggingPathTemplates = new ObservableCollection<string>(loggingPaths);
+        PathTemplates = new ObservableCollection<string>(messagePaths);
     }
 
-    public ObservableCollection<string> MessagePathTemplates { get; }
+    public PathTemplateType Type { get; }
 
-    public ObservableCollection<string> LoggingPathTemplates { get; }
+    public ObservableCollection<string> PathTemplates { get; }
 
     #region Begin Static Container Registrations
 
-    static void Register(ContainerBuilder builder)
+    private static void Register(ContainerBuilder builder)
     {
-        builder.RegisterType<ServerPathTemplateProviderService>().AsImplementedInterfaces().AsSelf()
-            .InstancePerLifetimeScope();
+        builder.Register(p => new ServerPathTemplateProviderService(PathTemplateType.Message, p.Resolve<SmtpServerSettings>()))
+            .Keyed<IPathTemplatesProvider>(PathTemplateType.Message).SingleInstance();
+
+        builder.Register(p => new ServerPathTemplateProviderService(PathTemplateType.Logging, p.Resolve<SmtpServerSettings>()))
+            .Keyed<IPathTemplatesProvider>(PathTemplateType.Logging).SingleInstance();
     }
 
     #endregion

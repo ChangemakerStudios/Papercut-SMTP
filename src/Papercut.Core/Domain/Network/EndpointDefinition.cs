@@ -38,7 +38,7 @@ public class EndpointDefinition
         StoreName storeName = StoreName.My)
         : this(address, port)
     {
-        this.Certificate = this.LoadCertificateFromStore(
+        this.Certificate = LoadCertificateFromStore(
             certificateFindType,
             certificateFindValue,
             storeLocation,
@@ -66,7 +66,7 @@ public class EndpointDefinition
         return IPAddress.Parse(value);
     }
 
-    private X509Certificate? LoadCertificateFromStore(
+    private static X509Certificate2 LoadCertificateFromStore(
         X509FindType findType,
         string findValue,
         StoreLocation storeLocation,
@@ -102,7 +102,7 @@ public class EndpointDefinition
             var certificate = certificates[0];
 
             // Validate certificate has private key (required for TLS server)
-            if (certificate is X509Certificate2 cert2)
+            if (certificate is { } cert2)
             {
                 if (!cert2.HasPrivateKey)
                 {

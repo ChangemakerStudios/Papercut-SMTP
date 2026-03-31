@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using Papercut.Core;
+using Papercut.Core.Domain.Application;
 using Papercut.Core.Infrastructure.Container;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Infrastructure;
@@ -26,12 +28,14 @@ namespace Papercut;
 
 public class Program
 {
+    internal static readonly IAppMeta AppMeta = new ApplicationMeta(AppConstants.ApplicationName, Assembly.GetExecutingAssembly().GetVersion());
+
     internal static IContainer Container { get; private set; }
 
     [STAThread]
     public static void Main(string[] args)
     {
-        Log.Logger = BootstrapLogger.CreateBootstrapLogger(args);
+        Log.Logger = BootstrapLogger.CreateBootstrapLogger(AppMeta, args);
 
         try
         {

@@ -20,12 +20,4 @@ using Papercut.Common.Domain;
 
 namespace Papercut.Core.Domain.Message;
 
-public class NewMessageEvent : IEvent
-{
-    public NewMessageEvent(MessageEntry newMessage)
-    {
-        this.NewMessage = newMessage;
-    }
-
-    public MessageEntry NewMessage { get; set; }
-}
+public record NewMessageEvent(MessageEntryDto NewMessage) : IEvent;

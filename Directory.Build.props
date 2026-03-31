@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<Company>Changemaker Studios</Company>
 		<Description>Standalone SMTP server designed for viewing received messages</Description>
-		<Copyright>Copyright © 2008 - 2024 Ken Robertson &amp; Jaben Cargman</Copyright>
+		<Copyright>Copyright © 2008 - 2025 Ken Robertson &amp; Jaben Cargman</Copyright>
 		<Platforms>AnyCPU;x86;x64</Platforms>
 		<DebugType>portable</DebugType>
 		<Nullable>enable</Nullable>
@@ -24,7 +24,7 @@
 		<Using Include="System.Text" />
 		<Using Include="Serilog" />
 		<Using Include="JetBrains.Annotations" />
-		<PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
-		<PackageReference Include="Serilog" Version="4.3.0" />
+		<PackageReference Include="JetBrains.Annotations" Version="2025.*" />
+		<PackageReference Include="Serilog" Version="4.*" />
 	</ItemGroup>
 </Project>

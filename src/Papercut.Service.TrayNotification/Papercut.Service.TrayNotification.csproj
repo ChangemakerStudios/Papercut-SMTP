@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Title>Papercut SMTP Service Tray Manager</Title>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net9.0-windows</TargetFramework>
+		<ApplicationIcon>icons\Papercut-icon.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<UseWindowsForms>true</UseWindowsForms>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.9" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj" />
+		<ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
+		<ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="icons\Papercut-icon.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+</Project>

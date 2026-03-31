@@ -15,6 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 using System.Net.Sockets;
 
 using Papercut.Common.Domain;
@@ -27,21 +28,23 @@ public class PapercutIPCommClient(EndpointDefinition endpointDefinition, ILogger
 {
     public EndpointDefinition Endpoint { get; } = endpointDefinition;
 
-    private async Task<T?> TryConnect<T>(Func<TcpClient, Task<T>> doOperation, TimeSpan connectTimeout)
+    private async Task<T?> TryConnect<T>(Func<TcpClient, CancellationToken, Task<T>> doOperation, TimeSpan connectTimeout, CancellationToken externalToken = default)
     {
         using var source = new CancellationTokenSource(connectTimeout);
+        using var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(source.Token, externalToken);
+
         using var client = new TcpClient();
 
         try
         {
             await client.ConnectAsync(
-                this.Endpoint.Address,
-                this.Endpoint.Port,
-                source.Token);
+                Endpoint.Address,
+                Endpoint.Port,
+                linkedToken.Token);
 
             if (client.Connected)
             {
-                return await doOperation(client);
+                return await doOperation(client, linkedToken.Token);
             }
         }
         catch (Exception e) when (e is OperationCanceledException or ObjectDisposedException or SocketException)
@@ -56,76 +59,78 @@ public class PapercutIPCommClient(EndpointDefinition endpointDefinition, ILogger
         return default;
     }
 
-    public async Task<TEvent?> ExchangeEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout) where TEvent : IEvent
+    public async Task<TEvent?> ExchangeEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout, CancellationToken externalToken = default) where TEvent : IEvent
     {
-        async Task<TEvent?> DoOperation(TcpClient client)
+        async Task<TEvent?> DoOperation(TcpClient client, CancellationToken t)
         {
             TEvent? returnEvent = default;
 
             await using var stream = client.GetStream();
             logger.Debug("Exchanging {@Event} with Remote", @event);
 
-            var isSuccessful = await this.HandlePublishEvent(
+            var isSuccessful = await HandlePublishEvent(
                 stream,
                 @event,
-                PapercutIPCommCommandType.Exchange);
+                PapercutIPCommCommandType.Exchange,
+                t);
 
             if (isSuccessful)
             {
-                returnEvent = (TEvent)await stream.ReadJsonBufferedAsync(typeof(TEvent));
+                returnEvent = (TEvent)await stream.ReadJsonBufferedAsync(typeof(TEvent), token: t);
             }
 
-            await stream.FlushAsync();
+            await stream.FlushAsync(t);
 
             return returnEvent;
         }
 
-        return await this.TryConnect(DoOperation, connectTimeout);
+        return await TryConnect(DoOperation, connectTimeout, externalToken);
     }
 
-    public async Task<bool> PublishEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout) where TEvent : IEvent
+    public async Task<bool> PublishEventServer<TEvent>(TEvent @event, TimeSpan connectTimeout, CancellationToken token = default) where TEvent : IEvent
     {
-        async Task<bool> DoOperation(TcpClient client)
+        async Task<bool> DoOperation(TcpClient client, CancellationToken t)
         {
             await using var stream = client.GetStream();
             logger.Debug("Publishing {@Event} to Remote", @event);
 
-            var isSuccessful = await this.HandlePublishEvent(
+            var isSuccessful = await HandlePublishEvent(
                 stream,
                 @event,
-                PapercutIPCommCommandType.Publish);
+                PapercutIPCommCommandType.Publish,
+                t);
 
-            await stream.FlushAsync();
+            await stream.FlushAsync(t);
 
             return isSuccessful;
         }
 
-        return await this.TryConnect(DoOperation, connectTimeout);
+        return await TryConnect(DoOperation, connectTimeout, token);
     }
 
-    async Task<bool> HandlePublishEvent<TEvent>(
+    private async Task<bool> HandlePublishEvent<TEvent>(
         NetworkStream stream,
         TEvent @event,
-        PapercutIPCommCommandType protocolCommandType) where TEvent : IEvent
+        PapercutIPCommCommandType protocolCommandType, CancellationToken token = default) where TEvent : IEvent
     {
-        string response = (await stream.ReadStringBufferedAsync()).Trim();
+        string response = (await stream.ReadStringBufferedAsync(token: token)).Trim();
 
         if (response != AppConstants.ApplicationName.ToUpper()) return false;
 
         var eventJson = PapercutIPCommSerializer.ToJson(@event);
 
         var requestJson = PapercutIPCommSerializer.ToJson(
-            new PapercutIPCommRequest()
+            new PapercutIPCommRequest
             {
                 CommandType = protocolCommandType,
                 Type = @event.GetType(),
                 ByteSize = Encoding.UTF8.GetBytes(eventJson).Length
             });
 
-        await stream.WriteLineAsync(requestJson);
+        await stream.WriteLineAsync(requestJson, token: token);
 
-        response = (await stream.ReadStringBufferedAsync()).Trim();
-        if (response == "ACK") await stream.WriteStrAsync(eventJson);
+        response = (await stream.ReadStringBufferedAsync(token: token)).Trim();
+        if (response == "ACK") await stream.WriteStrAsync(eventJson, token: token);
 
         return true;
     }
