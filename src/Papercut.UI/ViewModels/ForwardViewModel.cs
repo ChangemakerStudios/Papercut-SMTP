@@ -192,7 +192,7 @@ public class ForwardViewModel : Screen
     {
         AvailableRules.Clear();
 
-        var relayRules = _ruleService.Rules.OfType<RelayRule>();
+        var relayRules = _ruleService.Rules.OfType<ForwardRule>();
         foreach (var rule in relayRules)
         {
             AvailableRules.Add(new RelayRuleListItem(rule));
@@ -206,7 +206,7 @@ public class ForwardViewModel : Screen
         this.To = Settings.Default.ForwardTo;
         this.From = Settings.Default.ForwardFrom;
         this.Username = Settings.Default.ForwardSmtpUsername;
-        this.Password = Settings.Default.ForwardSmtpPassword;
+        // Password is intentionally not persisted to settings for security
         this.Port = Settings.Default.ForwardSmtpPort;
         this.UseSsl = Settings.Default.ForwardSmtpUseSsl;
     }
@@ -244,6 +244,14 @@ public class ForwardViewModel : Screen
             return;
         }
 
+        if (this.Port < 1 || this.Port > 65535)
+        {
+            _uiCommandHub.ShowMessage(
+                "SMTP port must be between 1 and 65535.",
+                AppConstants.ApplicationName);
+            return;
+        }
+
         if (this.FromSetting)
         {
             // Save settings for the next time
@@ -251,7 +259,7 @@ public class ForwardViewModel : Screen
             Settings.Default.ForwardTo = this.To.Trim();
             Settings.Default.ForwardFrom = this.From.Trim();
             Settings.Default.ForwardSmtpUsername = this.Username?.Trim() ?? string.Empty;
-            Settings.Default.ForwardSmtpPassword = this.Password ?? string.Empty;
+            // Password is intentionally not persisted to settings for security
             Settings.Default.ForwardSmtpPort = this.Port;
             Settings.Default.ForwardSmtpUseSsl = this.UseSsl;
             Settings.Default.Save();

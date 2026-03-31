@@ -697,11 +697,11 @@ public class MainViewModel : Conductor<object>,
             {
                 FromEmail = forwardViewModel.From,
                 ToEmail = forwardViewModel.To,
-                SmtpServer = forwardViewModel.Server.Trim(),
+                SmtpServer = forwardViewModel.Server?.Trim() ?? string.Empty,
                 SmtpPort = forwardViewModel.Port,
                 SmtpUseSSL = forwardViewModel.UseSsl,
-                SmtpUsername = forwardViewModel.Username,
-                SmtpPassword = forwardViewModel.Password
+                SmtpUsername = forwardViewModel.Username ?? string.Empty,
+                SmtpPassword = forwardViewModel.Password ?? string.Empty
             };
 
             // send message using relay dispatcher...
