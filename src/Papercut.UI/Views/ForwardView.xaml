@@ -20,6 +20,9 @@
                       BorderThickness="{DynamicResource AccentBorderThickness}"
                       GlowBrush="{DynamicResource AccentGlowBrush}"
                       BorderBrush="{DynamicResource AccentBorderBrush}">
+    <controls:MetroWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </controls:MetroWindow.Resources>
     <Grid Margin="8">
         <DockPanel>
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0"
@@ -44,6 +47,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <!-- Use Rule dropdown -->
@@ -52,6 +56,7 @@
                           ItemsSource="{Binding AvailableRules}"
                           SelectedItem="{Binding SelectedRule}"
                           DisplayMemberPath="DisplayName"
+                          IsEnabled="{Binding HasAvailableRules}"
                           controls:TextBoxHelper.Watermark="(manual entry)" />
 
                 <!-- Separator -->
@@ -74,21 +79,29 @@
                           IsChecked="{Binding UseSsl}" />
 
                 <!-- Authentication -->
-                <Label Grid.Column="0" Grid.Row="5" Content="Username:" Height="24"/>
-                <TextBox Grid.Column="1" Grid.Row="5" Margin="2" TabIndex="3"
-                         x:Name="Username" />
+                <Label Grid.Column="0" Grid.Row="5" Content="Authenticate:" Height="24"/>
+                <CheckBox Grid.Column="1" Grid.Row="5" Margin="2,5,2,2" TabIndex="3"
+                          IsChecked="{Binding UseAuthentication}" />
 
-                <Label Grid.Column="0" Grid.Row="6" Content="Password:" Height="24"/>
-                <PasswordBox Grid.Column="1" Grid.Row="6" Margin="2" TabIndex="4"
-                             behaviors:PasswordBoxBindingBehavior.Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <Label Grid.Column="0" Grid.Row="6" Content="Username:" Height="24"
+                       Visibility="{Binding UseAuthentication, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <TextBox Grid.Column="1" Grid.Row="6" Margin="2" TabIndex="4"
+                         x:Name="Username"
+                         Visibility="{Binding UseAuthentication, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                <Label Grid.Column="0" Grid.Row="7" Content="Password:" Height="24"
+                       Visibility="{Binding UseAuthentication, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <PasswordBox Grid.Column="1" Grid.Row="7" Margin="2" TabIndex="5"
+                             behaviors:PasswordBoxBindingBehavior.Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Visibility="{Binding UseAuthentication, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                 <!-- Email addresses -->
-                <Label Grid.Column="0" Grid.Row="7" Content="From:" Margin="0,2,0,0"/>
-                <TextBox Grid.Column="1" Grid.Row="7" Margin="2" TabIndex="5"
+                <Label Grid.Column="0" Grid.Row="8" Content="From:" Margin="0,2,0,0"/>
+                <TextBox Grid.Column="1" Grid.Row="8" Margin="2" TabIndex="6"
                          x:Name="From" />
 
-                <Label Grid.Column="0" Grid.Row="8" Content="To:"/>
-                <TextBox Grid.Column="1" Grid.Row="8" Margin="2" TabIndex="6"
+                <Label Grid.Column="0" Grid.Row="9" Content="To:"/>
+                <TextBox Grid.Column="1" Grid.Row="9" Margin="2" TabIndex="7"
                          x:Name="To" />
             </Grid>
         </DockPanel>

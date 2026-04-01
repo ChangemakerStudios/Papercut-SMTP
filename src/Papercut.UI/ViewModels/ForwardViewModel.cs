@@ -55,6 +55,8 @@ public class ForwardViewModel : Screen
 
     bool _useSsl;
 
+    bool _useAuthentication;
+
     string _windowTitle = "Forward Message";
 
     RelayRuleListItem _selectedRule;
@@ -156,7 +158,25 @@ public class ForwardViewModel : Screen
         }
     }
 
+    public bool UseAuthentication
+    {
+        get => this._useAuthentication;
+        set
+        {
+            this._useAuthentication = value;
+            this.NotifyOfPropertyChange(() => this.UseAuthentication);
+
+            if (!value)
+            {
+                this.Username = string.Empty;
+                this.Password = string.Empty;
+            }
+        }
+    }
+
     public ObservableCollection<RelayRuleListItem> AvailableRules { get; }
+
+    public bool HasAvailableRules => AvailableRules.Count > 0;
 
     public RelayRuleListItem SelectedRule
     {
@@ -178,6 +198,9 @@ public class ForwardViewModel : Screen
         this.Server = rule.SmtpServer;
         this.Port = rule.SmtpPort;
         this.UseSsl = rule.SmtpUseSSL;
+
+        var hasCredentials = !string.IsNullOrEmpty(rule.SmtpUsername) || !string.IsNullOrEmpty(rule.SmtpPassword);
+        this.UseAuthentication = hasCredentials;
         this.Username = rule.SmtpUsername;
         this.Password = rule.SmtpPassword;
 
@@ -197,6 +220,8 @@ public class ForwardViewModel : Screen
         {
             AvailableRules.Add(new RelayRuleListItem(rule));
         }
+
+        this.NotifyOfPropertyChange(() => this.HasAvailableRules);
     }
 
     void Load()
