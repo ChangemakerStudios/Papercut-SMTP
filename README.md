@@ -144,5 +144,15 @@ docker run -d \
 | `CertificateStoreName` | Store name | `My` | `My` (Personal) |
 | `Port` | SMTP port | `25` | 587 (STARTTLS recommended) |
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=ChangemakerStudios%2FPapercut-SMTP&type=date&legend=bottom-right">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ChangemakerStudios/Papercut-SMTP&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ChangemakerStudios/Papercut-SMTP&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ChangemakerStudios/Papercut-SMTP&type=date&legend=top-left" />
+ </picture>
+</a>
+
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
