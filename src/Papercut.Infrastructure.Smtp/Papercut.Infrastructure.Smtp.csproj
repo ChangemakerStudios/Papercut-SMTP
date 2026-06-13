@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -9,7 +9,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="SmtpServer" Version="11.0.0" />
+		<PackageReference Include="SmtpServer" Version="11.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>

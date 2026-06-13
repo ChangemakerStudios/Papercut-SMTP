@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<Title>Papercut SMTP</Title>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net9.0-windows10.0.19041</TargetFramework>
+		<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
 		<ApplicationIcon>App.ico</ApplicationIcon>
 		<SignManifests>false</SignManifests>
 		<UseWPF>true</UseWPF>
@@ -52,47 +52,47 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Analects.Caliburn.Micro.Autofac" Version="1.0.0" />
-		<PackageReference Include="Autofac" Version="8.4.0" />
+		<PackageReference Include="Autofac" Version="9.1.0" />
 		<PackageReference Include="AvalonEdit" Version="6.3.1.120" />
 		<PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
 		<PackageReference Include="Caliburn.Micro" Version="5.0.258" />
 		<PackageReference Include="LiteDB" Version="5.0.21" />
 		<PackageReference Include="MahApps.Metro" Version="2.4.11" />
-		<PackageReference Include="MahApps.Metro.IconPacks" Version="6.1.0" />
-		<PackageReference Include="MimeKit" Version="4.14.0" />
-		<PackageReference Include="ReactiveUI.WPF" Version="22.2.1" />
+		<PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+		<PackageReference Include="MimeKit" Version="4.17.0" />
+		<PackageReference Include="ReactiveUI.WPF" Version="23.2.28" />
 		<PackageReference Include="Serilog.Sinks.Observable" Version="3.0.0" />
 		<PackageReference Include="Handlebars.Net" Version="2.1.6" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
-		<PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4022.49" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="9.1.0" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-		<PackageReference Include="TaskTupleAwaiter" Version="2.1.0" />
-		<PackageReference Include="Velopack" Version="0.0.1521-gf115f70" />
-		<PackageReference Include="System.Management" Version="9.0.9" />
+		<PackageReference Include="TaskTupleAwaiter" Version="2.3.0" />
+		<PackageReference Include="Velopack" Version="1.2.0" />
+		<PackageReference Include="System.Management" Version="10.0.9" />
 	</ItemGroup>
 	<ItemGroup>
 		<Resource Include="Resources\attachment-icon.png" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Domain\Application\" />
+		<Folder Include="Domain\Application\" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Compile Update="Properties\Settings.Designer.cs">
-	    <DesignTimeSharedInput>True</DesignTimeSharedInput>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>Settings.settings</DependentUpon>
-	  </Compile>
-	  <Compile Update="Properties\UIStrings.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>UIStrings.resx</DependentUpon>
-	  </Compile>
+		<Compile Update="Properties\Settings.Designer.cs">
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+		<Compile Update="Properties\UIStrings.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>UIStrings.resx</DependentUpon>
+		</Compile>
 	</ItemGroup>
 	<ItemGroup>
-	  <None Update="Properties\Settings.settings">
-	    <Generator>PublicSettingsSingleFileGenerator</Generator>
-	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-	  </None>
+		<None Update="Properties\Settings.settings">
+			<Generator>PublicSettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
 	</ItemGroup>
 </Project>

@@ -151,7 +151,7 @@ public class ThemeManagerService(
             .Select(_ => "accent color");
 
         _monitoringSubscription = darkModeChanges.Merge(accentColorChanges)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(
                 changeType =>
                 {
