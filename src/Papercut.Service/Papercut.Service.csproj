@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<OutputType>exe</OutputType>
 		<OutputTypeEx>exe</OutputTypeEx>
 		<DebugType>portable</DebugType>
@@ -25,13 +25,13 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.0" />
 		<PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
 		<PackageReference Include="ElectronNET.API" Version="23.6.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.5" />
-		<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.9" />
+		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.ExceptionalLogContext" Version="1.1.0" />
-		<PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="9.1.0" />
 		<PackageReference Include="Serilog.Expressions" Version="5.0.0" />
 	</ItemGroup>
 	<ItemGroup>
