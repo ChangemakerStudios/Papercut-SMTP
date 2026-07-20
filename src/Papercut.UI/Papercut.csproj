@@ -58,7 +58,8 @@
 		<PackageReference Include="Caliburn.Micro" Version="5.0.258" />
 		<PackageReference Include="LiteDB" Version="5.0.21" />
 		<PackageReference Include="MahApps.Metro" Version="2.4.11" />
-		<PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+		<PackageReference Include="MahApps.Metro.IconPacks.Core" Version="6.2.1" />
+		<PackageReference Include="MahApps.Metro.IconPacks.Material" Version="6.2.1" />
 		<PackageReference Include="MimeKit" Version="4.17.0" />
 		<PackageReference Include="ReactiveUI.WPF" Version="23.2.28" />
 		<PackageReference Include="Serilog.Sinks.Observable" Version="3.0.0" />
