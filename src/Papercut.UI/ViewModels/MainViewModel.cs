@@ -723,13 +723,26 @@ public class MainViewModel : Conductor<object>,
 
         //_window.Flyouts.FindChild<FlyoutsControl>("LogFlyouts")
 
+        var previousWindowState = this._window.WindowState;
+
         this._window.StateChanged += (_, _) =>
         {
-            if (this._window.WindowState == WindowState.Minimized && Settings.Default.MinimizeToTray)
+            var currentWindowState = this._window.WindowState;
+
+            if (currentWindowState == WindowState.Minimized && Settings.Default.MinimizeToTray)
             {
                 // Hide the window if minimized so it doesn't show up on the task bar
                 this._window.Hide();
             }
+            else if (previousWindowState == WindowState.Minimized
+                     && currentWindowState != WindowState.Minimized)
+            {
+                // restored after minimize (possibly hours later) -- ensure the list is
+                // current even if the file watcher or refresh subscriptions have failed
+                this.MessageListViewModel.RefreshMessageList();
+            }
+
+            previousWindowState = currentWindowState;
         };
 
         this._window.Closing += (_, args) =>
