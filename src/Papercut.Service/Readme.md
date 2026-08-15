@@ -131,6 +131,24 @@ or
 
 **Security Note:** ⚠️ When binding to `0.0.0.0`, `+`, `*`, or a non-localhost IP address, the web interface becomes accessible from other machines on the network. Ensure proper firewall rules and network security are in place, as Papercut does not include built-in authentication.
 
+**Serve the Web UI Under a Path Prefix:**
+
+When running behind a reverse proxy or Kubernetes ingress, the web UI (and API) can be served under a path prefix (e.g. `http://host:8080/webmail/`). Set `HttpPathPrefix` in `appsettings.json` or `Papercut.Service.Settings.json`:
+
+```json
+{
+  "HttpPathPrefix": "/webmail"
+}
+```
+
+Or via environment variable (useful for Docker):
+
+```bash
+docker run -d -p 8080:8080 -p 2525:2525 -e HttpPathPrefix=/webmail changemakerstudiosus/papercut-smtp:latest
+```
+
+The default (empty) serves the web UI at the root as before. Requests without the prefix continue to work, so proxies that strip the prefix are also supported.
+
 **Change SMTP IP Address:**
 Edit `Papercut.Service.Settings.json`:
 ```json

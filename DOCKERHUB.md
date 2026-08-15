@@ -27,6 +27,11 @@ docker run -d \
 
 **Send test emails to:** localhost:2525
 
+### Papercut SMTP Web UI
+
+![Papercut SMTP Web UI - Message List](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutWebUI-V7-1.png)
+![Papercut SMTP Web UI - Message Detail](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutWebUI-V7-2.png)
+
 ---
 
 ## Port Configuration
@@ -86,6 +91,7 @@ docker run -d \
 - `SmtpServer__LoggingPath` - Path for log files (default: /app/logs)
 - `SmtpServer__AllowedIps` - IP allowlist for SMTP connections (default: "*" = all IPs allowed)
 - `Urls` - HTTP server URLs (default: http://0.0.0.0:8080)
+- `HttpPathPrefix` - Serve the web UI and API under a path prefix, e.g. `/webmail` (default: empty = serve at root)
 
 **Security - SMTP IP Allowlist Configuration:**
 - `SmtpServer__AllowedIps` - Comma-separated list of allowed IP addresses or CIDR ranges for SMTP connections
@@ -434,6 +440,23 @@ services:
 - Changes require container restart
 - HTTP web UI access is not restricted by this setting
 
+### Serve Under a Path Prefix (Reverse Proxy / Ingress)
+
+When running behind a reverse proxy or Kubernetes ingress, the web UI and API can be served under a path prefix using the `HttpPathPrefix` environment variable:
+
+```bash
+docker run -d \
+  --name papercut \
+  -e HttpPathPrefix=/webmail \
+  -p 8080:8080 \
+  -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+**Access the web UI at:** http://localhost:8080/webmail/
+
+Requests without the prefix continue to work, so proxies that strip the prefix before forwarding are also supported.
+
 ### IPv6 Support
 
 To listen on IPv6:
@@ -554,6 +577,8 @@ Access via port-forward for testing:
 ```bash
 kubectl port-forward svc/papercut-smtp 37408:8080 2525:2525
 ```
+
+**Exposing behind an ingress under a sub-path?** Set the `HttpPathPrefix` environment variable (e.g. `/webmail`) in the deployment so the web UI serves itself under that prefix — no path rewriting needed in the ingress.
 
 ---
 
