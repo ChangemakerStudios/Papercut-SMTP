@@ -147,7 +147,7 @@ Or via environment variable (useful for Docker):
 docker run -d -p 8080:8080 -p 2525:2525 -e HttpPathPrefix=/webmail changemakerstudiosus/papercut-smtp:latest
 ```
 
-The default (empty) serves the web UI at the root as before. Requests without the prefix continue to work, so proxies that strip the prefix are also supported.
+The default (empty) serves the web UI at the root as before. Requests without the prefix continue to work, so proxies that strip the prefix are also supported — but a prefix-stripping proxy must redirect the bare prefix (`/webmail` → `/webmail/`) itself, since the app only sees `/` and cannot issue that redirect. Forwarding the full prefix (with `HttpPathPrefix` set) avoids this entirely.
 
 **Change SMTP IP Address:**
 Edit `Papercut.Service.Settings.json`:

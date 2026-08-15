@@ -455,7 +455,7 @@ docker run -d \
 
 **Access the web UI at:** http://localhost:8080/webmail/
 
-Requests without the prefix continue to work, so proxies that strip the prefix before forwarding are also supported.
+Requests without the prefix continue to work, so proxies that strip the prefix before forwarding are also supported. **Note for prefix-stripping proxies:** if your proxy strips the prefix, it must also redirect the bare prefix (`/webmail` → `/webmail/`) itself — the app only sees `/` and cannot issue that redirect. Forwarding the full prefix (with `HttpPathPrefix` set) avoids this entirely.
 
 ### IPv6 Support
 
@@ -536,6 +536,9 @@ spec:
           value: "2525"
         - name: Urls
           value: "http://0.0.0.0:8080"
+        # Optional: serve the web UI under a sub-path behind an ingress
+        # - name: HttpPathPrefix
+        #   value: "/webmail"
         volumeMounts:
         - name: messages
           mountPath: /app/Incoming
