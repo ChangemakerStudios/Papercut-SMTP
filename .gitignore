@@ -27,3 +27,6 @@ Releases
 settings.local.json
 TestResults/
 .DS_Store
+
+# MkDocs build output
+site/

@@ -1,0 +1,76 @@
+site_name: Papercut SMTP
+site_url: https://www.papercut-smtp.com/
+site_description: The simple desktop email receiver and viewer for development — catch every email your app sends, deliver none of them.
+repo_url: https://github.com/ChangemakerStudios/Papercut-SMTP
+repo_name: ChangemakerStudios/Papercut-SMTP
+edit_uri: edit/develop/docs/
+
+theme:
+  name: material
+  logo: images/logo.png
+  favicon: images/logo.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: light blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: light blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - How It Works: how-it-works.md
+  - Getting Started: getting-started.md
+  - Guides:
+    - Send Email from Your App: send-from-your-app.md
+    - Desktop App: desktop.md
+    - Service & Web UI: service.md
+    - Docker: docker.md
+    - TLS & Authentication: smtp-tls-auth.md
+  - Troubleshooting: troubleshooting.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ChangemakerStudios/Papercut-SMTP
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/r/changemakerstudiosus/papercut-smtp
