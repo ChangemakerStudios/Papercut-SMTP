@@ -164,7 +164,9 @@ public static class WinGet
 // Parameter class
 public class WinGetReleaseParams
 {
-    public string PackageIdentifier { get; set; } = "ChangemakerStudios.PapercutSMTP";
+    // NOTE: must match the existing package path in microsoft/winget-pkgs:
+    // manifests/c/ChangemakerStudios/Papercut-SMTP (hyphenated!)
+    public string PackageIdentifier { get; set; } = "ChangemakerStudios.Papercut-SMTP";
     public string? Version { get; set; }
     public string? ChannelPostfix { get; set; }
     public DirectoryPath? ReleasesDirectory { get; set; }
