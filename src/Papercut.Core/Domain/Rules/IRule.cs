@@ -28,6 +28,8 @@ public interface IRule : INotifyPropertyChanged
 {
     Guid Id { get; }
 
+    string Name { get; set; }
+
     bool IsEnabled { get; set; }
 
     string Type { get; }

@@ -97,6 +97,42 @@ namespace Papercut.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ForwardSmtpUsername {
+            get {
+                return ((string)(this["ForwardSmtpUsername"]));
+            }
+            set {
+                this["ForwardSmtpUsername"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("25")]
+        public int ForwardSmtpPort {
+            get {
+                return ((int)(this["ForwardSmtpPort"]));
+            }
+            set {
+                this["ForwardSmtpPort"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ForwardSmtpUseSsl {
+            get {
+                return ((bool)(this["ForwardSmtpUseSsl"]));
+            }
+            set {
+                this["ForwardSmtpUseSsl"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool MinimizeOnClose {
             get {
