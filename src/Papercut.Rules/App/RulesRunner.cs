@@ -129,7 +129,7 @@ public class RulesRunner : IRulesRunner
             var ruleDispatcher = _lifetimeScope.Resolve<IRuleDispatcher<TRule>>();
             await ruleDispatcher.DispatchAsync(rule, messageEntry, token);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
             throw;
         }

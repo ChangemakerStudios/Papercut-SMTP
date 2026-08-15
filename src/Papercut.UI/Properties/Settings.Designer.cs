@@ -109,18 +109,6 @@ namespace Papercut.Properties {
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ForwardSmtpPassword {
-            get {
-                return ((string)(this["ForwardSmtpPassword"]));
-            }
-            set {
-                this["ForwardSmtpPassword"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("25")]
         public int ForwardSmtpPort {
             get {
