@@ -37,6 +37,13 @@ Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be
 Papercut SMTP has an optional HTTP server to receive emails even when the client is not running.
 It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut-SMTP/releases), unzipping, and installing as a Windows Service.
 
+### Papercut SMTP Web UI
+
+The service includes a built-in web interface for viewing received emails in your browser (default: **http://localhost:8080**):
+
+![Papercut SMTP Web UI - Message List](https://github.com/ChangemakerStudios/Papercut-SMTP/blob/develop/graphics/PapercutWebUI-V7-1.png?raw=true)
+![Papercut SMTP Web UI - Message Detail](https://github.com/ChangemakerStudios/Papercut-SMTP/blob/develop/graphics/PapercutWebUI-V7-2.png?raw=true)
+
 ### Installing Papercut SMTP Service
 
 1. **Download** the appropriate [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) for your system (win-x64 or win-x86)
@@ -143,6 +150,16 @@ docker run -d \
 | `CertificateStoreLocation` | Store location | `LocalMachine` | `LocalMachine` or `CurrentUser` |
 | `CertificateStoreName` | Store name | `My` | `My` (Personal) |
 | `Port` | SMTP port | `25` | 587 (STARTTLS recommended) |
+
+## Star History
+
+<a href="https://star-history.dera.page/#ChangemakerStudios/Papercut-SMTP&type=date&legend=bottom-right">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=ChangemakerStudios/Papercut-SMTP&type=date&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=ChangemakerStudios/Papercut-SMTP&type=date&legend=top-left" />
+    <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=ChangemakerStudios/Papercut-SMTP&type=date&legend=top-left" />
+  </picture>
+</a>
 
 ## License
 Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

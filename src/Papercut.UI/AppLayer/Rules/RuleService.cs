@@ -57,6 +57,12 @@ public class RuleService(
         _logger.Information("Papercut Service is {NewStatus}", @event.PapercutServiceStatus);
 
         await SyncRuleObservables();
+
+        if (backendServiceStatus.IsOnline)
+        {
+            // push the current rules so the service is in sync with the UI
+            await messageBus.PublishAsync(new RulesUpdatedEvent(Rules.ToArray()), token);
+        }
     }
 
     private async Task LoadRules()
@@ -89,17 +95,11 @@ public class RuleService(
     {
         await CleanupRuleSubscriptions();
 
-        if (backendServiceStatus.IsOnline)
-        {
-            _logger.Information("Backend service is online - rule execution delegated to service");
-            return;
-        }
-
-        _logger.Information("Rule subscriptions will be run in UI since backend service is offline");
-
         var cancellationSource = new CancellationTokenSource();
         _ruleObservableDisposables.Push(cancellationSource);
 
+        // rule change publishing must always be active -- it's how rule edits in the UI
+        // are synchronized to the backend service (and persisted there) when it's online
         _ruleObservableDisposables.Push(GetRuleChangedObservable(TaskPoolScheduler.Default)
             .SubscribeAsync(
                 async args =>
@@ -112,6 +112,14 @@ public class RuleService(
                     await messageBus.PublishAsync(new RulesUpdatedEvent(Rules.ToArray()), cancellationSource.Token);
                 },
                 ex => _logger.Error(ex, "Failure Publishing Rules")));
+
+        if (backendServiceStatus.IsOnline)
+        {
+            _logger.Information("Backend service is online - rule execution delegated to service");
+            return;
+        }
+
+        _logger.Information("Rules will be run in UI since backend service is offline");
 
         _logger.Debug("Setting up Rule Dispatcher Observable");
 

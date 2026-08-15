@@ -49,7 +49,7 @@ sc.exe start Papercut.Smtp.Service
 
 ## How to Configure Papercut.Service
 
-_Papercut.Service_ does not need manual configuration. When the service and the client (_Papercut.exe_) processes are run at the same time, they will automatically synchronize their configurations. For example, when the SMTP settings is modified in the Papercut UI options, the service will automatically update itself and save these changes. Rule changes work the same way.
+_Papercut.Service_ does not need manual configuration. When the service and the client (_Papercut.exe_) processes are run at the same time, they will automatically synchronize their configurations. For example, when the SMTP settings is modified in the Papercut UI options, the service will automatically update itself and save these changes. Rule changes are synchronized the same way, but are persisted separately to `rules.json` (not the settings file).
 
 ### Configuration Files
 
@@ -58,13 +58,18 @@ Configuration is managed through a layered system:
 1. **`Papercut.Service.Settings.json`** - User-editable settings that persist UI changes
    - Located in the same directory as `Papercut.Service.exe`
    - Contains configuration with comments outlining options
-   - Changes made via the Papercut UI are saved here automatically
+   - Changes made via the Papercut UI (e.g. SMTP IP/Port) are saved here automatically
+   - Note: rules are *not* stored here — see `rules.json` below
 
-2. **`appsettings.json`** - Default configuration
+2. **`rules.json`** - Persisted rules
+   - Located in the same directory as `Papercut.Service.exe`
+   - Rule changes made via the Papercut UI are synchronized to the service and saved here automatically
+
+3. **`appsettings.json`** - Default configuration
    - Provides baseline defaults (SMTP port: 25, IP: Any)
    - Not recommended to edit directly
 
-3. **`appsettings.Production.json`** - Production/Docker overrides
+4. **`appsettings.Production.json`** - Production/Docker overrides
    - Used when `ASPNETCORE_ENVIRONMENT=Production`
    - Docker deployments use non-privileged ports (SMTP: 2525, HTTP: 8080)
 
