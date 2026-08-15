@@ -35,7 +35,7 @@ public class RuleService(
     IRulesRunner rulesRunner)
     : RuleServiceBase(ruleRepository, logger),
         IEventHandler<RulesUpdatedEvent>,
-        IEventHandler<PapercutClientReadyEvent>,
+        IEventHandler<PapercutServiceReadyEvent>,
         IEventHandler<NewMessageEvent>
 {
     private static readonly TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);
@@ -75,19 +75,21 @@ public class RuleService(
         return Task.CompletedTask;
     }
 
-    public Task HandleAsync(PapercutClientReadyEvent @event, CancellationToken token = default)
+    public Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
     {
-        _logger.Debug("Attempting to Load Rules from {RuleFileName} on AppReady", RuleFileName);
-
         try
         {
             // accessing "Rules" forces the collection to be loaded
             if (Rules.Any())
             {
                 _logger.Information(
-                    "Loaded {RuleCount} from {RuleFileName}",
+                    "Loaded {RuleCount} Rule(s) from {RuleFileName}",
                     Rules.Count,
                     RuleFileName);
+            }
+            else
+            {
+                _logger.Information("No Rules found in {RuleFileName}", RuleFileName);
             }
         }
         catch (Exception ex) when (_logger.ErrorWithContext(ex, "Error loading rules from file {RuleFileName}", RuleFileName))
@@ -131,6 +133,8 @@ public class RuleService(
 
     private void SetupPeriodicRuleObservable()
     {
+        _periodicRuleSubscription?.Dispose();
+
         _logger.Debug("Setting up Periodic Rule Observable {RunInterval}", PeriodicRunInterval);
 
         _periodicRuleSubscription = Observable.Interval(PeriodicRunInterval, TaskPoolScheduler.Default)
