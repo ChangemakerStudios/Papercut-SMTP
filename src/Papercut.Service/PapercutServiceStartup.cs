@@ -76,8 +76,31 @@ internal class PapercutServiceStartup
         }
     }
 
-    public void Configure(IApplicationBuilder app)
+    public void Configure(WebApplication app)
     {
+        var pathPrefix = GetHttpPathPrefix(app);
+
+        if (!string.IsNullOrEmpty(pathPrefix))
+        {
+            Log.Information("Serving HTTP under path prefix {HttpPathPrefix}", pathPrefix);
+
+            app.UsePathBase(pathPrefix);
+
+            // redirect the bare prefix ("/webmail") to "/webmail/" so the web UI's
+            // relative asset and api urls resolve against the prefix
+            app.Use(
+                async (context, next) =>
+                {
+                    if (context.Request.PathBase.HasValue && !context.Request.Path.HasValue)
+                    {
+                        context.Response.Redirect(context.Request.PathBase + "/");
+                        return;
+                    }
+
+                    await next();
+                });
+        }
+
         app.UseRouting();
 
         app.UseSerilogRequestLogging();
@@ -87,5 +110,17 @@ internal class PapercutServiceStartup
             {
                 s.MapControllers();
             });
+    }
+
+    private static string GetHttpPathPrefix(WebApplication app)
+    {
+        var settingStore = app.Services.GetRequiredService<ISettingStore>();
+        var pathPrefix = settingStore.Get("HttpPathPrefix", app.Configuration["HttpPathPrefix"]);
+
+        if (string.IsNullOrWhiteSpace(pathPrefix)) return string.Empty;
+
+        pathPrefix = "/" + pathPrefix.Trim().Trim('/');
+
+        return pathPrefix == "/" ? string.Empty : pathPrefix;
     }
 }

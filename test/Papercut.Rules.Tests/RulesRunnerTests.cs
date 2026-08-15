@@ -43,6 +43,7 @@ public class RulesRunnerTests
     {
         public Guid Id { get; } = Guid.NewGuid();
         public bool IsEnabled { get; set; } = true;
+        public string Name { get; set; } = "TestRule";
         public string Type => "TestRule";
         public string Description => "Test rule for unit tests";
         public event PropertyChangedEventHandler? PropertyChanged;

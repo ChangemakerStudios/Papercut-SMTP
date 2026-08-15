@@ -127,7 +127,8 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" Width="80" />
-                        <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" Width="200" />
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="120" />
+                        <DataGridTextColumn Header="Rule Type" Binding="{Binding Type}" Width="150" />
                         <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
                     </DataGrid.Columns>
                 </DataGrid>

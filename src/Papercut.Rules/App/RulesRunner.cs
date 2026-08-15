@@ -61,6 +61,8 @@ public class RulesRunner : IRulesRunner
         if (rules == null) throw new ArgumentNullException(nameof(rules));
         if (messageEntry == null) throw new ArgumentNullException(nameof(messageEntry));
 
+        token.ThrowIfCancellationRequested();
+
         var ruleTasks = new List<Task>();
 
         foreach (var rule in rules.Where(r => r.IsEnabled))
@@ -126,6 +128,10 @@ public class RulesRunner : IRulesRunner
         {
             var ruleDispatcher = _lifetimeScope.Resolve<IRuleDispatcher<TRule>>();
             await ruleDispatcher.DispatchAsync(rule, messageEntry, token);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
