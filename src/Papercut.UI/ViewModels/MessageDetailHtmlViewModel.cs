@@ -300,8 +300,8 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
             };
         }
 
-        // Handle context menu for links
-        coreWebView.ContextMenuRequested += (sender, args) =>
+        // Handle context menu for links and text selection
+        coreWebView.ContextMenuRequested += async (sender, args) =>
         {
             var deferral = args.GetDeferral();
             try
@@ -311,21 +311,29 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
                 try
                 {
-                    linkUrl = args.ContextMenuTarget.LinkUri;
+                    // only read LinkUri when the target actually has one -- reading it on other
+                    // target kinds (e.g. selected text) throws 0x8000000E
+                    if (args.ContextMenuTarget.HasLinkUri)
+                    {
+                        linkUrl = args.ContextMenuTarget.LinkUri;
+                    }
                 }
                 catch (COMException ex) when (ex.HResult == unchecked((int)0x8000000E))
                 {
-                    // The ContextMenuTarget became invalid (race condition if user moved quickly)
+                    // The ContextMenuTarget became invalid (race condition if user moved quickly);
+                    // continue without link items -- Copy / Select All can still apply
                     _logger.Debug("Context menu target became invalid (user moved quickly)");
-                    args.MenuItems.Clear();
-                    return;
                 }
+
+                // capture any text selection directly from the document -- the deferral
+                // keeps the menu waiting while this async query runs
+                var selectionText = await this.GetSelectionTextAsync(coreWebView);
+
+                // build the menu items ourselves -- the default items cannot be relied upon here
+                args.MenuItems.Clear();
 
                 if (!string.IsNullOrEmpty(linkUrl))
                 {
-                    // Remove default menu items
-                    args.MenuItems.Clear();
-
                     // Add "Open Link" menu item
                     var openLinkItem = coreWebView.Environment.CreateContextMenuItem(
                         "Open Link",
@@ -361,11 +369,47 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
 
                     _logger.Debug("Context menu shown for link: {Url}", linkUrl);
                 }
-                else
+
+                // "Copy" whenever text is selected -- for links, alongside the link items
+                if (!string.IsNullOrEmpty(selectionText))
                 {
-                    // For non-links, remove all menu items (no context menu)
-                    args.MenuItems.Clear();
+                    var copySelectionItem = coreWebView.Environment.CreateContextMenuItem(
+                        "Copy",
+                        null,
+                        CoreWebView2ContextMenuItemKind.Command);
+
+                    copySelectionItem.CustomItemSelected += (_, __) =>
+                        this.CopyTextToClipboard(selectionText);
+
+                    args.MenuItems.Add(copySelectionItem);
                 }
+
+                if (string.IsNullOrEmpty(linkUrl))
+                {
+                    var selectAllItem = coreWebView.Environment.CreateContextMenuItem(
+                        "Select All",
+                        null,
+                        CoreWebView2ContextMenuItemKind.Command);
+
+                    selectAllItem.CustomItemSelected += async (_, __) =>
+                    {
+                        try
+                        {
+                            await coreWebView.ExecuteScriptAsync(
+                                "window.getSelection().selectAllChildren(document.body);");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex, "Failed to select all text in the message view");
+                        }
+                    };
+
+                    args.MenuItems.Add(selectAllItem);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failure building the message view context menu");
             }
             finally
             {
@@ -596,6 +640,33 @@ public class MessageDetailHtmlViewModel : Screen, IMessageDetailItem, IHandle<Se
                     model.SelectedPart = part;
                 }
             }
+        }
+    }
+
+    private async Task<string?> GetSelectionTextAsync(CoreWebView2 coreWebView)
+    {
+        try
+        {
+            var selectionJson = await coreWebView.ExecuteScriptAsync("window.getSelection().toString()");
+            return JsonSerializer.Deserialize<string>(selectionJson);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Failed to read the current text selection");
+            return null;
+        }
+    }
+
+    private void CopyTextToClipboard(string text)
+    {
+        try
+        {
+            Clipboard.SetText(text);
+            _logger.Debug("Copied selected message text to clipboard ({Length} characters)", text.Length);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Failed to copy selected text to clipboard");
         }
     }
 

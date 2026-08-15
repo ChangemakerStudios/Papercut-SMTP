@@ -6,6 +6,7 @@
 
 - **SMTP Authentication for Forwarding** - The Forward dialog and forwarding rules now support SMTP username/password authentication, along with Forward dialog usability improvements and a new Name property for rules. Fixes [#363](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/363) (Thanks for the report, [Theo-bos](https://github.com/Theo-bos)!)
 - **Configurable Web UI Path Prefix** - The Papercut Service web UI and API can now be hosted under a configurable HTTP path prefix, enabling reverse proxy scenarios (e.g. `https://myserver/papercut/`). Fixes [#365](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/365) (Thanks for the suggestion, [Moreno-Gentili](https://github.com/Moreno-Gentili)!)
+- **Copy to Clipboard Context Menus** - Right-click now offers Copy / Select All for selected text in the HTML message viewer (alongside the existing link menu), and in the Headers, Text Body, and Raw views. Fixes [#366](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/366) (Thanks for the suggestion, [PJOttCanHome](https://github.com/PJOttCanHome)!)
 
 ### Improvements
 
@@ -13,6 +14,7 @@
 - **Service Tray Manager Deployment** - The Service Tray Manager introduced in v7.7.2 is now included in the Windows Service deployment packages
 - **Smaller UI Footprint** - Removed unused MahApps icon pack dependencies, reducing application size. Fixes [#370](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/370) (Thanks, [AntekOlszewski](https://github.com/AntekOlszewski)!)
 - **Documentation** - Added Web UI screenshots and fixed the README star history chart (Thanks, [PingouinFerreux](https://github.com/PingouinFerreux)!)
+- **Dependencies** - Updated NuGet packages across all projects, including Rx.NET 7, ReactiveUI 24, WebView2, Autofac, and BouncyCastle, addressing a number of dependency vulnerability alerts
 
 ### Bug Fixes
 
