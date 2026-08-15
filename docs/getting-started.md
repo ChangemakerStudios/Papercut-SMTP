@@ -4,11 +4,13 @@
 
 === "Installer"
 
-    Download the installer for your architecture from the [latest release](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest):
+    Direct download links (always the latest version):
 
-    - **[PapercutSMTP-win-x64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest)** — 64-bit (most common)
-    - **PapercutSMTP-win-x86-stable-Setup.exe** — 32-bit
-    - **PapercutSMTP-win-arm64-stable-Setup.exe** — ARM64 (Surface Pro X, etc.)
+    - **[PapercutSMTP-win-x64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x64-stable-Setup.exe)** — 64-bit (most common)
+    - **[PapercutSMTP-win-x86-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x86-stable-Setup.exe)** — 32-bit
+    - **[PapercutSMTP-win-arm64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-arm64-stable-Setup.exe)** — ARM64 (Surface Pro X, etc.)
+
+    All releases (portable builds included) are on the [releases page](https://github.com/ChangemakerStudios/Papercut-SMTP/releases).
 
     Run it and you're done — Papercut keeps itself up to date automatically.
 
@@ -17,6 +19,9 @@
     ```powershell
     winget install ChangemakerStudios.Papercut-SMTP
     ```
+
+    !!! note
+        The WinGet package may lag behind the latest release. The direct installer links (see the **Installer** tab) are always current — and the app updates itself automatically after install either way.
 
 === "Portable"
 

@@ -11,7 +11,13 @@ Papercut SMTP is a 2-in-1 quick email viewer **and** built-in SMTP server for de
 
 ## Install
 
-**[Download the installer](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest)** (x64 / x86 / ARM64), or:
+Download the desktop installer (always the latest version):
+
+- **64-bit**: [PapercutSMTP-win-x64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x64-stable-Setup.exe)
+- **32-bit**: [PapercutSMTP-win-x86-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x86-stable-Setup.exe)
+- **ARM64**: [PapercutSMTP-win-arm64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-arm64-stable-Setup.exe)
+
+Or via WinGet (may lag behind the latest release):
 
 ```powershell
 winget install ChangemakerStudios.Papercut-SMTP
