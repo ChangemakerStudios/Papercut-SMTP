@@ -13,11 +13,15 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac">
-      <Version>9.1.0</Version>
+      <Version>9.3.2</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.4</Version>
     </PackageReference>
-    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <PackageReference Include="System.Reactive" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="JetBrains.Annotations" Version="2026.2.0" />
   </ItemGroup>
 </Project>

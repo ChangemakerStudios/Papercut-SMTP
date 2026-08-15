@@ -10,9 +10,9 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac">
-      <Version>9.1.0</Version>
+      <Version>9.3.2</Version>
     </PackageReference>
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
     <PackageReference Include="AutofacSerilogIntegration">
       <Version>5.0.0</Version>
     </PackageReference>
@@ -25,12 +25,16 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Trace" Version="4.0.0" />
-    <PackageReference Include="System.Management" Version="10.0.9" />
-    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <PackageReference Include="System.Management" Version="10.0.11" />
+    <PackageReference Include="System.Reactive" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Infrastructure\Consoles\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="JetBrains.Annotations" Version="2026.2.0" />
   </ItemGroup>
 
 </Project>

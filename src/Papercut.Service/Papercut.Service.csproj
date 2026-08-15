@@ -25,10 +25,10 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.0" />
+		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
 		<PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
 		<PackageReference Include="ElectronNET.API" Version="23.6.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.11" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.ExceptionalLogContext" Version="1.1.0" />
 		<PackageReference Include="Serilog.Sinks.Seq" Version="9.1.0" />
@@ -58,5 +58,8 @@
 		<None Update="icons\Papercut-icon.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Update="JetBrains.Annotations" Version="2026.2.0" />
 	</ItemGroup>
 </Project>

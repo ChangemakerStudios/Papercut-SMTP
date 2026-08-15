@@ -24,8 +24,6 @@ using Papercut.Core.Infrastructure.Async;
 using Papercut.Domain.Themes;
 using Papercut.Infrastructure.Themes;
 
-using ReactiveUI;
-
 using IMessageBus = Papercut.Common.Domain.IMessageBus;
 
 namespace Papercut.AppLayer.Themes;
@@ -151,7 +149,7 @@ public class ThemeManagerService(
             .Select(_ => "accent color");
 
         _monitoringSubscription = darkModeChanges.Merge(accentColorChanges)
-            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .ObserveOn(System.Windows.Application.Current.Dispatcher)
             .Subscribe(
                 changeType =>
                 {
