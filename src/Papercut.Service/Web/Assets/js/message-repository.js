@@ -2,7 +2,7 @@
 
 papercutApp.factory('messageRepository', function($http, $q){
     function listMessages(limit, skip){
-        var url = '/api/messages?limit='+ limit;
+        var url = 'api/messages?limit='+ limit;
         if (limit > 0) {
             url += "&start=" + skip;
         }
@@ -11,17 +11,17 @@ papercutApp.factory('messageRepository', function($http, $q){
     }
 
     function getMessage(id){
-        return $http.get('/api/messages/' + encodeURIComponent(id));
+        return $http.get('api/messages/' + encodeURIComponent(id));
     }
 
     function deleteAllMessages(onComplete){
-        $http.delete('/api/messages').finally(function () {
+        $http.delete('api/messages').finally(function () {
             onComplete();
           });
     }
 
     function deleteMessage(id){
-        return $http.delete('/api/messages/' + encodeURIComponent(id));
+        return $http.delete('api/messages/' + encodeURIComponent(id));
     }
 
     function onNewMessage(){
