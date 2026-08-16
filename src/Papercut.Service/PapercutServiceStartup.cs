@@ -51,6 +51,11 @@ internal class PapercutServiceStartup
 
         services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
 
+        services
+            .AddMcpServer()
+            .WithHttpTransport()
+            .WithToolsFromAssembly();
+
         // hosted services
         services.AddHostedService<PapercutServerHostedService>();
     }
@@ -109,6 +114,7 @@ internal class PapercutServiceStartup
             s =>
             {
                 s.MapControllers();
+                s.MapMcp("/mcp");
             });
     }
 
