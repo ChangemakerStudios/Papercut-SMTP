@@ -96,7 +96,7 @@ public class MessagesController(IMessageRepository messageRepository, IMimeMessa
         catch (Exception ex)
         {
             logger.Warning(ex, "Failure Deleting Message File {MessageFile}", messageEntry.File);
-            throw new McpException($"Failed to delete message '{id}': {ex.Message}");
+            throw new McpException($"Failed to delete message '{id}'");
         }
 
         return $"Deleted message '{id}'";

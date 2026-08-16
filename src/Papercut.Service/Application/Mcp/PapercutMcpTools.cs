@@ -66,9 +66,12 @@ public class PapercutMcpTools(
         [Description("Alternative to index: the section's contentId from the manifest")] string? contentId = null,
         CancellationToken cancellationToken = default)
     {
-        if (index is null && string.IsNullOrEmpty(contentId))
+        var hasIndex = index is not null;
+        var hasContentId = !string.IsNullOrEmpty(contentId);
+
+        if (hasIndex == hasContentId)
         {
-            throw new McpException("Either 'index' or 'contentId' must be provided");
+            throw new McpException("Provide exactly one of 'index' or 'contentId'");
         }
 
         var messageEntry = this.GetMessageEntry(id);
