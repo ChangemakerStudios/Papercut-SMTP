@@ -25,49 +25,19 @@ using Papercut.Service.Application.Controllers;
 
 namespace Papercut.Service.Application.Mcp;
 
+/// <summary>
+///     MCP-only tools. Tools shared with the REST API live on
+///     <see cref="MessagesController" />; these two exist because their REST
+///     counterparts return file streams, which cannot cross MCP.
+/// </summary>
 [McpServerToolType]
 public class PapercutMcpTools(
     IMessageRepository messageRepository,
-    IMimeMessageLoader messageLoader,
-    ILogger logger)
+    IMimeMessageLoader messageLoader)
 {
     const int MaxRawMessageChars = 200_000;
 
     const int MaxSectionBytes = 512_000;
-
-    [McpServerTool(Name = "list_messages")]
-    [Description("Lists received email messages, newest first. Returns the total message count and a page of message summaries (id, subject, size, created date).")]
-    public async Task<GetMessagesResponse> ListMessages(
-        [Description("Maximum number of messages to return (default 10)")] int limit = 10,
-        [Description("Zero-based offset to start from, for paging (default 0)")] int start = 0,
-        CancellationToken cancellationToken = default)
-    {
-        var messageEntries = messageRepository.LoadMessages().ToList();
-
-        var tasks =
-            messageEntries
-                .OrderByDescending(msg => msg.ModifiedDate)
-                .Skip(start)
-                .Take(limit)
-                .Select(async e => MimeMessageEntry.RefDto.CreateFrom(new MimeMessageEntry(e, (await messageLoader.GetAsync(e, cancellationToken))!)))
-                .ToArray();
-
-        var messages = await Task.WhenAll(tasks).WaitAsync(cancellationToken);
-
-        return new GetMessagesResponse(messageEntries.Count, messages);
-    }
-
-    [McpServerTool(Name = "get_message")]
-    [Description("Gets the full detail of a received email message by id: from/to/cc/bcc addresses, subject, text and HTML bodies, headers, and attachment sections.")]
-    public async Task<MimeMessageEntry.DetailDto> GetMessage(
-        [Description("The message id (as returned by list_messages)")] string id,
-        CancellationToken cancellationToken = default)
-    {
-        var messageEntry = this.GetMessageEntry(id);
-
-        return MimeMessageEntry.DetailDto.CreateFrom(
-            new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry, cancellationToken))!));
-    }
 
     [McpServerTool(Name = "get_message_raw")]
     [Description("Gets the raw RFC 822 (.eml) source of a received email message by id. Large messages are truncated.")]
@@ -178,56 +148,10 @@ public class PapercutMcpTools(
         public bool Truncated { get; set; }
     }
 
-    [McpServerTool(Name = "delete_message")]
-    [Description("Deletes a received email message by id.")]
-    public string DeleteMessage(
-        [Description("The message id (as returned by list_messages)")] string id)
-    {
-        var messageEntry = this.GetMessageEntry(id);
-
-        try
-        {
-            messageRepository.DeleteMessage(messageEntry);
-        }
-        catch (Exception ex)
-        {
-            logger.Warning(ex, "Failure Deleting Message File {MessageFile}", messageEntry.File);
-            throw new McpException($"Failed to delete message '{id}': {ex.Message}");
-        }
-
-        return $"Deleted message '{id}'";
-    }
-
-    [McpServerTool(Name = "delete_all_messages")]
-    [Description("Deletes all received email messages.")]
-    public string DeleteAllMessages()
-    {
-        var deleted = 0;
-        var failed = 0;
-
-        foreach (var msg in messageRepository.LoadMessages())
-        {
-            try
-            {
-                messageRepository.DeleteMessage(msg);
-                deleted++;
-            }
-            catch (Exception ex)
-            {
-                logger.Warning(ex, "Failure Deleting Message File {MessageFile}", msg.File);
-                failed++;
-            }
-        }
-
-        return failed == 0
-            ? $"Deleted {deleted} message(s)"
-            : $"Deleted {deleted} message(s); {failed} failed to delete";
-    }
-
     MessageEntry GetMessageEntry(string id)
     {
         var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
 
-        return messageEntry ?? throw new McpException($"Message '{id}' was not found");
+        return messageEntry ?? throw new MessageNotFoundException(id);
     }
 }
