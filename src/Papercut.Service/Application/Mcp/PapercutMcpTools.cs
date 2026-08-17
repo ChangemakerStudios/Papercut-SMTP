@@ -47,12 +47,23 @@ public class PapercutMcpTools(
     {
         var messageEntry = this.GetMessageEntry(id);
 
-        var raw = await File.ReadAllTextAsync(messageEntry.File, cancellationToken);
+        using var reader = new StreamReader(messageEntry.File);
 
-        if (raw.Length > MaxRawMessageChars)
+        var buffer = new char[MaxRawMessageChars];
+        var charsRead = 0;
+
+        while (charsRead < buffer.Length)
         {
-            raw = raw[..MaxRawMessageChars]
-                  + $"{Environment.NewLine}[... truncated at {MaxRawMessageChars:N0} characters -- full message available at GET api/messages/{id}/raw]";
+            var count = await reader.ReadAsync(buffer.AsMemory(charsRead), cancellationToken);
+            if (count == 0) break;
+            charsRead += count;
+        }
+
+        var raw = new string(buffer, 0, charsRead);
+
+        if (reader.Peek() >= 0)
+        {
+            raw += $"{Environment.NewLine}[... truncated at {MaxRawMessageChars:N0} characters -- full message available at GET api/messages/{id}/raw]";
         }
 
         return raw;
@@ -89,9 +100,33 @@ public class PapercutMcpTools(
                 $"Section {(index is null ? $"with contentId '{contentId}'" : $"index {index}")} was not found in message '{id}' ({sections.Count} section(s) available)");
         }
 
-        using var memoryStream = new MemoryStream();
-        mimePart.Content.DecodeTo(memoryStream);
-        var contentBytes = memoryStream.ToArray();
+        using var contentStream = mimePart.Content.Open();
+
+        var buffer = new byte[MaxSectionBytes];
+        var bytesRead = 0;
+
+        while (bytesRead < buffer.Length)
+        {
+            var count = await contentStream.ReadAsync(buffer.AsMemory(bytesRead), cancellationToken);
+            if (count == 0) break;
+            bytesRead += count;
+        }
+
+        // drain the remainder without buffering it so SizeBytes reports the true decoded size
+        long totalSize = bytesRead;
+
+        if (bytesRead == buffer.Length)
+        {
+            var drain = new byte[81920];
+            int count;
+            while ((count = await contentStream.ReadAsync(drain, cancellationToken)) > 0)
+            {
+                totalSize += count;
+            }
+        }
+
+        var byteTruncated = totalSize > bytesRead;
+        var contentBytes = buffer[..bytesRead];
 
         var result = new SectionContentDto
         {
@@ -99,12 +134,15 @@ public class PapercutMcpTools(
             ContentId = mimePart.ContentId,
             FileName = mimePart.FileName,
             MediaType = $"{mimePart.ContentType.MediaType}/{mimePart.ContentType.MediaSubtype}",
-            SizeBytes = contentBytes.Length
+            SizeBytes = totalSize,
+            Truncated = byteTruncated
         };
 
         if (mimePart is TextPart textPart)
         {
-            var text = textPart.Text;
+            // when fully within bounds, TextPart.Text gives MimeKit's full charset handling;
+            // for oversized sections decode only the bounded bytes
+            var text = byteTruncated ? GetCharsetEncoding(textPart).GetString(contentBytes) : textPart.Text;
 
             if (text.Length > MaxRawMessageChars)
             {
@@ -116,16 +154,22 @@ public class PapercutMcpTools(
         }
         else
         {
-            if (contentBytes.Length > MaxSectionBytes)
-            {
-                contentBytes = contentBytes[..MaxSectionBytes];
-                result.Truncated = true;
-            }
-
             result.Base64 = Convert.ToBase64String(contentBytes);
         }
 
         return result;
+    }
+
+    static Encoding GetCharsetEncoding(TextPart textPart)
+    {
+        try
+        {
+            return textPart.ContentType.CharsetEncoding ?? Encoding.UTF8;
+        }
+        catch (Exception)
+        {
+            return Encoding.UTF8;
+        }
     }
 
     public class SectionContentDto
