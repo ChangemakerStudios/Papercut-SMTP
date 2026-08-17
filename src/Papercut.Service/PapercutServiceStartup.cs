@@ -21,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 using Papercut.Rules;
+using Papercut.Service.Application.Mcp;
 using Papercut.Service.Domain;
 using Papercut.Service.Infrastructure.Configuration;
 using Papercut.Service.Infrastructure.Servers;
@@ -110,11 +111,32 @@ internal class PapercutServiceStartup
 
         app.UseSerilogRequestLogging();
 
+        var mcpEnabled = McpServerSettings.IsEnabled(
+            app.Services.GetRequiredService<ISettingStore>(),
+            app.Configuration);
+
+        if (mcpEnabled)
+        {
+            Log.Information(
+                "MCP server is enabled -- serving MCP endpoint at {McpEndpointPath}",
+                McpServerSettings.EndpointPath);
+        }
+        else
+        {
+            Log.Information(
+                "MCP server is disabled (set {McpEnabledSettingKey} to true to enable)",
+                McpServerSettings.EnabledSettingKey);
+        }
+
         app.UseEndpoints(
             s =>
             {
                 s.MapControllers();
-                s.MapMcp("/mcp");
+
+                if (mcpEnabled)
+                {
+                    s.MapMcp(McpServerSettings.EndpointPath);
+                }
             });
     }
 

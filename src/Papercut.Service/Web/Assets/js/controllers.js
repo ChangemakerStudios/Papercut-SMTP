@@ -2,7 +2,7 @@ var papercutApp = angular.module('papercutApp', [])
     .config( ['$compileProvider', function( $compileProvider ) { $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|papercut):/);}]);
 
 
-papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, messageRepository) {
+papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, $http, messageRepository) {
 
   $scope.events = {
     eventDone: 0,
@@ -34,6 +34,30 @@ papercutApp.controller('MailCtrl', function ($scope, $sce, $timeout, $interval, 
 
 
 
+
+  $scope.mcp = { enabled: false, url: null };
+  $scope.mcpCopied = false;
+
+  $http.get('api/mcp').then(function (response) {
+    $scope.mcp = response.data;
+  });
+
+  $scope.copyMcpUrl = function ($event) {
+    $event.preventDefault();
+    var url = $scope.mcp.url;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () {
+        $scope.$applyAsync(function () {
+          $scope.mcpCopied = true;
+          $timeout(function () { $scope.mcpCopied = false; }, 1500);
+        });
+      }, function () {
+        window.prompt('MCP endpoint URL:', url);
+      });
+    } else {
+      window.prompt('MCP endpoint URL:', url);
+    }
+  };
 
   $scope.getMoment = function (a) {
       return moment.utc(a, 'YYYY-MM-DDTHH:mm:ss.SSSZ').local();
