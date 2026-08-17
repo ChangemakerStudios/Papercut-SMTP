@@ -119,7 +119,7 @@ internal class PapercutServiceStartup
         {
             Log.Information(
                 "MCP server is enabled -- serving MCP endpoint at {McpEndpointPath}",
-                McpServerSettings.EndpointPath);
+                $"{pathPrefix}{McpServerSettings.EndpointPath}");
         }
         else
         {

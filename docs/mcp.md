@@ -13,7 +13,7 @@ A typical agent-driven test loop:
 !!! note "Off by default"
     The MCP server is disabled unless you explicitly enable it. The service logs its status at startup either way:
 
-    ```
+    ```text
     [INF] MCP server is enabled -- serving MCP endpoint at /mcp
     [INF] MCP server is disabled (set EnableMcpServer to true to enable)
     ```
@@ -44,11 +44,11 @@ Set `EnableMcpServer` to `true` using any of the service's [configuration layers
 
 Restart the service after changing it. When enabled, the endpoint is served at:
 
-```
+```text
 http://localhost:8080/mcp
 ```
 
-(Streamable HTTP transport; the path respects `HttpPathPrefix` if configured.) The web UI shows an **MCP** badge in the navigation bar when the server is on — hover it for the endpoint URL, click to copy. The URL is also available programmatically at `GET /api/mcp`.
+(Streamable HTTP transport; the path respects `HttpPathPrefix` if configured.) The web UI shows an **MCP** badge in the navigation bar when the server is on — hover it for the endpoint URL, click to copy. The URL is also available programmatically at `GET /api/mcp`, which — like all API routes — is relative to the service base URL including any `HttpPathPrefix`, and returns the full endpoint URL with the prefix applied.
 
 ## Connecting a client
 
