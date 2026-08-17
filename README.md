@@ -33,6 +33,16 @@ docker run -d -p 8080:8080 -p 2525:2525 changemakerstudiosus/papercut-smtp:lates
 
 Web UI at **http://localhost:8080**, SMTP on **localhost:2525**. Details on [Docker Hub](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp).
 
+## MCP Server (AI Agents)
+
+The Papercut Service includes an optional [Model Context Protocol](https://modelcontextprotocol.io/) server, so AI agents like Claude Code can inspect the email your app sends — list messages, assert on bodies and headers, verify attachment content, and clean up between test runs. Off by default; enable it with the `EnableMcpServer` setting, then connect:
+
+```bash
+claude mcp add --transport http papercut http://localhost:8080/mcp
+```
+
+See the [MCP Server documentation](https://www.papercut-smtp.com/mcp/) for setup and the full tool reference.
+
 ## Documentation
 
 **[www.papercut-smtp.com](https://www.papercut-smtp.com/)** — full documentation:
@@ -40,7 +50,7 @@ Web UI at **http://localhost:8080**, SMTP on **localhost:2525**. Details on [Doc
 - [How It Works](https://www.papercut-smtp.com/how-it-works/) — what Papercut is (and isn't), in two minutes
 - [Getting Started](https://www.papercut-smtp.com/getting-started/) — install, first run, first test email
 - [Send Email from Your App](https://www.papercut-smtp.com/send-from-your-app/) — copy-paste config for .NET, Node, Python, PHP, Java, Ruby
-- [Desktop App](https://www.papercut-smtp.com/desktop/) · [Service & Web UI](https://www.papercut-smtp.com/service/) · [Docker](https://www.papercut-smtp.com/docker/) · [TLS & Auth](https://www.papercut-smtp.com/smtp-tls-auth/)
+- [Desktop App](https://www.papercut-smtp.com/desktop/) · [Service & Web UI](https://www.papercut-smtp.com/service/) · [MCP Server](https://www.papercut-smtp.com/mcp/) · [Docker](https://www.papercut-smtp.com/docker/) · [TLS & Auth](https://www.papercut-smtp.com/smtp-tls-auth/)
 - [Troubleshooting](https://www.papercut-smtp.com/troubleshooting/)
 
 ## Release History

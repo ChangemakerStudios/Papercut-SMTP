@@ -44,6 +44,7 @@ nav:
     - Send Email from Your App: send-from-your-app.md
     - Desktop App: desktop.md
     - Service & Web UI: service.md
+    - MCP Server (AI Agents): mcp.md
     - Docker: docker.md
     - TLS & Authentication: smtp-tls-auth.md
   - Troubleshooting: troubleshooting.md

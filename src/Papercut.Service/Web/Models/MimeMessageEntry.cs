@@ -101,12 +101,28 @@ public class MimeMessageEntry(MessageEntry entry, MimeMessage message) : Message
 
             return bodyParts
                 .OfType<MimePart>()
-                .Select(e => new EmailAttachmentDto
+                .Select((e, i) => new EmailAttachmentDto
                 {
+                    Index = i,
                     Id = e.ContentId,
                     MediaType = $"{e.ContentType.MediaType}/{e.ContentType.MediaSubtype}",
-                    FileName = e.FileName
+                    FileName = e.FileName,
+                    IsAttachment = e.IsAttachment,
+                    Size = GetContentSize(e)
                 }).ToList();
+        }
+
+        private static long? GetContentSize(MimePart part)
+        {
+            try
+            {
+                var stream = part.Content?.Stream;
+                return stream?.CanSeek == true ? stream.Length : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         private static List<EmailAddressDto> ToAddressList(IEnumerable<InternetAddress>? mailAddresses)
@@ -139,10 +155,16 @@ public class MimeMessageEntry(MessageEntry entry, MimeMessage message) : Message
 
     public class EmailAttachmentDto
     {
+        public int Index { get; set; }
+
         public string? Id { get; set; }
 
         public string? MediaType { get; set; }
 
         public string? FileName { get; set; }
+
+        public bool IsAttachment { get; set; }
+
+        public long? Size { get; set; }
     }
 }

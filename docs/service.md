@@ -68,3 +68,5 @@ Use `http://0.0.0.0:8080` to listen on all interfaces — but read the warning b
 ## API
 
 The web UI is backed by a small HTTP API (`/api/messages`, etc.) you can script against — handy for asserting "an email was sent" in end-to-end tests. Explore the endpoints via your browser's dev tools on the web UI.
+
+For AI agents and coding assistants, the service can also expose these operations over the Model Context Protocol — see [MCP Server](mcp.md).
