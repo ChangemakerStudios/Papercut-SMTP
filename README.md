@@ -4,6 +4,7 @@
 [![Build and Release](https://github.com/ChangemakerStudios/Papercut-SMTP/actions/workflows/build.yml/badge.svg)](https://github.com/ChangemakerStudios/Papercut-SMTP/actions/workflows/build.yml)
 [![GitHub release](https://img.shields.io/github/v/release/ChangemakerStudios/Papercut-SMTP?label=release)](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/changemakerstudiosus/papercut-smtp?logo=docker)](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/Jaben?logo=githubsponsors&label=sponsors)](https://github.com/sponsors/Jaben)
 
 Papercut SMTP is a 2-in-1 quick email viewer **and** built-in SMTP server for development. Point your application at `localhost:25` and every email it sends is caught, displayed instantly, and **never delivered anywhere** — body, HTML, headers, attachments, and raw bits included.
 
@@ -66,6 +67,10 @@ See [ReleaseNotes.md](ReleaseNotes.md) for the full release history.
     <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=ChangemakerStudios/Papercut-SMTP&type=date&legend=top-left" />
   </picture>
 </a>
+
+## Support Papercut SMTP
+
+Papercut SMTP is free and open source. If it saves you time, consider [sponsoring the project](https://github.com/sponsors/Jaben) — sponsorships go directly toward project costs like the annual code-signing certificate that keeps the installer trusted by Windows.
 
 ## License
 
