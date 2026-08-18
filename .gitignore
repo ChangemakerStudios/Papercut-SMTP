@@ -30,3 +30,4 @@ TestResults/
 
 # MkDocs build output
 site/
+.playwright-mcp
