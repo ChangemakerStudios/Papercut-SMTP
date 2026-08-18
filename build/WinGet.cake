@@ -134,6 +134,9 @@ public static class WinGet
                 SilentWithProgress = "--silent"
             },
             UpgradeBehavior = "install",
+            // Velopack app Id ("PapercutSMTP" for all architectures) registers as the ARP ProductCode
+            ProductCode = "PapercutSMTP",
+            ReleaseDate = DateTime.UtcNow.ToString("yyyy-MM-dd"),
             Installers = new List<WinGetInstaller>(),
             ManifestType = "installer",
             ManifestVersion = "1.6.0"
@@ -218,6 +221,8 @@ public class WinGetInstallerManifest
     public List<string>? InstallModes { get; set; }
     public WinGetInstallerSwitches? InstallerSwitches { get; set; }
     public string? UpgradeBehavior { get; set; }
+    public string? ProductCode { get; set; }
+    public string? ReleaseDate { get; set; }
     public List<WinGetInstaller>? Installers { get; set; }
     public string? ManifestType { get; set; }
     public string? ManifestVersion { get; set; }
