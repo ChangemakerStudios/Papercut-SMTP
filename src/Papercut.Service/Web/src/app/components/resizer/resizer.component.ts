@@ -15,22 +15,15 @@ import { CommonModule } from '@angular/common';
     </div>
   `,
   styles: [`
+    /* Wide invisible grab area, hairline visual — the handle itself stays
+       transparent so the panels read as separated by a 1px divider */
     .resizer-handle {
       width: 7px;
-      background-color: var(--pc-surface-2);
+      background-color: transparent;
       cursor: col-resize;
       position: relative;
-      transition: background-color 0.2s;
       flex-shrink: 0;
       min-height: 100vh;
-    }
-
-    .resizer-handle:hover {
-      background-color: var(--pc-accent);
-    }
-
-    .resizer-handle.dragging {
-      background-color: var(--pc-accent);
     }
 
     .resizer-handle.dragging::before {
@@ -53,11 +46,14 @@ import { CommonModule } from '@angular/common';
       height: 100%;
       background-color: var(--pc-border);
       transform: translateX(-50%);
+      transition: width 0.12s ease, background-color 0.12s ease;
     }
 
+    /* Thicken and accent the line only while grabbing it */
     .resizer-handle:hover .resizer-line,
     .resizer-handle.dragging .resizer-line {
-      background-color: transparent;
+      width: 3px;
+      background-color: var(--pc-accent);
     }
 
     // Responsive design - hide resizer on mobile devices
