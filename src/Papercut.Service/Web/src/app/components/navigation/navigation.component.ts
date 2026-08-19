@@ -23,6 +23,7 @@ import { LoggingService } from '../../services/logging.service';
 import { McpService, McpStatus } from '../../services/mcp.service';
 import { OptionsDialogComponent } from '../options-dialog/options-dialog.component';
 import { RulesDialogComponent } from '../rules-dialog/rules-dialog.component';
+import { LogDialogComponent } from '../log-dialog/log-dialog.component';
 import { Observable, map } from 'rxjs';
 
 @Component({
@@ -236,8 +237,7 @@ export class NavigationComponent implements OnDestroy {
   }
 
   showLog(): void {
-    // TODO: Implement log functionality
-    this.loggingService.debug('Show Log clicked');
+    this.dialog.open(LogDialogComponent, { autoFocus: false, maxWidth: '90vw' });
   }
 
   showRules(): void {
