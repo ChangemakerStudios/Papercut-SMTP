@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog } from '@angular/material/dialog';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MessageService } from '../../services/message.service';
 import { MessageApiService } from '../../services/message-api.service';
@@ -177,7 +178,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
     private platformNotificationService: PlatformNotificationService,
     private loggingService: LoggingService,
     private messageStateService: MessageStateService,
-    private userSettingsService: UserSettingsService
+    private userSettingsService: UserSettingsService,
+    private dialog: MatDialog
   ) {
     // Load current page when query params change
     this.route.queryParams
@@ -358,6 +360,10 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   private selectAndViewMessage(messageId: string): void {
+    // A dialog (log viewer, options, rules) would cover the navigation —
+    // viewing a message from a notification should bring it into view
+    this.dialog.closeAll();
+
     // Navigate to the first page if not already there
     if (this.pageStart !== 0) {
       this.router.navigate([], {

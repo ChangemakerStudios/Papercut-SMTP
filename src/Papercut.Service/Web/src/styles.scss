@@ -646,8 +646,20 @@ app-message-detail {
 }
 
 .mat-mdc-snack-bar-container {
-  margin: 8px !important;
+  // bottom-center position must clear the fixed bottom toolbar (48px)
+  margin: 8px 8px 60px !important;
 }
+
+// Toast surfaces follow the token palette (accent-aware chrome for
+// informational toasts, semantic colors for success/warn/error)
+.toast-notification .mdc-snack-bar__surface {
+  background: var(--pc-chrome) !important;
+  color: var(--pc-on-chrome) !important;
+}
+
+.toast-success .mdc-snack-bar__surface { background: var(--pc-ok) !important; }
+.toast-error .mdc-snack-bar__surface { background: var(--pc-danger-strong) !important; }
+.toast-warning .mdc-snack-bar__surface { background: var(--pc-warn) !important; }
 
 // ============================================================================
 // Bottom toolbar positioning

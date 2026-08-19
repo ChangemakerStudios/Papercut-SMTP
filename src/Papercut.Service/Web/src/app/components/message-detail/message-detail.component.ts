@@ -62,7 +62,9 @@ interface MessageViewData {
             </div>
 
             <!-- Tabs Content -->
-            <mat-tab-group *ngIf="!messageData.isLoadingDetail && messageData.detail" class="h-full" dynamicHeight="false" animationDuration="0ms">
+            <mat-tab-group *ngIf="!messageData.isLoadingDetail && messageData.detail" class="h-full" dynamicHeight="false" animationDuration="0ms"
+                           [selectedIndex]="selectedTabIndex"
+                           (selectedIndexChange)="selectedTabIndex = $event">
 
               <!-- Message Tab (HTML iframe view) -->
               <mat-tab label="Message">
@@ -222,6 +224,9 @@ interface MessageViewData {
 })
 export class MessageDetailComponent {
   protected readonly icons = { Mail, Paperclip };
+
+  /** Survives switching between messages so the active tab is kept */
+  selectedTabIndex = 0;
 
   messageData$: Observable<MessageViewData>;
   private currentMessage: DetailDto | null = null;

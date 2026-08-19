@@ -3,6 +3,9 @@ import { MatSnackBar, MatSnackBarRef, MatSnackBarConfig } from '@angular/materia
 import { ComponentType } from '@angular/cdk/overlay';
 import { Component, Inject } from '@angular/core';
 import { MAT_SNACK_BAR_DATA, MatSnackBarAction } from '@angular/material/snack-bar';
+// (MatSnackBarAction must ALSO be in the component's imports array below —
+// without it the mat-snack-bar-action attribute silently binds to nothing
+// and the action button does nothing at all)
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Mail, CircleCheck, CircleAlert, TriangleAlert, Info, type LucideIconData } from 'lucide-angular';
@@ -20,14 +23,16 @@ export interface ToastData {
 @Component({
   selector: 'app-toast-notification',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, LucideAngularModule],
+  imports: [CommonModule, MatButtonModule, MatSnackBarAction, LucideAngularModule],
   template: `
-    <div class="flex items-center gap-3 py-1">
+    <div class="flex items-center gap-3 py-1"
+         [class.cursor-pointer]="data.clickable"
+         (click)="onSurfaceClick()">
       <lucide-icon *ngIf="data.icon" [img]="getIcon()" [size]="18" [ngClass]="getIconClass()"></lucide-icon>
       <span class="flex-1 text-sm">{{ data.message }}</span>
       <button *ngIf="data.action"
               mat-button
-              mat-snack-bar-action
+              matSnackBarAction
               class="!text-current !min-w-0">
         {{ data.action }}
       </button>
@@ -40,7 +45,17 @@ export interface ToastData {
   `]
 })
 export class ToastNotificationComponent {
-  constructor(@Inject(MAT_SNACK_BAR_DATA) public data: ToastData) {}
+  constructor(
+    @Inject(MAT_SNACK_BAR_DATA) public data: ToastData,
+    private snackBarRef: MatSnackBarRef<ToastNotificationComponent>
+  ) {}
+
+  /** Clickable toasts (new message) act like the action button anywhere on the surface */
+  onSurfaceClick(): void {
+    if (this.data.clickable) {
+      this.snackBarRef.dismissWithAction();
+    }
+  }
 
   getIcon(): LucideIconData {
     switch (this.data.icon) {
@@ -88,8 +103,8 @@ export class ToastNotificationService {
 
     const config: MatSnackBarConfig = {
       duration: data.duration,
-      horizontalPosition: 'right',
-      verticalPosition: 'top',
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
       panelClass: [
         'toast-notification',
         'toast-new-message',
@@ -160,8 +175,8 @@ export class ToastNotificationService {
   private showToast(data: ToastData): MatSnackBarRef<ToastNotificationComponent> {
     const config: MatSnackBarConfig = {
       duration: data.duration,
-      horizontalPosition: 'right',
-      verticalPosition: 'top',
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
       panelClass: [
         'toast-notification',
         `toast-${data.type}`,
