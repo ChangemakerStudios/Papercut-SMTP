@@ -22,7 +22,9 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { LucideAngularModule, Forward, X } from 'lucide-angular';
 import { MessageApiService } from '../../services/message-api.service';
+import { RulesApiService } from '../../services/rules-api.service';
 import { ForwardMessageRequest } from '../../models';
+import { RuleDto, isForwardFamily } from '../../models/rule-dto';
 
 export interface ForwardDialogData {
   messageId: string;
@@ -66,6 +68,17 @@ const EMAIL_REGEX = /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i;
 
       <div class="dialog-body">
         <div class="field-grid">
+          <ng-container *ngIf="availableRules.length > 0">
+            <label class="field-label" for="fwd-rule">Rule</label>
+            <select id="fwd-rule" class="pc-input" [(ngModel)]="selectedRuleIndex"
+                    (ngModelChange)="applyRule($event)" [disabled]="isSending">
+              <option [ngValue]="-1">(populate from a saved rule)</option>
+              <option *ngFor="let rule of availableRules; let i = index" [ngValue]="i">
+                {{ rule.name || summarizeRule(rule) }}
+              </option>
+            </select>
+          </ng-container>
+
           <label class="field-label" for="fwd-server">Server</label>
           <div class="field-inline">
             <input id="fwd-server" class="pc-input flex-1" [(ngModel)]="server"
@@ -285,12 +298,40 @@ export class ForwardDialogComponent {
   isSending = false;
   error: string | null = null;
 
+  availableRules: RuleDto[] = [];
+  selectedRuleIndex = -1;
+
   constructor(
     private dialogRef: MatDialogRef<ForwardDialogComponent, boolean>,
     @Inject(MAT_DIALOG_DATA) public data: ForwardDialogData,
-    private messageApiService: MessageApiService
+    private messageApiService: MessageApiService,
+    private rulesApiService: RulesApiService
   ) {
     this.loadSavedSettings();
+
+    // Like the desktop dialog: existing forward-type rules can prefill everything
+    this.rulesApiService.getRules().subscribe({
+      next: rules => this.availableRules = rules.filter(r => isForwardFamily(r.type)),
+      error: () => { /* rules are a convenience; the dialog works without them */ }
+    });
+  }
+
+  summarizeRule(rule: RuleDto): string {
+    return `${rule.type} - ${rule.smtpServer || '?'}${rule.toEmail ? ' → ' + rule.toEmail : ''}`;
+  }
+
+  applyRule(index: number): void {
+    const rule = this.availableRules[index];
+    if (!rule) return;
+
+    this.server = rule.smtpServer || '';
+    this.port = rule.smtpPort ?? 25;
+    this.useSsl = rule.smtpUseSSL ?? false;
+    this.username = rule.smtpUsername || '';
+    this.password = rule.smtpPassword || '';
+    this.useAuthentication = !!(this.username || this.password);
+    this.fromEmail = rule.fromEmail || this.fromEmail;
+    this.toEmail = rule.toEmail || this.toEmail;
   }
 
   cancel(): void {

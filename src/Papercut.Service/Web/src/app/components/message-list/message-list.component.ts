@@ -366,9 +366,9 @@ export class MessageListComponent implements OnInit, OnDestroy {
         queryParamsHandling: 'merge'
       });
     }
-    
-    // Navigate to the message detail
-    this.router.navigate(['/messages', messageId]);
+
+    // Navigate to the message detail (route is /message/:id)
+    this.router.navigate(['/message', messageId], { queryParamsHandling: 'preserve' });
   }
 
   selectMessage(messageId: string): void {

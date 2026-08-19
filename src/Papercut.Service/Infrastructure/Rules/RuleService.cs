@@ -156,8 +156,12 @@ public class RuleService(
 
     private static void Register(ContainerBuilder builder)
     {
+        // Singleton: this holds the process's rule state (loaded rules +
+        // periodic subscription). A scoped instance would let HTTP-request
+        // handling mutate a throwaway copy while the root instance keeps
+        // dispatching the stale set (same failure mode as PapercutSmtpServer).
         builder.RegisterType<RuleService>().AsImplementedInterfaces().AsSelf()
-            .InstancePerLifetimeScope();
+            .SingleInstance();
     }
 
     #endregion

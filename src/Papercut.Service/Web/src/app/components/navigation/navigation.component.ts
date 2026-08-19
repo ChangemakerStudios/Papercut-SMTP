@@ -22,6 +22,7 @@ import { ThemeService, AccentColor, ThemePreference } from '../../services/theme
 import { LoggingService } from '../../services/logging.service';
 import { McpService, McpStatus } from '../../services/mcp.service';
 import { OptionsDialogComponent } from '../options-dialog/options-dialog.component';
+import { RulesDialogComponent } from '../rules-dialog/rules-dialog.component';
 import { Observable, map } from 'rxjs';
 
 @Component({
@@ -240,8 +241,7 @@ export class NavigationComponent implements OnDestroy {
   }
 
   showRules(): void {
-    // TODO: Implement rules functionality
-    this.loggingService.debug('Show Rules clicked');
+    this.dialog.open(RulesDialogComponent, { autoFocus: false });
   }
 
   showOptions(): void {
