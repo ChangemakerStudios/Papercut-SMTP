@@ -16,6 +16,7 @@ import {
   type LucideIconData
 } from 'lucide-angular';
 import { DetailDto, EmailSectionDto } from '../../models';
+import { FileSizePipe } from '../../pipes/file-size.pipe';
 import { MessageService } from '../../services/message.service';
 import { FileDownloaderService } from '../file-downloader/file-downloader.component';
 import { DownloadButtonDirective } from '../../directives/download-button.directive';
@@ -30,7 +31,8 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
     MatProgressSpinnerModule,
     LucideAngularModule,
     DownloadButtonDirective,
-    SafeIframeComponent
+    SafeIframeComponent,
+    FileSizePipe
   ],
   template: `
     <!-- Sections List -->
@@ -42,8 +44,13 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
             <lucide-icon [img]="getSectionIcon(section.fileName || section.mediaType || 'Unknown')"
                          [size]="16" class="text-muted"></lucide-icon>
             <div class="flex-1 min-w-0">
-              <div class="section-type truncate">{{ section.fileName || section.mediaType || 'Unknown' }}</div>
-              <div class="section-info truncate">{{ section.mediaType || 'Unknown type' }}</div>
+              <div class="section-type truncate">
+                {{ getSectionTitle(section) }}
+                <span *ngIf="section.isAttachment" class="section-badge">attachment</span>
+              </div>
+              <div class="section-info truncate">
+                {{ section.mediaType || 'unknown type' }}<ng-container *ngIf="section.size != null"> · {{ section.size | fileSize }}</ng-container>
+              </div>
             </div>
             <div class="flex items-center gap-1">
               <!-- View Button (for text/plain and text/html without filename) -->
@@ -122,6 +129,21 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
       color: var(--pc-accent-text);
       border-color: var(--pc-border);
     }
+
+    .section-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--pc-border);
+      background: var(--pc-accent-soft);
+      color: var(--pc-accent-text);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      vertical-align: middle;
+    }
   `]
 })
 export class MessageSectionsComponent {
@@ -140,6 +162,21 @@ export class MessageSectionsComponent {
   ) {}
 
 
+
+  getSectionTitle(section: EmailSectionDto): string {
+    if (section.fileName) {
+      return section.fileName;
+    }
+
+    // Inline body parts have no filename — give them a friendly name instead
+    // of repeating the media type in both lines
+    const mediaType = (section.mediaType || '').toLowerCase();
+    if (mediaType === 'text/html') return 'HTML body';
+    if (mediaType === 'text/plain') return 'Plain text body';
+    if (mediaType.startsWith('image/')) return 'Inline image';
+
+    return section.mediaType || 'Unknown section';
+  }
 
   getMessageSections(): EmailSectionDto[] {
     if (!this.message || !this.message.sections || this.message.sections.length === 0) {
