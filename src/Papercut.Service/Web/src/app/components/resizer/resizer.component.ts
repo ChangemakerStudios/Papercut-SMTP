@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
     /* Wide invisible grab area, hairline visual — the handle itself stays
        transparent so the panels read as separated by a 1px divider */
     .resizer-handle {
-      width: 7px;
+      width: 5px;
       background-color: transparent;
       cursor: col-resize;
       position: relative;
