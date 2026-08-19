@@ -21,6 +21,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ThemeService, AccentColor, ThemePreference } from '../../services/theme.service';
 import { LoggingService } from '../../services/logging.service';
 import { McpService, McpStatus } from '../../services/mcp.service';
+import { RulesApiService } from '../../services/rules-api.service';
 import { OptionsDialogComponent } from '../options-dialog/options-dialog.component';
 import { RulesDialogComponent } from '../rules-dialog/rules-dialog.component';
 import { LogDialogComponent } from '../log-dialog/log-dialog.component';
@@ -62,6 +63,7 @@ import { Observable, map } from 'rxjs';
           <button class="papercut-nav-btn" (click)="showRules()">
             <lucide-icon [img]="icons.ListChecks" [size]="15"></lucide-icon>
             <span>Rules</span>
+            <span class="nav-count" *ngIf="rulesCount > 0">{{ rulesCount }}</span>
           </button>
 
           <button class="papercut-nav-btn" (click)="showOptions()">
@@ -128,6 +130,21 @@ import { Observable, map } from 'rxjs';
       background: rgba(255, 255, 255, 0.2);
     }
 
+    .nav-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      color: var(--pc-on-chrome);
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
     .accent-swatch {
       display: inline-block;
       width: 14px;
@@ -187,6 +204,7 @@ export class NavigationComponent implements OnDestroy {
   isDarkTheme$: Observable<boolean>;
   mcpStatus$: Observable<McpStatus>;
   mcpCopied = false;
+  rulesCount = 0;
   private mcpUrl: string | null = null;
   private mcpCopiedTimeout: any;
 
@@ -194,6 +212,7 @@ export class NavigationComponent implements OnDestroy {
     public themeService: ThemeService,
     private loggingService: LoggingService,
     private mcpService: McpService,
+    private rulesApiService: RulesApiService,
     private dialog: MatDialog
   ) {
     this.isDarkTheme$ = this.themeService.theme$.pipe(
@@ -201,6 +220,15 @@ export class NavigationComponent implements OnDestroy {
     );
     this.mcpStatus$ = this.mcpService.status$;
     this.mcpStatus$.subscribe(status => this.mcpUrl = status.url);
+
+    this.refreshRulesCount();
+  }
+
+  private refreshRulesCount(): void {
+    this.rulesApiService.getRules().subscribe({
+      next: rules => this.rulesCount = rules.length,
+      error: () => { /* count is cosmetic; ignore load failures */ }
+    });
   }
 
   setThemePreference(preference: ThemePreference): void {
@@ -241,7 +269,8 @@ export class NavigationComponent implements OnDestroy {
   }
 
   showRules(): void {
-    this.dialog.open(RulesDialogComponent, { autoFocus: false });
+    this.dialog.open(RulesDialogComponent, { autoFocus: false })
+      .afterClosed().subscribe(() => this.refreshRulesCount());
   }
 
   showOptions(): void {
