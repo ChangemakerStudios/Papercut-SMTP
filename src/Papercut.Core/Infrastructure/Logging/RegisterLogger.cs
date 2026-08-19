@@ -68,7 +68,11 @@ internal sealed class RegisterLogging
                         .Enrich.WithProperty("AppName", appMeta.AppName)
                         .Enrich.WithProperty("AppVersion", appMeta.AppVersion)
                         .Filter.ByExcluding(ExcludeTcpClientDisposeBugException)
-                        .WriteTo.Async(x => x.File(logFilePath))
+                        // shared: multiple Papercut processes (UI + service, or two
+                        // service instances) must be able to write the same log file;
+                        // without it the second process's sink fails to initialize and
+                        // spams "FailedSink" to stderr on every event
+                        .WriteTo.Async(x => x.File(logFilePath, shared: true))
                         .ReadFrom.KeyValuePairs(ArgumentParser.GetArgsKeyValue(Environment.GetCommandLineArgs()));
 
                 if (Debugger.IsAttached)
