@@ -134,6 +134,9 @@ public static class WinGet
                 SilentWithProgress = "--silent"
             },
             UpgradeBehavior = "install",
+            // Velopack app Id ("PapercutSMTP" for all architectures) registers as the ARP ProductCode
+            ProductCode = "PapercutSMTP",
+            ReleaseDate = DateTime.UtcNow.ToString("yyyy-MM-dd"),
             Installers = new List<WinGetInstaller>(),
             ManifestType = "installer",
             ManifestVersion = "1.6.0"
@@ -164,7 +167,9 @@ public static class WinGet
 // Parameter class
 public class WinGetReleaseParams
 {
-    public string PackageIdentifier { get; set; } = "ChangemakerStudios.PapercutSMTP";
+    // NOTE: must match the existing package path in microsoft/winget-pkgs:
+    // manifests/c/ChangemakerStudios/Papercut-SMTP (hyphenated!)
+    public string PackageIdentifier { get; set; } = "ChangemakerStudios.Papercut-SMTP";
     public string? Version { get; set; }
     public string? ChannelPostfix { get; set; }
     public DirectoryPath? ReleasesDirectory { get; set; }
@@ -216,6 +221,8 @@ public class WinGetInstallerManifest
     public List<string>? InstallModes { get; set; }
     public WinGetInstallerSwitches? InstallerSwitches { get; set; }
     public string? UpgradeBehavior { get; set; }
+    public string? ProductCode { get; set; }
+    public string? ReleaseDate { get; set; }
     public List<WinGetInstaller>? Installers { get; set; }
     public string? ManifestType { get; set; }
     public string? ManifestVersion { get; set; }

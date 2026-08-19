@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -9,13 +9,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="SmtpServer" Version="11.0.0" />
+		<PackageReference Include="SmtpServer" Version="11.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
 		<ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
 		<ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Update="JetBrains.Annotations" Version="2026.2.0" />
 	</ItemGroup>
 
 </Project>

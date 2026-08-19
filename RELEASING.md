@@ -1,104 +1,115 @@
 # Release Procedure
 
-This document describes how to release a new version of Papercut SMTP.
+This project follows [Gitflow](https://nvie.com/posts/a-successful-git-branching-model/) and uses [GitVersion](https://gitversion.net/) (ContinuousDelivery mode) for semantic versioning, with [Velopack](https://velopack.io/) for desktop installer packaging. The CI/CD pipeline runs via GitHub Actions and handles building, packaging, and publishing automatically based on branch.
 
-## Overview
+## Branch Overview
 
-Papercut uses [GitVersion](https://gitversion.net/) (ContinuousDelivery mode) for semantic versioning and [Velopack](https://velopack.io/) for desktop installer packaging. The CI/CD pipeline runs via GitHub Actions and handles building, packaging, and publishing automatically based on branch.
+| Branch      | Purpose                                   | Channel   | GitHub Release | Docker Tag                | WinGet |
+|-------------|-------------------------------------------|-----------|----------------|---------------------------|--------|
+| `master`    | Production releases only                  | `-stable` | Stable release | `latest`, `X.Y.Z`, `X.Y` | Yes    |
+| `develop`   | Integration branch for the next release   | `-dev`    | Pre-release    | `dev`, full semver        | No     |
+| `feature/*` | Feature branches off `develop`            | `-alpha`  | —              | —                         | No     |
+| `release/*` | Release stabilization branches off `develop` | `-alpha` | —            | —                         | No     |
+| `hotfix/*`  | Critical fixes off `master`               | `-alpha`  | —              | —                         | No     |
 
-| Branch    | Channel     | GitHub Release | Docker Tag                  | WinGet |
-|-----------|-------------|----------------|-----------------------------|--------|
-| `master`  | `-stable`   | Stable release | `latest`, `X.Y.Z`, `X.Y`   | Yes    |
-| `develop` | `-dev`      | Pre-release    | `dev`, full semver          | No     |
-| Other     | `-alpha`    | —              | —                           | No     |
+## Versioning
 
-## Pre-Release Checklist
+GitVersion derives the version automatically:
 
-1. **Verify `develop` is green** — Ensure the latest CI build on `develop` passes (tests, packaging).
+- On a `release/X.Y.Z` branch, **the version comes from the branch name** — this is the canonical way to choose the next version.
+- On `develop`, the version increments **Patch** per commit by default. A commit message containing `+semver: minor` or `+semver: major` forces a larger bump.
+- Run `dotnet gitversion` locally at any time to check the computed version.
 
-2. **Gather changes since last release**
-   - Review all PRs merged since the last release tag:
-     ```bash
-     # List PRs merged since last release
-     gh pr list --state merged --search "merged:>YYYY-MM-DD" --limit 100
-     # Or compare commits between last tag and develop
-     git log --oneline --merges vX.Y.Z..develop
-     ```
-   - Review commits for any changes not covered by PRs:
-     ```bash
-     git log --oneline vX.Y.Z..develop
-     ```
-   - Note the GitHub usernames of PR authors and issue reporters for attribution.
+## Releasing a Stable Version (Gitflow)
 
-3. **Update release notes**
-   - Edit [ReleaseNotesCurrent.md](ReleaseNotesCurrent.md) with the new version header and changes.
-   - Follow the established format — reference issue/PR numbers with links and **thank contributors** by GitHub username. Example:
-     ```markdown
-     # Release Notes
+### 1. Ensure `develop` is ready
 
-     ## Papercut SMTP vX.Y.Z [YYYY-MM-DD]
+- All feature branches for the release are merged into `develop`.
+- CI is green on `develop` (tests + packaging).
 
-     ### New Features
-     - **Feature Name** - Description of the feature. Fixes [#123](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/123) (Thanks, [username](https://github.com/username)!)
-       - Sub-detail about the feature
+### 2. Create the release branch
 
-     ### Improvements
-     - **Area** - What was improved
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b release/X.Y.Z
+```
 
-     ### Bug Fixes
-     - **Area** - What was fixed. Fixes [#456](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/456)
+### 3. Finalize the release on the branch
 
-     ### Contributors
-     Special thanks to [user1](https://github.com/user1) for ... and [user2](https://github.com/user2) for ...!
-     ```
-   - Prepend the same content to [ReleaseNotes.md](ReleaseNotes.md) (cumulative history).
+Release-only changes go here:
 
-3. **Smoke test locally** (optional but recommended)
-   ```powershell
-   dotnet restore Papercut.sln
-   dotnet build Papercut.sln --configuration Release
-   dotnet test Papercut.sln --configuration Release
-   ```
+- **Update [ReleaseNotesCurrent.md](ReleaseNotesCurrent.md)** with the new version header and changes (this file is embedded in the installers).
+  - Gather changes since the last release:
+    ```bash
+    gh pr list --state merged --search "merged:>YYYY-MM-DD" --limit 100
+    git log --oneline X.Y.Z-previous..develop
+    ```
+  - Follow the established format — reference issue/PR numbers with links and **thank contributors and reporters** by GitHub username:
+    ```markdown
+    # Release Notes
 
-## Releasing a Stable Version
+    ## Papercut SMTP vX.Y.Z [YYYY-MM-DD]
 
-### 1. Merge `develop` → `master`
+    ### New Features
+    - **Feature Name** - Description. Fixes [#123](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/123) (Thanks, [username](https://github.com/username)!)
+
+    ### Improvements
+    - **Area** - What was improved
+
+    ### Bug Fixes
+    - **Area** - What was fixed. Fixes [#456](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/456)
+
+    ### Contributors
+    Special thanks to [user1](https://github.com/user1) for ...!
+    ```
+- **Prepend the same section to [ReleaseNotes.md](ReleaseNotes.md)** (cumulative history).
+- **Smoke test locally**:
+  ```bash
+  dotnet build Papercut.sln --configuration Release
+  dotnet test Papercut.sln --configuration Release
+  ```
+- Optionally push the branch — CI will validate the build (`-alpha` channel, nothing is published).
+
+### 4. Merge into `master` and tag
 
 ```bash
 git checkout master
 git pull origin master
-git merge develop
-git push origin master
+git merge --no-ff release/X.Y.Z
+git tag X.Y.Z
+git push origin master --tags
 ```
 
-Or create a PR from `develop` → `master` and merge it.
+The `master` push triggers [build.yml](.github/workflows/build.yml), which will:
 
-### 2. CI Builds and Publishes Automatically
-
-Once pushed to `master`, GitHub Actions ([build.yml](.github/workflows/build.yml)) will:
-
-- Run GitVersion to determine the version
+- Run GitVersion (the computed version matches the tag)
 - Run all tests
 - Build UI installers for **x64**, **x86**, and **ARM64** via Velopack
 - Build Service packages (self-contained ZIPs) for all three architectures
 - Generate WinGet manifests
-- Create/update a **GitHub Release** (stable) with all artifacts
+- Publish the **GitHub Release** for the `X.Y.Z` tag with all artifacts
 - Build and push **Docker images** to Docker Hub (`latest`, version tags)
 
-### 3. WinGet Publishing (Automatic)
+### 5. Merge the release branch back into `develop`
 
-After the GitHub Release is published, [winget-publish.yml](.github/workflows/winget-publish.yml) triggers automatically:
+```bash
+git checkout develop
+git pull origin develop
+git merge --no-ff release/X.Y.Z
+git push origin develop
+```
 
-- Downloads WinGet manifest YAML files from the release
-- Validates them with `winget validate`
-- If `WINGET_PUBLISH_TOKEN` is configured: creates a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs)
-- If not: logs manual submission instructions
+### 6. Clean up
 
-See [installation/winget/README.md](installation/winget/README.md) for WinGet setup details.
+```bash
+git branch -d release/X.Y.Z
+git push origin --delete release/X.Y.Z   # if the branch was pushed
+```
 
-### 4. Post-Release Verification
+### 7. Post-Release Verification
 
-- [ ] GitHub Release exists with correct version and all expected artifacts:
+- [ ] GitHub Release exists for tag `X.Y.Z` with all expected artifacts:
   - `PapercutSMTP-*-win-x64-stable-Setup.exe`
   - `PapercutSMTP-*-win-x86-stable-Setup.exe`
   - `PapercutSMTP-*-win-arm64-stable-Setup.exe`
@@ -108,27 +119,35 @@ See [installation/winget/README.md](installation/winget/README.md) for WinGet se
   - WinGet YAML manifests
 - [ ] Docker Hub image updated: `changemakerstudiosus/papercut-smtp:latest`
 - [ ] Download and run the installer — verify the app launches and receives test emails
-- [ ] WinGet PR created (or submit manually if needed)
-
-### 5. Sync `master` back to `develop`
-
-```bash
-git checkout develop
-git pull origin develop
-git merge master
-git push origin develop
-```
+- [ ] WinGet PR created by [winget-publish.yml](.github/workflows/winget-publish.yml) (or submit manually — see [installation/winget/README.md](installation/winget/README.md))
 
 ## Releasing a Pre-Release (from `develop`)
 
 Pushing to `develop` automatically creates a **pre-release** on GitHub with `-dev` channel artifacts and pushes a `dev`-tagged Docker image. No manual steps required beyond merging your feature branches.
 
-## Hotfix Releases
+## Hotfix Releases (Gitflow)
 
-1. Create a `hotfix/*` branch from `master`
-2. Apply the fix, update release notes
-3. Merge into both `master` and `develop`
-4. The `master` push triggers the full stable release pipeline
+For critical fixes to a released version:
+
+```bash
+git checkout master
+git pull origin master
+git checkout -b hotfix/X.Y.Z+1
+# make the fix, update ReleaseNotesCurrent.md / ReleaseNotes.md, commit
+
+git checkout master
+git merge --no-ff hotfix/X.Y.Z+1
+git tag X.Y.Z+1
+git push origin master --tags
+
+git checkout develop
+git merge --no-ff hotfix/X.Y.Z+1
+git push origin develop
+
+git branch -d hotfix/X.Y.Z+1
+```
+
+The `master` push triggers the full stable release pipeline, exactly as in a normal release.
 
 ## Artifacts Produced
 
@@ -156,7 +175,8 @@ Pushing to `develop` automatically creates a **pre-release** on GitHub with `-de
 
 ## Troubleshooting
 
-- **Version not what you expected?** GitVersion derives version from git history/tags. Run `dotnet gitversion` locally to check.
+- **Version not what you expected?** GitVersion derives version from git history/tags/branch name. Run `dotnet gitversion` locally to check. On a `release/X.Y.Z` branch the branch name wins.
+- **Release came out as `X.Y.Z-N` (e.g. `7.8.0-33`)?** `N` is the number of commits since the last tag — the pipeline ran before the `X.Y.Z` tag was pushed. The artifacts are also internally stamped with the wrong version, so don't just rename the release: delete the draft, ensure the tag is on the `master` HEAD commit, and re-run the workflow (`gh run rerun <run-id>`). **Always push the tag together with the branch** (`git push origin master --tags`) so CI sees it.
 - **Deploy skipped?** `DeployReleases` only runs on `master`/`develop` in GitHub Actions with `GITHUB_TOKEN` present.
 - **WinGet PR not created?** Check that `WINGET_PUBLISH_TOKEN` secret is configured. See [installation/winget/README.md](installation/winget/README.md).
 - **Docker push failed?** Verify `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets are set.

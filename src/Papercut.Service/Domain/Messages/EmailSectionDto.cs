@@ -21,9 +21,15 @@ namespace Papercut.Service.Domain.Messages;
 [PublicAPI]
 public class EmailSectionDto
 {
+    public int Index { get; set; }
+
     public string? Id { get; set; }
 
     public string? MediaType { get; set; }
 
     public string? FileName { get; set; }
+
+    public bool IsAttachment { get; set; }
+
+    public long? Size { get; set; }
 }

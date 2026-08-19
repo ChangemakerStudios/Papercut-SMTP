@@ -27,7 +27,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
+using Application.Mcp;
+
 using Rules;
+
 using Papercut.Service.Domain;
 using Papercut.Service.Infrastructure.Configuration;
 
@@ -59,6 +62,11 @@ internal class PapercutServiceStartup
 
         services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
 
+        services
+            .AddMcpServer()
+            .WithHttpTransport()
+            .WithToolsFromAssembly();
+
         // hosted services
         services.AddHostedService<PapercutServerHostedService>();
         services.AddHostedService<MessageWatcherHostedService>();
@@ -85,19 +93,76 @@ internal class PapercutServiceStartup
         }
     }
 
-    public void Configure(IApplicationBuilder app)
+    public void Configure(WebApplication app)
     {
+        var pathPrefix = GetHttpPathPrefix(app);
+
+        if (!string.IsNullOrEmpty(pathPrefix))
+        {
+            Log.Information("Serving HTTP under path prefix {HttpPathPrefix}", pathPrefix);
+
+            app.UsePathBase(pathPrefix);
+
+            // redirect the bare prefix ("/webmail") to "/webmail/" so the web UI's
+            // relative asset and api urls resolve against the prefix
+            app.Use(
+                async (context, next) =>
+                {
+                    if (context.Request.PathBase.HasValue && !context.Request.Path.HasValue)
+                    {
+                        context.Response.Redirect(context.Request.PathBase + "/");
+                        return;
+                    }
+
+                    await next();
+                });
+        }
+
         app.UseRouting();
 
         app.UseCors();
 
         app.UseSerilogRequestLogging();
 
+        var mcpEnabled = McpServerSettings.IsEnabled(
+            app.Services.GetRequiredService<ISettingStore>(),
+            app.Configuration);
+
+        if (mcpEnabled)
+        {
+            Log.Information(
+                "MCP server is enabled -- serving MCP endpoint at {McpEndpointPath}",
+                $"{pathPrefix}{McpServerSettings.EndpointPath}");
+        }
+        else
+        {
+            Log.Information(
+                "MCP server is disabled (set {McpEnabledSettingKey} to true to enable)",
+                McpServerSettings.EnabledSettingKey);
+        }
+
         app.UseEndpoints(
             s =>
             {
                 s.MapControllers();
                 s.MapHub<MessagesHub>("/hubs/messages");
+
+                if (mcpEnabled)
+                {
+                    s.MapMcp(McpServerSettings.EndpointPath);
+                }
             });
+    }
+
+    private static string GetHttpPathPrefix(WebApplication app)
+    {
+        var settingStore = app.Services.GetRequiredService<ISettingStore>();
+        var pathPrefix = settingStore.Get("HttpPathPrefix", app.Configuration["HttpPathPrefix"]);
+
+        if (string.IsNullOrWhiteSpace(pathPrefix)) return string.Empty;
+
+        pathPrefix = "/" + pathPrefix.Trim().Trim('/');
+
+        return pathPrefix == "/" ? string.Empty : pathPrefix;
     }
 }

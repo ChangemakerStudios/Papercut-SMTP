@@ -1,36 +1,29 @@
 # Release Notes
 
-## Papercut SMTP v7.7.2 [2026-03-22]
+## Papercut SMTP v7.8.0 [2026-08-15]
 
 ### New Features
 
-- **Service Tray Manager** - New Windows tray notification application for managing the Papercut SMTP Windows Service. Provides system tray icon with service status, start/stop/restart controls, quick access to the web UI, balloon notifications for new emails, and run-at-startup support. Fixes [#249](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/249)
-- **Upgrade Dialog with Release Notes** - When an update is available, a new dialog shows current vs. new version with rendered release notes so you can review changes before upgrading. Fixes [#344](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/344)
-- **System Accent Color** - Added a "System" option to the theme accent dropdown that reads and syncs with the Windows accent color in real-time. Now the default for new installs. Fixes [#343](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/343)
-- **Web UI Overhaul** - Completely refreshed the Papercut Service web interface:
-  - Replaced Glyphicons with inline SVGs for a cleaner, dependency-free icon set
-  - Per-message delete with confirmation via new `DELETE /api/messages/{id}` endpoint
-  - Auto-refresh toggle button and browser back-button navigation
-  - Modern visual design with Plus Jakarta Sans font, refined colors, and improved layout
-- **Delete All Confirmation** - "Delete All" now shows the message count and only deletes messages older than the confirmation timestamp, preventing accidental deletion of emails arriving during the confirmation dialog. Fixes [#349](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/349) (Thanks, [AntekOlszewski](https://github.com/AntekOlszewski)!)
-
-### Bug Fixes
-
-- **FileSystemWatcher Reliability** - Fixed emails silently stopping to appear in the UI. Root cause was FileSystemWatcher buffer overflows from excessive NotifyFilter events. Now uses FileName-only filter, 64KB buffer, auto-recreation on faults, and a 30-second periodic fallback refresh. Fixes [#352](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/352)
-- **Notification Title** - Fixed Windows toast notifications showing "velopack.PapercutSMTP" instead of "Papercut SMTP" by using Velopack's native `--aumid` flag at install time. Fixes [#350](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/350)
-- **CID Embedded Images** - Fixed intermittent failure to load Content-ID embedded images in the HTML viewer due to incorrect `file://` URL format and MimeMessage cache state issues
-- **HTML Email Preview (Web UI)** - Fixed iframe collapsing to ~8px and load event race conditions by switching to `$watch`-based rendering with direct document writing, ResizeObserver support, and retry-based height measurement
-- **Cross-Thread Theme Exception** - Fixed crash when Windows system theme changes while the app is running
+- **SMTP Authentication for Forwarding** - The Forward dialog and forwarding rules now support SMTP username/password authentication, along with Forward dialog usability improvements and a new Name property for rules. Fixes [#363](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/363) (Thanks for the report, [Theo-bos](https://github.com/Theo-bos)!)
+- **Configurable Web UI Path Prefix** - The Papercut Service web UI and API can now be hosted under a configurable HTTP path prefix, enabling reverse proxy scenarios (e.g. `https://myserver/papercut/`). Fixes [#365](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/365) (Thanks for the suggestion, [Moreno-Gentili](https://github.com/Moreno-Gentili)!)
+- **Copy to Clipboard Context Menus** - Right-click now offers Copy / Select All for selected text in the HTML message viewer (alongside the existing link menu), and in the Headers, Text Body, and Raw views. Fixes [#366](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/366) (Thanks for the suggestion, [PJOttCanHome](https://github.com/PJOttCanHome)!)
 
 ### Improvements
 
-- **Security: jQuery & Frontend Library Upgrades** - Upgraded jQuery 1.11.0 to 3.7.1 and jQuery UI 1.10.4 to 1.14.1, mitigating CVE-2020-11022 and CVE-2020-11023 (XSS vulnerabilities). Also upgraded AngularJS 1.3.8 to 1.8.3 and Bootstrap 3.3.2 to 3.4.1. Fixes [#353](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/353)
-- **Aspire Integration Documentation** - Added documentation for using Papercut SMTP with .NET Aspire projects, including connection string format and setup examples. (Thanks, [mguinness](https://github.com/mguinness)!)
-- **Docker Documentation** - Added troubleshooting guide for volume permission errors when running with mounted volumes
-- **Dependencies** - Updated NuGet packages and Velopack to v0.0.1521
+- **.NET 10 Upgrade** - All projects upgraded from .NET 8 to .NET 10 for the latest runtime performance and security improvements. (Thanks, [Abdulstar](https://github.com/Abdulstar)!)
+- **Service Tray Manager Deployment** - The Service Tray Manager introduced in v7.7.2 is now included in the Windows Service deployment packages
+- **Smaller UI Footprint** - Removed unused MahApps icon pack dependencies, reducing application size. Fixes [#370](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/370) (Thanks, [AntekOlszewski](https://github.com/AntekOlszewski)!)
+- **Documentation** - Added Web UI screenshots and fixed the README star history chart (Thanks, [PingouinFerreux](https://github.com/PingouinFerreux)!)
+- **Dependencies** - Updated NuGet packages across all projects, including Rx.NET 7, ReactiveUI 24, WebView2, Autofac, and BouncyCastle, addressing a number of dependency vulnerability alerts
+
+### Bug Fixes
+
+- **Message List Stuck After Long Uptime** - Fixed the desktop app's message list permanently stopping to update after running for a long time (new emails triggered notifications but never appeared until restart). A single transient file-system error could silently terminate the internal refresh subscriptions; refreshes are now resilient to errors, and the message list additionally force-refreshes whenever the window is restored from the tray or taskbar
+- **Rule Sync to Service** - Fixed rule changes made in the desktop UI not being saved to the Papercut Service backend when connected. Fixes [#368](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/368) (Thanks for the report, [Pxtl](https://github.com/Pxtl)!)
+- **Periodic Rules in Standalone Service** - Fixed periodic background rules (such as the Mail Retention rule) never executing when running the standalone Papercut Service. Fixes [#369](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/369) (Thanks for the report, [Pxtl](https://github.com/Pxtl)!)
 
 ### Contributors
 
-Special thanks to [AntekOlszewski](https://github.com/AntekOlszewski) for fixing the Delete All race condition and [mguinness](https://github.com/mguinness) for documenting Aspire integration!
+Special thanks to [Abdulstar](https://github.com/Abdulstar) for the .NET 10 upgrade, [AntekOlszewski](https://github.com/AntekOlszewski) for the icon pack cleanup, [PingouinFerreux](https://github.com/PingouinFerreux) for the README fix, and to [Theo-bos](https://github.com/Theo-bos), [Moreno-Gentili](https://github.com/Moreno-Gentili), and [Pxtl](https://github.com/Pxtl) for their reports and suggestions!
 
 Several features and fixes in this release were developed with the assistance of [Claude Code](https://claude.ai/claude-code).

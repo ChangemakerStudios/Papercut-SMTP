@@ -124,6 +124,22 @@ The service uses standard ASP.NET Core configuration files:
 - `appsettings.Development.json` - Development overrides
 - `appsettings.Production.json` - Production overrides
 
+### Layered Settings Files
+
+Beyond the ASP.NET Core configuration files, two user-facing files persist runtime changes:
+
+1. **`Papercut.Service.Settings.json`** - User-editable settings that persist UI changes
+   - Located in the same directory as `Papercut.Service.exe`
+   - Contains configuration with comments outlining options
+   - Changes made via the Papercut UI (e.g. SMTP IP/Port) are saved here automatically
+   - Note: rules are *not* stored here — see `rules.json` below
+
+2. **`rules.json`** - Persisted rules
+   - Located in the same directory as `Papercut.Service.exe`
+   - Rule changes made via the Papercut UI are synchronized to the service and saved here automatically
+
+**Configuration Priority:** `Papercut.Service.Settings.json` > `appsettings.{Environment}.json` > `appsettings.json`
+
 ### SMTP Server Configuration
 ```json
 {
@@ -173,6 +189,24 @@ The service includes an embedded **Angular 17** web interface located in the `We
 - **Responsive Design** - Mobile-friendly interface
 
 **Note**: The Web UI is embedded as static assets and served by the ASP.NET Core application. See `Web/README.md` for detailed frontend documentation.
+
+### Serve the Web UI Under a Path Prefix
+
+When running behind a reverse proxy or Kubernetes ingress, the web UI (and API) can be served under a path prefix (e.g. `http://host:8080/webmail/`). Set `HttpPathPrefix` in `appsettings.json` or `Papercut.Service.Settings.json`:
+
+```json
+{
+  "HttpPathPrefix": "/webmail"
+}
+```
+
+Or via environment variable (useful for Docker):
+
+```bash
+docker run -d -p 8080:8080 -p 2525:2525 -e HttpPathPrefix=/webmail changemakerstudiosus/papercut-smtp:latest
+```
+
+The default (empty) serves the web UI at the root as before. Requests without the prefix continue to work, so proxies that strip the prefix are also supported — but a prefix-stripping proxy must redirect the bare prefix (`/webmail` → `/webmail/`) itself, since the app only sees `/` and cannot issue that redirect. Forwarding the full prefix (with `HttpPathPrefix` set) avoids this entirely.
 
 ## 🖥️ Electron Desktop Mode
 

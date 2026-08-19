@@ -32,15 +32,17 @@ public class NewMessageEventHandler(
     {
         try
         {
+            var newMessage = @event.NewMessage.ToEntry();
+
             // Load the message to create a RefDto
-            var mimeMessage = await messageLoader.GetAsync(@event.NewMessage, token);
+            var mimeMessage = await messageLoader.GetAsync(newMessage, token);
             if (mimeMessage == null)
             {
                 logger.Warning("Failed to load message for SignalR notification: {MessageFile}", @event.NewMessage.File);
                 return;
             }
 
-            var messageEntry = new MimeMessageEntry(@event.NewMessage, mimeMessage);
+            var messageEntry = new MimeMessageEntry(newMessage, mimeMessage);
             var messageDto = RefDto.CreateFrom(messageEntry);
 
             logger.Information("New message '{MessageId}' received. Notifying SignalR clients.", messageDto.Id);

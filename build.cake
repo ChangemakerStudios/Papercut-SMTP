@@ -388,6 +388,19 @@ Task("BuildAndPackServiceWin64")
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
+    var traySettings = new DotNetPublishSettings
+    {
+        Configuration = configuration,
+        OutputDirectory = publishDirectory + Directory("TrayNotification"),
+        Runtime = runtime,
+        EnableCompressionInSingleFile = true,
+        PublishSingleFile = true,
+        SelfContained = true,
+        MSBuildSettings = versionMSBuildSettings
+    };
+
+    DotNetPublish("./src/Papercut.Service.TrayNotification/Papercut.Service.TrayNotification.csproj", traySettings);
+
     CopyFiles("./installation/service/*.ps1", publishDirectory);
     CopyFiles("./installation/service/*.bat", publishDirectory);
 
@@ -417,6 +430,19 @@ Task("BuildAndPackServiceWin32")
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
+    var traySettings = new DotNetPublishSettings
+    {
+        Configuration = configuration,
+        OutputDirectory = publishDirectory + Directory("TrayNotification"),
+        Runtime = runtime,
+        EnableCompressionInSingleFile = true,
+        PublishSingleFile = true,
+        SelfContained = true,
+        MSBuildSettings = versionMSBuildSettings
+    };
+
+    DotNetPublish("./src/Papercut.Service.TrayNotification/Papercut.Service.TrayNotification.csproj", traySettings);
+
     CopyFiles("./installation/service/*.ps1", publishDirectory);
     CopyFiles("./installation/service/*.bat", publishDirectory);
 
@@ -445,6 +471,19 @@ Task("BuildAndPackServiceWinArm64")
     };
 
     DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
+
+    var traySettings = new DotNetPublishSettings
+    {
+        Configuration = configuration,
+        OutputDirectory = publishDirectory + Directory("TrayNotification"),
+        Runtime = runtime,
+        EnableCompressionInSingleFile = true,
+        PublishSingleFile = true,
+        SelfContained = true,
+        MSBuildSettings = versionMSBuildSettings
+    };
+
+    DotNetPublish("./src/Papercut.Service.TrayNotification/Papercut.Service.TrayNotification.csproj", traySettings);
 
     CopyFiles("./installation/service/*.ps1", publishDirectory);
     CopyFiles("./installation/service/*.bat", publishDirectory);

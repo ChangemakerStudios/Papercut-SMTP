@@ -83,13 +83,20 @@ a:focus, a:hover{
     display: none;
 }
 
-.navbar-github {
+.navbar-links {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-github,
+.navbar-mcp {
     color: rgba(255,255,255,0.7);
     font-size: 14px;
     padding: 10px 15px;
 }
 
-.navbar-github:hover {
+.navbar-github:hover,
+.navbar-mcp:hover {
     color: #fff;
     text-decoration: none;
 }

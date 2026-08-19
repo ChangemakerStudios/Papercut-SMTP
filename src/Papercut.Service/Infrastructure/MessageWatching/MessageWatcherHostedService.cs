@@ -32,7 +32,7 @@ public class MessageWatcherHostedService(Lazy<MessageWatcher> messageWatcher, IM
 
         _watcher.NewMessage += async (sender, args) =>
         {
-            await messageBus.PublishAsync(new NewMessageEvent(args.NewMessage), cancellationToken);
+            await messageBus.PublishAsync(new NewMessageEvent(args.NewMessage.ToDto()), cancellationToken);
         };
 
         return Task.CompletedTask;

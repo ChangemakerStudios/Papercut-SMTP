@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using Papercut.Helpers;
+
 namespace Papercut.Views;
 
 /// <summary>
@@ -26,5 +28,6 @@ public partial class MessageDetailRawView : UserControl
     public MessageDetailRawView()
     {
         this.InitializeComponent();
+        TextEditorContextMenu.Attach(this.rawEdit);
     }
 }

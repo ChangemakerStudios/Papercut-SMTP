@@ -43,6 +43,8 @@ public class DetailDto : RefDto
     {
         var mail = messageEntry.MailMessage;
 
+        var sections = ToSectionDtos(mail?.BodyParts);
+
         return new DetailDto
         {
             Id = messageEntry.Id,
@@ -57,22 +59,40 @@ public class DetailDto : RefDto
             TextBody = mail?.TextBody,
             Headers = (mail?.Headers ?? [])
                 .Select(h => new HeaderDto { Name = h.Field, Value = h.Value }).ToList(),
-            Sections = ToSectionDtos(mail?.BodyParts),
-            Attachments = ToSectionDtos(mail?.Attachments)
+            Sections = sections,
+            Attachments = sections.Where(s => s.IsAttachment).ToList()
         };
     }
 
+    // Sections are indexed against the full BodyParts list so Index lines up with
+    // the "api/messages/{id}/sections/{index}" endpoint; Attachments is the subset.
     private static List<EmailSectionDto> ToSectionDtos(IEnumerable<MimeEntity>? bodyParts)
     {
         if (bodyParts == null) return [];
 
         return bodyParts
             .OfType<MimePart>()
-            .Select(e => new EmailSectionDto
+            .Select((e, i) => new EmailSectionDto
             {
+                Index = i,
                 Id = e.ContentId,
                 MediaType = $"{e.ContentType.MediaType}/{e.ContentType.MediaSubtype}",
-                FileName = e.FileName
+                FileName = e.FileName,
+                IsAttachment = e.IsAttachment,
+                Size = GetContentSize(e)
             }).ToList();
+    }
+
+    private static long? GetContentSize(MimePart part)
+    {
+        try
+        {
+            var stream = part.Content?.Stream;
+            return stream?.CanSeek == true ? stream.Length : null;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 }

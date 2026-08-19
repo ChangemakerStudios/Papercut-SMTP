@@ -28,7 +28,7 @@ window.nativeFeatures = {
         }
 
         if (!/^https?\:/i.test(url)){
-            url = location.protocol + '//' + location.host + url;
+            url = new URL(url, location.href).toString();
         }
         
         try {
@@ -49,7 +49,7 @@ window.nativeFeatures = {
 
         var msgPrompt = {
            body: message,
-           icon: '/images/Papercut-icon.png'
+           icon: 'images/Papercut-icon.png'
         };
         
         if (this.isNative()){

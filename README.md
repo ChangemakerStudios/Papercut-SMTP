@@ -1,148 +1,77 @@
 ![Papercut Logo](https://raw.githubusercontent.com/ChangemakerStudios/Papercut/develop/graphics/PapercutLogo.png)<br>
-*The Simple Desktop Email Helper*
+*The Simple Desktop Email Receiver*
 
 [![Build and Release](https://github.com/ChangemakerStudios/Papercut-SMTP/actions/workflows/build.yml/badge.svg)](https://github.com/ChangemakerStudios/Papercut-SMTP/actions/workflows/build.yml)
+[![GitHub release](https://img.shields.io/github/v/release/ChangemakerStudios/Papercut-SMTP?label=release)](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest)
+[![Docker Pulls](https://img.shields.io/docker/pulls/changemakerstudiosus/papercut-smtp?logo=docker)](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/Jaben?logo=githubsponsors&label=sponsors)](https://github.com/sponsors/Jaben)
 
-## The problem
-If you ever send emails from an application or website during development, you're familiar with the fear of an email being released into the wild. Are you positive none of the 'test' emails are addressed to colleagues or worse, customers? Of course, you can set up and maintain a test email server for development -- but that's a chore. Plus, the delay when waiting to view new test emails can radically slow your development cycle.
+Papercut SMTP is a 2-in-1 quick email viewer **and** built-in SMTP server for development. Point your application at `localhost:25` and every email it sends is caught, displayed instantly, and **never delivered anywhere** — body, HTML, headers, attachments, and raw bits included.
 
-<img src="https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/papercut-choice.png" width="400" />
-
-## Papercut SMTP to the rescue!
-Papercut SMTP is a 2-in-1 quick email viewer AND built-in SMTP server (designed to receive messages only). Papercut SMTP doesn't enforce any restrictions on how you prepare your email, but it allows you to view the whole email-chilada: body, HTML, headers, and attachment right down to the naughty raw encoded bits. Papercut can be configured to run on startup and sit quietly (minimized in the tray) only providing a notification when a new message has arrived.
-
-## Download Desktop App Now
-#### Download the 64-bit [PapercutSMTP-win-X64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) desktop installer in releases.
-#### Download the 32-bit [PapercutSMTP-win-x86-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) desktop installer in releases.
-
-**For installation options, command-line parameters, and silent/unattended installation instructions, see the [Installation Guide](installation/README.md).**
-
-## Requirements
-Papercut SMTP UI Requires the "WebView2" Microsoft shared system component to be installed on your system. If you have any problems getting it running go to this site:
-[WebView2 Download](https://developer.microsoft.com/en-us/microsoft-edge/webview2) and install it.
-
-## Features
-#### Instant Feedback When New Email Arrives
-![Instant Feedback When New Email Arrives](https://github.com/ChangemakerStudios/Papercut-SMTP/blob/develop/graphics/PapercutV7-Notification-1.png?raw=true)
-#### Rich and Detailed View of Received Email
 ![Rich and Detailed View of Received Email](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/PapercutV7-Main-1.png)
-#### View and Download the Mime Sections of your Email
-![View and Download the Mime Sections of your Email](https://changemakerstudios.us/content/images/2020/07/Papercut-Mime.png)
-#### Raw View
-![Raw View](https://changemakerstudios.us/content/images/2020/07/Papercut-Raw.png)
-#### Logging View
-![Logging View](https://changemakerstudios.us/content/images/2020/07/Papercut-Log.png)
 
-## (Optional) Download Papercut SMTP Service
-Papercut SMTP has an optional HTTP server to receive emails even when the client is not running.
-It can be run in an almost portable way by downloading [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut-SMTP/releases), unzipping, and installing as a Windows Service.
+## Install
 
-### Installing Papercut SMTP Service
+Download the desktop installer (always the latest version):
 
-1. **Download** the appropriate [Papercut.Smtp.Service.*.zip](https://github.com/ChangemakerStudios/Papercut-SMTP/releases) for your system (win-x64 or win-x86)
-2. **Extract** the zip file to your desired location
-3. **Run the installation script** (requires administrator privileges):
-   - **Option A:** Double-click `install-papercut-service.bat`
-   - **Option B:** Run `install-papercut-service.ps1` in PowerShell
-4. The service will be installed and configured to **start automatically** on system boot
+- **64-bit**: [PapercutSMTP-win-x64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x64-stable-Setup.exe)
+- **32-bit**: [PapercutSMTP-win-x86-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x86-stable-Setup.exe)
+- **ARM64**: [PapercutSMTP-win-arm64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-arm64-stable-Setup.exe)
 
-**To uninstall:** Run `uninstall-papercut-service.bat` or `uninstall-papercut-service.ps1`
-
-**For complete Service configuration and Docker deployment instructions, see the [Service README](src/Papercut.Service/Readme.md).**
-
-### Host in Docker
-
-Optionally run Papercut SMTP Service in Docker: [Papercut SMTP on Docker Hub](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
-
-**Quick start:**
-```powershell
-docker pull changemakerstudiosus/papercut-smtp:latest
-docker run -d -p 37408:8080 -p 2525:2525 changemakerstudiosus/papercut-smtp:latest
-```
-
-Access at: **http://localhost:37408** | Send emails to: **localhost:2525**
-
-> **Note:** Docker uses non-privileged ports by default (SMTP: 2525, HTTP: 8080). See the [Service README](src/Papercut.Service/Readme.md#option-3-run-in-docker) for configuration options, Docker Compose examples, and troubleshooting.
-
-### Aspire Integration
-
-Papercut SMTP can be used for local email testing with Aspire projects. The integration exposes a connection string with the format `endpoint=smtp://<host>:<port>` which can be used to configure the SMTP client.
-
-#### Setup
-
-Install the package `CommunityToolkit.Aspire.Hosting.PapercutSmtp` from NuGet and then configure the integration in your App Host as follows:
-
-```c#
-var builder = DistributedApplication.CreateBuilder(args);
-
-var papercut = builder.AddPapercutSmtp("papercut");
-
-builder.AddProject<Projects.ExampleProject>()
-    .WithReference(papercut)
-    .WaitFor(papercut);
-```
-
-After running, the ports for both the Papercut UI and the SMTP service are automatically assigned and accessible through the Aspire dashboard.
-
-## SMTP Authentication and TLS/STARTTLS Support
-
-Papercut SMTP Server supports optional SMTP authentication and TLS/STARTTLS encryption for secure email testing.
-
-### Quick Setup
-
-**Step 1: Create a test certificate** (PowerShell):
+Or via WinGet (may lag behind the latest release):
 
 ```powershell
-New-SelfSignedCertificate -Subject "CN=localhost" -DnsName "localhost" `
-    -CertStoreLocation "cert:\LocalMachine\My" -NotAfter (Get-Date).AddYears(2)
+winget install ChangemakerStudios.Papercut-SMTP
 ```
 
-**Step 2: Enable TLS/STARTTLS** in your `appsettings.json`:
+Run it — Papercut is immediately listening on `127.0.0.1:25`. Configure your app to send there and you're done.
 
-```json
-{
-  "SmtpServer": {
-    "CertificateFindType": "FindBySubjectName",
-    "CertificateFindValue": "localhost",
-    "Port": 587
-  }
-}
-```
-
-That's it! The server will automatically find your "localhost" certificate.
-
-### Docker with TLS
-
-Mount a certificate and configure via environment variables:
+## Docker
 
 ```bash
-docker run -d \
-  -p 587:587 \
-  -p 8080:8080 \
-  -e SmtpServer__CertificateFindType=FindBySubjectName \
-  -e SmtpServer__CertificateFindValue=localhost \
-  changemakerstudiosus/papercut-smtp:latest
+docker run -d -p 8080:8080 -p 2525:2525 changemakerstudiosus/papercut-smtp:latest
 ```
 
-**Or use Docker Compose** (see [Service README](src/Papercut.Service/Readme.md) for complete examples).
+Web UI at **http://localhost:8080**, SMTP on **localhost:2525**. Details on [Docker Hub](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp).
 
-### Features
+## MCP Server (AI Agents)
 
-- ✅ **TLS/STARTTLS** support on any port (recommended: 587)
-- ✅ **SMTP AUTH** with flexible authentication (accepts all credentials in dev mode)
-- ✅ **Certificate store integration** (Windows LocalMachine/CurrentUser stores)
-- ✅ **Multiple search methods** (Thumbprint, SubjectName, etc.)
-- ✅ **Backward compatible** (TLS disabled by default)
+The Papercut Service includes an optional [Model Context Protocol](https://modelcontextprotocol.io/) server, so AI agents like Claude Code can inspect the email your app sends — list messages, assert on bodies and headers, verify attachment content, and clean up between test runs. Off by default; enable it with the `EnableMcpServer` setting, then connect:
 
-### Configuration Options
+```bash
+claude mcp add --transport http papercut http://localhost:8080/mcp
+```
 
-| Setting | Description | Default | Example |
-|---------|-------------|---------|---------|
-| `CertificateFindType` | Certificate search method | `FindBySubjectName` | `FindBySubjectName` |
-| `CertificateFindValue` | Certificate name or identifier (empty = TLS disabled) | `""` | `localhost` |
-| `CertificateStoreLocation` | Store location | `LocalMachine` | `LocalMachine` or `CurrentUser` |
-| `CertificateStoreName` | Store name | `My` | `My` (Personal) |
-| `Port` | SMTP port | `25` | 587 (STARTTLS recommended) |
+See the [MCP Server documentation](https://www.papercut-smtp.com/mcp/) for setup and the full tool reference.
+
+## Documentation
+
+**[www.papercut-smtp.com](https://www.papercut-smtp.com/)** — full documentation:
+
+- [How It Works](https://www.papercut-smtp.com/how-it-works/) — what Papercut is (and isn't), in two minutes
+- [Getting Started](https://www.papercut-smtp.com/getting-started/) — install, first run, first test email
+- [Send Email from Your App](https://www.papercut-smtp.com/send-from-your-app/) — copy-paste config for .NET, Node, Python, PHP, Java, Ruby
+- [Desktop App](https://www.papercut-smtp.com/desktop/) · [Service & Web UI](https://www.papercut-smtp.com/service/) · [MCP Server](https://www.papercut-smtp.com/mcp/) · [Docker](https://www.papercut-smtp.com/docker/) · [TLS & Auth](https://www.papercut-smtp.com/smtp-tls-auth/)
+- [Troubleshooting](https://www.papercut-smtp.com/troubleshooting/)
+
+## Release History
+
+See [ReleaseNotes.md](ReleaseNotes.md) for the full release history.
+
+## Star History
+
+<a href="https://star-history.dera.page/#ChangemakerStudios/Papercut-SMTP&type=date&legend=bottom-right">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=ChangemakerStudios/Papercut-SMTP&type=date&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=ChangemakerStudios/Papercut-SMTP&type=date&legend=top-left" />
+    <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=ChangemakerStudios/Papercut-SMTP&type=date&legend=top-left" />
+  </picture>
+</a>
+
+## Support Papercut SMTP
+
+Papercut SMTP is free and open source. If it saves you time, consider [sponsoring the project](https://github.com/sponsors/Jaben) — sponsorships go directly toward project costs like the annual code-signing certificate that keeps the installer trusted by Windows.
 
 ## License
-Papercut SMTP is Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+Papercut SMTP is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

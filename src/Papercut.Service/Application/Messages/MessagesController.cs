@@ -1,14 +1,14 @@
 // Papercut
-// 
+//
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2024 Jaben Cargman
-// 
+// Copyright © 2013 - 2025 Jaben Cargman
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,9 +25,10 @@ using Domain.Messages;
 using Infrastructure;
 
 [Route("api/[controller]")]
+[MessageNotFoundExceptionFilter]
 public class MessagesController(
-    MessageRepository messageRepository,
-    MimeMessageLoader messageLoader,
+    IMessageRepository messageRepository,
+    IMimeMessageLoader messageLoader,
     ILogger logger)
     : ControllerBase
 {
@@ -40,17 +41,17 @@ public class MessagesController(
         {
             return new GetMessagesResponse(0, []);
         }
-        
+
         // Generate ETag based on the most recent modified date
         var latestModifiedDate = messageEntries.Max(msg => msg.ModifiedDate);
         var etag = $"\"{latestModifiedDate.Ticks}\"";
-        
+
         // Check if the client has the same version
         if (Request.Headers.IfNoneMatch.Contains(etag))
         {
             return StatusCode(304);
         }
-        
+
         // Add ETag to response
         Response.Headers.ETag = etag;
 
@@ -86,11 +87,7 @@ public class MessagesController(
     [HttpDelete("{id}")]
     public ActionResult Delete(string id)
     {
-        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Name == id);
-        if (messageEntry == null)
-        {
-            return this.NotFound();
-        }
+        var messageEntry = this.GetMessageEntry(id);
 
         try
         {
@@ -106,37 +103,29 @@ public class MessagesController(
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<DetailDto>> Get(string id)
+    public async Task<ActionResult<DetailDto>> Get(string id, CancellationToken token = default)
     {
-        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == id || msg.Name == id);
-        if (messageEntry == null)
-        {
-            return NotFound();
-        }
+        var messageEntry = this.GetMessageEntry(id);
 
         // Generate ETag based on the message's modified date
         var etag = $@"""{messageEntry.ModifiedDate.Ticks}""";
-        
+
         // Check if client has the same version
         if (Request.Headers.IfNoneMatch.Contains(etag))
         {
             return new StatusCodeResult(304);
         }
-        
+
         // Add ETag to response
         Response.Headers.ETag = etag;
 
-        return DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry))!));
+        return DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry, token))!));
     }
 
     [HttpGet("{messageId}/raw")]
     public ActionResult DownloadRaw(string messageId)
     {
-        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == messageId || msg.Name == messageId);
-        if (messageEntry == null)
-        {
-            return NotFound();
-        }
+        var messageEntry = this.GetMessageEntry(messageId);
 
         var response =
             new FileStreamResult(System.IO.File.OpenRead(messageEntry.File), "message/rfc822")
@@ -159,13 +148,16 @@ public class MessagesController(
         return DownloadSection(messageId, sections => sections.FirstOrDefault(s => s.ContentId == contentId));
     }
 
+    MessageEntry GetMessageEntry(string id)
+    {
+        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == id || msg.Name == id);
+
+        return messageEntry ?? throw new MessageNotFoundException(id);
+    }
+
     async Task<ActionResult> DownloadSection(string messageId, Func<List<MimePart>, MimePart?> findSection)
     {
-        var messageEntry = messageRepository.LoadMessages().FirstOrDefault(msg => msg.Id == messageId || msg.Name == messageId);
-        if (messageEntry == null)
-        {
-            return NotFound();
-        }
+        var messageEntry = this.GetMessageEntry(messageId);
 
         var mimeMessage = new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry))!);
         var sections = mimeMessage.MailMessage.BodyParts.OfType<MimePart>().ToList();
@@ -182,15 +174,15 @@ public class MessagesController(
         }
 
         var etag = $@"""{mimePart.ContentMd5}""";
-        
+
         // Check if client has the same version
         if (Request.Headers.IfNoneMatch.Contains(etag))
         {
             return new StatusCodeResult(304);
         }
-        
+
         // Add ETag to response
-        Response.Headers.ETag = etag;        
+        Response.Headers.ETag = etag;
 
         var response = new MimePartFileStreamResult(
             mimePart.Content,

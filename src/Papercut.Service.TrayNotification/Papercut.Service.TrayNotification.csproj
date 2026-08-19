@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>Papercut SMTP Service Tray Manager</Title>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net9.0-windows</TargetFramework>
+		<TargetFramework>net10.0-windows7.0</TargetFramework>
 		<ApplicationIcon>icons\Papercut-icon.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<UseWindowsForms>true</UseWindowsForms>
@@ -12,7 +12,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-		<PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.9" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.11" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj" />
@@ -23,5 +23,8 @@
 		<None Update="icons\Papercut-icon.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Update="JetBrains.Annotations" Version="2026.2.0" />
 	</ItemGroup>
 </Project>

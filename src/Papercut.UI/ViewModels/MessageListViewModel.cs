@@ -187,12 +187,16 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
                 TaskPoolScheduler.Default)
             .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(Dispatcher.CurrentDispatcher)
-            .Subscribe(_ => this.RefreshMessageList());
+            .Subscribe(
+                _ => this.RefreshMessageList(),
+                ex => this._logger.Error(ex, "RefreshNeeded Subscription Terminated Unexpectedly"));
 
         // Periodic fallback refresh in case FileSystemWatcher stops raising events
         Observable.Interval(TimeSpan.FromSeconds(30))
             .ObserveOn(Dispatcher.CurrentDispatcher)
-            .Subscribe(_ => this.RefreshMessageList());
+            .Subscribe(
+                _ => this.RefreshMessageList(),
+                ex => this._logger.Error(ex, "Periodic Refresh Subscription Terminated Unexpectedly"));
 
         this.Messages.CollectionChanged += this.CollectionChanged;
     }
@@ -234,20 +238,28 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
         observable.ObserveOn(Dispatcher.CurrentDispatcher).Subscribe(
             message =>
             {
-                this._uiCommandHub.ShowBalloonTip(
-                    3500,
-                    "New Message Received",
-                    $"From: {message.From.ToString().Truncate(50, "...")}\r\nSubject: {message.Subject.Truncate(50)}",
-                    ToolTipIcon.Info);
+                try
+                {
+                    this.Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));
 
-                this.Messages.Add(new MimeMessageEntry(entry, this._mimeMessageLoader));
+                    // handle selection if nothing is selected
+                    this.ValidateSelected();
 
-                // handle selection if nothing is selected
-                this.ValidateSelected();
+                    this._uiCommandHub.ShowBalloonTip(
+                        3500,
+                        "New Message Received",
+                        $"From: {message.From.ToString().Truncate(50, "...")}\r\nSubject: {message.Subject.Truncate(50)}",
+                        ToolTipIcon.Info);
+                }
+                catch (Exception ex)
+                {
+                    this._logger.Error(ex, "Failure Adding New Message {MessageFile}", entry.File);
+                }
             },
-            _ =>
+            ex =>
             {
-                // NOOP
+                // the periodic fallback refresh will pick this message up
+                this._logger.Warning(ex, "Failed to Load New Message {MessageFile}", entry.File);
             });
     }
 
@@ -416,24 +428,35 @@ public class MessageListViewModel : Screen, IHandle<SettingsUpdatedEvent>
     {
         this.PushSelectedIndex();
 
-        List<MessageEntry> messageEntries = this._messageRepository.LoadMessages()
-            .ToList();
-
-        List<MimeMessageEntry> toAdd =
-            messageEntries.Except(this.Messages)
-                .OrderBy(s => s.FileSize)
-                .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
+        try
+        {
+            List<MessageEntry> messageEntries = this._messageRepository.LoadMessages()
                 .ToList();
 
-        var toDelete = this.Messages.Except(messageEntries)
-            .OfType<MimeMessageEntry>().ToList();
+            List<MimeMessageEntry> toAdd =
+                messageEntries.Except(this.Messages)
+                    .OrderBy(s => s.FileSize)
+                    .Select(m => new MimeMessageEntry(m, this._mimeMessageLoader))
+                    .ToList();
 
-        toDelete.ForEach(m => this.Messages.Remove(m));
-        this.Messages.AddRange(toAdd);
+            var toDelete = this.Messages.Except(messageEntries)
+                .OfType<MimeMessageEntry>().ToList();
 
-        this.MessagesSorted.Refresh();
-        this.ValidateSelected();
-        this.PopSelectedIndex();
+            toDelete.ForEach(m => this.Messages.Remove(m));
+            this.Messages.AddRange(toAdd);
+
+            this.MessagesSorted.Refresh();
+            this.ValidateSelected();
+        }
+        catch (Exception ex)
+        {
+            // must not propagate: a throw from here permanently terminates the Rx refresh subscriptions
+            this._logger.Error(ex, "Failure Refreshing the Message List");
+        }
+        finally
+        {
+            this.PopSelectedIndex();
+        }
     }
 
     protected override void OnViewLoaded(object view)

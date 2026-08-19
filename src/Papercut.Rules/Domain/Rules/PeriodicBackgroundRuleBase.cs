@@ -31,8 +31,24 @@ public abstract class PeriodicBackgroundRuleBase : IPeriodicBackgroundRule
 {
     bool _isEnabled;
 
+    string _name;
+
     [Category("Information")]
     public Guid Id { get; protected set; } = Guid.NewGuid();
+
+    [Category("Information")]
+    [DisplayName("Name")]
+    [Description("A friendly name for this rule")]
+    public string Name
+    {
+        get => this._name;
+        set
+        {
+            if (value == this._name) return;
+            this._name = value;
+            this.OnPropertyChanged(nameof(this.Name));
+        }
+    }
 
     [Category("State")]
     [Browsable(true)]
@@ -59,7 +75,7 @@ public abstract class PeriodicBackgroundRuleBase : IPeriodicBackgroundRule
     public virtual string Description
         =>
             this.GetPropertiesForDescription()
-                .Where(s => !s.Key.IsAny("Id", "Type", "Description"))
+                .Where(s => !s.Key.IsAny("Id", "Name", "Type", "Description"))
                 .OrderBy(s => s.Key)
                 .ToFormattedPairs()
                 .Join("\r\n");

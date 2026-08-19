@@ -28,3 +28,7 @@ src/Papercut.Service/Web/dist
 settings.local.json
 TestResults/
 .DS_Store
+
+# MkDocs build output
+site/
+.playwright-mcp
