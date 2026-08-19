@@ -87,7 +87,7 @@ const LEVEL_RANK: Record<string, number> = {
         </div>
         <div class="log-line" *ngFor="let entry of visibleEntries(); trackBy: trackBySeq">
           <span class="log-time">{{ entry.timestamp | date:'HH:mm:ss.SSS' }}</span>
-          <span class="log-level" [ngClass]="levelClass(entry.level)">{{ levelAbbr(entry.level) }}</span>
+          <span class="log-level" [ngClass]="levelClass(entry.level)">[{{ levelAbbr(entry.level) }}]</span>
           <span class="log-msg">{{ entry.message }}<ng-container *ngIf="entry.exception">
 {{ entry.exception }}</ng-container></span>
         </div>
@@ -190,14 +190,17 @@ const LEVEL_RANK: Record<string, number> = {
 
     .log-level {
       flex-shrink: 0;
-      width: 30px;
+      width: 42px;
       font-weight: 700;
     }
 
-    .level-vrb, .level-dbg { color: var(--pc-faint); }
-    .level-inf { color: var(--pc-accent-text); }
+    /* Each level gets its own distinct color */
+    .level-vrb { color: var(--pc-faint); }
+    .level-dbg { color: var(--pc-muted); }
+    .level-inf { color: var(--pc-ok); }
     .level-wrn { color: var(--pc-warn); }
-    .level-err, .level-ftl { color: var(--pc-danger); }
+    .level-err { color: var(--pc-danger); }
+    .level-ftl { color: var(--pc-danger-strong); text-decoration: underline; }
 
     .log-msg {
       flex: 1;
