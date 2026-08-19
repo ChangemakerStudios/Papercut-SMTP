@@ -13,25 +13,22 @@ import { MessageService } from '../../services/message.service';
     MatProgressSpinnerModule
   ],
   template: `
-    <div class="h-full overflow-hidden bg-gray-50 dark:bg-gray-900">
-      <div class="h-full p-3 overflow-auto">
-        <div class="h-full p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto">
-          <!-- Loading State -->
-          <div *ngIf="isLoading" class="flex items-center justify-center py-8">
-            <mat-spinner diameter="32"></mat-spinner>
-            <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">Loading raw content...</span>
-          </div>
-          
-          <!-- Error State -->
-          <div *ngIf="error && !isLoading" class="text-center py-8">
-            <p class="text-red-600 dark:text-red-400 text-sm mb-2">Failed to load raw content</p>
-            <p class="text-gray-500 dark:text-gray-400 text-xs">{{ error }}</p>
-          </div>
-          
-          <!-- Raw Content -->
-          <code *ngIf="rawContent && !isLoading" 
-                class="whitespace-pre-wrap text-xs text-gray-900 dark:text-gray-100 font-mono leading-tight block">{{ rawContent }}</code>
+    <div class="h-full overflow-hidden bg-surface">
+      <div class="h-full p-4 overflow-auto">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="flex items-center justify-center py-8">
+          <mat-spinner diameter="32"></mat-spinner>
+          <span class="ml-3 text-sm text-muted">Loading raw content...</span>
         </div>
+
+        <!-- Error State -->
+        <div *ngIf="error && !isLoading" class="text-center py-8">
+          <p class="text-danger text-sm mb-2">Failed to load raw content</p>
+          <p class="text-muted text-xs">{{ error }}</p>
+        </div>
+
+        <!-- Raw Content -->
+        <code *ngIf="rawContent && !isLoading" class="raw-code block">{{ rawContent }}</code>
       </div>
     </div>
   `,
@@ -40,11 +37,13 @@ import { MessageService } from '../../services/message.service';
       display: block;
       height: 100%;
     }
-    
-    code {
-      font-family: 'Courier New', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+
+    /* Same mono family as the Body tab, one step smaller */
+    .raw-code {
+      font-family: var(--pc-font-mono);
       font-size: 11px;
-      line-height: 1.3;
+      line-height: 1.55;
+      color: var(--pc-ink);
       white-space: pre-wrap;
       word-wrap: break-word;
       overflow-wrap: break-word;

@@ -151,23 +151,30 @@ export class ContentFormattingService {
    * @returns CSS styles as a string
    */
   private getThemeAwareStyles(): string {
-    // Use the ThemeService to detect theme
+    // Use the ThemeService to detect theme; colors come from the Papercut
+    // token layer so the iframe matches the active theme + accent
     const isDarkMode = this.themeService.isDarkTheme();
-    
-    const textColor = isDarkMode ? '#ffffff' : '#333333';
-    const bgColor = isDarkMode ? '#1f2937' : '#ffffff';
-    const linkColor = isDarkMode ? '#60a5fa' : '#0066cc';
-    
+
+    const tokens = getComputedStyle(document.body);
+    const textColor = tokens.getPropertyValue('--pc-ink').trim() || (isDarkMode ? '#d6dde6' : '#2d3748');
+    const bgColor = tokens.getPropertyValue('--pc-surface').trim() || (isDarkMode ? '#1a202b' : '#ffffff');
+    const linkColor = tokens.getPropertyValue('--pc-accent-text').trim() || (isDarkMode ? '#60a5fa' : '#3478b2');
+
+    // NOTE: the html background paints the whole viewport, so no min-height
+    // is needed — a forced min-height plus padding guarantees a scrollbar
     return `<style>
-      html, body { 
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      html, body {
+        font-family: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif !important;
         line-height: 1.6 !important;
-        background: ${bgColor} !important; 
-        color: ${textColor} !important; 
+        background: ${bgColor} !important;
+        color: ${textColor} !important;
         fill: ${textColor} !important;
+        box-sizing: border-box !important;
         margin: 0 !important;
+        padding: 0 !important;
+      }
+      body {
         padding: 4px !important;
-        min-height: 100vh !important;
       }
       * { 
         color: ${textColor} !important; 

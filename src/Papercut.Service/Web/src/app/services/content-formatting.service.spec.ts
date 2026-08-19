@@ -42,13 +42,14 @@ describe('ContentFormattingService', () => {
     it('should format HTML content with complete document', () => {
       const htmlContent = '<html><head></head><body><p>Test content</p></body></html>';
       themeService.isDarkTheme.and.returnValue(false);
-      
+
       const result = service.formatMessageContent(htmlContent, 'text/html', 'msg123');
-      
+
+      const tokens = getComputedStyle(document.body);
       expect(result).toContain('<html>');
       expect(result).toContain('<p>Test content</p>');
-      expect(result).toContain('color: #333333');
-      expect(result).toContain('background: #ffffff');
+      expect(result).toContain(`color: ${tokens.getPropertyValue('--pc-ink').trim()}`);
+      expect(result).toContain(`background: ${tokens.getPropertyValue('--pc-surface').trim()}`);
     });
 
     it('should format HTML content without complete document', () => {
@@ -74,26 +75,32 @@ describe('ContentFormattingService', () => {
       expect(result).toContain('font-family: \'Courier New\', monospace');
     });
 
-    it('should apply dark theme styles when theme is dark', () => {
+    it('should style content from the dark token palette when the theme is dark', () => {
       const htmlContent = '<p>Test content</p>';
       themeService.isDarkTheme.and.returnValue(true);
-      
-      const result = service.formatMessageContent(htmlContent, 'text/html', 'msg123');
-      
-      expect(result).toContain('color: #ffffff');
-      expect(result).toContain('background: #1f2937');
-      expect(result).toContain('color: #60a5fa');
+      document.body.setAttribute('data-theme', 'dark');
+
+      try {
+        const result = service.formatMessageContent(htmlContent, 'text/html', 'msg123');
+
+        const tokens = getComputedStyle(document.body);
+        expect(result).toContain(`color: ${tokens.getPropertyValue('--pc-ink').trim()}`);
+        expect(result).toContain(`background: ${tokens.getPropertyValue('--pc-surface').trim()}`);
+      } finally {
+        document.body.removeAttribute('data-theme');
+      }
     });
 
-    it('should apply light theme styles when theme is light', () => {
+    it('should style content from the light token palette when the theme is light', () => {
       const htmlContent = '<p>Test content</p>';
       themeService.isDarkTheme.and.returnValue(false);
-      
+
       const result = service.formatMessageContent(htmlContent, 'text/html', 'msg123');
-      
-      expect(result).toContain('color: #333333');
-      expect(result).toContain('background: #ffffff');
-      expect(result).toContain('color: #0066cc');
+
+      const tokens = getComputedStyle(document.body);
+      expect(result).toContain(`color: ${tokens.getPropertyValue('--pc-ink').trim()}`);
+      expect(result).toContain(`background: ${tokens.getPropertyValue('--pc-surface').trim()}`);
+      expect(result).toContain(`color: ${tokens.getPropertyValue('--pc-accent-text').trim()}`);
     });
   });
 
@@ -212,7 +219,7 @@ describe('ContentFormattingService', () => {
       themeService.isDarkTheme.and.returnValue(false);
       const result = service.formatMessageContent('<p>Test</p>', 'text/html', 'msg123');
       
-      expect(result).toContain('font-family: -apple-system, BlinkMacSystemFont');
+      expect(result).toContain("font-family: 'Plus Jakarta Sans'");
       expect(result).toContain('line-height: 1.6');
       expect(result).toContain('margin: 0');
       expect(result).toContain('padding: 4px');

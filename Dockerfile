@@ -2,6 +2,14 @@
 USER $APP_UID
 WORKDIR /app
 
+# Build the Angular web UI (output: Web/Assets, embedded by the service build)
+FROM node:22-alpine AS webbuild
+WORKDIR /web
+COPY src/Papercut.Service/Web/package.json src/Papercut.Service/Web/package-lock.json ./
+RUN npm ci
+COPY src/Papercut.Service/Web/ ./
+RUN npm run build
+
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 ARG BUILD_VERSION=1.0.0.0
@@ -18,13 +26,15 @@ COPY . .
 
 #RUN sed "s/\(Assembly\(Informational\|File\)Version(\d34[0-9]\+\.[0-9]\+\.[0-9]\+\.\)[0-9]\+/\1$BUILD_VERSION/" src/GlobalAssemblyInfo.cs
 
+COPY --from=webbuild /web/Assets /work/src/Papercut.Service/Web/Assets
+
 WORKDIR "/work/src/Papercut.Service"
 
-RUN dotnet build "Papercut.Service.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "Papercut.Service.csproj" -c $BUILD_CONFIGURATION -o /app/build /p:SkipAngularBuild=true
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Papercut.Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Papercut.Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false /p:SkipAngularBuild=true
 
 FROM base AS final
 
