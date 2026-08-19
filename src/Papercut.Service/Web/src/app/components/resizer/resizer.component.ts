@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
     /* Wide invisible grab area, hairline visual — the handle itself stays
        transparent so the panels read as separated by a 1px divider */
     .resizer-handle {
-      width: 5px;
+      width: 7px;
       background-color: transparent;
       cursor: col-resize;
       position: relative;
@@ -42,7 +42,7 @@ import { CommonModule } from '@angular/common';
       position: absolute;
       top: 0;
       left: 50%;
-      width: 1px;
+      width: 5px;
       height: 100%;
       background-color: var(--pc-border);
       transform: translateX(-50%);
@@ -52,7 +52,7 @@ import { CommonModule } from '@angular/common';
     /* Thicken and accent the line only while grabbing it */
     .resizer-handle:hover .resizer-line,
     .resizer-handle.dragging .resizer-line {
-      width: 3px;
+      width: 5px;
       background-color: var(--pc-accent);
     }
 
