@@ -39,10 +39,9 @@ describe('MessageListNoSelectionComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display the email icon', () => {
-    const iconElement = fixture.nativeElement.querySelector('mat-icon');
+  it('should display the mail icon', () => {
+    const iconElement = fixture.nativeElement.querySelector('lucide-icon svg');
     expect(iconElement).toBeTruthy();
-    expect(iconElement.textContent).toContain('email');
   });
 
   it('should display the "No message selected" heading', () => {

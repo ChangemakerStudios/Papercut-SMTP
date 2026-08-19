@@ -1,8 +1,20 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {
+  LucideAngularModule,
+  Image,
+  FileText,
+  FileType2,
+  Sheet,
+  Archive,
+  Paperclip,
+  ChevronUp,
+  ChevronDown,
+  Download,
+  type LucideIconData
+} from 'lucide-angular';
 import { DetailDto, EmailSectionDto } from '../../models';
 import { MessageService } from '../../services/message.service';
 import { FileDownloaderService } from '../file-downloader/file-downloader.component';
@@ -15,57 +27,54 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
   imports: [
     CommonModule,
     MatButtonModule,
-    MatIconModule,
     MatProgressSpinnerModule,
+    LucideAngularModule,
     DownloadButtonDirective,
     SafeIframeComponent
   ],
   template: `
     <!-- Sections List -->
-    <div class="h-full overflow-auto bg-gray-50 dark:bg-gray-900">
-      <div class="p-3 space-y-4">
-        <div *ngFor="let section of getMessageSections(); let i = index" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div class="h-full overflow-auto bg-surface">
+      <div class="p-4 space-y-3">
+        <div *ngFor="let section of getMessageSections(); let i = index" class="section-item">
           <!-- Section Header -->
-          <div class="p-3">
-            <div class="flex items-center gap-3">
-              <mat-icon class="text-gray-600 dark:text-gray-400">{{ getSectionIcon(section.fileName || section.mediaType || 'Unknown') }}</mat-icon>
-              <div class="flex-1">
-                <div class="font-semibold text-gray-800 dark:text-gray-100 text-sm">{{ section.fileName || section.mediaType || 'Unknown' }}</div>
-                <div class="text-gray-600 dark:text-gray-400 text-xs">{{ section.mediaType || 'Unknown type' }}</div>
-              </div>
-              <div class="flex items-center gap-2">
-                <!-- View Button (for text/plain and text/html without filename) -->
-                <button 
-                  *ngIf="shouldShowViewButton(section)"
-                  mat-icon-button 
-                  color="accent"
-                  (click)="toggleSectionView(section, i)"
-                  [title]="isViewingSection(i) ? 'Collapse content' : 'Expand content'">
-                  <mat-icon>{{ isViewingSection(i) ? 'expand_less' : 'expand_more' }}</mat-icon>
-                </button>
-                <!-- Download Button -->
-                <button 
-                  *ngIf="shouldShowDownloadButton(section)"
-                  mat-icon-button 
-                  color="primary"
-                  [appDownloadButton]="getDownloadButtonId(section, i)"
-                  [downloadUrl]="buildSectionUrl(section, i)"
-                  [downloadFilename]="section.fileName || 'section-' + (section.id || i)"
-                  title="Download">
-                  <mat-icon>download</mat-icon>
-                </button>
-              </div>
+          <div class="section-header">
+            <lucide-icon [img]="getSectionIcon(section.fileName || section.mediaType || 'Unknown')"
+                         [size]="16" class="text-muted"></lucide-icon>
+            <div class="flex-1 min-w-0">
+              <div class="section-type truncate">{{ section.fileName || section.mediaType || 'Unknown' }}</div>
+              <div class="section-info truncate">{{ section.mediaType || 'Unknown type' }}</div>
+            </div>
+            <div class="flex items-center gap-1">
+              <!-- View Button (for text/plain and text/html without filename) -->
+              <button
+                *ngIf="shouldShowViewButton(section)"
+                class="section-action-btn"
+                (click)="toggleSectionView(section, i)"
+                [title]="isViewingSection(i) ? 'Collapse content' : 'Expand content'">
+                <lucide-icon [img]="isViewingSection(i) ? sectionIcons.ChevronUp : sectionIcons.ChevronDown" [size]="16"></lucide-icon>
+              </button>
+              <!-- Download Button -->
+              <button
+                *ngIf="shouldShowDownloadButton(section)"
+                class="section-action-btn"
+                [appDownloadButton]="getDownloadButtonId(section, i)"
+                [downloadUrl]="buildSectionUrl(section, i)"
+                [downloadFilename]="section.fileName || 'section-' + (section.id || i)"
+                title="Download">
+                <lucide-icon [img]="sectionIcons.Download" [size]="16"></lucide-icon>
+              </button>
             </div>
           </div>
-          
+
           <!-- Expanded Content Area -->
-          <div *ngIf="isViewingSection(i)" class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-            <div class="p-3">
+          <div *ngIf="isViewingSection(i)" class="border-t" style="border-color: var(--pc-border);">
+            <div class="p-3" style="background: var(--pc-surface-2);">
               <div *ngIf="isSectionLoading(i)" class="flex items-center justify-center py-8">
                 <mat-spinner diameter="32"></mat-spinner>
-                <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">Loading content...</span>
+                <span class="ml-3 text-sm text-muted">Loading content...</span>
               </div>
-              <div *ngIf="!isSectionLoading(i)" class="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div *ngIf="!isSectionLoading(i)" class="rounded border overflow-hidden" style="border-color: var(--pc-border); background: var(--pc-surface);">
                 <app-safe-iframe
                   cssStyle="min-height: 200px; max-height: 400px;"
                   [content]="getSectionContentForViewing(i)">
@@ -88,13 +97,36 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
       background: white;
     }
 
-    /* Dark mode iframe background */
-    :host-context([data-theme="dark"]) iframe {
-      background: #1f2937;
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--pc-muted);
+      cursor: pointer;
+      transition: background-color 0.12s ease, color 0.12s ease;
+    }
+
+    .section-action-btn:hover {
+      background: var(--pc-hover);
+      color: var(--pc-accent-text);
+      border-color: var(--pc-border);
     }
   `]
 })
 export class MessageSectionsComponent {
+  protected readonly sectionIcons = { ChevronUp, ChevronDown, Download };
+
   @Input() message: DetailDto | null = null;
   
   // Section viewing state
@@ -217,23 +249,23 @@ export class MessageSectionsComponent {
     return formattedContent;
   }
 
-  getSectionIcon(type: string): string {
+  getSectionIcon(type: string): LucideIconData {
     const lowerType = type.toLowerCase();
-    
+
     if (lowerType.includes('image') || lowerType.includes('.jpg') || lowerType.includes('.png') || lowerType.includes('.gif')) {
-      return 'image';
+      return Image;
     } else if (lowerType.includes('text') || lowerType.includes('.txt')) {
-      return 'description';
+      return FileText;
     } else if (lowerType.includes('pdf')) {
-      return 'picture_as_pdf';
+      return FileType2;
     } else if (lowerType.includes('word') || lowerType.includes('document') || lowerType.includes('.doc')) {
-      return 'article';
+      return FileText;
     } else if (lowerType.includes('spreadsheet') || lowerType.includes('excel') || lowerType.includes('.xls')) {
-      return 'table_chart';
+      return Sheet;
     } else if (lowerType.includes('zip') || lowerType.includes('archive') || lowerType.includes('.zip')) {
-      return 'archive';
+      return Archive;
     } else {
-      return 'attach_file';
+      return Paperclip;
     }
   }
 

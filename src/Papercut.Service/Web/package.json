@@ -26,7 +26,10 @@
     "@angular/platform-browser": "^17.2.0",
     "@angular/platform-browser-dynamic": "^17.2.0",
     "@angular/router": "^17.2.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
     "@microsoft/signalr": "^8.0.11",
+    "lucide-angular": "^1.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"

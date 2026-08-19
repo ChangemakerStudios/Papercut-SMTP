@@ -40,9 +40,8 @@ describe('MessageListEmptyStateComponent', () => {
   });
 
   it('should display the inbox icon', () => {
-    const iconElement = fixture.nativeElement.querySelector('mat-icon');
+    const iconElement = fixture.nativeElement.querySelector('lucide-icon svg');
     expect(iconElement).toBeTruthy();
-    expect(iconElement.textContent).toContain('inbox');
   });
 
   it('should display the "No Messages" heading', () => {

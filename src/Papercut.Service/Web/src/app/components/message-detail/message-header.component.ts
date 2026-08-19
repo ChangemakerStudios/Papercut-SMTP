@@ -1,13 +1,13 @@
 // Papercut
-// 
+//
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,97 +16,159 @@
 
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
-import { EmailAddressDisplayComponent, EmailAddress } from '../shared/email-address-display.component';
-import { AttachmentSummaryComponent, Attachment } from '../shared/attachment-summary.component';
+import { LucideAngularModule, Paperclip } from 'lucide-angular';
+import { EmailAddress } from '../shared/email-address-display.component';
+import { Attachment } from '../shared/attachment-summary.component';
 import { DetailDto, RefDto } from '../../models';
 
 /**
- * Component responsible for displaying the message header section.
- * Extracted from MessageDetailComponent to follow Single Responsibility Principle.
- * This component handles the display of message metadata including sender, recipients, and attachments.
+ * Message header: the desktop app's labeled field rows (From / To / Date /
+ * Priority / Subject), refined. Addresses render in mono; priority gets
+ * semantic color; attachments are summarized inline.
  */
 @Component({
   selector: 'app-message-header',
   standalone: true,
   imports: [
     CommonModule,
-    MatIconModule,
-    EmailAddressDisplayComponent,
-    AttachmentSummaryComponent
+    LucideAngularModule
   ],
   template: `
-    <!-- Message Header Section -->
-    <div class="flex-shrink-0 bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
-      <div class="header-content flex items-center justify-between p-3 lg:p-4">
-        <!-- Subject Section -->
-        <div class="subject-section flex-1 min-w-0">
-          <h1 class="message-title text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white truncate m-0">
-            {{ (message?.detail?.subject || message?.ref?.subject) || '(No Subject)' }}
-          </h1>
-          <p class="message-date text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {{ (message?.detail?.createdAt || message?.ref?.createdAt) | date:'full' }}
-          </p>
-        </div>
+    <div class="header-fields flex-shrink-0">
+      <div class="field-row">
+        <span class="field-label">From</span>
+        <span class="field-value pc-mono">{{ formatAddresses(getFromAddresses()) || '—' }}</span>
       </div>
-    </div>
-
-    <!-- Message Details Section -->
-    <div class="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
-      <div class="message-details-content p-3 lg:p-4">
-        <div class="details-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          
-          <!-- From Section -->
-          <app-email-address-display
-            [emailAddresses]="getFromAddresses()"
-            label="From"
-            type="from">
-          </app-email-address-display>
-          
-          <!-- To Section -->
-          <app-email-address-display
-            *ngIf="getToAddresses().length"
-            [emailAddresses]="getToAddresses()"
-            label="To"
-            type="to">
-          </app-email-address-display>
-          
-          <!-- CC Section -->
-          <app-email-address-display
-            *ngIf="getCcAddresses().length"
-            [emailAddresses]="getCcAddresses()"
-            label="CC"
-            type="cc">
-          </app-email-address-display>
-          
-          <!-- BCC Section -->
-          <app-email-address-display
-            *ngIf="getBccAddresses().length"
-            [emailAddresses]="getBccAddresses()"
-            label="BCC"
-            type="bcc">
-          </app-email-address-display>
-          
-          <!-- Attachments Summary -->
-          <app-attachment-summary
-            *ngIf="getAttachments().length || getAttachmentCount() > 0"
-            [attachments]="getAttachments()"
-            [showPreview]="true"
-            [maxPreviewItems]="2"
-            (viewAttachments)="onViewAttachments()">
-          </app-attachment-summary>
-        </div>
+      <div class="field-row" *ngIf="getToAddresses().length">
+        <span class="field-label">To</span>
+        <span class="field-value pc-mono">{{ formatAddresses(getToAddresses()) }}</span>
+      </div>
+      <div class="field-row" *ngIf="getCcAddresses().length">
+        <span class="field-label">CC</span>
+        <span class="field-value pc-mono">{{ formatAddresses(getCcAddresses()) }}</span>
+      </div>
+      <div class="field-row" *ngIf="getBccAddresses().length">
+        <span class="field-label">BCC</span>
+        <span class="field-value pc-mono">{{ formatAddresses(getBccAddresses()) }}</span>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Date</span>
+        <span class="field-value pc-mono">{{ (message?.detail?.createdAt || message?.ref?.createdAt) | date:'M/d/yyyy h:mm:ss a ZZZZZ' }}</span>
+      </div>
+      <div class="field-row" *ngIf="getPriority() as priority">
+        <span class="field-label">Priority</span>
+        <span class="field-value field-priority" [class.priority-urgent]="priority === 'Urgent'">{{ priority }}</span>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Subject</span>
+        <span class="field-value field-subject">{{ (message?.detail?.subject || message?.ref?.subject) || '(No Subject)' }}</span>
+      </div>
+      <div class="field-row" *ngIf="getAttachmentCount() > 0">
+        <span class="field-label">Attach</span>
+        <span class="field-value">
+          <button class="attachment-chip" (click)="onViewAttachments()">
+            <lucide-icon [img]="icons.Paperclip" [size]="12"></lucide-icon>
+            <span>{{ getAttachmentSummary() }}</span>
+          </button>
+        </span>
       </div>
     </div>
   `,
-  styles: [],
+  styles: [`
+    .header-fields {
+      background: var(--pc-surface);
+      border-bottom: 1px solid var(--pc-border);
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .field-label {
+      flex-shrink: 0;
+      width: 52px;
+      text-align: right;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--pc-faint);
+      user-select: none;
+    }
+
+    .field-value {
+      flex: 1;
+      min-width: 0;
+      font-size: 12.5px;
+      color: var(--pc-ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .field-subject {
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--pc-ink-strong);
+      white-space: normal;
+      line-height: 1.35;
+    }
+
+    .field-priority {
+      font-weight: 600;
+    }
+
+    .priority-urgent {
+      color: var(--pc-danger);
+    }
+
+    .attachment-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 10px;
+      border: 1px solid var(--pc-border);
+      border-radius: 999px;
+      background: var(--pc-surface-2);
+      color: var(--pc-accent-text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.12s ease, border-color 0.12s ease;
+    }
+
+    .attachment-chip:hover {
+      background: var(--pc-hover);
+      border-color: var(--pc-accent);
+    }
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MessageHeaderComponent {
+  protected readonly icons = { Paperclip };
+
   @Input() message: { detail: DetailDto | null; ref: RefDto | null } | null = null;
 
   @Output() viewAttachments = new EventEmitter<void>();
   @Output() emailClick = new EventEmitter<EmailAddress>();
+
+  formatAddresses(addresses: EmailAddress[]): string {
+    return addresses
+      .map(a => a.name ? `${a.name} <${a.address}>` : a.address)
+      .join(', ');
+  }
+
+  getPriority(): string | null {
+    const priority = this.message?.ref?.priority;
+    return priority && priority !== 'Normal' ? priority : null;
+  }
 
   getFromAddresses(): EmailAddress[] {
     if (this.message?.detail?.from) {
@@ -159,7 +221,7 @@ export class MessageHeaderComponent {
         id: att.id || undefined,
         fileName: att.fileName || undefined,
         mediaType: att.mediaType || undefined,
-        size: undefined // EmailSectionDto doesn't have size property
+        size: att.size ?? undefined
       }));
     }
     return [];
@@ -172,6 +234,19 @@ export class MessageHeaderComponent {
       return this.message.ref.attachmentCount;
     }
     return 0;
+  }
+
+  getAttachmentSummary(): string {
+    const count = this.getAttachmentCount();
+    const names = this.getAttachments()
+      .map(a => a.fileName)
+      .filter(Boolean);
+
+    if (names.length === 1) {
+      return names[0]!;
+    }
+
+    return count === 1 ? '1 attachment' : `${count} attachments`;
   }
 
   onViewAttachments(): void {

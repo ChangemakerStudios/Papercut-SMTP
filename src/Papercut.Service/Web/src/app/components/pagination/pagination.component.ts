@@ -18,46 +18,38 @@ export interface PaginationInfo {
   standalone: true,
   imports: [CommonModule, FormsModule, MatProgressSpinnerModule],
   template: `
-    <div class="flex items-center justify-between gap-2 p-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 min-w-0">
-      <div class="text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 flex items-center gap-2">
+    <div class="pager flex items-center justify-between gap-2 p-2 min-w-0">
+      <div class="text-xs text-muted flex-shrink-0 flex items-center gap-2">
         <ng-container *ngIf="totalCount > 0; else noResults">
           {{ pageStart + 1 }}–{{ displayEnd }} of {{ totalCount }}
         </ng-container>
         <ng-template #noResults>
           No results
         </ng-template>
-        <mat-spinner *ngIf="isLoading" diameter="12" strokeWidth="2" class="text-blue-600 dark:text-blue-400"></mat-spinner>
+        <mat-spinner *ngIf="isLoading" diameter="12" strokeWidth="2"></mat-spinner>
       </div>
       <div class="flex items-center gap-1 flex-shrink-0">
-        <select class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded px-2 py-1 min-w-0 disabled:opacity-50 disabled:cursor-not-allowed"
+        <select class="pager-select"
                 [ngModel]="pageSize"
                 (ngModelChange)="onPageSizeChange($event)"
                 [disabled]="isLoading">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}/page</option>
         </select>
         <div class="flex items-center gap-1 flex-shrink-0">
-          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                  (click)="goToPage(1)" [disabled]="currentPage === 1 || isLoading">«</button>
-          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                  (click)="prevPage()" [disabled]="currentPage === 1 || isLoading">‹</button>
+          <button class="pager-btn" (click)="goToPage(1)" [disabled]="currentPage === 1 || isLoading">«</button>
+          <button class="pager-btn" (click)="prevPage()" [disabled]="currentPage === 1 || isLoading">‹</button>
           <ng-container *ngFor="let p of visiblePageNumbers">
             <button *ngIf="p > 0; else dots"
-                    class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                    style="min-width: 20px;"
-                    [ngClass]="{ 
-                      'bg-blue-600 text-white border-blue-600': p === currentPage, 
-                      'text-gray-700 dark:text-gray-200': p !== currentPage 
-                    }"
+                    class="pager-btn"
+                    [class.pager-btn-active]="p === currentPage"
                     (click)="goToPage(p)"
                     [disabled]="isLoading">{{ p }}</button>
             <ng-template #dots>
-              <span class="px-1 text-gray-500 flex-shrink-0">…</span>
+              <span class="px-1 text-faint flex-shrink-0">…</span>
             </ng-template>
           </ng-container>
-          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                  (click)="nextPage()" [disabled]="currentPage === totalPages || isLoading">›</button>
-          <button class="px-1 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                  (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages || isLoading">»</button>
+          <button class="pager-btn" (click)="nextPage()" [disabled]="currentPage === totalPages || isLoading">›</button>
+          <button class="pager-btn" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages || isLoading">»</button>
         </div>
       </div>
     </div>
@@ -68,10 +60,59 @@ export interface PaginationInfo {
       width: 100%;
       min-width: 0;
     }
-    
+
     :host > div {
       width: 100%;
       min-width: 0;
+    }
+
+    .pager {
+      border-top: 1px solid var(--pc-border);
+      background: var(--pc-surface-2);
+    }
+
+    .pager-select {
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--pc-border);
+      background: var(--pc-surface);
+      color: var(--pc-ink);
+      min-width: 0;
+    }
+
+    .pager-select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pager-btn {
+      min-width: 22px;
+      padding: 3px 5px;
+      font-size: 11px;
+      border-radius: 5px;
+      border: 1px solid var(--pc-border);
+      background: var(--pc-surface);
+      color: var(--pc-ink);
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background-color 0.12s ease;
+    }
+
+    .pager-btn:hover:not(:disabled):not(.pager-btn-active) {
+      background: var(--pc-hover);
+    }
+
+    .pager-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .pager-btn-active {
+      background: var(--pc-accent);
+      border-color: var(--pc-accent);
+      color: var(--pc-on-chrome);
+      font-weight: 600;
     }
   `]
 })

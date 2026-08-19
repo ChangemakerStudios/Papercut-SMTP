@@ -20,12 +20,21 @@
  * Matches the C# EmailSectionDto class.
  */
 export interface EmailSectionDto {
+  /** Zero-based index within the message's body parts (aligns with the sections/{index} endpoint) */
+  index?: number;
+
   /** The content ID of the attachment */
   id?: string | null;
-  
+
   /** The media type (MIME type) of the attachment */
   mediaType?: string | null;
-  
+
   /** The filename of the attachment */
   fileName?: string | null;
+
+  /** True when this section is an attachment (vs. an inline body part) */
+  isAttachment?: boolean;
+
+  /** Decoded content size in bytes, when known */
+  size?: number | null;
 } 

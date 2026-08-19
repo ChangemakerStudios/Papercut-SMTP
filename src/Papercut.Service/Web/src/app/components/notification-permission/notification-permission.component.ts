@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
+import { LucideAngularModule, Bell } from 'lucide-angular';
 import { Observable } from 'rxjs';
 import { PlatformNotificationService } from '../../services/platform-notification.service';
 
 @Component({
   selector: 'app-notification-permission',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule],
+  imports: [CommonModule, MatButtonModule, MatCardModule, LucideAngularModule],
   template: `
     <!-- Background overlay for better separation -->
     <div *ngIf="shouldShowPrompt" 
@@ -21,8 +21,8 @@ import { PlatformNotificationService } from '../../services/platform-notificatio
       <mat-card class="shadow-2xl dark:shadow-black/50 rounded-xl border border-gray-200 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-900 ring-1 ring-black/5 dark:ring-white/10">
         <!-- Header section with icon and text -->
         <div class="flex items-start gap-4 p-4 pb-3">
-          <div class="flex-shrink-0 w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
-            <mat-icon class="text-blue-600 dark:text-blue-400">notifications</mat-icon>
+          <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--pc-accent-soft);">
+            <lucide-icon [img]="icons.Bell" [size]="22" class="text-accent-text"></lucide-icon>
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="text-base font-medium text-gray-900 dark:text-white mb-1">
@@ -54,6 +54,8 @@ import { PlatformNotificationService } from '../../services/platform-notificatio
   styles: []
 })
 export class NotificationPermissionComponent implements OnInit {
+  protected readonly icons = { Bell };
+
   shouldShowPrompt = false;
   permissionStatus$: Observable<NotificationPermission>;
   isSupported$: Observable<boolean>;

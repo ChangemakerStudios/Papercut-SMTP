@@ -3,9 +3,9 @@ import { MatSnackBar, MatSnackBarRef, MatSnackBarConfig } from '@angular/materia
 import { ComponentType } from '@angular/cdk/overlay';
 import { Component, Inject } from '@angular/core';
 import { MAT_SNACK_BAR_DATA, MatSnackBarAction } from '@angular/material/snack-bar';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule, Mail, CircleCheck, CircleAlert, TriangleAlert, Info, type LucideIconData } from 'lucide-angular';
 import { EnvironmentService } from './environment.service';
 
 export interface ToastData {
@@ -20,13 +20,13 @@ export interface ToastData {
 @Component({
   selector: 'app-toast-notification',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, MatButtonModule, LucideAngularModule],
   template: `
     <div class="flex items-center gap-3 py-1">
-      <mat-icon *ngIf="data.icon" [ngClass]="getIconClass()">{{ data.icon }}</mat-icon>
+      <lucide-icon *ngIf="data.icon" [img]="getIcon()" [size]="18" [ngClass]="getIconClass()"></lucide-icon>
       <span class="flex-1 text-sm">{{ data.message }}</span>
-      <button *ngIf="data.action" 
-              mat-button 
+      <button *ngIf="data.action"
+              mat-button
               mat-snack-bar-action
               class="!text-current !min-w-0">
         {{ data.action }}
@@ -42,14 +42,22 @@ export interface ToastData {
 export class ToastNotificationComponent {
   constructor(@Inject(MAT_SNACK_BAR_DATA) public data: ToastData) {}
 
+  getIcon(): LucideIconData {
+    switch (this.data.icon) {
+      case 'email': return Mail;
+      case 'check_circle': return CircleCheck;
+      case 'error': return CircleAlert;
+      case 'warning': return TriangleAlert;
+      default: return Info;
+    }
+  }
+
   getIconClass(): string {
-    const baseClass = 'text-lg';
     switch (this.data.type) {
-      case 'success': return `${baseClass} text-green-500`;
-      case 'error': return `${baseClass} text-red-500`;
-      case 'warning': return `${baseClass} text-yellow-500`;
-      case 'info': return `${baseClass} text-blue-500`;
-      default: return baseClass;
+      case 'success': return 'text-ok';
+      case 'error': return 'text-danger';
+      case 'warning': return 'text-warn';
+      default: return '';
     }
   }
 }

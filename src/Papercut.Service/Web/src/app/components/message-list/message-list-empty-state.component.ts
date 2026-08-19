@@ -16,7 +16,7 @@
 
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
+import { LucideAngularModule, Inbox } from 'lucide-angular';
 
 /**
  * Component responsible for displaying the empty state when no messages are available.
@@ -28,17 +28,19 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [
     CommonModule,
-    MatIconModule
+    LucideAngularModule
   ],
   template: `
     <div class="flex flex-col items-center justify-center h-full p-8 text-center">
-      <mat-icon class="text-6xl mb-4 text-gray-400 dark:text-gray-500 !w-auto !h-auto">inbox</mat-icon>
-      <h3 class="text-xl font-medium mb-2 text-gray-700 dark:text-gray-300">No Messages</h3>
-      <p class="text-gray-600 dark:text-gray-400">No emails have been received yet</p>
-      <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Messages will appear here when they arrive</p>
+      <lucide-icon [img]="icons.Inbox" [size]="48" [strokeWidth]="1.5" class="mb-4 text-faint"></lucide-icon>
+      <h3 class="text-lg font-semibold mb-2 text-ink-strong">No Messages</h3>
+      <p class="text-muted text-sm">No emails have been received yet</p>
+      <p class="text-xs text-faint mt-2">Messages will appear here when they arrive</p>
     </div>
   `,
   styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MessageListEmptyStateComponent {}
+export class MessageListEmptyStateComponent {
+  protected readonly icons = { Inbox };
+}

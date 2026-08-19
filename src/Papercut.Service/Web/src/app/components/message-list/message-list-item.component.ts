@@ -1,88 +1,48 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { LucideAngularModule, Paperclip, ChevronsUp, ChevronsDown } from 'lucide-angular';
 import { FileSizePipe } from '../../pipes/file-size.pipe';
-import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 import { EmailService } from '../../services/email.service';
 import { RefDto } from 'src/app/models';
 
 @Component({
   selector: 'app-message-list-item',
   standalone: true,
-  imports: [CommonModule, MatTooltipModule, MatIconModule, MatProgressSpinnerModule, FileSizePipe, TimeAgoPipe],
+  imports: [CommonModule, MatTooltipModule, MatProgressSpinnerModule, LucideAngularModule, FileSizePipe],
   template: `
-    <div class="px-4 border-b transition-colors duration-200 w-full min-w-0 h-20 flex flex-col justify-center"
+    <div class="msg-item"
          [ngClass]="{
-           'bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-600 dark:border-blue-400 border-b-gray-200 dark:border-b-gray-700': selected,
-           'bg-blue-50 dark:bg-blue-800 border-l-2 border-blue-500 dark:border-blue-400 border-b-gray-200 dark:border-b-gray-700': !message.isRead && !selected,
-           'border-b-gray-200 dark:border-b-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700': !selected && message.isRead && !isLoading,
-           'hover:bg-blue-200 dark:hover:bg-blue-800': selected && !isLoading,
-           'hover:bg-blue-100 dark:hover:bg-blue-700': !message.isRead && !selected && !isLoading,
+           'msg-selected': selected,
+           'msg-unread': !message.isRead && !selected,
            'cursor-pointer': !isLoading,
            'cursor-not-allowed opacity-60': isLoading
          }"
          (click)="onSelect()">
-      <div class="font-semibold mb-1 overflow-hidden text-ellipsis whitespace-nowrap max-w-full" 
-           [ngClass]="{
-             'text-gray-900 dark:text-gray-100 font-bold': !message.isRead,
-             'text-gray-800 dark:text-gray-200': message.isRead,
-             'text-blue-800 dark:text-blue-200': selected
-           }">
-           <!-- [matTooltip]="message.subject ?? 'No Subject'" -->           
+      <div class="msg-subject" [matTooltip]="message.subject ?? 'No Subject'" matTooltipShowDelay="700">
         {{ message.subject ?? '(No Subject)' }}
       </div>
-      <div class="flex justify-between items-center text-xs">
-        <span class="flex-1 min-w-0" 
-              [ngClass]="{
-                'text-gray-700 dark:text-gray-300 font-semibold': !message.isRead,
-                'text-gray-600 dark:text-gray-400': message.isRead,
-                'text-blue-700 dark:text-blue-300': selected }"
-                [matTooltip]="(message.createdAt | date:'full') ?? 'No data'">
-                From: {{ getFromDisplay() }}<br/>
-                Received: {{ message.createdAt | timeAgo }}</span>
-        <div class="flex flex-row items-center ml-2">
-          <!-- Loading indicator first -->
-          <mat-spinner *ngIf="isLoadingDetail" 
-                      diameter="16" 
-                      strokeWidth="2" 
-                      class="mr-1 text-blue-600 dark:text-blue-400"></mat-spinner>
-          
-          <!-- Attachment icon second -->
-          <mat-icon class="text-base mr-1" 
-                    [ngClass]="{
-                      'text-gray-600 dark:text-gray-400': !selected,
-                      'text-blue-600 dark:text-blue-400': selected
-                    }"
-                    *ngIf="message.attachmentCount && message.attachmentCount > 0"
-                    [matTooltip]="getAttachmentTooltip()"
-                    style="width: auto; font-size: 8pt;">
-            attach_file
-          </mat-icon>
-          
-          <!-- Priority icons -->
-          <mat-icon class="text-base mr-1 text-red-600 dark:text-red-400" 
-                    *ngIf="message.priority === 'Urgent'"
-                    matTooltip="Urgent priority"
-                    style="width: auto; font-size: 8pt;">
-            priority_high
-          </mat-icon>
-          <mat-icon class="text-base mr-1 text-blue-600 dark:text-blue-400" 
-                    *ngIf="message.priority === 'Non-urgent'"
-                    matTooltip="Non-urgent priority"
-                    style="width: auto; font-size: 8pt;">
-            keyboard_arrow_down
-          </mat-icon>
-          
-          <!-- File size last -->
-          <span class="font-medium" 
-                [ngClass]="{
-                  'text-gray-700 dark:text-gray-300': !message.isRead,
-                  'text-gray-600 dark:text-gray-400': message.isRead,
-                  'text-blue-700 dark:text-blue-300': selected
-                }">{{ message.size | fileSize }}</span>
-        </div>
+      <div class="msg-meta">
+        <span class="msg-from pc-mono" [matTooltip]="(message.createdAt | date:'full') ?? ''" matTooltipShowDelay="700">
+          {{ getFromDisplay() }}
+        </span>
+        <span class="msg-indicators">
+          <mat-spinner *ngIf="isLoadingDetail" diameter="14" strokeWidth="2"></mat-spinner>
+          <lucide-icon *ngIf="message.attachmentCount && message.attachmentCount > 0"
+                       [img]="icons.Paperclip" [size]="12"
+                       [matTooltip]="getAttachmentTooltip()"></lucide-icon>
+          <lucide-icon *ngIf="message.priority === 'Urgent'"
+                       [img]="icons.ChevronsUp" [size]="13" class="text-danger"
+                       matTooltip="Urgent priority"></lucide-icon>
+          <lucide-icon *ngIf="message.priority === 'Non-urgent'"
+                       [img]="icons.ChevronsDown" [size]="13" class="text-faint"
+                       matTooltip="Non-urgent priority"></lucide-icon>
+        </span>
+      </div>
+      <div class="msg-meta">
+        <span class="msg-date">{{ message.createdAt | date:'M/d/yyyy h:mm:ss a' }}</span>
+        <span class="msg-size pc-mono">{{ message.size | fileSize }}</span>
       </div>
     </div>
   `,
@@ -92,13 +52,89 @@ import { RefDto } from 'src/app/models';
       width: 100%;
       box-sizing: border-box;
     }
-    
-    mat-icon {
-      vertical-align: middle;
+
+    .msg-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--pc-border-soft);
+      border-left: 3px solid transparent;
+      background: var(--pc-surface);
+      transition: background-color 0.12s ease;
+      min-width: 0;
     }
+
+    .msg-item:hover {
+      background: var(--pc-hover);
+    }
+
+    .msg-item.msg-selected {
+      background: var(--pc-selected);
+      border-left-color: var(--pc-selected-edge);
+    }
+
+    .msg-subject {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--pc-ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 3px;
+      line-height: 1.35;
+    }
+
+    .msg-item.msg-unread .msg-subject {
+      font-weight: 700;
+      color: var(--pc-ink-strong);
+    }
+
+    .msg-item.msg-selected .msg-subject {
+      color: var(--pc-ink-strong);
+      font-weight: 600;
+    }
+
+    .msg-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11.5px;
+      color: var(--pc-muted);
+      line-height: 1.5;
+      min-width: 0;
+    }
+
+    .msg-from {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .msg-date {
+      white-space: nowrap;
+      color: var(--pc-faint);
+    }
+
+    .msg-size {
+      white-space: nowrap;
+      color: var(--pc-faint);
+    }
+
+    .msg-indicators {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+      color: var(--pc-muted);
+    }
+
+    .text-danger { color: var(--pc-danger); }
+    .text-faint { color: var(--pc-faint); }
   `]
 })
 export class MessageListItemComponent {
+  protected readonly icons = { Paperclip, ChevronsUp, ChevronsDown };
+
   @Input() message!: RefDto;
   @Input() selected = false;
   @Input() isLoading = false;
@@ -111,18 +147,11 @@ export class MessageListItemComponent {
     if (this.isLoading) {
       return; // Prevent action during loading
     }
-    // Message item clicked - handled by parent component
     this.select.emit();
   }
 
   getFromDisplay(): string {
     return this.emailService.formatEmailAddressList(this.message?.from || []);
-  }
-
-  hasStatusIndicators(): boolean {
-    return (this.message?.attachmentCount && this.message.attachmentCount > 0) ||
-           this.message?.priority === 'Urgent' ||
-           this.message?.priority === 'Non-urgent' || false;
   }
 
   getAttachmentTooltip(): string {
@@ -131,4 +160,4 @@ export class MessageListItemComponent {
     }
     return this.message.attachmentCount === 1 ? 'Has 1 attachment' : `Has ${this.message.attachmentCount} attachments`;
   }
-} 
+}

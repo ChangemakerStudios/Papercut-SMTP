@@ -61,8 +61,8 @@ export class DownloadButtonDirective implements OnInit, OnDestroy {
       this.renderer.setStyle(this.el.nativeElement, 'opacity', '0.7');
       this.renderer.setStyle(this.el.nativeElement, 'pointer-events', 'none');
       
-      // Find mat-icon inside button and hide it
-      const matIcon = this.el.nativeElement.querySelector('mat-icon');
+      // Find the icon inside the button and hide it
+      const matIcon = this.el.nativeElement.querySelector('mat-icon, lucide-icon');
       if (matIcon) {
         this.renderer.setStyle(matIcon, 'display', 'none');
       }
@@ -94,8 +94,8 @@ export class DownloadButtonDirective implements OnInit, OnDestroy {
         this.renderer.removeChild(this.el.nativeElement, spinner);
       }
       
-      // Show mat-icon again
-      const matIcon = this.el.nativeElement.querySelector('mat-icon');
+      // Show the icon again
+      const matIcon = this.el.nativeElement.querySelector('mat-icon, lucide-icon');
       if (matIcon) {
         this.renderer.removeStyle(matIcon, 'display');
       }

@@ -1,89 +1,152 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ThemeService } from '../../services/theme.service';
+import {
+  LucideAngularModule,
+  Mail,
+  ScrollText,
+  ListChecks,
+  Settings2,
+  Zap,
+  Sun,
+  Moon,
+  Palette,
+  Check
+} from 'lucide-angular';
+import { ThemeService, AccentColor } from '../../services/theme.service';
 import { LoggingService } from '../../services/logging.service';
 import { McpService, McpStatus } from '../../services/mcp.service';
-import { Observable, map, switchMap, of } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-navigation',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
-    MatToolbarModule, 
-    MatButtonModule, 
-    MatIconModule,
-    MatTooltipModule
+    CommonModule,
+    RouterModule,
+    MatMenuModule,
+    MatTooltipModule,
+    LucideAngularModule
   ],
   template: `
     <nav class="papercut-navbar">
       <div class="nav-container">
-        <!-- Brand Section -->
+        <!-- Brand -->
         <div class="logo-section">
           <div class="logo-container" routerLink="/">
-            <img [src]="(isDarkTheme$ | async) ? '/assets/images/papercut-logo-dark.png' : '/assets/images/papercut-logo-light.png'" 
-                 alt="Papercut Logo" 
-                 class="papercut-logo">
+            <span class="brand-logo-icon">
+              <lucide-icon [img]="icons.Mail" [size]="22" [strokeWidth]="2"></lucide-icon>
+            </span>
+            <span class="brand-wordmark">
+              Paper<span class="brand-cut">cut</span>
+              <span class="brand-smtp">SMTP</span>
+            </span>
           </div>
         </div>
-        
-        <!-- Navigation Actions (Desktop Layout Style) -->
+
+        <!-- Actions -->
         <div class="nav-actions">
-          <button mat-stroked-button class="papercut-nav-btn" (click)="showLog()">
-            <mat-icon>list_alt</mat-icon>
+          <button class="papercut-nav-btn" (click)="showLog()">
+            <lucide-icon [img]="icons.ScrollText" [size]="15"></lucide-icon>
             <span>Log</span>
           </button>
-          
-          <button mat-stroked-button class="papercut-nav-btn" (click)="showRules()">
-            <mat-icon>rule</mat-icon>
+
+          <button class="papercut-nav-btn" (click)="showRules()">
+            <lucide-icon [img]="icons.ListChecks" [size]="15"></lucide-icon>
             <span>Rules</span>
           </button>
-          
-          <button mat-stroked-button class="papercut-nav-btn" (click)="showOptions()">
-            <mat-icon>settings</mat-icon>
+
+          <button class="papercut-nav-btn" (click)="showOptions()">
+            <lucide-icon [img]="icons.Settings2" [size]="15"></lucide-icon>
             <span>Options</span>
           </button>
 
-          <button mat-stroked-button
+          <button class="papercut-nav-btn"
                   *ngIf="(mcpStatus$ | async)?.enabled"
-                  class="papercut-nav-btn"
                   (click)="copyMcpUrl()"
                   [matTooltip]="'MCP endpoint: ' + ((mcpStatus$ | async)?.url || '') + ' (click to copy)'">
-            <mat-icon>bolt</mat-icon>
+            <lucide-icon [img]="icons.Zap" [size]="15"></lucide-icon>
             <span>{{ mcpCopied ? 'Copied!' : 'MCP' }}</span>
           </button>
 
-          <!-- Theme Toggle integrated into buttons -->
-          <button mat-stroked-button 
+          <span class="nav-divider"></span>
+
+          <!-- Theme accent picker -->
+          <button class="papercut-nav-btn"
+                  [matMenuTriggerFor]="accentMenu"
+                  matTooltip="Theme accent">
+            <lucide-icon [img]="icons.Palette" [size]="15"></lucide-icon>
+          </button>
+          <mat-menu #accentMenu="matMenu" class="accent-menu">
+            <button mat-menu-item
+                    *ngFor="let accent of themeService.accentColors"
+                    (click)="setAccent(accent)"
+                    class="accent-menu-item">
+              <span class="accent-swatch" [style.background]="accent.value"></span>
+              <span class="accent-name">{{ accent.name }}</span>
+              <lucide-icon *ngIf="isCurrentAccent(accent)"
+                           [img]="icons.Check" [size]="14"
+                           class="accent-check"></lucide-icon>
+            </button>
+          </mat-menu>
+
+          <!-- Theme toggle -->
+          <button class="papercut-nav-btn"
                   (click)="toggleTheme()"
-                  matTooltip="{{ (isDarkTheme$ | async) ? 'Switch to Light Theme' : 'Switch to Dark Theme' }}"
-                  class="papercut-nav-btn">
-            <mat-icon>{{ (isDarkTheme$ | async) ? 'light_mode' : 'dark_mode' }}</mat-icon>
-            <span>Theme</span>
+                  [matTooltip]="(isDarkTheme$ | async) ? 'Switch to light theme' : 'Switch to dark theme'">
+            <lucide-icon [img]="(isDarkTheme$ | async) ? icons.Sun : icons.Moon" [size]="15"></lucide-icon>
           </button>
         </div>
       </div>
     </nav>
   `,
-  styles: []
+  styles: [`
+    .nav-divider {
+      width: 1px;
+      height: 20px;
+      margin: 0 6px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .accent-swatch {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      margin-right: 10px;
+      flex-shrink: 0;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    .accent-menu-item {
+      display: flex !important;
+      align-items: center;
+    }
+
+    .accent-name {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .accent-check {
+      margin-left: 10px;
+      color: var(--pc-accent-text);
+    }
+  `]
 })
 export class NavigationComponent implements OnDestroy {
+  protected readonly icons = { Mail, ScrollText, ListChecks, Settings2, Zap, Sun, Moon, Palette, Check };
+
   isDarkTheme$: Observable<boolean>;
   mcpStatus$: Observable<McpStatus>;
   mcpCopied = false;
-  loadingTimeout: any;
-  isLoadingMessage = false;
   private mcpUrl: string | null = null;
   private mcpCopiedTimeout: any;
 
   constructor(
-    private themeService: ThemeService,
+    public themeService: ThemeService,
     private loggingService: LoggingService,
     private mcpService: McpService
   ) {
@@ -92,6 +155,18 @@ export class NavigationComponent implements OnDestroy {
     );
     this.mcpStatus$ = this.mcpService.status$;
     this.mcpStatus$.subscribe(status => this.mcpUrl = status.url);
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+
+  setAccent(accent: AccentColor): void {
+    this.themeService.setAccent(accent);
+  }
+
+  isCurrentAccent(accent: AccentColor): boolean {
+    return this.themeService.getCurrentAccent().name === accent.name;
   }
 
   copyMcpUrl(): void {
@@ -104,10 +179,6 @@ export class NavigationComponent implements OnDestroy {
       clearTimeout(this.mcpCopiedTimeout);
       this.mcpCopiedTimeout = setTimeout(() => this.mcpCopied = false, 2000);
     });
-  }
-
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
   }
 
   showLog(): void {
@@ -125,14 +196,9 @@ export class NavigationComponent implements OnDestroy {
     this.loggingService.debug('Show Options clicked');
   }
 
-
-
   ngOnDestroy() {
-    if (this.loadingTimeout) {
-      clearTimeout(this.loadingTimeout);
-    }
     if (this.mcpCopiedTimeout) {
       clearTimeout(this.mcpCopiedTimeout);
     }
   }
-} 
+}

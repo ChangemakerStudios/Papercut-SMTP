@@ -4,7 +4,6 @@ import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/ro
 import { Observable, finalize, filter, Subject, takeUntil } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -31,7 +30,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     RouterModule, 
     MatCardModule, 
     MatButtonModule, 
-    MatIconModule, 
+
     MatChipsModule,
     MatProgressSpinnerModule,
     ScrollingModule,

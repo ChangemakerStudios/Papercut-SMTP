@@ -31,6 +31,12 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/@fontsource/plus-jakarta-sans/400.css",
+              "node_modules/@fontsource/plus-jakarta-sans/500.css",
+              "node_modules/@fontsource/plus-jakarta-sans/600.css",
+              "node_modules/@fontsource/plus-jakarta-sans/700.css",
+              "node_modules/@fontsource/jetbrains-mono/400.css",
+              "node_modules/@fontsource/jetbrains-mono/600.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -126,6 +132,12 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/@fontsource/plus-jakarta-sans/400.css",
+              "node_modules/@fontsource/plus-jakarta-sans/500.css",
+              "node_modules/@fontsource/plus-jakarta-sans/600.css",
+              "node_modules/@fontsource/plus-jakarta-sans/700.css",
+              "node_modules/@fontsource/jetbrains-mono/400.css",
+              "node_modules/@fontsource/jetbrains-mono/600.css",
               "src/styles.scss"
             ],
             "scripts": []

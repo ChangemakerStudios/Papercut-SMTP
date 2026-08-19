@@ -2,9 +2,9 @@ import { Component, Injectable } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { LucideAngularModule, Download, CircleCheck, CircleAlert, X, type LucideIconData } from 'lucide-angular';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -170,44 +170,44 @@ export class FileDownloaderService {
   imports: [
     CommonModule,
     MatProgressBarModule,
-    MatIconModule,
     MatButtonModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    LucideAngularModule
   ],
   template: `
     <div *ngIf="downloads.length > 0" class="fixed bottom-4 right-4 z-50 space-y-2">
-      <div *ngFor="let download of downloads" 
-           class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 min-w-80 max-w-96">
+      <div *ngFor="let download of downloads"
+           class="rounded-lg shadow-lg border p-3 min-w-80 max-w-96"
+           style="background: var(--pc-surface); border-color: var(--pc-border);">
         <div class="flex items-center gap-3">
-          <mat-icon [ngClass]="{
-            'text-blue-600': download.status === 'downloading',
-            'text-green-600': download.status === 'completed',
-            'text-red-600': download.status === 'error'
-          }">
-            {{ getStatusIcon(download.status) }}
-          </mat-icon>
-          
+          <lucide-icon [img]="getStatusIcon(download.status)" [size]="18"
+                       [ngClass]="{
+                         'text-accent-text': download.status === 'downloading',
+                         'text-ok': download.status === 'completed',
+                         'text-danger': download.status === 'error'
+                       }"></lucide-icon>
+
           <div class="flex-1 min-w-0">
-            <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+            <div class="text-sm font-medium text-ink-strong truncate">
               {{ download.filename }}
             </div>
-            <div class="text-xs text-gray-600 dark:text-gray-400">
+            <div class="text-xs text-muted">
               {{ getStatusText(download) }}
             </div>
-            
+
             <!-- Progress Bar -->
-            <mat-progress-bar 
+            <mat-progress-bar
               *ngIf="download.status === 'downloading'"
-              mode="determinate" 
+              mode="determinate"
               [value]="download.progress"
               class="mt-1">
             </mat-progress-bar>
           </div>
-          
-          <button mat-icon-button 
+
+          <button mat-icon-button
                   (click)="removeDownload(download.id)"
-                  class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-            <mat-icon>close</mat-icon>
+                  class="text-faint hover:text-muted">
+            <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
           </button>
         </div>
       </div>
@@ -225,6 +225,8 @@ export class FileDownloaderService {
   `]
 })
 export class FileDownloaderComponent {
+  protected readonly icons = { X };
+
   downloads: DownloadProgress[] = [];
 
   constructor(private downloaderService: FileDownloaderService) {
@@ -237,12 +239,12 @@ export class FileDownloaderComponent {
     this.downloaderService.removeDownload(id);
   }
 
-  getStatusIcon(status: DownloadProgress['status']): string {
+  getStatusIcon(status: DownloadProgress['status']): LucideIconData {
     switch (status) {
-      case 'downloading': return 'download';
-      case 'completed': return 'check_circle';
-      case 'error': return 'error';
-      default: return 'download';
+      case 'downloading': return Download;
+      case 'completed': return CircleCheck;
+      case 'error': return CircleAlert;
+      default: return Download;
     }
   }
 

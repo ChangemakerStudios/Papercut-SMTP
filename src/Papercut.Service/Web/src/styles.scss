@@ -1,7 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+// ============================================================================
+// Papercut SMTP — global styles
+// Design language: "desktop-clean" — the classic Papercut desktop layout,
+// refined. All colors/fonts come from the token layer (styles/_tokens.scss);
+// the accent is user-configurable at runtime (Theme Accent).
+// ============================================================================
 
-// Import Material Design theme and typography FIRST (@use rules must come before everything else)
 @use '@angular/material' as mat;
+
+@import 'styles/tokens';
 
 // Tailwind CSS directives
 @tailwind base;
@@ -25,226 +31,241 @@ app-message-list cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper
   display: block !important;
 }
 
-// Google Fonts are now imported in index.html to avoid build issues with font inlining
-// @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-// @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+// ============================================================================
+// Angular Material theme
+// Material provides component behavior; the visible design language is ours.
+// ============================================================================
 
-// Include the common styles for Angular Material
 @include mat.core();
 
-// Define light theme palette
+$pc-typography: mat.define-typography-config(
+  $font-family: "'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif",
+);
+
 $primary-palette: mat.define-palette(mat.$blue-palette, 600);
-$accent-palette: mat.define-palette(mat.$teal-palette, 500);
+$accent-palette: mat.define-palette(mat.$light-blue-palette, 400);
 $warn-palette: mat.define-palette(mat.$red-palette);
 
-// Define dark theme palette
-$dark-primary-palette: mat.define-palette(mat.$blue-palette, 400);
-$dark-accent-palette: mat.define-palette(mat.$teal-palette, 300);
-$dark-warn-palette: mat.define-palette(mat.$red-palette, 300);
-
-// Create light theme
 $light-theme: mat.define-light-theme((
   color: (
     primary: $primary-palette,
     accent: $accent-palette,
     warn: $warn-palette,
   ),
-  typography: mat.define-typography-config(),
+  typography: $pc-typography,
   density: 0,
 ));
 
-// Create dark theme
 $dark-theme: mat.define-dark-theme((
   color: (
-    primary: $dark-primary-palette,
-    accent: $dark-accent-palette,
-    warn: $dark-warn-palette,
+    primary: mat.define-palette(mat.$blue-palette, 400),
+    accent: mat.define-palette(mat.$light-blue-palette, 300),
+    warn: mat.define-palette(mat.$red-palette, 300),
   ),
-  typography: mat.define-typography-config(),
+  typography: $pc-typography,
   density: 0,
 ));
 
-// Include light theme by default
 @include mat.all-component-themes($light-theme);
 
-// Include dark theme when data-theme="dark" is applied to body
-body[data-theme="dark"] {
+body[data-theme='dark'] {
   @include mat.all-component-colors($dark-theme);
-  
-  // Dark theme background and text colors
-  background-color: #121212;
-  color: #ffffff;
+
+  background-color: var(--pc-bg);
+  color: var(--pc-ink);
 }
 
-/* Global styles */
+// ============================================================================
+// Base
+// ============================================================================
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  font-size: 16px;
+  font-family: var(--pc-font-sans);
+  font-size: 14px;
   line-height: 1.5;
-  color: #333;
+  font-kerning: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--pc-ink);
+  background-color: var(--pc-bg);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-// Dark theme global styles
-body[data-theme="dark"] {
-  background-color: #121212;
-  color: #ffffff;
-  
-  h1, h2, h3, h4, h5, h6 {
-    color: #ffffff;
-  }
-
-  // Message detail dark mode overrides
-  .message-detail-container {
-    background-color: #111827 !important;
-  }
-
-  .header-section {
-    background-color: #1f2937 !important;
-    border-color: #374151 !important;
-  }
-
-  .message-details-section {
-    background-color: #1f2937 !important;
-    border-color: #374151 !important;
-  }
-
-  .detail-item {
-    &:nth-child(1) {
-      background-color: rgba(59, 130, 246, 0.1) !important;
-      
-      .detail-icon {
-        background-color: rgba(59, 130, 246, 0.2) !important;
-        
-        mat-icon {
-          color: #93c5fd !important;
-        }
-      }
-    }
-
-    &:nth-child(2) {
-      background-color: rgba(34, 197, 94, 0.1) !important;
-      
-      .detail-icon {
-        background-color: rgba(34, 197, 94, 0.2) !important;
-        
-        mat-icon {
-          color: #86efac !important;
-        }
-      }
-    }
-
-    &:nth-child(3) {
-      background-color: rgba(234, 179, 8, 0.1) !important;
-      
-      .detail-icon {
-        background-color: rgba(234, 179, 8, 0.2) !important;
-        
-        mat-icon {
-          color: #fde047 !important;
-        }
-      }
-    }
-
-    &:nth-child(4) {
-      background-color: rgba(239, 68, 68, 0.1) !important;
-      
-      .detail-icon {
-        background-color: rgba(239, 68, 68, 0.2) !important;
-        
-        mat-icon {
-          color: #fca5a5 !important;
-        }
-      }
-    }
-
-    &:nth-child(5) {
-      background-color: rgba(168, 85, 247, 0.1) !important;
-      
-      .detail-icon {
-        background-color: rgba(168, 85, 247, 0.2) !important;
-        
-        mat-icon {
-          color: #c4b5fd !important;
-        }
-      }
-    }
-  }
-
-  .detail-label {
-    color: #ffffff !important;
-  }
-
-  .detail-value {
-    color: #d1d5db !important;
-  }
-
-  .message-title {
-    color: #ffffff !important;
-  }
-
-  .message-date {
-    color: #9ca3af !important;
-  }
-}
-
-h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0;
-}
+h1 { font-size: 1.35rem; font-weight: 700; margin: 0; color: var(--pc-ink-strong); }
+h2 { font-size: 1.15rem; font-weight: 600; margin: 0; color: var(--pc-ink-strong); }
+h3 { font-size: 1rem; font-weight: 600; margin: 0; color: var(--pc-ink-strong); }
 
 button {
   font-family: inherit;
 }
 
-/* File size pipe styles */
+a {
+  color: var(--pc-accent-text);
+}
+
+// Technical values (addresses, sizes, ids) read in mono
+.pc-mono {
+  font-family: var(--pc-font-mono);
+  font-size: 0.92em;
+}
+
 .file-size {
-  color: #666;
+  color: var(--pc-muted);
   font-size: 0.9rem;
 }
 
-body[data-theme="dark"] .file-size {
-  color: #aaa;
+// Lucide icon sizing helper — icons align to text by default
+lucide-icon svg {
+  display: block;
 }
 
-/* =================
-   COMPONENT-SPECIFIC STYLES
-   ================= */
+// ============================================================================
+// App layout
+// ============================================================================
 
-/* =================
-   COMPACT BUSINESS LAYOUT (MahApps.Metro Style)
-   ================= */
+.app-container {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--pc-bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.main-content {
+  flex: 1;
+  margin-top: 52px;
+  margin-bottom: 48px; /* Space for bottom toolbar */
+  min-height: 0;
+  background-color: var(--pc-bg);
+  overflow: hidden;
+}
+
+// ============================================================================
+// Chrome bar (navigation) — accent-tinted, like the desktop title bar
+// ============================================================================
+
+.papercut-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: 52px;
+  background-color: var(--pc-chrome);
+  border-bottom: 1px solid color-mix(in srgb, var(--pc-chrome) 80%, #000);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease;
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  max-width: 100%;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.brand-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
+  color: var(--pc-on-chrome);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+.brand-wordmark .brand-cut {
+  color: var(--pc-brand-cut);
+}
+
+.brand-wordmark .brand-smtp {
+  font-weight: 500;
+  font-size: 9px;
+  color: var(--pc-on-chrome-faint);
+  letter-spacing: 0.12em;
+  margin-left: 5px;
+}
+
+.brand-logo-icon {
+  color: var(--pc-on-chrome);
+  display: flex;
+  align-items: center;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+// Quiet ghost buttons on the chrome bar
+.papercut-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--pc-on-chrome-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.papercut-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--pc-on-chrome);
+}
+
+.papercut-nav-btn:active {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.papercut-nav-btn.active {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--pc-on-chrome);
+}
+
+// ============================================================================
+// Message list / detail layout
+// ============================================================================
 
 .message-list-container {
   display: flex;
   height: 100vh;
   min-height: 0;
-  background-color: #f5f5f5;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body[data-theme="dark"] .message-list-container {
-  background-color: #2d2d30;
+  background-color: var(--pc-bg);
 }
 
 .message-list-panel {
@@ -252,223 +273,50 @@ body[data-theme="dark"] .message-list-container {
   flex-direction: column;
   width: 320px;
   min-width: 200px;
-  /* max-width: 400px; -- Removed to allow resizer to work */
   height: 100%;
-  border-right: 1px solid #d0d0d0;
-  background-color: #ffffff;
-}
-
-body[data-theme="dark"] .message-list-panel {
-  border-right-color: #3e3e42;
-  background-color: #2d2d30;
+  border-right: 1px solid var(--pc-border);
+  background-color: var(--pc-surface);
 }
 
 .message-list-header {
   padding: 8px 12px;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #f8f8f8;
+  border-bottom: 1px solid var(--pc-border);
+  background-color: var(--pc-surface-2);
   min-height: 32px;
-}
-
-body[data-theme="dark"] .message-list-header {
-  border-bottom-color: #3e3e42;
-  background-color: #383838;
 }
 
 .message-list-title {
   font-size: 13px;
   font-weight: 600;
-  color: #2c2c2c;
+  color: var(--pc-ink-strong);
   margin: 0;
   display: flex;
   align-items: center;
   line-height: 1.2;
 }
 
-body[data-theme="dark"] .message-list-title {
-  color: #f0f0f0;
-}
-
-.message-list-title mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  margin-right: 6px;
-}
-
 .message-count {
   font-size: 11px;
-  color: #666666;
+  color: var(--pc-muted);
   margin: 2px 0 0 0;
-}
-
-body[data-theme="dark"] .message-count {
-  color: #b0b0b0;
 }
 
 .message-list-panel cdk-virtual-scroll-viewport {
   flex: 1;
   height: 0;
-  background-color: #ffffff;
-}
-
-body[data-theme="dark"] .message-list-panel cdk-virtual-scroll-viewport {
-  background-color: #2d2d30;
+  background-color: var(--pc-surface);
 }
 
 .message-detail-panel {
   flex: 1;
   height: 100%;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--pc-surface);
   display: flex;
   flex-direction: column;
-  border-left: 1px solid #e0e0e0;
-  min-height: 0; /* Ensure flex child can shrink */
+  border-left: 1px solid var(--pc-border);
+  min-height: 0;
 }
-
-body[data-theme="dark"] .message-detail-panel {
-  background-color: #2d2d30;
-  border-left-color: #3e3e42;
-}
-
-/* =================
-   COMPACT MESSAGE ITEMS (Business Style)
-   ================= */
-
-.message-item {
-  padding: 6px 12px;
-  border-bottom: 1px solid #eeeeee;
-  cursor: pointer;
-  transition: background-color 0.1s ease;
-  background-color: #ffffff;
-  font-size: 12px;
-  line-height: 1.3;
-}
-
-body[data-theme="dark"] .message-item {
-  border-bottom-color: #3e3e42;
-  background-color: #2d2d30;
-}
-
-.message-item:hover {
-  background-color: #f0f8ff;
-}
-
-body[data-theme="dark"] .message-item:hover {
-  background-color: #404040;
-}
-
-.message-item.selected {
-  background-color: #e6f3ff;
-  border-left: 2px solid #0078d4;
-  padding-left: 10px;
-}
-
-body[data-theme="dark"] .message-item.selected {
-  background-color: #1f3a5f;
-  border-left-color: #4a9eff;
-}
-
-.message-item .message-from {
-  font-weight: 500;
-  color: #323130;
-  margin-bottom: 2px;
-  font-size: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-body[data-theme="dark"] .message-item .message-from {
-  color: #ffffff;
-}
-
-.message-item.selected .message-from {
-  color: #0078d4;
-}
-
-body[data-theme="dark"] .message-item.selected .message-from {
-  color: #4a9eff;
-}
-
-.message-item .message-subject {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 400;
-  font-size: 13px;
-  color: #323130;
-  margin-bottom: 2px;
-  line-height: 1.2;
-}
-
-body[data-theme="dark"] .message-item .message-subject {
-  color: #ffffff;
-}
-
-.message-item.selected .message-subject {
-  color: #0078d4;
-  font-weight: 500;
-}
-
-body[data-theme="dark"] .message-item.selected .message-subject {
-  color: #4a9eff;
-}
-
-.message-item .message-meta {
-  font-size: 11px;
-  color: #605e5c;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-body[data-theme="dark"] .message-item .message-meta {
-  color: #a19f9d;
-}
-
-.message-item.selected .message-meta {
-  color: #0078d4;
-}
-
-body[data-theme="dark"] .message-item.selected .message-meta {
-  color: #4a9eff;
-}
-
-.message-status-indicators {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 1px;
-  float: right;
-}
-
-.message-indicator {
-  width: 4px;
-  height: 4px;
-  border-radius: 2px;
-  background-color: transparent;
-}
-
-.message-indicator.unread {
-  background-color: #0078d4;
-}
-
-.message-indicator.important {
-  background-color: #d13438;
-}
-
-.message-indicator.has-attachments {
-  background-color: #ca5010;
-}
-
-/* =================
-   LOADING STATES
-   ================= */
 
 .loading-more-indicator {
   display: flex;
@@ -476,108 +324,37 @@ body[data-theme="dark"] .message-item.selected .message-meta {
   justify-content: center;
   gap: 0.75rem;
   padding: 1.5rem;
-  color: #6b7280;
+  color: var(--pc-muted);
   font-size: 0.875rem;
-  background-color: #f8fafc;
-  border-top: 1px solid #e5e7eb;
+  background-color: var(--pc-surface-2);
+  border-top: 1px solid var(--pc-border);
 }
 
-body[data-theme="dark"] .loading-more-indicator {
-  color: #9ca3af;
-  background-color: #111827;
-  border-top-color: #374151;
-}
-
-/* =================
-   COMPACT MESSAGE DETAILS (Business Style)
-   ================= */
+// ============================================================================
+// Message detail
+// ============================================================================
 
 .message-details {
   padding: 0;
   height: 100%;
   display: flex;
   flex-direction: column;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .message-details-header {
   padding: 12px 16px 8px;
-  background-color: #f8f8f8;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--pc-surface-2);
+  border-bottom: 1px solid var(--pc-border);
   font-size: 12px;
-}
-
-body[data-theme="dark"] .message-details-header {
-  background-color: #383838;
-  border-bottom-color: #3e3e42;
 }
 
 .message-subject {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 6px;
-  color: #323130;
+  color: var(--pc-ink-strong);
   line-height: 1.3;
   word-wrap: break-word;
-}
-
-body[data-theme="dark"] .message-subject {
-  color: #ffffff;
-}
-
-.message-from {
-  font-size: 12px;
-  color: #605e5c;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-body[data-theme="dark"] .message-from {
-  color: #a19f9d;
-}
-
-.message-from mat-icon {
-  color: #605e5c;
-  font-size: 14px;
-  width: 14px;
-  height: 14px;
-}
-
-body[data-theme="dark"] .message-from mat-icon {
-  color: #a19f9d;
-}
-
-.message-meta {
-  font-size: 11px;
-  color: #605e5c;
-  margin-bottom: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-body[data-theme="dark"] .message-meta {
-  color: #a19f9d;
-}
-
-.message-meta-item {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.message-meta-item mat-icon {
-  font-size: 12px;
-  width: 12px;
-  height: 12px;
-  color: #605e5c;
-}
-
-body[data-theme="dark"] .message-meta-item mat-icon {
-  color: #a19f9d;
 }
 
 .no-message {
@@ -586,81 +363,35 @@ body[data-theme="dark"] .message-meta-item mat-icon {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #605e5c;
+  color: var(--pc-muted);
   text-align: center;
   padding: 32px 16px;
-  background-color: #ffffff;
-}
-
-body[data-theme="dark"] .no-message {
-  color: #a19f9d;
-  background-color: #2d2d30;
-}
-
-.no-message mat-icon {
-  font-size: 48px;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 12px;
-  color: #a19f9d;
-}
-
-body[data-theme="dark"] .no-message mat-icon {
-  color: #605e5c;
+  background-color: var(--pc-surface);
 }
 
 .no-message h3 {
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 4px;
-  color: #323130;
-}
-
-body[data-theme="dark"] .no-message h3 {
-  color: #ffffff;
+  color: var(--pc-ink-strong);
 }
 
 .no-message p {
   font-size: 12px;
   margin: 0;
   max-width: 300px;
-  color: #605e5c;
+  color: var(--pc-muted);
 }
 
-body[data-theme="dark"] .no-message p {
-  color: #a19f9d;
-}
+// ============================================================================
+// Flex plumbing (tabs, router outlet) — layout-critical, do not remove
+// ============================================================================
 
-/* =================
-   FLEX UTILITY CLASSES
-   ================= */
+.flex-column { display: flex !important; flex-direction: column !important; }
+.flex-fill { flex: 1 1 auto !important; min-height: 0 !important; }
+.flex-none { flex: none !important; }
+.flex-center { align-items: center !important; justify-content: center !important; }
 
-.flex-column {
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.flex-fill {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-}
-
-.flex-none {
-  flex: none !important;
-}
-
-.flex-center {
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-/* =================
-   TABBED MESSAGE DETAILS
-   ================= */
-
-/* Force Angular Material tabs to use full height flex */
-
-/* Force router-outlet and app-message-detail to take full height */
 router-outlet {
   display: flex;
   flex-direction: column;
@@ -706,56 +437,64 @@ app-message-detail {
   min-height: 0 !important;
 }
 
+// ============================================================================
+// Tab strip — the desktop app's big text tabs
+// ============================================================================
+
 .message-tabs .mat-mdc-tab-header {
-  background-color: #f8f8f8;
-  border-bottom: 1px solid #e0e0e0;
-  min-height: 32px;
+  background-color: var(--pc-surface);
+  border-bottom: 1px solid var(--pc-border);
   flex-shrink: 0;
+  --mdc-secondary-navigation-tab-container-height: 44px;
 }
 
-body[data-theme="dark"] .message-tabs .mat-mdc-tab-header {
-  background-color: #383838;
-  border-bottom-color: #3e3e42;
-}
-
-.message-tabs .mat-mdc-tab-label {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 0 12px;
+.message-tabs .mdc-tab {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 0 14px;
   min-width: 60px;
-  height: 32px;
-  color: #605e5c;
 }
 
-body[data-theme="dark"] .message-tabs .mat-mdc-tab-label {
-  color: #a19f9d;
+.message-tabs .mat-mdc-tab .mdc-tab__text-label {
+  color: var(--pc-faint) !important;
+  transition: color 0.15s ease;
 }
 
-.message-tabs .mat-mdc-tab-label.mdc-tab--active {
-  color: #0078d4;
+.message-tabs .mat-mdc-tab:hover .mdc-tab__text-label {
+  color: var(--pc-muted) !important;
 }
 
-body[data-theme="dark"] .message-tabs .mat-mdc-tab-label.mdc-tab--active {
-  color: #4a9eff;
+.message-tabs .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label,
+.message-tabs .mat-mdc-tab.mdc-tab--active:hover .mdc-tab__text-label {
+  color: var(--pc-accent-text) !important;
+}
+
+.message-tabs .mdc-tab-indicator__content--underline {
+  border-color: var(--pc-accent) !important;
+  border-top-width: 3px !important;
+}
+
+.message-tabs .mat-mdc-tab .mdc-tab__ripple::before,
+.message-tabs .mat-mdc-tab .mat-mdc-tab-ripple {
+  display: none;
 }
 
 .tab-content {
   padding: 8px;
-  background-color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--pc-surface);
   overflow: hidden;
   height: 100% !important;
 }
 
-body[data-theme="dark"] .tab-content {
-  background-color: #2d2d30;
-}
+// ============================================================================
+// Tab panes: headers / body / sections / raw — technical content is mono
+// ============================================================================
 
-/* Headers Tab */
 .headers-content {
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  line-height: 1.4;
+  font-family: var(--pc-font-mono);
+  font-size: 12px;
+  line-height: 1.6;
   overflow: auto;
 }
 
@@ -766,27 +505,18 @@ body[data-theme="dark"] .tab-content {
 
 .header-name {
   font-weight: 600;
-  color: #0078d4;
+  color: var(--pc-accent-text);
   margin-right: 8px;
 }
 
-body[data-theme="dark"] .header-name {
-  color: #4a9eff;
-}
-
 .header-value {
-  color: #323130;
+  color: var(--pc-ink);
 }
 
-body[data-theme="dark"] .header-value {
-  color: #ffffff;
-}
-
-/* Body Tab */
 .body-content {
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  line-height: 1.4;
+  font-family: var(--pc-font-mono);
+  font-size: 12px;
+  line-height: 1.6;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -801,14 +531,9 @@ body[data-theme="dark"] .header-value {
   margin: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: #323130;
+  color: var(--pc-ink);
 }
 
-body[data-theme="dark"] .body-content pre {
-  color: #ffffff;
-}
-
-/* Sections Tab */
 .sections-content {
   font-size: 12px;
   overflow: auto;
@@ -816,12 +541,8 @@ body[data-theme="dark"] .body-content pre {
 
 .section-item {
   margin-bottom: 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 2px;
-}
-
-body[data-theme="dark"] .section-item {
-  border-color: #3e3e42;
+  border: 1px solid var(--pc-border);
+  border-radius: 6px;
 }
 
 .section-header {
@@ -829,42 +550,19 @@ body[data-theme="dark"] .section-item {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background-color: #f8f8f8;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-body[data-theme="dark"] .section-header {
-  background-color: #383838;
-  border-bottom-color: #3e3e42;
-}
-
-.section-header mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  color: #605e5c;
-}
-
-body[data-theme="dark"] .section-header mat-icon {
-  color: #a19f9d;
+  background-color: var(--pc-surface-2);
+  border-bottom: 1px solid var(--pc-border);
 }
 
 .section-type {
   font-weight: 600;
-  color: #323130;
-}
-
-body[data-theme="dark"] .section-type {
-  color: #ffffff;
+  color: var(--pc-ink-strong);
 }
 
 .section-info {
   font-size: 11px;
-  color: #605e5c;
-}
-
-body[data-theme="dark"] .section-info {
-  color: #a19f9d;
+  color: var(--pc-muted);
+  font-family: var(--pc-font-mono);
 }
 
 .section-content {
@@ -875,23 +573,18 @@ body[data-theme="dark"] .section-info {
 
 .section-content pre {
   margin: 0;
-  font-family: 'Courier New', monospace;
-  font-size: 10px;
-  line-height: 1.3;
+  font-family: var(--pc-font-mono);
+  font-size: 11px;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: #323130;
+  color: var(--pc-ink);
 }
 
-body[data-theme="dark"] .section-content pre {
-  color: #ffffff;
-}
-
-/* Raw Tab */
 .raw-content {
-  font-family: 'Courier New', monospace;
-  font-size: 10px;
-  line-height: 1.3;
+  font-family: var(--pc-font-mono);
+  font-size: 11px;
+  line-height: 1.5;
   overflow: auto;
 }
 
@@ -899,484 +592,19 @@ body[data-theme="dark"] .section-content pre {
   margin: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: #323130;
+  color: var(--pc-ink);
 }
 
-body[data-theme="dark"] .raw-content pre {
-  color: #ffffff;
-}
-
-/* Message iframe in Message tab */
 .message-iframe {
   width: 100%;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--pc-border);
   border-radius: 0;
-  background-color: #ffffff;
+  background-color: #ffffff; // email content renders on white regardless of theme
 }
 
-body[data-theme="dark"] .message-iframe {
-  border-color: #3e3e42;
-  background-color: #2d2d30;
-}
-
-/* =================
-   NAVIGATION STYLES (PAPERCUT DESKTOP STYLE)
-   ================= */
-
-.papercut-navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  background-color: #e8e8e8;
-  border-bottom: 1px solid #a0a0a0;
-  transition: all 0.2s ease;
-  height: 56px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-body[data-theme="dark"] .papercut-navbar {
-  background-color: #2d2d30;
-  border-bottom-color: #555;
-}
-
-.nav-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: 56px;
-  padding: 0 16px;
-  max-width: 100%;
-}
-
-.logo-section {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  /*padding: 8px 12px;
-  border-radius: 4px;*/
-  transition: background-color 0.2s ease;
-}
-
-.papercut-logo {
-  height: 72px;
-  width: auto;
-  transition: opacity 0.2s ease;
-}
-
-.papercut-logo:hover {
-  opacity: 0.8;
-}
-
-.brand-text {
-  font-size: 14px;
-  font-weight: 700;
-  color: #333;
-  text-decoration: none;
-  letter-spacing: 0.5px;
-  text-shadow: 1px 1px 1px rgba(255,255,255,0.8);
-}
-
-body[data-theme="dark"] .brand-text {
-  color: #ffffff;
-  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.papercut-nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 3px;
-  transition: all 0.2s ease;
-  color: #333;
-  min-width: auto;
-  font-weight: 500;
-  font-size: 12px;
-  border: 1px solid #999;
-  background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  height: 32px;
-}
-
-body[data-theme="dark"] .papercut-nav-btn {
-  color: #ffffff;
-  border-color: #555;
-  background: linear-gradient(to bottom, #4a4a4e, #3e3e42);
-}
-
-.papercut-nav-btn:hover {
-  background: linear-gradient(to bottom, #ffffff, #f0f0f0);
-  border-color: #666;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-body[data-theme="dark"] .papercut-nav-btn:hover {
-  background: linear-gradient(to bottom, #5a5a5e, #4a4a4e);
-  border-color: #777;
-}
-
-.papercut-nav-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  background: linear-gradient(to bottom, #e8e8e8, #d8d8d8);
-}
-
-body[data-theme="dark"] .papercut-nav-btn:active {
-  background: linear-gradient(to bottom, #3e3e42, #2e2e32);
-}
-
-.papercut-nav-btn mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-}
-
-.papercut-nav-btn span {
-  font-weight: 500;
-  font-size: 11px;
-}
-
-@media (max-width: 640px) {
-  .nav-button span {
-    display: none;
-  }
-}
-
-.theme-toggle-btn {
-  color: #323130;
-  transition: background-color 0.1s ease;
-  padding: 4px;
-  border-radius: 2px;
-  border: 1px solid transparent;
-}
-
-body[data-theme="dark"] .theme-toggle-btn {
-  color: #ffffff;
-}
-
-.theme-toggle-btn:hover {
-  background-color: #f3f2f1;
-  border-color: #d0d0d0;
-}
-
-body[data-theme="dark"] .theme-toggle-btn:hover {
-  background-color: #404040;
-  border-color: #3e3e42;
-}
-
-.theme-toggle-btn mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-}
-
-.mobile-menu-btn {
-  color: #323130;
-  padding: 4px;
-  border-radius: 2px;
-}
-
-body[data-theme="dark"] .mobile-menu-btn {
-  color: #ffffff;
-}
-
-.mobile-menu-btn:hover {
-  background-color: #f3f2f1;
-}
-
-body[data-theme="dark"] .mobile-menu-btn:hover {
-  background-color: #404040;
-}
-
-@media (min-width: 1024px) {
-  .mobile-menu-btn {
-    display: none;
-  }
-}
-
-/* Mobile optimizations */
-@media (max-width: 640px) {
-  .nav-container {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-  }
-  
-  .logo-background {
-    padding: 0.5rem;
-    margin-right: 0.5rem;
-  }
-}
-
-/* Mobile navigation adjustments */
-@media (max-width: 768px) {
-  .nav-container {
-    padding: 0 1rem;
-  }
-  
-  .brand-text {
-    display: none;
-  }
-  
-  .logo-container img {
-    height: 2.5rem;
-  }
-  
-  .nav-button span {
-    display: none;
-  }
-  
-  .nav-button {
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .nav-container {
-    padding: 0 0.75rem;
-  }
-  
-  .logo-container img {
-    height: 2rem;
-  }
-}
-
-/* =================
-   RESPONSIVE MESSAGE LAYOUT
-   ================= */
-
-@media (max-width: 1024px) {
-  .message-list-panel {
-    width: 320px;
-    min-width: 200px;
-  }
-}
-
-@media (max-width: 768px) {
-  .message-list-container {
-    flex-direction: column;
-  }
-  
-  .message-list-panel {
-    width: 100%;
-    max-width: none;
-    height: 40vh;
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
-  body[data-theme="dark"] .message-list-panel {
-    border-bottom-color: #3e3e42;
-  }
-  
-  .message-detail-panel {
-    height: 60vh;
-  }
-  
-  .message-list-header {
-    padding: 6px 10px;
-  }
-  
-  .message-list-title {
-    font-size: 12px;
-  }
-  
-  .message-count {
-    font-size: 10px;
-  }
-  
-  .message-item {
-    padding: 4px 10px;
-  }
-  
-  .message-details-header {
-    padding: 10px 12px 6px;
-  }
-  
-  .message-subject {
-    font-size: 14px;
-  }
-  
-  .message-content {
-    padding: 6px;
-  }
-  
-  .tab-content .message-iframe {
-    min-height: 200px;
-  }
-
-  .message-tabs .mat-mdc-tab-header {
-    min-height: 28px;
-  }
-
-  .message-tabs .mat-mdc-tab-label {
-    font-size: 11px;
-    height: 28px;
-    padding: 0 8px;
-  }
-}
-
-@media (max-width: 480px) {
-  .navbar {
-    height: 36px;
-  }
-
-  .nav-container {
-    height: 36px;
-    padding: 0 8px;
-  }
-
-  .main-content {
-    margin-top: 36px;
-  }
-
-  .logo-container img {
-    height: 16px;
-  }
-
-  .brand-text {
-    font-size: 12px;
-  }
-
-  .nav-button {
-    padding: 2px 4px;
-    font-size: 10px;
-  }
-
-  .message-list-header {
-    padding: 4px 8px;
-  }
-
-  .message-list-title {
-    font-size: 11px;
-  }
-
-  .message-count {
-    font-size: 9px;
-  }
-  
-  .message-item {
-    padding: 3px 8px;
-  }
-  
-  .message-item .message-from {
-    font-size: 10px;
-  }
-  
-  .message-item .message-subject {
-    font-size: 11px;
-  }
-  
-  .message-item .message-meta {
-    font-size: 9px;
-  }
-  
-  .message-details-header {
-    padding: 8px 10px 4px;
-  }
-  
-  .message-subject {
-    font-size: 13px;
-  }
-  
-  .message-from {
-    font-size: 10px;
-  }
-  
-  .message-meta {
-    font-size: 9px;
-  }
-  
-  .message-content {
-    padding: 4px;
-  }
-  
-  .tab-content .message-iframe {
-    min-height: 150px;
-  }
-
-  .message-tabs .mat-mdc-tab-header {
-    min-height: 24px;
-  }
-
-  .message-tabs .mat-mdc-tab-label {
-    font-size: 10px;
-    height: 24px;
-    padding: 0 6px;
-  }
-  
-  .no-message {
-    padding: 20px 8px;
-  }
-  
-  .no-message mat-icon {
-    font-size: 32px;
-    width: 32px;
-    height: 32px;
-    margin-bottom: 8px;
-  }
-
-  .no-message h3 {
-    font-size: 12px;
-  }
-
-  .no-message p {
-    font-size: 10px;
-  }
-}
-
-/* =================
-   APP LAYOUT STYLES
-   ================= */
-
-.app-container {
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  background-color: #f9fafb;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body[data-theme="dark"] .app-container {
-  background-color: #111827;
-}
-
-.main-content {
-  flex: 1;
-  margin-top: 56px;
-  margin-bottom: 48px; /* Space for bottom toolbar */
-  min-height: 0;
-  background-color: #f5f5f5;
-  overflow: hidden;
-}
-
-body[data-theme="dark"] .main-content {
-  background-color: #2d2d30;
-}
-
-/* =================
-   TOAST NOTIFICATION STYLES
-   ================= */
+// ============================================================================
+// Toast notifications
+// ============================================================================
 
 .toast-notification {
   border-radius: 8px !important;
@@ -1406,23 +634,13 @@ body[data-theme="dark"] .main-content {
   max-width: 480px !important;
 }
 
-/* Dark theme toast adjustments */
-body[data-theme="dark"] .toast-notification {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
-}
-
-body[data-theme="dark"] .toast-new-message:hover {
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
-}
-
-/* Toast notification positioning */
 .mat-mdc-snack-bar-container {
   margin: 8px !important;
 }
 
-/* =================
-   BOTTOM TOOLBAR POSITIONING
-   ================= */
+// ============================================================================
+// Bottom toolbar positioning
+// ============================================================================
 
 app-bottom-toolbar {
   position: fixed;
@@ -1432,28 +650,66 @@ app-bottom-toolbar {
   z-index: 40;
 }
 
-/* Adjust responsive behavior for mobile */
-@media (max-width: 768px) {
-  .papercut-navbar {
-    height: 48px;
+// ============================================================================
+// Responsive
+// ============================================================================
+
+@media (max-width: 1024px) {
+  .message-list-panel {
+    width: 320px;
+    min-width: 200px;
   }
-  
+}
+
+@media (max-width: 768px) {
+  .papercut-navbar,
   .nav-container {
     height: 48px;
+  }
+
+  .nav-container {
     padding: 0 12px;
   }
-  
+
   .papercut-nav-btn span {
     display: none;
   }
-  
+
   .papercut-nav-btn {
-    padding: 8px;
-    min-width: 40px;
+    padding: 0 8px;
+    min-width: 36px;
+    justify-content: center;
   }
-  
+
   .main-content {
     margin-top: 48px;
     margin-bottom: 48px;
+  }
+
+  .message-list-container {
+    flex-direction: column;
+  }
+
+  .message-list-panel {
+    width: 100%;
+    max-width: none;
+    height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid var(--pc-border);
+  }
+
+  .message-detail-panel {
+    height: 60vh;
+  }
+
+  .message-tabs .mdc-tab {
+    font-size: 14px;
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-wordmark {
+    font-size: 16px;
   }
 }

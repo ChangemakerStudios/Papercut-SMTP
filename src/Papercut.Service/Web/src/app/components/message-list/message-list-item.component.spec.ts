@@ -130,46 +130,4 @@ describe('MessageListItemComponent', () => {
     });
   });
 
-  describe('hasStatusIndicators', () => {
-    it('should return true when message has attachments', () => {
-      component.message = {
-        id: '1',
-        attachmentCount: 2
-      } as RefDto;
-
-      const result = component.hasStatusIndicators();
-      expect(result).toBe(true);
-    });
-
-    it('should return true when message has urgent priority', () => {
-      component.message = {
-        id: '1',
-        priority: 'Urgent'
-      } as RefDto;
-
-      const result = component.hasStatusIndicators();
-      expect(result).toBe(true);
-    });
-
-    it('should return true when message has non-urgent priority', () => {
-      component.message = {
-        id: '1',
-        priority: 'Non-urgent'
-      } as RefDto;
-
-      const result = component.hasStatusIndicators();
-      expect(result).toBe(true);
-    });
-
-    it('should return false when message has no status indicators', () => {
-      component.message = {
-        id: '1',
-        attachmentCount: 0,
-        priority: 'normal'
-      } as RefDto;
-
-      const result = component.hasStatusIndicators();
-      expect(result).toBe(false);
-    });
-  });
 });
