@@ -40,6 +40,8 @@ public class StaticContentController : ControllerBase
         { "ttf", "application/x-font-ttf" },
         { "woff", "application/font-woff" },
         { "woff2", "application/font-woff2" },
+        { "json", "application/json" },
+        { "webmanifest", "application/manifest+json" },
     };
 
     [HttpGet("{*anything}", Order = short.MaxValue)]
@@ -54,6 +56,15 @@ public class StaticContentController : ControllerBase
     {
         var resourceName = GetRequestedResourceName(Request.Path);
         var resourceContent = GetResourceStream(resourceName);
+
+        if (resourceContent == null && !Path.HasExtension(Request.Path.Value))
+        {
+            // deep links into the Angular SPA (e.g. /message/{id}) fall back to index.html
+            // so the client-side router can handle the route
+            resourceName = "index.html";
+            resourceContent = GetResourceStream(resourceName);
+        }
+
         if (resourceContent == null)
         {
             return NotFound();

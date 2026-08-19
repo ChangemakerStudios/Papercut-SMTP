@@ -15,6 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Papercut.Message;
+
 using Papercut.Service.Domain;
 
 namespace Papercut.Service;
@@ -43,6 +45,7 @@ public class PapercutServiceModule : Module
             .AsSelf()
             .SingleInstance();
 
+        builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance().ExternallyOwned();
 
         builder.RegisterStaticMethods(ThisAssembly);
     }

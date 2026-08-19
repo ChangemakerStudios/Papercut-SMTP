@@ -24,7 +24,7 @@ using Microsoft.AspNetCore.SignalR;
 
 public class NewMessageEventHandler(
     IHubContext<MessagesHub> hubContext,
-    MimeMessageLoader messageLoader,
+    IMimeMessageLoader messageLoader,
     ILogger logger)
     : IEventHandler<NewMessageEvent>
 {
