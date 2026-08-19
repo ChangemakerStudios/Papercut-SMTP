@@ -12,10 +12,12 @@ import {
   Zap,
   Sun,
   Moon,
+  Monitor,
   Palette,
-  Check
+  Check,
+  type LucideIconData
 } from 'lucide-angular';
-import { ThemeService, AccentColor } from '../../services/theme.service';
+import { ThemeService, AccentColor, ThemePreference } from '../../services/theme.service';
 import { LoggingService } from '../../services/logging.service';
 import { McpService, McpStatus } from '../../services/mcp.service';
 import { Observable, map } from 'rxjs';
@@ -92,12 +94,24 @@ import { Observable, map } from 'rxjs';
             </button>
           </mat-menu>
 
-          <!-- Theme toggle -->
+          <!-- Theme: System / Light / Dark -->
           <button class="papercut-nav-btn"
-                  (click)="toggleTheme()"
-                  [matTooltip]="(isDarkTheme$ | async) ? 'Switch to light theme' : 'Switch to dark theme'">
-            <lucide-icon [img]="(isDarkTheme$ | async) ? icons.Sun : icons.Moon" [size]="15"></lucide-icon>
+                  [matMenuTriggerFor]="themeMenu"
+                  matTooltip="Theme">
+            <lucide-icon [img]="currentThemeIcon()" [size]="15"></lucide-icon>
           </button>
+          <mat-menu #themeMenu="matMenu">
+            <button mat-menu-item
+                    *ngFor="let option of themeOptions"
+                    (click)="setThemePreference(option.value)"
+                    class="theme-menu-item">
+              <lucide-icon [img]="option.icon" [size]="15" class="theme-option-icon"></lucide-icon>
+              <span class="theme-option-name">{{ option.label }}</span>
+              <lucide-icon *ngIf="isCurrentPreference(option.value)"
+                           [img]="icons.Check" [size]="14"
+                           class="theme-check"></lucide-icon>
+            </button>
+          </mat-menu>
         </div>
       </div>
     </nav>
@@ -134,10 +148,37 @@ import { Observable, map } from 'rxjs';
       margin-left: 10px;
       color: var(--pc-accent-text);
     }
+
+    .theme-menu-item {
+      display: flex !important;
+      align-items: center;
+    }
+
+    .theme-option-icon {
+      margin-right: 10px;
+      color: var(--pc-muted);
+      display: inline-flex;
+    }
+
+    .theme-option-name {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .theme-check {
+      margin-left: 10px;
+      color: var(--pc-accent-text);
+    }
   `]
 })
 export class NavigationComponent implements OnDestroy {
-  protected readonly icons = { Mail, ScrollText, ListChecks, Settings2, Zap, Sun, Moon, Palette, Check };
+  protected readonly icons = { Mail, ScrollText, ListChecks, Settings2, Zap, Sun, Moon, Monitor, Palette, Check };
+
+  protected readonly themeOptions: { value: ThemePreference; label: string; icon: LucideIconData }[] = [
+    { value: 'system', label: 'System', icon: Monitor },
+    { value: 'light', label: 'Light', icon: Sun },
+    { value: 'dark', label: 'Dark', icon: Moon }
+  ];
 
   isDarkTheme$: Observable<boolean>;
   mcpStatus$: Observable<McpStatus>;
@@ -157,8 +198,17 @@ export class NavigationComponent implements OnDestroy {
     this.mcpStatus$.subscribe(status => this.mcpUrl = status.url);
   }
 
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
+  setThemePreference(preference: ThemePreference): void {
+    this.themeService.setPreference(preference);
+  }
+
+  isCurrentPreference(preference: ThemePreference): boolean {
+    return this.themeService.getCurrentPreference() === preference;
+  }
+
+  currentThemeIcon(): LucideIconData {
+    const option = this.themeOptions.find(o => o.value === this.themeService.getCurrentPreference());
+    return option?.icon ?? Monitor;
   }
 
   setAccent(accent: AccentColor): void {
