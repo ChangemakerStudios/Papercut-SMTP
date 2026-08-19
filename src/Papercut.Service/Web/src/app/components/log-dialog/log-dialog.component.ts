@@ -20,6 +20,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { LucideAngularModule, ScrollText, X, ArrowDownToLine, Pause, Play } from 'lucide-angular';
 import { Subscription, timer } from 'rxjs';
@@ -49,7 +50,7 @@ const LEVEL_RANK: Record<string, number> = {
 @Component({
   selector: 'app-log-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatTooltipModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatProgressSpinnerModule, MatTooltipModule, LucideAngularModule],
   template: `
     <div class="log-dialog">
       <div class="dialog-header">
@@ -82,7 +83,11 @@ const LEVEL_RANK: Record<string, number> = {
       </div>
 
       <div class="log-body" #logBody>
-        <div class="log-empty" *ngIf="visibleEntries().length === 0">
+        <div class="log-loading" *ngIf="isLoading">
+          <mat-spinner diameter="28" strokeWidth="3"></mat-spinner>
+          <span>Loading the log…</span>
+        </div>
+        <div class="log-empty" *ngIf="!isLoading && visibleEntries().length === 0">
           {{ entries.length === 0 ? 'Waiting for log output…' : 'No entries match the current filter.' }}
         </div>
         <div class="log-line" *ngFor="let entry of visibleEntries(); trackBy: trackBySeq">
@@ -174,6 +179,17 @@ const LEVEL_RANK: Record<string, number> = {
       color: var(--pc-muted);
     }
 
+    .log-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 40px;
+      font-family: var(--pc-font-sans);
+      font-size: 12.5px;
+      color: var(--pc-muted);
+    }
+
     .log-line {
       display: flex;
       gap: 10px;
@@ -217,6 +233,7 @@ export class LogDialogComponent implements OnDestroy {
   @ViewChild('logBody') logBody?: ElementRef<HTMLDivElement>;
 
   entries: LogEntry[] = [];
+  isLoading = true;
   minLevel = 'Information';
   filterText = '';
   follow = true;
@@ -287,6 +304,7 @@ export class LogDialogComponent implements OnDestroy {
   private poll(): void {
     this.http.get<LogTailResponse>(this.logsUrl, { params: { after: this.lastSeq } }).subscribe({
       next: response => {
+        this.isLoading = false;
         if (response.entries.length > 0) {
           this.entries = [...this.entries, ...response.entries].slice(-1000);
           if (this.follow) {
@@ -295,7 +313,10 @@ export class LogDialogComponent implements OnDestroy {
         }
         this.lastSeq = response.lastSeq;
       },
-      error: () => { /* transient poll failures are fine; next tick retries */ }
+      error: () => {
+        // transient poll failures are fine; the next tick retries
+        this.isLoading = false;
+      }
     });
   }
 

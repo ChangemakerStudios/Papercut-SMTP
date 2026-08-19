@@ -45,19 +45,19 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
         </button>
       </div>
 
-      <div class="dialog-body" *ngIf="!isLoading; else loading">
+      <div class="dialog-body">
         <!-- Server section -->
         <div class="section-title">SMTP Server</div>
         <div class="field-grid">
           <label class="field-label" for="opt-ip">IP Address</label>
-          <select id="opt-ip" class="pc-input" [(ngModel)]="smtpIP" [disabled]="isSaving">
+          <select id="opt-ip" class="pc-input" [(ngModel)]="smtpIP" [disabled]="isSaving || isLoading">
             <option *ngFor="let ip of availableIPs" [value]="ip">{{ ip }}</option>
           </select>
 
           <label class="field-label" for="opt-port">Port</label>
           <div class="field-inline">
             <input id="opt-port" class="pc-input w-24" type="number" [(ngModel)]="smtpPort"
-                   min="1" max="65535" [disabled]="isSaving" />
+                   min="1" max="65535" [disabled]="isSaving || isLoading" />
             <span class="field-hint">default is 25 (2525 in Docker)</span>
           </div>
         </div>
@@ -107,19 +107,13 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
         <div class="field-grid">
           <label class="field-label">MCP</label>
           <label class="pc-check">
-            <input type="checkbox" [(ngModel)]="mcpEnabled" [disabled]="isSaving" />
+            <input type="checkbox" [(ngModel)]="mcpEnabled" [disabled]="isSaving || isLoading" />
             <span>Enable the MCP server endpoint <span class="field-hint">(takes effect after restart)</span></span>
           </label>
         </div>
 
         <div class="dialog-error" *ngIf="error">{{ error }}</div>
       </div>
-
-      <ng-template #loading>
-        <div class="dialog-loading">
-          <mat-spinner diameter="28" strokeWidth="3"></mat-spinner>
-        </div>
-      </ng-template>
 
       <div class="dialog-actions">
         <button class="pc-btn" (click)="cancel()" [disabled]="isSaving">Cancel</button>
@@ -171,13 +165,6 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
       border-top: 1px solid var(--pc-border-soft);
       max-height: 65vh;
       overflow-y: auto;
-    }
-
-    .dialog-loading {
-      display: flex;
-      justify-content: center;
-      padding: 40px;
-      border-top: 1px solid var(--pc-border-soft);
     }
 
     .section-title {
