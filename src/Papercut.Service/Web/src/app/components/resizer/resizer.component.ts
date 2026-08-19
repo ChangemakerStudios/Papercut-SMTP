@@ -16,8 +16,8 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [`
     .resizer-handle {
-      width: 4px;
-      background-color: #e0e0e0;
+      width: 7px;
+      background-color: var(--pc-surface-2);
       cursor: col-resize;
       position: relative;
       transition: background-color 0.2s;
@@ -26,11 +26,11 @@ import { CommonModule } from '@angular/common';
     }
 
     .resizer-handle:hover {
-      background-color: #2196f3;
+      background-color: var(--pc-accent);
     }
 
     .resizer-handle.dragging {
-      background-color: #2196f3;
+      background-color: var(--pc-accent);
     }
 
     .resizer-handle.dragging::before {
@@ -51,25 +51,13 @@ import { CommonModule } from '@angular/common';
       left: 50%;
       width: 1px;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: var(--pc-border);
       transform: translateX(-50%);
     }
 
-    // Dark mode styles
-    :host-context(body[data-theme="dark"]) .resizer-handle {
-      background-color: #3e3e42;
-    }
-
-    :host-context(body[data-theme="dark"]) .resizer-handle:hover {
-      background-color: #4fc3f7;
-    }
-
-    :host-context(body[data-theme="dark"]) .resizer-handle.dragging {
-      background-color: #4fc3f7;
-    }
-
-    :host-context(body[data-theme="dark"]) .resizer-line {
-      background-color: rgba(255, 255, 255, 0.15);
+    .resizer-handle:hover .resizer-line,
+    .resizer-handle.dragging .resizer-line {
+      background-color: transparent;
     }
 
     // Responsive design - hide resizer on mobile devices
