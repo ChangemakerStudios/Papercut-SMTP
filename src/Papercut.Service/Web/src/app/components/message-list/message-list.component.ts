@@ -13,6 +13,7 @@ import { SignalRService } from '../../services/signalr.service';
 import { ToastNotificationService } from '../../services/toast-notification.service';
 import { PlatformNotificationService } from '../../services/platform-notification.service';
 import { LoggingService } from '../../services/logging.service';
+import { MessageStateService } from '../../services/message-state.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { ResizerComponent } from '../resizer/resizer.component';
@@ -173,7 +174,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
     private signalRService: SignalRService,
     private toastService: ToastNotificationService,
     private platformNotificationService: PlatformNotificationService,
-    private loggingService: LoggingService
+    private loggingService: LoggingService,
+    private messageStateService: MessageStateService
   ) {
     // Load current page when query params change
     this.route.queryParams
@@ -243,6 +245,11 @@ export class MessageListComponent implements OnInit, OnDestroy {
         }
       });
 
+    // Refresh when toolbar actions (delete, delete all) change the list
+    this.messageStateService.refreshRequests$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.refreshCurrentPage());
+
     // Subscribe to connection status
     this.signalRService.isConnected$
       .pipe(takeUntil(this.destroy$))
@@ -266,6 +273,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
     } else {
       this.selectedMessageId = null;
     }
+
+    this.messageStateService.setCurrentMessageId(this.selectedMessageId);
   }
 
   private loadPage(limit: number, start: number): void {
@@ -276,6 +285,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
         this.allMessages = response.messages;
         this.totalCount = response.totalMessageCount;
         this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+        this.messageStateService.setTotalCount(this.totalCount);
       });
   }
 

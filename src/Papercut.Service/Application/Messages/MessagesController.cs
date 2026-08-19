@@ -18,11 +18,17 @@
 
 namespace Papercut.Service.Application.Messages;
 
+using System.Text.RegularExpressions;
+
 using Common.Helper;
 
 using Domain.Messages;
 
 using Infrastructure;
+
+using Papercut.Message.Helpers;
+using Papercut.Rules.App.Relaying;
+using Papercut.Rules.Domain.Forwarding;
 
 [Route("api/[controller]")]
 [MessageNotFoundExceptionFilter]
@@ -42,9 +48,11 @@ public class MessagesController(
             return new GetMessagesResponse(0, []);
         }
 
-        // Generate ETag based on the most recent modified date
+        // Generate ETag from the count AND the most recent modified date --
+        // count matters because deleting an older message leaves the max
+        // modified date (and would otherwise 304 a stale list)
         var latestModifiedDate = messageEntries.Max(msg => msg.ModifiedDate);
-        var etag = $"\"{latestModifiedDate.Ticks}\"";
+        var etag = $"\"{messageEntries.Count}-{latestModifiedDate.Ticks}\"";
 
         // Check if the client has the same version
         if (Request.Headers.IfNoneMatch.Contains(etag))
@@ -120,6 +128,75 @@ public class MessagesController(
         Response.Headers.ETag = etag;
 
         return DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry, token))!));
+    }
+
+    // Same permissive check the desktop Forward dialog uses
+    static readonly Regex _emailRegex = new(
+        @"\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    [HttpPost("{id}/forward")]
+    public async Task<ActionResult> Forward(string id, [FromBody] ForwardMessageRequest request, CancellationToken token = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Server)
+            || string.IsNullOrWhiteSpace(request.FromEmail)
+            || string.IsNullOrWhiteSpace(request.ToEmail))
+        {
+            return BadRequest(new { error = "Server, FromEmail, and ToEmail are required" });
+        }
+
+        if (!_emailRegex.IsMatch(request.FromEmail.Trim()) || !_emailRegex.IsMatch(request.ToEmail.Trim()))
+        {
+            return BadRequest(new { error = "FromEmail and ToEmail must be valid email addresses" });
+        }
+
+        if (request.Port < 1 || request.Port > 65535)
+        {
+            return BadRequest(new { error = "Port must be between 1 and 65535" });
+        }
+
+        var messageEntry = this.GetMessageEntry(id);
+
+        // Same mechanics as the desktop Forward dialog / ForwardRuleDispatch,
+        // but sending inline so failures surface to the caller
+        var forwardRule = new ForwardRule
+        {
+            FromEmail = request.FromEmail.Trim(),
+            ToEmail = request.ToEmail.Trim(),
+            SmtpServer = request.Server.Trim(),
+            SmtpPort = request.Port,
+            SmtpUseSSL = request.UseSsl,
+            SmtpUsername = request.Username?.Trim() ?? string.Empty,
+            SmtpPassword = request.Password ?? string.Empty
+        };
+
+        var mimeMessage = await messageLoader.GetClonedAsync(messageEntry, token);
+
+        try
+        {
+            using var client = await forwardRule.CreateConnectedSmtpClientAsync(token);
+
+            forwardRule.PopulateFromRule(mimeMessage);
+
+            await client.SendAsync(mimeMessage, token);
+            await client.DisconnectAsync(true, token);
+        }
+        catch (Exception ex)
+        {
+            logger.Warning(
+                ex,
+                "Failed forwarding message {MessageFile} to {SmtpServer}:{SmtpPort}",
+                messageEntry.File,
+                forwardRule.SmtpServer,
+                forwardRule.SmtpPort);
+
+            return Problem(
+                title: "Forward failed",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status502BadGateway);
+        }
+
+        return Ok(new { forwarded = id, to = forwardRule.ToEmail });
     }
 
     [HttpGet("{messageId}/raw")]

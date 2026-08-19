@@ -18,11 +18,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
-import { 
-  GetMessagesResponse, 
-  DetailDto, 
+import {
+  GetMessagesResponse,
+  DetailDto,
   RefDto,
-  PaginationOptions
+  PaginationOptions,
+  ForwardMessageRequest
 } from '../models';
 import { EnvironmentService } from './environment.service';
 import { LoggingService } from './logging.service';
@@ -192,6 +193,26 @@ export class MessageApiService {
    */
   deleteAllMessages(): Observable<void> {
     return this.http.delete<void>(this.baseUrl);
+  }
+
+  /**
+   * Deletes a single message by ID.
+   * @param messageId The unique message ID
+   */
+  deleteMessage(messageId: string): Observable<void> {
+    const encodedId = encodeURIComponent(messageId);
+    return this.http.delete<void>(`${this.baseUrl}/${encodedId}`);
+  }
+
+  /**
+   * Forwards a captured message to a real SMTP server, mirroring the
+   * desktop app's Forward Message dialog.
+   * @param messageId The unique message ID
+   * @param request SMTP server settings and from/to addresses
+   */
+  forwardMessage(messageId: string, request: ForwardMessageRequest): Observable<unknown> {
+    const encodedId = encodeURIComponent(messageId);
+    return this.http.post(`${this.baseUrl}/${encodedId}/forward`, request);
   }
 
   /**

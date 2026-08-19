@@ -1,14 +1,14 @@
 // Papercut
-// 
+//
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,15 +16,15 @@
 // limitations under the License.
 
 /**
- * Barrel export file for all Papercut domain models.
- * These interfaces match the C# DTOs exactly.
+ * Parameters for POST api/messages/{id}/forward.
+ * Matches the C# ForwardMessageRequest class.
  */
-
-export { EmailAddressDto } from './email-address-dto';
-export { HeaderDto } from './header-dto';
-export { EmailSectionDto, EmailSectionDto as EmailAttachmentDto } from './email-attachment-dto';
-export { RefDto } from './ref-dto';
-export { DetailDto } from './detail-dto';
-export { GetMessagesResponse } from './get-messages-response';
-export { PaginationOptions } from './pagination-options';
-export { ForwardMessageRequest } from './forward-message-request';
+export interface ForwardMessageRequest {
+  server: string;
+  port: number;
+  useSsl: boolean;
+  username?: string | null;
+  password?: string | null;
+  fromEmail: string;
+  toEmail: string;
+}
