@@ -4,7 +4,7 @@
 export const environment = {
   production: false,
   name: 'development',
-  apiBaseUrl: 'http://localhost:37408/api',
+  apiBaseUrl: '/api',
   signalRUrl: '/hubs/messages',
   enableLogging: true,
   logLevel: 'debug',
