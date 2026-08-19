@@ -53,14 +53,17 @@ export class MessageApiService {
    * @param start The starting index for pagination (default: 0)
    * @returns Observable of GetMessagesResponse with converted dates
    */
-  getMessages(limit: number = 10, start: number = 0): Observable<GetMessagesResponse> {
+  getMessages(limit: number = 10, start: number = 0, order: 'desc' | 'asc' = 'desc'): Observable<GetMessagesResponse> {
     let params = new HttpParams();
-    
+
     if (limit !== undefined) {
       params = params.set('limit', limit.toString());
     }
     if (start !== undefined) {
       params = params.set('start', start.toString());
+    }
+    if (order !== 'desc') {
+      params = params.set('order', order);
     }
     
     return this.http.get<GetMessagesResponse>(this.baseUrl, { params }).pipe(

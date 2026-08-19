@@ -39,7 +39,7 @@ public class MessagesController(
     : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<GetMessagesResponse>> GetAll(int limit = 10, int start = 0, CancellationToken token = default)
+    public async Task<ActionResult<GetMessagesResponse>> GetAll(int limit = 10, int start = 0, string order = "desc", CancellationToken token = default)
     {
         var messageEntries = messageRepository.LoadMessages().ToList();
 
@@ -63,9 +63,12 @@ public class MessagesController(
         // Add ETag to response
         Response.Headers.ETag = etag;
 
+        var ordered = string.Equals(order, "asc", StringComparison.OrdinalIgnoreCase)
+            ? messageEntries.OrderBy(msg => msg.ModifiedDate)
+            : messageEntries.OrderByDescending(msg => msg.ModifiedDate);
+
         var tasks =
-            messageEntries
-                .OrderByDescending(msg => msg.ModifiedDate)
+            ordered
                 .Skip(start)
                 .Take(limit)
                 .Select(async e => RefDto.CreateFrom(new MimeMessageEntry(e, (await messageLoader.GetAsync(e, token))!)))

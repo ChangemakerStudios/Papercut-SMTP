@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { Observable, finalize, filter, Subject, takeUntil } from 'rxjs';
+import { Observable, finalize, filter, skip, Subject, takeUntil } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -14,6 +14,7 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
 import { PlatformNotificationService } from '../../services/platform-notification.service';
 import { LoggingService } from '../../services/logging.service';
 import { MessageStateService } from '../../services/message-state.service';
+import { UserSettingsService } from '../../services/user-settings.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { ResizerComponent } from '../resizer/resizer.component';
@@ -175,7 +176,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
     private toastService: ToastNotificationService,
     private platformNotificationService: PlatformNotificationService,
     private loggingService: LoggingService,
-    private messageStateService: MessageStateService
+    private messageStateService: MessageStateService,
+    private userSettingsService: UserSettingsService
   ) {
     // Load current page when query params change
     this.route.queryParams
@@ -250,6 +252,11 @@ export class MessageListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.refreshCurrentPage());
 
+    // Reload when the sort order preference changes (Options dialog)
+    this.userSettingsService.sortOrder$
+      .pipe(skip(1), takeUntil(this.destroy$))
+      .subscribe(() => this.refreshCurrentPage());
+
     // Subscribe to connection status
     this.signalRService.isConnected$
       .pipe(takeUntil(this.destroy$))
@@ -279,7 +286,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   private loadPage(limit: number, start: number): void {
     this.isLoading = true;
-    this.messageApiService.getMessages(limit, start)
+    this.messageApiService.getMessages(limit, start, this.userSettingsService.getSortOrder())
       .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe((response: GetMessagesResponse) => {
         this.allMessages = response.messages;
@@ -295,21 +302,23 @@ export class MessageListComponent implements OnInit, OnDestroy {
       ? newMessage.from[0].name || newMessage.from[0].address || 'Unknown Sender'
       : 'Unknown Sender';
     const subject = newMessage.subject || 'No Subject';
-    
-    // Always show toast notification
-    this.toastService.showNewMessageToast(
-      subject,
-      sender,
-      newMessage.id!,
-      () => this.selectAndViewMessage(newMessage.id!)
-    );
 
-    // Show platform notification only if tab is not visible
-    this.platformNotificationService.showNewMessageNotificationIfTabHidden(
-      subject,
-      sender,
-      () => this.selectAndViewMessage(newMessage.id!)
-    );
+    // Notifications honor the Options "Show new message notifications" setting
+    if (this.userSettingsService.areNotificationsEnabled()) {
+      this.toastService.showNewMessageToast(
+        subject,
+        sender,
+        newMessage.id!,
+        () => this.selectAndViewMessage(newMessage.id!)
+      );
+
+      // Show platform notification only if tab is not visible
+      this.platformNotificationService.showNewMessageNotificationIfTabHidden(
+        subject,
+        sender,
+        () => this.selectAndViewMessage(newMessage.id!)
+      );
+    }
 
     // If we're on the first page, add the new message to the top of the list
     if (this.pageStart === 0) {

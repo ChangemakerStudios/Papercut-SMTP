@@ -17,9 +17,11 @@ import {
   Check,
   type LucideIconData
 } from 'lucide-angular';
+import { MatDialog } from '@angular/material/dialog';
 import { ThemeService, AccentColor, ThemePreference } from '../../services/theme.service';
 import { LoggingService } from '../../services/logging.service';
 import { McpService, McpStatus } from '../../services/mcp.service';
+import { OptionsDialogComponent } from '../options-dialog/options-dialog.component';
 import { Observable, map } from 'rxjs';
 
 @Component({
@@ -189,7 +191,8 @@ export class NavigationComponent implements OnDestroy {
   constructor(
     public themeService: ThemeService,
     private loggingService: LoggingService,
-    private mcpService: McpService
+    private mcpService: McpService,
+    private dialog: MatDialog
   ) {
     this.isDarkTheme$ = this.themeService.theme$.pipe(
       map(theme => theme === 'dark')
@@ -242,8 +245,7 @@ export class NavigationComponent implements OnDestroy {
   }
 
   showOptions(): void {
-    // TODO: Implement options functionality
-    this.loggingService.debug('Show Options clicked');
+    this.dialog.open(OptionsDialogComponent, { autoFocus: false });
   }
 
   ngOnDestroy() {

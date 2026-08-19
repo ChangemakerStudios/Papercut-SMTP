@@ -31,7 +31,12 @@ public class PapercutSmtpModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterType<PapercutSmtpServer>().AsSelf();
+        // There is exactly one SMTP listener per process. A non-singleton
+        // registration hands scoped resolvers (e.g. an HTTP request handling
+        // a settings change) a fresh, unstarted server instance -- the rebind
+        // then starts a listener that dies with the request scope while the
+        // original keeps the old port.
+        builder.RegisterType<PapercutSmtpServer>().AsSelf().SingleInstance();
 
         // smtp
         builder.RegisterType<SmtpMessageStore>().As<IMessageStore>();

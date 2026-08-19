@@ -98,7 +98,7 @@ describe('Message System Integration', () => {
       tick();
       
       // Verify the mock API service was called
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
       
       // Verify component state
       expect(component.allMessages).toEqual(mockMessages);
@@ -123,7 +123,7 @@ describe('Message System Integration', () => {
       tick();
       
       // Verify mock API service was called
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
       
       // Test that the component can handle route parameter changes for pagination
       // This is what the component is actually designed to do
@@ -143,7 +143,7 @@ describe('Message System Integration', () => {
       activatedRoute.queryParamsSubject.next(routeParams);
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
       
       // Reset the spy to clear previous calls
       messageApiService.getMessages.calls.reset();
@@ -155,7 +155,7 @@ describe('Message System Integration', () => {
       tick();
       
       // Verify the component responded to route change
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(newPageSize, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(newPageSize, 0, 'desc');
       expect(component.pageSize).toBe(newPageSize);
       
       // Clean up timers
@@ -170,7 +170,7 @@ describe('Message System Integration', () => {
       activatedRoute.queryParamsSubject.next(routeParams);
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
       
       // Reset the spy to clear previous calls
       messageApiService.getMessages.calls.reset();
@@ -181,7 +181,7 @@ describe('Message System Integration', () => {
       tick();
       
       // Verify the component responded to route change
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 10);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 10, 'desc');
       expect(component.currentPage).toBe(2);
       
       // Clean up timers
@@ -201,7 +201,7 @@ describe('Message System Integration', () => {
       activatedRoute.queryParamsSubject.next(routeParams);
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
       expect(component.isLoading).toBe(false);
       
       // Now test that the component can handle subsequent successful requests
@@ -212,7 +212,7 @@ describe('Message System Integration', () => {
       activatedRoute.queryParamsSubject.next(newRouteParams);
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(5, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(5, 0, 'desc');
       expect(component.isLoading).toBe(false);
       
       // Clean up timers
@@ -235,7 +235,7 @@ describe('Message System Integration', () => {
       tick();
       
       // Verify the mock API service was called
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
       
       // Clean up timers
       flush();
@@ -251,7 +251,7 @@ describe('Message System Integration', () => {
       activatedRoute.queryParamsSubject.next(routeParams);
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
       
       // Verify data consistency
       expect(component.allMessages).toEqual(mockMessages);
@@ -271,7 +271,7 @@ describe('Message System Integration', () => {
       activatedRoute.queryParamsSubject.next(routeParams);
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
       
       // Verify loading state synchronization
       expect(component.isLoading).toBe(false);
@@ -289,7 +289,7 @@ describe('Message System Integration', () => {
       activatedRoute.queryParamsSubject.next(routeParams);
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
       
       // Test that the component can handle pagination changes via route parameters
       // This demonstrates the component's ability to respond to route changes
@@ -302,7 +302,7 @@ describe('Message System Integration', () => {
       tick();
       
       // Verify the component responded to route change
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(newPageSize, 0);
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(newPageSize, 0, 'desc');
       expect(component.pageSize).toBe(newPageSize);
       
       // Clean up timers
