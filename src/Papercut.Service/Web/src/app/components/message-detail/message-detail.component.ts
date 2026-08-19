@@ -4,7 +4,10 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable, map, switchMap, catchError, of, EMPTY, startWith, combineLatest, shareReplay } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { LucideAngularModule, Mail } from 'lucide-angular';
+import { LucideAngularModule, Mail, Paperclip } from 'lucide-angular';
+import { FileSizePipe } from '../../pipes/file-size.pipe';
+import { DownloadButtonDirective } from '../../directives/download-button.directive';
+import { EmailSectionDto } from '../../models';
 import { MessageService } from '../../services/message.service';
 import { MessageApiService } from '../../services/message-api.service';
 import { LoggingService } from '../../services/logging.service';
@@ -30,6 +33,8 @@ interface MessageViewData {
     MatTabsModule,
     MatProgressSpinnerModule,
     LucideAngularModule,
+    FileSizePipe,
+    DownloadButtonDirective,
     MessageSectionsComponent,
     MessageHeaderComponent,
     SafeIframeComponent,
@@ -61,12 +66,29 @@ interface MessageViewData {
 
               <!-- Message Tab (HTML iframe view) -->
               <mat-tab label="Message">
-                <div class="h-full overflow-hidden bg-surface">
-                  <div class="h-full">
+                <div class="h-full overflow-hidden bg-surface flex flex-col">
+                  <div class="flex-1 min-h-0">
                     <app-safe-iframe
                       class="h-full"
                       [content]="getMessageContent(messageData.detail)">
                     </app-safe-iframe>
+                  </div>
+
+                  <!-- Attachments bar (desktop-style, bottom of the message view) -->
+                  <div class="attachments-bar" *ngIf="messageData.detail?.attachments?.length">
+                    <span class="attachments-label">Attachments</span>
+                    <div class="attachments-chips">
+                      <button class="attachment-chip"
+                              *ngFor="let att of messageData.detail!.attachments"
+                              [appDownloadButton]="'attach-' + (att.id || att.index)"
+                              [downloadUrl]="buildAttachmentUrl(messageData.detail!, att)"
+                              [downloadFilename]="att.fileName || 'attachment-' + (att.index ?? 0)"
+                              [title]="'Download ' + (att.fileName || att.mediaType || 'attachment')">
+                        <lucide-icon [img]="icons.Paperclip" [size]="14"></lucide-icon>
+                        <span class="chip-name">{{ att.fileName || att.mediaType || 'attachment' }}</span>
+                        <span class="chip-size" *ngIf="att.size != null">{{ att.size | fileSize }}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </mat-tab>
@@ -133,6 +155,65 @@ interface MessageViewData {
       animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 
+    /* Desktop-style attachments row: one line along the bottom */
+    .attachments-bar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      border-top: 1px solid var(--pc-border);
+      background: var(--pc-surface-2);
+      min-width: 0;
+    }
+
+    .attachments-label {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--pc-faint);
+      user-select: none;
+    }
+
+    .attachments-chips {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      min-width: 0;
+      padding: 2px 0;
+    }
+
+    .attachment-chip {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 14px;
+      border: 1px solid var(--pc-border);
+      border-radius: 999px;
+      background: var(--pc-surface);
+      color: var(--pc-accent-text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.12s ease, border-color 0.12s ease;
+    }
+
+    .attachment-chip:hover {
+      background: var(--pc-hover);
+      border-color: var(--pc-accent);
+    }
+
+    .chip-size {
+      font-family: var(--pc-font-mono);
+      font-size: 11.5px;
+      font-weight: 400;
+      color: var(--pc-muted);
+    }
+
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
@@ -140,7 +221,7 @@ interface MessageViewData {
   `]
 })
 export class MessageDetailComponent {
-  protected readonly icons = { Mail };
+  protected readonly icons = { Mail, Paperclip };
 
   messageData$: Observable<MessageViewData>;
   private currentMessage: DetailDto | null = null;
@@ -213,6 +294,16 @@ export class MessageDetailComponent {
     }).catch(err => {
       this.loggingService.error('Failed to redirect to home', err);
     });
+  }
+
+  buildAttachmentUrl(message: DetailDto, att: EmailSectionDto): string {
+    const encodedMessageId = encodeURIComponent(message.id!);
+
+    if (att.id) {
+      return `/api/messages/${encodedMessageId}/contents/${encodeURIComponent(att.id)}`;
+    }
+
+    return `/api/messages/${encodedMessageId}/sections/${att.index ?? 0}`;
   }
 
   getMessageContent(message: DetailDto | null): string {

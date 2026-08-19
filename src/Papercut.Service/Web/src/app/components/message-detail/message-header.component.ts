@@ -63,15 +63,6 @@ import { DetailDto, RefDto } from '../../models';
         <span class="field-label">Subject</span>
         <span class="field-value field-subject">{{ (message?.detail?.subject || message?.ref?.subject) || '(No Subject)' }}</span>
       </div>
-      <div class="field-row" *ngIf="getAttachmentCount() > 0">
-        <span class="field-label">Attach</span>
-        <span class="field-value">
-          <button class="attachment-chip" (click)="onViewAttachments()">
-            <lucide-icon [img]="icons.Paperclip" [size]="12"></lucide-icon>
-            <span>{{ getAttachmentSummary() }}</span>
-          </button>
-        </span>
-      </div>
     </div>
   `,
   styles: [`
@@ -127,26 +118,6 @@ import { DetailDto, RefDto } from '../../models';
 
     .priority-urgent {
       color: var(--pc-danger);
-    }
-
-    .attachment-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 2px 10px;
-      border: 1px solid var(--pc-border);
-      border-radius: 999px;
-      background: var(--pc-surface-2);
-      color: var(--pc-accent-text);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.12s ease, border-color 0.12s ease;
-    }
-
-    .attachment-chip:hover {
-      background: var(--pc-hover);
-      border-color: var(--pc-accent);
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
