@@ -430,6 +430,14 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   selectMessage(messageId: string): void {
+    // Re-clicking the open message is a no-op: the router ignores a navigation
+    // to the url it is already on, so nothing would reload -- but the loading
+    // state below would still dim the whole list for half a second and make it
+    // look like it did.
+    if (messageId === this.selectedMessageId) {
+      return;
+    }
+
     this.loggingService.debug('Selecting message', { messageId });
     this.loadingMessageId = messageId;
     this.isLoadingMessageDetail = true;
