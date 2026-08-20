@@ -14,21 +14,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CDK Virtual Scroll width constraints - Global fix */
-app-message-list cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper {
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-  position: relative !important;
-}
-
+/* Keep virtualized rows to the panel width.
+   NOTE: never override position/overflow on .cdk-virtual-scroll-content-wrapper.
+   The CDK absolutely-positions it over the spacer that represents the full list
+   height; forcing position: relative puts the rendered rows back into normal
+   flow, so the spacer's height is added below them and the list ends in a
+   screenful of empty space. */
 app-message-list cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper > app-message-list-item {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important;
-  display: block !important;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: block;
 }
 
 // ============================================================================
