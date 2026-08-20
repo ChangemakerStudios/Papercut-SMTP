@@ -16,11 +16,11 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
 import { PlatformNotificationService } from '../../services/platform-notification.service';
 import { LoggingService } from '../../services/logging.service';
 import { MessageStateService } from '../../services/message-state.service';
-import { UserSettingsService } from '../../services/user-settings.service';
+import { UserSettingsService, MessageSortOrder } from '../../services/user-settings.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideAngularModule, PanelLeftClose, PanelLeftOpen } from 'lucide-angular';
+import { LucideAngularModule, PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp } from 'lucide-angular';
 import { ResizerComponent } from '../resizer/resizer.component';
 import { MessageListItemComponent } from './message-list-item.component';
 import { MessageListEmptyStateComponent } from './message-list-empty-state.component';
@@ -75,6 +75,14 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
           <span class="list-count">
             {{ totalCount }} {{ totalCount === 1 ? 'message' : 'messages' }}
           </span>
+
+          <!-- Sort toggle. Shares the Options setting, so flipping it here
+               sticks and the two never disagree. -->
+          <button class="rail-btn sort-btn" (click)="toggleSortOrder()"
+                  [attr.aria-label]="sortOrder === 'desc' ? 'Newest first — sort oldest first instead' : 'Oldest first — sort newest first instead'"
+                  [matTooltip]="sortOrder === 'desc' ? 'Newest first' : 'Oldest first'">
+            <lucide-icon [img]="sortOrder === 'desc' ? icons.ArrowDown : icons.ArrowUp" [size]="14"></lucide-icon>
+          </button>
           <span class="list-loaded" *ngIf="allMessages.length < totalCount">
             {{ allMessages.length }} loaded
           </span>
@@ -270,6 +278,17 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
       margin-right: -4px;
     }
 
+    .sort-btn {
+      width: 20px;
+      height: 20px;
+      margin-left: -2px;
+    }
+
+    .sort-btn:hover {
+      background: var(--pc-hover);
+      color: var(--pc-accent-text);
+    }
+
     /* Responsive: below this there is only room for one pane, so the list and
        the message take turns. Opening a message collapses the list to its rail
        (see selectMessage), and the rail is how you get back. */
@@ -326,7 +345,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
   isLoadingMore = false;
 
   // Resizer properties
-  protected readonly icons = { PanelLeftClose, PanelLeftOpen };
+  protected readonly icons = { PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp };
 
   messageListWidth = 400; // Default width
 
@@ -371,6 +390,20 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
     // Note: Resizer component handles localStorage loading automatically
     this.isListCollapsed = localStorage.getItem(MessageListComponent.CollapsedKey) === 'true';
+  }
+
+  get sortOrder(): MessageSortOrder {
+    return this.userSettingsService.getSortOrder();
+  }
+
+  /**
+   * Flipping the order reloads from the top rather than re-sorting what is
+   * already loaded: with 250 messages and 100 of them fetched, sorting the
+   * loaded slice would show the oldest of the newest, which is nobody's idea
+   * of "oldest first".
+   */
+  toggleSortOrder(): void {
+    this.userSettingsService.setSortOrder(this.sortOrder === 'desc' ? 'asc' : 'desc');
   }
 
   toggleListCollapsed(): void {
@@ -435,11 +468,6 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.messageStateService.messageDeleted$
       .pipe(takeUntil(this.destroy$))
       .subscribe(id => this.onMessageDeleted(id));
-
-    // Reload when the sort order preference changes (Options dialog)
-    this.userSettingsService.sortOrder$
-      .pipe(skip(1), takeUntil(this.destroy$))
-      .subscribe(() => this.refreshCurrentPage());
 
     // Subscribe to connection status
     this.signalRService.isConnected$
