@@ -1,5 +1,6 @@
 import { Component, Input, AfterViewInit, ViewChild, ElementRef, OnChanges, SimpleChanges, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ToastNotificationService } from '../../services/toast-notification.service';
 
 @Component({
   selector: 'app-safe-iframe',
@@ -11,7 +12,7 @@ import { CommonModule } from '@angular/common';
       class="w-full border-none"
       [class]="cssClass"
       [style]="cssStyle"
-      sandbox="allow-same-origin"
+      sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       frameborder="0"
       scrolling="auto">
     </iframe>
@@ -40,7 +41,10 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
   private visibilityChangeListener?: () => void;
   private intersectionObserver?: IntersectionObserver;
 
-  constructor(private ngZone: NgZone) {}
+  constructor(
+    private ngZone: NgZone,
+    private toastService: ToastNotificationService
+  ) {}
 
   ngAfterViewInit() {
     // Set initial content after view is initialized
@@ -79,25 +83,77 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private setIframeContent(iframe: HTMLIFrameElement, content: string) {
-    try {
-      // Primary method: Direct document manipulation
-      const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (doc) {
-        doc.open();
-        doc.write(content);
-        doc.close();
-        
-        // Successfully set iframe content via document.write
-      } else {
-        // Fallback to srcdoc if document access fails
-        iframe.srcdoc = content;
-        // Fallback: Set iframe content via srcdoc
-      }
-    } catch (error) {
-      // Error setting iframe content - using fallback
-      // Final fallback
-      iframe.srcdoc = content;
+    if (this.writeDocument(iframe, content)) {
+      return;
     }
+
+    // The frame is unwritable -- it navigated somewhere cross-origin, so its
+    // document can no longer be reached. Reset it to a blank same-origin
+    // document and write once that load completes, otherwise the message view
+    // stays stuck on whatever it navigated to.
+    const onLoad = () => {
+      iframe.removeEventListener('load', onLoad);
+
+      if (!this.writeDocument(iframe, content)) {
+        iframe.srcdoc = content;
+      }
+    };
+
+    iframe.addEventListener('load', onLoad);
+    iframe.src = 'about:blank';
+  }
+
+  /** Writes the document directly; returns false when the frame is unreachable. */
+  private writeDocument(iframe: HTMLIFrameElement, content: string): boolean {
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!doc) return false;
+
+      doc.open();
+      doc.write(content);
+      doc.close();
+
+      this.attachLinkHandler(doc);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * The message document is written same-origin, so clicks inside it can be
+   * handled here rather than by the sandboxed frame. Every link opens in a
+   * new tab; file:// links get special treatment because browsers refuse to
+   * navigate to them from an http(s) page.
+   */
+  private attachLinkHandler(doc: Document): void {
+    doc.addEventListener('click', (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest?.('a') as HTMLAnchorElement | null;
+      if (!anchor) return;
+
+      const href = anchor.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+
+      // The frame can't navigate anywhere useful; handle it from the host
+      event.preventDefault();
+
+      this.ngZone.run(() => this.openLink(href));
+    });
+  }
+
+  private openLink(href: string): void {
+    if (/^file:/i.test(href)) {
+      // Browsers block file:// navigation from an http(s) page and always
+      // will -- hand the path over instead so it can be pasted somewhere useful
+      navigator.clipboard?.writeText(href).then(
+        () => this.toastService.showInfo('Browsers block file:// links — path copied to the clipboard'),
+        () => this.toastService.showWarning(`Browsers block file:// links: ${href}`)
+      );
+      return;
+    }
+
+    window.open(href, '_blank', 'noopener,noreferrer');
   }
 
   private setupVisibilityMonitoring() {
@@ -108,7 +164,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
       this.ngZone.run(() => {
         entries.forEach(entry => {
           if (entry.isIntersecting && entry.intersectionRatio > 0) {
-            console.log('Iframe became visible, refreshing content');
+            // iframe became visible -- refresh content
             setTimeout(() => {
               this.updateContent();
             }, 100); // Small delay to ensure DOM is ready
@@ -125,7 +181,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
     // Also listen for document visibility changes (tab switches)
     this.visibilityChangeListener = () => {
       if (!document.hidden && this.iframe) {
-        console.log('Document became visible, checking iframe content');
+        // document became visible -- check content
         setTimeout(() => {
           this.checkAndRefreshContent();
         }, 200);
@@ -155,11 +211,11 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
       const isEmpty = !doc || !doc.body || doc.body.innerHTML.trim() === '';
       
       if (isEmpty) {
-        console.log('Iframe content is empty, refreshing');
+        // content empty -- refresh
         this.updateContent();
       }
     } catch (error) {
-      console.log('Cannot access iframe content, refreshing anyway');
+      // content unreachable -- refresh anyway
       this.updateContent();
     }
   }

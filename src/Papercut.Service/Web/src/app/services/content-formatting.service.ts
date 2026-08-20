@@ -121,6 +121,8 @@ export class ContentFormattingService {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="referrer" content="no-referrer">
+        <base target="_blank">
         ${themeStyles}
       </head>
       <body>
@@ -139,7 +141,11 @@ export class ContentFormattingService {
     const themeStyles = this.getThemeAwareStyles();
     
     if (html.includes('<head>')) {
-      return html.replace('<head>', `<head>${themeStyles}`);
+      // base/referrer go in with the styles so links in full email documents
+      // open in a new tab too (the host also intercepts clicks -- see SafeIframeComponent)
+      return html.replace(
+        '<head>',
+        `<head><meta name="referrer" content="no-referrer"><base target="_blank">${themeStyles}`);
     } else {
       // If no head tag, wrap the content
       return this.createStyledDocument(html, false);
