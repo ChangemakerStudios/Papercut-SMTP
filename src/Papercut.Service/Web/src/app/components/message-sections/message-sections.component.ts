@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -146,15 +146,28 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
     }
   `]
 })
-export class MessageSectionsComponent {
+export class MessageSectionsComponent implements OnChanges {
   protected readonly sectionIcons = { ChevronUp, ChevronDown, Download };
 
   @Input() message: DetailDto | null = null;
-  
+
   // Section viewing state
   viewingSectionIndex: number | null = null;
   sectionContents: Map<number, string> = new Map();
   loadingSections: Set<number> = new Set();
+
+  /**
+   * These caches are keyed by section index, which means nothing across
+   * messages. The tab group stays mounted now, so without this the next
+   * message's section 0 would show the previous message's section 0.
+   */
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['message']) return;
+
+    this.viewingSectionIndex = null;
+    this.sectionContents.clear();
+    this.loadingSections.clear();
+  }
 
   constructor(
     private messageService: MessageService,

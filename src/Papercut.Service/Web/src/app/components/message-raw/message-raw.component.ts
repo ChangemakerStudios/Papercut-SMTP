@@ -1,7 +1,7 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, takeUntil, catchError, of } from 'rxjs';
+import { Subject, takeUntil, catchError, of, switchMap, tap } from 'rxjs';
 import { DetailDto, RefDto } from '../../models';
 import { MessageService } from '../../services/message.service';
 
@@ -50,31 +50,58 @@ import { MessageService } from '../../services/message.service';
     }
   `]
 })
-export class MessageRawComponent implements OnInit, OnDestroy {
+export class MessageRawComponent implements OnChanges, OnDestroy {
   @Input() message: DetailDto | RefDto | null = null;
-  
+
   rawContent: string = '';
   isLoading: boolean = false;
   error: string = '';
-  
+
   private destroy$ = new Subject<void>();
 
-  constructor(private messageService: MessageService) {}
+  /**
+   * Loading on ngOnInit alone was enough back when the tab group was rebuilt
+   * per message. It is not any more -- the tabs stay mounted and this component
+   * lives across messages, so it has to reload whenever the input changes or it
+   * keeps showing the first message it ever saw.
+   */
+  private readonly load$ = new Subject<string>();
 
-  ngOnInit(): void {
-    if (this.message) {
-      this.loadRawContent();
-    }
+  constructor(private messageService: MessageService) {
+    this.load$
+      .pipe(
+        tap(() => {
+          this.isLoading = true;
+          this.error = '';
+          this.rawContent = '';
+        }),
+        // switchMap, so a slow response for the message you just left cannot
+        // land on top of the one you are looking at now
+        switchMap(messageId =>
+          this.messageService.getRawContent(messageId).pipe(
+            catchError(error => {
+              this.error = error.message || 'Unknown error occurred';
+              return of('');
+            })
+          )
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((content: string) => {
+        this.rawContent = content;
+        this.isLoading = false;
+      });
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['message']) return;
 
-  private loadRawContent(): void {
+    // null while the next message's detail is in flight -- that is a load, not
+    // an error, and showing the previous message's raw text would be a lie
     if (!this.message) {
-      this.error = 'No message provided';
+      this.rawContent = '';
+      this.error = '';
+      this.isLoading = true;
       return;
     }
 
@@ -84,22 +111,11 @@ export class MessageRawComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.isLoading = true;
-    this.error = '';
-    this.rawContent = '';
+    this.load$.next(messageId);
+  }
 
-    this.messageService.getRawContent(messageId)
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError(error => {
-          // Error loading raw content - handled in error property
-          this.error = error.message || 'Unknown error occurred';
-          return of('');
-        })
-      )
-      .subscribe((content: string) => {
-        this.rawContent = content;
-        this.isLoading = false;
-      });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
