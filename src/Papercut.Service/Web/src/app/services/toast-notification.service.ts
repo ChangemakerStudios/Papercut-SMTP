@@ -103,7 +103,7 @@ export class ToastNotificationService {
 
     const config: MatSnackBarConfig = {
       duration: data.duration,
-      horizontalPosition: 'center',
+      horizontalPosition: 'right',
       verticalPosition: 'bottom',
       panelClass: [
         'toast-notification',
@@ -175,7 +175,7 @@ export class ToastNotificationService {
   private showToast(data: ToastData): MatSnackBarRef<ToastNotificationComponent> {
     const config: MatSnackBarConfig = {
       duration: data.duration,
-      horizontalPosition: 'center',
+      horizontalPosition: 'right',
       verticalPosition: 'bottom',
       panelClass: [
         'toast-notification',
