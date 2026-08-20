@@ -131,9 +131,10 @@ interface MessageViewData {
         </div>
 
         <!-- The one loading indicator. It covers the whole pane (header
-             included, so no stale headers show over a new message) and stays
-             up until the body is painted -- see isSwitchingMessage(). -->
-        <div *ngIf="isSwitchingMessage(messageData)" class="loading-veil">
+             included, so no stale header shows over a new message) and stays
+             up until the body is painted -- see isSwitchingMessage(). It is
+             kept mounted so it can fade, rather than popping in and out. -->
+        <div class="loading-veil" [class.is-loading]="isSwitchingMessage(messageData)">
           <mat-spinner diameter="36" strokeWidth="3"></mat-spinner>
         </div>
       </ng-container>
@@ -158,6 +159,9 @@ interface MessageViewData {
       background: white;
     }
 
+    /* A frosted scrim, not a blank panel: the outgoing message stays faintly
+       visible underneath so a switch reads as a transition instead of the
+       whole pane being torn down and rebuilt. */
     .loading-veil {
       position: absolute;
       inset: 0;
@@ -165,7 +169,24 @@ interface MessageViewData {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--pc-surface);
+      background: color-mix(in srgb, var(--pc-surface) 68%, transparent);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      /* visibility trails the fade so the blur stops being composited once hidden */
+      transition: opacity 160ms ease, visibility 0s linear 160ms;
+    }
+
+    /* The fade-in is delayed: a local message opens in well under 100ms, and a
+       spinner that flashes for three frames is worse than no spinner at all.
+       Only a load slow enough to notice ever shows one. */
+    .loading-veil.is-loading {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: opacity 140ms ease 110ms, visibility 0s;
     }
 
     .loading-mail-icon {
