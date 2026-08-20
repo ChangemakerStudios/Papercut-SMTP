@@ -1,7 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { LucideAngularModule, Paperclip, ChevronsUp, ChevronsDown } from 'lucide-angular';
 import { FileSizePipe } from '../../pipes/file-size.pipe';
 import { EmailService } from '../../services/email.service';
@@ -10,14 +9,12 @@ import { RefDto } from 'src/app/models';
 @Component({
   selector: 'app-message-list-item',
   standalone: true,
-  imports: [CommonModule, MatTooltipModule, MatProgressSpinnerModule, LucideAngularModule, FileSizePipe],
+  imports: [CommonModule, MatTooltipModule, LucideAngularModule, FileSizePipe],
   template: `
-    <div class="msg-item"
+    <div class="msg-item cursor-pointer"
          [ngClass]="{
            'msg-selected': selected,
-           'msg-unread': !message.isRead && !selected,
-           'cursor-pointer': !isLoading,
-           'cursor-not-allowed opacity-60': isLoading
+           'msg-unread': !message.isRead && !selected
          }"
          (click)="onSelect()">
       <div class="msg-subject" [matTooltip]="message.subject ?? 'No Subject'" matTooltipShowDelay="700">
@@ -28,7 +25,6 @@ import { RefDto } from 'src/app/models';
           {{ getFromDisplay() }}
         </span>
         <span class="msg-indicators">
-          <mat-spinner *ngIf="isLoadingDetail" diameter="14" strokeWidth="2"></mat-spinner>
           <lucide-icon *ngIf="message.attachmentCount && message.attachmentCount > 0"
                        [img]="icons.Paperclip" [size]="12"
                        [matTooltip]="getAttachmentTooltip()"></lucide-icon>
@@ -150,16 +146,11 @@ export class MessageListItemComponent {
 
   @Input() message!: RefDto;
   @Input() selected = false;
-  @Input() isLoading = false;
-  @Input() isLoadingDetail = false;
   @Output() select = new EventEmitter<void>();
 
   constructor(private emailService: EmailService) {}
 
   onSelect(): void {
-    if (this.isLoading) {
-      return; // Prevent action during loading
-    }
     this.select.emit();
   }
 

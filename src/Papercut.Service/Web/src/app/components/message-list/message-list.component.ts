@@ -22,7 +22,6 @@ import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 import { ResizerComponent } from '../resizer/resizer.component';
 import { MessageListItemComponent } from './message-list-item.component';
 import { MessageListEmptyStateComponent } from './message-list-empty-state.component';
-import { MessageListLoadingOverlayComponent } from './message-list-loading-overlay.component';
 import { MessageListNoSelectionComponent } from './message-list-no-selection.component';
 
 @Component({
@@ -40,7 +39,6 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     ResizerComponent,
     MessageListItemComponent,
     MessageListEmptyStateComponent,
-    MessageListLoadingOverlayComponent,
     MessageListNoSelectionComponent
   ],
   template: `
@@ -76,7 +74,6 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
             *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
             [message]="message"
             [selected]="message.id === selectedMessageId"
-            [isLoadingDetail]="loadingMessageId === message.id"
             (select)="selectMessage(message.id!)"
             class="block w-full">
           </app-message-list-item>
@@ -98,12 +95,8 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
 
       <!-- Message Detail Panel -->
       <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0 relative">
-        <!-- Buffer loader overlay -->
-        <app-message-list-loading-overlay 
-          [isLoading]="isLoadingMessageDetail"
-          loadingMessage="Loading message...">
-        </app-message-list-loading-overlay>
-        
+        <!-- No loader here: the detail pane owns the one loading indicator,
+             and it lifts when the body is actually on screen -->
         <router-outlet></router-outlet>
         
         <app-message-list-no-selection *ngIf="!selectedMessageId"></app-message-list-no-selection>
@@ -195,8 +188,6 @@ export class MessageListComponent implements OnInit, OnDestroy {
   messageListWidth = 400; // Default width
   isDragging = false;
   isLoading = false;
-  isLoadingMessageDetail = false;
-  loadingMessageId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -439,19 +430,11 @@ export class MessageListComponent implements OnInit, OnDestroy {
     }
 
     this.loggingService.debug('Selecting message', { messageId });
-    this.loadingMessageId = messageId;
-    this.isLoadingMessageDetail = true;
     this.selectedMessageId = messageId;
-    this.router.navigate(['message', messageId], { 
+    this.router.navigate(['message', messageId], {
       relativeTo: this.route,
       queryParamsHandling: 'preserve'
     });
-    
-    // Clear loading state after a short delay (the message detail component should handle its own loading)
-    setTimeout(() => {
-      this.loadingMessageId = null;
-      this.isLoadingMessageDetail = false;
-    }, 500);
   }
 
 

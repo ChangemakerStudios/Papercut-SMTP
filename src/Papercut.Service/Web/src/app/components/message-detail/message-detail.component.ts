@@ -45,7 +45,7 @@ interface MessageViewData {
     MessageRawComponent
   ],
   template: `
-    <div class="flex flex-col h-full bg-surface transition-colors duration-300">
+    <div class="flex flex-col h-full bg-surface transition-colors duration-300 relative">
 
       <!-- Single async pipe to prevent duplicate subscriptions -->
       <ng-container *ngIf="messageData$ | async as messageData; else loadingTemplate">
@@ -60,11 +60,6 @@ interface MessageViewData {
              click-to-render cost. They stay mounted and the content swaps. -->
         <div class="flex-1 overflow-hidden bg-surface message-tabs relative">
           <div class="h-full">
-            <!-- Loading veil over the (still mounted) tabs -->
-            <div *ngIf="messageData.isLoadingDetail" class="loading-veil">
-              <mat-spinner diameter="36" strokeWidth="3"></mat-spinner>
-            </div>
-
             <!-- Tabs Content -->
             <mat-tab-group class="h-full" dynamicHeight="false" animationDuration="0ms"
                            [selectedIndex]="selectedTabIndex"
@@ -76,7 +71,9 @@ interface MessageViewData {
                   <div class="flex-1 min-h-0">
                     <app-safe-iframe
                       class="h-full"
-                      [content]="getMessageContent(messageData)">
+                      [content]="getMessageContent(messageData)"
+                      [contentKey]="routeMessageId || ''"
+                      (rendered)="onBodyRendered($event)">
                     </app-safe-iframe>
                   </div>
 
@@ -131,6 +128,13 @@ interface MessageViewData {
 
             </mat-tab-group>
           </div>
+        </div>
+
+        <!-- The one loading indicator. It covers the whole pane (header
+             included, so no stale headers show over a new message) and stays
+             up until the body is painted -- see isSwitchingMessage(). -->
+        <div *ngIf="isSwitchingMessage(messageData)" class="loading-veil">
+          <mat-spinner diameter="36" strokeWidth="3"></mat-spinner>
         </div>
       </ng-container>
 
@@ -245,6 +249,10 @@ export class MessageDetailComponent {
   messageData$: Observable<MessageViewData>;
   private currentMessage: DetailDto | null = null;
 
+  /** id the route is on vs. id the iframe has actually painted */
+  routeMessageId: string | null = null;
+  private renderedMessageId: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -255,6 +263,9 @@ export class MessageDetailComponent {
     this.messageData$ = this.route.params.pipe(
       switchMap(params => {
         const messageId = params['id'];
+        // Remembered up front: until the frame reports this id painted, the
+        // pane is still showing the message we are navigating away from.
+        this.routeMessageId = messageId ?? null;
         if (messageId) {
           this.loggingService.debug('Loading message with ID', { 
             messageId, 
@@ -341,6 +352,19 @@ export class MessageDetailComponent {
     }
 
     return `/api/messages/${encodedMessageId}/sections/${att.index ?? 0}`;
+  }
+
+  /**
+   * True while the pane is still showing the previous message. Data arriving is
+   * not enough -- the iframe has to have painted the new body, otherwise
+   * lifting the veil uncovers the old one for a beat.
+   */
+  isSwitchingMessage(messageData: MessageViewData): boolean {
+    return messageData.isLoadingDetail || this.renderedMessageId !== this.routeMessageId;
+  }
+
+  onBodyRendered(messageId: string): void {
+    this.renderedMessageId = messageId;
   }
 
   getMessageContent(messageData: MessageViewData): string {

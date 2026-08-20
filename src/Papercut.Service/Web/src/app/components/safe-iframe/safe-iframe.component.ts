@@ -1,4 +1,4 @@
-import { Component, Input, AfterViewInit, ViewChild, ElementRef, OnChanges, SimpleChanges, OnDestroy, NgZone } from '@angular/core';
+import { Component, Input, Output, EventEmitter, AfterViewInit, ViewChild, ElementRef, OnChanges, SimpleChanges, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastNotificationService } from '../../services/toast-notification.service';
 
@@ -38,6 +38,15 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
   @Input() cssStyle: string = '';
   @Input() loadingContent: string = '<html><body style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: system-ui;">Loading...</body></html>';
 
+  /**
+   * Opaque tag for the current content -- echoed back by (rendered) so the host
+   * can tell which content actually made it onto the screen.
+   */
+  @Input() contentKey: string = '';
+
+  /** Fires once real content has been written AND painted by the frame. */
+  @Output() rendered = new EventEmitter<string>();
+
   private visibilityChangeListener?: () => void;
   private intersectionObserver?: IntersectionObserver;
   private hasWrittenContent = false;
@@ -66,6 +75,14 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
     // visible as a flash of the loading placeholder on every message click
     if (changes['content'] && !changes['content'].firstChange) {
       this.updateContent();
+      return;
+    }
+
+    // A new key over byte-identical content (the same email sent twice) leaves
+    // nothing to rewrite -- but the host is still waiting to hear that this key
+    // reached the screen, so say so rather than leaving it loading forever.
+    if (changes['contentKey'] && !changes['contentKey'].firstChange && this.content && this.hasWrittenContent) {
+      this.rendered.emit(this.contentKey);
     }
   }
 
@@ -95,6 +112,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
 
       if (!this.writeDocument(iframe, content)) {
         iframe.srcdoc = content;
+        this.notifyWhenPainted(iframe, content);
       }
     };
 
@@ -114,10 +132,36 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
 
       this.attachLinkHandler(doc);
       this.hasWrittenContent = true;
+      this.notifyWhenPainted(iframe, content);
       return true;
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Tells the host the frame is actually showing this content. The write itself
+   * is synchronous but the frame still has to lay the document out, so we wait
+   * for a frame inside the child document -- lifting a loading veil on the
+   * write alone uncovers the previous message for a beat.
+   *
+   * The placeholder never counts as rendered: only real content resolves the
+   * key the host is waiting on.
+   */
+  private notifyWhenPainted(iframe: HTMLIFrameElement, content: string): void {
+    if (content !== this.content || !this.content) return;
+
+    const key = this.contentKey;
+    const done = () => this.ngZone.run(() => this.rendered.emit(key));
+    const raf = iframe.contentWindow?.requestAnimationFrame?.bind(iframe.contentWindow);
+
+    if (!raf) {
+      done();
+      return;
+    }
+
+    // two frames: the first lands after layout, the second after it has painted
+    raf(() => raf(done));
   }
 
   /**
