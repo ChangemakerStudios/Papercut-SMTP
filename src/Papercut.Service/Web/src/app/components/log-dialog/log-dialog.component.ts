@@ -167,8 +167,10 @@ const LEVEL_RANK: Record<string, number> = {
       padding: 8px 0;
       background: var(--pc-surface);
       font-family: var(--pc-font-mono);
-      font-size: var(--pc-text-read);
-      line-height: var(--pc-leading-read);
+      /* a log is scanned, not read: one step down the scale and tighter
+         leading fits noticeably more of it on screen */
+      font-size: var(--pc-text-small);
+      line-height: var(--pc-leading-ui);
     }
 
     .log-empty {
