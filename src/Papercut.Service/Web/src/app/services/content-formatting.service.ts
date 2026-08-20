@@ -172,8 +172,9 @@ export class ContentFormattingService {
       // open in a new tab too (the host also intercepts clicks -- see SafeIframeComponent)
       return html.replace(headTag, match => `${match}${this.getDocumentHead()}${themeStyles}`);
     } else {
-      // If no head tag, wrap the content
-      return this.createStyledDocument(html, false);
+      // If no head tag, wrap the content -- keeping the themed decision, since
+      // plain-text bodies (a bare <pre>) always take this path
+      return this.createStyledDocument(html, themed);
     }
   }
 
@@ -200,8 +201,14 @@ export class ContentFormattingService {
       }`;
 
     if (!themed) {
+      // Email HTML is authored for a white canvas, so give it one whatever the
+      // app theme is -- exactly what the desktop's WebView2 does. Without a
+      // background the frame would show the dark app surface behind dark text.
+      // These are plain declarations, so an email's own background/color wins.
       return `<style>
       html, body {
+        background: #ffffff;
+        color: #1a1a1a;
         margin: 0;
         padding: 0;
         box-sizing: border-box;
