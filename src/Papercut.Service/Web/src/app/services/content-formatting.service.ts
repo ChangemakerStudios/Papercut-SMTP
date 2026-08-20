@@ -59,7 +59,7 @@ export class ContentFormattingService {
     } else {
       // For text/plain and other text types
       const escapedContent = this.escapeHtml(content);
-      return this.createStyledDocument(`<pre>${escapedContent}</pre>`, true);
+      return this.createStyledDocument(`<pre class="papercut-plain-text">${escapedContent}</pre>`, true);
     }
   }
 
@@ -120,7 +120,9 @@ export class ContentFormattingService {
   styleRenderedHtml(html: string): string {
     if (!html) return this.createStyledDocument('Loading...', true);
 
-    return this.injectThemeStyles(html);
+    // plain-text bodies carry a marker class and get themed; designed email
+    // html is left to render in its own colors
+    return this.injectThemeStyles(html, html.includes('papercut-plain-text'));
   }
 
   /**
@@ -133,7 +135,8 @@ export class ContentFormattingService {
   }
 
   private createStyledDocument(content: string, isPreformatted: boolean): string {
-    const themeStyles = this.getThemeAwareStyles();
+    // preformatted content is plain text (no design of its own) -- theme it
+    const themeStyles = this.getThemeAwareStyles(isPreformatted);
     const bodyContent = isPreformatted ? content : content;
     
     return `
@@ -157,9 +160,9 @@ export class ContentFormattingService {
    * @param html The HTML content to inject styles into
    * @returns HTML content with injected theme styles
    */
-  private injectThemeStyles(html: string): string {
-    const themeStyles = this.getThemeAwareStyles();
-    
+  private injectThemeStyles(html: string, themed = false): string {
+    const themeStyles = this.getThemeAwareStyles(themed);
+
     // match <head>, <HEAD> and <head lang="en"> alike -- a missed match used to
     // fall through and nest a whole document inside another one
     const headTag = /<head\b[^>]*>/i;
@@ -178,71 +181,65 @@ export class ContentFormattingService {
    * Gets theme-aware CSS styles for email content rendering.
    * @returns CSS styles as a string
    */
-  private getThemeAwareStyles(): string {
-    // Use the ThemeService to detect theme; colors come from the Papercut
-    // token layer so the iframe matches the active theme + accent
-    const isDarkMode = this.themeService.isDarkTheme();
-
-    const tokens = getComputedStyle(document.body);
-    const textColor = tokens.getPropertyValue('--pc-ink').trim() || (isDarkMode ? '#d6dde6' : '#2d3748');
-    const bgColor = tokens.getPropertyValue('--pc-surface').trim() || (isDarkMode ? '#1a202b' : '#ffffff');
-    const linkColor = tokens.getPropertyValue('--pc-accent-text').trim() || (isDarkMode ? '#60a5fa' : '#3478b2');
-
-    // NOTE: the html background paints the whole viewport, so no min-height
-    // is needed — a forced min-height plus padding guarantees a scrollbar
-    return `<style>
-      html, body {
-        font-family: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif !important;
-        line-height: 1.6 !important;
-        background: ${bgColor} !important;
-        color: ${textColor} !important;
-        fill: ${textColor} !important;
-        box-sizing: border-box !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      body {
-        padding: 4px !important;
-      }
-      * { 
-        color: ${textColor} !important; 
-        fill: ${textColor} !important;
-        background-color: transparent !important;
-      }
-      p, div, span, h1, h2, h3, h4, h5, h6, td, th, li {
-        color: ${textColor} !important;
-        fill: ${textColor} !important;
-        background-color: transparent !important;
-      }
-      a { 
-        color: ${linkColor} !important; 
-        fill: ${linkColor} !important;
-      }
-      pre {
-        font-family: 'Courier New', monospace !important;
-        white-space: pre-wrap !important;
-        word-wrap: break-word !important;
-        color: ${textColor} !important;
-        fill: ${textColor} !important;
-        background-color: transparent !important;
-        margin: 0 !important;
-        padding: 0 !important;
+  private getThemeAwareStyles(themed = false): string {
+    // Designed email HTML is rendered as the recipient would see it -- the
+    // desktop preview injects no colors at all, and forcing them here used to
+    // flatten every branded email (it even put borders and padding on every
+    // table cell, which wrecks the table layouts most emails are built from).
+    // Only the plain-text view, which has no design of its own, gets themed.
+    const shared = `
+      /* long unbroken strings must not blow out the layout (issue #154 --
+         the desktop applies this through HtmlToHtmlFormatWrapper) */
+      * {
+        overflow-wrap: break-word;
+        word-wrap: break-word;
       }
       img {
-        max-width: 100% !important;
-        height: auto !important;
+        max-width: 100%;
+        height: auto;
+      }`;
+
+    if (!themed) {
+      return `<style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      table {
-        border-collapse: collapse !important;
-        color: ${textColor} !important;
-        fill: ${textColor} !important;
+      body {
+        padding: 4px;
       }
-      table td, table th {
-        border: 1px solid ${isDarkMode ? '#4b5563' : '#d1d5db'} !important;
-        padding: 8px !important;
-        color: ${textColor} !important;
-        fill: ${textColor} !important;
+      ${shared}
+    </style>`;
+    }
+
+    const tokens = getComputedStyle(document.body);
+    const isDarkMode = this.themeService.isDarkTheme();
+    const textColor = tokens.getPropertyValue('--pc-ink').trim() || (isDarkMode ? '#d6dde6' : '#2d3748');
+    const bgColor = tokens.getPropertyValue('--pc-surface').trim() || (isDarkMode ? '#1a202b' : '#ffffff');
+    const monoFont = tokens.getPropertyValue('--pc-font-mono').trim() || `'Courier New', monospace`;
+
+    return `<style>
+      html, body {
+        background: ${bgColor};
+        color: ${textColor};
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
+      body {
+        padding: 4px;
+      }
+      pre {
+        font-family: ${monoFont};
+        font-size: 12px;
+        line-height: 1.5em;
+        white-space: pre-wrap;
+        margin: 0;
+        padding: 0;
+        color: ${textColor};
+      }
+      ${shared}
     </style>`;
   }
 

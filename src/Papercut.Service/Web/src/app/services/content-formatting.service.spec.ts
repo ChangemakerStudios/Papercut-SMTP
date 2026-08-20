@@ -45,11 +45,24 @@ describe('ContentFormattingService', () => {
 
       const result = service.formatMessageContent(htmlContent, 'text/html', 'msg123');
 
-      const tokens = getComputedStyle(document.body);
       expect(result).toContain('<html>');
       expect(result).toContain('<p>Test content</p>');
-      expect(result).toContain(`color: ${tokens.getPropertyValue('--pc-ink').trim()}`);
-      expect(result).toContain(`background: ${tokens.getPropertyValue('--pc-surface').trim()}`);
+    });
+
+    it('should leave designed html to render in its own colors', () => {
+      const htmlContent = '<html><head></head><body><p style="color: #ff0000">Branded</p></body></html>';
+      themeService.isDarkTheme.and.returnValue(false);
+
+      const result = service.formatMessageContent(htmlContent, 'text/html', 'msg123');
+
+      const tokens = getComputedStyle(document.body);
+      const ink = tokens.getPropertyValue('--pc-ink').trim();
+
+      // the email's own styling must survive: no forced colors, and no
+      // borders/padding imposed on the table layouts emails are built from
+      expect(result).toContain('color: #ff0000');
+      expect(result).not.toContain(`color: ${ink} !important`);
+      expect(result).not.toContain('border: 1px solid');
     });
 
     it('should format HTML content without complete document', () => {
@@ -71,17 +84,16 @@ describe('ContentFormattingService', () => {
       const result = service.formatMessageContent(textContent, 'text/plain', 'msg123');
       
       expect(result).toContain('<!DOCTYPE html>');
-      expect(result).toContain('<pre>Plain text content</pre>');
-      expect(result).toContain('font-family: \'Courier New\', monospace');
+      expect(result).toContain('Plain text content');
+      expect(result).toContain('papercut-plain-text');
     });
 
-    it('should style content from the dark token palette when the theme is dark', () => {
-      const htmlContent = '<p>Test content</p>';
+    it('should style plain text from the dark token palette when the theme is dark', () => {
       themeService.isDarkTheme.and.returnValue(true);
       document.body.setAttribute('data-theme', 'dark');
 
       try {
-        const result = service.formatMessageContent(htmlContent, 'text/html', 'msg123');
+        const result = service.formatMessageContent('Plain text', 'text/plain', 'msg123');
 
         const tokens = getComputedStyle(document.body);
         expect(result).toContain(`color: ${tokens.getPropertyValue('--pc-ink').trim()}`);
@@ -91,16 +103,14 @@ describe('ContentFormattingService', () => {
       }
     });
 
-    it('should style content from the light token palette when the theme is light', () => {
-      const htmlContent = '<p>Test content</p>';
+    it('should style plain text from the light token palette when the theme is light', () => {
       themeService.isDarkTheme.and.returnValue(false);
 
-      const result = service.formatMessageContent(htmlContent, 'text/html', 'msg123');
+      const result = service.formatMessageContent('Plain text', 'text/plain', 'msg123');
 
       const tokens = getComputedStyle(document.body);
       expect(result).toContain(`color: ${tokens.getPropertyValue('--pc-ink').trim()}`);
       expect(result).toContain(`background: ${tokens.getPropertyValue('--pc-surface').trim()}`);
-      expect(result).toContain(`color: ${tokens.getPropertyValue('--pc-accent-text').trim()}`);
     });
   });
 
@@ -142,7 +152,7 @@ describe('ContentFormattingService', () => {
       const result = service.getMessageContent(htmlBody, textBody, messageId);
       
       expect(result).toContain('<!DOCTYPE html>');
-      expect(result).toContain('<pre>Text content</pre>');
+      expect(result).toContain('Text content');
       expect(contentTransformationService.transformContent).not.toHaveBeenCalled();
     });
 
@@ -183,7 +193,7 @@ describe('ContentFormattingService', () => {
       const result = service.getMessageContent(htmlBody, textBody, messageId);
       
       expect(result).toContain('<!DOCTYPE html>');
-      expect(result).toContain('<pre>Text content</pre>');
+      expect(result).toContain('Text content');
       expect(contentTransformationService.transformContent).not.toHaveBeenCalled();
     });
 
@@ -218,19 +228,23 @@ describe('ContentFormattingService', () => {
     it('should include proper CSS reset and base styles', () => {
       themeService.isDarkTheme.and.returnValue(false);
       const result = service.formatMessageContent('<p>Test</p>', 'text/html', 'msg123');
-      
-      expect(result).toContain("font-family: 'Plus Jakarta Sans'");
-      expect(result).toContain('line-height: 1.6');
+
       expect(result).toContain('margin: 0');
       expect(result).toContain('padding: 4px');
+      expect(result).toContain('box-sizing: border-box');
+      // issue #154: long unbroken strings must not blow out the layout
+      expect(result).toContain('overflow-wrap: break-word');
     });
 
-    it('should include table styling', () => {
+    it('should not impose table styling on email layouts', () => {
       themeService.isDarkTheme.and.returnValue(false);
       const result = service.formatMessageContent('<p>Test</p>', 'text/html', 'msg123');
-      
-      expect(result).toContain('border-collapse: collapse');
-      expect(result).toContain('border: 1px solid');
+
+      // emails are built from tables; borders/padding/collapse of our own
+      // would visibly break their design
+      expect(result).not.toContain('border: 1px solid');
+      expect(result).not.toContain('border-collapse');
+      expect(result).not.toContain("font-family: 'Plus Jakarta Sans'");
     });
 
     it('should include image styling', () => {
@@ -245,7 +259,10 @@ describe('ContentFormattingService', () => {
       themeService.isDarkTheme.and.returnValue(false);
       const result = service.formatMessageContent('Text content', 'text/plain', 'msg123');
       
-      expect(result).toContain('font-family: \'Courier New\', monospace');
+      const mono = getComputedStyle(document.body).getPropertyValue('--pc-font-mono').trim()
+        || `'Courier New', monospace`;
+
+      expect(result).toContain(`font-family: ${mono}`);
       expect(result).toContain('white-space: pre-wrap');
       expect(result).toContain('word-wrap: break-word');
     });

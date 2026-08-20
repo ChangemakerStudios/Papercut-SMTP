@@ -43,6 +43,13 @@ namespace Papercut.Message.Helpers;
 public static class HtmlMessageRenderer
 {
     /// <summary>
+    ///     Marks output converted from a plain-text part. A host can use it to
+    ///     decide whether the content has a design of its own to preserve, or
+    ///     whether it should be styled to match the surrounding application.
+    /// </summary>
+    public const string PlainTextMarkerClass = "papercut-plain-text";
+
+    /// <summary>
     ///     Elements dropped entirely, along with their content. style is
     ///     deliberately kept -- email layout (MJML and friends) depends on it,
     ///     and it is inert inside a script-less frame.
@@ -212,7 +219,17 @@ public static class HtmlMessageRenderer
             }
             else
             {
-                _body = new TextToHtml().Convert(entity.Text);
+                // <pre> matches the desktop's TextToHtmlFormatWrapper so plain
+                // text keeps its spacing and monospace rendering. The wrapper's
+                // IE-only bits (X-UA-Compatible) are deliberately dropped, and
+                // the host supplies the font/margins.
+                _body = new TextToHtml
+                {
+                    Header = $"<pre class=\"{PlainTextMarkerClass}\">",
+                    HeaderFormat = HeaderFooterFormat.Html,
+                    Footer = "</pre>",
+                    FooterFormat = HeaderFooterFormat.Html
+                }.Convert(entity.Text);
             }
         }
 
