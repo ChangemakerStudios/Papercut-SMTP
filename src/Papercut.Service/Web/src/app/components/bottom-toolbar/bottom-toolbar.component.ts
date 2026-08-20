@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { LucideAngularModule, Forward, Trash2, Trash } from 'lucide-angular';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-bottom-toolbar',
@@ -160,29 +161,43 @@ export class BottomToolbarComponent {
   @Output() deleteSelected = new EventEmitter<void>();
   @Output() deleteAll = new EventEmitter<void>();
 
+  constructor(private confirmService: ConfirmService) {}
+
   onForward(): void {
     this.forward.emit();
   }
 
   onDeleteSelected(): void {
-    if (this.selectedMessageCount > 0) {
-      const message = this.selectedMessageCount === 1
-        ? 'Are you sure you want to delete this message?'
-        : `Are you sure you want to delete these ${this.selectedMessageCount} messages?`;
+    if (this.selectedMessageCount === 0) return;
 
-      if (confirm(message)) {
-        this.deleteSelected.emit();
-      }
-    }
+    const one = this.selectedMessageCount === 1;
+
+    this.confirmService.confirm({
+      title: one ? 'Delete Message' : 'Delete Messages',
+      message: one
+        ? 'Delete this message?'
+        : `Delete these ${this.selectedMessageCount} messages?`,
+      detail: 'The .eml file will be removed from the message folder.',
+      confirmLabel: one ? 'Delete' : `Delete ${this.selectedMessageCount}`,
+      danger: true
+    }).subscribe(confirmed => {
+      if (confirmed) this.deleteSelected.emit();
+    });
   }
 
   onDeleteAll(): void {
-    if (this.totalMessageCount > 0) {
-      const message = `Are you sure you want to delete all ${this.totalMessageCount} messages? This action cannot be undone.`;
+    if (this.totalMessageCount === 0) return;
 
-      if (confirm(message)) {
-        this.deleteAll.emit();
-      }
-    }
+    this.confirmService.confirm({
+      title: 'Delete All Messages',
+      message: `Delete all ${this.totalMessageCount} messages?`,
+      detail: 'Every .eml file in the message folder will be removed. This cannot be undone.',
+      confirmLabel: 'Delete All',
+      danger: true,
+      // nothing here is recoverable -- do not let a reflexive Enter empty the inbox
+      initialFocus: 'cancel'
+    }).subscribe(confirmed => {
+      if (confirmed) this.deleteAll.emit();
+    });
   }
 }
