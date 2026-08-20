@@ -79,10 +79,10 @@ import { Observable, map } from 'rxjs';
             <span>{{ mcpCopied ? 'Copied!' : 'MCP' }}</span>
           </button>
 
-          <span class="nav-divider"></span>
+          <span class="nav-divider desktop-only"></span>
 
           <!-- Theme accent picker -->
-          <button class="papercut-nav-btn"
+          <button class="papercut-nav-btn desktop-only"
                   [matMenuTriggerFor]="accentMenu"
                   matTooltip="Theme accent">
             <lucide-icon [img]="icons.Palette" [size]="15"></lucide-icon>
@@ -101,7 +101,7 @@ import { Observable, map } from 'rxjs';
           </mat-menu>
 
           <!-- Theme: System / Light / Dark -->
-          <button class="papercut-nav-btn"
+          <button class="papercut-nav-btn desktop-only"
                   [matMenuTriggerFor]="themeMenu"
                   matTooltip="Theme">
             <lucide-icon [img]="currentThemeIcon()" [size]="15"></lucide-icon>
@@ -123,6 +123,14 @@ import { Observable, map } from 'rxjs';
     </nav>
   `,
   styles: [`
+    /* Theme and accent are chrome, not tools -- on a narrow window the nav bar
+       needs the room, and both are reachable from Options anyway. */
+    @media (max-width: 768px) {
+      .desktop-only {
+        display: none !important;
+      }
+    }
+
     .nav-divider {
       width: 1px;
       height: 20px;

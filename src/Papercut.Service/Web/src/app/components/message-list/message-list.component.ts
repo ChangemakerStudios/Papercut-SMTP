@@ -19,6 +19,8 @@ import { MessageStateService } from '../../services/message-state.service';
 import { UserSettingsService } from '../../services/user-settings.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { LucideAngularModule, PanelLeftClose, PanelLeftOpen } from 'lucide-angular';
 import { ResizerComponent } from '../resizer/resizer.component';
 import { MessageListItemComponent } from './message-list-item.component';
 import { MessageListEmptyStateComponent } from './message-list-empty-state.component';
@@ -35,6 +37,8 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
 
     MatChipsModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
+    LucideAngularModule,
     ScrollingModule,
     ResizerComponent,
     MessageListItemComponent,
@@ -44,8 +48,27 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
   template: `
     <div class="flex h-full bg-gray-100 dark:bg-gray-900 transition-colors duration-300" 
          [class.dragging]="isDragging">
+      <!-- Collapsed rail: all that is left of the list, and the way back to it.
+           The whole strip is the target -- a 26px icon is a silly thing to aim
+           at when there is a full-height bar sitting right there. -->
+      <div class="list-rail" *ngIf="isListCollapsed"
+           role="button"
+           tabindex="0"
+           aria-label="Show the message list"
+           matTooltip="Show the message list"
+           matTooltipPosition="right"
+           (click)="toggleListCollapsed()"
+           (keydown.enter)="toggleListCollapsed()"
+           (keydown.space)="toggleListCollapsed(); $event.preventDefault()">
+        <span class="rail-btn">
+          <lucide-icon [img]="icons.PanelLeftOpen" [size]="16"></lucide-icon>
+        </span>
+        <span class="rail-count">{{ totalCount }}</span>
+      </div>
+
       <!-- Message List Panel -->
       <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel"
+           *ngIf="!isListCollapsed"
            [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
         <!-- Count bar -->
         <div class="list-count-bar">
@@ -56,6 +79,11 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
             {{ allMessages.length }} loaded
           </span>
           <mat-spinner *ngIf="isLoading || isLoadingMore" diameter="12" strokeWidth="2"></mat-spinner>
+
+          <button class="rail-btn count-bar-btn" (click)="toggleListCollapsed()"
+                  matTooltip="Collapse the message list" matTooltipPosition="left">
+            <lucide-icon [img]="icons.PanelLeftClose" [size]="15"></lucide-icon>
+          </button>
         </div>
 
         <!-- No Messages Placeholder -->
@@ -82,7 +110,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
       </div>
 
       <!-- Resizer Handle -->
-      <div class="flex-shrink-0">
+      <div class="flex-shrink-0 list-resizer" *ngIf="!isListCollapsed">
         <app-resizer 
           [currentWidth]="messageListWidth"
           [minWidth]="200"
@@ -95,7 +123,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
       </div>
 
       <!-- Message Detail Panel -->
-      <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0 relative">
+      <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0 relative message-detail-panel">
         <!-- No loader here: the detail pane owns the one loading indicator,
              and it lifts when the body is actually on screen -->
         <router-outlet></router-outlet>
@@ -105,6 +133,15 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     </div>
   `,
   styles: [`
+    /* An Angular host defaults to display: inline, which left the layout below
+       it without a definite height to stretch against -- the panes were sized
+       by their content instead of filling the window (most visible at narrow
+       widths, where the list stopped after three rows). */
+    :host {
+      display: block;
+      height: 100%;
+    }
+
     /* Scroll Container with flexible height */
     .virtual-scroll-container {
       flex: 1;
@@ -159,14 +196,100 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
       min-height: 0;
     }
 
-    /* Responsive design */
+    /* The panes are laid out in a flex row, but stretch does not take here --
+       align-items/align-self: stretch both measured as no-ops, while an explicit
+       percentage height works. Without this the list stopped at its content
+       height (three rows and then a void) instead of filling the window. */
+    .message-list-panel,
+    .message-detail-panel,
+    .list-rail {
+      height: 100%;
+    }
+
+    /* Collapsed rail: narrow enough to be out of the way, wide enough to be an
+       obvious way back. Doubles as the mobile "back to the list" control. */
+    .list-rail {
+      flex: 0 0 34px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      border-right: 1px solid var(--pc-border);
+      background: var(--pc-surface-2);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.12s ease;
+    }
+
+    .list-rail:hover {
+      background: var(--pc-hover);
+    }
+
+    .list-rail:hover .rail-btn,
+    .list-rail:hover .rail-count {
+      color: var(--pc-accent-text);
+    }
+
+    .list-rail:focus-visible {
+      outline: 2px solid var(--pc-accent);
+      outline-offset: -2px;
+    }
+
+    .rail-count {
+      font-size: var(--pc-text-micro);
+      font-weight: 600;
+      color: var(--pc-faint);
+      writing-mode: vertical-rl;
+      user-select: none;
+    }
+
+    .rail-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--pc-muted);
+      cursor: pointer;
+      transition: background-color 0.12s ease, color 0.12s ease;
+    }
+
+    button.rail-btn:hover {
+      background: var(--pc-hover);
+      color: var(--pc-accent-text);
+    }
+
+    .count-bar-btn {
+      width: 22px;
+      height: 22px;
+      margin-left: auto;
+      margin-right: -4px;
+    }
+
+    /* Responsive: below this there is only room for one pane, so the list and
+       the message take turns. Opening a message collapses the list to its rail
+       (see selectMessage), and the rail is how you get back. */
     @media (max-width: 768px) {
       .message-list-panel {
-        flex: 0 0 100% !important;
+        flex: 1 1 auto !important;
+        min-width: 0;
       }
-      
+
+      .list-resizer {
+        display: none;
+      }
+
+      /* with the list expanded there is no room left for the message */
       .message-detail-panel {
         display: none;
+      }
+
+      .list-rail ~ .message-detail-panel {
+        display: flex;
       }
     }
   `]
@@ -203,7 +326,17 @@ export class MessageListComponent implements OnInit, OnDestroy {
   isLoadingMore = false;
 
   // Resizer properties
+  protected readonly icons = { PanelLeftClose, PanelLeftOpen };
+
   messageListWidth = 400; // Default width
+
+  /** Collapsed to the rail, giving the message the full window. */
+  isListCollapsed = false;
+
+  private static readonly CollapsedKey = 'papercut-message-list-collapsed';
+
+  /** Below this the two panes cannot share the window -- see the media query. */
+  private static readonly SinglePaneWidth = 768;
   isDragging = false;
   isLoading = false;
 
@@ -237,6 +370,16 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.updateSelectedMessageFromUrl();
 
     // Note: Resizer component handles localStorage loading automatically
+    this.isListCollapsed = localStorage.getItem(MessageListComponent.CollapsedKey) === 'true';
+  }
+
+  toggleListCollapsed(): void {
+    this.isListCollapsed = !this.isListCollapsed;
+    localStorage.setItem(MessageListComponent.CollapsedKey, String(this.isListCollapsed));
+  }
+
+  private get isSinglePane(): boolean {
+    return window.innerWidth <= MessageListComponent.SinglePaneWidth;
   }
 
   ngOnInit(): void {
@@ -561,6 +704,13 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.loggingService.debug('Selecting message', { messageId });
     this.selectedMessageId = messageId;
     this.markRead(messageId);
+
+    // One pane at a time on a narrow window: opening a message hands the window
+    // over to it, and the rail left behind is how you get back to the list.
+    // Not persisted -- widening the window should not leave it collapsed.
+    if (this.isSinglePane) {
+      this.isListCollapsed = true;
+    }
     this.router.navigate(['message', messageId], {
       relativeTo: this.route,
       queryParamsHandling: 'preserve'
