@@ -40,6 +40,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   private visibilityChangeListener?: () => void;
   private intersectionObserver?: IntersectionObserver;
+  private hasWrittenContent = false;
 
   constructor(
     private ngZone: NgZone,
@@ -61,25 +62,23 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // Update content when input changes
+    // Write as soon as the content arrives -- deferring by a frame here was
+    // visible as a flash of the loading placeholder on every message click
     if (changes['content'] && !changes['content'].firstChange) {
-      setTimeout(() => {
-        this.updateContent();
-      }, 0);
+      this.updateContent();
     }
   }
 
   private updateContent() {
-    if (this.iframe && this.iframe.nativeElement) {
-      const contentToSet = this.content || this.loadingContent;
-      
-      // Extra safety check to ensure iframe is still in DOM
-      if (this.iframe.nativeElement.isConnected) {
-        this.setIframeContent(this.iframe.nativeElement, contentToSet);
-      } else {
-        // Iframe not connected to DOM, skipping content update
-      }
-    }
+    if (!this.iframe?.nativeElement?.isConnected) return;
+
+    // While the next message's content is in flight the host passes empty
+    // content. Rewriting the frame with a placeholder then would throw away
+    // what is already rendered for no benefit -- the caller covers the frame
+    // while it loads -- so only the first write falls back to the placeholder.
+    if (!this.content && this.hasWrittenContent) return;
+
+    this.setIframeContent(this.iframe.nativeElement, this.content || this.loadingContent);
   }
 
   private setIframeContent(iframe: HTMLIFrameElement, content: string) {
@@ -114,6 +113,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
       doc.close();
 
       this.attachLinkHandler(doc);
+      this.hasWrittenContent = true;
       return true;
     } catch {
       return false;
@@ -171,10 +171,10 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
       this.ngZone.run(() => {
         entries.forEach(entry => {
           if (entry.isIntersecting && entry.intersectionRatio > 0) {
-            // iframe became visible -- refresh content
-            setTimeout(() => {
-              this.updateContent();
-            }, 100); // Small delay to ensure DOM is ready
+            // Becoming visible only needs a rewrite if the frame actually lost
+            // its content (tab switch); rewriting unconditionally on a timer
+            // delayed every first paint by that timer's length
+            this.checkAndRefreshContent();
           }
         });
       });
@@ -189,9 +189,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.visibilityChangeListener = () => {
       if (!document.hidden && this.iframe) {
         // document became visible -- check content
-        setTimeout(() => {
-          this.checkAndRefreshContent();
-        }, 200);
+        this.checkAndRefreshContent();
       }
     };
 

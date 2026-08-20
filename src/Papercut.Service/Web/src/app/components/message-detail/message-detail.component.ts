@@ -53,20 +53,20 @@ interface MessageViewData {
         <!-- Labeled header fields (desktop-style From/To/Date/Subject rows) -->
         <app-message-header [message]="messageData"></app-message-header>
 
-        <!-- Content Section with Tabs -->
-        <div class="flex-1 overflow-hidden bg-surface message-tabs">
+        <!-- Content Section with Tabs.
+             The tab group and its iframe are deliberately NOT behind an *ngIf:
+             tearing them down per message meant rebuilding Material's tab
+             group and a fresh iframe on every click, which is most of the
+             click-to-render cost. They stay mounted and the content swaps. -->
+        <div class="flex-1 overflow-hidden bg-surface message-tabs relative">
           <div class="h-full">
-            <!-- Loading State for Tabs -->
-            <div *ngIf="messageData.isLoadingDetail" class="h-full flex items-center justify-center">
-              <div class="text-center p-8">
-                <mat-spinner diameter="48" strokeWidth="4" class="mx-auto mb-4"></mat-spinner>
-                <h3 class="text-lg text-muted mb-2">Loading message content...</h3>
-                <p class="text-faint">Please wait while we fetch the message details.</p>
-              </div>
+            <!-- Loading veil over the (still mounted) tabs -->
+            <div *ngIf="messageData.isLoadingDetail" class="loading-veil">
+              <mat-spinner diameter="36" strokeWidth="3"></mat-spinner>
             </div>
 
             <!-- Tabs Content -->
-            <mat-tab-group *ngIf="!messageData.isLoadingDetail && messageData.detail" class="h-full" dynamicHeight="false" animationDuration="0ms"
+            <mat-tab-group class="h-full" dynamicHeight="false" animationDuration="0ms"
                            [selectedIndex]="selectedTabIndex"
                            (selectedIndexChange)="selectedTabIndex = $event">
 
@@ -85,9 +85,9 @@ interface MessageViewData {
                     <span class="attachments-label">Attachments</span>
                     <div class="attachments-chips">
                       <button class="attachment-chip"
-                              *ngFor="let att of messageData.detail!.attachments"
+                              *ngFor="let att of messageData.detail?.attachments"
                               [appDownloadButton]="'attach-' + (att.id || att.index)"
-                              [downloadUrl]="buildAttachmentUrl(messageData.detail!, att)"
+                              [downloadUrl]="buildAttachmentUrl(messageData.detail, att)"
                               [downloadFilename]="att.fileName || 'attachment-' + (att.index ?? 0)"
                               [title]="'Download ' + (att.fileName || att.mediaType || 'attachment')">
                         <lucide-icon [img]="icons.Paperclip" [size]="14"></lucide-icon>
@@ -120,7 +120,7 @@ interface MessageViewData {
               </mat-tab>
 
               <!-- Sections Tab -->
-              <mat-tab label="Sections" [disabled]="!messageData.detail.sections?.length">
+              <mat-tab label="Sections" [disabled]="!messageData.detail?.sections?.length">
                 <app-message-sections [message]="messageData.detail"></app-message-sections>
               </mat-tab>
 
@@ -152,6 +152,16 @@ interface MessageViewData {
     iframe {
       border: none;
       background: white;
+    }
+
+    .loading-veil {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--pc-surface);
     }
 
     .loading-mail-icon {
@@ -295,7 +305,11 @@ export class MessageDetailComponent {
               detail,
               html: rendered.html,
               htmlFailed: rendered.failed,
-              isLoadingDetail: detail === null
+              // hold the view until the body is ready too: detail and html are
+              // requested together and land within a few ms of each other, so
+              // waiting gives one clean transition instead of spinner -> tabs
+              // -> "Loading..." placeholder -> content
+              isLoadingDetail: detail === null || (rendered.html === null && !rendered.failed)
             }))
           );
         }
@@ -317,8 +331,10 @@ export class MessageDetailComponent {
     });
   }
 
-  buildAttachmentUrl(message: DetailDto, att: EmailSectionDto): string {
-    const encodedMessageId = encodeURIComponent(message.id!);
+  buildAttachmentUrl(message: DetailDto | null, att: EmailSectionDto): string {
+    if (!message?.id) return '';
+
+    const encodedMessageId = encodeURIComponent(message.id);
 
     if (att.id) {
       return `/api/messages/${encodedMessageId}/contents/${encodeURIComponent(att.id)}`;
