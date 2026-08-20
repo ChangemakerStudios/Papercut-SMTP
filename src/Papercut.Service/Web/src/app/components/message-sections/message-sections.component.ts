@@ -39,8 +39,16 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
     <div class="h-full overflow-auto bg-surface">
       <div class="p-4 space-y-3">
         <div *ngFor="let section of getMessageSections(); let i = index" class="section-item">
-          <!-- Section Header -->
-          <div class="section-header">
+          <!-- Section Header. The whole row toggles an expandable section --
+               a 30px chevron is a needlessly small target for a full-width row. -->
+          <div class="section-header"
+               [class.is-expandable]="shouldShowViewButton(section)"
+               [attr.role]="shouldShowViewButton(section) ? 'button' : null"
+               [attr.tabindex]="shouldShowViewButton(section) ? 0 : null"
+               [attr.aria-expanded]="shouldShowViewButton(section) ? isViewingSection(i) : null"
+               (click)="onHeaderActivate(section, i)"
+               (keydown.enter)="onHeaderActivate(section, i)"
+               (keydown.space)="onHeaderActivate(section, i); $event.preventDefault()">
             <lucide-icon [img]="getSectionIcon(section.fileName || section.mediaType || 'Unknown')"
                          [size]="16" class="text-muted"></lucide-icon>
             <div class="flex-1 min-w-0">
@@ -57,7 +65,7 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
               <button
                 *ngIf="shouldShowViewButton(section)"
                 class="section-action-btn"
-                (click)="toggleSectionView(section, i)"
+                (click)="toggleSectionView(section, i); $event.stopPropagation()"
                 [title]="isViewingSection(i) ? 'Collapse content' : 'Expand content'">
                 <lucide-icon [img]="isViewingSection(i) ? sectionIcons.ChevronUp : sectionIcons.ChevronDown" [size]="16"></lucide-icon>
               </button>
@@ -65,6 +73,7 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
               <button
                 *ngIf="shouldShowDownloadButton(section)"
                 class="section-action-btn"
+                (click)="$event.stopPropagation()"
                 [appDownloadButton]="getDownloadButtonId(section, i)"
                 [downloadUrl]="buildSectionUrl(section, i)"
                 [downloadFilename]="section.fileName || 'section-' + (section.id || i)"
@@ -256,6 +265,13 @@ export class MessageSectionsComponent implements OnChanges {
 
   isSectionLoading(index: number): boolean {
     return this.loadingSections.has(index);
+  }
+
+  /** Row-level activation: only expandable sections respond. */
+  onHeaderActivate(section: EmailSectionDto, index: number): void {
+    if (!this.shouldShowViewButton(section)) return;
+
+    this.toggleSectionView(section, index);
   }
 
   shouldShowViewButton(section: EmailSectionDto): boolean {

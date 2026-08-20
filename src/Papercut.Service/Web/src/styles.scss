@@ -551,6 +551,21 @@ app-message-detail {
   border-bottom: 1px solid var(--pc-border);
 }
 
+/* Rows that expand are clickable end to end, so they have to look it */
+.section-header.is-expandable {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.section-header.is-expandable:hover {
+  background-color: var(--pc-hover);
+}
+
+.section-header.is-expandable:focus-visible {
+  outline: 2px solid var(--pc-accent);
+  outline-offset: -2px;
+}
+
 .section-type {
   font-weight: 600;
   color: var(--pc-ink-strong);
