@@ -122,15 +122,27 @@ internal class PapercutServiceStartup
 
         app.UseCors();
 
+        // Request traffic is background noise for a mail viewer: a single click
+        // fetches the ref, the detail and the rendered body, so logging each one
+        // at INF buried the events people actually open the log for (messages
+        // received, rules run, failures). Successful requests go to DBG, where
+        // the Log view's level picker can still bring them back.
         app.UseSerilogRequestLogging(
             options => options.GetLevel = (httpContext, _, ex) =>
-                ex != null || httpContext.Response.StatusCode >= 500
-                    ? Serilog.Events.LogEventLevel.Error
-                    // the web Log view polls this endpoint; logging each poll
-                    // at INF would fill the log with its own tailing
-                    : httpContext.Request.Path.StartsWithSegments("/api/logs")
-                        ? Serilog.Events.LogEventLevel.Verbose
-                        : Serilog.Events.LogEventLevel.Information);
+            {
+                if (ex != null || httpContext.Response.StatusCode >= 500)
+                    return Serilog.Events.LogEventLevel.Error;
+
+                if (httpContext.Response.StatusCode >= 400)
+                    return Serilog.Events.LogEventLevel.Warning;
+
+                // the web Log view polls this endpoint; even at DBG its own
+                // tailing would crowd out everything else
+                if (httpContext.Request.Path.StartsWithSegments("/api/logs"))
+                    return Serilog.Events.LogEventLevel.Verbose;
+
+                return Serilog.Events.LogEventLevel.Debug;
+            });
 
         var mcpEnabled = McpServerSettings.IsEnabled(
             app.Services.GetRequiredService<ISettingStore>(),
