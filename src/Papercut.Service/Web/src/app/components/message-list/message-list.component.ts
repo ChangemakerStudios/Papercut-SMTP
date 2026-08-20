@@ -1,5 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { Observable, finalize, filter, skip, Subject, takeUntil } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
@@ -20,7 +21,6 @@ import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { ResizerComponent } from '../resizer/resizer.component';
 import { MessageListItemComponent } from './message-list-item.component';
-import { MessageListHeaderComponent } from './message-list-header.component';
 import { MessageListEmptyStateComponent } from './message-list-empty-state.component';
 import { MessageListLoadingOverlayComponent } from './message-list-loading-overlay.component';
 import { MessageListNoSelectionComponent } from './message-list-no-selection.component';
@@ -39,7 +39,6 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     ScrollingModule,
     ResizerComponent,
     MessageListItemComponent,
-    MessageListHeaderComponent,
     MessageListEmptyStateComponent,
     MessageListLoadingOverlayComponent,
     MessageListNoSelectionComponent
@@ -48,37 +47,40 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     <div class="flex h-full bg-gray-100 dark:bg-gray-900 transition-colors duration-300" 
          [class.dragging]="isDragging">
       <!-- Message List Panel -->
-      <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel" 
+      <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel"
            [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
-        <!-- Paginated List -->
-        <div class="w-full overflow-auto virtual-scroll-container flex-1">
-          <!-- No Messages Placeholder -->
-          <app-message-list-empty-state *ngIf="!isLoading && allMessages.length === 0"></app-message-list-empty-state>
-          
-          <!-- Messages List -->
+        <!-- Count bar -->
+        <div class="list-count-bar">
+          <span class="list-count">
+            {{ totalCount }} {{ totalCount === 1 ? 'message' : 'messages' }}
+          </span>
+          <span class="list-loaded" *ngIf="allMessages.length < totalCount">
+            {{ allMessages.length }} loaded
+          </span>
+          <mat-spinner *ngIf="isLoading || isLoadingMore" diameter="12" strokeWidth="2"></mat-spinner>
+        </div>
+
+        <!-- No Messages Placeholder -->
+        <app-message-list-empty-state *ngIf="!isLoading && allMessages.length === 0"></app-message-list-empty-state>
+
+        <!-- Virtualized list: only the visible rows exist in the DOM, and the
+             next chunk loads as it comes into view -->
+        <cdk-virtual-scroll-viewport
+          *ngIf="allMessages.length > 0"
+          [itemSize]="messageRowHeight"
+          minBufferPx="600"
+          maxBufferPx="1200"
+          class="flex-1 w-full"
+          (scrolledIndexChange)="onScrolledIndexChange()">
           <app-message-list-item
-            *ngFor="let message of allMessages; trackBy: trackByMessageId"
+            *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
             [message]="message"
             [selected]="message.id === selectedMessageId"
-            [isLoading]="isLoading"
             [isLoadingDetail]="loadingMessageId === message.id"
             (select)="selectMessage(message.id!)"
             class="block w-full">
           </app-message-list-item>
-        </div>
-        
-        <!-- Pagination Bar -->
-        <app-message-list-header
-          [pageSize]="pageSize"
-          [pageStart]="pageStart"
-          [currentPage]="currentPage"
-          [totalPages]="totalPages"
-          [totalCount]="totalCount"
-          [pageSizeOptions]="pageSizeOptions"
-          [isLoading]="isLoading"
-          (pageSizeChange)="onPageSizeChange($event)"
-          (pageChange)="goToPage($event)">
-        </app-message-list-header>
+        </cdk-virtual-scroll-viewport>
       </div>
 
       <!-- Resizer Handle -->
@@ -132,6 +134,31 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
       min-width: 0;
     }
 
+    .list-count-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-bottom: 1px solid var(--pc-border);
+      background: var(--pc-surface-2);
+      font-size: 11.5px;
+      color: var(--pc-muted);
+    }
+
+    .list-count {
+      font-weight: 600;
+      color: var(--pc-ink);
+    }
+
+    .list-loaded {
+      color: var(--pc-faint);
+    }
+
+    cdk-virtual-scroll-viewport {
+      min-height: 0;
+    }
+
     /* Responsive design */
     @media (max-width: 768px) {
       .message-list-panel {
@@ -151,15 +178,18 @@ export class MessageListComponent implements OnInit, OnDestroy {
   selectedMessageId: string | null = null;
   private loadingTimeout: any = null;
   private destroy$ = new Subject<void>();
-  
-  // Pagination state
+
+  @ViewChild(CdkVirtualScrollViewport) viewport?: CdkVirtualScrollViewport;
+
+  /** Must match the fixed .msg-item height for virtual scrolling to line up */
+  readonly messageRowHeight = 76;
+
+  /** How many messages are fetched per trip to the server */
+  private readonly chunkSize = 100;
+
   allMessages: RefDto[] = [];
-  pageSize = 10;
-  pageStart = 0;
-  currentPage = 1;
-  totalPages = 1;
   totalCount = 0;
-  pageSizeOptions: number[] = [10, 25, 50, 100];
+  isLoadingMore = false;
 
   // Resizer properties
   messageListWidth = 400; // Default width
@@ -181,17 +211,10 @@ export class MessageListComponent implements OnInit, OnDestroy {
     private userSettingsService: UserSettingsService,
     private dialog: MatDialog
   ) {
-    // Load current page when query params change
-    this.route.queryParams
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        const limit = parseInt(params['limit'] || '10', 10);
-        const start = parseInt(params['start'] || '0', 10);
-        this.pageSize = limit;
-        this.pageStart = start;
-        this.currentPage = Math.floor(start / limit) + 1;
-        this.loadPage(limit, start);
-      });
+    // Reload when the sort order preference changes
+    this.userSettingsService.sortOrder$
+      .pipe(skip(1), takeUntil(this.destroy$))
+      .subscribe(() => this.loadFirstChunk());
 
     // Listen for route changes to detect when a message is selected via URL
     this.router.events.pipe(
@@ -208,6 +231,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadFirstChunk();
+
     // Start SignalR connection
     this.signalRService.start();
 
@@ -286,16 +311,52 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.messageStateService.setCurrentMessageId(this.selectedMessageId);
   }
 
-  private loadPage(limit: number, start: number): void {
+  /** Loads the first chunk, replacing whatever is in the list. */
+  private loadFirstChunk(): void {
     this.isLoading = true;
-    this.messageApiService.getMessages(limit, start, this.userSettingsService.getSortOrder())
+
+    this.fetch(0, this.chunkSize)
       .pipe(finalize(() => { this.isLoading = false; }))
-      .subscribe((response: GetMessagesResponse) => {
+      .subscribe(response => {
         this.allMessages = response.messages;
-        this.totalCount = response.totalMessageCount;
-        this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
-        this.messageStateService.setTotalCount(this.totalCount);
+        this.setTotalCount(response.totalMessageCount);
       });
+  }
+
+  /** Appends the next chunk as the user scrolls toward the end. */
+  private loadNextChunk(): void {
+    if (this.isLoadingMore || this.allMessages.length >= this.totalCount) return;
+
+    this.isLoadingMore = true;
+
+    this.fetch(this.allMessages.length, this.chunkSize)
+      .pipe(finalize(() => { this.isLoadingMore = false; }))
+      .subscribe(response => {
+        // guard against duplicates if the list shifted while loading
+        const known = new Set(this.allMessages.map(m => m.id));
+        const fresh = response.messages.filter(m => !known.has(m.id));
+
+        this.allMessages = [...this.allMessages, ...fresh];
+        this.setTotalCount(response.totalMessageCount);
+      });
+  }
+
+  onScrolledIndexChange(): void {
+    const end = this.viewport?.getRenderedRange().end ?? 0;
+
+    // start the next chunk a screenful before the end so scrolling stays smooth
+    if (end >= this.allMessages.length - 20) {
+      this.loadNextChunk();
+    }
+  }
+
+  private fetch(start: number, limit: number): Observable<GetMessagesResponse> {
+    return this.messageApiService.getMessages(limit, start, this.userSettingsService.getSortOrder());
+  }
+
+  private setTotalCount(total: number): void {
+    this.totalCount = total;
+    this.messageStateService.setTotalCount(total);
   }
 
   private handleNewMessage(newMessage: RefDto): void {
@@ -322,37 +383,37 @@ export class MessageListComponent implements OnInit, OnDestroy {
       );
     }
 
-    // If we're on the first page, add the new message to the top of the list
-    if (this.pageStart === 0) {
-      // Check if message already exists to avoid duplicates
-      const existingIndex = this.allMessages.findIndex(msg => msg.id === newMessage.id);
-      
-      if (existingIndex === -1) {
-        // Add new message to the beginning of the list
-        this.allMessages.unshift(newMessage);
-        
-        // If we've exceeded the page size, remove the last item
-        if (this.allMessages.length > this.pageSize) {
-          this.allMessages.pop();
+    const alreadyListed = this.allMessages.some(msg => msg.id === newMessage.id);
+
+    if (!alreadyListed) {
+      // newest first is the default order, so a new message goes on top;
+      // ascending puts it at the end, but only once everything is loaded
+      if (this.userSettingsService.getSortOrder() === 'asc') {
+        if (this.allMessages.length >= this.totalCount) {
+          this.allMessages = [...this.allMessages, newMessage];
         }
-        
-        // Update total count
-        this.totalCount++;
-        this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
-        
-        this.loggingService.debug('Added new message to list', { messageId: newMessage.id });
+      } else {
+        this.allMessages = [newMessage, ...this.allMessages];
       }
-    } else {
-      // If we're not on the first page, just update the total count
-      // The user will see the new message when they navigate back to page 1
-      this.totalCount++;
-      this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+
+      this.loggingService.debug('Added new message to list', { messageId: newMessage.id });
     }
+
+    this.setTotalCount(this.totalCount + 1);
   }
 
+  /** Reloads everything currently loaded, keeping the user's scroll depth. */
   private refreshCurrentPage(): void {
-    // Refresh the current page without changing pagination state
-    this.loadPage(this.pageSize, this.pageStart);
+    const loaded = Math.max(this.chunkSize, this.allMessages.length);
+
+    this.isLoading = true;
+
+    this.fetch(0, loaded)
+      .pipe(finalize(() => { this.isLoading = false; }))
+      .subscribe(response => {
+        this.allMessages = response.messages;
+        this.setTotalCount(response.totalMessageCount);
+      });
   }
 
   trackByMessageId(index: number, message: RefDto): string {
@@ -363,15 +424,6 @@ export class MessageListComponent implements OnInit, OnDestroy {
     // A dialog (log viewer, options, rules) would cover the navigation —
     // viewing a message from a notification should bring it into view
     this.dialog.closeAll();
-
-    // Navigate to the first page if not already there
-    if (this.pageStart !== 0) {
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { limit: this.pageSize, start: 0 },
-        queryParamsHandling: 'merge'
-      });
-    }
 
     // Navigate to the message detail (route is /message/:id)
     this.router.navigate(['/message', messageId], { queryParamsHandling: 'preserve' });
@@ -416,22 +468,6 @@ export class MessageListComponent implements OnInit, OnDestroy {
   // Resizer event handlers
   onWidthChange(width: number): void {
     this.messageListWidth = width;
-  }
-
-  // Pagination actions
-  onPageSizeChange(size: number): void {
-    this.pageSize = Number(size) || 10;
-    this.goToPage(1);
-  }
-
-  goToPage(page: number): void {
-    const safePage = Math.min(Math.max(1, page), this.totalPages || 1);
-    const start = (safePage - 1) * this.pageSize;
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { limit: this.pageSize, start },
-      queryParamsHandling: 'merge'
-    });
   }
 
   onDraggingChange(isDragging: boolean): void {

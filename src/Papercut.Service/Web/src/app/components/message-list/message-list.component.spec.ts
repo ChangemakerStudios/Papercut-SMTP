@@ -150,8 +150,7 @@ describe('MessageListComponent', () => {
     it('should initialize with default values', () => {
       expect(component.allMessages).toEqual([]);
       expect(component.isLoading).toBe(false);
-      expect(component.currentPage).toBe(1);
-      expect(component.pageSize).toBe(10);
+      expect(component.totalCount).toBe(0);
       expect(component.messageListWidth).toBe(400);
     });
 
@@ -214,55 +213,6 @@ describe('MessageListComponent', () => {
       expect(component.isLoading).toBe(false);
       expect(component.allMessages).toEqual([]);
     }));
-  });
-
-  describe('Pagination', () => {
-    beforeEach(() => {
-      messageService.getMessages.and.returnValue(of(mockGetMessagesResponse));
-      // Simulate initial load
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
-      fixture.detectChanges();
-    });
-
-    it('should calculate total pages correctly', () => {
-      expect(component.totalPages).toBe(1); // 3 messages / 10 per page = 1 page
-    });
-
-    it('should change page size', fakeAsync(() => {
-      const newPageSize = 5;
-      messageService.getMessages.and.returnValue(of({
-        ...mockGetMessagesResponse,
-        messages: mockMessages.slice(0, newPageSize)
-      }));
-      
-      component.onPageSizeChange(newPageSize);
-      tick();
-      
-      expect(component.pageSize).toBe(newPageSize);
-    }));
-
-    it('should navigate to specific page', fakeAsync(() => {
-      const targetPage = 1;
-      messageService.getMessages.and.returnValue(of({
-        ...mockGetMessagesResponse,
-        messages: []
-      }));
-      
-      component.goToPage(targetPage);
-      tick();
-      
-      expect(component.currentPage).toBe(targetPage);
-    }));
-
-    it('should not navigate to invalid page', () => {
-      const invalidPage = -1;
-      const originalPage = component.currentPage;
-      
-      component.goToPage(invalidPage);
-      
-      expect(component.currentPage).toBe(originalPage);
-    });
   });
 
   describe('Message Selection', () => {

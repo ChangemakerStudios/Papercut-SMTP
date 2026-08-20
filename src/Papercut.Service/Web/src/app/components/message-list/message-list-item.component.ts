@@ -53,13 +53,18 @@ import { RefDto } from 'src/app/models';
       box-sizing: border-box;
     }
 
+    /* fixed height: must stay in step with MessageListComponent's
+       messageRowHeight, which drives the virtual scroll item size */
     .msg-item {
+      height: 76px;
+      box-sizing: border-box;
       padding: 10px 14px;
       border-bottom: 1px solid var(--pc-border-soft);
       border-left: 3px solid transparent;
       background: var(--pc-surface);
       transition: background-color 0.12s ease;
       min-width: 0;
+      overflow: hidden;
     }
 
     .msg-item:hover {

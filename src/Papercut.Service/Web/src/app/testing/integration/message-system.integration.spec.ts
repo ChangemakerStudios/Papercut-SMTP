@@ -93,12 +93,11 @@ describe('Message System Integration', () => {
       const component = messageListFixture.componentInstance;
       
       // Simulate route params change to trigger loading
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
+      messageListFixture.detectChanges();
       tick();
       
       // Verify the mock API service was called
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc');
       
       // Verify component state
       expect(component.allMessages).toEqual(mockMessages);
@@ -118,73 +117,38 @@ describe('Message System Integration', () => {
       const component = messageListFixture.componentInstance;
       
       // Load initial messages
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
+      messageListFixture.detectChanges();
       tick();
       
       // Verify mock API service was called
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc');
       
       // Test that the component can handle route parameter changes for pagination
       // This is what the component is actually designed to do
-      expect(component.pageSize).toBe(10);
-      expect(component.pageStart).toBe(0);
-      expect(component.currentPage).toBe(1);
+      expect(component.totalCount).toBe(mockMessages.length);
       
       // Clean up timers
       flush();
     }));
 
-    it('should handle pagination changes via route simulation', fakeAsync(() => {
+    it('should append the next chunk when scrolled toward the end', fakeAsync(() => {
       const component = messageListFixture.componentInstance;
-      
-      // Load initial messages
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
-      tick();
-      
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
-      
-      // Reset the spy to clear previous calls
-      messageApiService.getMessages.calls.reset();
-      
-      // Simulate changing page size by triggering route change
-      const newPageSize = 5;
-      const newRouteParams = { limit: newPageSize.toString(), start: '0' };
-      activatedRoute.queryParamsSubject.next(newRouteParams);
-      tick();
-      
-      // Verify the component responded to route change
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(newPageSize, 0, 'desc');
-      expect(component.pageSize).toBe(newPageSize);
-      
-      // Clean up timers
-      flush();
-    }));
 
-    it('should handle navigation between pages via route simulation', fakeAsync(() => {
-      const component = messageListFixture.componentInstance;
-      
-      // Load initial messages
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
+      messageListFixture.detectChanges();
       tick();
-      
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
-      
-      // Reset the spy to clear previous calls
+
+      const loaded = component.allMessages.length;
       messageApiService.getMessages.calls.reset();
-      
-      // Simulate navigating to second page by triggering route change
-      const secondPageParams = { limit: '10', start: '10' };
-      activatedRoute.queryParamsSubject.next(secondPageParams);
+
+      // pretend everything loaded so far is rendered and more remain
+      (component as any).totalCount = 500;
+      (component as any).viewport = { getRenderedRange: () => ({ start: 0, end: component.allMessages.length }) };
+
+      component.onScrolledIndexChange();
       tick();
-      
-      // Verify the component responded to route change
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 10, 'desc');
-      expect(component.currentPage).toBe(2);
-      
-      // Clean up timers
+
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, loaded, 'desc');
+
       flush();
     }));
   });
@@ -197,22 +161,24 @@ describe('Message System Integration', () => {
       // test that the component can recover from a failed state
       
       // First load messages successfully
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
+      messageListFixture.detectChanges();
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
+      messageListFixture.detectChanges();
+      tick();
+
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc');
       expect(component.isLoading).toBe(false);
       
       // Now test that the component can handle subsequent successful requests
       messageApiService.getMessages.calls.reset();
       
-      // Simulate another route change
-      const newRouteParams = { limit: '5', start: '0' };
-      activatedRoute.queryParamsSubject.next(newRouteParams);
+      // ngOnInit only runs once, so reload the way the app does (refresh /
+      // sort-order change both funnel through here)
+      (component as any).loadFirstChunk();
       tick();
-      
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(5, 0, 'desc');
+
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc');
       expect(component.isLoading).toBe(false);
       
       // Clean up timers
@@ -230,12 +196,11 @@ describe('Message System Integration', () => {
       messageApiService.getMessages.and.returnValue(of(malformedResponse));
       
       // Simulate route params change to trigger loading
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
+      messageListFixture.detectChanges();
       tick();
       
       // Verify the mock API service was called
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc');
       
       // Clean up timers
       flush();
@@ -247,11 +212,10 @@ describe('Message System Integration', () => {
       const component = messageListFixture.componentInstance;
       
       // Load initial messages
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
+      messageListFixture.detectChanges();
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc');
       
       // Verify data consistency
       expect(component.allMessages).toEqual(mockMessages);
@@ -267,11 +231,10 @@ describe('Message System Integration', () => {
       const component = messageListFixture.componentInstance;
       
       // Load initial messages
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
+      messageListFixture.detectChanges();
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc');
       
       // Verify loading state synchronization
       expect(component.isLoading).toBe(false);
@@ -285,25 +248,14 @@ describe('Message System Integration', () => {
       const component = messageListFixture.componentInstance;
       
       // Load initial messages
-      const routeParams = { limit: '10', start: '0' };
-      activatedRoute.queryParamsSubject.next(routeParams);
+      messageListFixture.detectChanges();
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(10, 0, 'desc');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc');
       
-      // Test that the component can handle pagination changes via route parameters
-      // This demonstrates the component's ability to respond to route changes
-      messageApiService.getMessages.calls.reset();
-      
-      // Simulate changing page size via route change
-      const newPageSize = 5;
-      const newRouteParams = { limit: newPageSize.toString(), start: '0' };
-      activatedRoute.queryParamsSubject.next(newRouteParams);
-      tick();
-      
-      // Verify the component responded to route change
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(newPageSize, 0, 'desc');
-      expect(component.pageSize).toBe(newPageSize);
+      // the list keeps its own state now rather than reading pagination
+      // out of the route
+      expect(component.allMessages.length).toBe(mockMessages.length);
       
       // Clean up timers
       flush();
