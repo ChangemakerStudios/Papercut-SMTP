@@ -76,9 +76,9 @@ export class AppComponent {
 
     this.messageApiService.deleteMessage(messageId).subscribe({
       next: () => {
-        this.router.navigate(['/'], { queryParamsHandling: 'preserve' }).then(() => {
-          this.messageState.requestRefresh();
-        });
+        // The list owns the selection, and it is the only thing that knows
+        // which message sat next to this one -- let it decide where to go
+        this.messageState.notifyDeleted(messageId);
       },
       error: (err) => {
         this.loggingService.error('Failed to delete message', err);

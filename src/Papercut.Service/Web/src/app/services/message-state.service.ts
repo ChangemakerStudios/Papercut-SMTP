@@ -19,6 +19,11 @@ export class MessageStateService {
   private refreshRequests = new Subject<void>();
   readonly refreshRequests$ = this.refreshRequests.asObservable();
 
+  /** Carries the id of a message that was just deleted, so the list can put
+   *  the selection somewhere sensible instead of dropping it. */
+  private messageDeleted = new Subject<string>();
+  readonly messageDeleted$ = this.messageDeleted.asObservable();
+
   setCurrentMessageId(id: string | null): void {
     if (this.currentMessageId.value !== id) {
       this.currentMessageId.next(id);
@@ -37,5 +42,9 @@ export class MessageStateService {
 
   requestRefresh(): void {
     this.refreshRequests.next();
+  }
+
+  notifyDeleted(id: string): void {
+    this.messageDeleted.next(id);
   }
 }

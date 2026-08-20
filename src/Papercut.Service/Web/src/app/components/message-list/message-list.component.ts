@@ -270,6 +270,11 @@ export class MessageListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.refreshCurrentPage());
 
+    // A delete should leave you somewhere, not on an empty pane
+    this.messageStateService.messageDeleted$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(id => this.onMessageDeleted(id));
+
     // Reload when the sort order preference changes (Options dialog)
     this.userSettingsService.sortOrder$
       .pipe(skip(1), takeUntil(this.destroy$))
@@ -391,6 +396,42 @@ export class MessageListComponent implements OnInit, OnDestroy {
     }
 
     this.setTotalCount(this.totalCount + 1);
+  }
+
+  /**
+   * Moves the selection onto the message that takes the deleted one's place --
+   * the next one down, or the new last one if you deleted the bottom of the
+   * list. This is what the desktop app does (MessageListViewModel remembers the
+   * index across the delete and reselects at it), and it is what makes deleting
+   * a run of messages possible without re-picking a row every time.
+   */
+  private onMessageDeleted(deletedId: string): void {
+    const index = this.allMessages.findIndex(msg => msg.id === deletedId);
+
+    if (index === -1) {
+      // deleted from somewhere outside this list; nothing to reselect against
+      this.refreshCurrentPage();
+      return;
+    }
+
+    this.allMessages = [
+      ...this.allMessages.slice(0, index),
+      ...this.allMessages.slice(index + 1)
+    ];
+    this.setTotalCount(Math.max(0, this.totalCount - 1));
+
+    // same index as the deleted message, clamped to the end of what is left
+    const neighbor = this.allMessages[Math.min(index, this.allMessages.length - 1)];
+
+    if (neighbor?.id) {
+      this.selectMessage(neighbor.id);
+    } else {
+      this.selectedMessageId = null;
+      this.router.navigate(['/'], { queryParamsHandling: 'preserve' });
+    }
+
+    // backfill from the server behind the selection that just happened
+    this.refreshCurrentPage();
   }
 
   /** Reloads everything currently loaded, keeping the user's scroll depth. */
