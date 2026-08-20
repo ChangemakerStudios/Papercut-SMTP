@@ -239,8 +239,8 @@ export class ContentFormattingService {
       }
       pre {
         font-family: ${monoFont};
-        font-size: 12px;
-        line-height: 1.5em;
+        font-size: 13.5px;
+        line-height: 1.65;
         white-space: pre-wrap;
         margin: 0;
         padding: 0;

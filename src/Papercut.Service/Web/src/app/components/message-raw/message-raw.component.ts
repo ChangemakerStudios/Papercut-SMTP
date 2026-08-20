@@ -41,8 +41,8 @@ import { MessageService } from '../../services/message.service';
     /* Same mono family as the Body tab, one step smaller */
     .raw-code {
       font-family: var(--pc-font-mono);
-      font-size: 11px;
-      line-height: 1.55;
+      font-size: var(--pc-text-read);
+      line-height: var(--pc-leading-read);
       color: var(--pc-ink);
       white-space: pre-wrap;
       word-wrap: break-word;

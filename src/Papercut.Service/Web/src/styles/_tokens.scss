@@ -53,6 +53,20 @@
   --pc-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', sans-serif;
   --pc-font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+
+  // Type scale. Chrome (labels, buttons, list rows) can be dense, but anything
+  // meant to be *read* -- raw source, log output, headers, message bodies --
+  // sits at --pc-text-read or larger with generous leading, since small text
+  // needs more line-height, not less.
+  --pc-text-micro: 11px;   // uppercase field labels, badges
+  --pc-text-small: 12.5px; // secondary UI text
+  --pc-text-ui: 13.5px;    // primary UI text
+  --pc-text-read: 13.5px;  // reading surfaces (mono content)
+  --pc-text-title: 15px;   // dialog titles, subjects
+
+  --pc-leading-tight: 1.35; // dense UI rows
+  --pc-leading-ui: 1.5;     // default
+  --pc-leading-read: 1.65;  // reading surfaces; small text needs more
 }
 
 body[data-theme='dark'] {

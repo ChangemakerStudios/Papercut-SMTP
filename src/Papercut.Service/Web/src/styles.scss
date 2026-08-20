@@ -490,8 +490,8 @@ app-message-detail {
 
 .headers-content {
   font-family: var(--pc-font-mono);
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: var(--pc-text-read);
+  line-height: var(--pc-leading-read);
   overflow: auto;
 }
 
@@ -512,8 +512,8 @@ app-message-detail {
 
 .body-content {
   font-family: var(--pc-font-mono);
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: var(--pc-text-read);
+  line-height: var(--pc-leading-read);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -571,8 +571,8 @@ app-message-detail {
 .section-content pre {
   margin: 0;
   font-family: var(--pc-font-mono);
-  font-size: 11px;
-  line-height: 1.5;
+  font-size: var(--pc-text-small);
+  line-height: var(--pc-leading-read);
   white-space: pre-wrap;
   word-wrap: break-word;
   color: var(--pc-ink);
@@ -580,8 +580,8 @@ app-message-detail {
 
 .raw-content {
   font-family: var(--pc-font-mono);
-  font-size: 11px;
-  line-height: 1.5;
+  font-size: var(--pc-text-read);
+  line-height: var(--pc-leading-read);
   overflow: auto;
 }
 
