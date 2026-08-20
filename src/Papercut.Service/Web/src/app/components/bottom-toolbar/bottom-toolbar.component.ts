@@ -15,8 +15,8 @@ import { ConfirmService } from '../../services/confirm.service';
         <div class="toolbar-actions">
           <button class="toolbar-btn"
                   (click)="onForward()"
-                  [disabled]="!selectedMessageCount"
-                  matTooltip="Forward selected message">
+                  [disabled]="!canForward"
+                  matTooltip="Forward the open message">
             <lucide-icon [img]="icons.Forward" [size]="14"></lucide-icon>
             <span>Forward</span>
           </button>
@@ -156,6 +156,9 @@ export class BottomToolbarComponent {
 
   @Input() selectedMessageCount = 0;
   @Input() totalMessageCount = 0;
+
+  /** Forward acts on the one open message, not the whole ticked set. */
+  @Input() canForward = false;
 
   @Output() forward = new EventEmitter<void>();
   @Output() deleteSelected = new EventEmitter<void>();

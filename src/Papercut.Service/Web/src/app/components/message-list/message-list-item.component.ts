@@ -14,9 +14,10 @@ import { RefDto } from 'src/app/models';
     <div class="msg-item cursor-pointer"
          [ngClass]="{
            'msg-selected': selected,
+           'msg-in-selection': inSelection && !selected,
            'msg-unread': !message.isRead
          }"
-         (click)="onSelect()">
+         (click)="onSelect($event)">
       <div class="msg-subject" [matTooltip]="message.subject ?? 'No Subject'" matTooltipShowDelay="700">
         {{ message.subject ?? '(No Subject)' }}
       </div>
@@ -70,6 +71,13 @@ import { RefDto } from 'src/app/models';
     .msg-item.msg-selected {
       background: var(--pc-selected);
       border-left-color: var(--pc-selected-edge);
+    }
+
+    /* Ticked but not the one on screen: same family as the open row, quieter,
+       so it is obvious what Delete (n) is about to take. */
+    .msg-item.msg-in-selection {
+      background: color-mix(in srgb, var(--pc-selected) 55%, var(--pc-surface));
+      border-left-color: color-mix(in srgb, var(--pc-selected-edge) 55%, transparent);
     }
 
     .msg-subject {
@@ -146,12 +154,15 @@ export class MessageListItemComponent {
 
   @Input() message!: RefDto;
   @Input() selected = false;
-  @Output() select = new EventEmitter<void>();
+
+  /** Ticked as part of a ctrl/shift selection, but not the message on screen. */
+  @Input() inSelection = false;
+  @Output() select = new EventEmitter<MouseEvent>();
 
   constructor(private emailService: EmailService) {}
 
-  onSelect(): void {
-    this.select.emit();
+  onSelect(event: MouseEvent): void {
+    this.select.emit(event);
   }
 
   getFromDisplay(): string {

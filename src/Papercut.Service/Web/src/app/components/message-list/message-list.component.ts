@@ -74,7 +74,8 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
             *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
             [message]="message"
             [selected]="message.id === selectedMessageId"
-            (select)="selectMessage(message.id!)"
+            [inSelection]="isInSelection(message.id)"
+            (select)="onRowClick(message.id!, $event)"
             class="block w-full">
           </app-message-list-item>
         </cdk-virtual-scroll-viewport>
@@ -125,6 +126,12 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     /* Ensure message list panel respects width constraints */
     .message-list-panel {
       min-width: 0;
+
+      /* The list is a set of click targets, not prose. Without this a
+         shift+click for a range drags a text selection across the rows
+         instead, and a double click highlights a word. */
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .list-count-bar {
@@ -169,6 +176,17 @@ export class MessageListComponent implements OnInit, OnDestroy {
   messages$!: Observable<GetMessagesResponse>;
   
   selectedMessageId: string | null = null;
+
+  /**
+   * The ticked set, mirroring the desktop list's SelectionMode="Extended":
+   * a plain click replaces it, ctrl+click toggles one row, shift+click takes
+   * the range from the anchor. selectedMessageId stays the single message the
+   * detail pane is showing.
+   */
+  private selectedIds = new Set<string>();
+
+  /** Row a shift+click measures its range from. */
+  private anchorIndex: number | null = null;
   private loadingTimeout: any = null;
   private destroy$ = new Subject<void>();
 
@@ -300,8 +318,20 @@ export class MessageListComponent implements OnInit, OnDestroy {
       const messageId = currentRoute.snapshot.params['id'];
       this.loggingService.debug('Message ID from URL', { messageId });
       this.selectedMessageId = messageId;
+
+      // Arriving by url rather than by click (a toast's View, a bookmark, a
+      // reload) still has to seed the ticked set, or the toolbar would show
+      // nothing selected while a message is plainly open.
+      if (!this.selectedIds.has(messageId)) {
+        this.selectedIds = new Set([messageId]);
+        this.publishSelection();
+      }
     } else {
       this.selectedMessageId = null;
+      if (this.selectedIds.size > 0) {
+        this.selectedIds = new Set();
+        this.publishSelection();
+      }
     }
 
     this.messageStateService.setCurrentMessageId(this.selectedMessageId);
@@ -405,8 +435,11 @@ export class MessageListComponent implements OnInit, OnDestroy {
    * index across the delete and reselects at it), and it is what makes deleting
    * a run of messages possible without re-picking a row every time.
    */
-  private onMessageDeleted(deletedId: string): void {
-    const index = this.allMessages.findIndex(msg => msg.id === deletedId);
+  private onMessageDeleted(deletedIds: string[]): void {
+    const gone = new Set(deletedIds);
+
+    // where the first of them sat -- the selection lands here afterwards
+    const index = this.allMessages.findIndex(msg => !!msg.id && gone.has(msg.id));
 
     if (index === -1) {
       // deleted from somewhere outside this list; nothing to reselect against
@@ -414,21 +447,25 @@ export class MessageListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.allMessages = [
-      ...this.allMessages.slice(0, index),
-      ...this.allMessages.slice(index + 1)
-    ];
-    this.setTotalCount(Math.max(0, this.totalCount - 1));
+    this.allMessages = this.allMessages.filter(msg => !msg.id || !gone.has(msg.id));
+    this.setTotalCount(Math.max(0, this.totalCount - deletedIds.length));
 
-    // same index as the deleted message, clamped to the end of what is left
+    this.selectedIds = new Set();
+    this.anchorIndex = null;
+
+    // same index the first deleted message held, clamped to what is left
     const neighbor = this.allMessages[Math.min(index, this.allMessages.length - 1)];
 
     if (neighbor?.id) {
+      this.selectedIds = new Set([neighbor.id]);
+      this.anchorIndex = Math.min(index, this.allMessages.length - 1);
       this.selectMessage(neighbor.id);
     } else {
       this.selectedMessageId = null;
       this.router.navigate(['/'], { queryParamsHandling: 'preserve' });
     }
+
+    this.publishSelection();
 
     // backfill from the server behind the selection that just happened
     this.refreshCurrentPage();
@@ -461,6 +498,57 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/message', messageId], { queryParamsHandling: 'preserve' });
   }
 
+  isInSelection(messageId: string | null | undefined): boolean {
+    return !!messageId && this.selectedIds.has(messageId);
+  }
+
+  /**
+   * Extended-selection click handling, the same three gestures the desktop
+   * list supports: plain click selects one, ctrl (or cmd) toggles a row in and
+   * out, shift takes everything between the anchor and the clicked row.
+   */
+  onRowClick(messageId: string, event?: MouseEvent): void {
+    const index = this.allMessages.findIndex(msg => msg.id === messageId);
+
+    if (event?.shiftKey && this.anchorIndex !== null && index !== -1) {
+      const from = Math.min(this.anchorIndex, index);
+      const to = Math.max(this.anchorIndex, index);
+
+      this.selectedIds = new Set(
+        this.allMessages.slice(from, to + 1).map(msg => msg.id!).filter(Boolean)
+      );
+      this.publishSelection();
+      this.selectMessage(messageId);
+      return;
+    }
+
+    if (event && (event.ctrlKey || event.metaKey)) {
+      if (this.selectedIds.has(messageId)) {
+        this.selectedIds.delete(messageId);
+        this.publishSelection();
+
+        // the open message just left the selection -- fall back to whatever is
+        // still ticked so the pane never shows something no longer selected
+        if (messageId === this.selectedMessageId) {
+          const fallback = [...this.selectedIds].pop();
+          if (fallback) this.selectMessage(fallback);
+        }
+      } else {
+        this.selectedIds.add(messageId);
+        this.publishSelection();
+        this.selectMessage(messageId);
+      }
+
+      if (index !== -1) this.anchorIndex = index;
+      return;
+    }
+
+    this.selectedIds = new Set([messageId]);
+    this.publishSelection();
+    if (index !== -1) this.anchorIndex = index;
+    this.selectMessage(messageId);
+  }
+
   selectMessage(messageId: string): void {
     // Re-clicking the open message is a no-op: the router ignores a navigation
     // to the url it is already on, so nothing would reload -- but the loading
@@ -477,6 +565,10 @@ export class MessageListComponent implements OnInit, OnDestroy {
       relativeTo: this.route,
       queryParamsHandling: 'preserve'
     });
+  }
+
+  private publishSelection(): void {
+    this.messageStateService.setSelectedIds([...this.selectedIds]);
   }
 
 

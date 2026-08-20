@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NavigationComponent } from './components/navigation/navigation.component';
@@ -26,7 +27,8 @@ import { ToastNotificationService } from './services/toast-notification.service'
         <router-outlet></router-outlet>
       </main>
       <app-bottom-toolbar
-        [selectedMessageCount]="(messageState.currentMessageId$ | async) ? 1 : 0"
+        [selectedMessageCount]="((messageState.selectedIds$ | async) ?? []).length"
+        [canForward]="!!(messageState.currentMessageId$ | async)"
         [totalMessageCount]="(messageState.totalCount$ | async) ?? 0"
         (forward)="onForward()"
         (deleteSelected)="onDeleteSelected()"
@@ -71,18 +73,22 @@ export class AppComponent {
   }
 
   onDeleteSelected(): void {
-    const messageId = this.messageState.getCurrentMessageId();
-    if (!messageId) return;
+    const ids = this.messageState.getSelectedIds();
+    if (ids.length === 0) return;
 
-    this.messageApiService.deleteMessage(messageId).subscribe({
+    // one request per message: the api has no bulk delete, and the desktop
+    // deletes them one at a time too
+    forkJoin(ids.map(id => this.messageApiService.deleteMessage(id))).subscribe({
       next: () => {
         // The list owns the selection, and it is the only thing that knows
-        // which message sat next to this one -- let it decide where to go
-        this.messageState.notifyDeleted(messageId);
+        // which message sat next to these -- let it decide where to go
+        this.messageState.notifyDeleted(ids);
       },
       error: (err) => {
-        this.loggingService.error('Failed to delete message', err);
-        this.toastService.showError('Failed to delete message');
+        this.loggingService.error('Failed to delete messages', err);
+        this.toastService.showError(ids.length === 1 ? 'Failed to delete message' : 'Failed to delete messages');
+        // some may have gone through; resync rather than trust the local list
+        this.messageState.requestRefresh();
       }
     });
   }
