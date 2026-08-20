@@ -72,7 +72,7 @@ interface MessageViewData {
                     <app-safe-iframe
                       class="h-full"
                       [content]="getMessageContent(messageData)"
-                      [contentKey]="routeMessageId || ''"
+                      [contentKey]="getContentKey(messageData)"
                       (rendered)="onBodyRendered($event)">
                     </app-safe-iframe>
                   </div>
@@ -130,6 +130,12 @@ interface MessageViewData {
           </div>
         </div>
 
+        <!-- Immediate acknowledgement that the click landed. A local message
+             opens in ~40ms, far too quick for the veil below, but the click
+             still deserves an answer -- so this appears at once and the veil
+             only joins it if the load is actually slow. -->
+        <div class="pane-progress" [class.is-loading]="isSwitchingMessage(messageData)"></div>
+
         <!-- The one loading indicator. It covers the whole pane (header
              included, so no stale header shows over a new message) and stays
              up until the body is painted -- see isSwitchingMessage(). It is
@@ -157,6 +163,51 @@ interface MessageViewData {
     iframe {
       border: none;
       background: white;
+    }
+
+    /* Two-pixel indeterminate sweep across the top of the pane. No delay: this
+       is the "yes, I heard you" cue, so it must not wait for anything. */
+    .pane-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      z-index: 6;
+      overflow: hidden;
+      pointer-events: none;
+      background: color-mix(in srgb, var(--pc-accent) 16%, transparent);
+      opacity: 0;
+      /* holds a beat, then fades -- otherwise a 40ms load is a flicker nobody
+         can read. The bar still starts and stops with the real load. */
+      transition: opacity 220ms ease 60ms;
+    }
+
+    .pane-progress.is-loading {
+      opacity: 1;
+      transition: opacity 0s;
+    }
+
+    .pane-progress::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 35%;
+      background: var(--pc-accent);
+      animation: pane-progress-sweep 1.1s ease-in-out infinite;
+    }
+
+    @keyframes pane-progress-sweep {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(340%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pane-progress::before {
+        animation: none;
+        width: 100%;
+      }
     }
 
     /* A frosted scrim, not a blank panel: the outgoing message stays faintly
@@ -386,6 +437,23 @@ export class MessageDetailComponent {
 
   onBodyRendered(messageId: string): void {
     this.renderedMessageId = messageId;
+  }
+
+  /**
+   * Identity of whatever getMessageContent() is handing the frame right now.
+   *
+   * It has to be read off messageData, the same object the content is, so the
+   * two always move together. Keying off the route id instead let the key run
+   * ahead of the content: on every switch the key became the new message while
+   * the frame still held the old body, and the frame duly reported the new
+   * message as painted before it had been -- which silently disabled the
+   * loading state for every fast load.
+   */
+  getContentKey(messageData: MessageViewData): string {
+    // nothing has been handed over yet
+    if (!messageData.html && !messageData.htmlFailed) return '';
+
+    return messageData.detail?.id ?? messageData.ref?.id ?? '';
   }
 
   getMessageContent(messageData: MessageViewData): string {
