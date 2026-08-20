@@ -431,6 +431,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
     this.loggingService.debug('Selecting message', { messageId });
     this.selectedMessageId = messageId;
+    this.markRead(messageId);
     this.router.navigate(['message', messageId], {
       relativeTo: this.route,
       queryParamsHandling: 'preserve'
@@ -438,6 +439,19 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
 
+
+  /**
+   * Opening a message clears its unread bold straight away, the way selecting a
+   * row does on the desktop. The service records this too (it is what the next
+   * list load reports), but waiting for that round trip would leave the row
+   * bold under the reader's eyes.
+   */
+  private markRead(messageId: string): void {
+    const message = this.allMessages.find(msg => msg.id === messageId);
+    if (message && !message.isRead) {
+      message.isRead = true;
+    }
+  }
 
   downloadSection(messageId: string, contentId: string): void {
     this.messageService.downloadSectionByContentId(messageId, contentId);

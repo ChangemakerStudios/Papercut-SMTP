@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -35,6 +35,7 @@ using Papercut.Rules.Domain.Forwarding;
 public class MessagesController(
     IMessageRepository messageRepository,
     IMimeMessageLoader messageLoader,
+    MessageReadStateService readState,
     ILogger logger)
     : ControllerBase
 {
@@ -52,7 +53,10 @@ public class MessagesController(
         // count matters because deleting an older message leaves the max
         // modified date (and would otherwise 304 a stale list)
         var latestModifiedDate = messageEntries.Max(msg => msg.ModifiedDate);
-        var etag = $"\"{messageEntries.Count}-{latestModifiedDate.Ticks}\"";
+
+        // ...and on the read-state version, so opening a message is not hidden
+        // behind a 304 that would leave the list showing it as unread
+        var etag = $"\"{messageEntries.Count}-{latestModifiedDate.Ticks}-{readState.Version}\"";
 
         // Check if the client has the same version
         if (Request.Headers.IfNoneMatch.Contains(etag))
@@ -71,7 +75,16 @@ public class MessagesController(
             ordered
                 .Skip(start)
                 .Take(limit)
-                .Select(async e => RefDto.CreateFrom(new MimeMessageEntry(e, (await messageLoader.GetAsync(e, token))!)))
+                .Select(async e =>
+                {
+                    var dto = RefDto.CreateFrom(new MimeMessageEntry(e, (await messageLoader.GetAsync(e, token))!));
+
+                    // HasBeenSeen only knows the message's age; this knows whether
+                    // anyone actually opened it
+                    dto.IsRead |= readState.IsRead(dto.Id!);
+
+                    return dto;
+                })
                 .ToArray();
 
         var messages = await Task.WhenAll(tasks).WaitAsync(token);
@@ -117,6 +130,10 @@ public class MessagesController(
     public async Task<ActionResult<DetailDto>> Get(string id, CancellationToken token = default)
     {
         var messageEntry = this.GetMessageEntry(id);
+
+        // Opening the message is what marks it read -- ahead of the 304 below,
+        // so a cached re-open still counts
+        readState.MarkRead(messageEntry.Id);
 
         // Generate ETag based on the message's modified date
         var etag = $@"""{messageEntry.ModifiedDate.Ticks}""";

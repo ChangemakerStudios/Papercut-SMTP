@@ -14,7 +14,7 @@ import { RefDto } from 'src/app/models';
     <div class="msg-item cursor-pointer"
          [ngClass]="{
            'msg-selected': selected,
-           'msg-unread': !message.isRead && !selected
+           'msg-unread': !message.isRead
          }"
          (click)="onSelect()">
       <div class="msg-subject" [matTooltip]="message.subject ?? 'No Subject'" matTooltipShowDelay="700">
