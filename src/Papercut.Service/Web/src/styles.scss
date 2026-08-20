@@ -20,6 +20,15 @@
    height; forcing position: relative puts the rendered rows back into normal
    flow, so the spacer's height is added below them and the list ends in a
    screenful of empty space. */
+/* The wrapper is absolutely positioned, so it sizes to its content -- and
+   min-width: 100% only sets a floor. A long unwrapped subject line therefore
+   stretched it past the panel, which both defeated the rows' ellipsis (their
+   100% was 100% of the stretched wrapper) and left the list scrolling
+   sideways. Capping it is enough; position and overflow stay untouched. */
+app-message-list cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper {
+  max-width: 100%;
+}
+
 app-message-list cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper > app-message-list-item {
   width: 100%;
   max-width: 100%;
