@@ -143,6 +143,13 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private openLink(href: string): void {
+    // window.open() would execute a javascript:/data: URL in a window that
+    // inherits this origin -- never hand it an email-controlled scheme
+    if (/^\s*(javascript|data|vbscript):/i.test(href)) {
+      this.toastService.showWarning('Blocked a link with an unsafe scheme');
+      return;
+    }
+
     if (/^file:/i.test(href)) {
       // Browsers block file:// navigation from an http(s) page and always
       // will -- hand the path over instead so it can be pasted somewhere useful
