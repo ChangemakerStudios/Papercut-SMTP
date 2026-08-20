@@ -202,6 +202,35 @@ public class MessagesController(
         return Ok(new { forwarded = id, to = forwardRule.ToEmail });
     }
 
+    /// <summary>
+    ///     The message body rendered to display-ready HTML: the most faithful
+    ///     alternative part, inline images pointed at this API, and script /
+    ///     frame / event-handler content removed. Clients should prefer this
+    ///     over the raw HtmlBody on the detail DTO.
+    /// </summary>
+    [HttpGet("{id}/html")]
+    public async Task<ActionResult> GetHtml(string id, CancellationToken token = default)
+    {
+        var messageEntry = this.GetMessageEntry(id);
+        var mimeMessage = (await messageLoader.GetAsync(messageEntry, token))!;
+
+        // relative so the markup keeps working under an HttpPathPrefix
+        var contentsBase = $"api/messages/{Uri.EscapeDataString(messageEntry.Id)}/contents";
+
+        var rendered = HtmlMessageRenderer.Render(
+            mimeMessage,
+            (part, _) =>
+            {
+                var contentId = part.ContentId?.Trim('<', '>');
+
+                return string.IsNullOrEmpty(contentId)
+                    ? null
+                    : $"{contentsBase}/{Uri.EscapeDataString(contentId)}";
+            });
+
+        return Content(rendered.Html, "text/html; charset=utf-8");
+    }
+
     [HttpGet("{messageId}/raw")]
     public ActionResult DownloadRaw(string messageId)
     {

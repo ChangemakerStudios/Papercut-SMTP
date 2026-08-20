@@ -191,6 +191,17 @@ export class MessageApiService {
   }
 
   /**
+   * Gets the message body rendered to display-ready HTML by the service:
+   * most-faithful alternative part, inline images resolved to API URLs, and
+   * scripts/frames/event handlers removed.
+   * @param messageId The unique message ID
+   */
+  getMessageHtml(messageId: string): Observable<string> {
+    const encodedId = encodeURIComponent(messageId);
+    return this.http.get(`${this.baseUrl}/${encodedId}/html`, { responseType: 'text' });
+  }
+
+  /**
    * Deletes all messages.
    * @returns Observable of void
    */

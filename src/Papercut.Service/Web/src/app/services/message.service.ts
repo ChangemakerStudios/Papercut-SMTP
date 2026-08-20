@@ -141,6 +141,14 @@ export class MessageService {
     return this.messageApiService.deleteAllMessages();
   }
 
+  /**
+   * Applies the theme/base-href wrapper to html already rendered and
+   * sanitized by the service (GET api/messages/{id}/html).
+   */
+  styleRenderedHtml(html: string): string {
+    return this.contentFormattingService.styleRenderedHtml(html);
+  }
+
   // Returns the HTML content for a message, handling plain text and HTML bodies
   getMessageContent(message: DetailDto): string {
     return this.contentFormattingService.getMessageContent(

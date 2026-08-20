@@ -21,6 +21,10 @@ import { MessageRawComponent } from '../message-raw/message-raw.component';
 interface MessageViewData {
   ref: RefDto | null;
   detail: DetailDto | null;
+  /** Service-rendered, sanitized body html (null until it arrives) */
+  html: string | null;
+  /** True once the render request failed and the raw body is all we have */
+  htmlFailed: boolean;
   isLoadingDetail: boolean;
 }
 
@@ -72,7 +76,7 @@ interface MessageViewData {
                   <div class="flex-1 min-h-0">
                     <app-safe-iframe
                       class="h-full"
-                      [content]="getMessageContent(messageData.detail)">
+                      [content]="getMessageContent(messageData)">
                     </app-safe-iframe>
                   </div>
 
@@ -274,11 +278,23 @@ export class MessageDetailComponent {
             })
           );
           
-          // Combine RefDto and DetailDto
-          return combineLatest([refMessage$, detailMessage$.pipe(startWith(null))]).pipe(
-            map(([ref, detail]) => ({
+          // Body html comes pre-rendered and sanitized from the service
+          const html$ = this.messageApiService.getMessageHtml(messageId).pipe(
+            map(html => ({ html: html as string | null, failed: false })),
+            catchError(error => {
+              this.loggingService.warn('Falling back to the raw body: rendered html failed', error);
+              return of({ html: null, failed: true });
+            }),
+            startWith({ html: null, failed: false })
+          );
+
+          // Combine RefDto, DetailDto and the rendered html
+          return combineLatest([refMessage$, detailMessage$.pipe(startWith(null)), html$]).pipe(
+            map(([ref, detail, rendered]) => ({
               ref,
               detail,
+              html: rendered.html,
+              htmlFailed: rendered.failed,
               isLoadingDetail: detail === null
             }))
           );
@@ -311,9 +327,20 @@ export class MessageDetailComponent {
     return `/api/messages/${encodedMessageId}/sections/${att.index ?? 0}`;
   }
 
-  getMessageContent(message: DetailDto | null): string {
-    if (!message) return '<html><body>No message content available.</body></html>';
-    return this.messageService.getMessageContent(message);
+  getMessageContent(messageData: MessageViewData): string {
+    if (messageData.html) {
+      // already sanitized and cid-resolved by the service -- just theme it
+      return this.messageService.styleRenderedHtml(messageData.html);
+    }
+
+    // Only reach for the raw body when the render actually failed: showing it
+    // while the request is still in flight would put unsanitized markup
+    // (scripts, unresolved cid: refs) into the frame for those few frames
+    if (!messageData.htmlFailed) return '';
+
+    if (!messageData.detail) return '<html><body>No message content available.</body></html>';
+
+    return this.messageService.getMessageContent(messageData.detail);
   }
 
   getMessageHeaders(message: DetailDto | null) {

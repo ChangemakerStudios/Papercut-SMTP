@@ -111,6 +111,27 @@ export class ContentFormattingService {
    * @param isPreformatted Whether the content is preformatted
    * @returns Complete HTML document
    */
+  /**
+   * Wraps service-rendered html (already sanitized, with inline content
+   * resolved) in the theme styles and document head. No client-side
+   * transformation is needed -- the service did that work against the real
+   * MIME tree.
+   */
+  styleRenderedHtml(html: string): string {
+    if (!html) return this.createStyledDocument('Loading...', true);
+
+    return this.injectThemeStyles(html);
+  }
+
+  /**
+   * The base href makes the service's relative inline-content URLs
+   * (api/messages/.../contents/...) resolve against the app root rather than
+   * the current route, which also keeps them working under an HttpPathPrefix.
+   */
+  private getDocumentHead(): string {
+    return `<meta name="referrer" content="no-referrer"><base href="${document.baseURI}" target="_blank">`;
+  }
+
   private createStyledDocument(content: string, isPreformatted: boolean): string {
     const themeStyles = this.getThemeAwareStyles();
     const bodyContent = isPreformatted ? content : content;
@@ -121,8 +142,7 @@ export class ContentFormattingService {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="referrer" content="no-referrer">
-        <base target="_blank">
+        ${this.getDocumentHead()}
         ${themeStyles}
       </head>
       <body>
@@ -140,12 +160,14 @@ export class ContentFormattingService {
   private injectThemeStyles(html: string): string {
     const themeStyles = this.getThemeAwareStyles();
     
-    if (html.includes('<head>')) {
+    // match <head>, <HEAD> and <head lang="en"> alike -- a missed match used to
+    // fall through and nest a whole document inside another one
+    const headTag = /<head\b[^>]*>/i;
+
+    if (headTag.test(html)) {
       // base/referrer go in with the styles so links in full email documents
       // open in a new tab too (the host also intercepts clicks -- see SafeIframeComponent)
-      return html.replace(
-        '<head>',
-        `<head><meta name="referrer" content="no-referrer"><base target="_blank">${themeStyles}`);
+      return html.replace(headTag, match => `${match}${this.getDocumentHead()}${themeStyles}`);
     } else {
       // If no head tag, wrap the content
       return this.createStyledDocument(html, false);
