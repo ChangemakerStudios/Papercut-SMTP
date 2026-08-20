@@ -25,6 +25,7 @@ import { RulesApiService } from '../../services/rules-api.service';
 import { OptionsDialogComponent } from '../options-dialog/options-dialog.component';
 import { RulesDialogComponent } from '../rules-dialog/rules-dialog.component';
 import { LogDialogComponent } from '../log-dialog/log-dialog.component';
+import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 import { Observable, map } from 'rxjs';
 
 @Component({
@@ -35,7 +36,8 @@ import { Observable, map } from 'rxjs';
     RouterModule,
     MatMenuModule,
     MatTooltipModule,
-    LucideAngularModule
+    LucideAngularModule,
+    ConnectionStatusComponent
   ],
   template: `
     <nav class="papercut-navbar">
@@ -78,6 +80,9 @@ import { Observable, map } from 'rxjs';
             <lucide-icon [img]="icons.Zap" [size]="15"></lucide-icon>
             <span>{{ mcpCopied ? 'Copied!' : 'MCP' }}</span>
           </button>
+
+          <!-- Only visible when the service has gone away -->
+          <app-connection-status></app-connection-status>
 
           <span class="nav-divider desktop-only"></span>
 
