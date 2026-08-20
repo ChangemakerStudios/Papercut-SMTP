@@ -41,7 +41,7 @@ import { RefDto } from 'src/app/models';
         </span>
       </div>
       <div class="msg-meta">
-        <span class="msg-date">{{ message.createdAt | date:'M/d/yyyy h:mm:ss a' }}</span>
+        <span class="msg-date">{{ message.createdAt | date:'M/d/yyyy' }}<span class="msg-date-sep" aria-hidden="true">&#183;</span>{{ message.createdAt | date:'h:mm:ss a' }}</span>
         <span class="msg-size pc-mono">{{ message.size | fileSize }}</span>
       </div>
     </div>
@@ -118,6 +118,14 @@ import { RefDto } from 'src/app/models';
     .msg-date {
       white-space: nowrap;
       color: var(--pc-faint);
+    }
+
+    /* a quiet separator so the date and the time read as two facts, not one
+       long number -- kept lighter than the text it divides */
+    .msg-date-sep {
+      display: inline-block;
+      padding: 0 0.45em;
+      opacity: 0.55;
     }
 
     .msg-size {
