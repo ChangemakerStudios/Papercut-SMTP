@@ -95,6 +95,8 @@ docker run -d \
 
 **Security - SMTP IP Allowlist Configuration:**
 - `SmtpServer__AllowedIps` - Comma-separated list of allowed IP addresses or CIDR ranges for SMTP connections
+- `SmtpServer__RateLimit` - Message reception rate limit as `<count>/<window>`, e.g. `500/1h` (default: "*" = no limit)
+- `SmtpServer__RateLimitReplyCode` - SMTP reply code returned once the rate limit is hit (default: 451)
   - `*` - Allow all IPs (default, backward compatible)
   - `192.168.1.0/24` - Allow single CIDR range
   - `192.168.1.0/24,10.0.0.0/8` - Allow multiple CIDR ranges

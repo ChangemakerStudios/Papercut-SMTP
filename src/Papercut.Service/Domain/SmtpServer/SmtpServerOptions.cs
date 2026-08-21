@@ -70,6 +70,25 @@ public class SmtpServerOptions
     /// </summary>
     public string AllowedIps { get; set; } = "*";
 
+    /// <summary>
+    /// Limits how many messages the SMTP server will accept per window, so applications
+    /// can be tested against a mail server that is throttling them.
+    /// Format is "&lt;count&gt;/&lt;window&gt;", where window is a number followed by
+    /// s (seconds), m (minutes), or h (hours).
+    /// Use "*" for no limit (default).
+    /// Examples: "500/1h", "5/10m", "100/30s"
+    /// Environment variable: SmtpServer__RateLimit
+    /// </summary>
+    public string RateLimit { get; set; } = "*";
+
+    /// <summary>
+    /// SMTP reply code returned once <see cref="RateLimit" /> is reached.
+    /// 4xx codes are transient (the client should retry later), 5xx are permanent.
+    /// Common choices: 421, 451 (default), 452, 550.
+    /// Environment variable: SmtpServer__RateLimitReplyCode
+    /// </summary>
+    public int RateLimitReplyCode { get; set; } = 451;
+
     public SmtpServerSettings GetSettings(string ipOverride, int portOverride) => new(ipOverride,
         portOverride,
         CertificateFindType,
@@ -78,5 +97,7 @@ public class SmtpServerOptions
         CertificateStoreName,
         MessagePath,
         LoggingPath,
-        AllowedIps);
+        AllowedIps,
+        RateLimit,
+        RateLimitReplyCode);
 }
