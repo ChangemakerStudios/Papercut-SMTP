@@ -1,4 +1,4 @@
-# Service & Web UI
+﻿# Service & Web UI
 
 The **Papercut SMTP Service** is an optional background component that receives email even when the desktop app isn't running — as a Windows Service or a [Docker container](docker.md) — and includes a browser-based UI for viewing messages.
 
@@ -82,7 +82,7 @@ for example `500/1h`, `5/10m`, or `100/30s`. Use `*` (the default) for no limit.
 
 Once the limit is reached, Papercut rejects at `MAIL FROM` until the window resets:
 
-```
+```text
 451 4.7.1 Message rate limit exceeded (500 per hour)
 ```
 

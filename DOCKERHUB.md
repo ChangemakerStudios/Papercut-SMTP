@@ -1,4 +1,4 @@
-![Papercut Logo](https://raw.githubusercontent.com/ChangemakerStudios/Papercut/develop/graphics/PapercutLogo.png)<br>
+﻿![Papercut Logo](https://raw.githubusercontent.com/ChangemakerStudios/Papercut/develop/graphics/PapercutLogo.png)<br>
 *The Simple Desktop Email Helper*
 
 ## The problem
@@ -90,13 +90,13 @@ docker run -d \
 - `SmtpServer__MessagePath` - Path where emails are stored (default: /app/Incoming)
 - `SmtpServer__LoggingPath` - Path for log files (default: /app/logs)
 - `SmtpServer__AllowedIps` - IP allowlist for SMTP connections (default: "*" = all IPs allowed)
+- `SmtpServer__RateLimit` - Message reception rate limit as `<count>/<window>`, e.g. `500/1h` (default: "*" = no limit)
+- `SmtpServer__RateLimitReplyCode` - SMTP reply code returned once the rate limit is hit (default: 451)
 - `Urls` - HTTP server URLs (default: http://0.0.0.0:8080)
 - `HttpPathPrefix` - Serve the web UI and API under a path prefix, e.g. `/webmail` (default: empty = serve at root)
 
 **Security - SMTP IP Allowlist Configuration:**
 - `SmtpServer__AllowedIps` - Comma-separated list of allowed IP addresses or CIDR ranges for SMTP connections
-- `SmtpServer__RateLimit` - Message reception rate limit as `<count>/<window>`, e.g. `500/1h` (default: "*" = no limit)
-- `SmtpServer__RateLimitReplyCode` - SMTP reply code returned once the rate limit is hit (default: 451)
   - `*` - Allow all IPs (default, backward compatible)
   - `192.168.1.0/24` - Allow single CIDR range
   - `192.168.1.0/24,10.0.0.0/8` - Allow multiple CIDR ranges

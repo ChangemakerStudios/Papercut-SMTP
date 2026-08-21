@@ -140,12 +140,29 @@ public sealed class SmtpRateLimit
 
         return char.ToLowerInvariant(unit) switch
         {
-            's' => ExecutionResult.Success(TimeSpan.FromSeconds(amount)),
-            'm' => ExecutionResult.Success(TimeSpan.FromMinutes(amount)),
-            'h' => ExecutionResult.Success(TimeSpan.FromHours(amount)),
+            's' => FromUnits(amount, TimeSpan.TicksPerSecond, window),
+            'm' => FromUnits(amount, TimeSpan.TicksPerMinute, window),
+            'h' => FromUnits(amount, TimeSpan.TicksPerHour, window),
             _ => ExecutionResult.Failure<TimeSpan>(
                 $"Invalid rate limit window unit '{unit}'. Expected s (seconds), m (minutes), or h (hours).")
         };
+    }
+
+    /// <summary>
+    /// Converts a whole number of units into a TimeSpan, reporting a failure rather than
+    /// throwing when the result would not fit. TimeSpan.FromHours(int.MaxValue) overflows,
+    /// and an exception escaping here would take down service startup instead of falling
+    /// back to no limit.
+    /// </summary>
+    private static ExecutionResult<TimeSpan> FromUnits(int amount, long ticksPerUnit, string window)
+    {
+        if (amount > TimeSpan.MaxValue.Ticks / ticksPerUnit)
+        {
+            return ExecutionResult.Failure<TimeSpan>(
+                $"Rate limit window '{window}' is too large.");
+        }
+
+        return ExecutionResult.Success(new TimeSpan(amount * ticksPerUnit));
     }
 
     private static string DescribeWindow(TimeSpan window)

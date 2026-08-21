@@ -119,6 +119,30 @@ public class SmtpRateLimitTests
         result.Errors.Should().NotBeEmpty();
     }
 
+    [TestCase("1/2147483647h")]
+    [TestCase("1/999999999h")]
+    public void Create_WithWindowTooLargeForTimeSpan_ReturnsFailureRatherThanThrowing(string spec)
+    {
+        // Act -- TimeSpan.FromHours(int.MaxValue) overflows; an exception escaping here
+        // would take down service startup instead of falling back to no limit
+        var result = SmtpRateLimit.Create(spec);
+
+        // Assert
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().NotBeEmpty();
+    }
+
+    [Test]
+    public void Create_WithLargestWindowThatStillFits_ReturnsSuccess()
+    {
+        // Act -- int.MaxValue minutes is within TimeSpan's range and must keep working
+        var result = SmtpRateLimit.Create("1/2147483647m");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Window.Should().Be(TimeSpan.FromMinutes(2147483647L));
+    }
+
     #endregion
 
     #region Reply Code Tests

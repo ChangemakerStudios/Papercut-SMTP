@@ -54,10 +54,12 @@ public sealed class SmtpRateLimiter(SmtpRateLimit rateLimit, TimeProvider timePr
             return new RateLimitDecision(true, 0, TimeSpan.Zero);
         }
 
-        var now = timeProvider.GetUtcNow();
-
         lock (this._sync)
         {
+            // Read the clock inside the lock: a timestamp captured outside it can be
+            // older than a _windowStart another thread has already advanced, which
+            // yields a negative elapsed and an inflated RetryAfter.
+            var now = timeProvider.GetUtcNow();
             var elapsed = now - this._windowStart;
 
             if (this._count == 0 || elapsed >= this.Limit.Window)
