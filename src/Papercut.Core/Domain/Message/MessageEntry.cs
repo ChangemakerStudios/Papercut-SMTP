@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Globalization;
 
 using Papercut.Common.Extensions;
+using Papercut.Core.Infrastructure.Identities;
 
 namespace Papercut.Core.Domain.Message;
 
@@ -46,6 +47,9 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
     public MessageEntry(FileInfo fileInfo)
     {
         _info = fileInfo;
+
+        Id = HashHelpers.GenerateUniqueId(_info.Name);
+
         InitializeFromFileInfo();
     }
 
@@ -59,6 +63,10 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
     public long SortTicks => (_created ?? ModifiedDate).Ticks;
 
     public string Name => _info.Name;
+
+    public string Id { get; }
+
+    public long FileSizeBytes => _info.Length;
 
     public string FileSize => _info.Length.ToFileSizeFormat();
 

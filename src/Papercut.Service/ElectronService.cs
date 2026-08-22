@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+namespace Papercut.Service;
+
 using System.Runtime.InteropServices;
 
 using ElectronNET.API;
@@ -23,15 +25,13 @@ using ElectronNET.API.Entities;
 
 using Microsoft.Extensions.Hosting;
 
-namespace Papercut.Service;
-
 public class ElectronService : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         Log.Information("Running Electron Create Window Service");
 
-        Electron.App.WillQuit += (q) =>
+        Electron.App.WillQuit += q =>
         {
             Program.Shutdown();
             return Task.CompletedTask;
@@ -94,7 +94,7 @@ public class ElectronService : IHostedService
 
         Electron.Menu.SetApplicationMenu(menu);
 
-        await Electron.App.On("activate", (obj) =>
+        await Electron.App.On("activate", obj =>
         {
             // obj should be a boolean that represents where there are active windows or not.
             var hasWindows = (bool)obj;

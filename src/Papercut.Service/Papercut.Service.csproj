@@ -10,9 +10,39 @@
 		<ApplicationIcon>icons\Papercut-icon.ico</ApplicationIcon>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	</PropertyGroup>
+	<PropertyGroup>
+		<!-- Set /p:SkipAngularBuild=true to build without node (requires Web\Assets to already exist) -->
+		<SkipAngularBuild Condition="'$(SkipAngularBuild)' == ''">false</SkipAngularBuild>
+		<AngularBuildStamp>$(BaseIntermediateOutputPath)angular.stamp</AngularBuildStamp>
+	</PropertyGroup>
+
 	<ItemGroup>
-		<EmbeddedResource Include="Web\Assets\**" />
+		<AngularInput Include="Web\src\**;Web\angular.json;Web\package.json;Web\package-lock.json;Web\tailwind.config.js;Web\tsconfig.json;Web\tsconfig.app.json" />
 	</ItemGroup>
+
+	<Target Name="NpmInstall" Condition="'$(SkipAngularBuild)' != 'true' AND '$(DesignTimeBuild)' != 'true' AND !Exists('Web\node_modules')">
+		<Message Importance="high" Text="Restoring npm packages for the web UI..." />
+		<Exec Command="npm ci" WorkingDirectory="Web" />
+	</Target>
+
+	<Target Name="BuildAngular"
+	        DependsOnTargets="NpmInstall"
+	        BeforeTargets="EmbedWebAssets"
+	        Inputs="@(AngularInput)"
+	        Outputs="$(AngularBuildStamp)"
+	        Condition="'$(SkipAngularBuild)' != 'true' AND '$(DesignTimeBuild)' != 'true'">
+		<Message Importance="high" Text="Building the Angular web UI into Web\Assets..." />
+		<Exec Command="npm run build" WorkingDirectory="Web" />
+		<Touch Files="$(AngularBuildStamp)" AlwaysCreate="true" />
+	</Target>
+
+	<Target Name="EmbedWebAssets" BeforeTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+		<Error Condition="!Exists('Web\Assets\index.html')"
+		       Text="Web UI assets not found at Web\Assets. Run 'npm run build' in src/Papercut.Service/Web (requires node), or build without /p:SkipAngularBuild=true." />
+		<ItemGroup>
+			<EmbeddedResource Include="Web\Assets\**" />
+		</ItemGroup>
+	</Target>
 	<ItemGroup>
 		<None Remove="electron.manifest.json" />
 		<None Update="appsettings.Production.json">

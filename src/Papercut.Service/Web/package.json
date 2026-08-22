@@ -1,0 +1,53 @@
+{
+  "name": "papercut-web",
+  "version": "1.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "start:dev": "ng serve --configuration development",
+    "start:staging": "ng serve --configuration staging",
+    "start:prod": "ng serve --configuration production",
+    "build": "ng build",
+    "build:dev": "ng build --configuration development",
+    "build:staging": "ng build --configuration staging",
+    "build:prod": "ng build --configuration production",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test --no-watch"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^21.2.21",
+    "@angular/cdk": "^21.2.14",
+    "@angular/common": "^21.2.21",
+    "@angular/compiler": "^21.2.21",
+    "@angular/core": "^21.2.21",
+    "@angular/forms": "^21.2.21",
+    "@angular/material": "^21.2.14",
+    "@angular/platform-browser": "^21.2.21",
+    "@angular/platform-browser-dynamic": "^21.2.21",
+    "@angular/router": "^21.2.21",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
+    "@microsoft/signalr": "^8.0.11",
+    "lucide-angular": "^1.0.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.1"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^21.2.21",
+    "@angular/cli": "^21.2.21",
+    "@angular/compiler-cli": "^21.2.21",
+    "@types/jasmine": "~5.1.0",
+    "autoprefixer": "^10.4.21",
+    "jasmine-core": "~5.1.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.9.3"
+  }
+}
