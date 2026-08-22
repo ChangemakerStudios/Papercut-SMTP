@@ -30,7 +30,6 @@ interface MessageViewData {
 
 @Component({
   selector: 'app-message-detail',
-  standalone: true,
   imports: [
     CommonModule,
     RouterModule,

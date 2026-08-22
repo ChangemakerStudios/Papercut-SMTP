@@ -32,7 +32,6 @@ export interface EmailAddress {
  */
 @Component({
   selector: 'app-email-address-display',
-  standalone: true,
   imports: [
     CommonModule,
     MatIconModule,

@@ -17,7 +17,6 @@ import { ToastNotificationService } from './services/toast-notification.service'
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [CommonModule, RouterOutlet, MatDialogModule, MatSnackBarModule, NavigationComponent, BottomToolbarComponent, NotificationPermissionComponent],
   template: `
     <div class="app-container">

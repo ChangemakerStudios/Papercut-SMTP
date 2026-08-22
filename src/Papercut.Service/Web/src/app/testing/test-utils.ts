@@ -221,7 +221,6 @@ export async function waitFor(condition: () => boolean, timeout: number = 1000):
  */
 @Component({
   template: '<ng-content></ng-content>',
-  standalone: true
 })
 export class TestComponent {}
 

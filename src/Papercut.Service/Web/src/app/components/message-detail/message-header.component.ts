@@ -28,7 +28,6 @@ import { DetailDto, RefDto } from '../../models';
  */
 @Component({
   selector: 'app-message-header',
-  standalone: true,
   imports: [
     CommonModule,
     LucideAngularModule

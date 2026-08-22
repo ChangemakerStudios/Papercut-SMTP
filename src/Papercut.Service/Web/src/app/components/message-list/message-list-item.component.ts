@@ -8,7 +8,6 @@ import { RefDto } from 'src/app/models';
 
 @Component({
   selector: 'app-message-list-item',
-  standalone: true,
   imports: [CommonModule, MatTooltipModule, LucideAngularModule, FileSizePipe],
   template: `
     <div class="msg-item cursor-pointer"

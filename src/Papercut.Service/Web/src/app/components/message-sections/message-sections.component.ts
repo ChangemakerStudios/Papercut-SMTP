@@ -24,7 +24,6 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
 
 @Component({
   selector: 'app-message-sections',
-  standalone: true,
   imports: [
     CommonModule,
     MatButtonModule,

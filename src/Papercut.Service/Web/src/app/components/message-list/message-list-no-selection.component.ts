@@ -25,7 +25,6 @@ import { LucideAngularModule, MailOpen } from 'lucide-angular';
  */
 @Component({
   selector: 'app-message-list-no-selection',
-  standalone: true,
   imports: [
     CommonModule,
     LucideAngularModule

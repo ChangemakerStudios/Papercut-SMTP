@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-resizer',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="resizer-handle" 

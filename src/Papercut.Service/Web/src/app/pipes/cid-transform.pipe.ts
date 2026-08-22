@@ -24,7 +24,6 @@ import { ContentTransformationService } from '../services/content-transformation
  */
 @Pipe({
   name: 'cidTransform',
-  standalone: true
 })
 export class CidTransformPipe implements PipeTransform {
   constructor(

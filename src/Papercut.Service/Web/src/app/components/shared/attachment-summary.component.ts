@@ -33,7 +33,6 @@ export interface Attachment {
  */
 @Component({
   selector: 'app-attachment-summary',
-  standalone: true,
   imports: [
     CommonModule,
     MatIconModule,

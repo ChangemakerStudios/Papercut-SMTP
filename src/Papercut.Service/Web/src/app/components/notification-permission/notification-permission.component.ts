@@ -8,7 +8,6 @@ import { PlatformNotificationService } from '../../services/platform-notificatio
 
 @Component({
   selector: 'app-notification-permission',
-  standalone: true,
   imports: [CommonModule, MatButtonModule, MatCardModule, LucideAngularModule],
   template: `
     <!-- Background overlay for better separation -->

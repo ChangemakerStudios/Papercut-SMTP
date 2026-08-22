@@ -7,7 +7,6 @@ import { MessageService } from '../../services/message.service';
 
 @Component({
   selector: 'app-message-raw',
-  standalone: true,
   imports: [
     CommonModule,
     MatProgressSpinnerModule

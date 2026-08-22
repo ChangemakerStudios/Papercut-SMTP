@@ -52,7 +52,6 @@ describe('MessageListComponent', () => {
           </div>
         </div>
       `,
-      standalone: true,
       imports: [CommonModule]
     })
     class TestMessageListComponent {

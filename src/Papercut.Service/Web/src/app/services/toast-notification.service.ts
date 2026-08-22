@@ -22,7 +22,6 @@ export interface ToastData {
 
 @Component({
   selector: 'app-toast-notification',
-  standalone: true,
   imports: [CommonModule, MatButtonModule, MatSnackBarAction, LucideAngularModule],
   template: `
     <div class="flex items-center gap-3 py-1"

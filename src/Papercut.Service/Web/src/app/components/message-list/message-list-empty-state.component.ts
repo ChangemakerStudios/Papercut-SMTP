@@ -25,7 +25,6 @@ import { LucideAngularModule, Inbox } from 'lucide-angular';
  */
 @Component({
   selector: 'app-message-list-empty-state',
-  standalone: true,
   imports: [
     CommonModule,
     LucideAngularModule

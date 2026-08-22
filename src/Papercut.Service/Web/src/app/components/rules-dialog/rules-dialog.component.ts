@@ -42,7 +42,6 @@ import {
  */
 @Component({
   selector: 'app-rules-dialog',
-  standalone: true,
   imports: [CommonModule, FormsModule, MatDialogModule, MatProgressSpinnerModule, MatTooltipModule, LucideAngularModule],
   template: `
     <div class="rules-dialog">

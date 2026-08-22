@@ -166,7 +166,6 @@ export class FileDownloaderService {
 
 @Component({
   selector: 'app-file-downloader',
-  standalone: true,
   imports: [
     CommonModule,
     MatProgressBarModule,

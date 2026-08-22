@@ -46,7 +46,6 @@ export interface ConfirmDialogData {
  */
 @Component({
   selector: 'app-confirm-dialog',
-  standalone: true,
   imports: [CommonModule, MatDialogModule, LucideAngularModule],
   template: `
     <div class="confirm-dialog">

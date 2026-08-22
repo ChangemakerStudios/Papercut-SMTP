@@ -28,7 +28,6 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
 
 @Component({
   selector: 'app-message-list',
-  standalone: true,
   imports: [
     CommonModule, 
     RouterModule, 

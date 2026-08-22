@@ -4,7 +4,6 @@ import { FileDownloaderService } from '../components/file-downloader/file-downlo
 
 @Directive({
   selector: '[appDownloadButton]',
-  standalone: true
 })
 export class DownloadButtonDirective implements OnInit, OnDestroy {
   @Input() appDownloadButton!: string; // Button ID

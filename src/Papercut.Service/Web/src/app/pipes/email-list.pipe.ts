@@ -24,7 +24,6 @@ import { EmailService } from '../services/email.service';
  */
 @Pipe({
   name: 'emailList',
-  standalone: true
 })
 export class EmailListPipe implements PipeTransform {
   

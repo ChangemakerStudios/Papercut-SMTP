@@ -4,7 +4,6 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
 
 @Component({
   selector: 'app-safe-iframe',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <iframe

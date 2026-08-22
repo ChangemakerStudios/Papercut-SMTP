@@ -33,7 +33,6 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
  */
 @Component({
   selector: 'app-options-dialog',
-  standalone: true,
   imports: [CommonModule, FormsModule, MatDialogModule, MatProgressSpinnerModule, LucideAngularModule],
   template: `
     <div class="options-dialog">

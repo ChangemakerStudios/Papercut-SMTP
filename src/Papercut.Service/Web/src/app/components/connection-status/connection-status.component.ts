@@ -29,7 +29,6 @@ import { SignalRService } from '../../services/signalr.service';
  */
 @Component({
   selector: 'app-connection-status',
-  standalone: true,
   imports: [CommonModule, MatTooltipModule, LucideAngularModule],
   template: `
     <span class="conn-offline"

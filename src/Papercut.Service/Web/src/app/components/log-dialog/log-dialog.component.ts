@@ -49,7 +49,6 @@ const LEVEL_RANK: Record<string, number> = {
  */
 @Component({
   selector: 'app-log-dialog',
-  standalone: true,
   imports: [CommonModule, FormsModule, MatDialogModule, MatProgressSpinnerModule, MatTooltipModule, LucideAngularModule],
   template: `
     <div class="log-dialog">

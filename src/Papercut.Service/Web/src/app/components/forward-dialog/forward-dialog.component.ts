@@ -52,7 +52,6 @@ const EMAIL_REGEX = /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i;
  */
 @Component({
   selector: 'app-forward-dialog',
-  standalone: true,
   imports: [CommonModule, FormsModule, MatDialogModule, MatProgressSpinnerModule, LucideAngularModule],
   template: `
     <div class="forward-dialog">

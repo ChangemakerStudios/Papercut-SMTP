@@ -25,7 +25,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
  */
 @Component({
   selector: 'app-message-list-loading-overlay',
-  standalone: true,
   imports: [
     CommonModule,
     MatProgressSpinnerModule

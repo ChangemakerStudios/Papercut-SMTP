@@ -6,7 +6,6 @@ import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-bottom-toolbar',
-  standalone: true,
   imports: [CommonModule, MatTooltipModule, LucideAngularModule],
   template: `
     <div class="bottom-toolbar">
