@@ -22,12 +22,28 @@ export class EnvironmentService {
     return environment.name === 'staging';
   }
 
+  /**
+   * The configured paths are root-relative ('/api'), which is only correct when
+   * the app is served from the root. Under an HttpPathPrefix ('/webmail') every
+   * request has to carry that prefix, so both are resolved against the document
+   * base -- the server writes <base href> to match the prefix it is serving on.
+   *
+   * In dev, baseURI is http://localhost:4200/ and the paths come out unchanged,
+   * so the ng serve proxy still catches /api and /hubs.
+   */
   get apiBaseUrl(): string {
-    return environment.apiBaseUrl;
+    return this.resolveAgainstBase(environment.apiBaseUrl);
   }
 
   get signalRUrl(): string {
-    return environment.signalRUrl;
+    return this.resolveAgainstBase(environment.signalRUrl);
+  }
+
+  private resolveAgainstBase(path: string): string {
+    // an absolute url in config wins -- someone pointed this at another host
+    if (/^https?:\/\//i.test(path)) return path;
+
+    return new URL(path.replace(/^\/+/, ''), document.baseURI).toString().replace(/\/$/, '');
   }
 
   get isLoggingEnabled(): boolean {

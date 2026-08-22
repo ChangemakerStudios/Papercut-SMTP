@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -19,6 +19,7 @@
 namespace Papercut.Service.Application.StaticContent;
 
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 public class StaticContentController : ControllerBase
 {
@@ -44,6 +45,17 @@ public class StaticContentController : ControllerBase
         { "webmanifest", "application/manifest+json" },
     };
 
+    /// <summary>
+    ///     The SPA ships with a root base href. When the service is mounted under an
+    ///     HttpPathPrefix that is wrong for every url the app builds from it, so the
+    ///     tag is rewritten on the way out to whatever prefix this request arrived on.
+    /// </summary>
+    static readonly Regex _baseHrefRegex = new(
+        @"<base\s+href\s*=\s*([""'])[^""']*\1",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    const string IndexResource = "index.html";
+
     [HttpGet("{*anything}", Order = short.MaxValue)]
     [ResponseCache(
 #if DEBUG
@@ -52,7 +64,7 @@ public class StaticContentController : ControllerBase
         Duration = 600
 #endif
     )]
-    public IActionResult Get()
+    public async Task<IActionResult> Get()
     {
         var resourceName = GetRequestedResourceName(Request.Path);
         var resourceContent = GetResourceStream(resourceName);
@@ -61,7 +73,7 @@ public class StaticContentController : ControllerBase
         {
             // deep links into the Angular SPA (e.g. /message/{id}) fall back to index.html
             // so the client-side router can handle the route
-            resourceName = "index.html";
+            resourceName = IndexResource;
             resourceContent = GetResourceStream(resourceName);
         }
 
@@ -70,7 +82,24 @@ public class StaticContentController : ControllerBase
             return NotFound();
         }
 
+        if (string.Equals(resourceName, IndexResource, StringComparison.OrdinalIgnoreCase))
+        {
+            return Content(await ReadIndexWithBaseHrefAsync(resourceContent), "text/html", Encoding.UTF8);
+        }
+
         return new FileStreamResult(resourceContent, GetMimeType(resourceName));
+    }
+
+    async Task<string> ReadIndexWithBaseHrefAsync(Stream content)
+    {
+        using var reader = new StreamReader(content, Encoding.UTF8);
+        var html = await reader.ReadToEndAsync();
+
+        // PathBase is what UsePathBase stripped off, i.e. exactly the prefix this
+        // request came in on. Empty when there is no prefix, giving "/" as before.
+        var baseHref = $"{Request.PathBase.Value?.TrimEnd('/')}/";
+
+        return _baseHrefRegex.Replace(html, match => $"<base href=\"{baseHref}\"", 1);
     }
 
     static string GetRequestedResourceName(string requestUri)
