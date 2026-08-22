@@ -233,14 +233,16 @@ describe('MessageListComponent', () => {
       expect(component.selectedMessageId).toBe(messageId);
     });
 
-    it('should handle message selection correctly', () => {
+    // NOTE: these specs drive a stub declared in this file, not MessageListComponent
+    // itself, so they can only cover what the stub reimplements. Real selection
+    // behaviour (ctrl/shift extend, the ticked set feeding Delete (n)) is not
+    // reachable from here.
+    it('should record the selected message', () => {
       const messageId = 'msg-001';
-      
+
       component.selectMessage(messageId);
-      
+
       expect(component.selectedMessageId).toBe(messageId);
-      expect(component.loadingMessageId).toBe(messageId);
-      expect(component.isLoadingMessageDetail).toBe(true);
     });
   });
 

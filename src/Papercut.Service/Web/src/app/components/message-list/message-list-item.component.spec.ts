@@ -111,22 +111,24 @@ describe('MessageListItemComponent', () => {
   });
 
   describe('onSelect', () => {
-    it('should emit select event when not loading', () => {
-      component.isLoading = false;
+    it('should emit the click event', () => {
       spyOn(component.select, 'emit');
+      const event = new MouseEvent('click');
 
-      component.onSelect();
+      component.onSelect(event);
 
-      expect(component.select.emit).toHaveBeenCalled();
+      expect(component.select.emit).toHaveBeenCalledWith(event);
     });
 
-    it('should not emit select event when loading', () => {
-      component.isLoading = true;
+    it('should pass the modifier keys through so the list can extend the selection', () => {
       spyOn(component.select, 'emit');
+      const event = new MouseEvent('click', { ctrlKey: true });
 
-      component.onSelect();
+      component.onSelect(event);
 
-      expect(component.select.emit).not.toHaveBeenCalled();
+      expect(component.select.emit).toHaveBeenCalledWith(
+        jasmine.objectContaining({ ctrlKey: true }) as any
+      );
     });
   });
 
