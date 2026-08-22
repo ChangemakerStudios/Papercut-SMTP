@@ -25,7 +25,7 @@ env:
   # The service embeds the Angular UI, so packaging needs node. Kept in step
   # with the Dockerfile's node:22-alpine stage -- the container build and the
   # Windows build must not compile the UI with different toolchains.
-  NODE_VERSION: '22.x'
+  NODE_VERSION: '26.x'
   CONFIGURATION: Release
 
 jobs:

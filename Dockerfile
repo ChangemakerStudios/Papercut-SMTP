@@ -3,7 +3,7 @@ USER $APP_UID
 WORKDIR /app
 
 # Build the Angular web UI (output: Web/Assets, embedded by the service build)
-FROM node:22-alpine AS webbuild
+FROM node:26-alpine AS webbuild
 WORKDIR /web
 COPY src/Papercut.Service/Web/package.json src/Papercut.Service/Web/package-lock.json ./
 RUN npm ci
