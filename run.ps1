@@ -1,4 +1,4 @@
-# ============================================================================
+﻿# ============================================================================
 # Papercut SMTP — dev environment launcher
 #
 # Opens two Windows Terminal tabs:
@@ -9,6 +9,13 @@
 # Develop against http://localhost:4200 — changes to Web/src hot-reload.
 # The embedded UI (served by the service itself on :8080) only updates on a
 # full 'dotnet build', so use :4200 while iterating.
+#
+# The service tab builds with SkipAngularBuild: both tabs start at once, and
+# letting MSBuild run an Angular build while ng serve is starting puts two
+# Angular processes on the same .angular/cache, where they stall each other.
+# Nothing is lost -- the UI you are iterating on comes from :4200 anyway. The
+# embedded copy is built once below if it is missing, and refreshed by a plain
+# 'dotnet build' whenever you actually want :8080 up to date.
 # ============================================================================
 
 $root = $PSScriptRoot
@@ -23,7 +30,16 @@ if (-not (Test-Path (Join-Path $webDir 'node_modules'))) {
     Pop-Location
 }
 
-$serviceCmd = "dotnet run --no-launch-profile"
+# The service embeds Web\Assets at build time and fails if they are missing, so
+# make sure they exist once -- after that the dev loop never rebuilds them.
+if (-not (Test-Path (Join-Path $webDir 'Assets\index.html'))) {
+    Write-Host 'Web assets missing - building the Angular UI once...' -ForegroundColor Yellow
+    Push-Location $webDir
+    npm run build
+    Pop-Location
+}
+
+$serviceCmd = "dotnet run --no-launch-profile --property:SkipAngularBuild=true"
 $webCmd = "npm start"
 
 if (Get-Command wt -ErrorAction SilentlyContinue) {
@@ -41,3 +57,6 @@ Write-Host ''
 Write-Host 'Papercut dev environment starting:' -ForegroundColor Cyan
 Write-Host '  Service (API/SMTP):  http://localhost:8080   (SMTP on :2525 in dev)' -ForegroundColor Gray
 Write-Host '  Web UI (live):       http://localhost:4200' -ForegroundColor Green
+Write-Host ''
+Write-Host '  The service tab skips the Angular build -- iterate on :4200.' -ForegroundColor DarkGray
+Write-Host "  Run 'dotnet build' in src/Papercut.Service to refresh the copy embedded at :8080." -ForegroundColor DarkGray
