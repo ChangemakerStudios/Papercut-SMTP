@@ -452,7 +452,7 @@ app-message-detail {
   background-color: var(--pc-surface);
   border-bottom: 1px solid var(--pc-border);
   flex-shrink: 0;
-  --mdc-secondary-navigation-tab-container-height: 44px;
+  --mat-tab-container-height: 44px;
 }
 
 .message-tabs .mdc-tab {
