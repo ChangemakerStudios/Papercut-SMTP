@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,6 +14,7 @@ import {
 } from '../mock-data';
 import { createMockActivatedRoute, createMockMessageApiService } from '../test-utils';
 import { throwError, of, Subject } from 'rxjs';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('Message System Integration', () => {
   let messageListFixture: ComponentFixture<MessageListComponent>;
@@ -51,19 +52,18 @@ describe('Message System Integration', () => {
     mockSignalR.isConnected$ = of(false);
 
     await TestBed.configureTestingModule({
-      imports: [
-        MessageListComponent,
-        HttpClientTestingModule,
+    imports: [MessageListComponent,
         RouterTestingModule,
-        NoopAnimationsModule
-      ],
-      providers: [
+        NoopAnimationsModule],
+    providers: [
         MessageService,
         { provide: MessageApiService, useValue: mockApiService },
         { provide: SignalRService, useValue: mockSignalR },
-        { provide: ActivatedRoute, useValue: mockRoute }
-      ]
-    }).compileComponents();
+        { provide: ActivatedRoute, useValue: mockRoute },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+}).compileComponents();
 
     messageListFixture = TestBed.createComponent(MessageListComponent);
     messageService = TestBed.inject(MessageService);
