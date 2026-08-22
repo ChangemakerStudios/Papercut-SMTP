@@ -44,15 +44,15 @@ app-message-list cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper
 
 @include mat.core();
 
-$pc-typography: mat.define-typography-config(
+$pc-typography: mat.m2-define-typography-config(
   $font-family: "'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif",
 );
 
-$primary-palette: mat.define-palette(mat.$blue-palette, 600);
-$accent-palette: mat.define-palette(mat.$light-blue-palette, 400);
-$warn-palette: mat.define-palette(mat.$red-palette);
+$primary-palette: mat.m2-define-palette(mat.$m2-blue-palette, 600);
+$accent-palette: mat.m2-define-palette(mat.$m2-light-blue-palette, 400);
+$warn-palette: mat.m2-define-palette(mat.$m2-red-palette);
 
-$light-theme: mat.define-light-theme((
+$light-theme: mat.m2-define-light-theme((
   color: (
     primary: $primary-palette,
     accent: $accent-palette,
@@ -62,11 +62,11 @@ $light-theme: mat.define-light-theme((
   density: 0,
 ));
 
-$dark-theme: mat.define-dark-theme((
+$dark-theme: mat.m2-define-dark-theme((
   color: (
-    primary: mat.define-palette(mat.$blue-palette, 400),
-    accent: mat.define-palette(mat.$light-blue-palette, 300),
-    warn: mat.define-palette(mat.$red-palette, 300),
+    primary: mat.m2-define-palette(mat.$m2-blue-palette, 400),
+    accent: mat.m2-define-palette(mat.$m2-light-blue-palette, 300),
+    warn: mat.m2-define-palette(mat.$m2-red-palette, 300),
   ),
   typography: $pc-typography,
   density: 0,
