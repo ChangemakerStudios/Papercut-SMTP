@@ -44,42 +44,45 @@ export interface EmailAddress {
       <div class="flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0" [ngClass]="iconClass">
         <mat-icon [ngClass]="iconColorClass">{{ iconName }}</mat-icon>
       </div>
-      
+    
       <!-- Content -->
       <div class="flex-1 min-w-0">
         <h4 class="font-semibold text-sm mb-0.5" [ngClass]="labelClass">{{ label }}</h4>
         <div class="text-sm break-words" [ngClass]="contentClass">
-          <ng-container *ngIf="emailAddresses && emailAddresses.length > 0; else noAddresses">
-            <ng-container *ngIf="emailAddresses.length === 1; else multipleAddresses">
+          @if (emailAddresses && emailAddresses.length > 0) {
+            @if (emailAddresses.length === 1) {
               <!-- Single email address -->
               <div class="flex items-center gap-2">
                 <span class="font-medium">{{ emailAddresses[0].name || emailAddresses[0].address }}</span>
-                <span *ngIf="emailAddresses[0].name" class="text-gray-500 dark:text-gray-400">
-                  &lt;{{ emailAddresses[0].address }}&gt;
-                </span>
+                @if (emailAddresses[0].name) {
+                  <span class="text-gray-500 dark:text-gray-400">
+                    &lt;{{ emailAddresses[0].address }}&gt;
+                  </span>
+                }
               </div>
-            </ng-container>
-            
-            <ng-template #multipleAddresses>
+            } @else {
               <!-- Multiple email addresses -->
               <div class="space-y-1">
-                <div *ngFor="let email of emailAddresses" class="flex items-center gap-2">
-                  <span class="font-medium">{{ email.name || email.address }}</span>
-                  <span *ngIf="email.name" class="text-gray-500 dark:text-gray-400">
-                    &lt;{{ email.address }}&gt;
-                  </span>
-                </div>
+                @for (email of emailAddresses; track email) {
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium">{{ email.name || email.address }}</span>
+                    @if (email.name) {
+                      <span class="text-gray-500 dark:text-gray-400">
+                        &lt;{{ email.address }}&gt;
+                      </span>
+                    }
+                  </div>
+                }
               </div>
-            </ng-template>
-          </ng-container>
-          
-          <ng-template #noAddresses>
+            }
+          } @else {
             <span class="text-gray-500 dark:text-gray-400 italic">No addresses</span>
-          </ng-template>
+          }
+    
         </div>
       </div>
     </div>
-  `,
+    `,
   styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

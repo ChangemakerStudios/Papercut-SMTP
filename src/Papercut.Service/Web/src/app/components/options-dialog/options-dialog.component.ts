@@ -16,7 +16,7 @@
 // limitations under the License.
 
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -33,7 +33,7 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
  */
 @Component({
   selector: 'app-options-dialog',
-  imports: [CommonModule, FormsModule, MatDialogModule, MatProgressSpinnerModule, LucideAngularModule],
+  imports: [FormsModule, MatDialogModule, MatProgressSpinnerModule, LucideAngularModule],
   template: `
     <div class="options-dialog">
       <div class="dialog-header">
@@ -43,24 +43,26 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
           <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
         </button>
       </div>
-
+    
       <div class="dialog-body">
         <!-- Server section -->
         <div class="section-title">SMTP Server</div>
         <div class="field-grid">
           <label class="field-label" for="opt-ip">IP Address</label>
           <select id="opt-ip" class="pc-input" [(ngModel)]="smtpIP" [disabled]="isSaving || isLoading">
-            <option *ngFor="let ip of availableIPs" [value]="ip">{{ ip }}</option>
+            @for (ip of availableIPs; track ip) {
+              <option [value]="ip">{{ ip }}</option>
+            }
           </select>
-
+    
           <label class="field-label" for="opt-port">Port</label>
           <div class="field-inline">
             <input id="opt-port" class="pc-input w-24" type="number" [(ngModel)]="smtpPort"
-                   min="1" max="65535" [disabled]="isSaving || isLoading" />
+              min="1" max="65535" [disabled]="isSaving || isLoading" />
             <span class="field-hint">default is 25 (2525 in Docker)</span>
           </div>
         </div>
-
+    
         <!-- Messages section -->
         <div class="section-title">Messages</div>
         <div class="field-grid">
@@ -69,14 +71,14 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
             <option value="desc">Descending (newest first)</option>
             <option value="asc">Ascending (oldest first)</option>
           </select>
-
+    
           <label class="field-label">Notify</label>
           <label class="pc-check">
             <input type="checkbox" [(ngModel)]="notificationsEnabled" [disabled]="isSaving" />
             <span>Show new message notifications</span>
           </label>
         </div>
-
+    
         <!-- Appearance section -->
         <div class="section-title">Appearance</div>
         <div class="field-grid">
@@ -86,21 +88,25 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
             <option value="light">Light</option>
             <option value="dark">Dark</option>
           </select>
-
+    
           <label class="field-label">Accent</label>
           <div class="accent-grid">
-            <button *ngFor="let accent of themeService.accentColors"
-                    class="accent-swatch-btn"
-                    [class.selected]="accent.name === selectedAccent.name"
-                    [style.background]="accent.value"
-                    [title]="accent.name"
-                    [disabled]="isSaving"
-                    (click)="selectedAccent = accent">
-              <lucide-icon *ngIf="accent.name === selectedAccent.name" [img]="icons.Check" [size]="13"></lucide-icon>
-            </button>
+            @for (accent of themeService.accentColors; track accent) {
+              <button
+                class="accent-swatch-btn"
+                [class.selected]="accent.name === selectedAccent.name"
+                [style.background]="accent.value"
+                [title]="accent.name"
+                [disabled]="isSaving"
+                (click)="selectedAccent = accent">
+                @if (accent.name === selectedAccent.name) {
+                  <lucide-icon [img]="icons.Check" [size]="13"></lucide-icon>
+                }
+              </button>
+            }
           </div>
         </div>
-
+    
         <!-- MCP section -->
         <div class="section-title">Integrations</div>
         <div class="field-grid">
@@ -110,19 +116,23 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
             <span>Enable the MCP server endpoint <span class="field-hint">(takes effect after restart)</span></span>
           </label>
         </div>
-
-        <div class="dialog-error" *ngIf="error">{{ error }}</div>
+    
+        @if (error) {
+          <div class="dialog-error">{{ error }}</div>
+        }
       </div>
-
+    
       <div class="dialog-actions">
         <button class="pc-btn" (click)="cancel()" [disabled]="isSaving">Cancel</button>
         <button class="pc-btn pc-btn-primary" (click)="save()" [disabled]="isSaving || isLoading">
-          <mat-spinner *ngIf="isSaving" diameter="14" strokeWidth="2"></mat-spinner>
+          @if (isSaving) {
+            <mat-spinner diameter="14" strokeWidth="2"></mat-spinner>
+          }
           <span>{{ isSaving ? 'Saving…' : 'Save' }}</span>
         </button>
       </div>
     </div>
-  `,
+    `,
   styles: [`
     .options-dialog {
       min-width: 440px;

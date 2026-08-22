@@ -1,10 +1,10 @@
 import { Component, Input, Output, EventEmitter, AfterViewInit, ViewChild, ElementRef, OnChanges, SimpleChanges, OnDestroy, NgZone } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ToastNotificationService } from '../../services/toast-notification.service';
 
 @Component({
   selector: 'app-safe-iframe',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <iframe
       #safeIframe

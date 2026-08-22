@@ -15,7 +15,7 @@
 // limitations under the License.
 
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { LucideAngularModule, MailOpen } from 'lucide-angular';
 
 /**
@@ -26,9 +26,8 @@ import { LucideAngularModule, MailOpen } from 'lucide-angular';
 @Component({
   selector: 'app-message-list-no-selection',
   imports: [
-    CommonModule,
     LucideAngularModule
-  ],
+],
   template: `
     <div class="flex-1 flex flex-col items-center justify-center p-8">
       <lucide-icon [img]="icons.MailOpen" [size]="48" [strokeWidth]="1.5" class="mb-4 text-faint"></lucide-icon>

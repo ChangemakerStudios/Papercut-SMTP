@@ -15,7 +15,7 @@
 // limitations under the License.
 
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { LucideAngularModule, Inbox } from 'lucide-angular';
 
 /**
@@ -26,9 +26,8 @@ import { LucideAngularModule, Inbox } from 'lucide-angular';
 @Component({
   selector: 'app-message-list-empty-state',
   imports: [
-    CommonModule,
     LucideAngularModule
-  ],
+],
   template: `
     <div class="flex flex-col items-center justify-center h-full p-8 text-center">
       <lucide-icon [img]="icons.Inbox" [size]="48" [strokeWidth]="1.5" class="mb-4 text-faint"></lucide-icon>

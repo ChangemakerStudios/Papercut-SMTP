@@ -16,7 +16,7 @@
 // limitations under the License.
 
 import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -52,7 +52,7 @@ const EMAIL_REGEX = /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i;
  */
 @Component({
   selector: 'app-forward-dialog',
-  imports: [CommonModule, FormsModule, MatDialogModule, MatProgressSpinnerModule, LucideAngularModule],
+  imports: [FormsModule, MatDialogModule, MatProgressSpinnerModule, LucideAngularModule],
   template: `
     <div class="forward-dialog">
       <div class="dialog-header">
@@ -62,31 +62,35 @@ const EMAIL_REGEX = /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i;
           <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
         </button>
       </div>
-
-      <div class="dialog-subject" *ngIf="data.subject">{{ data.subject }}</div>
-
+    
+      @if (data.subject) {
+        <div class="dialog-subject">{{ data.subject }}</div>
+      }
+    
       <div class="dialog-body">
         <div class="field-grid">
-          <ng-container *ngIf="availableRules.length > 0">
+          @if (availableRules.length > 0) {
             <label class="field-label" for="fwd-rule">Rule</label>
             <select id="fwd-rule" class="pc-input" [(ngModel)]="selectedRuleIndex"
-                    (ngModelChange)="applyRule($event)" [disabled]="isSending">
+              (ngModelChange)="applyRule($event)" [disabled]="isSending">
               <option [ngValue]="-1">(populate from a saved rule)</option>
-              <option *ngFor="let rule of availableRules; let i = index" [ngValue]="i">
-                {{ rule.name || summarizeRule(rule) }}
-              </option>
+              @for (rule of availableRules; track rule; let i = $index) {
+                <option [ngValue]="i">
+                  {{ rule.name || summarizeRule(rule) }}
+                </option>
+              }
             </select>
-          </ng-container>
-
+          }
+    
           <label class="field-label" for="fwd-server">Server</label>
           <div class="field-inline">
             <input id="fwd-server" class="pc-input flex-1" [(ngModel)]="server"
-                   placeholder="smtp.example.com" [disabled]="isSending" />
+              placeholder="smtp.example.com" [disabled]="isSending" />
             <label class="field-label-inline" for="fwd-port">Port</label>
             <input id="fwd-port" class="pc-input w-20" type="number" [(ngModel)]="port"
-                   min="1" max="65535" [disabled]="isSending" />
+              min="1" max="65535" [disabled]="isSending" />
           </div>
-
+    
           <span class="field-label"></span>
           <div class="field-inline field-checks">
             <label class="pc-check">
@@ -98,37 +102,40 @@ const EMAIL_REGEX = /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i;
               <span>Use Authentication</span>
             </label>
           </div>
-
-          <ng-container *ngIf="useAuthentication">
+    
+          @if (useAuthentication) {
             <label class="field-label" for="fwd-user">Username</label>
             <input id="fwd-user" class="pc-input" [(ngModel)]="username" [disabled]="isSending" autocomplete="off" />
-
             <label class="field-label" for="fwd-pass">Password</label>
             <input id="fwd-pass" class="pc-input" type="password" [(ngModel)]="password"
-                   [disabled]="isSending" autocomplete="new-password" />
-          </ng-container>
-
+              [disabled]="isSending" autocomplete="new-password" />
+          }
+    
           <label class="field-label" for="fwd-from">From</label>
           <input id="fwd-from" class="pc-input pc-mono" [(ngModel)]="fromEmail"
-                 placeholder="sender@example.com" [disabled]="isSending" />
-
+            placeholder="sender@example.com" [disabled]="isSending" />
+    
           <label class="field-label" for="fwd-to">To</label>
           <input id="fwd-to" class="pc-input pc-mono" [(ngModel)]="toEmail"
-                 placeholder="recipient@example.com" [disabled]="isSending" />
+            placeholder="recipient@example.com" [disabled]="isSending" />
         </div>
-
-        <div class="dialog-error" *ngIf="error">{{ error }}</div>
+    
+        @if (error) {
+          <div class="dialog-error">{{ error }}</div>
+        }
       </div>
-
+    
       <div class="dialog-actions">
         <button class="pc-btn" (click)="cancel()" [disabled]="isSending">Cancel</button>
         <button class="pc-btn pc-btn-primary" (click)="send()" [disabled]="isSending">
-          <mat-spinner *ngIf="isSending" diameter="14" strokeWidth="2"></mat-spinner>
+          @if (isSending) {
+            <mat-spinner diameter="14" strokeWidth="2"></mat-spinner>
+          }
           <span>{{ isSending ? 'Sending…' : 'Send' }}</span>
         </button>
       </div>
     </div>
-  `,
+    `,
   styles: [`
     .forward-dialog {
       min-width: 420px;

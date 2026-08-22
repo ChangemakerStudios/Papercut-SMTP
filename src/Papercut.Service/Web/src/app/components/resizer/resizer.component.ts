@@ -1,9 +1,9 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-resizer',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="resizer-handle" 
          (mousedown)="onMouseDown($event)"

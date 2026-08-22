@@ -15,7 +15,7 @@
 // limitations under the License.
 
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 /**
@@ -26,17 +26,18 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 @Component({
   selector: 'app-message-list-loading-overlay',
   imports: [
-    CommonModule,
     MatProgressSpinnerModule
-  ],
+],
   template: `
-    <div *ngIf="isLoading" class="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm z-10 flex items-center justify-center">
-      <div class="flex flex-col items-center gap-3">
-        <mat-spinner diameter="40" strokeWidth="4"></mat-spinner>
-        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ loadingMessage }}</span>
+    @if (isLoading) {
+      <div class="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm z-10 flex items-center justify-center">
+        <div class="flex flex-col items-center gap-3">
+          <mat-spinner diameter="40" strokeWidth="4"></mat-spinner>
+          <span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ loadingMessage }}</span>
+        </div>
       </div>
-    </div>
-  `,
+    }
+    `,
   styles: [],
   changeDetection: ChangeDetectionStrategy.Default
 })

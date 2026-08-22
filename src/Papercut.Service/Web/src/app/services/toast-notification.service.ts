@@ -25,18 +25,22 @@ export interface ToastData {
   imports: [CommonModule, MatButtonModule, MatSnackBarAction, LucideAngularModule],
   template: `
     <div class="flex items-center gap-3 py-1"
-         [class.cursor-pointer]="data.clickable"
-         (click)="onSurfaceClick()">
-      <lucide-icon *ngIf="data.icon" [img]="getIcon()" [size]="18" [ngClass]="getIconClass()"></lucide-icon>
+      [class.cursor-pointer]="data.clickable"
+      (click)="onSurfaceClick()">
+      @if (data.icon) {
+        <lucide-icon [img]="getIcon()" [size]="18" [ngClass]="getIconClass()"></lucide-icon>
+      }
       <span class="flex-1 text-sm">{{ data.message }}</span>
-      <button *ngIf="data.action"
-              mat-button
-              matSnackBarAction
-              class="!text-current !min-w-0">
-        {{ data.action }}
-      </button>
+      @if (data.action) {
+        <button
+          mat-button
+          matSnackBarAction
+          class="!text-current !min-w-0">
+          {{ data.action }}
+        </button>
+      }
     </div>
-  `,
+    `,
   styles: [`
     :host {
       display: block;

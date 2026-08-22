@@ -16,7 +16,7 @@
 // limitations under the License.
 
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -42,7 +42,7 @@ import {
  */
 @Component({
   selector: 'app-rules-dialog',
-  imports: [CommonModule, FormsModule, MatDialogModule, MatProgressSpinnerModule, MatTooltipModule, LucideAngularModule],
+  imports: [FormsModule, MatDialogModule, MatProgressSpinnerModule, MatTooltipModule, LucideAngularModule],
   template: `
     <div class="rules-dialog">
       <div class="dialog-header">
@@ -52,144 +52,148 @@ import {
           <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
         </button>
       </div>
-
+    
       <!-- ======================= List view ======================= -->
-      <div class="dialog-body" *ngIf="!isLoading && !editing">
-        <div class="add-row">
-          <select class="pc-input" [(ngModel)]="newRuleType" [disabled]="isSaving">
-            <option *ngFor="let t of ruleTypes" [value]="t">{{ t }}</option>
-          </select>
-          <button class="pc-btn" (click)="addRule()" [disabled]="isSaving">
-            <lucide-icon [img]="icons.Plus" [size]="14"></lucide-icon>
-            <span>Add</span>
-          </button>
-        </div>
-
-        <div class="rule-empty" *ngIf="rules.length === 0">
-          No rules configured. Rules run automatically as messages arrive.
-        </div>
-
-        <div class="rule-row" *ngFor="let rule of rules; let i = index">
-          <label class="pc-check rule-toggle" matTooltip="Enabled">
-            <input type="checkbox" [(ngModel)]="rule.isEnabled" [disabled]="isSaving" (ngModelChange)="markDirty()" />
-          </label>
-          <div class="rule-info" (click)="editRule(i)">
-            <div class="rule-name">{{ rule.name || rule.type }}</div>
-            <div class="rule-desc">{{ summarize(rule) }}</div>
+      @if (!isLoading && !editing) {
+        <div class="dialog-body">
+          <div class="add-row">
+            <select class="pc-input" [(ngModel)]="newRuleType" [disabled]="isSaving">
+              @for (t of ruleTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+            <button class="pc-btn" (click)="addRule()" [disabled]="isSaving">
+              <lucide-icon [img]="icons.Plus" [size]="14"></lucide-icon>
+              <span>Add</span>
+            </button>
           </div>
-          <button class="rule-action" (click)="editRule(i)" matTooltip="Edit" [disabled]="isSaving">
-            <lucide-icon [img]="icons.Pencil" [size]="14"></lucide-icon>
-          </button>
-          <button class="rule-action rule-action-danger" (click)="deleteRule(i)" matTooltip="Delete" [disabled]="isSaving">
-            <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
-          </button>
-        </div>
-
-        <div class="dialog-error" *ngIf="error">{{ error }}</div>
-      </div>
-
-      <!-- ======================= Edit view ======================= -->
-      <div class="dialog-body" *ngIf="!isLoading && editing as rule">
-        <div class="edit-type">{{ rule.type }}</div>
-
-        <div class="field-grid">
-          <label class="field-label" for="rule-name">Name</label>
-          <input id="rule-name" class="pc-input" [(ngModel)]="rule.name" placeholder="(optional)" />
-
-          <ng-container *ngIf="isRelayFamily(rule.type)">
-            <label class="field-label" for="rule-server">Server</label>
-            <div class="field-inline">
-              <input id="rule-server" class="pc-input flex-1" [(ngModel)]="rule.smtpServer" placeholder="smtp.example.com" />
-              <label class="field-label-inline">Port</label>
-              <input class="pc-input w-20" type="number" [(ngModel)]="rule.smtpPort" min="1" max="65535" />
+          @if (rules.length === 0) {
+            <div class="rule-empty">
+              No rules configured. Rules run automatically as messages arrive.
             </div>
-
+          }
+          @for (rule of rules; track rule; let i = $index) {
+            <div class="rule-row">
+              <label class="pc-check rule-toggle" matTooltip="Enabled">
+                <input type="checkbox" [(ngModel)]="rule.isEnabled" [disabled]="isSaving" (ngModelChange)="markDirty()" />
+              </label>
+              <div class="rule-info" (click)="editRule(i)">
+                <div class="rule-name">{{ rule.name || rule.type }}</div>
+                <div class="rule-desc">{{ summarize(rule) }}</div>
+              </div>
+              <button class="rule-action" (click)="editRule(i)" matTooltip="Edit" [disabled]="isSaving">
+                <lucide-icon [img]="icons.Pencil" [size]="14"></lucide-icon>
+              </button>
+              <button class="rule-action rule-action-danger" (click)="deleteRule(i)" matTooltip="Delete" [disabled]="isSaving">
+                <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
+              </button>
+            </div>
+          }
+          @if (error) {
+            <div class="dialog-error">{{ error }}</div>
+          }
+        </div>
+      }
+    
+      <!-- ======================= Edit view ======================= -->
+      @if (!isLoading && editing; as rule) {
+        <div class="dialog-body">
+          <div class="edit-type">{{ rule.type }}</div>
+          <div class="field-grid">
+            <label class="field-label" for="rule-name">Name</label>
+            <input id="rule-name" class="pc-input" [(ngModel)]="rule.name" placeholder="(optional)" />
+            @if (isRelayFamily(rule.type)) {
+              <label class="field-label" for="rule-server">Server</label>
+              <div class="field-inline">
+                <input id="rule-server" class="pc-input flex-1" [(ngModel)]="rule.smtpServer" placeholder="smtp.example.com" />
+                <label class="field-label-inline">Port</label>
+                <input class="pc-input w-20" type="number" [(ngModel)]="rule.smtpPort" min="1" max="65535" />
+              </div>
+              <span class="field-label"></span>
+              <label class="pc-check">
+                <input type="checkbox" [(ngModel)]="rule.smtpUseSSL" />
+                <span>Use SSL</span>
+              </label>
+              <label class="field-label" for="rule-user">Username</label>
+              <input id="rule-user" class="pc-input" [(ngModel)]="rule.smtpUsername" autocomplete="off" />
+              <label class="field-label" for="rule-pass">Password</label>
+              <input id="rule-pass" class="pc-input" type="password" [(ngModel)]="rule.smtpPassword" autocomplete="new-password" />
+              <label class="field-label" for="rule-bcc">To BCC</label>
+              <input id="rule-bcc" class="pc-input pc-mono" [(ngModel)]="rule.toBcc" placeholder="(optional)" />
+            }
+            @if (isForwardFamily(rule.type)) {
+              <label class="field-label" for="rule-from">From</label>
+              <input id="rule-from" class="pc-input pc-mono" [(ngModel)]="rule.fromEmail" placeholder="sender@example.com" />
+              <label class="field-label" for="rule-to">To</label>
+              <input id="rule-to" class="pc-input pc-mono" [(ngModel)]="rule.toEmail" placeholder="recipient@example.com" />
+            }
+            @if (isConditionalFamily(rule.type)) {
+              <label class="field-label" for="rule-rxh">Header Rx</label>
+              <input id="rule-rxh" class="pc-input pc-mono" [(ngModel)]="rule.regexHeaderMatch" placeholder="regex matched against headers" />
+              <label class="field-label" for="rule-rxb">Body Rx</label>
+              <input id="rule-rxb" class="pc-input pc-mono" [(ngModel)]="rule.regexBodyMatch" placeholder="regex matched against body" />
+            }
+            @if (rule.type === 'Conditional Forward with Retry') {
+              <label class="field-label" for="rule-retries">Retries</label>
+              <div class="field-inline">
+                <input id="rule-retries" class="pc-input w-20" type="number" [(ngModel)]="rule.retryAttempts" min="1" />
+                <label class="field-label-inline">Delay (s)</label>
+                <input class="pc-input w-20" type="number" [(ngModel)]="rule.retryAttemptDelaySeconds" min="1" />
+              </div>
+            }
+            @if (rule.type === 'Invoke Process') {
+              <label class="field-label" for="rule-proc">Process</label>
+              <input id="rule-proc" class="pc-input pc-mono" [(ngModel)]="rule.processToRun" placeholder="C:\\path\\to\\program.exe" />
+              <label class="field-label" for="rule-args">Arguments</label>
+              <input id="rule-args" class="pc-input pc-mono" [(ngModel)]="rule.processCommandLine" placeholder="%e expands to the message file" />
+            }
+            @if (rule.type === 'Cleanup Mail') {
+              <label class="field-label" for="rule-days">Keep (days)</label>
+              <input id="rule-days" class="pc-input w-20" type="number" [(ngModel)]="rule.mailRetentionDays" min="1" />
+            }
             <span class="field-label"></span>
             <label class="pc-check">
-              <input type="checkbox" [(ngModel)]="rule.smtpUseSSL" />
-              <span>Use SSL</span>
+              <input type="checkbox" [(ngModel)]="rule.isEnabled" />
+              <span>Enabled</span>
             </label>
-
-            <label class="field-label" for="rule-user">Username</label>
-            <input id="rule-user" class="pc-input" [(ngModel)]="rule.smtpUsername" autocomplete="off" />
-
-            <label class="field-label" for="rule-pass">Password</label>
-            <input id="rule-pass" class="pc-input" type="password" [(ngModel)]="rule.smtpPassword" autocomplete="new-password" />
-
-            <label class="field-label" for="rule-bcc">To BCC</label>
-            <input id="rule-bcc" class="pc-input pc-mono" [(ngModel)]="rule.toBcc" placeholder="(optional)" />
-          </ng-container>
-
-          <ng-container *ngIf="isForwardFamily(rule.type)">
-            <label class="field-label" for="rule-from">From</label>
-            <input id="rule-from" class="pc-input pc-mono" [(ngModel)]="rule.fromEmail" placeholder="sender@example.com" />
-
-            <label class="field-label" for="rule-to">To</label>
-            <input id="rule-to" class="pc-input pc-mono" [(ngModel)]="rule.toEmail" placeholder="recipient@example.com" />
-          </ng-container>
-
-          <ng-container *ngIf="isConditionalFamily(rule.type)">
-            <label class="field-label" for="rule-rxh">Header Rx</label>
-            <input id="rule-rxh" class="pc-input pc-mono" [(ngModel)]="rule.regexHeaderMatch" placeholder="regex matched against headers" />
-
-            <label class="field-label" for="rule-rxb">Body Rx</label>
-            <input id="rule-rxb" class="pc-input pc-mono" [(ngModel)]="rule.regexBodyMatch" placeholder="regex matched against body" />
-          </ng-container>
-
-          <ng-container *ngIf="rule.type === 'Conditional Forward with Retry'">
-            <label class="field-label" for="rule-retries">Retries</label>
-            <div class="field-inline">
-              <input id="rule-retries" class="pc-input w-20" type="number" [(ngModel)]="rule.retryAttempts" min="1" />
-              <label class="field-label-inline">Delay (s)</label>
-              <input class="pc-input w-20" type="number" [(ngModel)]="rule.retryAttemptDelaySeconds" min="1" />
-            </div>
-          </ng-container>
-
-          <ng-container *ngIf="rule.type === 'Invoke Process'">
-            <label class="field-label" for="rule-proc">Process</label>
-            <input id="rule-proc" class="pc-input pc-mono" [(ngModel)]="rule.processToRun" placeholder="C:\\path\\to\\program.exe" />
-
-            <label class="field-label" for="rule-args">Arguments</label>
-            <input id="rule-args" class="pc-input pc-mono" [(ngModel)]="rule.processCommandLine" placeholder="%e expands to the message file" />
-          </ng-container>
-
-          <ng-container *ngIf="rule.type === 'Cleanup Mail'">
-            <label class="field-label" for="rule-days">Keep (days)</label>
-            <input id="rule-days" class="pc-input w-20" type="number" [(ngModel)]="rule.mailRetentionDays" min="1" />
-          </ng-container>
-
-          <span class="field-label"></span>
-          <label class="pc-check">
-            <input type="checkbox" [(ngModel)]="rule.isEnabled" />
-            <span>Enabled</span>
-          </label>
+          </div>
         </div>
-      </div>
-
-      <div class="dialog-loading" *ngIf="isLoading">
-        <mat-spinner diameter="28" strokeWidth="3"></mat-spinner>
-      </div>
-
+      }
+    
+      @if (isLoading) {
+        <div class="dialog-loading">
+          <mat-spinner diameter="28" strokeWidth="3"></mat-spinner>
+        </div>
+      }
+    
       <!-- ======================= Actions ======================= -->
-      <div class="dialog-actions" *ngIf="!editing">
-        <span class="dirty-note" *ngIf="isDirty">Unsaved changes</span>
-        <button class="pc-btn" (click)="cancel()" [disabled]="isSaving">Cancel</button>
-        <button class="pc-btn pc-btn-primary" (click)="saveAll()" [disabled]="isSaving || isLoading || !isDirty">
-          <mat-spinner *ngIf="isSaving" diameter="14" strokeWidth="2"></mat-spinner>
-          <span>{{ isSaving ? 'Saving…' : 'Save' }}</span>
-        </button>
-      </div>
-
-      <div class="dialog-actions" *ngIf="editing">
-        <button class="pc-btn" (click)="closeEditor(false)">
-          <lucide-icon [img]="icons.ChevronLeft" [size]="14"></lucide-icon>
-          <span>Back</span>
-        </button>
-        <span class="flex-spacer"></span>
-        <button class="pc-btn pc-btn-primary" (click)="closeEditor(true)">OK</button>
-      </div>
+      @if (!editing) {
+        <div class="dialog-actions">
+          @if (isDirty) {
+            <span class="dirty-note">Unsaved changes</span>
+          }
+          <button class="pc-btn" (click)="cancel()" [disabled]="isSaving">Cancel</button>
+          <button class="pc-btn pc-btn-primary" (click)="saveAll()" [disabled]="isSaving || isLoading || !isDirty">
+            @if (isSaving) {
+              <mat-spinner diameter="14" strokeWidth="2"></mat-spinner>
+            }
+            <span>{{ isSaving ? 'Saving…' : 'Save' }}</span>
+          </button>
+        </div>
+      }
+    
+      @if (editing) {
+        <div class="dialog-actions">
+          <button class="pc-btn" (click)="closeEditor(false)">
+            <lucide-icon [img]="icons.ChevronLeft" [size]="14"></lucide-icon>
+            <span>Back</span>
+          </button>
+          <span class="flex-spacer"></span>
+          <button class="pc-btn pc-btn-primary" (click)="closeEditor(true)">OK</button>
+        </div>
+      }
     </div>
-  `,
+    `,
   styles: [`
     .rules-dialog {
       width: 520px;

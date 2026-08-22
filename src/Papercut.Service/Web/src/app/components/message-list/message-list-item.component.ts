@@ -16,7 +16,7 @@ import { RefDto } from 'src/app/models';
            'msg-in-selection': inSelection && !selected,
            'msg-unread': !message.isRead
          }"
-         (click)="onSelect($event)">
+      (click)="onSelect($event)">
       <div class="msg-subject" [matTooltip]="message.subject ?? 'No Subject'" matTooltipShowDelay="700">
         {{ message.subject ?? '(No Subject)' }}
       </div>
@@ -25,15 +25,21 @@ import { RefDto } from 'src/app/models';
           {{ getFromDisplay() }}
         </span>
         <span class="msg-indicators">
-          <lucide-icon *ngIf="message.attachmentCount && message.attachmentCount > 0"
-                       [img]="icons.Paperclip" [size]="12"
-                       [matTooltip]="getAttachmentTooltip()"></lucide-icon>
-          <lucide-icon *ngIf="message.priority === 'Urgent'"
-                       [img]="icons.ChevronsUp" [size]="13" class="text-danger"
-                       matTooltip="Urgent priority"></lucide-icon>
-          <lucide-icon *ngIf="message.priority === 'Non-urgent'"
-                       [img]="icons.ChevronsDown" [size]="13" class="text-faint"
-                       matTooltip="Non-urgent priority"></lucide-icon>
+          @if (message.attachmentCount && message.attachmentCount > 0) {
+            <lucide-icon
+              [img]="icons.Paperclip" [size]="12"
+            [matTooltip]="getAttachmentTooltip()"></lucide-icon>
+          }
+          @if (message.priority === 'Urgent') {
+            <lucide-icon
+              [img]="icons.ChevronsUp" [size]="13" class="text-danger"
+            matTooltip="Urgent priority"></lucide-icon>
+          }
+          @if (message.priority === 'Non-urgent') {
+            <lucide-icon
+              [img]="icons.ChevronsDown" [size]="13" class="text-faint"
+            matTooltip="Non-urgent priority"></lucide-icon>
+          }
         </span>
       </div>
       <div class="msg-meta">
@@ -41,7 +47,7 @@ import { RefDto } from 'src/app/models';
         <span class="msg-size pc-mono">{{ message.size | fileSize }}</span>
       </div>
     </div>
-  `,
+    `,
   styles: [`
     :host {
       display: block;

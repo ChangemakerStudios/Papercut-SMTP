@@ -31,13 +31,14 @@ import { SignalRService } from '../../services/signalr.service';
   selector: 'app-connection-status',
   imports: [CommonModule, MatTooltipModule, LucideAngularModule],
   template: `
-    <span class="conn-offline"
-          *ngIf="isOffline$ | async"
-          role="status"
-          matTooltip="Disconnected from the Papercut service — retrying…">
-      <lucide-icon [img]="icons.PlugZap" [size]="15"></lucide-icon>
-    </span>
-  `,
+    @if (isOffline$ | async) {
+      <span class="conn-offline"
+        role="status"
+        matTooltip="Disconnected from the Papercut service — retrying…">
+        <lucide-icon [img]="icons.PlugZap" [size]="15"></lucide-icon>
+      </span>
+    }
+    `,
   styles: [`
     :host { display: contents; }
 

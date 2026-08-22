@@ -53,79 +53,88 @@ import { Observable, map } from 'rxjs';
             </span>
           </div>
         </div>
-
+    
         <!-- Actions -->
         <div class="nav-actions">
           <button class="papercut-nav-btn" (click)="showLog()">
             <lucide-icon [img]="icons.ScrollText" [size]="15"></lucide-icon>
             <span>Log</span>
           </button>
-
+    
           <button class="papercut-nav-btn" (click)="showRules()">
             <lucide-icon [img]="icons.ListChecks" [size]="15"></lucide-icon>
             <span>Rules</span>
-            <span class="nav-count" *ngIf="rulesCount > 0">{{ rulesCount }}</span>
+            @if (rulesCount > 0) {
+              <span class="nav-count">{{ rulesCount }}</span>
+            }
           </button>
-
+    
           <button class="papercut-nav-btn" (click)="showOptions()">
             <lucide-icon [img]="icons.Settings2" [size]="15"></lucide-icon>
             <span>Options</span>
           </button>
-
-          <button class="papercut-nav-btn"
-                  *ngIf="(mcpStatus$ | async)?.enabled"
-                  (click)="copyMcpUrl()"
-                  [matTooltip]="'MCP endpoint: ' + ((mcpStatus$ | async)?.url || '') + ' (click to copy)'">
-            <lucide-icon [img]="icons.Zap" [size]="15"></lucide-icon>
-            <span>{{ mcpCopied ? 'Copied!' : 'MCP' }}</span>
-          </button>
-
+    
+          @if ((mcpStatus$ | async)?.enabled) {
+            <button class="papercut-nav-btn"
+              (click)="copyMcpUrl()"
+              [matTooltip]="'MCP endpoint: ' + ((mcpStatus$ | async)?.url || '') + ' (click to copy)'">
+              <lucide-icon [img]="icons.Zap" [size]="15"></lucide-icon>
+              <span>{{ mcpCopied ? 'Copied!' : 'MCP' }}</span>
+            </button>
+          }
+    
           <!-- Only visible when the service has gone away -->
           <app-connection-status></app-connection-status>
-
+    
           <span class="nav-divider desktop-only"></span>
-
+    
           <!-- Theme accent picker -->
           <button class="papercut-nav-btn desktop-only"
-                  [matMenuTriggerFor]="accentMenu"
-                  matTooltip="Theme accent">
+            [matMenuTriggerFor]="accentMenu"
+            matTooltip="Theme accent">
             <lucide-icon [img]="icons.Palette" [size]="15"></lucide-icon>
           </button>
           <mat-menu #accentMenu="matMenu" class="accent-menu">
-            <button mat-menu-item
-                    *ngFor="let accent of themeService.accentColors"
-                    (click)="setAccent(accent)"
-                    class="accent-menu-item">
-              <span class="accent-swatch" [style.background]="accent.value"></span>
-              <span class="accent-name">{{ accent.name }}</span>
-              <lucide-icon *ngIf="isCurrentAccent(accent)"
-                           [img]="icons.Check" [size]="14"
-                           class="accent-check"></lucide-icon>
-            </button>
+            @for (accent of themeService.accentColors; track accent) {
+              <button mat-menu-item
+                (click)="setAccent(accent)"
+                class="accent-menu-item">
+                <span class="accent-swatch" [style.background]="accent.value"></span>
+                <span class="accent-name">{{ accent.name }}</span>
+                @if (isCurrentAccent(accent)) {
+                  <lucide-icon
+                    [img]="icons.Check" [size]="14"
+                  class="accent-check"></lucide-icon>
+                }
+              </button>
+            }
           </mat-menu>
-
+    
           <!-- Theme: System / Light / Dark -->
           <button class="papercut-nav-btn desktop-only"
-                  [matMenuTriggerFor]="themeMenu"
-                  matTooltip="Theme">
+            [matMenuTriggerFor]="themeMenu"
+            matTooltip="Theme">
             <lucide-icon [img]="currentThemeIcon()" [size]="15"></lucide-icon>
           </button>
           <mat-menu #themeMenu="matMenu">
-            <button mat-menu-item
-                    *ngFor="let option of themeOptions"
-                    (click)="setThemePreference(option.value)"
-                    class="theme-menu-item">
-              <lucide-icon [img]="option.icon" [size]="15" class="theme-option-icon"></lucide-icon>
-              <span class="theme-option-name">{{ option.label }}</span>
-              <lucide-icon *ngIf="isCurrentPreference(option.value)"
-                           [img]="icons.Check" [size]="14"
-                           class="theme-check"></lucide-icon>
-            </button>
+            @for (option of themeOptions; track option) {
+              <button mat-menu-item
+                (click)="setThemePreference(option.value)"
+                class="theme-menu-item">
+                <lucide-icon [img]="option.icon" [size]="15" class="theme-option-icon"></lucide-icon>
+                <span class="theme-option-name">{{ option.label }}</span>
+                @if (isCurrentPreference(option.value)) {
+                  <lucide-icon
+                    [img]="icons.Check" [size]="14"
+                  class="theme-check"></lucide-icon>
+                }
+              </button>
+            }
           </mat-menu>
         </div>
       </div>
     </nav>
-  `,
+    `,
   styles: [`
     /* Theme and accent are chrome, not tools -- on a narrow window the nav bar
        needs the room, and both are reachable from Options anyway. */

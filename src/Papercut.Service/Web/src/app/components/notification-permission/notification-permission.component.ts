@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { LucideAngularModule, Bell } from 'lucide-angular';
@@ -8,48 +8,51 @@ import { PlatformNotificationService } from '../../services/platform-notificatio
 
 @Component({
   selector: 'app-notification-permission',
-  imports: [CommonModule, MatButtonModule, MatCardModule, LucideAngularModule],
+  imports: [MatButtonModule, MatCardModule, LucideAngularModule],
   template: `
     <!-- Background overlay for better separation -->
-    <div *ngIf="shouldShowPrompt" 
-         class="fixed inset-0 bg-black/10 dark:bg-black/30 z-40 backdrop-blur-[1px]"></div>
+    @if (shouldShowPrompt) {
+      <div
+      class="fixed inset-0 bg-black/10 dark:bg-black/30 z-40 backdrop-blur-[1px]"></div>
+    }
     
     <!-- Notification card -->
-    <div *ngIf="shouldShowPrompt" 
-         class="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 md:mx-0">
-      <mat-card class="shadow-2xl dark:shadow-black/50 rounded-xl border border-gray-200 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-900 ring-1 ring-black/5 dark:ring-white/10">
-        <!-- Header section with icon and text -->
-        <div class="flex items-start gap-4 p-4 pb-3">
-          <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--pc-accent-soft);">
-            <lucide-icon [img]="icons.Bell" [size]="22" class="text-accent-text"></lucide-icon>
+    @if (shouldShowPrompt) {
+      <div
+        class="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 md:mx-0">
+        <mat-card class="shadow-2xl dark:shadow-black/50 rounded-xl border border-gray-200 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-900 ring-1 ring-black/5 dark:ring-white/10">
+          <!-- Header section with icon and text -->
+          <div class="flex items-start gap-4 p-4 pb-3">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--pc-accent-soft);">
+              <lucide-icon [img]="icons.Bell" [size]="22" class="text-accent-text"></lucide-icon>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-base font-medium text-gray-900 dark:text-white mb-1">
+                Enable Notifications
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                Get notified when new emails arrive, even when this tab isn't active.
+              </p>
+            </div>
           </div>
-          <div class="flex-1 min-w-0">
-            <h3 class="text-base font-medium text-gray-900 dark:text-white mb-1">
+          <!-- Button section at bottom -->
+          <div class="px-4 pb-4 flex justify-end gap-2">
+            <button mat-button
+              (click)="dismissPermissionPrompt()"
+              class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm">
+              Not Now
+            </button>
+            <button mat-raised-button
+              color="primary"
+              (click)="requestPermission()"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
               Enable Notifications
-            </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              Get notified when new emails arrive, even when this tab isn't active.
-            </p>
+            </button>
           </div>
-        </div>
-        
-        <!-- Button section at bottom -->
-        <div class="px-4 pb-4 flex justify-end gap-2">
-          <button mat-button 
-                  (click)="dismissPermissionPrompt()" 
-                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm">
-            Not Now
-          </button>
-          <button mat-raised-button 
-                  color="primary" 
-                  (click)="requestPermission()"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-            Enable Notifications
-          </button>
-        </div>
-      </mat-card>
-    </div>
-  `,
+        </mat-card>
+      </div>
+    }
+    `,
   styles: []
 })
 export class NotificationPermissionComponent implements OnInit {

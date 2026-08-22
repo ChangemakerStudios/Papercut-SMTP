@@ -16,7 +16,7 @@
 // limitations under the License.
 
 import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { LucideAngularModule, AlertTriangle, HelpCircle, X } from 'lucide-angular';
 
@@ -46,40 +46,42 @@ export interface ConfirmDialogData {
  */
 @Component({
   selector: 'app-confirm-dialog',
-  imports: [CommonModule, MatDialogModule, LucideAngularModule],
+  imports: [MatDialogModule, LucideAngularModule],
   template: `
     <div class="confirm-dialog">
       <div class="dialog-header">
         <lucide-icon [img]="data.danger ? icons.AlertTriangle : icons.HelpCircle"
-                     [size]="16"
-                     [class.icon-danger]="data.danger"></lucide-icon>
+          [size]="16"
+        [class.icon-danger]="data.danger"></lucide-icon>
         <h2 class="dialog-title">{{ data.title }}</h2>
         <button class="dialog-close" (click)="cancel()" aria-label="Close">
           <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
         </button>
       </div>
-
+    
       <div class="dialog-body">
         <p class="confirm-message">{{ data.message }}</p>
-        <p class="confirm-detail" *ngIf="data.detail">{{ data.detail }}</p>
+        @if (data.detail) {
+          <p class="confirm-detail">{{ data.detail }}</p>
+        }
       </div>
-
+    
       <div class="dialog-actions">
         <button class="pc-btn"
-                [attr.cdkFocusInitial]="focusCancel ? '' : null"
-                (click)="cancel()">
+          [attr.cdkFocusInitial]="focusCancel ? '' : null"
+          (click)="cancel()">
           {{ data.cancelLabel || 'Cancel' }}
         </button>
         <button class="pc-btn"
-                [class.pc-btn-primary]="!data.danger"
-                [class.pc-btn-danger]="data.danger"
-                [attr.cdkFocusInitial]="focusCancel ? null : ''"
-                (click)="confirm()">
+          [class.pc-btn-primary]="!data.danger"
+          [class.pc-btn-danger]="data.danger"
+          [attr.cdkFocusInitial]="focusCancel ? null : ''"
+          (click)="confirm()">
           {{ data.confirmLabel || 'OK' }}
         </button>
       </div>
     </div>
-  `,
+    `,
   styles: [`
     .confirm-dialog {
       min-width: 360px;

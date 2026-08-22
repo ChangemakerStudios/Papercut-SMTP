@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { LucideAngularModule, Forward, Trash2, Trash } from 'lucide-angular';
 import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-bottom-toolbar',
-  imports: [CommonModule, MatTooltipModule, LucideAngularModule],
+  imports: [MatTooltipModule, LucideAngularModule],
   template: `
     <div class="bottom-toolbar">
       <div class="toolbar-container">

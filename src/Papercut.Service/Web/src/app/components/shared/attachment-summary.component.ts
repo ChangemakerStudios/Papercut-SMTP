@@ -15,7 +15,7 @@
 // limitations under the License.
 
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -34,58 +34,64 @@ export interface Attachment {
 @Component({
   selector: 'app-attachment-summary',
   imports: [
-    CommonModule,
     MatIconModule,
     MatButtonModule
-  ],
+],
   template: `
     <div class="flex items-start gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
       <!-- Icon -->
       <div class="flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-800/40 rounded-full flex-shrink-0">
         <mat-icon class="text-purple-600 dark:text-purple-400 flex items-center justify-center">attach_file</mat-icon>
       </div>
-      
+    
       <!-- Content -->
       <div class="flex-1 min-w-0">
         <h4 class="font-semibold text-gray-800 dark:text-gray-100 text-sm mb-0.5">Attachments</h4>
         <div class="text-gray-700 dark:text-gray-300 text-sm">
-          <ng-container *ngIf="attachments && attachments.length > 0; else noAttachments">
+          @if (attachments && attachments.length > 0) {
             <div class="flex items-center justify-between">
               <span>{{ attachments.length }} attachment(s)</span>
-              <button 
-                *ngIf="showViewButton"
-                mat-icon-button 
-                color="primary" 
-                size="small"
-                (click)="onViewAttachments()"
-                title="View attachments">
-                <mat-icon>visibility</mat-icon>
-              </button>
+              @if (showViewButton) {
+                <button
+                  mat-icon-button
+                  color="primary"
+                  size="small"
+                  (click)="onViewAttachments()"
+                  title="View attachments">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              }
             </div>
-            
             <!-- Attachment preview (optional) -->
-            <div *ngIf="showPreview && attachments.length > 0" class="mt-2 space-y-1">
-              <div *ngFor="let attachment of attachments.slice(0, maxPreviewItems)" 
-                   class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                <mat-icon class="text-xs">{{ getAttachmentIcon(attachment) }}</mat-icon>
-                <span class="truncate">{{ attachment.fileName || 'Unnamed attachment' }}</span>
-                <span *ngIf="attachment.size" class="text-gray-500">
-                  ({{ formatFileSize(attachment.size) }})
-                </span>
+            @if (showPreview && attachments.length > 0) {
+              <div class="mt-2 space-y-1">
+                @for (attachment of attachments.slice(0, maxPreviewItems); track attachment) {
+                  <div
+                    class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                    <mat-icon class="text-xs">{{ getAttachmentIcon(attachment) }}</mat-icon>
+                    <span class="truncate">{{ attachment.fileName || 'Unnamed attachment' }}</span>
+                    @if (attachment.size) {
+                      <span class="text-gray-500">
+                        ({{ formatFileSize(attachment.size) }})
+                      </span>
+                    }
+                  </div>
+                }
+                @if (attachments.length > maxPreviewItems) {
+                  <div class="text-xs text-gray-500 italic">
+                    +{{ attachments.length - maxPreviewItems }} more
+                  </div>
+                }
               </div>
-              <div *ngIf="attachments.length > maxPreviewItems" class="text-xs text-gray-500 italic">
-                +{{ attachments.length - maxPreviewItems }} more
-              </div>
-            </div>
-          </ng-container>
-          
-          <ng-template #noAttachments>
+            }
+          } @else {
             <span class="text-gray-500 dark:text-gray-400 italic">No attachments</span>
-          </ng-template>
+          }
+    
         </div>
       </div>
     </div>
-  `,
+    `,
   styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

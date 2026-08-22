@@ -174,44 +174,46 @@ export class FileDownloaderService {
     LucideAngularModule
   ],
   template: `
-    <div *ngIf="downloads.length > 0" class="fixed bottom-4 right-4 z-50 space-y-2">
-      <div *ngFor="let download of downloads"
-           class="rounded-lg shadow-lg border p-3 min-w-80 max-w-96"
-           style="background: var(--pc-surface); border-color: var(--pc-border);">
-        <div class="flex items-center gap-3">
-          <lucide-icon [img]="getStatusIcon(download.status)" [size]="18"
+    @if (downloads.length > 0) {
+      <div class="fixed bottom-4 right-4 z-50 space-y-2">
+        @for (download of downloads; track download) {
+          <div
+            class="rounded-lg shadow-lg border p-3 min-w-80 max-w-96"
+            style="background: var(--pc-surface); border-color: var(--pc-border);">
+            <div class="flex items-center gap-3">
+              <lucide-icon [img]="getStatusIcon(download.status)" [size]="18"
                        [ngClass]="{
                          'text-accent-text': download.status === 'downloading',
                          'text-ok': download.status === 'completed',
                          'text-danger': download.status === 'error'
                        }"></lucide-icon>
-
-          <div class="flex-1 min-w-0">
-            <div class="text-sm font-medium text-ink-strong truncate">
-              {{ download.filename }}
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium text-ink-strong truncate">
+                  {{ download.filename }}
+                </div>
+                <div class="text-xs text-muted">
+                  {{ getStatusText(download) }}
+                </div>
+                <!-- Progress Bar -->
+                @if (download.status === 'downloading') {
+                  <mat-progress-bar
+                    mode="determinate"
+                    [value]="download.progress"
+                    class="mt-1">
+                  </mat-progress-bar>
+                }
+              </div>
+              <button mat-icon-button
+                (click)="removeDownload(download.id)"
+                class="text-faint hover:text-muted">
+                <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
+              </button>
             </div>
-            <div class="text-xs text-muted">
-              {{ getStatusText(download) }}
-            </div>
-
-            <!-- Progress Bar -->
-            <mat-progress-bar
-              *ngIf="download.status === 'downloading'"
-              mode="determinate"
-              [value]="download.progress"
-              class="mt-1">
-            </mat-progress-bar>
           </div>
-
-          <button mat-icon-button
-                  (click)="removeDownload(download.id)"
-                  class="text-faint hover:text-muted">
-            <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
-          </button>
-        </div>
+        }
       </div>
-    </div>
-  `,
+    }
+    `,
   styles: [`
     :host {
       position: fixed;

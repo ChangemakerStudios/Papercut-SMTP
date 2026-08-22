@@ -55,7 +55,7 @@ const LEVEL_RANK: Record<string, number> = {
       <div class="dialog-header">
         <lucide-icon [img]="icons.ScrollText" [size]="16"></lucide-icon>
         <h2 class="dialog-title">Service Log</h2>
-
+    
         <select class="pc-input level-select" [(ngModel)]="minLevel">
           <option value="Verbose">Verbose</option>
           <option value="Debug">Debug</option>
@@ -63,41 +63,48 @@ const LEVEL_RANK: Record<string, number> = {
           <option value="Warning">Warning</option>
           <option value="Error">Error</option>
         </select>
-
+    
         <input class="pc-input filter-input" [(ngModel)]="filterText" placeholder="filter…" />
-
+    
         <button class="header-btn" (click)="togglePause()"
-                [matTooltip]="isPaused ? 'Resume tailing' : 'Pause tailing'">
+          [matTooltip]="isPaused ? 'Resume tailing' : 'Pause tailing'">
           <lucide-icon [img]="isPaused ? icons.Play : icons.Pause" [size]="15"></lucide-icon>
         </button>
-
+    
         <button class="header-btn" [class.active]="follow" (click)="follow = !follow"
-                matTooltip="Follow (auto-scroll)">
+          matTooltip="Follow (auto-scroll)">
           <lucide-icon [img]="icons.ArrowDownToLine" [size]="15"></lucide-icon>
         </button>
-
+    
         <button class="dialog-close" (click)="close()">
           <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
         </button>
       </div>
-
+    
       <div class="log-body" #logBody>
-        <div class="log-loading" *ngIf="isLoading">
-          <mat-spinner diameter="28" strokeWidth="3"></mat-spinner>
-          <span>Loading the log…</span>
-        </div>
-        <div class="log-empty" *ngIf="!isLoading && visibleEntries().length === 0">
-          {{ entries.length === 0 ? 'Waiting for log output…' : 'No entries match the current filter.' }}
-        </div>
-        <div class="log-line" *ngFor="let entry of visibleEntries(); trackBy: trackBySeq">
-          <span class="log-time">{{ entry.timestamp | date:'HH:mm:ss.SSS' }}</span>
-          <span class="log-level" [ngClass]="levelClass(entry.level)">[{{ levelAbbr(entry.level) }}]</span>
-          <span class="log-msg">{{ entry.message }}<ng-container *ngIf="entry.exception">
-{{ entry.exception }}</ng-container></span>
-        </div>
+        @if (isLoading) {
+          <div class="log-loading">
+            <mat-spinner diameter="28" strokeWidth="3"></mat-spinner>
+            <span>Loading the log…</span>
+          </div>
+        }
+        @if (!isLoading && visibleEntries().length === 0) {
+          <div class="log-empty">
+            {{ entries.length === 0 ? 'Waiting for log output…' : 'No entries match the current filter.' }}
+          </div>
+        }
+        @for (entry of visibleEntries(); track trackBySeq($index, entry)) {
+          <div class="log-line">
+            <span class="log-time">{{ entry.timestamp | date:'HH:mm:ss.SSS' }}</span>
+            <span class="log-level" [ngClass]="levelClass(entry.level)">[{{ levelAbbr(entry.level) }}]</span>
+            <span class="log-msg">{{ entry.message }}@if (entry.exception) {
+              {{ entry.exception }}
+            }</span>
+          </div>
+        }
       </div>
     </div>
-  `,
+    `,
   styles: [`
     .log-dialog {
       display: flex;

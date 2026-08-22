@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
@@ -25,82 +25,94 @@ import { SafeIframeComponent } from '../safe-iframe/safe-iframe.component';
 @Component({
   selector: 'app-message-sections',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatProgressSpinnerModule,
     LucideAngularModule,
     DownloadButtonDirective,
     SafeIframeComponent,
     FileSizePipe
-  ],
+],
   template: `
     <!-- Sections List -->
     <div class="h-full overflow-auto bg-surface">
       <div class="p-4 space-y-3">
-        <div *ngFor="let section of getMessageSections(); let i = index" class="section-item">
-          <!-- Section Header. The whole row toggles an expandable section --
-               a 30px chevron is a needlessly small target for a full-width row. -->
-          <div class="section-header"
-               [class.is-expandable]="shouldShowViewButton(section)"
-               [attr.role]="shouldShowViewButton(section) ? 'button' : null"
-               [attr.tabindex]="shouldShowViewButton(section) ? 0 : null"
-               [attr.aria-expanded]="shouldShowViewButton(section) ? isViewingSection(i) : null"
-               (click)="onHeaderActivate(section, i)"
-               (keydown.enter)="onHeaderActivate(section, i)"
-               (keydown.space)="onHeaderActivate(section, i); $event.preventDefault()">
-            <lucide-icon [img]="getSectionIcon(section.fileName || section.mediaType || 'Unknown')"
-                         [size]="16" class="text-muted"></lucide-icon>
-            <div class="flex-1 min-w-0">
-              <div class="section-type truncate">
-                {{ getSectionTitle(section) }}
-                <span *ngIf="section.isAttachment" class="section-badge">attachment</span>
-              </div>
-              <div class="section-info truncate">
-                {{ section.mediaType || 'unknown type' }}<ng-container *ngIf="section.size != null"> · {{ section.size | fileSize }}</ng-container>
+        @for (section of getMessageSections(); track section; let i = $index) {
+          <div class="section-item">
+            <!-- Section Header. The whole row toggles an expandable section --
+            a 30px chevron is a needlessly small target for a full-width row. -->
+            <div class="section-header"
+              [class.is-expandable]="shouldShowViewButton(section)"
+              [attr.role]="shouldShowViewButton(section) ? 'button' : null"
+              [attr.tabindex]="shouldShowViewButton(section) ? 0 : null"
+              [attr.aria-expanded]="shouldShowViewButton(section) ? isViewingSection(i) : null"
+              (click)="onHeaderActivate(section, i)"
+              (keydown.enter)="onHeaderActivate(section, i)"
+              (keydown.space)="onHeaderActivate(section, i); $event.preventDefault()">
+              <lucide-icon [img]="getSectionIcon(section.fileName || section.mediaType || 'Unknown')"
+              [size]="16" class="text-muted"></lucide-icon>
+              <div class="flex-1 min-w-0">
+                <div class="section-type truncate">
+                  {{ getSectionTitle(section) }}
+                  @if (section.isAttachment) {
+                    <span class="section-badge">attachment</span>
+                  }
+                </div>
+                <div class="section-info truncate">
+                  {{ section.mediaType || 'unknown type' }}@if (section.size != null) {
+                  · {{ section.size | fileSize }}
+                }
               </div>
             </div>
             <div class="flex items-center gap-1">
               <!-- View Button (for text/plain and text/html without filename) -->
-              <button
-                *ngIf="shouldShowViewButton(section)"
-                class="section-action-btn"
-                (click)="toggleSectionView(section, i); $event.stopPropagation()"
-                [title]="isViewingSection(i) ? 'Collapse content' : 'Expand content'">
-                <lucide-icon [img]="isViewingSection(i) ? sectionIcons.ChevronUp : sectionIcons.ChevronDown" [size]="16"></lucide-icon>
-              </button>
+              @if (shouldShowViewButton(section)) {
+                <button
+                  class="section-action-btn"
+                  (click)="toggleSectionView(section, i); $event.stopPropagation()"
+                  [title]="isViewingSection(i) ? 'Collapse content' : 'Expand content'">
+                  <lucide-icon [img]="isViewingSection(i) ? sectionIcons.ChevronUp : sectionIcons.ChevronDown" [size]="16"></lucide-icon>
+                </button>
+              }
               <!-- Download Button -->
-              <button
-                *ngIf="shouldShowDownloadButton(section)"
-                class="section-action-btn"
-                (click)="$event.stopPropagation()"
-                [appDownloadButton]="getDownloadButtonId(section, i)"
-                [downloadUrl]="buildSectionUrl(section, i)"
-                [downloadFilename]="section.fileName || 'section-' + (section.id || i)"
-                title="Download">
-                <lucide-icon [img]="sectionIcons.Download" [size]="16"></lucide-icon>
-              </button>
+              @if (shouldShowDownloadButton(section)) {
+                <button
+                  class="section-action-btn"
+                  (click)="$event.stopPropagation()"
+                  [appDownloadButton]="getDownloadButtonId(section, i)"
+                  [downloadUrl]="buildSectionUrl(section, i)"
+                  [downloadFilename]="section.fileName || 'section-' + (section.id || i)"
+                  title="Download">
+                  <lucide-icon [img]="sectionIcons.Download" [size]="16"></lucide-icon>
+                </button>
+              }
             </div>
           </div>
-
           <!-- Expanded Content Area -->
-          <div *ngIf="isViewingSection(i)" class="border-t" style="border-color: var(--pc-border);">
-            <div class="p-3" style="background: var(--pc-surface-2);">
-              <div *ngIf="isSectionLoading(i)" class="flex items-center justify-center py-8">
-                <mat-spinner diameter="32"></mat-spinner>
-                <span class="ml-3 text-sm text-muted">Loading content...</span>
-              </div>
-              <div *ngIf="!isSectionLoading(i)" class="rounded border overflow-hidden" style="border-color: var(--pc-border); background: var(--pc-surface);">
-                <app-safe-iframe
-                  cssStyle="min-height: 200px; max-height: 400px;"
-                  [content]="getSectionContentForViewing(i)">
-                </app-safe-iframe>
+          @if (isViewingSection(i)) {
+            <div class="border-t" style="border-color: var(--pc-border);">
+              <div class="p-3" style="background: var(--pc-surface-2);">
+                @if (isSectionLoading(i)) {
+                  <div class="flex items-center justify-center py-8">
+                    <mat-spinner diameter="32"></mat-spinner>
+                    <span class="ml-3 text-sm text-muted">Loading content...</span>
+                  </div>
+                }
+                @if (!isSectionLoading(i)) {
+                  <div class="rounded border overflow-hidden" style="border-color: var(--pc-border); background: var(--pc-surface);">
+                    <app-safe-iframe
+                      cssStyle="min-height: 200px; max-height: 400px;"
+                      [content]="getSectionContentForViewing(i)">
+                    </app-safe-iframe>
+                  </div>
+                }
               </div>
             </div>
-          </div>
+          }
         </div>
-      </div>
+      }
     </div>
-  `,
+    </div>
+    `,
   styles: [`
     :host {
       display: block;

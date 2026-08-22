@@ -45,25 +45,22 @@ interface MessageViewData {
   ],
   template: `
     <div class="flex flex-col h-full bg-surface transition-colors duration-300 relative">
-
+    
       <!-- Single async pipe to prevent duplicate subscriptions -->
-      <ng-container *ngIf="messageData$ | async as messageData; else loadingTemplate">
-
+      @if (messageData$ | async; as messageData) {
         <!-- Labeled header fields (desktop-style From/To/Date/Subject rows) -->
         <app-message-header [message]="messageData"></app-message-header>
-
         <!-- Content Section with Tabs.
-             The tab group and its iframe are deliberately NOT behind an *ngIf:
-             tearing them down per message meant rebuilding Material's tab
-             group and a fresh iframe on every click, which is most of the
-             click-to-render cost. They stay mounted and the content swaps. -->
+        The tab group and its iframe are deliberately NOT behind an *ngIf:
+        tearing them down per message meant rebuilding Material's tab
+        group and a fresh iframe on every click, which is most of the
+        click-to-render cost. They stay mounted and the content swaps. -->
         <div class="flex-1 overflow-hidden bg-surface message-tabs relative">
           <div class="h-full">
             <!-- Tabs Content -->
             <mat-tab-group class="h-full" dynamicHeight="false" animationDuration="0ms"
-                           [selectedIndex]="selectedTabIndex"
-                           (selectedIndexChange)="selectedTabIndex = $event">
-
+              [selectedIndex]="selectedTabIndex"
+              (selectedIndexChange)="selectedTabIndex = $event">
               <!-- Message Tab (HTML iframe view) -->
               <mat-tab label="Message">
                 <div class="h-full overflow-hidden bg-surface flex flex-col">
@@ -75,37 +72,41 @@ interface MessageViewData {
                       (rendered)="onBodyRendered($event)">
                     </app-safe-iframe>
                   </div>
-
                   <!-- Attachments bar (desktop-style, bottom of the message view) -->
-                  <div class="attachments-bar" *ngIf="messageData.detail?.attachments?.length">
-                    <span class="attachments-label">Attachments</span>
-                    <div class="attachments-chips">
-                      <button class="attachment-chip"
-                              *ngFor="let att of messageData.detail?.attachments"
-                              [appDownloadButton]="'attach-' + (att.id || att.index)"
-                              [downloadUrl]="buildAttachmentUrl(messageData.detail, att)"
-                              [downloadFilename]="att.fileName || 'attachment-' + (att.index ?? 0)"
-                              [title]="'Download ' + (att.fileName || att.mediaType || 'attachment')">
-                        <lucide-icon [img]="icons.Paperclip" [size]="14"></lucide-icon>
-                        <span class="chip-name">{{ att.fileName || att.mediaType || 'attachment' }}</span>
-                        <span class="chip-size" *ngIf="att.size != null">{{ att.size | fileSize }}</span>
-                      </button>
+                  @if (messageData.detail?.attachments?.length) {
+                    <div class="attachments-bar">
+                      <span class="attachments-label">Attachments</span>
+                      <div class="attachments-chips">
+                        @for (att of messageData.detail?.attachments; track att) {
+                          <button class="attachment-chip"
+                            [appDownloadButton]="'attach-' + (att.id || att.index)"
+                            [downloadUrl]="buildAttachmentUrl(messageData.detail, att)"
+                            [downloadFilename]="att.fileName || 'attachment-' + (att.index ?? 0)"
+                            [title]="'Download ' + (att.fileName || att.mediaType || 'attachment')">
+                            <lucide-icon [img]="icons.Paperclip" [size]="14"></lucide-icon>
+                            <span class="chip-name">{{ att.fileName || att.mediaType || 'attachment' }}</span>
+                            @if (att.size != null) {
+                              <span class="chip-size">{{ att.size | fileSize }}</span>
+                            }
+                          </button>
+                        }
+                      </div>
                     </div>
-                  </div>
+                  }
                 </div>
               </mat-tab>
-
               <!-- Headers Tab -->
               <mat-tab label="Headers">
                 <div class="h-full overflow-auto bg-surface">
                   <div class="p-4 headers-content">
-                    <div *ngFor="let header of getMessageHeaders(messageData.detail)" class="header-item">
-                      <span class="header-name">{{ header.name }}:</span><span class="header-value">{{ header.value }}</span>
-                    </div>
+                    @for (header of getMessageHeaders(messageData.detail); track header) {
+                      <div class="header-item">
+                        <span class="header-name">{{ header.name }}:</span><span class="header-value">{{ header.value }}</span>
+                      </div>
+                    }
                   </div>
                 </div>
               </mat-tab>
-
               <!-- Body Tab (Plain text) -->
               <mat-tab label="Body">
                 <div class="h-full overflow-hidden bg-surface">
@@ -114,38 +115,30 @@ interface MessageViewData {
                   </div>
                 </div>
               </mat-tab>
-
               <!-- Sections Tab -->
               <mat-tab label="Sections" [disabled]="!messageData.detail?.sections?.length">
                 <app-message-sections [message]="messageData.detail"></app-message-sections>
               </mat-tab>
-
               <!-- Raw Tab -->
               <mat-tab label="Raw">
                 <app-message-raw [message]="messageData.detail"></app-message-raw>
               </mat-tab>
-
             </mat-tab-group>
           </div>
         </div>
-
         <!-- Immediate acknowledgement that the click landed. A local message
-             opens in ~40ms, far too quick for the veil below, but the click
-             still deserves an answer -- so this appears at once and the veil
-             only joins it if the load is actually slow. -->
+        opens in ~40ms, far too quick for the veil below, but the click
+        still deserves an answer -- so this appears at once and the veil
+        only joins it if the load is actually slow. -->
         <div class="pane-progress" [class.is-loading]="isSwitchingMessage(messageData)"></div>
-
         <!-- The one loading indicator. It covers the whole pane (header
-             included, so no stale header shows over a new message) and stays
-             up until the body is painted -- see isSwitchingMessage(). It is
-             kept mounted so it can fade, rather than popping in and out. -->
+        included, so no stale header shows over a new message) and stays
+        up until the body is painted -- see isSwitchingMessage(). It is
+        kept mounted so it can fade, rather than popping in and out. -->
         <div class="loading-veil" [class.is-loading]="isSwitchingMessage(messageData)">
           <mat-spinner diameter="36" strokeWidth="3"></mat-spinner>
         </div>
-      </ng-container>
-
-      <!-- Loading Template -->
-      <ng-template #loadingTemplate>
+      } @else {
         <div class="flex-1 flex items-center justify-center min-h-96 bg-surface">
           <div class="text-center p-8">
             <lucide-icon [img]="icons.Mail" [size]="56" class="loading-mail-icon"></lucide-icon>
@@ -153,10 +146,12 @@ interface MessageViewData {
             <p class="text-faint">Please wait while we fetch the message details.</p>
           </div>
         </div>
-      </ng-template>
+      }
+    
+      <!-- Loading Template -->
     </div>
-
-  `,
+    
+    `,
   styles: [`
     /* Essential iframe styles for message content */
     iframe {

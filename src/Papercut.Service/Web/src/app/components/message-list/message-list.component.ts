@@ -45,100 +45,110 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     MessageListNoSelectionComponent
   ],
   template: `
-    <div class="flex h-full bg-gray-100 dark:bg-gray-900 transition-colors duration-300" 
-         [class.dragging]="isDragging">
+    <div class="flex h-full bg-gray-100 dark:bg-gray-900 transition-colors duration-300"
+      [class.dragging]="isDragging">
       <!-- Collapsed rail: all that is left of the list, and the way back to it.
-           The whole strip is the target -- a 26px icon is a silly thing to aim
-           at when there is a full-height bar sitting right there. -->
-      <div class="list-rail" *ngIf="isListCollapsed"
-           role="button"
-           tabindex="0"
-           aria-label="Show the message list"
-           matTooltip="Show the message list"
-           matTooltipPosition="right"
-           (click)="toggleListCollapsed()"
-           (keydown.enter)="toggleListCollapsed()"
-           (keydown.space)="toggleListCollapsed(); $event.preventDefault()">
-        <span class="rail-btn">
-          <lucide-icon [img]="icons.PanelLeftOpen" [size]="16"></lucide-icon>
-        </span>
-        <span class="rail-count">{{ totalCount }}</span>
-      </div>
-
-      <!-- Message List Panel -->
-      <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel"
-           *ngIf="!isListCollapsed"
-           [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
-        <!-- Count bar -->
-        <div class="list-count-bar">
-          <span class="list-count">
-            {{ totalCount }} {{ totalCount === 1 ? 'message' : 'messages' }}
+      The whole strip is the target -- a 26px icon is a silly thing to aim
+      at when there is a full-height bar sitting right there. -->
+      @if (isListCollapsed) {
+        <div class="list-rail"
+          role="button"
+          tabindex="0"
+          aria-label="Show the message list"
+          matTooltip="Show the message list"
+          matTooltipPosition="right"
+          (click)="toggleListCollapsed()"
+          (keydown.enter)="toggleListCollapsed()"
+          (keydown.space)="toggleListCollapsed(); $event.preventDefault()">
+          <span class="rail-btn">
+            <lucide-icon [img]="icons.PanelLeftOpen" [size]="16"></lucide-icon>
           </span>
-
-          <!-- Sort toggle. Shares the Options setting, so flipping it here
-               sticks and the two never disagree. -->
-          <button class="rail-btn sort-btn" (click)="toggleSortOrder()"
-                  [attr.aria-label]="sortOrder === 'desc' ? 'Newest first — sort oldest first instead' : 'Oldest first — sort newest first instead'"
-                  [matTooltip]="sortOrder === 'desc' ? 'Newest first' : 'Oldest first'">
-            <lucide-icon [img]="sortOrder === 'desc' ? icons.ArrowDown : icons.ArrowUp" [size]="14"></lucide-icon>
-          </button>
-          <span class="list-loaded" *ngIf="allMessages.length < totalCount">
-            {{ allMessages.length }} loaded
-          </span>
-          <mat-spinner *ngIf="isLoading || isLoadingMore" diameter="12" strokeWidth="2"></mat-spinner>
-
-          <button class="rail-btn count-bar-btn" (click)="toggleListCollapsed()"
-                  matTooltip="Collapse the message list" matTooltipPosition="left">
-            <lucide-icon [img]="icons.PanelLeftClose" [size]="15"></lucide-icon>
-          </button>
+          <span class="rail-count">{{ totalCount }}</span>
         </div>
-
-        <!-- No Messages Placeholder -->
-        <app-message-list-empty-state *ngIf="!isLoading && allMessages.length === 0"></app-message-list-empty-state>
-
-        <!-- Virtualized list: only the visible rows exist in the DOM, and the
-             next chunk loads as it comes into view -->
-        <cdk-virtual-scroll-viewport
-          *ngIf="allMessages.length > 0"
-          [itemSize]="messageRowHeight"
-          minBufferPx="600"
-          maxBufferPx="1200"
-          class="flex-1 w-full"
-          (scrolledIndexChange)="onScrolledIndexChange()">
-          <app-message-list-item
-            *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
-            [message]="message"
-            [selected]="message.id === selectedMessageId"
-            [inSelection]="isInSelection(message.id)"
-            (select)="onRowClick(message.id!, $event)"
-            class="block w-full">
-          </app-message-list-item>
-        </cdk-virtual-scroll-viewport>
-      </div>
-
+      }
+    
+      <!-- Message List Panel -->
+      @if (!isListCollapsed) {
+        <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel"
+          [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
+          <!-- Count bar -->
+          <div class="list-count-bar">
+            <span class="list-count">
+              {{ totalCount }} {{ totalCount === 1 ? 'message' : 'messages' }}
+            </span>
+            <!-- Sort toggle. Shares the Options setting, so flipping it here
+            sticks and the two never disagree. -->
+            <button class="rail-btn sort-btn" (click)="toggleSortOrder()"
+              [attr.aria-label]="sortOrder === 'desc' ? 'Newest first — sort oldest first instead' : 'Oldest first — sort newest first instead'"
+              [matTooltip]="sortOrder === 'desc' ? 'Newest first' : 'Oldest first'">
+              <lucide-icon [img]="sortOrder === 'desc' ? icons.ArrowDown : icons.ArrowUp" [size]="14"></lucide-icon>
+            </button>
+            @if (allMessages.length < totalCount) {
+              <span class="list-loaded">
+                {{ allMessages.length }} loaded
+              </span>
+            }
+            @if (isLoading || isLoadingMore) {
+              <mat-spinner diameter="12" strokeWidth="2"></mat-spinner>
+            }
+            <button class="rail-btn count-bar-btn" (click)="toggleListCollapsed()"
+              matTooltip="Collapse the message list" matTooltipPosition="left">
+              <lucide-icon [img]="icons.PanelLeftClose" [size]="15"></lucide-icon>
+            </button>
+          </div>
+          <!-- No Messages Placeholder -->
+          @if (!isLoading && allMessages.length === 0) {
+            <app-message-list-empty-state></app-message-list-empty-state>
+          }
+          <!-- Virtualized list: only the visible rows exist in the DOM, and the
+          next chunk loads as it comes into view -->
+          @if (allMessages.length > 0) {
+            <cdk-virtual-scroll-viewport
+              [itemSize]="messageRowHeight"
+              minBufferPx="600"
+              maxBufferPx="1200"
+              class="flex-1 w-full"
+              (scrolledIndexChange)="onScrolledIndexChange()">
+              <app-message-list-item
+                *cdkVirtualFor="let message of allMessages; trackBy: trackByMessageId"
+                [message]="message"
+                [selected]="message.id === selectedMessageId"
+                [inSelection]="isInSelection(message.id)"
+                (select)="onRowClick(message.id!, $event)"
+                class="block w-full">
+              </app-message-list-item>
+            </cdk-virtual-scroll-viewport>
+          }
+        </div>
+      }
+    
       <!-- Resizer Handle -->
-      <div class="flex-shrink-0 list-resizer" *ngIf="!isListCollapsed">
-        <app-resizer 
-          [currentWidth]="messageListWidth"
-          [minWidth]="200"
-          [maxWidth]="2000"
-          [defaultWidth]="400"
-          localStorageKey="papercut-message-list-width"
-          (widthChange)="onWidthChange($event)"
-          (draggingChange)="onDraggingChange($event)">
-        </app-resizer>
-      </div>
-
+      @if (!isListCollapsed) {
+        <div class="flex-shrink-0 list-resizer">
+          <app-resizer
+            [currentWidth]="messageListWidth"
+            [minWidth]="200"
+            [maxWidth]="2000"
+            [defaultWidth]="400"
+            localStorageKey="papercut-message-list-width"
+            (widthChange)="onWidthChange($event)"
+            (draggingChange)="onDraggingChange($event)">
+          </app-resizer>
+        </div>
+      }
+    
       <!-- Message Detail Panel -->
       <div class="flex-1 bg-white dark:bg-gray-800 flex flex-col min-w-0 relative message-detail-panel">
         <!-- No loader here: the detail pane owns the one loading indicator,
-             and it lifts when the body is actually on screen -->
+        and it lifts when the body is actually on screen -->
         <router-outlet></router-outlet>
-        
-        <app-message-list-no-selection *ngIf="!selectedMessageId"></app-message-list-no-selection>
+    
+        @if (!selectedMessageId) {
+          <app-message-list-no-selection></app-message-list-no-selection>
+        }
       </div>
     </div>
-  `,
+    `,
   styles: [`
     /* An Angular host defaults to display: inline, which left the layout below
        it without a definite height to stretch against -- the panes were sized

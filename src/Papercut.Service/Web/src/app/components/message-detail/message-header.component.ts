@@ -38,32 +38,40 @@ import { DetailDto, RefDto } from '../../models';
         <span class="field-label">From</span>
         <span class="field-value pc-mono">{{ formatAddresses(getFromAddresses()) || '—' }}</span>
       </div>
-      <div class="field-row" *ngIf="getToAddresses().length">
-        <span class="field-label">To</span>
-        <span class="field-value pc-mono">{{ formatAddresses(getToAddresses()) }}</span>
-      </div>
-      <div class="field-row" *ngIf="getCcAddresses().length">
-        <span class="field-label">CC</span>
-        <span class="field-value pc-mono">{{ formatAddresses(getCcAddresses()) }}</span>
-      </div>
-      <div class="field-row" *ngIf="getBccAddresses().length">
-        <span class="field-label">BCC</span>
-        <span class="field-value pc-mono">{{ formatAddresses(getBccAddresses()) }}</span>
-      </div>
+      @if (getToAddresses().length) {
+        <div class="field-row">
+          <span class="field-label">To</span>
+          <span class="field-value pc-mono">{{ formatAddresses(getToAddresses()) }}</span>
+        </div>
+      }
+      @if (getCcAddresses().length) {
+        <div class="field-row">
+          <span class="field-label">CC</span>
+          <span class="field-value pc-mono">{{ formatAddresses(getCcAddresses()) }}</span>
+        </div>
+      }
+      @if (getBccAddresses().length) {
+        <div class="field-row">
+          <span class="field-label">BCC</span>
+          <span class="field-value pc-mono">{{ formatAddresses(getBccAddresses()) }}</span>
+        </div>
+      }
       <div class="field-row">
         <span class="field-label">Date</span>
         <span class="field-value pc-mono">{{ (message?.detail?.createdAt || message?.ref?.createdAt) | date:'M/d/yyyy h:mm:ss a ZZZZZ' }}</span>
       </div>
-      <div class="field-row" *ngIf="getPriority() as priority">
-        <span class="field-label">Priority</span>
-        <span class="field-value field-priority" [class.priority-urgent]="priority === 'Urgent'">{{ priority }}</span>
-      </div>
+      @if (getPriority(); as priority) {
+        <div class="field-row">
+          <span class="field-label">Priority</span>
+          <span class="field-value field-priority" [class.priority-urgent]="priority === 'Urgent'">{{ priority }}</span>
+        </div>
+      }
       <div class="field-row">
         <span class="field-label">Subject</span>
         <span class="field-value field-subject">{{ (message?.detail?.subject || message?.ref?.subject) || '(No Subject)' }}</span>
       </div>
     </div>
-  `,
+    `,
   styles: [`
     .header-fields {
       background: var(--pc-surface);

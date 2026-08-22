@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subject, takeUntil, catchError, of, switchMap, tap } from 'rxjs';
 import { DetailDto, RefDto } from '../../models';
@@ -8,29 +8,34 @@ import { MessageService } from '../../services/message.service';
 @Component({
   selector: 'app-message-raw',
   imports: [
-    CommonModule,
     MatProgressSpinnerModule
-  ],
+],
   template: `
     <div class="h-full overflow-hidden bg-surface">
       <div class="h-full p-4 overflow-auto">
         <!-- Loading State -->
-        <div *ngIf="isLoading" class="flex items-center justify-center py-8">
-          <mat-spinner diameter="32"></mat-spinner>
-          <span class="ml-3 text-sm text-muted">Loading raw content...</span>
-        </div>
-
+        @if (isLoading) {
+          <div class="flex items-center justify-center py-8">
+            <mat-spinner diameter="32"></mat-spinner>
+            <span class="ml-3 text-sm text-muted">Loading raw content...</span>
+          </div>
+        }
+    
         <!-- Error State -->
-        <div *ngIf="error && !isLoading" class="text-center py-8">
-          <p class="text-danger text-sm mb-2">Failed to load raw content</p>
-          <p class="text-muted text-xs">{{ error }}</p>
-        </div>
-
+        @if (error && !isLoading) {
+          <div class="text-center py-8">
+            <p class="text-danger text-sm mb-2">Failed to load raw content</p>
+            <p class="text-muted text-xs">{{ error }}</p>
+          </div>
+        }
+    
         <!-- Raw Content -->
-        <code *ngIf="rawContent && !isLoading" class="raw-code block">{{ rawContent }}</code>
+        @if (rawContent && !isLoading) {
+          <code class="raw-code block">{{ rawContent }}</code>
+        }
       </div>
     </div>
-  `,
+    `,
   styles: [`
     :host {
       display: block;

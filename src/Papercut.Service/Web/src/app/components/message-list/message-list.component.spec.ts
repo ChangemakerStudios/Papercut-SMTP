@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { CommonModule } from '@angular/common';
+
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { of, throwError, delay } from 'rxjs';
@@ -44,15 +44,17 @@ describe('MessageListComponent', () => {
       selector: 'app-test-message-list',
       template: `
         <div class="test-message-list">
-          <div *ngFor="let message of allMessages" class="message-item">
-            {{ message.subject }}
-          </div>
+          @for (message of allMessages; track message) {
+            <div class="message-item">
+              {{ message.subject }}
+            </div>
+          }
           <div class="pagination-info">
             Page {{ currentPage }} of {{ totalPages }}
           </div>
         </div>
-      `,
-      imports: [CommonModule]
+        `,
+      imports: []
     })
     class TestMessageListComponent {
       allMessages: any[] = [];
