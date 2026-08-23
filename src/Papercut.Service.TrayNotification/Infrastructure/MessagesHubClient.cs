@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2026 Jaben Cargman
@@ -63,6 +63,19 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
     }
 
     public event EventHandler<NewMessageDto>? NewMessageReceived;
+
+    /// <summary>
+    /// Raised when <see cref="IsConnected" /> changes.
+    /// </summary>
+    public event EventHandler<bool>? ConnectionChanged;
+
+    /// <summary>
+    /// True while the hub connection is live. This is the tray's evidence that a
+    /// Papercut service is actually reachable, which is a different question from
+    /// whether the Windows Service is installed -- the service also runs as a
+    /// console app and in Docker.
+    /// </summary>
+    public bool IsConnected => _connection?.State == HubConnectionState.Connected;
 
     public void Start()
     {
@@ -150,6 +163,13 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
         {
             _logger.Information("Reconnected to the Papercut messages hub");
             await JoinMessagesGroupAsync(connection, CancellationToken.None);
+            RaiseConnectionChanged();
+        };
+
+        connection.Reconnecting += _ =>
+        {
+            RaiseConnectionChanged();
+            return Task.CompletedTask;
         };
 
         _connection = connection;
@@ -160,6 +180,20 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
         await JoinMessagesGroupAsync(connection, token);
 
         _logger.Information("Connected to the Papercut messages hub at {HubUrl}", hubUrl);
+
+        RaiseConnectionChanged();
+    }
+
+    private void RaiseConnectionChanged()
+    {
+        try
+        {
+            ConnectionChanged?.Invoke(this, IsConnected);
+        }
+        catch (Exception ex)
+        {
+            _logger.Debug(ex, "Connection changed handler threw");
+        }
     }
 
     private async Task JoinMessagesGroupAsync(HubConnection connection, CancellationToken token)
@@ -194,6 +228,7 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
                 _logger.Debug("Messages hub connection closed");
 
             closed.TrySetResult();
+            RaiseConnectionChanged();
 
             return Task.CompletedTask;
         }

@@ -27,13 +27,21 @@ namespace Papercut.Service.TrayNotification.Infrastructure;
 /// </summary>
 public class ServiceStatusService(
     PapercutServiceControllerProvider serviceControllerProvider,
-    ServiceEndpointProvider endpointProvider)
+    ServiceEndpointProvider endpointProvider,
+    MessagesHubClient hubClient)
 {
     private ServiceControllerStatus? _lastKnownStatus;
 
     public ServiceControllerStatus? CurrentStatus => _lastKnownStatus;
 
     public bool IsServiceInstalled { get; private set; } = true;
+
+    /// <summary>
+    /// True when a Papercut service is actually reachable, evidenced by a live
+    /// messages hub connection. The service can run as a console app or in Docker,
+    /// so this is deliberately independent of <see cref="IsServiceInstalled" />.
+    /// </summary>
+    public bool IsServiceReachable => hubClient.IsConnected;
 
     public event EventHandler<ServiceControllerStatus>? StatusChanged;
 
@@ -133,7 +141,7 @@ public class ServiceStatusService(
     {
         if (!IsServiceInstalled)
         {
-            return "Not Installed";
+            return IsServiceReachable ? "Running, not installed" : "Not Installed";
         }
 
         return _lastKnownStatus switch

@@ -78,7 +78,14 @@ public class ServiceTrayCoordinator : IDisposable
         {
             Interval = 2000
         };
-        _statusUpdateTimer.Tick += (_, _) => _serviceStatusService.UpdateStatus();
+        _statusUpdateTimer.Tick += (_, _) =>
+        {
+            _serviceStatusService.UpdateStatus();
+
+            // hub connectivity changes without the Windows Service status changing,
+            // so refresh the tooltip here rather than only on StatusChanged
+            UpdateTrayIcon();
+        };
         _statusUpdateTimer.Start();
 
         // Initial status update
@@ -239,12 +246,15 @@ public class ServiceTrayCoordinator : IDisposable
 
         if (!_serviceStatusService.IsServiceInstalled)
         {
-            statusLabel.Text = "✗ Service Not Installed";
+            // the service also runs as a console app or in Docker, where there is no
+            // Windows Service to control but the web UI and notifications work fine
+            var reachable = _serviceStatusService.IsServiceReachable;
+
+            statusLabel.Text = reachable ? "● Service Running (not installed)" : "✗ Service Not Installed";
             startItem.Enabled = false;
             stopItem.Enabled = false;
             restartItem.Enabled = false;
-            openWebUIItem.Enabled = false;
-            openWebUIItem.Text = "Open Web UI";
+            SetOpenWebUIItem(openWebUIItem, reachable);
             return;
         }
 
@@ -264,18 +274,20 @@ public class ServiceTrayCoordinator : IDisposable
         restartItem.Enabled = _serviceStatusService.CanRestart();
 
         // Update Open Web UI menu item with URL and enable only when service is running
-        var isRunning = status == ServiceControllerStatus.Running;
-        openWebUIItem.Enabled = isRunning;
+        var isRunning = status == ServiceControllerStatus.Running || _serviceStatusService.IsServiceReachable;
 
-        var cachedUrl = _serviceStatusService.CachedWebUIUrl;
-        if (!isRunning || string.IsNullOrEmpty(cachedUrl))
-        {
-            openWebUIItem.Text = "Open Web UI";
-        }
-        else
-        {
-            openWebUIItem.Text = $"Open Web UI ({cachedUrl})";
-        }
+        SetOpenWebUIItem(openWebUIItem, isRunning);
+    }
+
+    private void SetOpenWebUIItem(ToolStripMenuItem openWebUIItem, bool enabled)
+    {
+        openWebUIItem.Enabled = enabled;
+
+        var url = _serviceStatusService.CachedWebUIUrl;
+
+        openWebUIItem.Text = !enabled || string.IsNullOrEmpty(url)
+            ? "Open Web UI"
+            : $"Open Web UI ({url})";
     }
 
     private void OnTrayIconDoubleClick(object? sender, EventArgs e)
