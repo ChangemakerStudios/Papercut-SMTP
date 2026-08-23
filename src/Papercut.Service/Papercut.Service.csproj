@@ -44,20 +44,13 @@
 		</ItemGroup>
 	</Target>
 	<ItemGroup>
-		<None Remove="electron.manifest.json" />
 		<None Update="appsettings.Production.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<Content Include="electron.manifest.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-	<ItemGroup>
 		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
 		<PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
-		<PackageReference Include="ElectronNET.API" Version="23.6.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.11" />
 		<PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
