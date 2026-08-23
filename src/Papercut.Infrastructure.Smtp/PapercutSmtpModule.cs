@@ -18,6 +18,8 @@
 
 using Autofac;
 
+using Papercut.Infrastructure.Smtp.RateLimiting;
+
 using SmtpServer;
 using SmtpServer.Authentication;
 using SmtpServer.Net;
@@ -58,9 +60,29 @@ public class PapercutSmtpModule : Module
             ctx =>
             {
                 var ipAllowedList = ctx.ResolveOptional<IPAllowedList>() ?? IPAllowedList.AllowAll;
-                var logger = ctx.Resolve<ILogger>().ForContext<IpAllowlistMailboxFilter>();
+                var logger = ctx.Resolve<ILogger>();
+                var ipLogger = logger.ForContext<IpAllowlistMailboxFilter>();
+
+                // Rate limiting is opt-in and only registered by the service host, so
+                // hosts that never configure it (the UI) resolve nothing and pay nothing.
+                var rateLimiter = ctx.ResolveOptional<SmtpRateLimiter>();
+                var rateLimitLogger = logger.ForContext<RateLimitMailboxFilter>();
+
                 return new DelegatingMailboxFilterFactory(
-                    _ => new IpAllowlistMailboxFilter(ipAllowedList, logger));
+                    _ =>
+                    {
+                        var ipFilter = new IpAllowlistMailboxFilter(ipAllowedList, ipLogger);
+
+                        if (rateLimiter is null || rateLimiter.Limit.IsUnlimited)
+                        {
+                            return ipFilter;
+                        }
+
+                        // Allowlist first: connections Papercut was never going to
+                        // accept should not consume the caller's quota.
+                        return new ChainedMailboxFilter(
+                            [ipFilter, new RateLimitMailboxFilter(rateLimiter, rateLimitLogger)]);
+                    });
             }).As<IMailboxFilterFactory>();
 
         builder.Register<SmtpServer.SmtpServer>(

@@ -1,4 +1,4 @@
-# Service & Web UI
+﻿# Service & Web UI
 
 The **Papercut SMTP Service** is an optional background component that receives email even when the desktop app isn't running — as a Windows Service or a [Docker container](docker.md) — and includes a browser-based UI for viewing messages.
 
@@ -64,6 +64,36 @@ Use `http://0.0.0.0:8080` to listen on all interfaces — but read the warning b
 
 !!! warning "Network exposure"
     When binding to `0.0.0.0`, `+`, `*`, or a LAN IP, the web UI is reachable from other machines — and Papercut has **no built-in authentication**. Use firewall rules or a reverse proxy with auth in front of it.
+
+**Rate limiting** — reject mail once a quota is hit, so you can test how your application
+handles a mail server that is throttling it (`appsettings.json`):
+
+```json
+{
+  "SmtpServer": {
+    "RateLimit": "500/1h",
+    "RateLimitReplyCode": 451
+  }
+}
+```
+
+`RateLimit` is `<count>/<window>`, where the window is a number followed by `s`, `m`, or `h` —
+for example `500/1h`, `5/10m`, or `100/30s`. Use `*` (the default) for no limit.
+
+Once the limit is reached, Papercut rejects at `MAIL FROM` until the window resets:
+
+```text
+451 4.7.1 Message rate limit exceeded (500 per hour)
+```
+
+`RateLimitReplyCode` accepts any 4xx or 5xx reply code — 421, 451 (the default), 452 and 550
+are the usual choices. A 4xx code tells the sending client the failure is temporary and worth
+retrying; a 5xx code tells it the message was permanently refused.
+
+The count is global to the server rather than per-sender or per-IP, and the window is fixed:
+it starts when the first message arrives and resets in full once it expires.
+
+Environment variable form (Docker): `SmtpServer__RateLimit` and `SmtpServer__RateLimitReplyCode`.
 
 ## API
 

@@ -29,6 +29,8 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
 {
     private readonly IPAllowedList _ipAllowedList;
 
+    private readonly SmtpRateLimit _rateLimit;
+
     private readonly ILogger _logger;
 
     private readonly SmtpServerOptionsProvider _settingsProvider;
@@ -40,12 +42,14 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
     public SmtpServerManager(PapercutSmtpServer smtpServer,
         SmtpServerOptionsProvider settingsProvider,
         IPAllowedList ipAllowedList,
+        SmtpRateLimit rateLimit,
         ISettingStore settingStore,
         ILogger logger)
     {
         _smtpServer = smtpServer;
         _settingsProvider = settingsProvider;
         _ipAllowedList = ipAllowedList;
+        _rateLimit = rateLimit;
         _settingStore = settingStore;
         _logger = logger;
     }
@@ -111,11 +115,12 @@ public class SmtpServerManager : IEventHandler<SmtpServerBindEvent>, IEventHandl
                 : $"Enabled (Cert: {smtpServerSettings.CertificateFindValue})";
 
             _logger.Information(
-                "SMTP Server Configuration: Address={Address}, Port={Port} TLS={TlsStatus}, Allow={AllowList}",
+                "SMTP Server Configuration: Address={Address}, Port={Port} TLS={TlsStatus}, Allow={AllowList}, RateLimit={RateLimit}",
                 endpoint.Address,
                 endpoint.Port,
                 tlsStatus,
-                _ipAllowedList);
+                _ipAllowedList,
+                _rateLimit);
 
             await _smtpServer.StartAsync(endpoint);
         }

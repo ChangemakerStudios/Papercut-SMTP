@@ -46,6 +46,35 @@ public class PapercutServiceModule : Module
             .AsSelf()
             .SingleInstance();
 
+        builder.Register(ctx =>
+            {
+                var smtpServerOptions = ctx.Resolve<SmtpServerSettings>();
+                var result = SmtpRateLimit.Create(
+                    smtpServerOptions.RateLimit,
+                    smtpServerOptions.RateLimitReplyCode);
+
+                if (!result.IsSuccess)
+                {
+                    var logger = ctx.Resolve<ILogger>().ForContext<PapercutServiceModule>();
+
+                    logger.Warning(
+                        "Invalid SMTP rate limit configuration: {Errors}. Falling back to no limit.",
+                        string.Join(", ", result.Errors));
+
+                    return SmtpRateLimit.Unlimited;
+                }
+
+                return result.Value!;
+            })
+            .AsSelf()
+            .SingleInstance();
+
+        // The message count has to survive across sessions, so the limiter -- unlike
+        // the per-session filter that consults it -- must be a singleton.
+        builder.Register(ctx => new SmtpRateLimiter(ctx.Resolve<SmtpRateLimit>()))
+            .AsSelf()
+            .SingleInstance();
+
         builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance().ExternallyOwned();
 
         // Read state lives for the life of the service, so it must not be
