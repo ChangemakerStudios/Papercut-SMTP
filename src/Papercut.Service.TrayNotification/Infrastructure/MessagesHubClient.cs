@@ -115,7 +115,10 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
             }
             catch (Exception ex)
             {
-                _logger.Debug(ex, "Messages hub connection attempt failed, will retry");
+                _logger.Information(
+                    "Could not reach the Papercut messages hub ({Reason}). Retrying in {RetrySeconds}s.",
+                    ex.Message,
+                    RetryAfterClosed.TotalSeconds);
             }
 
             if (token.IsCancellationRequested) return;
@@ -155,7 +158,10 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
             "NewMessageReceived",
             message =>
             {
-                _logger.Debug("Hub reported new message {Subject}", message.Subject);
+                _logger.Information(
+                    "Hub reported new message {Subject} from {From}",
+                    message.Subject,
+                    message.FromDisplay);
                 NewMessageReceived?.Invoke(this, message);
             });
 
@@ -174,7 +180,7 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
 
         _connection = connection;
 
-        _logger.Debug("Connecting to the Papercut messages hub at {HubUrl}", hubUrl);
+        _logger.Information("Connecting to the Papercut messages hub at {HubUrl}...", hubUrl);
 
         await connection.StartAsync(token);
         await JoinMessagesGroupAsync(connection, token);
@@ -201,6 +207,7 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
         try
         {
             await connection.InvokeAsync("JoinMessagesGroup", token);
+            _logger.Information("Joined the Messages hub group -- now receiving new mail notifications");
         }
         catch (Exception ex)
         {
@@ -225,7 +232,7 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
             if (error != null)
                 _logger.Warning(error, "Messages hub connection closed");
             else
-                _logger.Debug("Messages hub connection closed");
+                _logger.Information("Messages hub connection closed");
 
             closed.TrySetResult();
             RaiseConnectionChanged();

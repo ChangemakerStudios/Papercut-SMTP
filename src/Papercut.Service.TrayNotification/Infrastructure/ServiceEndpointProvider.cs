@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2026 Jaben Cargman
@@ -72,15 +72,31 @@ public class ServiceEndpointProvider
 
     private string Resolve()
     {
-        var resolved = FromEnvironment() ?? FromServiceDirectory() ?? FromTrayDirectory();
+        var resolved = FromEnvironment();
+        var source = "PAPERCUT_SERVICE_URL";
 
         if (resolved == null)
         {
-            _logger.Debug("Could not locate service configuration, using fallback {Url}", FallbackBaseUrl);
+            resolved = FromServiceDirectory();
+            source = "the installed service appsettings.json";
+        }
+
+        if (resolved == null)
+        {
+            resolved = FromTrayDirectory();
+            source = "appsettings.json beside the tray";
+        }
+
+        if (resolved == null)
+        {
+            _logger.Information(
+                "No Papercut service configuration found -- falling back to {Url}. Set PAPERCUT_SERVICE_URL to override.",
+                FallbackBaseUrl);
+
             return FallbackBaseUrl;
         }
 
-        _logger.Debug("Resolved Papercut service base url {Url}", resolved);
+        _logger.Information("Papercut service url {Url} resolved from {Source}", resolved, source);
 
         return resolved;
     }

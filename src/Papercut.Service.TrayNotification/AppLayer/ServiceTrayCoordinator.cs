@@ -120,6 +120,10 @@ public class ServiceTrayCoordinator : IDisposable
                 ? $"Subject: {subject}"
                 : $"From: {from}{Environment.NewLine}Subject: {subject}";
 
+            // logged so a notification that never reaches the screen can be told
+            // apart from one that was never raised (Windows can suppress toasts)
+            Log.Information("Showing new mail balloon tip for {Subject}", subject);
+
             ShowBalloonTip("New Email Received", body, ToolTipIcon.Info);
         }
         catch (Exception ex)
