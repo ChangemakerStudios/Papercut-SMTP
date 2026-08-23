@@ -1,13 +1,12 @@
 # Papercut.Service
 
-**Papercut.Service** is a modern ASP.NET Core 8.0 web application that serves as the backend service for Papercut SMTP. It provides both SMTP email capture functionality and a RESTful API for managing messages, with an optional Electron-based desktop interface.
+**Papercut.Service** is a modern ASP.NET Core web application that serves as the backend service for Papercut SMTP. It provides SMTP email capture, a RESTful API for managing messages, and the embedded Angular web UI.
 
 ## 🎯 Purpose & Architecture
 
 Papercut.Service is designed as a **hybrid application** that can operate in multiple modes:
 
 - **Standalone Service**: Runs as a background Windows service for server deployments
-- **Desktop Application**: Optionally runs with an Electron GUI for desktop usage
 - **Web API Service**: Always provides HTTP endpoints for message management
 - **SMTP Server**: Captures SMTP messages sent to configurable ports
 
@@ -90,9 +89,8 @@ src/Papercut.Service/
 - **Papercut.Rules** - Message processing rules engine
 - **Papercut.Common** - Shared utilities and extensions
 
-#### **Optional Desktop Support**
-- **ElectronNET.API** - Cross-platform desktop wrapper (when enabled)
-- **Angular 17 Web UI** - Modern frontend embedded as static assets
+#### **Embedded Web UI**
+- **Angular Web UI** - Modern frontend embedded as static assets
 
 ## 🚀 How to Run Papercut.Service
 
@@ -106,9 +104,6 @@ Papercut.Service.exe
 # Install and start as Windows service
 Papercut.Service.exe install --sudo
 ```
-
-### Option 3: With Electron Desktop Interface
-The service can optionally launch with a desktop GUI when Electron support is active. This provides a native desktop experience while maintaining the same backend functionality.
 
 ### Command Line Options
 Get a full listing of available command line options:
@@ -208,18 +203,6 @@ docker run -d -p 8080:8080 -p 2525:2525 -e HttpPathPrefix=/webmail changemakerst
 
 The default (empty) serves the web UI at the root as before. Requests without the prefix continue to work, so proxies that strip the prefix are also supported — but a prefix-stripping proxy must redirect the bare prefix (`/webmail` → `/webmail/`) itself, since the app only sees `/` and cannot issue that redirect. Forwarding the full prefix (with `HttpPathPrefix` set) avoids this entirely.
 
-## 🖥️ Electron Desktop Mode
-
-**Status**: Currently available but not actively used in production deployments.
-
-The Electron integration (`ElectronService.cs`) provides:
-- Cross-platform desktop window hosting the web UI
-- Native application menus and system integration
-- Platform-specific icons and behaviors
-- Desktop notifications and app lifecycle management
-
-**Future Plans**: Electron support is maintained for potential future desktop distribution scenarios. See `Electron.md` for detailed analysis of the Electron implementation.
-
 ## 📦 Deployment Modes
 
 ### 1. Windows Service (Recommended for Production)
@@ -252,7 +235,6 @@ The Electron integration (`ElectronService.cs`) provides:
 - **Autofac** - Dependency injection container
 
 ### Optional Dependencies
-- **ElectronNET.API 23.6.2** - Desktop GUI support (when enabled)
 - **Node.js & npm** - For building embedded Angular web UI
 
 ## 🔍 Troubleshooting
@@ -271,7 +253,6 @@ Comprehensive logging is available through Serilog:
 ## 📄 Related Documentation
 
 - `Web/README.md` - Angular frontend documentation
-- `Electron.md` - Electron desktop integration analysis
 - `Web/TESTING.md` - Web UI testing guidelines
 
 ---
