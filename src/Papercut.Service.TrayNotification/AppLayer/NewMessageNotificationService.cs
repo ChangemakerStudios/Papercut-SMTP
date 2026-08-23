@@ -1,7 +1,7 @@
 // Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
-// Copyright © 2013 - 2025 Jaben Cargman
+// Copyright © 2013 - 2026 Jaben Cargman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,19 +17,31 @@
 
 
 using Autofac;
-using Papercut.Common.Domain;
-using Papercut.Core.Domain.Message;
+
+using Papercut.Service.TrayNotification.Infrastructure;
 
 namespace Papercut.Service.TrayNotification.AppLayer;
 
 /// <summary>
 /// Handles new message notifications and displays balloon tips
 /// </summary>
-public class NewMessageNotificationService(ILogger logger) : IEventHandler<NewMessageEvent>
+public class NewMessageNotificationService : IDisposable
 {
+    private readonly MessagesHubClient _hubClient;
+
+    private readonly ILogger _logger;
+
     private bool _notificationsEnabled = true;
 
-    public event EventHandler<NewMessageEvent>? NewMessageReceived;
+    public NewMessageNotificationService(MessagesHubClient hubClient, ILogger logger)
+    {
+        _hubClient = hubClient;
+        _logger = logger;
+
+        _hubClient.NewMessageReceived += OnHubNewMessageReceived;
+    }
+
+    public event EventHandler<NewMessageDto>? NewMessageReceived;
 
     public bool NotificationsEnabled
     {
@@ -37,25 +49,30 @@ public class NewMessageNotificationService(ILogger logger) : IEventHandler<NewMe
         set => _notificationsEnabled = value;
     }
 
-    public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
+    public void Dispose()
+    {
+        _hubClient.NewMessageReceived -= OnHubNewMessageReceived;
+
+        GC.SuppressFinalize(this);
+    }
+
+    private void OnHubNewMessageReceived(object? sender, NewMessageDto message)
     {
         if (!_notificationsEnabled)
         {
-            logger.Debug("Notifications disabled, skipping notification for message");
-            return Task.CompletedTask;
+            _logger.Debug("Notifications disabled, skipping notification for message");
+            return;
         }
 
         try
         {
-            logger.Information("New message received: {FileName}", @event.NewMessage.Name);
-            NewMessageReceived?.Invoke(this, @event);
+            _logger.Information("New message received: {Subject}", message.Subject);
+            NewMessageReceived?.Invoke(this, message);
         }
         catch (Exception ex)
         {
-            logger.Error(ex, "Failed to handle new message notification");
+            _logger.Error(ex, "Failed to handle new message notification");
         }
-
-        return Task.CompletedTask;
     }
 
     #region Begin Static Container Registrations
@@ -63,7 +80,7 @@ public class NewMessageNotificationService(ILogger logger) : IEventHandler<NewMe
     [UsedImplicitly]
     private static void Register(ContainerBuilder builder)
     {
-        if (builder == null) throw new ArgumentNullException(nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.RegisterType<NewMessageNotificationService>().AsImplementedInterfaces().AsSelf().SingleInstance();
     }

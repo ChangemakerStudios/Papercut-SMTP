@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -97,27 +97,23 @@ public class ServiceTrayCoordinator : IDisposable
         _trayIcon?.Dispose();
     }
 
-    private void OnNewMessageReceived(object? sender, Core.Domain.Message.NewMessageEvent e)
+    private void OnNewMessageReceived(object? sender, NewMessageDto message)
     {
         if (!_notificationService.NotificationsEnabled)
             return;
 
         try
         {
-            // Extract subject from filename format: {timestamp} {subject} {randomstring}.eml
-            var fileName = Path.GetFileNameWithoutExtension(e.NewMessage.Name);
-            var parts = fileName.Split(' ', 3); // Split into timestamp, subject, random
-            var subject = parts.Length >= 2
-                ? string.Join(" ", parts.Skip(1).Take(parts.Length - 2))
-                : "(No Subject)";
+            // the hub sends the parsed message, so the subject and sender are the
+            // real values rather than fragments recovered from the .eml filename
+            var subject = string.IsNullOrWhiteSpace(message.Subject) ? "(No Subject)" : message.Subject;
+            var from = message.FromDisplay;
 
-            if (string.IsNullOrWhiteSpace(subject))
-                subject = "(No Subject)";
+            var body = string.IsNullOrWhiteSpace(from)
+                ? $"Subject: {subject}"
+                : $"From: {from}{Environment.NewLine}Subject: {subject}";
 
-            ShowBalloonTip(
-                "New Email Received",
-                $"Subject: {subject}",
-                ToolTipIcon.Info);
+            ShowBalloonTip("New Email Received", body, ToolTipIcon.Info);
         }
         catch (Exception ex)
         {

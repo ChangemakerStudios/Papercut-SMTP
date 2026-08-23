@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -27,7 +27,7 @@ namespace Papercut.Service.TrayNotification.Infrastructure;
 /// </summary>
 public class ServiceStatusService(
     PapercutServiceControllerProvider serviceControllerProvider,
-    ServiceCommunicator serviceCommunicator)
+    ServiceEndpointProvider endpointProvider)
 {
     private ServiceControllerStatus? _lastKnownStatus;
 
@@ -79,7 +79,7 @@ public class ServiceStatusService(
         if (status == ServiceControllerStatus.Stopped)
         {
             serviceControllerProvider.Start();
-            serviceCommunicator.InvalidateCache();
+            endpointProvider.InvalidateCache();
             UpdateStatus();
         }
     }
@@ -108,23 +108,23 @@ public class ServiceStatusService(
         if (status == ServiceControllerStatus.Running)
         {
             serviceControllerProvider.Restart();
-            serviceCommunicator.InvalidateCache();
+            endpointProvider.InvalidateCache();
             UpdateStatus();
         }
     }
 
     /// <summary>
-    /// Gets the web UI URL from the service via IPComm
+    /// Gets the web UI URL, read from the service configuration
     /// </summary>
-    public async Task<string> GetWebUIUrlAsync()
+    public Task<string> GetWebUIUrlAsync()
     {
-        return await serviceCommunicator.GetWebUIUrlAsync();
+        return Task.FromResult(endpointProvider.BaseUrl);
     }
 
     /// <summary>
-    /// Gets the cached web UI URL without making an async call
+    /// Gets the web UI URL without making an async call
     /// </summary>
-    public string? CachedWebUIUrl => serviceCommunicator.CachedWebUrl;
+    public string? CachedWebUIUrl => endpointProvider.BaseUrl;
 
     /// <summary>
     /// Gets a display-friendly status text
