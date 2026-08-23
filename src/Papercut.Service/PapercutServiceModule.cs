@@ -15,7 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Papercut.Message;
+
 using Papercut.Service.Domain;
+using Papercut.Service.Domain.Messages;
 
 namespace Papercut.Service;
 
@@ -71,6 +74,12 @@ public class PapercutServiceModule : Module
         builder.Register(ctx => new SmtpRateLimiter(ctx.Resolve<SmtpRateLimit>()))
             .AsSelf()
             .SingleInstance();
+
+        builder.RegisterType<MessageWatcher>().AsSelf().SingleInstance().ExternallyOwned();
+
+        // Read state lives for the life of the service, so it must not be
+        // rebuilt per request scope
+        builder.RegisterType<MessageReadStateService>().AsSelf().SingleInstance();
 
         builder.RegisterStaticMethods(ThisAssembly);
     }

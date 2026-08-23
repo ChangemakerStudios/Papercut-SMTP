@@ -16,17 +16,23 @@
 // limitations under the License.
 
 
+namespace Papercut.Service;
+
+using Application.Messages;
+
+using Infrastructure.MessageWatching;
+using Infrastructure.Servers;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-using Papercut.Rules;
-using Papercut.Service.Application.Mcp;
+using Application.Mcp;
+
+using Rules;
+
 using Papercut.Service.Domain;
 using Papercut.Service.Infrastructure.Configuration;
-using Papercut.Service.Infrastructure.Servers;
-
-namespace Papercut.Service;
 
 internal class PapercutServiceStartup
 {
@@ -47,8 +53,12 @@ internal class PapercutServiceStartup
                     {
                         c.AllowAnyHeader();
                         c.AllowAnyOrigin();
+                        c.AllowAnyMethod();
                     });
             });
+
+        // Add SignalR
+        services.AddSignalR();
 
         services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
 
@@ -59,9 +69,10 @@ internal class PapercutServiceStartup
 
         // hosted services
         services.AddHostedService<PapercutServerHostedService>();
+        services.AddHostedService<MessageWatcherHostedService>();
     }
 
-    IEnumerable<Autofac.Module> GetModules()
+    IEnumerable<Module> GetModules()
     {
         yield return new PapercutCoreModule();
         yield return new PapercutMessageModule();
@@ -76,7 +87,7 @@ internal class PapercutServiceStartup
     [UsedImplicitly]
     public void ConfigureContainer(ContainerBuilder builder)
     {
-        foreach (var module in this.GetModules())
+        foreach (var module in GetModules())
         {
             builder.RegisterModule(module);
         }
@@ -109,7 +120,29 @@ internal class PapercutServiceStartup
 
         app.UseRouting();
 
-        app.UseSerilogRequestLogging();
+        app.UseCors();
+
+        // Request traffic is background noise for a mail viewer: a single click
+        // fetches the ref, the detail and the rendered body, so logging each one
+        // at INF buried the events people actually open the log for (messages
+        // received, rules run, failures). Successful requests go to DBG, where
+        // the Log view's level picker can still bring them back.
+        app.UseSerilogRequestLogging(
+            options => options.GetLevel = (httpContext, _, ex) =>
+            {
+                if (ex != null || httpContext.Response.StatusCode >= 500)
+                    return Serilog.Events.LogEventLevel.Error;
+
+                if (httpContext.Response.StatusCode >= 400)
+                    return Serilog.Events.LogEventLevel.Warning;
+
+                // the web Log view polls this endpoint; even at DBG its own
+                // tailing would crowd out everything else
+                if (httpContext.Request.Path.StartsWithSegments("/api/logs"))
+                    return Serilog.Events.LogEventLevel.Verbose;
+
+                return Serilog.Events.LogEventLevel.Debug;
+            });
 
         var mcpEnabled = McpServerSettings.IsEnabled(
             app.Services.GetRequiredService<ISettingStore>(),
@@ -132,6 +165,7 @@ internal class PapercutServiceStartup
             s =>
             {
                 s.MapControllers();
+                s.MapHub<MessagesHub>("/hubs/messages");
 
                 if (mcpEnabled)
                 {

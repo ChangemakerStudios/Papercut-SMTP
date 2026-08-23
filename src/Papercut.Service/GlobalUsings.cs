@@ -16,8 +16,6 @@
 // limitations under the License.
 
 
-global using System.Net.Http;
-
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Http.Features;
@@ -39,7 +37,6 @@ global using Papercut.Infrastructure.Smtp;
 global using Papercut.Infrastructure.Smtp.RateLimiting;
 global using Papercut.Message;
 global using Papercut.Service.Domain.SmtpServer;
-global using Papercut.Service.Web.Models;
 
 global using Autofac;
 

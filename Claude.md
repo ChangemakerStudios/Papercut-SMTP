@@ -25,10 +25,9 @@ The solution is organized into several projects with clear separation of concern
   - WebView2 for HTML email rendering
   - ReactiveUI for reactive programming patterns
 
-- **Papercut.Service** - Windows Service/HTTP server for receiving emails (net8.0)
+- **Papercut.Service** - Windows Service/HTTP server for receiving emails (net10.0)
   - ASP.NET Core based with embedded web UI
-  - AngularJS web interface (embedded in Web/Assets/)
-  - ElectronNET.API integration
+  - Angular web interface (source in Web/, built into Web/Assets/)
   - Can run independently of the desktop UI
   - Accessible via HTTP (default port 8080)
 

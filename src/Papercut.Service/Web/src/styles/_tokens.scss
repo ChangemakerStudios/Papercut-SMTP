@@ -1,0 +1,95 @@
+// ============================================================================
+// Papercut Design Tokens
+//
+// The single source of truth for the UI's design language. Everything —
+// Tailwind utilities, Material overrides, and component styles — reads these
+// custom properties. `--pc-accent` is set at runtime by ThemeService (the
+// "Theme Accent" feature, matching the desktop app); every accent-derived
+// color is computed from it with color-mix() so any accent works in both
+// themes.
+// ============================================================================
+
+:root {
+  // -- Brand constants ------------------------------------------------------
+  --pc-navy: #1a2332; // Papercut ink-navy (web navbar / wordmark)
+  --pc-brand-cut: #7ab0d4; // the "cut" in Paper·cut
+
+  // -- Runtime accent (overridden by ThemeService) --------------------------
+  --pc-accent: #4682b4; // default: Steel Blue, like the desktop app
+
+  // -- Accent-derived -------------------------------------------------------
+  // Chrome bar: accent tinted toward navy so light accents keep contrast
+  --pc-chrome: color-mix(in srgb, var(--pc-accent) 62%, var(--pc-navy));
+  --pc-on-chrome: #ffffff;
+  --pc-on-chrome-muted: rgba(255, 255, 255, 0.75);
+  --pc-on-chrome-faint: rgba(255, 255, 255, 0.45);
+  // Accent as readable text/edge on light surfaces
+  --pc-accent-text: color-mix(in srgb, var(--pc-accent) 75%, var(--pc-navy));
+  --pc-accent-soft: color-mix(in srgb, var(--pc-accent) 12%, transparent);
+  --pc-selected: color-mix(in srgb, var(--pc-accent) 13%, #ffffff);
+  --pc-selected-edge: var(--pc-accent);
+
+  // -- Neutrals (light) -----------------------------------------------------
+  --pc-bg: #f5f6f8;
+  --pc-surface: #ffffff;
+  --pc-surface-2: #f8f9fb; // headers, toolbars, tab strips
+  --pc-ink: #2d3748;
+  --pc-ink-strong: #1a2332;
+  --pc-muted: #718096;
+  --pc-faint: #a0aec0;
+  --pc-border: #e2e6ea;
+  --pc-border-soft: #edf0f4;
+  --pc-hover: #f0f4f8;
+
+  // -- Semantic -------------------------------------------------------------
+  --pc-danger: #e53e3e;
+  --pc-danger-strong: #c53030;
+  --pc-danger-soft: #fee2e2;
+  --pc-warn: #b45309;
+  --pc-warn-soft: #fef3c7;
+  --pc-ok: #2f855a;
+
+  // -- Type -----------------------------------------------------------------
+  --pc-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  --pc-font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+
+  // Type scale. Chrome (labels, buttons, list rows) can be dense, but anything
+  // meant to be *read* -- raw source, log output, headers, message bodies --
+  // sits at --pc-text-read or larger with generous leading, since small text
+  // needs more line-height, not less.
+  --pc-text-micro: 11px;   // uppercase field labels, badges
+  --pc-text-small: 12.5px; // secondary UI text
+  --pc-text-ui: 13.5px;    // primary UI text
+  --pc-text-read: 13.5px;  // reading surfaces (mono content)
+  --pc-text-title: 15px;   // dialog titles, subjects
+
+  --pc-leading-tight: 1.35; // dense UI rows
+  --pc-leading-ui: 1.5;     // default
+  --pc-leading-read: 1.65;  // reading surfaces; small text needs more
+}
+
+body[data-theme='dark'] {
+  --pc-chrome: color-mix(in srgb, var(--pc-accent) 42%, #10151d);
+  --pc-accent-text: color-mix(in srgb, var(--pc-accent) 60%, #dce7f0);
+  --pc-accent-soft: color-mix(in srgb, var(--pc-accent) 22%, transparent);
+  --pc-selected: color-mix(in srgb, var(--pc-accent) 22%, #1a202b);
+
+  --pc-bg: #12161d;
+  --pc-surface: #1a202b;
+  --pc-surface-2: #1f2733;
+  --pc-ink: #d6dde6;
+  --pc-ink-strong: #f0f4f8;
+  --pc-muted: #8a96a6;
+  --pc-faint: #5d6b7d;
+  --pc-border: #2b3444;
+  --pc-border-soft: #242c3a;
+  --pc-hover: #222b38;
+
+  --pc-danger: #f26d6d;
+  --pc-danger-strong: #ff8f8f;
+  --pc-danger-soft: color-mix(in srgb, #e53e3e 20%, #1a202b);
+  --pc-warn: #d9a441;
+  --pc-warn-soft: color-mix(in srgb, #b45309 22%, #1a202b);
+  --pc-ok: #57ab7f;
+}

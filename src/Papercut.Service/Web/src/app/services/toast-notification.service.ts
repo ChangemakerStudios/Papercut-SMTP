@@ -1,0 +1,219 @@
+import { Injectable } from '@angular/core';
+import { MatSnackBar, MatSnackBarRef, MatSnackBarConfig } from '@angular/material/snack-bar';
+import { ComponentType } from '@angular/cdk/overlay';
+import { Component, Inject } from '@angular/core';
+import { MAT_SNACK_BAR_DATA, MatSnackBarAction } from '@angular/material/snack-bar';
+// (MatSnackBarAction must ALSO be in the component's imports array below —
+// without it the mat-snack-bar-action attribute silently binds to nothing
+// and the action button does nothing at all)
+import { MatButtonModule } from '@angular/material/button';
+import { CommonModule } from '@angular/common';
+import { LucideAngularModule, Mail, CircleCheck, CircleAlert, TriangleAlert, Info, type LucideIconData } from 'lucide-angular';
+import { EnvironmentService } from './environment.service';
+
+export interface ToastData {
+  message: string;
+  action?: string;
+  icon?: string;
+  type?: 'success' | 'error' | 'warning' | 'info';
+  duration?: number;
+  clickable?: boolean;
+}
+
+@Component({
+  selector: 'app-toast-notification',
+  imports: [CommonModule, MatButtonModule, MatSnackBarAction, LucideAngularModule],
+  template: `
+    <div class="flex items-center gap-3 py-1"
+      [class.cursor-pointer]="data.clickable"
+      (click)="onSurfaceClick()">
+      @if (data.icon) {
+        <lucide-icon [img]="getIcon()" [size]="18" [ngClass]="getIconClass()"></lucide-icon>
+      }
+      <span class="flex-1 text-sm">{{ data.message }}</span>
+      @if (data.action) {
+        <button
+          mat-button
+          matSnackBarAction
+          class="!text-current !min-w-0">
+          {{ data.action }}
+        </button>
+      }
+    </div>
+    `,
+  styles: [`
+    :host {
+      display: block;
+    }
+  `]
+})
+export class ToastNotificationComponent {
+  constructor(
+    @Inject(MAT_SNACK_BAR_DATA) public data: ToastData,
+    private snackBarRef: MatSnackBarRef<ToastNotificationComponent>
+  ) {}
+
+  /** Clickable toasts (new message) act like the action button anywhere on the surface */
+  onSurfaceClick(): void {
+    if (this.data.clickable) {
+      this.snackBarRef.dismissWithAction();
+    }
+  }
+
+  getIcon(): LucideIconData {
+    switch (this.data.icon) {
+      case 'email': return Mail;
+      case 'check_circle': return CircleCheck;
+      case 'error': return CircleAlert;
+      case 'warning': return TriangleAlert;
+      default: return Info;
+    }
+  }
+
+  getIconClass(): string {
+    switch (this.data.type) {
+      case 'success': return 'text-ok';
+      case 'error': return 'text-danger';
+      case 'warning': return 'text-warn';
+      default: return '';
+    }
+  }
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ToastNotificationService {
+  constructor(
+    private snackBar: MatSnackBar,
+    private environmentService: EnvironmentService
+  ) {}
+
+  showNewMessageToast(subject: string, sender: string, messageId: string, onMessageClick: () => void): MatSnackBarRef<ToastNotificationComponent> | null {
+    // Check if notifications are enabled in environment
+    if (!this.environmentService.areNotificationsEnabled) {
+      return null;
+    }
+
+    const data: ToastData = {
+      message: `New message from ${sender}: ${subject}`,
+      action: 'VIEW',
+      icon: 'email',
+      type: 'info',
+      duration: this.getNotificationDuration(),
+      clickable: true
+    };
+
+    const config: MatSnackBarConfig = {
+      duration: data.duration,
+      horizontalPosition: 'right',
+      verticalPosition: 'bottom',
+      panelClass: [
+        'toast-notification',
+        'toast-new-message',
+        'bg-blue-600',
+        'text-white',
+        '!max-w-md'
+      ],
+      data
+    };
+
+    const snackBarRef = this.snackBar.openFromComponent(ToastNotificationComponent, config);
+
+    // Handle click events
+    snackBarRef.onAction().subscribe(() => {
+      onMessageClick();
+      snackBarRef.dismiss();
+    });
+
+    // Make the entire toast clickable
+    snackBarRef.containerInstance.snackBarConfig.panelClass = [
+      ...snackBarRef.containerInstance.snackBarConfig.panelClass || [],
+      'cursor-pointer'
+    ];
+
+    return snackBarRef;
+  }
+
+  showSuccess(message: string, action?: string): MatSnackBarRef<ToastNotificationComponent> {
+    return this.showToast({
+      message,
+      action,
+      icon: 'check_circle',
+      type: 'success',
+      duration: 4000
+    });
+  }
+
+  showError(message: string, action?: string): MatSnackBarRef<ToastNotificationComponent> {
+    return this.showToast({
+      message,
+      action,
+      icon: 'error',
+      type: 'error',
+      duration: 6000
+    });
+  }
+
+  showWarning(message: string, action?: string): MatSnackBarRef<ToastNotificationComponent> {
+    return this.showToast({
+      message,
+      action,
+      icon: 'warning',
+      type: 'warning',
+      duration: 5000
+    });
+  }
+
+  showInfo(message: string, action?: string): MatSnackBarRef<ToastNotificationComponent> {
+    return this.showToast({
+      message,
+      action,
+      icon: 'info',
+      type: 'info',
+      duration: 4000
+    });
+  }
+
+  private showToast(data: ToastData): MatSnackBarRef<ToastNotificationComponent> {
+    const config: MatSnackBarConfig = {
+      duration: data.duration,
+      horizontalPosition: 'right',
+      verticalPosition: 'bottom',
+      panelClass: [
+        'toast-notification',
+        `toast-${data.type}`,
+        this.getBackgroundClass(data.type),
+        'text-white',
+        '!max-w-md'
+      ],
+      data
+    };
+
+    return this.snackBar.openFromComponent(ToastNotificationComponent, config);
+  }
+
+  private getBackgroundClass(type: ToastData['type']): string {
+    switch (type) {
+      case 'success': return 'bg-green-600';
+      case 'error': return 'bg-red-600';
+      case 'warning': return 'bg-yellow-600';
+      case 'info': return 'bg-blue-600';
+      default: return 'bg-gray-600';
+    }
+  }
+
+  private getNotificationDuration(): number {
+    // Base durations in milliseconds
+    const baseDuration = 8000; // 8 seconds for new messages
+    
+    // Adjust based on environment
+    if (this.environmentService.isProduction) {
+      return baseDuration * 0.75; // Shorter in production
+    } else if (this.environmentService.isDevelopment) {
+      return baseDuration * 1.5; // Longer in development for testing
+    }
+    
+    return baseDuration;
+  }
+}

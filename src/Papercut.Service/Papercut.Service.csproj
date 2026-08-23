@@ -10,24 +10,47 @@
 		<ApplicationIcon>icons\Papercut-icon.ico</ApplicationIcon>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	</PropertyGroup>
+	<PropertyGroup>
+		<!-- Set /p:SkipAngularBuild=true to build without node (requires Web\Assets to already exist) -->
+		<SkipAngularBuild Condition="'$(SkipAngularBuild)' == ''">false</SkipAngularBuild>
+		<AngularBuildStamp>$(BaseIntermediateOutputPath)angular.stamp</AngularBuildStamp>
+	</PropertyGroup>
+
 	<ItemGroup>
-		<EmbeddedResource Include="Web\Assets\**" />
+		<AngularInput Include="Web\src\**;Web\angular.json;Web\package.json;Web\package-lock.json;Web\tailwind.config.js;Web\tsconfig.json;Web\tsconfig.app.json" />
 	</ItemGroup>
+
+	<Target Name="NpmInstall" Condition="'$(SkipAngularBuild)' != 'true' AND '$(DesignTimeBuild)' != 'true' AND !Exists('Web\node_modules')">
+		<Message Importance="high" Text="Restoring npm packages for the web UI..." />
+		<Exec Command="npm ci" WorkingDirectory="Web" />
+	</Target>
+
+	<Target Name="BuildAngular"
+	        DependsOnTargets="NpmInstall"
+	        BeforeTargets="EmbedWebAssets"
+	        Inputs="@(AngularInput)"
+	        Outputs="$(AngularBuildStamp)"
+	        Condition="'$(SkipAngularBuild)' != 'true' AND '$(DesignTimeBuild)' != 'true'">
+		<Message Importance="high" Text="Building the Angular web UI into Web\Assets..." />
+		<Exec Command="npm run build" WorkingDirectory="Web" />
+		<Touch Files="$(AngularBuildStamp)" AlwaysCreate="true" />
+	</Target>
+
+	<Target Name="EmbedWebAssets" BeforeTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+		<Error Condition="!Exists('Web\Assets\index.html')"
+		       Text="Web UI assets not found at Web\Assets. Run 'npm run build' in src/Papercut.Service/Web (requires node), or build without /p:SkipAngularBuild=true." />
+		<ItemGroup>
+			<EmbeddedResource Include="Web\Assets\**" />
+		</ItemGroup>
+	</Target>
 	<ItemGroup>
-		<None Remove="electron.manifest.json" />
 		<None Update="appsettings.Production.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<Content Include="electron.manifest.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-	<ItemGroup>
 		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
 		<PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
-		<PackageReference Include="ElectronNET.API" Version="23.6.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.11" />
 		<PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
