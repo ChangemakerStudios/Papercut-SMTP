@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 // 
 // Copyright � 2008 - 2012 Ken Robertson
 // Copyright � 2013 - 2025 Jaben Cargman
@@ -32,13 +32,19 @@ public class MessageWatcher : IDisposable
 
     readonly MessagePathConfigurator _messagePathConfigurator;
 
+    readonly PublishedMessageTracker _publishedMessageTracker;
+
     readonly object _watchersLock = new();
 
     List<FileSystemWatcher> _watchers = [];
 
-    public MessageWatcher(ILogger logger, MessagePathConfigurator messagePathConfigurator)
+    public MessageWatcher(
+        ILogger logger,
+        MessagePathConfigurator messagePathConfigurator,
+        PublishedMessageTracker publishedMessageTracker)
     {
         this._logger = logger;
+        this._publishedMessageTracker = publishedMessageTracker;
         this._messagePathConfigurator = messagePathConfigurator;
         this._messagePathConfigurator.RefreshLoadPath += this.OnRefreshLoadPaths;
         this.SetupMessageWatchers();
@@ -209,6 +215,18 @@ public class MessageWatcher : IDisposable
                 }
             }
             while (!await info.CanReadFile());
+
+            // the SMTP path publishes as soon as it saves, so for mail we received
+            // ourselves this file is already announced -- staying quiet here is what
+            // keeps rules and clients from seeing every message twice
+            if (this._publishedMessageTracker.ClaimAlreadyPublished(info.FullName))
+            {
+                this._logger.Debug(
+                    "Message {MessageFile} was already published by the receiving path, skipping",
+                    info.FullName);
+
+                return;
+            }
 
             this.OnNewMessage(new NewMessageEventArgs(new MessageEntry(info)));
         }

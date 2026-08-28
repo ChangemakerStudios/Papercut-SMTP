@@ -32,5 +32,6 @@ public class PapercutMessageModule : Module
             .As<IMessageRepository>().SingleInstance();
         builder.RegisterType<MimeMessageLoader>().As<IMimeMessageLoader>().SingleInstance();
         builder.RegisterType<ReceivedDataMessageHandler>().As<IReceivedDataHandler>().SingleInstance();
+        builder.RegisterType<PublishedMessageTracker>().AsSelf().SingleInstance();
     }
 }

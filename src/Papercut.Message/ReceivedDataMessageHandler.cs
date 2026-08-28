@@ -26,6 +26,7 @@ namespace Papercut.Message;
 public class ReceivedDataMessageHandler(
     IMessageRepository messageRepository,
     IMessageBus messageBus,
+    PublishedMessageTracker publishedMessageTracker,
     ILogger logger)
     : IReceivedDataHandler
 {
@@ -79,7 +80,13 @@ public class ReceivedDataMessageHandler(
         try
         {
             if (!string.IsNullOrWhiteSpace(file) && File.Exists(file))
+            {
+                // claim before publishing so the file watcher, which sees this same
+                // file appear, knows the message has already been announced
+                publishedMessageTracker.MarkPublished(file);
+
                 await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file).ToDto()));
+            }
         }
         catch (Exception ex)
         {
