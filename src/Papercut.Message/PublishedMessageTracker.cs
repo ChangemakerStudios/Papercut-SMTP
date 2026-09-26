@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2026 Jaben Cargman
@@ -44,7 +44,17 @@ public class PublishedMessageTracker
     /// </summary>
     private static readonly TimeSpan ClaimLifetime = TimeSpan.FromMinutes(5);
 
-    private readonly ConcurrentDictionary<string, DateTime> _published = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>
+    /// Match the file system: Windows and macOS compare paths case-insensitively,
+    /// Linux (where the service commonly runs in Docker) does not, and there
+    /// "mail.eml" and "MAIL.eml" are different messages.
+    /// </summary>
+    private static readonly StringComparer PathComparer =
+        OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+
+    private readonly ConcurrentDictionary<string, DateTime> _published = new(PathComparer);
 
     /// <summary>
     /// Records that <paramref name="messageFilePath" /> is being published by the
@@ -81,7 +91,9 @@ public class PublishedMessageTracker
 
         foreach (var entry in _published)
         {
-            if (entry.Value < cutoff) _published.TryRemove(entry.Key, out _);
+            // remove only the exact entry observed, so a claim re-made for the same
+            // path while pruning is not swept away with the stale one
+            if (entry.Value < cutoff) _published.TryRemove(entry);
         }
     }
 
