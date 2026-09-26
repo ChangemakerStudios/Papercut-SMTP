@@ -111,20 +111,20 @@ public class ServiceTrayCoordinator : IDisposable
 
         try
         {
-            // the hub sends the parsed message, so the subject and sender are the
-            // real values rather than fragments recovered from the .eml filename
-            var subject = string.IsNullOrWhiteSpace(message.Subject) ? "(No Subject)" : message.Subject;
-            var from = message.FromDisplay;
-
-            var body = string.IsNullOrWhiteSpace(from)
-                ? $"Subject: {subject}"
-                : $"From: {from}{Environment.NewLine}Subject: {subject}";
+            // shaped like a mail client's toast: the sender is the title and the subject
+            // is the text. The header already reads "Papercut SMTP" (the exe's file
+            // description), so a "New Email Received" title would only repeat it.
+            var subject = string.IsNullOrWhiteSpace(message.Subject) ? "(No Subject)" : message.Subject.Trim();
+            var from = string.IsNullOrWhiteSpace(message.FromDisplay) ? "New message" : message.FromDisplay.Trim();
 
             // logged so a notification that never reaches the screen can be told
             // apart from one that was never raised (Windows can suppress toasts)
-            Log.Information("Showing new mail balloon tip for {Subject}", subject);
+            Log.Information("Showing new mail balloon tip for {Subject} from {From}", subject, from);
 
-            ShowBalloonTip("New Email Received", body, ToolTipIcon.Info);
+            ShowBalloonTip(
+                Truncate(from, BalloonTitleMaxLength),
+                Truncate(subject, BalloonTextMaxLength),
+                ToolTipIcon.None);
         }
         catch (Exception ex)
         {
@@ -530,6 +530,14 @@ public class ServiceTrayCoordinator : IDisposable
     {
         _notifyIcon.ShowBalloonTip(3000, title, text, icon);
     }
+
+    // NOTIFYICONDATA holds 64 chars of title and 256 of text, each including the terminator
+    private const int BalloonTitleMaxLength = 63;
+
+    private const int BalloonTextMaxLength = 255;
+
+    private static string Truncate(string value, int maxLength) =>
+        value.Length <= maxLength ? value : value[..(maxLength - 1)] + "…";
 
     #region Begin Static Container Registrations
 
