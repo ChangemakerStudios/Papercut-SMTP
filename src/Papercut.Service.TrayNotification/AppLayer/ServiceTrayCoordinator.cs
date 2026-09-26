@@ -258,7 +258,7 @@ public class ServiceTrayCoordinator : IDisposable
             startItem.Enabled = false;
             stopItem.Enabled = false;
             restartItem.Enabled = false;
-            SetOpenWebUIItem(openWebUIItem, reachable);
+            SetOpenWebUIItem(openWebUIItem, _serviceStatusService.IsWebUIAvailable);
             return;
         }
 
@@ -278,9 +278,7 @@ public class ServiceTrayCoordinator : IDisposable
         restartItem.Enabled = _serviceStatusService.CanRestart();
 
         // Update Open Web UI menu item with URL and enable only when service is running
-        var isRunning = status == ServiceControllerStatus.Running || _serviceStatusService.IsServiceReachable;
-
-        SetOpenWebUIItem(openWebUIItem, isRunning);
+        SetOpenWebUIItem(openWebUIItem, _serviceStatusService.IsWebUIAvailable);
     }
 
     private void SetOpenWebUIItem(ToolStripMenuItem openWebUIItem, bool enabled)
@@ -414,22 +412,14 @@ public class ServiceTrayCoordinator : IDisposable
 
     private async void OnOpenWebUI(object? sender, EventArgs e)
     {
-        // Check if service is running before attempting to open web UI
-        if (!_serviceStatusService.IsServiceInstalled)
+        // same check the menu uses to enable this item -- the handler used to demand an
+        // installed, running Windows Service, so a console-app or Docker service showed
+        // an enabled menu item that only produced an error dialog
+        if (!_serviceStatusService.IsWebUIAvailable)
         {
             MessageBox.Show(
-                "The Papercut SMTP Service is not installed.\n\nPlease install the service first.",
-                "Service Not Installed",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
-            return;
-        }
-
-        if (_serviceStatusService.CurrentStatus != ServiceControllerStatus.Running)
-        {
-            MessageBox.Show(
-                "The Papercut SMTP Service is not running.\n\nPlease start the service first.",
-                "Service Not Running",
+                "The Papercut SMTP Service is not running or not reachable.\n\nPlease start the service first.",
+                "Service Not Available",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
             return;

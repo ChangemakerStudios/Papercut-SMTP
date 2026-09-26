@@ -30,9 +30,17 @@ namespace Papercut.Service.TrayNotification.Infrastructure;
 /// populated message over SignalR to drive the web UI, so the tray now receives
 /// the real subject and sender instead of parsing them back out of the .eml
 /// filename.
+///
+/// Deliberately not an Autofac IStartable. Startables are activated during
+/// container build, before the AutoActivate registration that swaps the bootstrap
+/// logger for the real file logger (and closes the bootstrap one) -- so a startable
+/// is handed a logger that is dead a moment later and everything it logs is lost.
+/// Program starts this explicitly once the container is built.
 /// </summary>
-public class MessagesHubClient : IStartable, IAsyncDisposable
+public class MessagesHubClient : IDisposable, IAsyncDisposable
 {
+    private static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(5);
+
     /// <summary>
     /// Matches the web UI's retry schedule (signalr.service.ts). After these are
     /// exhausted the connection is closed and we restart it ourselves, so a
@@ -55,6 +63,10 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private HubConnection? _connection;
+
+    private Task? _runTask;
+
+    private int _disposed;
 
     public MessagesHubClient(ServiceEndpointProvider endpointProvider, ILogger logger)
     {
@@ -79,12 +91,30 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
 
     public void Start()
     {
-        _ = Task.Run(() => RunAsync(_cancellationTokenSource.Token), _cancellationTokenSource.Token);
+        if (_runTask != null) return;
+
+        _runTask = Task.Run(() => RunAsync(_cancellationTokenSource.Token), _cancellationTokenSource.Token);
     }
 
     public async ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
+
         await _cancellationTokenSource.CancelAsync();
+
+        // wait for the connect loop to finish before touching the connection --
+        // otherwise it can assign a fresh _connection after we have cleared it
+        if (_runTask != null)
+        {
+            try
+            {
+                await _runTask.WaitAsync(ShutdownTimeout);
+            }
+            catch (Exception ex) when (ex is OperationCanceledException or TimeoutException)
+            {
+                // shutting down either way
+            }
+        }
 
         if (_connection != null)
         {
@@ -95,6 +125,23 @@ public class MessagesHubClient : IStartable, IAsyncDisposable
         _cancellationTokenSource.Dispose();
 
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// The tray disposes its container synchronously, and Autofac refuses to dispose
+    /// an IAsyncDisposable-only component that way. Runs the async path on the
+    /// thread pool so the WinForms synchronization context cannot deadlock it.
+    /// </summary>
+    public void Dispose()
+    {
+        try
+        {
+            Task.Run(async () => await DisposeAsync()).Wait(ShutdownTimeout);
+        }
+        catch (Exception ex)
+        {
+            _logger.Debug(ex, "Error disposing the messages hub client");
+        }
     }
 
     private async Task RunAsync(CancellationToken token)

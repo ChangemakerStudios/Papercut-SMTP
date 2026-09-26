@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2026 Jaben Cargman
@@ -42,7 +42,7 @@ public class NewMessageDto
     {
         get
         {
-            var first = From.FirstOrDefault();
+            var first = From?.FirstOrDefault();
 
             if (first == null) return null;
 

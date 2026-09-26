@@ -43,6 +43,15 @@ public class ServiceStatusService(
     /// </summary>
     public bool IsServiceReachable => hubClient.IsConnected;
 
+    /// <summary>
+    /// True when the web UI can be opened: a reachable service (console app, Docker,
+    /// or an installed service we are connected to), or an installed Windows Service
+    /// that reports Running while the hub is still connecting. The menu item and every
+    /// way of opening the UI (click, double-click, balloon) must use this one check.
+    /// </summary>
+    public bool IsWebUIAvailable =>
+        IsServiceReachable || (IsServiceInstalled && CurrentStatus == ServiceControllerStatus.Running);
+
     public event EventHandler<ServiceControllerStatus>? StatusChanged;
 
     /// <summary>
