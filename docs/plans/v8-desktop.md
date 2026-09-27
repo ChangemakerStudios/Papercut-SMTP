@@ -146,6 +146,12 @@ Pin the `NativeWebView` package version the spike runs against.
 
 If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 
+**Status (2026-09-27):** Windows passes; macOS and Linux are not run yet. Results and the per-platform API survey are in `spike/Papercut.Shell.Spike/README.md`. What this changes for card A:
+- Use the official `Avalonia.Controls.WebView` package (AvaloniaUI, MIT). The feature-flag caveats above came from the community `NativeWebView` package.
+- On Windows, `NavigationStarted` covers the main frame only. The shell hooks `FrameNavigationStarting` and `PermissionRequested` on the raw `CoreWebView2` (`TryGetPlatformHandle()`). By decompilation, macOS and Linux (WPE) already route subframe navigations through `NavigationStarted`.
+- The iframe sandbox blocks `target=_top`, meta refresh and form posts on its own. The renderer defences in item 3 are a second layer.
+- The shell needs a Windows app manifest (`supportedOS`), and single-instance enforcement: a second instance crashes on WebView2's locked user data folder (`0x800700AA`).
+
 ### A. Shell details
 
 - One window, reused; closing hides it to the tray.

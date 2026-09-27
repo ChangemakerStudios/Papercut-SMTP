@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Throwaway go/no-go spike for the v8 shell. Not part of Papercut.sln. See README.md. -->
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<ApplicationIcon>Assets\papercut.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Controls.WebView" Version="12.1.0" />
+		<!-- only used on Windows, for frame navigation + permission hooks on the raw CoreWebView2 -->
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4129.50" />
+	</ItemGroup>
+</Project>
