@@ -37,15 +37,28 @@ public class RuleServiceBase : Disposable
 
     readonly Lazy<ObservableCollection<IRule>> _rules;
 
-    protected RuleServiceBase(IRuleRepository ruleRepository, ILogger logger)
+    protected RuleServiceBase(
+        IRuleRepository ruleRepository,
+        ILogger logger,
+        string? ruleFileName = null,
+        string? legacyRuleFileName = null)
     {
         this._ruleRepository = ruleRepository;
         this._logger = logger;
-        this.RuleFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
+        this.RuleFileName = ruleFileName ?? DefaultRuleFileName;
+        this.LegacyRuleFileName = legacyRuleFileName ?? DefaultRuleFileName;
         this._rules = new Lazy<ObservableCollection<IRule>>(this.GetRulesCollection);
     }
 
+    public static string DefaultRuleFileName { get; } =
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.json");
+
     public string RuleFileName { get; set; }
+
+    /// <summary>
+    /// Where rules lived before RuleFileName moved -- copied over once if RuleFileName is missing.
+    /// </summary>
+    public string LegacyRuleFileName { get; }
 
     public ObservableCollection<IRule> Rules => this._rules.Value;
 
@@ -64,6 +77,8 @@ public class RuleServiceBase : Disposable
     {
         IList<IRule>? loadRules = null;
 
+        this.CopyLegacyRuleFile();
+
         try
         {
             loadRules = this._ruleRepository.LoadRules(this.RuleFileName);
@@ -80,6 +95,7 @@ public class RuleServiceBase : Disposable
     {
         try
         {
+            EnsureDirectory(this.RuleFileName);
             this._ruleRepository.SaveRules(this.Rules, this.RuleFileName);
             this._logger.Information(
                 "Saved {RuleCount} to {RuleFileName}",
@@ -90,5 +106,37 @@ public class RuleServiceBase : Disposable
         {
             this._logger.Error(ex, "Error saving rules to file {RuleFileName}", this.RuleFileName);
         }
+    }
+
+    private void CopyLegacyRuleFile()
+    {
+        // copied, not moved -- an older version run from the same folder still finds its rules
+        if (File.Exists(this.RuleFileName) || !File.Exists(this.LegacyRuleFileName)) return;
+
+        try
+        {
+            EnsureDirectory(this.RuleFileName);
+            File.Copy(this.LegacyRuleFileName, this.RuleFileName);
+
+            this._logger.Information(
+                "Copied rules from {LegacyRuleFileName} to {RuleFileName}",
+                this.LegacyRuleFileName,
+                this.RuleFileName);
+        }
+        catch (Exception ex)
+        {
+            this._logger.Warning(
+                ex,
+                "Failed to copy rules from {LegacyRuleFileName} to {RuleFileName}",
+                this.LegacyRuleFileName,
+                this.RuleFileName);
+        }
+    }
+
+    private static void EnsureDirectory(string filePath)
+    {
+        var directory = Path.GetDirectoryName(filePath);
+
+        if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
     }
 }
