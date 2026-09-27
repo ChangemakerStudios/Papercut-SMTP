@@ -58,6 +58,7 @@ The solution is organized into several projects with clear separation of concern
 
 ## Important Conventions
 
+- **Use CURT comments and commit messages** - short, to the point, no essays
 - **Nullable reference types enabled** across all projects
 - **Implicit usings enabled** for common namespaces
 - **Global usings**: System.Text, Serilog, JetBrains.Annotations
