@@ -10,7 +10,7 @@ One application, run three ways, on Windows, macOS and Linux:
 - **The tray** is the shell: tray icon, notifications, run-at-startup, and a window that shows the web UI.
 - **Papercut.UI (WPF)** and **Papercut.Infrastructure.IPComm** are deleted.
 
-v7 desktop users must get v8 as a normal in-place update, with their messages, rules and settings intact.
+v7 desktop users must get v8 as a normal in-place update, with their messages and settings intact. Rules come through intact if they were saved on the bridge release or later; see [Migration](#migration) for the one-time loss before that.
 
 ## Model
 
@@ -90,6 +90,11 @@ Ships before v8 so rules are somewhere v8 can find them.
 - Verified by running the WPF app: the legacy `rules.json` was copied on first load, and on exit an edited rule saved to `%AppData%` while the legacy file stayed unchanged.
 
 **Limit:** Velopack replaces `current\` before any code from the new version runs. So for Velopack installs the copy finds nothing, and rules saved before the bridge are lost at that update, as they already are on every v7 update. The copy only helps zip, portable and dev runs. What the bridge does fix is that rules survive every update from this release on, including the update to v8.
+
+Nothing can capture those files first: the v7 already installed has no pre-update hook, and Velopack's updater does the replacement. So the guarantee is narrowed on purpose:
+- **Velopack desktop-only users** lose rules saved before the bridge, once, at the bridge update. This is no worse than today, because every v7 update already deletes them. The bridge release notes tell users to re-create their forwarding rules once after updating; they persist from then on.
+- **Users who also ran the Windows Service** can get them back through the v8 fallback below.
+- **Messages and settings are not affected.** They already live outside `current\`: messages in `%AppData%`, and WPF settings in `user.config` under `%LocalAppData%\Changemaker_Studios`.
 
 ### Part 2: v8 first-run migration
 
