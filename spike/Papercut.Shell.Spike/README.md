@@ -66,13 +66,12 @@ Findings:
 
 ### macOS — not run yet
 
-### Linux — not run yet
+### Linux — out of scope
 
-The local WSL distro is Ubuntu 20.04, which predates WebKitGTK 4.1 and current WPE. Run on 24.04 or later.
+Decided 2026-09-27: no Linux desktop shell. Linux users run the service (Docker or console) and use the web UI in a browser. The Linux column above is kept for reference only.
 
 ## Still to do (plan spike items)
 
-- macOS and Linux runs (items 1–3)
-- Self-contained publish + `vpk pack` on each OS (item 5)
-- Clean Linux install and prerequisites (item 6)
-- OS notifications per OS (item 7)
+- macOS run (items 1–3)
+- Self-contained publish + `vpk pack` on Windows and macOS (item 5)
+- OS notifications on Windows and macOS (item 7)
