@@ -89,7 +89,7 @@ Ships before v8 so rules are somewhere v8 can find them.
 - `JsonSettingStore` is not part of the bridge. The WPF app keeps its real settings in `user.config` and only writes an empty `Papercut SMTP.Settings.json`. The service's settings file moves to the data folder in card B.
 - Verified by running the WPF app: the legacy `rules.json` was copied on first load, and on exit an edited rule saved to `%AppData%` while the legacy file stayed unchanged.
 
-Users who jump from an older v7 straight to v8 lose rules they saved in `current\`. The bridge release shrinks that gap as much as possible.
+**Limit:** Velopack replaces `current\` before any code from the new version runs. So for Velopack installs the copy finds nothing, and rules saved before the bridge are lost at that update, as they already are on every v7 update. The copy only helps zip, portable and dev runs. What the bridge does fix is that rules survive every update from this release on, including the update to v8.
 
 ### Part 2: v8 first-run migration
 
@@ -108,13 +108,13 @@ Runs in the shell on first start. It is idempotent and guarded by a marker file 
 | `MessageListSortOrder`, `Theme`, `BaseTheme`, zoom | Web UI where an equivalent exists, otherwise dropped and noted in the release notes |
 | `WebView2UserFolder`, `IgnoreSslCertificateErrors` | Dropped |
 
-- **Rules:** read from the data folder, where the bridge release put them.
+- **Rules:** read from the data folder, where the bridge release put them. If there are none, import from the installed Windows Service's `rules.json`, found through the registry `ImagePath`. When both were running, the WPF app synced its rules to the service, so that copy may still exist.
 
 ## Work breakdown
 
 | Card | Scope | Depends on |
 |---|---|---|
-| **0. Bridge release** | Data-folder rules/settings + copy from old location. Ship as 7.x. | none |
+| **0. Bridge release** | WPF rules in the data folder + copy from the old location (#383). Ship as 7.x. | none |
 | **A. Cross-platform shell** | Avalonia 12 tray + webview window, replacing the WinForms tray. Absorbs "Desktop shell: cross-platform later". | Spike |
 | **B. Desktop mode** | Tray launches the service as a child; source resolution; data-folder config. | A |
 | **C. Velopack desktop package** | Package layout, update flow, v8 migration, new channels. | A, B, 0 |
@@ -125,26 +125,34 @@ Runs in the shell on first start. It is idempotent and guarded by a marker file 
 
 Run on Windows, macOS and Linux:
 
-1. **Must pass:** cancel top-level and iframe navigations, and intercept new-window requests. Email links arrive as `target="_blank"` new-window requests from the sandboxed iframe (`content-formatting.service.ts`).
-2. Turn devtools off, set the user data folder, deny permission requests.
-3. Self-contained publish + `vpk pack` works on each OS.
-4. An OS notification route exists on each OS: Windows toast, macOS UserNotifications, freedesktop D-Bus.
-5. Confirm the `NativeWebView` package license.
+Pin the `NativeWebView` package version the spike runs against.
 
-If 1 fails, switch to Tauri.
+1. **Must pass on all three:** intercept `NewWindowRequested`, read its URL, and suppress the popup. Email links arrive as `target="_blank"` new-window requests from the sandboxed iframe (`content-formatting.service.ts`).
+2. **Top-level cancellation:** `NavigationStarted` can be cancelled only where `Features.Supports(NativeWebViewFeature.NavigationCancellation)` is true. The docs list Windows and embedded macOS, not Linux. Required on Windows and macOS. A Linux gap is acceptable only if item 3 holds, because the iframe sandbox has no `allow-top-navigation`, so email cannot navigate the top page.
+3. **Iframe navigation:** frame loads raise no navigation events on any platform, so the defence goes into the email content, not the webview:
+   - the renderer forces `target="_blank"` on every link and strips `<meta http-equiv="refresh">`
+   - the sandbox stays without `allow-scripts`, `allow-forms` or `allow-top-navigation`
+   - the spike proves that a `target="_self"` link, a meta refresh and a form post in an email do not navigate the iframe on any platform
+4. Turn devtools off (`IsDevToolsEnabled`) and set the user data folder. No permission-request event is documented, so check what each platform does by default.
+5. Self-contained publish + `vpk pack` works on each OS.
+6. **Linux:** install and launch the package on a clean supported distro. Confirm the WPE or WebKitGTK prerequisites (GTK 3, WebKitGTK 4.1, libsoup 3) are bundled or documented.
+7. An OS notification route exists on each OS: Windows toast, macOS UserNotifications, freedesktop D-Bus.
+8. Confirm the `NativeWebView` package license.
+
+If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 
 ### A. Shell details
 
 - One window, reused; closing hides it to the tray.
 - Menu: "Open Papercut" is the default item (also on double-click and notification click). "Open in Browser" is secondary.
-- Link policy: the service origin loads in the window. Other http(s) links open in the default browser, and `mailto:` goes to the OS handler. Everything else is blocked and logged.
+- Link policy: the service origin loads in the window. Other http(s) links open in the default browser, and `mailto:` goes to the OS handler. Everything else is blocked and logged. The origin check applies to every navigation and new-window request, whether or not the user started it.
 - Notification click opens `message/{id}`. If the window is already open, route in place with a web message and a small Angular listener, instead of reloading.
 - Offline page with Start/Retry buttons; it reloads when the SignalR hub reconnects.
 - Platform services behind interfaces:
   - run-at-startup: registry on Windows, LaunchAgent on macOS, XDG autostart on Linux
   - service control: Windows only
   - notifications
-- Carry over from Papercut.UI: the `DisableEdgeFeaturesHelper` settings, the navigation and new-window policy from `MessageDetailHtmlViewModel`, and the `WebView2Information` runtime check. The `HtmlPreviewVisitor` MIME edge cases belong to the WPF wind-down card.
+- Carry over from Papercut.UI: the `DisableEdgeFeaturesHelper` settings and the `WebView2Information` runtime check. Port the link handling from `MessageDetailHtmlViewModel`, with one change: it allows every navigation the user did not start (`!args.IsUserInitiated`) without checking the URL. The shell drops that exception, and the origin check above always applies. The `HtmlPreviewVisitor` MIME edge cases belong to the WPF wind-down card.
 
 ### B. Desktop mode details
 
