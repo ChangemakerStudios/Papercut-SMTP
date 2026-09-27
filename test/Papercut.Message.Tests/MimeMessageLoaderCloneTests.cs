@@ -102,14 +102,28 @@ public class MimeMessageLoaderCloneTests
     }
 
     [Test]
-    public async Task GetClonedAsync_Sequentially_EveryCloneIsIntact()
+    public async Task GetClonedAsync_ReturnsIntactPrivateCopies()
     {
         var entry = new MessageEntry(_file);
 
-        await _loader.GetAsync(entry);
+        var cached = await _loader.GetAsync(entry);
+        var first = await _loader.GetClonedAsync(entry);
+        var second = await _loader.GetClonedAsync(entry);
 
-        for (var i = 0; i < 5; i++)
-            IsIntact(await _loader.GetClonedAsync(entry)).Should().BeTrue();
+        IsIntact(first).Should().BeTrue();
+        IsIntact(second).Should().BeTrue();
+
+        first.Should().NotBeSameAs(cached);
+        second.Should().NotBeSameAs(cached).And.NotBeSameAs(first);
+
+        // rules rewrite recipients; that must not leak into the cache or other copies
+        first.Subject = "changed";
+        first.To.Clear();
+
+        cached!.Subject.Should().Be("Concurrent forward");
+        cached.To.Count.Should().Be(1);
+        second.Subject.Should().Be("Concurrent forward");
+        second.To.Count.Should().Be(1);
     }
 
     private bool IsIntact(MimeMessage? clone)
