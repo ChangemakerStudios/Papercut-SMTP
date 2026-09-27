@@ -127,6 +127,24 @@ public class MimeMessageLoader : Disposable, IMimeMessageLoader
         return this.GetMimeMessageFromCacheAsync(messageEntry, token);
     }
 
+    // Parsed fresh from disk, never cloned from the cached instance: MimeKit content
+    // streams aren't thread-safe, so concurrent clones corrupted forwards (#379).
+    public virtual Task<MimeMessage> GetClonedAsync(MessageEntry messageEntry, CancellationToken token = default)
+    {
+        ArgumentNullException.ThrowIfNull(messageEntry);
+
+        return LoadFromFileAsync(messageEntry, token);
+    }
+
+    private async Task<MimeMessage> LoadFromFileAsync(MessageEntry messageEntry, CancellationToken token)
+    {
+        var message = await _messageRepository.GetMessage(messageEntry.File);
+
+        using var ms = new MemoryStream(message);
+
+        return await MimeMessage.LoadAsync(ParserOptions.Default, ms, token);
+    }
+
     protected virtual async Task<MimeMessage?> GetMimeMessageFromCacheAsync(MessageEntry messageEntry, CancellationToken token = default)
     {
         return await MimeMessageCache.GetOrSetAsync(
@@ -140,11 +158,7 @@ public class MimeMessageLoader : Disposable, IMimeMessageLoader
                         messageEntry.File);
                 }
 
-                var message = await _messageRepository.GetMessage(messageEntry.File);
-
-                using var ms = new MemoryStream(message);
-
-                return await MimeMessage.LoadAsync(ParserOptions.Default, ms, token);
+                return await LoadFromFileAsync(messageEntry, token);
             },
             m =>
             {

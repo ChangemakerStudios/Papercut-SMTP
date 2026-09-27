@@ -29,4 +29,9 @@ public interface IMimeMessageLoader
         Action<MimeMessage?> callback);
 
     Task<MimeMessage?> GetAsync(MessageEntry messageEntry, CancellationToken token = default);
+
+    /// <summary>
+    /// A private copy safe to mutate or send. Never the shared cached instance.
+    /// </summary>
+    Task<MimeMessage> GetClonedAsync(MessageEntry messageEntry, CancellationToken token = default);
 }

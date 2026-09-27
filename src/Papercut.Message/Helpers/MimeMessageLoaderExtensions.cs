@@ -27,15 +27,6 @@ namespace Papercut.Message.Helpers;
 
 public static class MimeMessageLoaderExtensions
 {
-    public static async Task<MimeMessage> GetClonedAsync(this IMimeMessageLoader loader, MessageEntry entry, CancellationToken token = default)
-    {
-        ArgumentNullException.ThrowIfNull(loader);
-        ArgumentNullException.ThrowIfNull(entry);
-
-        var message = await loader.GetAsync(entry, token);
-        return await message.CloneMessageAsync(token);
-    }
-
     public static IObservable<MimeMessage?> GetObservable(this IMimeMessageLoader loader, MessageEntry entry, CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(loader);

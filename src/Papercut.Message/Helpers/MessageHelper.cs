@@ -26,19 +26,6 @@ namespace Papercut.Message.Helpers;
 
 public static class MessageHelper
 {
-    public static async Task<MimeMessage> CloneMessageAsync(this MimeMessage? mimeMessage, CancellationToken token)
-    {
-        ArgumentNullException.ThrowIfNull(mimeMessage);
-
-        using var ms = new MemoryStream();
-
-        await mimeMessage.WriteToAsync(FormatOptions.Default, ms, token);
-        ms.Seek(0, SeekOrigin.Begin);
-        var clonedMessage = await MimeMessage.LoadAsync(ParserOptions.Default, ms, token);
-
-        return clonedMessage;
-    }
-
     public static string? GetStringDump(this MimeMessage? mimeMessage)
     {
         ArgumentNullException.ThrowIfNull(mimeMessage);
