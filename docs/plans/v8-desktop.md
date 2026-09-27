@@ -86,7 +86,8 @@ macOS packages must be built on a macOS runner, and they need an Apple Developer
 Ships before v8 so rules are somewhere v8 can find them.
 
 - Done: the WPF `RuleService` saves `rules.json` to `UserAppDataDirectory`. On load, if that file is missing and `BaseDirectory\rules.json` exists, `RuleServiceBase` copies it over and logs it. The service keeps `BaseDirectory`.
-- `JsonSettingStore` is not part of the bridge: only the service uses it, because the WPF app keeps its settings in `user.config`. Its move to the data folder belongs to card B.
+- `JsonSettingStore` is not part of the bridge. The WPF app keeps its real settings in `user.config` and only writes an empty `Papercut SMTP.Settings.json`. The service's settings file moves to the data folder in card B.
+- Verified by running the WPF app: the legacy `rules.json` was copied on first load, and on exit an edited rule saved to `%AppData%` while the legacy file stayed unchanged.
 
 Users who jump from an older v7 straight to v8 lose rules they saved in `current\`. The bridge release shrinks that gap as much as possible.
 
