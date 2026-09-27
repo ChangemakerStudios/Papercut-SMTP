@@ -5,6 +5,10 @@ repo_url: https://github.com/ChangemakerStudios/Papercut-SMTP
 repo_name: ChangemakerStudios/Papercut-SMTP
 edit_uri: edit/develop/docs/
 
+# internal planning docs, not part of the site
+exclude_docs: |
+  plans/
+
 theme:
   name: material
   logo: images/logo.png
