@@ -44,6 +44,7 @@ public class ReceivedDataMessageHandlerTests
         _handler = new ReceivedDataMessageHandler(
             _mockRepository.Object,
             _mockMessageBus.Object,
+            new PublishedMessageTracker(),
             _mockLogger.Object);
     }
 
