@@ -85,9 +85,8 @@ macOS packages must be built on a macOS runner, and they need an Apple Developer
 
 Ships before v8 so rules are somewhere v8 can find them.
 
-- `RuleServiceBase` saves `rules.json` to the data folder. On load, if that file is missing and `BaseDirectory\rules.json` exists, it copies it over.
-- `JsonSettingStore` does the same for desktop installs only.
-- Log the move once.
+- Done: the WPF `RuleService` saves `rules.json` to `UserAppDataDirectory`. On load, if that file is missing and `BaseDirectory\rules.json` exists, `RuleServiceBase` copies it over and logs it. The service keeps `BaseDirectory`.
+- `JsonSettingStore` is not part of the bridge: only the service uses it, because the WPF app keeps its settings in `user.config`. Its move to the data folder belongs to card B.
 
 Users who jump from an older v7 straight to v8 lose rules they saved in `current\`. The bridge release shrinks that gap as much as possible.
 
