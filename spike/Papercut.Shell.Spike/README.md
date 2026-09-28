@@ -2,7 +2,7 @@
 
 Throwaway go/no-go spike for card A in [docs/plans/v8-desktop.md](../../docs/plans/v8-desktop.md). It is not part of `Papercut.sln`.
 
-It is a tray icon plus one window hosting `NativeWebView` from `Avalonia.Controls.WebView` 12.1.0 (AvaloniaUI, MIT). The window loads a local test page that reproduces the web UI's email iframe: the same `sandbox` attributes and the same injected `<base target="_blank">`. Every navigation, popup and permission decision is logged to the window and to `spike-results-<os>-<time>.log` next to the exe.
+It is a tray icon plus one window hosting `NativeWebView` from `Avalonia.Controls.WebView` 12.1.0 (AvaloniaUI, MIT). The window loads a local test page that reproduces the web UI's email iframe: the same `sandbox` attributes and the same injected `<base target="_blank">`. Every navigation, popup and permission decision is logged to the window and to `spike-results-<os>-<time>.log` in the per-user data folder: `%LocalAppData%\Papercut.Shell.Spike\logs` on Windows, `~/Library/Application Support/Papercut.Shell.Spike/logs` on macOS.
 
 ## Run
 
@@ -11,6 +11,23 @@ dotnet run --project spike/Papercut.Shell.Spike            # add -- --devtools t
 ```
 
 Click every case on the page (T1–T7, then I1–I5 in the iframe, with Reload between iframe cases), then choose **Exit** from the tray menu. Collect the log file.
+
+## macOS packaging test (unsigned)
+
+On a Mac, from the repo root:
+
+```
+spike/Papercut.Shell.Spike/packaging/macos/pack.sh            # osx-arm64, version 0.1.0
+spike/Papercut.Shell.Spike/packaging/macos/pack.sh osx-x64 0.1.0
+```
+
+It installs `vpk` 1.2.158 as a global dotnet tool if needed, then:
+1. publishes a self-contained build
+2. builds `Papercut.icns` from `graphics/Papercut-icon.png` with `sips` and `iconutil`
+3. writes `packaging/macos/Info.plist`, which sets `LSUIElement` so there is no Dock icon
+4. runs `vpk pack` with no signing flags
+
+Output goes to `packaging/macos/out/<rid>/releases` (git-ignored). The script prints the checks to do after installing the `.pkg`. A locally built package is not quarantined, so Gatekeeper does not block it; that only happens to downloaded builds.
 
 ## Package: official vs community
 

@@ -7,6 +7,9 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // must run first: handles Velopack install/update hooks, and vpk pack checks for it
+        Velopack.VelopackApp.Build().Run();
+
         using var server = TestServer.Start();
 
         SpikeLog.Start();

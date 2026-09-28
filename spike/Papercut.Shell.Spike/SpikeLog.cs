@@ -14,7 +14,14 @@ internal static class SpikeLog
     public static void Start()
     {
         var os = OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsMacOS() ? "macos" : "linux";
-        FilePath = Path.Combine(AppContext.BaseDirectory, $"spike-results-{os}-{DateTime.Now:yyyyMMdd-HHmmss}.log");
+        // not beside the exe: an installed .app bundle is read-only, and Velopack replaces it on update
+        var folder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Papercut.Shell.Spike",
+            "logs");
+
+        Directory.CreateDirectory(folder);
+        FilePath = Path.Combine(folder, $"spike-results-{os}-{DateTime.Now:yyyyMMdd-HHmmss}.log");
     }
 
     public static void Write(string source, string verdict, string detail)
