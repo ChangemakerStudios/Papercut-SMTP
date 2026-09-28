@@ -54,7 +54,7 @@ Velopack replaces `current\` on every update (see [Preserving Files](https://doc
 - `rules.json`: `RuleServiceBase` saves it to `AppDomain.BaseDirectory`. The WPF app uses the same class, so **v7 users probably lose their rules on every update today**.
 - `<AppName>.Settings.json`: `JsonSettingStore` also saves it to `BaseDirectory`.
 
-The desktop data folder is the existing `AppConstants.UserAppDataDirectory`, which is `%ApplicationData%\Changemaker Studios\Papercut SMTP`. That is already the first entry in the WPF `MessagePaths`. On macOS it is the equivalent `SpecialFolder.ApplicationData` path.
+The desktop data folder is the existing `AppConstants.UserAppDataDirectory`, which is `%ApplicationData%\Changemaker Studios\Papercut SMTP`. That is already the first entry in the WPF `MessagePaths`. On macOS use `~/Library/Application Support/Papercut SMTP` (`SpecialFolder.LocalApplicationData`). Do not use `UserAppDataDirectory` there: .NET maps `SpecialFolder.ApplicationData` to `~/.config` on macOS. No v7 data exists on macOS, so nothing needs migrating.
 
 The Windows Service zip and Docker keep `BaseDirectory` so existing service installs do not move.
 
@@ -77,7 +77,21 @@ The shell calls `VelopackApp.Build().Run()` first, and uses the same `GithubSour
 
 Secondary distributions are unchanged: the service zip (service + tray in `TrayNotification/`), Docker, and WinGet.
 
-macOS packages must be built on a macOS runner, and they need an Apple Developer ID for notarization.
+### macOS packaging
+
+- **Output:** `vpk pack` produces a `.app` bundle, a `.pkg` installer (to `/Applications` or `~/Applications`) and a portable `.zip`. Updates are cached in `~/Library/Caches/velopack/<packId>/packages` and replace the `.app` in place. Updating inside `/Applications` may prompt for elevation.
+- **Build on macOS only:** Velopack needs `codesign`, `xcrun` and `productbuild`. Releases are built on a GitHub Actions macOS runner; local tests run on a Mac. Velopack PR #1065 (open, not released) would allow packing and signing from Windows/Linux via `rcodesign`.
+- **Channels:** `osx-arm64` and `osx-x64`, one publish per RID.
+- **Icon:** `--icon` needs an `.icns` file.
+- **Info.plist:** ship a custom `--plist` rather than `--bundleId` (the two are mutually exclusive), so it can set `LSUIElement` (menu-bar only, no Dock icon) and the bundle id.
+- **Notifications:** macOS UserNotifications are tied to the bundle id, so they can only be tested from the packaged `.app`. Test them together with packaging.
+- **No App Sandbox:** Velopack's updater cannot run sandboxed, so there is no Mac App Store distribution.
+- **Signing and notarization:** needed for real distribution. Gatekeeper blocks unsigned downloaded apps; on current macOS users must go to System Settings → Privacy & Security → Open Anyway. Signing requires:
+  - the Apple Developer Program ($99/yr)
+  - "Developer ID Application" and "Developer ID Installer" certificates in the keychain
+  - a notary profile: `xcrun notarytool store-credentials --apple-id … --team-id … --password <app-specific> <profile>`
+  - then `vpk pack --signAppIdentity "Developer ID Application: …" --signInstallIdentity "Developer ID Installer: …" --notaryProfile <profile>`
+- **Next test:** an unsigned local build on the Mac: publish `osx-arm64`, `vpk pack` with the custom plist and `.icns`, install the `.pkg`, and check the menu-bar icon (no Dock icon) and a notification. Locally built apps are not quarantined, so this tests everything except signing.
 
 ## Migration
 
@@ -176,4 +190,5 @@ If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 ## Open questions
 
 - Apple Developer ID for notarization, or ship the first macOS build unsigned?
+- macOS: free (sponsor-funded) or paid binaries? The code stays Apache 2.0 either way.
 - Confirm the two *(proposed)* defaults under Model.
