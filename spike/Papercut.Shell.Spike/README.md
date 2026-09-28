@@ -64,7 +64,29 @@ Findings:
 - **An app manifest is required on Windows.** Without a Windows 10 `supportedOS` entry, the native control host throws "Unable to create child window".
 - **The shell must enforce a single instance.** A second instance, or leftover `msedgewebview2` processes from a killed one, crashes on the locked user data folder with `0x800700AA`.
 
-### macOS — not run yet
+### macOS (M4 MacBook Pro), WKWebView — pass
+
+Log: [results/macos-2026-09-27.log](results/macos-2026-09-27.log). The paste starts at `EnvironmentRequested`, so the tray lines are not in it.
+
+| Case | Result | Caught by |
+|---|---|---|
+| T1 same-origin link | allowed | `NavigationStarted` |
+| T2 external link, same window | cancelled | `NavigationStarted` |
+| T3 `target=_blank` | no popup, URL captured | `NewWindowRequested` |
+| T4 `window.open` | nothing opens, nothing logged | see findings |
+| T5 `mailto:` | cancelled | `NavigationStarted` |
+| T7 geolocation | nothing logged | no permission hook on macOS |
+| I1 email link (base `_blank`) | no popup, URL captured | `NewWindowRequested` |
+| I2 email link `target=_self` | cancelled | `NavigationStarted`, with no extra hook |
+| I3 email link `target=_top` | no navigation; URL captured as a new-window request | `NewWindowRequested` |
+| I4 email meta refresh | never navigates | iframe sandbox |
+| I5 email form post | never navigates | iframe sandbox |
+
+Findings:
+
+- **Iframe navigations need no extra wiring on macOS.** `NavigationStarted` covers subframes and honours `Cancel`, as the decompiled adapter showed.
+- **`window.open` is not surfaced.** Avalonia's macOS adapter has no `createWebView` handler, so WebKit opens nothing and the shell never sees the URL. That is safe (email frames cannot run script), but it means the web UI must open new windows with `target="_blank"` links, never `window.open`. The Angular app does not use `window.open` today.
+- **`target=_top` from the sandboxed email becomes a new-window request** on macOS instead of being dropped silently as on Windows. The shell opens it in the browser, which is the right outcome for a clicked link.
 
 ### Linux — out of scope
 
@@ -72,6 +94,5 @@ Decided 2026-09-27: no Linux desktop shell. Linux users run the service (Docker 
 
 ## Still to do (plan spike items)
 
-- macOS run (items 1–3)
 - Self-contained publish + `vpk pack` on Windows and macOS (item 5)
 - OS notifications on Windows and macOS (item 7)

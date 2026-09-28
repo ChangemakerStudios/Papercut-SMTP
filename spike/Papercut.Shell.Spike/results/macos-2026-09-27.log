@@ -1,0 +1,45 @@
+# pasted from the run on an M4 MacBook Pro; the first lines (spike start, tray created) were not included
+20:01:53.207  EnvironmentRequested       config     AppleWKWebViewEnvironmentRequestedEventArgs devtools=False data=/Users/jaben.cargman/Library/Application Support/Papercut.Shell.Spike
+20:01:53.277  AdapterCreated             info       DetailedWebViewAdapterInfo { Type = WkWebView, Engine = WebKit, Version = , IsSupported = True, IsInstalled = True, UnavailableReason = , SupportedScenarios = NativeControlHost }
+20:01:53.777  NavigationStarted          allowed    http://127.0.0.1:55576/ 
+20:01:53.833  NavigationStarted          allowed    about:blank 
+20:01:53.840  NavigationStarted          allowed    about:srcdoc 
+20:01:53.843  NavigationCompleted        ok         http://127.0.0.1:55576/
+20:01:55.976  NavigationStarted          allowed    http://127.0.0.1:55576/same-origin 
+20:01:55.986  NavigationCompleted        ok         http://127.0.0.1:55576/same-origin
+20:01:57.214  NavigationStarted          allowed    http://127.0.0.1:55576/ 
+20:01:57.219  NavigationStarted          allowed    about:blank 
+20:01:57.230  NavigationStarted          allowed    about:srcdoc 
+20:01:57.234  NavigationCompleted        ok         http://127.0.0.1:55576/
+20:01:58.103  NavigationStarted          CANCELLED  https://example.com/?case=T2 <T2>
+20:01:59.156  NewWindowRequested         HANDLED    https://example.com/?case=T3 <T3>
+20:02:00.256  NavigationStarted          CANCELLED  mailto:someone@example.com?subject=T5 <T5>
+20:02:05.952  NewWindowRequested         HANDLED    https://example.com/?case=I1 <I1>
+20:02:07.157  NavigationStarted          CANCELLED  https://example.com/?case=I2 <I2>
+20:02:08.048  NewWindowRequested         HANDLED    https://example.com/?case=I3 <I3>
+20:02:19.951  NavigationStarted          allowed    about:srcdoc 
+20:02:23.638  NavigationStarted          allowed    http://127.0.0.1:55576/same-origin 
+20:02:23.647  NavigationCompleted        ok         http://127.0.0.1:55576/same-origin
+20:02:25.105  NavigationStarted          allowed    http://127.0.0.1:55576/ 
+20:02:25.113  NavigationStarted          allowed    about:blank 
+20:02:25.114  NavigationStarted          allowed    about:srcdoc 
+20:02:25.116  NavigationCompleted        ok         http://127.0.0.1:55576/
+20:02:25.930  NavigationStarted          CANCELLED  https://example.com/?case=T2 <T2>
+20:02:26.621  NewWindowRequested         HANDLED    https://example.com/?case=T3 <T3>
+20:02:28.501  NavigationStarted          CANCELLED  mailto:someone@example.com?subject=T5 <T5>
+20:02:32.267  NavigationStarted          allowed    about:srcdoc 
+20:02:33.126  NavigationStarted          allowed    about:srcdoc 
+20:02:33.933  NavigationStarted          allowed    about:srcdoc 
+20:02:38.041  NavigationStarted          allowed    about:srcdoc 
+20:02:40.930  NavigationStarted          CANCELLED  https://example.com/?case=I2 <I2>
+20:02:41.867  NavigationStarted          CANCELLED  https://example.com/?case=I2 <I2>
+20:03:16.889  NewWindowRequested         HANDLED    https://example.com/?case=T3 <T3>
+20:03:19.694  NavigationStarted          CANCELLED  https://example.com/?case=T2 <T2>
+20:03:21.968  NavigationStarted          allowed    http://127.0.0.1:55576/same-origin 
+20:03:21.976  NavigationCompleted        ok         http://127.0.0.1:55576/same-origin
+20:03:22.821  NavigationStarted          allowed    http://127.0.0.1:55576/ 
+20:03:22.828  NavigationStarted          allowed    about:blank 
+20:03:22.830  NavigationStarted          allowed    about:srcdoc 
+20:03:22.832  NavigationCompleted        ok         http://127.0.0.1:55576/
+20:03:24.572  NavigationStarted          CANCELLED  mailto:someone@example.com?subject=T5 <T5>
+20:03:25.776  NavigationStarted          CANCELLED  mailto:someone@example.com?subject=T5 <T5>
