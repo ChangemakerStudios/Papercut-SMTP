@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EnvironmentService } from './environment.service';
 import { LoggingService } from './logging.service';
+import { isDesktopShell } from '../utils/desktop-shell';
 
 export interface PlatformNotificationOptions {
   title: string;
@@ -33,10 +34,13 @@ export class PlatformNotificationService {
   }
 
   private checkSupport(): void {
-    const isSupported = 'Notification' in window && typeof Notification !== 'undefined';
+    // in the desktop shell the shell raises OS notifications; browser ones would double up
+    const isSupported = !isDesktopShell() && 'Notification' in window && typeof Notification !== 'undefined';
     this._isSupported.next(isSupported);
     
-    if (isSupported) {
+    if (isDesktopShell()) {
+      this.loggingService.info('Running in the desktop shell -- it shows new-mail notifications');
+    } else if (isSupported) {
       this.loggingService.info('Platform notifications are supported');
     } else {
       this.loggingService.warn('Platform notifications are not supported in this browser');

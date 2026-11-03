@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { DESKTOP_NAVIGATE_EVENT } from './utils/desktop-shell';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NavigationComponent } from './components/navigation/navigation.component';
@@ -52,6 +53,17 @@ export class AppComponent {
   ) {
     this.loggingService.logEnvironmentInfo();
     this.loggingService.info('Papercut application started');
+  }
+
+  /**
+   * The desktop shell routes a notification click to its message without reloading.
+   */
+  @HostListener(`window:${DESKTOP_NAVIGATE_EVENT}`, ['$event'])
+  onDesktopNavigate(event: Event): void {
+    const path = (event as CustomEvent<string>).detail;
+    if (typeof path === 'string' && path.startsWith('/')) {
+      this.router.navigateByUrl(path);
+    }
   }
 
   onForward(): void {

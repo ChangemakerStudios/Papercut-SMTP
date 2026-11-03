@@ -27,6 +27,7 @@ import {
 } from '../models';
 import { EnvironmentService } from './environment.service';
 import { LoggingService } from './logging.service';
+import { openInNewTab } from '../utils/open-in-new-tab';
 
 /**
  * Unified service for handling message API operations.
@@ -166,7 +167,7 @@ export class MessageApiService {
    */
   downloadRawMessage(messageId: string): void {
     const encodedId = encodeURIComponent(messageId);
-    window.open(`${this.baseUrl}/${encodedId}/raw`, '_blank');
+    openInNewTab(`${this.baseUrl}/${encodedId}/raw`);
   }
 
   /**
@@ -176,7 +177,7 @@ export class MessageApiService {
    */
   downloadSectionByIndex(messageId: string, sectionIndex: number): void {
     const encodedId = encodeURIComponent(messageId);
-    window.open(`${this.baseUrl}/${encodedId}/sections/${sectionIndex}`, '_blank');
+    openInNewTab(`${this.baseUrl}/${encodedId}/sections/${sectionIndex}`);
   }
 
   /**
@@ -187,7 +188,7 @@ export class MessageApiService {
   downloadSectionByContentId(messageId: string, contentId: string): void {
     const encodedMessageId = encodeURIComponent(messageId);
     const encodedContentId = encodeURIComponent(contentId);
-    window.open(`${this.baseUrl}/${encodedMessageId}/contents/${encodedContentId}`, '_blank');
+    openInNewTab(`${this.baseUrl}/${encodedMessageId}/contents/${encodedContentId}`);
   }
 
   /**
