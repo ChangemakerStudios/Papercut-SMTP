@@ -4,7 +4,7 @@ Status: draft, 2026-09-27. Tracks the "Papercut SMTP v8" board: https://github.c
 
 ## Goal
 
-One application, run three ways, on Windows, macOS and Linux:
+One application, run three ways. The desktop shell targets Windows and macOS. **Linux has no desktop shell** (decided 2026-09-27): Linux users run the service, via Docker or the console, and use the web UI in their browser.
 
 - **Papercut.Service** is the app: SMTP, HTTP API, Angular UI, rules, MCP.
 - **The tray** is the shell: tray icon, notifications, run-at-startup, and a window that shows the web UI.
@@ -20,9 +20,9 @@ Two independent choices: where the service comes from, and where the UI is shown
 
 | # | Source | Tray's role | Platforms |
 |---|---|---|---|
-| 1 | Already reachable (Docker, console, remote) | Connect only | All |
+| 1 | Already reachable (Docker, console, remote) | Connect only | Windows, macOS |
 | 2 | Installed Windows Service | Connect + start/stop/restart | Windows |
-| 3 | Desktop: tray launches `Papercut.Service` as a child process | Owns its lifetime | All |
+| 3 | Desktop: tray launches `Papercut.Service` as a child process | Owns its lifetime | Windows, macOS |
 
 **UI surface:** the shell's window (native webview) or the default browser. Either works with any source.
 
@@ -36,8 +36,8 @@ Rules:
 
 The tray is WinForms today, which only runs on Windows. It moves to **Avalonia 12**:
 
-- `TrayIcon` works on Windows, macOS and Linux (StatusNotifierItem on Linux; GNOME needs the AppIndicator extension).
-- `NativeWebView` is open source as of v12. It uses the OS webview (WebView2, WKWebView, WPE WebKit/WebKitGTK), so no Chromium is bundled.
+- `TrayIcon` works on Windows and macOS.
+- `NativeWebView` is open source as of v12. It uses the OS webview (WebView2 on Windows, WKWebView on macOS), so no Chromium is bundled.
 - The framework is MIT licensed. Only the Accelerate tooling is paid, and Papercut does not need it.
 - The output is a plain `dotnet publish`, so it fits the existing `vpk pack` flow.
 
@@ -54,7 +54,7 @@ Velopack replaces `current\` on every update (see [Preserving Files](https://doc
 - `rules.json`: `RuleServiceBase` saves it to `AppDomain.BaseDirectory`. The WPF app uses the same class, so **v7 users probably lose their rules on every update today**.
 - `<AppName>.Settings.json`: `JsonSettingStore` also saves it to `BaseDirectory`.
 
-The desktop data folder is the existing `AppConstants.UserAppDataDirectory`, which is `%ApplicationData%\Changemaker Studios\Papercut SMTP`. That is already the first entry in the WPF `MessagePaths`. On macOS/Linux it is the equivalent `SpecialFolder.ApplicationData` path.
+The desktop data folder is the existing `AppConstants.UserAppDataDirectory`, which is `%ApplicationData%\Changemaker Studios\Papercut SMTP`. That is already the first entry in the WPF `MessagePaths`. On macOS use `~/Library/Application Support/Papercut SMTP` (`SpecialFolder.LocalApplicationData`). Do not use `UserAppDataDirectory` there: .NET maps `SpecialFolder.ApplicationData` to `~/.config` on macOS. No v7 data exists on macOS, so nothing needs migrating.
 
 The Windows Service zip and Docker keep `BaseDirectory` so existing service installs do not move.
 
@@ -65,7 +65,7 @@ The **default install** is Velopack, containing the tray shell plus the desktop 
 | | v7 | v8 |
 |---|---|---|
 | Pack id | `PapercutSMTP` | `PapercutSMTP` (unchanged) |
-| Channels | `win-x64`, `win-x86`, `win-arm64` | same, plus `osx-arm64`, `osx-x64`, `linux-x64` |
+| Channels | `win-x64`, `win-x86`, `win-arm64` | same, plus `osx-arm64`, `osx-x64` (no Linux channel) |
 | Main exe | `Papercut.exe` (WPF) | `Papercut.exe` (tray shell) |
 | AUMID | `ChangemakerStudios.PapercutSMTP` | unchanged |
 | Framework | `net8.0-x64-desktop,webview2` | `webview2` only (self-contained) |
@@ -77,7 +77,21 @@ The shell calls `VelopackApp.Build().Run()` first, and uses the same `GithubSour
 
 Secondary distributions are unchanged: the service zip (service + tray in `TrayNotification/`), Docker, and WinGet.
 
-macOS packages must be built on a macOS runner, and they need an Apple Developer ID for notarization.
+### macOS packaging
+
+- **Output:** `vpk pack` produces a `.app` bundle, a `.pkg` installer (to `/Applications` or `~/Applications`) and a portable `.zip`. Updates are cached in `~/Library/Caches/velopack/<packId>/packages` and replace the `.app` in place. Updating inside `/Applications` may prompt for elevation.
+- **Build on macOS only:** Velopack needs `codesign`, `xcrun` and `productbuild`. Releases are built on a GitHub Actions macOS runner; local tests run on a Mac. Velopack PR #1065 (open, not released) would allow packing and signing from Windows/Linux via `rcodesign`.
+- **Channels:** `osx-arm64` and `osx-x64`, one publish per RID.
+- **Icon:** `--icon` needs an `.icns` file.
+- **Info.plist:** ship a custom `--plist` rather than `--bundleId` (the two are mutually exclusive), so it can set `LSUIElement` (menu-bar only, no Dock icon) and the bundle id.
+- **Notifications:** macOS UserNotifications are tied to the bundle id, so they can only be tested from the packaged `.app`. Test them together with packaging.
+- **No App Sandbox:** Velopack's updater cannot run sandboxed, so there is no Mac App Store distribution.
+- **Signing and notarization:** needed for real distribution. Gatekeeper blocks unsigned downloaded apps; on current macOS users must go to System Settings → Privacy & Security → Open Anyway. Signing requires:
+  - the Apple Developer Program ($99/yr)
+  - "Developer ID Application" and "Developer ID Installer" certificates in the keychain
+  - a notary profile: `xcrun notarytool store-credentials --apple-id … --team-id … --password <app-specific> <profile>`
+  - then `vpk pack --signAppIdentity "Developer ID Application: …" --signInstallIdentity "Developer ID Installer: …" --notaryProfile <profile>`
+- **Next test:** an unsigned local build on the Mac: publish `osx-arm64`, `vpk pack` with the custom plist and `.icns`, install the `.pkg`, and check the menu-bar icon (no Dock icon) and a notification. Locally built apps are not quarantined, so this tests everything except signing.
 
 ## Migration
 
@@ -128,23 +142,30 @@ Runs in the shell on first start. It is idempotent and guarded by a marker file 
 
 ### Spike (go/no-go for Avalonia)
 
-Run on Windows, macOS and Linux:
+Run on Windows and macOS:
 
 Pin the `NativeWebView` package version the spike runs against.
 
-1. **Must pass on all three:** intercept `NewWindowRequested`, read its URL, and suppress the popup. Email links arrive as `target="_blank"` new-window requests from the sandboxed iframe (`content-formatting.service.ts`).
-2. **Top-level cancellation:** `NavigationStarted` can be cancelled only where `Features.Supports(NativeWebViewFeature.NavigationCancellation)` is true. The docs list Windows and embedded macOS, not Linux. Required on Windows and macOS. A Linux gap is acceptable only if item 3 holds, because the iframe sandbox has no `allow-top-navigation`, so email cannot navigate the top page.
+1. **Must pass on both:** intercept `NewWindowRequested`, read its URL, and suppress the popup. Email links arrive as `target="_blank"` new-window requests from the sandboxed iframe (`content-formatting.service.ts`).
+2. **Top-level cancellation:** `NavigationStarted` must be cancellable on Windows and macOS.
 3. **Iframe navigation:** frame loads raise no navigation events on any platform, so the defence goes into the email content, not the webview:
    - the renderer forces `target="_blank"` on every link and strips `<meta http-equiv="refresh">`
    - the sandbox stays without `allow-scripts`, `allow-forms` or `allow-top-navigation`
    - the spike proves that a `target="_self"` link, a meta refresh and a form post in an email do not navigate the iframe on any platform
 4. Turn devtools off (`IsDevToolsEnabled`) and set the user data folder. No permission-request event is documented, so check what each platform does by default.
 5. Self-contained publish + `vpk pack` works on each OS.
-6. **Linux:** install and launch the package on a clean supported distro. Confirm the WPE or WebKitGTK prerequisites (GTK 3, WebKitGTK 4.1, libsoup 3) are bundled or documented.
-7. An OS notification route exists on each OS: Windows toast, macOS UserNotifications, freedesktop D-Bus.
+6. ~~Linux clean install~~ dropped with the Linux shell.
+7. An OS notification route exists on each OS: Windows toast, macOS UserNotifications.
 8. Confirm the `NativeWebView` package license.
 
 If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
+
+**Status (2026-09-27):** items 1–3 pass on Windows and macOS. Items 5 and 7 (packaging, notifications) are still open. Results and the per-platform API survey are in `spike/Papercut.Shell.Spike/README.md`. What this changes for card A:
+- Use the official `Avalonia.Controls.WebView` package (AvaloniaUI, MIT). The feature-flag caveats above came from the community `NativeWebView` package.
+- On Windows, `NavigationStarted` covers the main frame only. The shell hooks `FrameNavigationStarting` and `PermissionRequested` on the raw `CoreWebView2` (`TryGetPlatformHandle()`). macOS routes subframe navigations through `NavigationStarted`, confirmed by the run.
+- macOS does not surface `window.open` (no `createWebView` handler), so the web UI must open new windows with `target="_blank"` links, never `window.open`.
+- The iframe sandbox blocks `target=_top`, meta refresh and form posts on its own. The renderer defences in item 3 are a second layer.
+- The shell needs a Windows app manifest (`supportedOS`), and single-instance enforcement: a second instance crashes on WebView2's locked user data folder (`0x800700AA`).
 
 ### A. Shell details
 
@@ -154,7 +175,7 @@ If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 - Notification click opens `message/{id}`. If the window is already open, route in place with a web message and a small Angular listener, instead of reloading.
 - Offline page with Start/Retry buttons; it reloads when the SignalR hub reconnects.
 - Platform services behind interfaces:
-  - run-at-startup: registry on Windows, LaunchAgent on macOS, XDG autostart on Linux
+  - run-at-startup: registry on Windows, LaunchAgent on macOS
   - service control: Windows only
   - notifications
 - Carry over from Papercut.UI: the `DisableEdgeFeaturesHelper` settings and the `WebView2Information` runtime check. Port the link handling from `MessageDetailHtmlViewModel`, with one change: it allows every navigation the user did not start (`!args.IsUserInitiated`) without checking the URL. The shell drops that exception, and the origin check above always applies. The `HtmlPreviewVisitor` MIME edge cases belong to the WPF wind-down card.
@@ -163,10 +184,11 @@ If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 
 - Launch `service/Papercut.Service` with an explicit `--urls` and data folder, so the tray knows the URL without guessing.
 - Stopping: the service exits when stdin closes or its parent process disappears; this works on every OS. On Windows, a Job Object also kills it if the tray crashes.
-- The default SMTP port on macOS/Linux is 2525, because ports below 1024 need root.
+- The default SMTP port on macOS is 2525, because ports below 1024 need root.
 - The status line shows the source: "Windows Service", "Local", or "External at …". Start/stop target the active source and are disabled for external services.
 
 ## Open questions
 
 - Apple Developer ID for notarization, or ship the first macOS build unsigned?
+- macOS: free (sponsor-funded) or paid binaries? The code stays Apache 2.0 either way.
 - Confirm the two *(proposed)* defaults under Model.
