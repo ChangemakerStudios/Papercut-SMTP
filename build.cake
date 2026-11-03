@@ -1,4 +1,4 @@
-
+﻿
 #module nuget:?package=Cake.BuildSystems.Module&version=8.0.0
 
 #tool "nuget:?package=System.Configuration.ConfigurationManager&version=4.5.0"
@@ -8,7 +8,7 @@
 #tool "nuget:?package=OpenCover&version=4.7.1221"
 
 #tool "dotnet:?package=GitVersion.Tool&version=6.4.0"
-#tool "dotnet:?package=vpk&version=0.0.1521-gf115f70&prerelease"
+#tool "dotnet:?package=vpk&version=1.2.158"
 
 #addin "nuget:?package=Cake.FileHelpers&version=7.0.0"
 #addin "nuget:?package=Cake.Incubator&version=8.0.0"
@@ -21,6 +21,7 @@
 
 #load "./build/ReleaseNotes.cake"
 #load "./build/Velopack.cake"
+#load "./build/Desktop.cake"
 #load "./build/WinGet.cake"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -512,6 +513,30 @@ Task("PrepareWinGetRelease")
 .OnError(exception => Error(exception));
 
 ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// v8 DESKTOP (Avalonia shell + service/) -- not in "All" yet: CI still ships the WPF app
+
+var desktopPublishDirectory = Directory("./publish/desktop");
+
+foreach (var desktopRuntime in new[] { "win-x64", "win-x86", "win-arm64" })
+{
+    var runtime = desktopRuntime;
+
+    Task($"PackageDesktop-{runtime}")
+        .IsDependentOn("Restore")
+        .Does(() =>
+    {
+        Desktop.Publish(Context, runtime, configuration, desktopPublishDirectory, versionMSBuildSettings);
+        Velopack.Pack(Context, Desktop.WindowsPackParams(runtime, channelPostfix, versionInfo.FullSemVer, desktopPublishDirectory, releasesDirectory));
+    })
+    .OnError(exception => Error(exception));
+}
+
+Task("PackageDesktop")
+    .IsDependentOn("PackageDesktop-win-x64")
+    .IsDependentOn("PackageDesktop-win-x86")
+    .IsDependentOn("PackageDesktop-win-arm64");
+
 Task("All")
     .IsDependentOn("Clean")
     .IsDependentOn("CreateReleaseNotes")

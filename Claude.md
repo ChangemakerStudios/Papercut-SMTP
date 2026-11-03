@@ -31,6 +31,11 @@ The solution is organized into several projects with clear separation of concern
   - Can run independently of the desktop UI
   - Accessible via HTTP (default port 8080)
 
+- **Papercut.Desktop** - v8 desktop shell (Avalonia 12, Windows + macOS), builds as Papercut.exe
+  - Tray + OS webview window over Papercut.Service, which it runs as a child from service/
+  - Velopack package id PapercutSMTP, same as v7, so v7 updates in place
+  - See src/Papercut.Desktop/README.md and docs/plans/v8-desktop.md
+
 - **Papercut.Core** - Core business logic and application services
   - Autofac dependency injection
   - Reactive extensions (System.Reactive)

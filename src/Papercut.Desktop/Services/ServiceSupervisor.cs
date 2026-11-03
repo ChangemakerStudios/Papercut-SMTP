@@ -16,6 +16,8 @@
 // limitations under the License.
 
 
+using System.Net.NetworkInformation;
+
 namespace Papercut.Desktop.Services;
 
 internal enum ServiceSourceKind
@@ -246,6 +248,9 @@ internal sealed class ServiceSupervisor : IAsyncDisposable
 
     private async Task<bool> IsPapercutAsync(Uri baseUri, CancellationToken token)
     {
+        // a refused loopback connect takes ~2s on Windows (SYN retries); the listener table is instant
+        if (baseUri.IsLoopback && !IsListening(baseUri.Port)) return false;
+
         try
         {
             using var response = await _http.GetAsync(new Uri(baseUri, "health"), token);
@@ -257,6 +262,18 @@ internal sealed class ServiceSupervisor : IAsyncDisposable
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !token.IsCancellationRequested)
         {
             return false;
+        }
+    }
+
+    private static bool IsListening(int port)
+    {
+        try
+        {
+            return IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners().Any(e => e.Port == port);
+        }
+        catch (NetworkInformationException)
+        {
+            return true;
         }
     }
 
