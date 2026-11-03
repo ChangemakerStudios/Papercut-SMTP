@@ -1,29 +1,35 @@
 # Release Notes
 
-## Papercut SMTP v7.8.0 [2026-08-15]
+## Papercut SMTP v7.9.0 [2026-11-02]
 
 ### New Features
 
-- **SMTP Authentication for Forwarding** - The Forward dialog and forwarding rules now support SMTP username/password authentication, along with Forward dialog usability improvements and a new Name property for rules. Fixes [#363](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/363) (Thanks for the report, [Theo-bos](https://github.com/Theo-bos)!)
-- **Configurable Web UI Path Prefix** - The Papercut Service web UI and API can now be hosted under a configurable HTTP path prefix, enabling reverse proxy scenarios (e.g. `https://myserver/papercut/`). Fixes [#365](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/365) (Thanks for the suggestion, [Moreno-Gentili](https://github.com/Moreno-Gentili)!)
-- **Copy to Clipboard Context Menus** - Right-click now offers Copy / Select All for selected text in the HTML message viewer (alongside the existing link menu), and in the Headers, Text Body, and Raw views. Fixes [#366](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/366) (Thanks for the suggestion, [PJOttCanHome](https://github.com/PJOttCanHome)!)
+- **Rebuilt Web UI** - The Papercut Service web UI is rebuilt on Angular 21 and now matches the desktop app. It adds rules management, an Options dialog, a live service log viewer, Forward / Delete / Delete All, ctrl/shift multi-select, virtual scrolling with a message count, a sort direction toggle, read tracking, a System / Light / Dark theme, and a collapsible message list. Message HTML is rendered on the server through a MIME-aware pipeline, and emails keep their own colors in dark mode.
+- **MCP Server** - Papercut Service can expose its messages to AI assistants over the Model Context Protocol. It is off by default; see [MCP](https://www.papercut-smtp.com/mcp/) in the docs.
+- **SMTP Rate Limiting** - Optional, configurable rate limiting for incoming SMTP messages.
+- **Documentation Site** - New docs at [papercut-smtp.com](https://www.papercut-smtp.com/). Fixes [#220](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/220) (Thanks, [Carsak](https://github.com/Carsak)!)
 
 ### Improvements
 
-- **.NET 10 Upgrade** - All projects upgraded from .NET 8 to .NET 10 for the latest runtime performance and security improvements. (Thanks, [Abdulstar](https://github.com/Abdulstar)!)
-- **Service Tray Manager Deployment** - The Service Tray Manager introduced in v7.7.2 is now included in the Windows Service deployment packages
-- **Smaller UI Footprint** - Removed unused MahApps icon pack dependencies, reducing application size. Fixes [#370](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/370) (Thanks, [AntekOlszewski](https://github.com/AntekOlszewski)!)
-- **Documentation** - Added Web UI screenshots and fixed the README star history chart (Thanks, [PingouinFerreux](https://github.com/PingouinFerreux)!)
-- **Dependencies** - Updated NuGet packages across all projects, including Rx.NET 7, ReactiveUI 24, WebView2, Autofac, and BouncyCastle, addressing a number of dependency vulnerability alerts
+- **Service Tray Notifications** - The Service Tray Manager now gets new-mail notifications over SignalR. It treats any reachable service as running, and Open Web UI works for services that are not registered.
+- **Rules Survive Updates** - The desktop app now saves `rules.json` to `%AppData%\Changemaker Studios\Papercut SMTP`, so updates no longer wipe your rules. **Velopack installs:** rules saved before this release are lost once, at this update (every earlier update already deleted them). Re-create your rules once after updating; they persist from now on.
+- **Safer Message View** - `javascript:`, `data:` and `vbscript:` links are blocked, and links open in a new tab.
+- **Bounded Memory** - Reading raw messages and MIME sections no longer loads unbounded data into memory.
+- **WinGet** - Fixed the package ID and PR creation for WinGet publishing, and added ProductCode and ReleaseDate to the manifests. Relates to [#376](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/376) (Thanks, [AntekOlszewski](https://github.com/AntekOlszewski)!)
+- **Cleanup** - Removed the unused Electron.NET integration. Added an Apache 2.0 LICENSE file.
 
 ### Bug Fixes
 
-- **Message List Stuck After Long Uptime** - Fixed the desktop app's message list permanently stopping to update after running for a long time (new emails triggered notifications but never appeared until restart). A single transient file-system error could silently terminate the internal refresh subscriptions; refreshes are now resilient to errors, and the message list additionally force-refreshes whenever the window is restored from the tray or taskbar
-- **Rule Sync to Service** - Fixed rule changes made in the desktop UI not being saved to the Papercut Service backend when connected. Fixes [#368](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/368) (Thanks for the report, [Pxtl](https://github.com/Pxtl)!)
-- **Periodic Rules in Standalone Service** - Fixed periodic background rules (such as the Mail Retention rule) never executing when running the standalone Papercut Service. Fixes [#369](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/369) (Thanks for the report, [Pxtl](https://github.com/Pxtl)!)
+- **Forwarding Rules Corrupting Messages** - Fixed messages and attachments getting corrupted when several forwarding rules matched the same message. Each rule now works on its own copy read from disk. Fixes [#379](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/379) (Thanks for the report, [dpinkham6](https://github.com/dpinkham6)!)
+- **Duplicate New-Message Events** - Each received message now raises one new-message event, not several.
+- **Web UI Under a Path Prefix** - The Angular UI now loads correctly when the service runs under an `HttpPathPrefix`.
+- **SMTP Rebind in the Service** - Changing the SMTP IP or port at runtime now moves the running listener. Before this fix, the old port stayed open and the new listener died.
+- **Log File Access** - The log viewer opens the log file with shared access, so it no longer conflicts with the logger.
 
 ### Contributors
 
-Special thanks to [Abdulstar](https://github.com/Abdulstar) for the .NET 10 upgrade, [AntekOlszewski](https://github.com/AntekOlszewski) for the icon pack cleanup, [PingouinFerreux](https://github.com/PingouinFerreux) for the README fix, and to [Theo-bos](https://github.com/Theo-bos), [Moreno-Gentili](https://github.com/Moreno-Gentili), and [Pxtl](https://github.com/Pxtl) for their reports and suggestions!
+Special thanks to [dpinkham6](https://github.com/dpinkham6), [AntekOlszewski](https://github.com/AntekOlszewski), and [Carsak](https://github.com/Carsak) for their reports and suggestions!
+
+Papercut SMTP is free and open source. If it saves you time, consider [sponsoring the project](https://github.com/sponsors/Jaben).
 
 Several features and fixes in this release were developed with the assistance of [Claude Code](https://claude.ai/claude-code).
