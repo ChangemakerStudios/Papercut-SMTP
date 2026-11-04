@@ -38,9 +38,16 @@ internal sealed class ShellUpdater
     {
         try
         {
+            // PAPERCUT_UPDATE_SOURCE: a local releases folder, for testing the update flow
+            var localSource = Environment.GetEnvironmentVariable("PAPERCUT_UPDATE_SOURCE");
+
             // prerelease: true lets -dev channels see their builds; a stable channel's
             // releases.<channel>.json only exists on stable releases, so it is unaffected
-            _manager = new UpdateManager(new GithubSource(RepositoryUrl, null, true));
+            IUpdateSource source = string.IsNullOrWhiteSpace(localSource)
+                ? new GithubSource(RepositoryUrl, null, true)
+                : new SimpleFileSource(new DirectoryInfo(localSource));
+
+            _manager = new UpdateManager(source);
         }
         catch (Exception ex)
         {

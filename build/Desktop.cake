@@ -13,9 +13,14 @@ public static class Desktop
     /// <summary>
     /// Publishes the shell to publishDir and the service to publishDir/service, both self-contained.
     /// </summary>
-    public static void Publish(ICakeContext context, string runtime, string configuration, DirectoryPath publishDir, DotNetMSBuildSettings msbuild)
+    public static void Publish(ICakeContext context, string runtime, string configuration, DirectoryPath publishDir, DotNetMSBuildSettings baseMsbuild)
     {
         context.CleanDirectory(publishDir);
+
+        // no .pdb files in the package
+        var msbuild = new DotNetMSBuildSettings();
+        foreach (var property in baseMsbuild.Properties) msbuild.Properties[property.Key] = property.Value.ToList();
+        msbuild.WithProperty("DebugType", "none").WithProperty("DebugSymbols", "false");
 
         context.DotNetPublish("./src/Papercut.Desktop/Papercut.Desktop.csproj", new DotNetPublishSettings
         {
@@ -38,6 +43,10 @@ public static class Desktop
             OutputDirectory = publishDir.Combine("service"),
             MSBuildSettings = msbuild
         });
+
+        // the shell runs the service as Production; a Development file would only confuse
+        var devSettings = publishDir.Combine("service").CombineWithFilePath("appsettings.Development.json");
+        if (context.FileExists(devSettings)) context.DeleteFile(devSettings);
     }
 
     public static VpkPackParams WindowsPackParams(string runtime, string channelPostfix, string version, DirectoryPath publishDir, DirectoryPath releasesDir) =>
