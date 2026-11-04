@@ -1,5 +1,9 @@
 public static class Velopack
 {
+    // the #tool-pinned vpk (build.cake), not whatever global vpk is on PATH
+    private static FilePath VpkPath(ICakeContext context) =>
+        context.Tools.Resolve("vpk.exe") ?? context.Tools.Resolve("vpk") ?? new FilePath("vpk");
+
     public static void Pack(ICakeContext context, VpkPackParams @params)
     {
         if (context == null)
@@ -35,7 +39,7 @@ public static class Velopack
         }
 
         //Information("Running Vpk Pack with arguments: " + arguments.Render());
-        context.StartProcess("vpk", new ProcessSettings
+        context.StartProcess(VpkPath(context), new ProcessSettings
         {
             Arguments = arguments
         });
@@ -65,7 +69,7 @@ public static class Velopack
             arguments.Append("--merge");
         }
 
-        context.StartProcess("vpk", new ProcessSettings
+        context.StartProcess(VpkPath(context), new ProcessSettings
         {
             Arguments = arguments
         });

@@ -47,6 +47,9 @@ public static class Desktop
         // the shell runs the service as Production; a Development file would only confuse
         var devSettings = publishDir.Combine("service").CombineWithFilePath("appsettings.Development.json");
         if (context.FileExists(devSettings)) context.DeleteFile(devSettings);
+
+        // native packages (SkiaSharp, HarfBuzz) ship their own .pdb files
+        context.DeleteFiles(context.GetFiles(publishDir.FullPath + "/**/*.pdb"));
     }
 
     public static VpkPackParams WindowsPackParams(string runtime, string channelPostfix, string version, DirectoryPath publishDir, DirectoryPath releasesDir) =>
