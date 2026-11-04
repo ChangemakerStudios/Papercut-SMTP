@@ -172,8 +172,11 @@ If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 - killing the shell kills the child, and closing the child's stdin stops the service
 - the `PackageDesktop-win-x64` cake task builds Setup, Portable and nupkg, and the portable package runs and receives mail
 
+- v7 → v8: the 7.8.0 portable package's own `Update.exe` (Velopack 0.0.1521) applied the v8 package in place; v7's stub then launched the shell, which received mail
+- an update from a local feed (`PAPERCUT_UPDATE_SOURCE`) was found and downloaded
+
 Still open:
-- the v7 → v8 update test against a real v7 Velopack install
+- the v7 → v8 update through an installed v7's own update check (Setup install, stable channel)
 - clicking through the tray menu (Exit, Restart to Update, Windows Service start/stop)
 - macOS: a build and run on a Mac, and real UserNotifications
 - switching CI's `All` target from the WPF package to `PackageDesktop`
