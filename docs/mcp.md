@@ -79,6 +79,7 @@ claude mcp add --transport http papercut http://localhost:8080/mcp
 | `get_message` | Full detail for one message: from/to/cc/bcc, subject, text and HTML bodies, headers, and a manifest of MIME sections (index, contentId, media type, filename, attachment flag, size) |
 | `get_message_section` | Decoded content of a single MIME part, selected by `index` or `contentId` from the manifest — text parts return as text, binary parts as base64 |
 | `get_message_raw` | The raw RFC 822 (`.eml`) source of a message |
+| `create_message` | Create a message directly, without SMTP, as `markdown`, `html` or `text`. It notifies like received mail, so an agent can use it to tell you something |
 | `delete_message` | Delete one message by id |
 | `delete_all_messages` | Clear the message store |
 

@@ -20,6 +20,8 @@ namespace Papercut.Service.Domain.Messages;
 
 using Infrastructure.EmailAddresses;
 
+using MimeKit.IO;
+
 [PublicAPI]
 public class DetailDto : RefDto
 {
@@ -51,6 +53,10 @@ public class DetailDto : RefDto
             Name = messageEntry.Name,
             Subject = messageEntry.Subject,
             CreatedAt = messageEntry.Created?.ToUniversalTime(),
+            Size = messageEntry.FileSizeBytes,
+            AttachmentCount = sections.Count(s => s.IsAttachment),
+            Priority = (mail?.Priority ?? MessagePriority.Normal).ToString(),
+            IsRead = messageEntry.HasBeenSeen,
             From = (mail?.From).ToAddressList(),
             To = (mail?.To).ToAddressList(),
             Cc = (mail?.Cc).ToAddressList(),
@@ -87,8 +93,13 @@ public class DetailDto : RefDto
     {
         try
         {
-            var stream = part.Content?.Stream;
-            return stream?.CanSeek == true ? stream.Length : null;
+            if (part.Content == null) return null;
+
+            // decoded: the stream holds the transfer-encoded bytes (base64 is about 4/3 larger)
+            using var measure = new MeasuringStream();
+            part.Content.DecodeTo(measure);
+
+            return measure.Length;
         }
         catch (Exception)
         {

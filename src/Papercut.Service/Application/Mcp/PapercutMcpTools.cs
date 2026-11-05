@@ -21,6 +21,7 @@ using System.ComponentModel;
 using ModelContextProtocol;
 using ModelContextProtocol.Server;
 
+using Papercut.Core.Domain.Message;
 using Papercut.Service.Application.Messages;
 using Papercut.Service.Domain.Messages;
 
@@ -35,6 +36,7 @@ namespace Papercut.Service.Application.Mcp;
 public class PapercutMcpTools(
     IMessageRepository messageRepository,
     IMimeMessageLoader messageLoader,
+    IReceivedDataHandler receivedDataHandler,
     ILogger logger)
 {
     const int MaxRawMessageChars = 200_000;
@@ -72,6 +74,34 @@ public class PapercutMcpTools(
         var messageEntry = this.GetMessageEntry(id);
 
         return DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry, cancellationToken))!));
+    }
+
+    [McpServerTool(Name = "create_message")]
+    [Description("Creates a message directly, without SMTP, and notifies the user as if it had been received: use it to send the user a local notification. Needs a subject or a body. Give the body as markdown (rendered to HTML), html, or text.")]
+    public async Task<RefDto> CreateMessage(
+        [Description("Subject; also the notification text")] string? subject = null,
+        [Description("Markdown body, rendered to HTML. Not with html.")] string? markdown = null,
+        [Description("HTML body. Not with markdown.")] string? html = null,
+        [Description("Plain text body")] string? text = null,
+        [Description("Sender address, shown as the notification title (default Papercut)")] string? from = null,
+        [Description("Comma-separated recipient addresses (optional)")] string? to = null,
+        CancellationToken cancellationToken = default)
+    {
+        string file;
+
+        try
+        {
+            file = await receivedDataHandler.SaveDraftAsync(
+                new MessageDraft { Subject = subject, Markdown = markdown, Html = html, Text = text, From = from, To = to });
+        }
+        catch (ArgumentException ex)
+        {
+            throw new McpException(ex.Message);
+        }
+
+        var messageEntry = new MessageEntry(file);
+
+        return RefDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry, cancellationToken))!));
     }
 
     [McpServerTool(Name = "delete_message")]

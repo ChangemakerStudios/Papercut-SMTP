@@ -63,6 +63,8 @@ internal class PapercutServiceStartup
 
         services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
 
+        services.AddSingleton<McpEndpointState>();
+
         services
             .AddMcpServer()
             .WithHttpTransport()
@@ -148,6 +150,8 @@ internal class PapercutServiceStartup
         var mcpEnabled = McpServerSettings.IsEnabled(
             app.Services.GetRequiredService<ISettingStore>(),
             app.Configuration);
+
+        app.Services.GetRequiredService<McpEndpointState>().IsMapped = mcpEnabled;
 
         if (mcpEnabled)
         {

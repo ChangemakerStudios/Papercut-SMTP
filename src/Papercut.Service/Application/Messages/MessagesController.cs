@@ -22,6 +22,8 @@ using System.Text.RegularExpressions;
 
 using Common.Helper;
 
+using Core.Domain.Message;
+
 using Domain.Messages;
 
 using Infrastructure;
@@ -36,6 +38,7 @@ public class MessagesController(
     IMessageRepository messageRepository,
     IMimeMessageLoader messageLoader,
     MessageReadStateService readState,
+    IReceivedDataHandler receivedDataHandler,
     ILogger logger)
     : ControllerBase
 {
@@ -90,6 +93,47 @@ public class MessagesController(
         var messages = await Task.WhenAll(tasks).WaitAsync(token);
 
         return new GetMessagesResponse(messageEntries.Count, messages);
+    }
+
+    /// <summary>
+    /// Creates a message directly, without SMTP: subject, from, to, cc, text, html, markdown.
+    /// </summary>
+    [HttpPost]
+    [HttpPut]
+    public async Task<ActionResult<RefDto>> Create([FromBody] MessageDraft? draft, CancellationToken token = default)
+    {
+        // CORS is open, and this raises a notification: no other site gets to fake one.
+        // Scripts send no Origin.
+        if (IsCrossOrigin()) return StatusCode(403, "Cross-origin requests cannot create messages");
+
+        if (draft == null) return BadRequest("Expected a JSON body");
+
+        string file;
+
+        try
+        {
+            file = await receivedDataHandler.SaveDraftAsync(draft);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        var messageEntry = new MessageEntry(file);
+
+        return Created(
+            $"api/messages/{messageEntry.Id}",
+            RefDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry, token))!)));
+    }
+
+    private bool IsCrossOrigin()
+    {
+        var origin = Request.Headers.Origin.ToString();
+
+        if (string.IsNullOrEmpty(origin)) return false;
+
+        return !Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+               || !string.Equals(uri.Authority, Request.Host.Value, StringComparison.OrdinalIgnoreCase);
     }
 
     [HttpDelete]

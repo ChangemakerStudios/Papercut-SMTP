@@ -30,7 +30,7 @@ public class ReceivedDataMessageHandler(
     ILogger logger)
     : IReceivedDataHandler
 {
-    public async Task HandleReceivedAsync(
+    public async Task<string> HandleReceivedAsync(
         byte[] messageData,
         string[] recipients)
     {
@@ -92,5 +92,7 @@ public class ReceivedDataMessageHandler(
         {
             logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
         }
+
+        return file;
     }
 }
