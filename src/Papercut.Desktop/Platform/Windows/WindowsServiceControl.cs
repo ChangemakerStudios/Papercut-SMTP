@@ -55,13 +55,13 @@ internal sealed class WindowsServiceControl : IWindowsServiceControl
             var directory = Path.GetDirectoryName(UnquoteImagePath(imagePath));
             var settingsPath = directory == null ? null : Path.Combine(directory, "appsettings.json");
 
-            if (settingsPath == null || !File.Exists(settingsPath)) return ServiceUrls.Normalize("http://localhost:8080");
+            if (settingsPath == null || !File.Exists(settingsPath)) return ServiceUrls.Normalize("http://127.0.0.1:8080");
 
             using var document = JsonDocument.Parse(File.ReadAllText(settingsPath));
 
             var urls = document.RootElement.TryGetProperty("Urls", out var value) ? value.GetString() : null;
 
-            return ServiceUrls.Normalize(urls ?? "http://localhost:8080");
+            return ServiceUrls.Normalize(urls ?? "http://127.0.0.1:8080");
         }
         catch (Exception ex)
         {

@@ -16,7 +16,8 @@
 // limitations under the License.
 
 
-using System.Net.NetworkInformation;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Papercut.Desktop.Services;
 
@@ -40,6 +41,8 @@ internal sealed class ServiceSupervisor : IAsyncDisposable
     private const int MaxRestarts = 5;
 
     private static readonly TimeSpan RestartWindow = TimeSpan.FromMinutes(2);
+
+    private static readonly TimeSpan LoopbackConnectTimeout = TimeSpan.FromMilliseconds(500);
 
     // 127.0.0.1, not localhost: a refused localhost connect on Windows retries IPv6 then IPv4 (~2s)
     private static readonly Uri DockerDefault = new("http://127.0.0.1:8080/");
@@ -110,10 +113,24 @@ internal sealed class ServiceSupervisor : IAsyncDisposable
 
     /// <summary>
     /// Called on a timer. A connect-only source that stops answering is re-resolved, which
-    /// starts the desktop service if nothing else is there.
+    /// starts the desktop service if nothing else is there. A Windows Service that comes up
+    /// while the desktop service runs takes over, and frees the SMTP port for it.
     /// </summary>
     public async Task CheckAsync(CancellationToken token = default)
     {
+        if (Kind == ServiceSourceKind.Desktop && !IsStarting)
+        {
+            if (IsWindowsServiceRunning
+                && _windowsService?.GetBaseUri() is { } windowsUri
+                && await IsPapercutAsync(windowsUri, token))
+            {
+                Log.Information("Windows Service is running at {BaseUri} -- switching to it", windowsUri);
+                await ResolveAsync(token);
+            }
+
+            return;
+        }
+
         if (Kind is not (ServiceSourceKind.External or ServiceSourceKind.WindowsService) || BaseUri == null) return;
 
         if (await IsPapercutAsync(BaseUri, token))
@@ -248,8 +265,10 @@ internal sealed class ServiceSupervisor : IAsyncDisposable
 
     private async Task<bool> IsPapercutAsync(Uri baseUri, CancellationToken token)
     {
-        // a refused loopback connect takes ~2s on Windows (SYN retries); the listener table is instant
-        if (baseUri.IsLoopback && !IsListening(baseUri.Port)) return false;
+        // a refused loopback connect takes ~2s on Windows (SYN retries), so don't wait that long for one.
+        // Not the listener table: it can miss live listeners (seen on Windows 11 26300).
+        if (baseUri.HostNameType != UriHostNameType.Dns && IPAddress.IsLoopback(IPAddress.Parse(baseUri.DnsSafeHost))
+            && !await CanConnectAsync(baseUri, token)) return false;
 
         try
         {
@@ -265,15 +284,21 @@ internal sealed class ServiceSupervisor : IAsyncDisposable
         }
     }
 
-    private static bool IsListening(int port)
+    private static async Task<bool> CanConnectAsync(Uri baseUri, CancellationToken token)
     {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+        timeout.CancelAfter(LoopbackConnectTimeout);
+
+        using var client = new TcpClient();
+
         try
         {
-            return IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners().Any(e => e.Port == port);
-        }
-        catch (NetworkInformationException)
-        {
+            await client.ConnectAsync(baseUri.DnsSafeHost, baseUri.Port, timeout.Token);
             return true;
+        }
+        catch (Exception ex) when (ex is SocketException or OperationCanceledException && !token.IsCancellationRequested)
+        {
+            return false;
         }
     }
 

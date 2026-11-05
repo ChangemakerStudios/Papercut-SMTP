@@ -22,7 +22,8 @@ internal static class ServiceUrls
 {
     /// <summary>
     /// First entry of a ';'-separated Kestrel "Urls" value, with wildcard hosts swapped for
-    /// localhost: "http://0.0.0.0:8080" is something Kestrel binds, not something a client can open.
+    /// 127.0.0.1: "http://0.0.0.0:8080" is something Kestrel binds, not something a client can open.
+    /// Not localhost: a wildcard bind is IPv4-only, and a refused ::1 costs ~2s on Windows.
     /// Keeps a path prefix ("http://host:8080/papercut/") and always ends with '/'.
     /// </summary>
     public static Uri? Normalize(string? urls)
@@ -35,7 +36,7 @@ internal static class ServiceUrls
         {
             if (!first.Contains(wildcard, StringComparison.Ordinal)) continue;
 
-            first = first.Replace(wildcard, "//localhost", StringComparison.Ordinal);
+            first = first.Replace(wildcard, "//127.0.0.1", StringComparison.Ordinal);
             break;
         }
 

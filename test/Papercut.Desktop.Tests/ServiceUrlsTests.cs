@@ -27,10 +27,10 @@ namespace Papercut.Desktop.Tests;
 [TestFixture]
 public class ServiceUrlsTests
 {
-    [TestCase("http://0.0.0.0:8080", "http://localhost:8080/")]
-    [TestCase("http://+:8080", "http://localhost:8080/")]
-    [TestCase("http://*:9000", "http://localhost:9000/")]
-    [TestCase("http://[::]:8080", "http://localhost:8080/")]
+    [TestCase("http://0.0.0.0:8080", "http://127.0.0.1:8080/")]
+    [TestCase("http://+:8080", "http://127.0.0.1:8080/")]
+    [TestCase("http://*:9000", "http://127.0.0.1:9000/")]
+    [TestCase("http://[::]:8080", "http://127.0.0.1:8080/")]
     [TestCase("http://localhost:5000;https://localhost:5001", "http://localhost:5000/")]
     [TestCase("https://papercut.example.com/papercut", "https://papercut.example.com/papercut/")]
     [TestCase(" http://127.0.0.1:37410/ ", "http://127.0.0.1:37410/")]
