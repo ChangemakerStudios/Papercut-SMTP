@@ -28,7 +28,7 @@ namespace Papercut.Desktop;
 /// </summary>
 internal sealed class ShellUpdater
 {
-    private const string RepositoryUrl = "https://github.com/ChangemakerStudios/Papercut-SMTP";
+    public const string RepositoryUrl = "https://github.com/ChangemakerStudios/Papercut-SMTP";
 
     private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(12);
 
@@ -85,9 +85,10 @@ internal sealed class ShellUpdater
             token);
     }
 
-    public async Task CheckAsync()
+    public async Task<UpdateCheckResult> CheckAsync()
     {
-        if (_manager == null || !IsInstalled || PendingUpdate != null) return;
+        if (_manager == null || !IsInstalled) return UpdateCheckResult.NotInstalled;
+        if (PendingUpdate != null) return UpdateCheckResult.Ready;
 
         try
         {
@@ -96,7 +97,7 @@ internal sealed class ShellUpdater
             if (update == null)
             {
                 Log.Information("Papercut {Version} is up to date", CurrentVersion);
-                return;
+                return UpdateCheckResult.UpToDate;
             }
 
             Log.Information("Downloading update {Version}", update.TargetFullRelease.Version);
@@ -105,10 +106,13 @@ internal sealed class ShellUpdater
 
             PendingUpdate = update.TargetFullRelease;
             UpdateReady?.Invoke();
+
+            return UpdateCheckResult.Ready;
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Update check failed");
+            return UpdateCheckResult.Failed;
         }
     }
 
@@ -139,4 +143,12 @@ internal sealed class ShellUpdater
             Log.Warning(ex, "Unable to schedule the update for exit");
         }
     }
+}
+
+internal enum UpdateCheckResult
+{
+    NotInstalled,
+    UpToDate,
+    Ready,
+    Failed
 }

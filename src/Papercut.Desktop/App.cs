@@ -17,6 +17,7 @@
 
 
 using System.Diagnostics;
+using System.Reflection;
 
 using Avalonia;
 using Avalonia.Controls;
@@ -59,6 +60,8 @@ internal sealed class App : Application
     private DispatcherTimer? _timer;
 
     private bool _exiting;
+
+    private string? _menuState;
 
     public static ShellSettings? StartupSettings { get; set; }
 
@@ -153,6 +156,7 @@ internal sealed class App : Application
             _window = new MainWindow(_settings, () => _ = _supervisor.ResolveAsync(_shutdown.Token));
             _window.OpenExternallyRequested += OpenExternally;
             _window.SetService(_supervisor.IsStarting ? null : _supervisor.BaseUri, _supervisor.StatusText);
+            _window.SetMenu(BuildWindowMenu());
         }
 
         _window.Show();
@@ -166,7 +170,25 @@ internal sealed class App : Application
         _window?.ShowMessage(id);
     }
 
-    private void RebuildMenu()
+    /// <summary>
+    /// Rebuilds the tray and window menus when what they show has changed. Rebuilding
+    /// every tick would close a window menu the user has open.
+    /// </summary>
+    private void RebuildMenu(bool force = false)
+    {
+        var state = string.Join('|',
+            _supervisor?.StatusText, _supervisor?.BaseUri, _supervisor?.IsStarting,
+            _supervisor?.IsWindowsServiceInstalled, _supervisor?.IsWindowsServiceRunning,
+            _updater?.PendingUpdate?.Version, SafeIsRunAtStartup(), _settings.ShowNotifications);
+
+        if (!force && state == _menuState) return;
+        _menuState = state;
+
+        _tray.Menu = BuildTrayMenu();
+        _window?.SetMenu(BuildWindowMenu());
+    }
+
+    private NativeMenu BuildTrayMenu()
     {
         var menu = new NativeMenu();
 
@@ -174,26 +196,89 @@ internal sealed class App : Application
         menu.Add(new NativeMenuItemSeparator());
 
         menu.Add(Item("Open Papercut", ShowWindow));
-        menu.Add(Item("Open in Browser", () =>
-        {
-            if (_supervisor?.BaseUri is { } baseUri) OpenExternally(baseUri);
-        }, enabled: _supervisor?.BaseUri != null && !_supervisor.IsStarting));
+        menu.Add(OpenInBrowserItem());
 
-        if (_supervisor?.IsWindowsServiceInstalled == true)
+        if (WindowsServiceItem() is { } serviceItem)
         {
             menu.Add(new NativeMenuItemSeparator());
-
-            menu.Add(_supervisor.IsWindowsServiceRunning
-                ? Item("Stop Windows Service", () => _ = _supervisor.StopWindowsServiceAsync(), enabled: !_supervisor.IsStarting)
-                : Item("Start Windows Service", () => _ = _supervisor.StartWindowsServiceAsync(), enabled: !_supervisor.IsStarting));
+            menu.Add(serviceItem);
         }
 
         menu.Add(new NativeMenuItemSeparator());
 
-        if (_updater?.PendingUpdate != null)
-            menu.Add(Item($"Restart to Update ({_updater.PendingUpdate.Version})", () => _ = RestartToUpdateAsync()));
+        if (RestartToUpdateItem() is { } updateItem) menu.Add(updateItem);
 
-        menu.Add(Toggle("Run at Startup", SafeIsRunAtStartup(), on =>
+        menu.Add(RunAtStartupItem());
+        menu.Add(ShowNotificationsItem());
+        menu.Add(Item("View Logs", () => OpenPath(ShellPaths.LogDirectory)));
+        menu.Add(new NativeMenuItemSeparator());
+        menu.Add(Item("Exit", () => _ = ExitAsync()));
+
+        return menu;
+    }
+
+    private NativeMenu BuildWindowMenu()
+    {
+        var file = new NativeMenu();
+        file.Add(OpenInBrowserItem());
+        file.Add(Item("Open Data Folder", () => OpenPath(ShellPaths.DataDirectory)));
+        file.Add(Item("View Logs", () => OpenPath(ShellPaths.LogDirectory)));
+        file.Add(new NativeMenuItemSeparator());
+        file.Add(Item("Close Window", () => _window?.Close()));
+        file.Add(Item("Exit", () => _ = ExitAsync()));
+
+        var view = new NativeMenu();
+        view.Add(Item("Reload", () => _window?.Reload()));
+
+        var options = new NativeMenu();
+        options.Add(RunAtStartupItem());
+        options.Add(ShowNotificationsItem());
+
+        if (WindowsServiceItem() is { } serviceItem)
+        {
+            options.Add(new NativeMenuItemSeparator());
+            options.Add(serviceItem);
+        }
+
+        var help = new NativeMenu();
+        help.Add(Item("Papercut SMTP on GitHub", () => OpenExternally(new Uri(ShellUpdater.RepositoryUrl))));
+        help.Add(Item("Report an Issue", () => OpenExternally(new Uri(ShellUpdater.RepositoryUrl + "/issues"))));
+        help.Add(new NativeMenuItemSeparator());
+        help.Add(RestartToUpdateItem() ?? Item("Check for Updates", () => _ = CheckForUpdatesAsync()));
+        help.Add(new NativeMenuItemSeparator());
+        help.Add(new NativeMenuItem($"Papercut SMTP {Version}") { IsEnabled = false });
+
+        return new NativeMenu
+        {
+            new NativeMenuItem("_File") { Menu = file },
+            new NativeMenuItem("_View") { Menu = view },
+            new NativeMenuItem("_Options") { Menu = options },
+            new NativeMenuItem("_Help") { Menu = help }
+        };
+    }
+
+    private NativeMenuItem OpenInBrowserItem() =>
+        Item("Open in Browser", () =>
+        {
+            if (_supervisor?.BaseUri is { } baseUri) OpenExternally(baseUri);
+        }, enabled: _supervisor?.BaseUri != null && !_supervisor.IsStarting);
+
+    private NativeMenuItem? WindowsServiceItem()
+    {
+        if (_supervisor?.IsWindowsServiceInstalled != true) return null;
+
+        return _supervisor.IsWindowsServiceRunning
+            ? Item("Stop Windows Service", () => _ = _supervisor.StopWindowsServiceAsync(), enabled: !_supervisor.IsStarting)
+            : Item("Start Windows Service", () => _ = _supervisor.StartWindowsServiceAsync(), enabled: !_supervisor.IsStarting);
+    }
+
+    private NativeMenuItem? RestartToUpdateItem() =>
+        _updater?.PendingUpdate is { } pending
+            ? Item($"Restart to Update ({pending.Version})", () => _ = RestartToUpdateAsync())
+            : null;
+
+    private NativeMenuItem RunAtStartupItem() =>
+        Toggle("Run at Startup", SafeIsRunAtStartup(), on =>
         {
             try
             {
@@ -204,20 +289,38 @@ internal sealed class App : Application
                 Log.Error(ex, "Failed to change run at startup");
                 _notifier.Show("Papercut SMTP", $"Could not change Run at Startup: {ex.Message}", null);
             }
-        }));
 
-        menu.Add(Toggle("Show Notifications", _settings.ShowNotifications, on =>
+            RebuildMenu();
+        });
+
+    private NativeMenuItem ShowNotificationsItem() =>
+        Toggle("Show Notifications", _settings.ShowNotifications, on =>
         {
             _settings.ShowNotifications = on;
             _settings.Save();
-        }));
+            RebuildMenu();
+        });
 
-        menu.Add(Item("View Logs", () => OpenPath(ShellPaths.LogDirectory)));
-        menu.Add(new NativeMenuItemSeparator());
-        menu.Add(Item("Exit", () => _ = ExitAsync()));
+    private async Task CheckForUpdatesAsync()
+    {
+        var result = await _updater.CheckAsync();
 
-        _tray.Menu = menu;
+        // Ready raises UpdateReady, which has its own notification
+        var message = result switch
+        {
+            UpdateCheckResult.NotInstalled => "Updates are only available in the installed app.",
+            UpdateCheckResult.UpToDate => $"Papercut SMTP {Version} is up to date.",
+            UpdateCheckResult.Failed => "Could not check for updates. See the logs for details.",
+            _ => null
+        };
+
+        if (message != null) _notifier.Show("Papercut SMTP", message, null);
     }
+
+    private string Version =>
+        _updater.CurrentVersion
+        ?? typeof(App).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0]
+        ?? "(dev)";
 
     private bool SafeIsRunAtStartup()
     {

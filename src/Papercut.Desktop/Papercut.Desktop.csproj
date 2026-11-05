@@ -37,7 +37,7 @@
 		<PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
 		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
 		<PackageReference Include="Avalonia.Controls.WebView" Version="12.1.0" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.11" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<!-- keep in step with the vpk version in build.cake -->
 		<PackageReference Include="Velopack" Version="1.2.158" />

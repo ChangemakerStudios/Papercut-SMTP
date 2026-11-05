@@ -40,6 +40,8 @@ internal sealed class MainWindow : Window
 
     private readonly TextBlock _offlineText;
 
+    private readonly Action _retry;
+
     private Uri? _origin;
 
     private bool _loaded;
@@ -90,7 +92,13 @@ internal sealed class MainWindow : Window
             }
         };
 
-        Content = new Panel { Children = { _webView, _offlinePanel } };
+        _retry = retry;
+
+        // Windows draws the window's NativeMenu here; macOS puts it in the system menu bar
+        var menuBar = new NativeMenuBar();
+        DockPanel.SetDock(menuBar, Dock.Top);
+
+        Content = new DockPanel { Children = { menuBar, new Panel { Children = { _webView, _offlinePanel } } } };
     }
 
     public event Action<Uri>? OpenExternallyRequested;
@@ -138,6 +146,22 @@ internal sealed class MainWindow : Window
         }
 
         _webView.Source = new Uri(_origin, path.TrimStart('/'));
+    }
+
+    public void SetMenu(NativeMenu menu) => NativeMenu.SetMenu(this, menu);
+
+    /// <summary>
+    /// Reloads the web UI, or retries finding a service while there is none.
+    /// </summary>
+    public void Reload()
+    {
+        if (_origin == null)
+        {
+            _retry();
+            return;
+        }
+
+        _webView.Refresh();
     }
 
     public void AllowClose() => _allowClose = true;
