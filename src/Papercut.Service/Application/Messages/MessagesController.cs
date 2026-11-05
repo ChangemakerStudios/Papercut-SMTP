@@ -96,7 +96,7 @@ public class MessagesController(
     }
 
     /// <summary>
-    /// Creates a message directly, without SMTP: subject, from, to, cc, text, html, markdown.
+    /// Creates a message directly, without SMTP: subject, from, to, cc, text, html, markdown, notify.
     /// </summary>
     [HttpPost]
     [HttpPut]

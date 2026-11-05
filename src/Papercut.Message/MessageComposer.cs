@@ -49,6 +49,9 @@ public class MessageDraft
 
     /// <summary>Rendered to the HTML part; the source becomes the text part. Not with Html.</summary>
     public string? Markdown { get; set; }
+
+    /// <summary>False: it still appears in the message list, without a notification.</summary>
+    public bool Notify { get; set; } = true;
 }
 
 public static class MessageComposer
@@ -112,7 +115,7 @@ public static class MessageComposer
 
         var recipients = message.To.Mailboxes.Concat(message.Cc.Mailboxes).Select(m => m.Address).ToArray();
 
-        return await handler.HandleReceivedAsync(stream.ToArray(), recipients);
+        return await handler.HandleReceivedAsync(stream.ToArray(), recipients, draft.Notify);
     }
 
     private static MailboxAddress ParseFrom(string? value, ParserOptions options)

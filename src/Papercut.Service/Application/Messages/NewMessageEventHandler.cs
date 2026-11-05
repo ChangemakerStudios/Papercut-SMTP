@@ -48,7 +48,8 @@ public class NewMessageEventHandler(
             logger.Information("New message '{MessageId}' received. Notifying SignalR clients.", messageDto.Id);
 
             // Send notification to all clients in the Messages group
-            await hubContext.Clients.Group("Messages").SendAsync("NewMessageReceived", messageDto, token);
+            if (@event.Notify)
+                await hubContext.Clients.Group("Messages").SendAsync("NewMessageReceived", messageDto, token);
             
             // Also send a general refresh signal
             await hubContext.Clients.Group("Messages").SendAsync("MessageListChanged", token);

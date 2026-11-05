@@ -132,8 +132,8 @@ public class MessageComposerTests
         string[]? recipients = null;
 
         var handler = new Mock<IReceivedDataHandler>();
-        handler.Setup(h => h.HandleReceivedAsync(It.IsAny<byte[]>(), It.IsAny<string[]>()))
-            .Callback<byte[], string[]>((data, to) =>
+        handler.Setup(h => h.HandleReceivedAsync(It.IsAny<byte[]>(), It.IsAny<string[]>(), true))
+            .Callback<byte[], string[], bool>((data, to, _) =>
             {
                 saved = data;
                 recipients = to;
@@ -148,5 +148,21 @@ public class MessageComposerTests
         var message = await MimeMessage.LoadAsync(new MemoryStream(saved!));
         message.Subject.Should().Be("Ünicode");
         message.HtmlBody.Should().Contain("<strong>x</strong>");
+    }
+
+    [TestCase(null, true)]
+    [TestCase(true, true)]
+    [TestCase(false, false)]
+    public async Task SaveDraftAsync_PassesNotifyToTheHandler_DefaultingToTrue(bool? notify, bool expected)
+    {
+        var handler = new Mock<IReceivedDataHandler>();
+        handler.Setup(h => h.HandleReceivedAsync(It.IsAny<byte[]>(), It.IsAny<string[]>(), It.IsAny<bool>())).ReturnsAsync("file.eml");
+
+        var draft = new MessageDraft { Subject = "s" };
+        if (notify is { } value) draft.Notify = value;
+
+        await handler.Object.SaveDraftAsync(draft);
+
+        handler.Verify(h => h.HandleReceivedAsync(It.IsAny<byte[]>(), It.IsAny<string[]>(), expected), Times.Once);
     }
 }

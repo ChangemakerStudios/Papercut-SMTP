@@ -77,7 +77,7 @@ public class PapercutMcpTools(
     }
 
     [McpServerTool(Name = "create_message")]
-    [Description("Creates a message directly, without SMTP, and notifies the user as if it had been received: use it to send the user a local notification. Needs a subject or a body. Give the body as markdown (rendered to HTML), html, or text.")]
+    [Description("Creates a message directly, without SMTP, and by default notifies the user as if it had been received: use it to send the user a local notification, or set notify to false to just file it in the inbox. Needs a subject or a body. Give the body as markdown (rendered to HTML), html, or text.")]
     public async Task<RefDto> CreateMessage(
         [Description("Subject; also the notification text")] string? subject = null,
         [Description("Markdown body, rendered to HTML. Not with html.")] string? markdown = null,
@@ -85,6 +85,7 @@ public class PapercutMcpTools(
         [Description("Plain text body")] string? text = null,
         [Description("Sender address, shown as the notification title (default Papercut)")] string? from = null,
         [Description("Comma-separated recipient addresses (optional)")] string? to = null,
+        [Description("Raise a notification (default true). False still adds it to the message list.")] bool notify = true,
         CancellationToken cancellationToken = default)
     {
         string file;
@@ -92,7 +93,7 @@ public class PapercutMcpTools(
         try
         {
             file = await receivedDataHandler.SaveDraftAsync(
-                new MessageDraft { Subject = subject, Markdown = markdown, Html = html, Text = text, From = from, To = to });
+                new MessageDraft { Subject = subject, Markdown = markdown, Html = html, Text = text, From = from, To = to, Notify = notify });
         }
         catch (ArgumentException ex)
         {

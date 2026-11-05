@@ -32,7 +32,8 @@ public class ReceivedDataMessageHandler(
 {
     public async Task<string> HandleReceivedAsync(
         byte[] messageData,
-        string[] recipients)
+        string[] recipients,
+        bool notify = true)
     {
         ArgumentNullException.ThrowIfNull(messageData);
         ArgumentNullException.ThrowIfNull(recipients);
@@ -85,7 +86,7 @@ public class ReceivedDataMessageHandler(
                 // file appear, knows the message has already been announced
                 publishedMessageTracker.MarkPublished(file);
 
-                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file).ToDto()));
+                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file).ToDto(), notify));
             }
         }
         catch (Exception ex)

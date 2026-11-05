@@ -21,5 +21,5 @@ namespace Papercut.Core.Domain.Message;
 public interface IReceivedDataHandler
 {
     /// <returns>The saved message file.</returns>
-    Task<string> HandleReceivedAsync(byte[] message, string[] recipients);
+    Task<string> HandleReceivedAsync(byte[] message, string[] recipients, bool notify = true);
 }

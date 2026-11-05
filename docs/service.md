@@ -120,6 +120,7 @@ curl -X POST http://localhost:8080/api/messages   -H "Content-Type: application/
 | `text` | Plain text body |
 | `from` | One address. Defaults to `Papercut <papercut@localhost>` |
 | `to`, `cc` | Comma-separated addresses, optional |
+| `notify` | Raise a notification. Defaults to `true`; with `false` the message still appears in the inbox |
 
 A subject alone is enough. Requests from a web page on another origin get `403`, so a site you visit can't fake a notification; scripts and tools don't send an `Origin` header and aren't affected.
 
