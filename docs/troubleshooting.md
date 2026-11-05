@@ -15,6 +15,22 @@
 
 Another program (often IIS SMTP, another mail catcher, or an antivirus proxy) is already listening on port 25. Change Papercut's port in **Options**, or stop the other program.
 
+The service keeps retrying while its SMTP port is in use and logs `SMTP port ... is in use -- retrying until it is free`, so it starts receiving as soon as the other program stops.
+
+## The API or MCP takes about 2 seconds to respond on `localhost`
+
+On Windows, `localhost` tries IPv6 first. A service bound to `0.0.0.0` only listens on IPv4, so each new connection waits about 2 seconds for the IPv6 attempt to fail. Use `127.0.0.1` instead of `localhost`.
+
+## The web UI or my own page gets 403 errors
+
+Web pages on another origin are blocked. If the web UI's actions fail or new messages only appear after a reload, or your own page's calls fail, look in the logs for a line like:
+
+```text
+Blocked GET /hubs/messages from https://mail.example.com
+```
+
+To allow that origin, or if a reverse proxy passes neither `Host` nor `X-Forwarded-Host`, see [Calling the API from a web page](service.md#calling-the-api-from-a-web-page).
+
 ## Do I need the Papercut Service?
 
 **No.** The desktop app alone receives and displays email. The service is only for receiving email when the desktop app isn't running — see [Service & Web UI](service.md).

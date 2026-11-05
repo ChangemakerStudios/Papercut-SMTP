@@ -1,8 +1,10 @@
 name: Build and Deploy Docs
 
+# Publishes with a release, so the site describes what people can install.
+# For an urgent fix before then, run this manually on develop.
 on:
   push:
-    branches: [master, develop]
+    branches: [master]
     paths:
       - 'docs/**'
       - 'mkdocs.yml'

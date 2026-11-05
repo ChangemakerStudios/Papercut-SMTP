@@ -71,7 +71,7 @@ Papercut Web UI is the frontend application for Papercut SMTP, an email testing 
 
 ### API Communication
 - RESTful API calls to `/api/messages` endpoints
-- Proxy configuration routes API calls to `localhost:37408`
+- Proxy configuration routes API and hub calls to `127.0.0.1:8080` (`proxy.conf.js`)
 - Integrates with the C# Papercut.Service backend
 - Uses HTTP interceptors for request/response handling
 
@@ -133,7 +133,7 @@ npm test
 ```
 
 ### Configuration
-- **Proxy Setup**: API calls are proxied to `localhost:37408` for local development
+- **Proxy Setup**: API and hub calls are proxied to `127.0.0.1:8080` for local development, so run the service on that port. The proxy must keep the `Host` header (`changeOrigin: false`), or the service blocks the calls as cross-origin
 - **Environment**: Environment-specific configurations in `src/environments/`
 - **Styling**: SCSS compilation with PostCSS and Tailwind CSS
 - **Build**: Optimized production builds with Angular CLI

@@ -165,6 +165,10 @@ Configure your application's outgoing email to use host **`localhost`**, port **
     }
     ```
 
+## Creating a message without SMTP
+
+Some things aren't really sending email: a build script telling you it finished, say, or an agent reporting back. For those you can create a message over HTTP, with a Markdown or HTML body, and choose whether it raises a notification. See [Creating a message](service.md#creating-a-message).
+
 ## Sending from another machine
 
 By default Papercut listens on `127.0.0.1` — localhost only. To catch email from other machines (a VM, a phone, another dev box), open **Options** and set the IP to `Any`, then point the sender at your machine's LAN address. Watch out for firewalls blocking port 25.
