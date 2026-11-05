@@ -202,6 +202,10 @@ Still open:
 - The default SMTP port on macOS is 2525, because ports below 1024 need root.
 - The status line shows the source: "Windows Service", "Local", or "External at …". Start/stop target the active source and are disabled for external services.
 
+## Release notes to write
+
+- **Breaking:** web pages on another origin can no longer call the service. Anyone calling it from a browser app needs `CorsAllowedOrigins` (see docs/service.md). Scripts, curl and MCP clients are unaffected.
+
 ## Open questions
 
 - Apple Developer ID for notarization, or ship the first macOS build unsigned?
