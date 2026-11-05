@@ -167,6 +167,21 @@ If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 - The iframe sandbox blocks `target=_top`, meta refresh and form posts on its own. The renderer defences in item 3 are a second layer.
 - The shell needs a Windows app manifest (`supportedOS`), and single-instance enforcement: a second instance crashes on WebView2's locked user data folder (`0x800700AA`).
 
+**Status (2026-11-03):** cards A, B and most of C are built in `src/Papercut.Desktop` (branch `feature/v8-desktop-shell`); see its README. Verified on Windows 11:
+- the shell starts the desktop service, receives mail, raises a toast, and shows the web UI in the window
+- killing the shell kills the child, and closing the child's stdin stops the service
+- the `PackageDesktop-win-x64` cake task builds Setup, Portable and nupkg, and the portable package runs and receives mail
+
+- v7 → v8: the 7.8.0 portable package's own `Update.exe` (Velopack 0.0.1521) applied the v8 package in place; v7's stub then launched the shell, which received mail
+- an update from a local feed (`PAPERCUT_UPDATE_SOURCE`) was found and downloaded
+
+Still open:
+- the v7 → v8 update through an installed v7's own update check (Setup install, stable channel)
+- clicking through the tray menu (Exit, Restart to Update, Windows Service start/stop)
+- macOS: a build and run on a Mac, and real UserNotifications
+- switching CI's `All` target from the WPF package to `PackageDesktop`
+- package size, about 110 MB on x64: two self-contained runtimes, untrimmed
+
 ### A. Shell details
 
 - One window, reused; closing hides it to the tray.

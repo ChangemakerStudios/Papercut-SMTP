@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, AfterViewInit, ViewChild, ElementRef, OnChanges, SimpleChanges, OnDestroy, NgZone } from '@angular/core';
 
 import { ToastNotificationService } from '../../services/toast-notification.service';
+import { openInNewTab } from '../../utils/open-in-new-tab';
 
 @Component({
   selector: 'app-safe-iframe',
@@ -186,7 +187,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private openLink(href: string): void {
-    // window.open() would execute a javascript:/data: URL in a window that
+    // a new tab would execute a javascript:/data: URL in a window that
     // inherits this origin -- never hand it an email-controlled scheme
     if (/^\s*(javascript|data|vbscript):/i.test(href)) {
       this.toastService.showWarning('Blocked a link with an unsafe scheme');
@@ -203,7 +204,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
       return;
     }
 
-    window.open(href, '_blank', 'noopener,noreferrer');
+    openInNewTab(href);
   }
 
   private setupVisibilityMonitoring() {

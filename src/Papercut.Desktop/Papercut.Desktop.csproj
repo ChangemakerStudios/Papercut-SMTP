@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<!-- v8 desktop shell: tray + web UI window over Papercut.Service. See docs/plans/v8-desktop.md. -->
+	<PropertyGroup>
+		<Title>Papercut SMTP</Title>
+		<!-- FileDescription: Windows shows this as the header of notification toasts -->
+		<AssemblyTitle>Papercut SMTP</AssemblyTitle>
+		<Product>Papercut SMTP</Product>
+		<!-- the v7 exe name: Velopack's main exe, shortcuts and the run-at-startup value all point at Papercut.exe -->
+		<AssemblyName>Papercut</AssemblyName>
+		<RootNamespace>Papercut.Desktop</RootNamespace>
+		<OutputType>WinExe</OutputType>
+		<!-- Windows TFM for WebView2 hooks + WinRT toasts; plain net10.0 for macOS -->
+		<TargetFrameworks>net10.0-windows10.0.19041.0;net10.0</TargetFrameworks>
+		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'">10.0.17763.0</SupportedOSPlatformVersion>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<ApplicationIcon>Assets\papercut.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'">
+		<DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+		<!-- toast icon: Windows reads it from disk -->
+		<None Include="Assets\papercut.ico" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' != 'net10.0-windows10.0.19041.0'">
+		<Compile Remove="Platform\Windows\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Controls.WebView" Version="12.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+		<!-- keep in step with the vpk version in build.cake -->
+		<PackageReference Include="Velopack" Version="1.2.158" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'">
+		<!-- frame navigation + permission hooks on the raw CoreWebView2 -->
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4129.50" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.11" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Papercut.Desktop.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Update="JetBrains.Annotations" Version="2026.2.0" />
+	</ItemGroup>
+</Project>

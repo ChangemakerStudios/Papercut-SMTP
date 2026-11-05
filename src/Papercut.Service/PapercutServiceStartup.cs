@@ -20,6 +20,7 @@ namespace Papercut.Service;
 
 using Application.Messages;
 
+using Infrastructure.Hosting;
 using Infrastructure.MessageWatching;
 using Infrastructure.Servers;
 
@@ -70,6 +71,7 @@ internal class PapercutServiceStartup
         // hosted services
         services.AddHostedService<PapercutServerHostedService>();
         services.AddHostedService<MessageWatcherHostedService>();
+        services.AddHostedService<ParentProcessWatcher>();
     }
 
     IEnumerable<Module> GetModules()
