@@ -65,6 +65,34 @@ public class ReceivedDataMessageHandlerTests
         return ms.ToArray();
     }
 
+    #region Notify
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task HandleReceivedAsync_PublishesTheNotifyChoice(bool notify)
+    {
+        var tempFile = Path.GetTempFileName();
+
+        try
+        {
+            _mockRepository
+                .Setup(x => x.SaveMessage(It.IsAny<string>(), It.IsAny<Func<FileStream, Task>>()))
+                .ReturnsAsync(tempFile);
+
+            await _handler.HandleReceivedAsync(CreateTestMessage("recipient@test.com"), ["recipient@test.com"], notify);
+
+            _mockMessageBus.Verify(
+                x => x.PublishAsync(It.Is<NewMessageEvent>(e => e.Notify == notify), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    #endregion
+
     #region Basic Functionality Tests
 
     [Test]

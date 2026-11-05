@@ -30,9 +30,10 @@ public class ReceivedDataMessageHandler(
     ILogger logger)
     : IReceivedDataHandler
 {
-    public async Task HandleReceivedAsync(
+    public async Task<string> HandleReceivedAsync(
         byte[] messageData,
-        string[] recipients)
+        string[] recipients,
+        bool notify = true)
     {
         ArgumentNullException.ThrowIfNull(messageData);
         ArgumentNullException.ThrowIfNull(recipients);
@@ -85,12 +86,14 @@ public class ReceivedDataMessageHandler(
                 // file appear, knows the message has already been announced
                 publishedMessageTracker.MarkPublished(file);
 
-                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file).ToDto()));
+                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file).ToDto(), notify));
             }
         }
         catch (Exception ex)
         {
             logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
         }
+
+        return file;
     }
 }

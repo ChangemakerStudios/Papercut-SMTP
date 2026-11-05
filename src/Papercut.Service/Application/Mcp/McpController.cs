@@ -16,17 +16,16 @@
 // limitations under the License.
 
 
-using Microsoft.Extensions.Configuration;
-
 namespace Papercut.Service.Application.Mcp;
 
 [Route("api/[controller]")]
-public class McpController(ISettingStore settingStore, IConfiguration configuration) : ControllerBase
+public class McpController(McpEndpointState endpointState) : ControllerBase
 {
     [HttpGet]
     public McpStatusDto Get()
     {
-        var enabled = McpServerSettings.IsEnabled(settingStore, configuration);
+        // what is being served, not the setting: a change only applies after a restart
+        var enabled = endpointState.IsMapped;
 
         return new McpStatusDto
         {

@@ -99,4 +99,29 @@ Environment variable form (Docker): `SmtpServer__RateLimit` and `SmtpServer__Rat
 
 The web UI is backed by a small HTTP API (`/api/messages`, etc.) you can script against — handy for asserting "an email was sent" in end-to-end tests. Explore the endpoints via your browser's dev tools on the web UI.
 
+### Creating a message
+
+You can put a message straight into Papercut without SMTP, which makes it a handy local notification system: it shows up in the inbox and raises a desktop notification like received mail, and rules run on it.
+
+```bash
+curl -X POST http://localhost:8080/api/messages   -H "Content-Type: application/json"   -d '{"subject": "Deploy finished", "from": "CI <ci@example.com>", "markdown": "# All green
+
+- **api** deployed
+- **web** deployed"}'
+```
+
+`PUT` works the same way. It returns `201` with the new message's summary, including its `id`.
+
+| Field | |
+|---|---|
+| `subject` | Subject, and the notification text |
+| `markdown` | Body, rendered to HTML (tables and the other common extensions work); the source becomes the plain text part |
+| `html` | Body as HTML. Use this or `markdown`, not both |
+| `text` | Plain text body |
+| `from` | One address. Defaults to `Papercut <papercut@localhost>` |
+| `to`, `cc` | Comma-separated addresses, optional |
+| `notify` | Raise a notification. Defaults to `true`; with `false` the message still appears in the inbox |
+
+A subject alone is enough. Requests from a web page on another origin get `403`, so a site you visit can't fake a notification; scripts and tools don't send an `Origin` header and aren't affected.
+
 For AI agents and coding assistants, the service can also expose these operations over the Model Context Protocol — see [MCP Server](mcp.md).

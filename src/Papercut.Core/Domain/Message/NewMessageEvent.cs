@@ -20,4 +20,6 @@ using Papercut.Common.Domain;
 
 namespace Papercut.Core.Domain.Message;
 
-public record NewMessageEvent(MessageEntryDto NewMessage) : IEvent;
+/// <param name="NewMessage">The message.</param>
+/// <param name="Notify">False: update message lists and run rules, but raise no notification.</param>
+public record NewMessageEvent(MessageEntryDto NewMessage, bool Notify = true) : IEvent;
