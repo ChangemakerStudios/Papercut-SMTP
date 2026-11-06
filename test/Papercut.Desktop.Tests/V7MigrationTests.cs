@@ -26,6 +26,26 @@ namespace Papercut.Desktop.Tests;
 public class V7MigrationTests
 {
     [Test]
+    public void Asks_to_recreate_rules_only_when_updating_from_v7_without_a_copy()
+    {
+        var rulesFile = Path.Combine(Path.GetTempPath(), $"rules-{Guid.NewGuid():N}.json");
+
+        V7Migration.RulesNeedRecreating(foundV7Settings: true, rulesFile).Should().BeTrue();
+        V7Migration.RulesNeedRecreating(foundV7Settings: false, rulesFile).Should().BeFalse();
+
+        File.WriteAllText(rulesFile, "[]");
+
+        try
+        {
+            V7Migration.RulesNeedRecreating(foundV7Settings: true, rulesFile).Should().BeFalse();
+        }
+        finally
+        {
+            File.Delete(rulesFile);
+        }
+    }
+
+    [Test]
     public void Reads_settings_from_a_wpf_user_config()
     {
         var path = Path.Combine(Path.GetTempPath(), $"user-{Guid.NewGuid():N}.config");

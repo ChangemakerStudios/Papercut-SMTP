@@ -10,7 +10,7 @@ One application, run three ways. The desktop shell targets Windows and macOS. **
 - **The tray** is the shell: tray icon, notifications, run-at-startup, and a window that shows the web UI.
 - **Papercut.UI (WPF)** and **Papercut.Infrastructure.IPComm** are deleted.
 
-v7 desktop users must get v8 as a normal in-place update, with their messages and settings intact. Rules come through intact if they were saved on the bridge release or later; see [Migration](#migration) for the one-time loss before that.
+v7 desktop users must get v8 as a normal in-place update, with their messages and settings intact. Desktop-only users lose their rules once at that update; see [Migration](#migration).
 
 ## Model
 
@@ -97,7 +97,9 @@ Secondary distributions are unchanged: the service zip (service + tray in `TrayN
 
 ### Part 1: 7.x bridge release (branch `fix/rules-settings-data-folder`)
 
-Ships before v8 so rules are somewhere v8 can find them.
+**Dropped (2026-11-06):** no 7.x release is planned, so v7 users go straight to v8. A bridge wouldn't have saved existing rules anyway, because they would be lost at the update to the bridge. Tested: a real 7.8.0 `Update.exe` applying the v8 package removed `current\rules.json` and left no copy. 7.8.0 registers nothing on the `--veloapp-obsolete` hook, so no release can capture them. v8 imports a Windows Service's copy if there is one, shows the rest a one-time notice, and keeps rules in the data folder from then on. The rest of this section is the original design.
+
+Was to ship before v8 so rules are somewhere v8 can find them.
 
 - Done: the WPF `RuleService` saves `rules.json` to `UserAppDataDirectory`. On load, if that file is missing and `BaseDirectory\rules.json` exists, `RuleServiceBase` copies it over and logs it. The service keeps `BaseDirectory`.
 - `JsonSettingStore` is not part of the bridge. The WPF app keeps its real settings in `user.config` and only writes an empty `Papercut SMTP.Settings.json`. The service's settings file moves to the data folder in card B.
@@ -178,8 +180,7 @@ If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 Still open:
 - the v7 → v8 update through an installed v7's own update check (Setup install, stable channel)
 - clicking through the tray menu (Exit, Restart to Update, Windows Service start/stop)
-- macOS: a build and run on a Mac, and real UserNotifications
-- switching CI's `All` target from the WPF package to `PackageDesktop`
+- macOS: CI builds both architectures, and its smoke test receives mail and opens the window on a real runner. How the menu-bar icon, menus and notifications look gets tested by hand after the release
 - package size, about 110 MB on x64: two self-contained runtimes, untrimmed
 
 ### A. Shell details
@@ -204,6 +205,9 @@ Still open:
 
 ## Release notes to write
 
+- **macOS:** new, and unsigned, so the first launch needs System Settings -> Privacy & Security -> Open Anyway.
+- **Rules:** forwarding rules from v7 don't carry over, unless the Windows Service had a copy. Re-create them once under Rules; from v8 on they survive updates.
+- **Not carried over from v7:** forward dialog settings, theme, sort order and zoom.
 - **Breaking:** web pages on another origin can no longer call the service. Anyone calling it from a browser app needs `CorsAllowedOrigins` (see docs/service.md). Scripts, curl and MCP clients are unaffected. Behind a reverse proxy that passes neither `Host` nor `X-Forwarded-Host`, which includes nginx by default, the web UI goes blank until the proxy is fixed or `CorsAllowedOrigins` is set.
 
 ## Open questions

@@ -104,6 +104,81 @@ jobs:
           path: releases/*
           if-no-files-found: warn
 
+  build-macos:
+    name: Build Papercut SMTP (${{ matrix.rid }})
+    needs: build-windows
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: osx-arm64
+            os: macos-latest
+          - rid: osx-x64
+            os: macos-15-intel
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/Papercut.Service/Web/package-lock.json
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v4.1.0
+        with:
+          versionSpec: '6.x'
+
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v4.1.0
+        with:
+          configFilePath: GitVersion.yml
+
+      # same channels as build.cake
+      - name: Set channel
+        id: channel
+        run: |
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+          case "$GITHUB_REF_NAME" in
+            master) echo "postfix=-stable" >> "$GITHUB_OUTPUT" ;;
+            develop) echo "postfix=-dev" >> "$GITHUB_OUTPUT" ;;
+            *) echo "postfix=-alpha" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Package
+        run: bash src/Papercut.Desktop/packaging/macos/pack.sh ${{ matrix.rid }} "${{ steps.gitversion.outputs.fullSemVer }}" "${{ steps.channel.outputs.postfix }}"
+
+      - name: Smoke test
+        run: bash src/Papercut.Desktop/packaging/macos/smoke-test.sh "src/Papercut.Desktop/packaging/macos/out/${{ matrix.rid }}/releases"
+
+      # adds to the draft release build-windows created
+      - name: Upload to the release
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          vpk upload github \
+            --outputDir "src/Papercut.Desktop/packaging/macos/out/${{ matrix.rid }}/releases" \
+            --channel "${{ matrix.rid }}${{ steps.channel.outputs.postfix }}" \
+            --repoUrl "https://github.com/ChangemakerStudios/Papercut-SMTP" \
+            --token "$GITHUB_TOKEN" \
+            --merge \
+            ${{ github.ref == 'refs/heads/master' && ' ' || '--pre' }}
+
   build-docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest

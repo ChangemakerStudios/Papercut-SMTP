@@ -10,7 +10,7 @@ The desktop app from v8 on: an Avalonia 12 tray icon and a window that shows the
 - **Notifications**: new mail arrives over SignalR (`/hubs/messages`). Windows shows WinRT toasts under the v7 AUMID, and clicking one opens the message. macOS uses `osascript` for now (no click handling); UserNotifications needs the signed `.app`.
 - **Run at startup**: on Windows, the v7 `HKCU\...\Run\Papercut.Smtp.App` value; on macOS, a LaunchAgent.
 - **Updates**: Velopack from GitHub releases, on the channel the build was packed with. Updates download in the background. "Restart to Update" stops the child service first; otherwise the update is applied on Exit.
-- **v7 import**, once: the newest WPF `user.config` gives the SMTP IP and port (written to the service settings) plus message paths, notifications and window size. Rules are already in the data folder since the 7.x bridge release.
+- **v7 import**, once: the newest WPF `user.config` gives the SMTP IP and port (written to the service settings) plus message paths, notifications and window size. v7's `rules.json` can't be recovered, because Velopack replaces `current\` before any v8 code runs. A Windows Service's copy is imported if there is one; otherwise a one-time notice asks the user to re-create their rules.
 
 Data folder: `%AppData%\Changemaker Studios\Papercut SMTP` (the v7 one) on Windows, `~/Library/Application Support/Papercut SMTP` on macOS. Shell settings: `Papercut.Shell.json`. Logs: `Logs/`.
 
@@ -34,4 +34,4 @@ To run another instance, launch it again: a second launch shows the first instan
 ## Package
 
 - Windows: `dotnet-cake --target=PackageDesktop-win-x64` (also `-win-x86`, `-win-arm64`, or `PackageDesktop` for all three). This publishes the shell, publishes the service into `service/`, and runs `vpk pack` with id `PapercutSMTP`, the `webview2` prerequisite and the v7 AUMID. Output goes to `releases/`. The tasks are not part of `All` yet, so CI still ships the WPF app.
-- macOS: `src/Papercut.Desktop/packaging/macos/pack.sh [osx-arm64|osx-x64] [version]` on a Mac. Builds unsigned for now.
+- macOS: `src/Papercut.Desktop/packaging/macos/pack.sh [osx-arm64|osx-x64] [version]` on a Mac, or from CI (`build-macos`). Builds unsigned for now. `smoke-test.sh <releases dir>` runs the packaged app and checks it receives mail.

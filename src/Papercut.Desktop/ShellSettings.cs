@@ -54,6 +54,11 @@ internal sealed class ShellSettings
     /// </summary>
     public bool V7MigrationDone { get; set; }
 
+    /// <summary>
+    /// Set by the v7 import when rules couldn't come across; cleared once the notice has shown.
+    /// </summary>
+    public bool ShowV7RulesNotice { get; set; }
+
     public static ShellSettings Load()
     {
         try

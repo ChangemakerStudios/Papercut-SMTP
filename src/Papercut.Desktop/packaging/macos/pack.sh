@@ -32,17 +32,21 @@ fi
 rm -rf "$OUT"
 mkdir -p "$PUBLISH" "$RELEASES" "$WORK"
 
+# assembly and bundle versions must be numeric: strip any prerelease suffix
+SHORT_VERSION="${VERSION%%-*}"
+VERSION_PROPS=(-p:Version="$VERSION" -p:AssemblyVersion="$SHORT_VERSION" -p:FileVersion="$SHORT_VERSION" -p:InformationalVersion="$VERSION")
+
 echo "==> publishing the shell ($RID)"
 dotnet publish "$PROJECT_DIR/Papercut.Desktop.csproj" \
   -c Release -f net10.0 -r "$RID" --self-contained true \
-  -p:Version="$VERSION" \
+  "${VERSION_PROPS[@]}" \
   -o "$PUBLISH"
 
 echo "==> publishing the service ($RID) into service/"
 dotnet publish "$REPO_ROOT/src/Papercut.Service/Papercut.Service.csproj" \
   -c Release -r "$RID" --self-contained true \
   -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true \
-  -p:Version="$VERSION" \
+  "${VERSION_PROPS[@]}" \
   -o "$PUBLISH/service"
 
 echo "==> building Papercut.icns"
@@ -58,8 +62,6 @@ done
 iconutil -c icns "$ICONSET" -o "$WORK/Papercut.icns"
 
 echo "==> writing Info.plist"
-# CFBundleShortVersionString must be numeric: strip any prerelease suffix
-SHORT_VERSION="${VERSION%%-*}"
 sed -e "s/@VERSION@/$SHORT_VERSION/g" "$HERE/Info.plist" > "$WORK/Info.plist"
 plutil -lint "$WORK/Info.plist"
 

@@ -45,6 +45,12 @@ internal sealed class App : Application
 
     private MessagesHubClient _hub = null!;
 
+    // One instance each, with only their items replaced: macOS binds to the first menu it
+    // exports and throws on any other
+    private readonly NativeMenu _trayMenu = new();
+
+    private readonly NativeMenu _windowMenu = new();
+
     private INotifier _notifier = null!;
 
     private IRunAtStartup _runAtStartup = null!;
@@ -95,7 +101,9 @@ internal sealed class App : Application
         _tray = new TrayIcon
         {
             Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://Papercut/Assets/papercut.ico"))),
-            ToolTipText = "Papercut SMTP"
+            ToolTipText = "Papercut SMTP",
+            // before SetIcons: attaching without a menu exports an empty one, which macOS keeps
+            Menu = _trayMenu
         };
         _tray.Clicked += (_, _) => ShowWindow();
         TrayIcon.SetIcons(this, new TrayIcons { _tray });
@@ -114,6 +122,13 @@ internal sealed class App : Application
 
         _ = _supervisor.ResolveAsync(_shutdown.Token);
         _updater.StartChecking(_shutdown.Token);
+
+        if (_settings.ShowV7RulesNotice)
+        {
+            _notifier.Show("Papercut SMTP", "Rules from Papercut 7 couldn't be carried over. If you used forwarding rules, re-create them under Rules.", null);
+            _settings.ShowV7RulesNotice = false;
+            _settings.Save();
+        }
 
         Log.Information("Papercut desktop {Version} started", _updater.CurrentVersion ?? "(not installed)");
 
@@ -156,7 +171,7 @@ internal sealed class App : Application
             _window = new MainWindow(_settings, () => _ = _supervisor.ResolveAsync(_shutdown.Token));
             _window.OpenExternallyRequested += OpenExternally;
             _window.SetService(_supervisor.IsStarting ? null : _supervisor.BaseUri, _supervisor.StatusText);
-            _window.SetMenu(BuildWindowMenu());
+            _window.SetMenu(_windowMenu);
         }
 
         _window.Show();
@@ -184,13 +199,14 @@ internal sealed class App : Application
         if (!force && state == _menuState) return;
         _menuState = state;
 
-        _tray.Menu = BuildTrayMenu();
-        _window?.SetMenu(BuildWindowMenu());
+        FillTrayMenu();
+        FillWindowMenu();
     }
 
-    private NativeMenu BuildTrayMenu()
+    private void FillTrayMenu()
     {
-        var menu = new NativeMenu();
+        var menu = _trayMenu;
+        menu.Items.Clear();
 
         menu.Add(new NativeMenuItem($"Papercut SMTP: {_supervisor?.StatusText ?? "Starting..."}") { IsEnabled = false });
         menu.Add(new NativeMenuItemSeparator());
@@ -213,11 +229,9 @@ internal sealed class App : Application
         menu.Add(Item("View Logs", () => OpenPath(ShellPaths.LogDirectory)));
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(Item("Exit", () => _ = ExitAsync()));
-
-        return menu;
     }
 
-    private NativeMenu BuildWindowMenu()
+    private void FillWindowMenu()
     {
         var file = new NativeMenu();
         file.Add(OpenInBrowserItem());
@@ -248,13 +262,11 @@ internal sealed class App : Application
         help.Add(new NativeMenuItemSeparator());
         help.Add(new NativeMenuItem($"Papercut SMTP {Version}") { IsEnabled = false });
 
-        return new NativeMenu
-        {
-            new NativeMenuItem("_File") { Menu = file },
-            new NativeMenuItem("_View") { Menu = view },
-            new NativeMenuItem("_Options") { Menu = options },
-            new NativeMenuItem("_Help") { Menu = help }
-        };
+        _windowMenu.Items.Clear();
+        _windowMenu.Add(new NativeMenuItem("_File") { Menu = file });
+        _windowMenu.Add(new NativeMenuItem("_View") { Menu = view });
+        _windowMenu.Add(new NativeMenuItem("_Options") { Menu = options });
+        _windowMenu.Add(new NativeMenuItem("_Help") { Menu = help });
     }
 
     private NativeMenuItem OpenInBrowserItem() =>
