@@ -4,6 +4,20 @@ public static class Velopack
     private static FilePath VpkPath(ICakeContext context) =>
         context.Tools.Resolve("vpk.exe") ?? context.Tools.Resolve("vpk") ?? new FilePath("vpk");
 
+    // StartProcess only returns the exit code, so a failure would otherwise pass unnoticed
+    private static void Run(ICakeContext context, string command, ProcessArgumentBuilder arguments)
+    {
+        var exitCode = context.StartProcess(VpkPath(context), new ProcessSettings
+        {
+            Arguments = arguments
+        });
+
+        if (exitCode != 0)
+        {
+            throw new CakeException($"vpk {command} failed with exit code {exitCode}");
+        }
+    }
+
     public static void Pack(ICakeContext context, VpkPackParams @params)
     {
         if (context == null)
@@ -39,10 +53,7 @@ public static class Velopack
         }
 
         //Information("Running Vpk Pack with arguments: " + arguments.Render());
-        context.StartProcess(VpkPath(context), new ProcessSettings
-        {
-            Arguments = arguments
-        });
+        Run(context, "pack", arguments);
     }
 
     public static void UploadGithub(ICakeContext context, VpkUploadParams @params)
@@ -69,10 +80,7 @@ public static class Velopack
             arguments.Append("--merge");
         }
 
-        context.StartProcess(VpkPath(context), new ProcessSettings
-        {
-            Arguments = arguments
-        });
+        Run(context, "upload", arguments);
     }
 }
 

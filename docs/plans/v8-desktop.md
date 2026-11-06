@@ -180,7 +180,7 @@ If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 Still open:
 - the v7 → v8 update through an installed v7's own update check (Setup install, stable channel)
 - clicking through the tray menu (Exit, Restart to Update, Windows Service start/stop)
-- macOS: a build and run on a Mac, and real UserNotifications
+- macOS: a build and run on a Mac, and real UserNotifications. Not needed for 8.0.0: it ships in a later 8.0.x
 - package size, about 110 MB on x64: two self-contained runtimes, untrimmed
 
 ### A. Shell details
