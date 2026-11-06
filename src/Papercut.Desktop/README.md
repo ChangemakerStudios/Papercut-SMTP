@@ -34,4 +34,4 @@ To run another instance, launch it again: a second launch shows the first instan
 ## Package
 
 - Windows: `dotnet-cake --target=PackageDesktop-win-x64` (also `-win-x86`, `-win-arm64`, or `PackageDesktop` for all three). This publishes the shell, publishes the service into `service/`, and runs `vpk pack` with id `PapercutSMTP`, the `webview2` prerequisite and the v7 AUMID. Output goes to `releases/`. The tasks are not part of `All` yet, so CI still ships the WPF app.
-- macOS: `src/Papercut.Desktop/packaging/macos/pack.sh [osx-arm64|osx-x64] [version]` on a Mac. Builds unsigned for now.
+- macOS: `src/Papercut.Desktop/packaging/macos/pack.sh [osx-arm64|osx-x64] [version]` on a Mac, or from CI (`build-macos`). Builds unsigned for now. `smoke-test.sh <releases dir>` runs the packaged app and checks it receives mail.

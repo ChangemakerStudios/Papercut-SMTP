@@ -180,7 +180,7 @@ If 1 or 3 fails, or 2 fails on Windows or macOS, switch to Tauri.
 Still open:
 - the v7 → v8 update through an installed v7's own update check (Setup install, stable channel)
 - clicking through the tray menu (Exit, Restart to Update, Windows Service start/stop)
-- macOS: a build and run on a Mac, and real UserNotifications. Not needed for 8.0.0: it ships in a later 8.0.x
+- macOS: CI builds both architectures and its smoke test receives mail on a real runner. The menu-bar icon and notifications get tested by hand after the release
 - package size, about 110 MB on x64: two self-contained runtimes, untrimmed
 
 ### A. Shell details
@@ -205,6 +205,7 @@ Still open:
 
 ## Release notes to write
 
+- **macOS:** new, and unsigned, so the first launch needs System Settings -> Privacy & Security -> Open Anyway.
 - **Rules:** forwarding rules from v7 don't carry over, unless the Windows Service had a copy. Re-create them once under Rules; from v8 on they survive updates.
 - **Not carried over from v7:** forward dialog settings, theme, sort order and zoom.
 - **Breaking:** web pages on another origin can no longer call the service. Anyone calling it from a browser app needs `CorsAllowedOrigins` (see docs/service.md). Scripts, curl and MCP clients are unaffected. Behind a reverse proxy that passes neither `Host` nor `X-Forwarded-Host`, which includes nginx by default, the web UI goes blank until the proxy is fixed or `CorsAllowedOrigins` is set.
