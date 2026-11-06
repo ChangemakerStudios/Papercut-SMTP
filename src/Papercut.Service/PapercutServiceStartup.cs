@@ -1,7 +1,7 @@
-ï»¿// Papercut
+// Papercut
 // 
-// Copyright Â© 2008 - 2012 Ken Robertson
-// Copyright Â© 2013 - 2025 Jaben Cargman
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ using Application.Mcp;
 
 using Rules;
 
+using Papercut.Core.Domain.Network;
 using Papercut.Service.Domain;
 using Papercut.Service.Infrastructure.Configuration;
 
@@ -46,17 +47,7 @@ internal class PapercutServiceStartup
 
         services.AddHttpContextAccessor();
 
-        services.AddCors(
-            s =>
-            {
-                s.AddDefaultPolicy(
-                    c =>
-                    {
-                        c.AllowAnyHeader();
-                        c.AllowAnyOrigin();
-                        c.AllowAnyMethod();
-                    });
-            });
+        services.AddCors();
 
         // Add SignalR
         services.AddSignalR();
@@ -121,9 +112,49 @@ internal class PapercutServiceStartup
                 });
         }
 
+        var allowedOrigins = CrossOriginPolicy.ParseAllowedOrigins(
+            app.Services.GetRequiredService<ISettingStore>().Get(
+                CrossOriginPolicy.AllowedOriginsSettingKey,
+                app.Configuration[CrossOriginPolicy.AllowedOriginsSettingKey]));
+
+        // CORS only stops a page reading a response: the request still runs, and WebSockets
+        // ignore CORS altogether. This stops them all, for the API, MCP and the hub.
+        app.Use(
+            async (context, next) =>
+            {
+                var request = context.Request;
+                var origin = request.Headers.Origin.ToString();
+
+                if (CrossOriginPolicy.IsAllowed(origin, request.Host.Value, request.Headers["X-Forwarded-Host"].ToString(), allowedOrigins))
+                {
+                    await next();
+                    return;
+                }
+
+                Log.Warning(
+                    "Blocked {Method} {Path} from {Origin}. To allow this site, add it to {SettingKey}",
+                    request.Method,
+                    request.Path.Value,
+                    origin,
+                    CrossOriginPolicy.AllowedOriginsSettingKey);
+
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            });
+
         app.UseRouting();
 
-        app.UseCors();
+        if (allowedOrigins.Length > 0)
+        {
+            app.UseCors(
+                c =>
+                {
+                    if (allowedOrigins.Contains(CrossOriginPolicy.AnyOrigin)) c.AllowAnyOrigin();
+                    else c.WithOrigins(allowedOrigins);
+
+                    c.AllowAnyHeader();
+                    c.AllowAnyMethod();
+                });
+        }
 
         // Request traffic is background noise for a mail viewer: a single click
         // fetches the ref, the detail and the rendered body, so logging each one

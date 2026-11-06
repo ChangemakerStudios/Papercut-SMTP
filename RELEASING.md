@@ -118,6 +118,8 @@ git push origin --delete release/X.Y.Z   # if the branch was pushed
   - `Papercut.Smtp.Service.*-win-arm64.zip`
   - WinGet YAML manifests
 - [ ] Docker Hub image updated: `changemakerstudiosus/papercut-smtp:latest`
+- [ ] Docker Hub description updated by hand: paste `DOCKERHUB.md`
+- [ ] Docs site published: the master push runs `Build and Deploy Docs`; check https://www.papercut-smtp.com
 - [ ] Download and run the installer — verify the app launches and receives test emails
 - [ ] WinGet PR created by [winget-publish.yml](.github/workflows/winget-publish.yml) (or submit manually — see [installation/winget/README.md](installation/winget/README.md))
 

@@ -55,6 +55,8 @@ docker run -d \
 
 For TLS in Docker, see [TLS & Authentication](smtp-tls-auth.md).
 
+Web pages on another origin are blocked by default. To allow one, or if a reverse proxy passes neither `Host` nor `X-Forwarded-Host`, see [Calling the API from a web page](service.md#calling-the-api-from-a-web-page).
+
 ## Tags
 
 | Tag | Meaning |
