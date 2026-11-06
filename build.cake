@@ -88,8 +88,7 @@ Task("Clean")
 ///////////////////////////////////////////////////////////////////////////////
 // RELEASE NOTES
 Task("CreateReleaseNotes")
-    .Does(() => ReleaseNotes.Create(Context))
-    .OnError(exception => Error(exception));
+    .Does(() => ReleaseNotes.Create(Context));
 
 ///////////////////////////////////////////////////////////////////////////////
 Task("Restore")
@@ -124,8 +123,7 @@ Task("Test")
 
         DotNetTest(project.FullPath, settings);
     }
-})
-.OnError(exception => Error(exception));
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
@@ -143,8 +141,7 @@ Task("BuildUI64")
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-})
-.OnError(exception => Error(exception));
+});
 
 Task("PackageUI64")
     .IsDependentOn("BuildUI64")
@@ -171,8 +168,7 @@ Task("PackageUI64")
     // Copy installation helper files alongside Setup.exe
     CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
     CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("BuildUI32")
     .IsDependentOn("Restore")
@@ -190,8 +186,7 @@ Task("BuildUI32")
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-})
-.OnError(exception => Error(exception));
+});
 
 Task("PackageUI32")
     .IsDependentOn("BuildUI32")
@@ -219,8 +214,7 @@ Task("PackageUI32")
     // Copy installation helper files alongside Setup.exe
     CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
     CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("BuildUIArm64")
     .IsDependentOn("Restore")
@@ -238,8 +232,7 @@ Task("BuildUIArm64")
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-})
-.OnError(exception => Error(exception));
+});
 
 Task("PackageUIArm64")
     .IsDependentOn("BuildUIArm64")
@@ -266,8 +259,7 @@ Task("PackageUIArm64")
     // Copy installation helper files alongside Setup.exe
     CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
     CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("DeployReleases")
     .WithCriteria(isRunningInGitHubActions && (isMasterBranch || isDevelopBranch) && hasGithubToken)
@@ -365,8 +357,7 @@ Task("DeployReleases")
                 });
             }
         }
-    })
-.OnError(exception => Error(exception));
+    });
 
 
 Task("BuildAndPackServiceWin64")
@@ -407,8 +398,7 @@ Task("BuildAndPackServiceWin64")
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("BuildAndPackServiceWin32")
     .IsDependentOn("Restore")
@@ -449,8 +439,7 @@ Task("BuildAndPackServiceWin32")
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("BuildAndPackServiceWinArm64")
     .IsDependentOn("Restore")
@@ -491,8 +480,7 @@ Task("BuildAndPackServiceWinArm64")
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
-})
-.OnError(exception => Error(exception));
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 // WINGET
@@ -509,8 +497,7 @@ Task("PrepareWinGetRelease")
     };
 
     WinGet.PrepareRelease(Context, wingetParams);
-})
-.OnError(exception => Error(exception));
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -532,8 +519,7 @@ foreach (var desktopRuntime in new[] { "win-x64", "win-x86", "win-arm64" })
         // Copy installation helper files alongside Setup.exe
         CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
         CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
-    })
-    .OnError(exception => Error(exception));
+    });
 }
 
 Task("PackageDesktop")
@@ -553,7 +539,6 @@ Task("All")
     .IsDependentOn("BuildAndPackServiceWin32")
     .IsDependentOn("BuildAndPackServiceWinArm64")
     .IsDependentOn("PrepareWinGetRelease")
-    .IsDependentOn("DeployReleases")
-    .OnError(exception => Error(exception));
+    .IsDependentOn("DeployReleases");
 
 RunTarget(target);
