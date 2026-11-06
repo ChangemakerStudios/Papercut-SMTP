@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Runs the packaged app from a portable zip and checks it receives mail. Doesn't cover the menu-bar icon or notifications.
+# Runs the packaged app from a portable zip, checks it receives mail, then opens its window.
+# Doesn't check how the menu-bar icon, menus or notifications look.
 # Usage: ./smoke-test.sh <releases dir>
 set -euo pipefail
 
@@ -48,9 +49,16 @@ with smtplib.SMTP("127.0.0.1", 2525, timeout=30) as s:
 PY
 
 for _ in $(seq 1 15); do
-  curl -fs "$WEB/api/messages" | grep -q "macOS smoke test" && { echo "==> mail received"; exit 0; }
+  curl -fs "$WEB/api/messages" | grep -q "macOS smoke test" && { RECEIVED=1; break; }
   sleep 2
 done
+[[ -n "${RECEIVED:-}" ]] || { echo "the mail never appeared" >&2; exit 1; }
+echo "==> mail received"
 
-echo "the mail never appeared" >&2
-exit 1
+echo "==> opening the window"
+# a second launch asks the running app to show it
+"$APP/Contents/MacOS/Papercut"
+sleep 10
+kill -0 "$PID" 2>/dev/null || { echo "the app crashed opening its window" >&2; exit 1; }
+curl -fs -o /dev/null "$WEB/health"
+echo "==> window opened, app still running"
