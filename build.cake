@@ -514,7 +514,7 @@ Task("PrepareWinGetRelease")
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-// v8 DESKTOP (Avalonia shell + service/) -- not in "All" yet: CI still ships the WPF app
+// v8 DESKTOP (Avalonia shell + service/) -- what "All" ships
 
 var desktopPublishDirectory = Directory("./publish/desktop");
 
@@ -528,6 +528,10 @@ foreach (var desktopRuntime in new[] { "win-x64", "win-x86", "win-arm64" })
     {
         Desktop.Publish(Context, runtime, configuration, desktopPublishDirectory, versionMSBuildSettings);
         Velopack.Pack(Context, Desktop.WindowsPackParams(runtime, channelPostfix, versionInfo.FullSemVer, desktopPublishDirectory, releasesDirectory));
+
+        // Copy installation helper files alongside Setup.exe
+        CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
+        CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
     })
     .OnError(exception => Error(exception));
 }
@@ -542,9 +546,9 @@ Task("All")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("Test")
-    .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
-    .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
-    .IsDependentOn("BuildUIArm64").IsDependentOn("PackageUIArm64")
+    // WPF isn't shipped, but it shares code with the service: keep it compiling until it's removed
+    .IsDependentOn("BuildUI64")
+    .IsDependentOn("PackageDesktop")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
     .IsDependentOn("BuildAndPackServiceWinArm64")

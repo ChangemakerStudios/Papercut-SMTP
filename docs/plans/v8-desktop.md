@@ -179,7 +179,6 @@ Still open:
 - the v7 → v8 update through an installed v7's own update check (Setup install, stable channel)
 - clicking through the tray menu (Exit, Restart to Update, Windows Service start/stop)
 - macOS: a build and run on a Mac, and real UserNotifications
-- switching CI's `All` target from the WPF package to `PackageDesktop`
 - package size, about 110 MB on x64: two self-contained runtimes, untrimmed
 
 ### A. Shell details

@@ -93,7 +93,7 @@ public static class WinGet
             Description = "Papercut SMTP is a 2-in-1 quick email viewer AND built-in SMTP server designed for development.\n" +
                          "It allows developers to safely test email functionality without risk of emails being sent to real recipients.\n\n" +
                          "Features:\n" +
-                         "- Desktop WPF application for viewing emails\n" +
+                         "- Desktop tray app and web UI for viewing emails\n" +
                          "- Built-in SMTP server (receive-only)\n" +
                          "- Full email inspection (body, HTML, headers, attachments, raw encoded bits)\n" +
                          "- Support for running as a minimized tray application with notifications\n" +

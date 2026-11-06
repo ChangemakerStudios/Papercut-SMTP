@@ -101,8 +101,9 @@ dotnet build Papercut.sln --configuration Release
 ### Cake Build Tasks
 - `Clean` - Clean build artifacts
 - `Restore` - Restore NuGet packages
-- `BuildUI64` / `BuildUI32` - Build 64/32-bit UI
-- `PackageUI64` / `PackageUI32` - Create Velopack installers
+- `PackageDesktop` - Create the v8 Velopack installers (Avalonia shell + service); what `All` ships
+- `BuildUI64` / `BuildUI32` - Build 64/32-bit WPF UI
+- `PackageUI64` / `PackageUI32` - Create WPF Velopack installers (no longer shipped)
 - `BuildAndPackServiceWin64` / `BuildAndPackServiceWin32` - Build service packages
 - `All` - Complete build pipeline
 
