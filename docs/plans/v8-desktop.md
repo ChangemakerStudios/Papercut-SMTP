@@ -204,7 +204,7 @@ Still open:
 
 ## Release notes to write
 
-- **Breaking:** web pages on another origin can no longer call the service. Anyone calling it from a browser app needs `CorsAllowedOrigins` (see docs/service.md). Scripts, curl and MCP clients are unaffected.
+- **Breaking:** web pages on another origin can no longer call the service. Anyone calling it from a browser app needs `CorsAllowedOrigins` (see docs/service.md). Scripts, curl and MCP clients are unaffected. Behind a reverse proxy that passes neither `Host` nor `X-Forwarded-Host`, which includes nginx by default, the web UI goes blank until the proxy is fixed or `CorsAllowedOrigins` is set.
 
 ## Open questions
 

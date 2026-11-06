@@ -477,7 +477,7 @@ docker run -d \
 
 `*` allows any origin, which also lets any website you visit reach your mail. Avoid it unless the container is locked down.
 
-**Behind a reverse proxy or ingress:** the web UI needs no setting if the proxy keeps the original `Host` header or sets `X-Forwarded-Host`, including on WebSocket upgrades. If it does neither, set `CorsAllowedOrigins` to the public URL of the web UI, such as `https://mail.example.com`.
+**Behind a reverse proxy or ingress:** the web UI needs no setting if the proxy keeps the original `Host` header or sets `X-Forwarded-Host`, including on WebSocket upgrades. If it does neither, the web UI shows a blank page. nginx does neither by default, so add `proxy_set_header Host $http_host;`, or set `CorsAllowedOrigins` to the public URL of the web UI, such as `https://mail.example.com`.
 
 ### IPv6 Support
 
@@ -685,16 +685,16 @@ docker run -d \
 3. Verify port mapping: `docker port papercut`
 4. Try alternate port based on your mapping: http://localhost:8080
 
-### Web UI Gets 403 Errors, or Live Updates Don't Work
+### Web UI Is Blank or Gets 403 Errors
 
-**Symptoms:** The page loads but actions fail, or new messages only appear after a reload. Your own web page gets a CORS or `403` error calling the API.
+**Symptoms:** Behind a reverse proxy, the web UI is a blank page, with `403` errors for its scripts in the browser console. Or your own web page gets a CORS or `403` error calling the API.
 
 **Check the logs:**
 ```bash
 docker logs papercut | grep Blocked
 ```
 
-A line like `Blocked GET /hubs/messages from https://mail.example.com` means that origin isn't allowed. Set it in `CorsAllowedOrigins`, or configure your proxy to pass `Host` or `X-Forwarded-Host`. See [Calling the API from a Web Page](#calling-the-api-from-a-web-page).
+A line like `Blocked GET /main-RVU45O6T.js from https://mail.example.com` means that origin isn't allowed. Set it in `CorsAllowedOrigins`, or configure your proxy to pass `Host` or `X-Forwarded-Host`. See [Calling the API from a Web Page](#calling-the-api-from-a-web-page).
 
 ### SMTP Not Receiving Emails
 

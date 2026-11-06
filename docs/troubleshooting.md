@@ -21,12 +21,12 @@ The service keeps retrying while its SMTP port is in use and logs `SMTP port ...
 
 On Windows, `localhost` tries IPv6 first. A service bound to `0.0.0.0` only listens on IPv4, so each new connection waits about 2 seconds for the IPv6 attempt to fail. Use `127.0.0.1` instead of `localhost`.
 
-## The web UI or my own page gets 403 errors
+## The web UI is blank, or my own page gets 403 errors
 
-Web pages on another origin are blocked. If the web UI's actions fail or new messages only appear after a reload, or your own page's calls fail, look in the logs for a line like:
+Web pages on another origin are blocked. If the web UI is a blank page behind a reverse proxy, or your own page's calls fail, look in the logs for a line like:
 
 ```text
-Blocked GET /hubs/messages from https://mail.example.com
+Blocked GET /main-RVU45O6T.js from https://mail.example.com
 ```
 
 To allow that origin, or if a reverse proxy passes neither `Host` nor `X-Forwarded-Host`, see [Calling the API from a web page](service.md#calling-the-api-from-a-web-page).
