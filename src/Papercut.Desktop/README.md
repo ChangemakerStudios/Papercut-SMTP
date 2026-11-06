@@ -10,7 +10,7 @@ The desktop app from v8 on: an Avalonia 12 tray icon and a window that shows the
 - **Notifications**: new mail arrives over SignalR (`/hubs/messages`). Windows shows WinRT toasts under the v7 AUMID, and clicking one opens the message. macOS uses `osascript` for now (no click handling); UserNotifications needs the signed `.app`.
 - **Run at startup**: on Windows, the v7 `HKCU\...\Run\Papercut.Smtp.App` value; on macOS, a LaunchAgent.
 - **Updates**: Velopack from GitHub releases, on the channel the build was packed with. Updates download in the background. "Restart to Update" stops the child service first; otherwise the update is applied on Exit.
-- **v7 import**, once: the newest WPF `user.config` gives the SMTP IP and port (written to the service settings) plus message paths, notifications and window size. Rules are already in the data folder since the 7.x bridge release.
+- **v7 import**, once: the newest WPF `user.config` gives the SMTP IP and port (written to the service settings) plus message paths, notifications and window size. v7's `rules.json` can't be recovered, because Velopack replaces `current\` before any v8 code runs. A Windows Service's copy is imported if there is one; otherwise a one-time notice asks the user to re-create their rules.
 
 Data folder: `%AppData%\Changemaker Studios\Papercut SMTP` (the v7 one) on Windows, `~/Library/Application Support/Papercut SMTP` on macOS. Shell settings: `Papercut.Shell.json`. Logs: `Logs/`.
 

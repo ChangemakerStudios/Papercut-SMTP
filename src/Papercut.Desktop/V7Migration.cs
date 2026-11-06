@@ -25,8 +25,9 @@ namespace Papercut.Desktop;
 
 /// <summary>
 /// First run after the update from the v7 WPF app. Runs once (ShellSettings.V7MigrationDone).
-/// Messages need nothing: the desktop service reads the same folders. Rules are already in the
-/// data folder since the 7.x bridge release. This brings over the WPF user.config settings.
+/// Messages need nothing: the desktop service reads the same folders. This brings over the WPF
+/// user.config settings. v7's rules.json is gone by now: it lived in current\, which Velopack
+/// replaces before any v8 code runs. Only a Windows Service's copy can be recovered.
 /// </summary>
 internal static class V7Migration
 {
@@ -34,6 +35,8 @@ internal static class V7Migration
     /// The desktop service's settings file (ServiceSettingStore under DataDirectory).
     /// </summary>
     public static string ServiceSettingsFile => Path.Combine(ShellPaths.DataDirectory, "Papercut.SMTP.Service.Settings.json");
+
+    private static string RulesFile => Path.Combine(ShellPaths.DataDirectory, "rules.json");
 
     public static void Run(ShellSettings settings)
     {
@@ -43,8 +46,9 @@ internal static class V7Migration
         {
             if (OperatingSystem.IsWindows())
             {
-                ImportUserConfig(settings);
+                var foundV7Settings = ImportUserConfig(settings);
                 ImportWindowsServiceRules();
+                settings.ShowV7RulesNotice = RulesNeedRecreating(foundV7Settings, RulesFile);
             }
         }
         catch (Exception ex)
@@ -56,14 +60,20 @@ internal static class V7Migration
         settings.Save();
     }
 
-    private static void ImportUserConfig(ShellSettings settings)
+    /// <summary>
+    /// Can't tell whether v7 had any rules, so anyone updating from v7 without a copy gets told.
+    /// </summary>
+    internal static bool RulesNeedRecreating(bool foundV7Settings, string rulesFile) =>
+        foundV7Settings && !File.Exists(rulesFile);
+
+    private static bool ImportUserConfig(ShellSettings settings)
     {
         var userConfig = FindNewestUserConfig();
 
         if (userConfig == null)
         {
             Log.Information("No v7 user.config found -- nothing to import");
-            return;
+            return false;
         }
 
         Log.Information("Importing v7 settings from {UserConfig}", userConfig);
@@ -96,6 +106,8 @@ internal static class V7Migration
             service.GetValueOrDefault("IP", "(default)"),
             service.GetValueOrDefault("Port", "(default)"),
             settings.MessagePaths);
+
+        return true;
     }
 
     /// <summary>
@@ -149,11 +161,11 @@ internal static class V7Migration
 
     /// <summary>
     /// When v7 ran alongside the Windows Service, the WPF app synced its rules to the service.
-    /// If the data folder has none (rules saved before the bridge were wiped), take that copy.
+    /// If the data folder has none, take that copy.
     /// </summary>
     private static void ImportWindowsServiceRules()
     {
-        var target = Path.Combine(ShellPaths.DataDirectory, "rules.json");
+        var target = RulesFile;
 
         if (File.Exists(target)) return;
 

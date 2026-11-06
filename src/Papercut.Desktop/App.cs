@@ -115,6 +115,13 @@ internal sealed class App : Application
         _ = _supervisor.ResolveAsync(_shutdown.Token);
         _updater.StartChecking(_shutdown.Token);
 
+        if (_settings.ShowV7RulesNotice)
+        {
+            _notifier.Show("Papercut SMTP", "Rules from Papercut 7 couldn't be carried over. If you used forwarding rules, re-create them under Rules.", null);
+            _settings.ShowV7RulesNotice = false;
+            _settings.Save();
+        }
+
         Log.Information("Papercut desktop {Version} started", _updater.CurrentVersion ?? "(not installed)");
 
         base.OnFrameworkInitializationCompleted();
