@@ -1,5 +1,5 @@
 ﻿
-#module nuget:?package=Cake.BuildSystems.Module&version=8.0.0
+#module nuget:?package=Cake.BuildSystems.Module&version=9.0.0
 
 #tool "nuget:?package=System.Configuration.ConfigurationManager&version=4.5.0"
 #tool "nuget:?package=MarkdownSharp&version=2.0.5"
@@ -10,8 +10,8 @@
 #tool "dotnet:?package=GitVersion.Tool&version=6.4.0"
 #tool "dotnet:?package=vpk&version=1.2.158"
 
-#addin "nuget:?package=Cake.FileHelpers&version=7.0.0"
-#addin "nuget:?package=Cake.Incubator&version=8.0.0"
+#addin "nuget:?package=Cake.FileHelpers&version=9.0.0"
+#addin "nuget:?package=Cake.Incubator&version=11.0.0"
 
 #nullable enable
 

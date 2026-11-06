@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-dotnet tool install --global Cake.Tool --version 5.1.0
+dotnet tool install --global Cake.Tool --version 6.3.0
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # update installs it too, and moves an older global vpk forward
