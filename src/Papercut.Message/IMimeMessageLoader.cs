@@ -28,10 +28,14 @@ public interface IMimeMessageLoader
         MessageEntry messageEntry,
         Action<MimeMessage?> callback);
 
+    /// <summary>
+    /// The shared cached instance. Headers only when callers can overlap: its content
+    /// streams have one read position, so concurrent decodes return doubled or torn bodies.
+    /// </summary>
     Task<MimeMessage?> GetAsync(MessageEntry messageEntry, CancellationToken token = default);
 
     /// <summary>
-    /// A private copy safe to mutate or send. Never the shared cached instance.
+    /// A private copy safe to read, mutate or send. Never the shared cached instance.
     /// </summary>
     Task<MimeMessage> GetClonedAsync(MessageEntry messageEntry, CancellationToken token = default);
 }

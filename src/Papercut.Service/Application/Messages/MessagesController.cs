@@ -177,7 +177,7 @@ public class MessagesController(
         // Add ETag to response
         Response.Headers.ETag = etag;
 
-        return DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry, token))!));
+        return DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, await messageLoader.GetClonedAsync(messageEntry, token)));
     }
 
     // Same permissive check the desktop Forward dialog uses
@@ -259,7 +259,7 @@ public class MessagesController(
     public async Task<ActionResult> GetHtml(string id, CancellationToken token = default)
     {
         var messageEntry = this.GetMessageEntry(id);
-        var mimeMessage = (await messageLoader.GetAsync(messageEntry, token))!;
+        var mimeMessage = await messageLoader.GetClonedAsync(messageEntry, token);
 
         // relative so the markup keeps working under an HttpPathPrefix
         var contentsBase = $"api/messages/{Uri.EscapeDataString(messageEntry.Id)}/contents";
@@ -315,7 +315,7 @@ public class MessagesController(
     {
         var messageEntry = this.GetMessageEntry(messageId);
 
-        var mimeMessage = new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry))!);
+        var mimeMessage = new MimeMessageEntry(messageEntry, await messageLoader.GetClonedAsync(messageEntry));
         var sections = mimeMessage.MailMessage.BodyParts.OfType<MimePart>().ToList();
 
         var mimePart = findSection(sections);

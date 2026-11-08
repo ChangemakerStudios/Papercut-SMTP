@@ -73,7 +73,7 @@ public class PapercutMcpTools(
     {
         var messageEntry = this.GetMessageEntry(id);
 
-        return DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, (await messageLoader.GetAsync(messageEntry, cancellationToken))!));
+        return DetailDto.CreateFrom(new MimeMessageEntry(messageEntry, await messageLoader.GetClonedAsync(messageEntry, cancellationToken)));
     }
 
     [McpServerTool(Name = "create_message")]
@@ -199,8 +199,8 @@ public class PapercutMcpTools(
 
         var messageEntry = this.GetMessageEntry(id);
 
-        var mimeMessage = await messageLoader.GetAsync(messageEntry, cancellationToken);
-        var sections = mimeMessage!.BodyParts.OfType<MimePart>().ToList();
+        var mimeMessage = await messageLoader.GetClonedAsync(messageEntry, cancellationToken);
+        var sections = mimeMessage.BodyParts.OfType<MimePart>().ToList();
 
         var mimePart = index is { } i
             ? i >= 0 && i < sections.Count ? sections[i] : null
