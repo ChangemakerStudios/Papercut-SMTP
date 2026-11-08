@@ -29,8 +29,8 @@ docker run -d \
 
 ### Papercut SMTP Web UI
 
-![Papercut SMTP Web UI - Message List](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutWebUI-V7-1.png)
-![Papercut SMTP Web UI - Message Detail](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutWebUI-V7-2.png)
+![Papercut SMTP Web UI - Message List](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutV8-List-1.png)
+![Papercut SMTP Web UI - Message Detail in Dark Mode](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutV8-Dark-1.png)
 
 ---
 

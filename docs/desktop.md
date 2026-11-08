@@ -26,7 +26,7 @@ Select a message to inspect every layer of it:
 - **Sections** — every MIME part, viewable and downloadable individually (attachments included)
 - **Raw** — the raw encoded message source
 
-![Rich and Detailed View of Received Email](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/PapercutV7-Main-1.png)
+![Rich and Detailed View of Received Email](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/PapercutV8-Main-1.png)
 
 ## Managing Messages
 

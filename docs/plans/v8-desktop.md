@@ -91,6 +91,7 @@ Secondary distributions are unchanged: the service zip (service + tray in `TrayN
   - "Developer ID Application" and "Developer ID Installer" certificates in the keychain
   - a notary profile: `xcrun notarytool store-credentials --apple-id … --team-id … --password <app-specific> <profile>`
   - then `vpk pack --signAppIdentity "Developer ID Application: …" --signInstallIdentity "Developer ID Installer: …" --notaryProfile <profile>`
+- **Decided:** v8 ships the macOS build free and unsigned, with Open Anyway documented. Signing can come later.
 - **Next test:** an unsigned local build on the Mac: publish `osx-arm64`, `vpk pack` with the custom plist and `.icns`, install the `.pkg`, and check the menu-bar icon (no Dock icon) and a notification. Locally built apps are not quarantined, so this tests everything except signing.
 
 ## Migration
@@ -209,6 +210,4 @@ Drafted in `ReleaseNotesCurrent.md`.
 
 ## Open questions
 
-- Apple Developer ID for notarization, or ship the first macOS build unsigned?
-- macOS: free (sponsor-funded) or paid binaries? The code stays Apache 2.0 either way.
 - Confirm the two *(proposed)* defaults under Model.
