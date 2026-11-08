@@ -14,17 +14,19 @@ Papercut SMTP is a 2-in-1 quick email viewer **and** built-in SMTP server for de
 
 Download the desktop installer (always the latest version):
 
-- **64-bit**: [PapercutSMTP-win-x64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x64-stable-Setup.exe)
-- **32-bit**: [PapercutSMTP-win-x86-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x86-stable-Setup.exe)
-- **ARM64**: [PapercutSMTP-win-arm64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-arm64-stable-Setup.exe)
+- **Windows 64-bit**: [PapercutSMTP-win-x64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x64-stable-Setup.exe)
+- **Windows 32-bit**: [PapercutSMTP-win-x86-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-x86-stable-Setup.exe)
+- **Windows ARM64**: [PapercutSMTP-win-arm64-stable-Setup.exe](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-win-arm64-stable-Setup.exe)
+- **macOS Apple Silicon**: [PapercutSMTP-osx-arm64-stable-Setup.pkg](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-osx-arm64-stable-Setup.pkg)
+- **macOS Intel**: [PapercutSMTP-osx-x64-stable-Setup.pkg](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest/download/PapercutSMTP-osx-x64-stable-Setup.pkg)
 
-Or via WinGet (may lag behind the latest release):
+Or on Windows via WinGet (may lag behind the latest release):
 
 ```powershell
 winget install ChangemakerStudios.Papercut-SMTP
 ```
 
-Run it — Papercut is immediately listening on `127.0.0.1:25`. Configure your app to send there and you're done.
+Run it — Papercut is immediately listening on port `25` (`2525` on macOS). Configure your app to send there and you're done.
 
 ## Docker
 

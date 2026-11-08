@@ -27,7 +27,7 @@ Exactly one thing: your application's outgoing mail settings. Wherever your app 
 | Setting | Value |
 |---------|-------|
 | Host / Server | `localhost` (or `127.0.0.1`) |
-| Port | `25` (Papercut's default) |
+| Port | `25` (Papercut's default; `2525` on macOS) |
 | Username / Password | *(leave empty — anything is accepted)* |
 | Encryption | None (or STARTTLS if [configured](smtp-tls-auth.md)) |
 
@@ -35,7 +35,7 @@ See [Send Email from Your App](send-from-your-app.md) for copy-paste examples in
 
 ## Where emails go
 
-Received messages are stored as standard `.eml` files on disk — no database. The desktop app lists them the moment they arrive, complete with a tray notification. Right-click a message and choose **Open Containing Folder** to get at the raw files.
+Received messages are stored as standard `.eml` files on disk — no database. The desktop app lists them the moment they arrive, complete with a notification. Choose **File → Open Data Folder** in its window to get at the raw files.
 
 ## Desktop app vs. service
 

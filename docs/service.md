@@ -7,7 +7,7 @@ The **Papercut SMTP Service** is an optional background component that receives 
 
 ## Web UI
 
-The service serves a web interface at **http://localhost:8080** by default:
+The service serves a web interface at **http://localhost:8080** by default. The [desktop app](desktop.md) shows the same UI in its window:
 
 ![Papercut SMTP Web UI - Message List](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutWebUI-V7-1.png)
 
@@ -27,22 +27,22 @@ You can also run it as a plain console app — just execute `Papercut.Service.ex
 
 ## Configuration
 
-The service needs no manual configuration: when the desktop app and service run on the same machine, they **synchronize settings automatically** — change the SMTP port in the desktop Options and the service follows. Rules sync the same way.
+The service needs no manual configuration: change its settings under **Options** and its rules under **Rules** in the web UI. If the desktop app runs on the same machine, it uses a running service instead of starting its own, so those settings and rules apply there too.
 
 For manual configuration, the service uses layered files (highest priority first):
 
 | File | Purpose |
 |------|---------|
-| `Papercut.Service.Settings.json` | User settings — UI changes are saved here (SMTP `IP`, `Port`, etc.) |
+| `Papercut.SMTP.Service.Settings.json` | User settings — UI changes are saved here (SMTP `IP`, `Port`, etc.) |
 | `rules.json` | Persisted rules |
 | `appsettings.Production.json` | Docker/production overrides (non-privileged ports) |
-| `appsettings.json` | Baseline defaults (SMTP port 25, IP Any) |
+| `appsettings.json` | Baseline defaults (SMTP port 2525, IP Any) |
 
 Restart the service after manual edits.
 
 ### Common changes
 
-**SMTP port** — `Papercut.Service.Settings.json`:
+**SMTP port** — `Papercut.SMTP.Service.Settings.json`:
 
 ```json
 { "Port": "2525" }
@@ -128,7 +128,7 @@ A subject alone is enough.
 
 Scripts, curl and MCP clients aren't affected by this. Web pages are: a page on another origin gets `403` from the API, MCP and the live-update hub, which stops ordinary cross-site requests from a site you visit reading or deleting your captured mail. The web UI is same-origin, including behind a reverse proxy that keeps `Host` or sets `X-Forwarded-Host`. A proxy that does neither gets a blank page. nginx does neither by default, so add `proxy_set_header Host $http_host;`.
 
-To let your own page call Papercut, or if a proxy rewrites `Host` without setting `X-Forwarded-Host`, list the origins in `CorsAllowedOrigins`, separated by `;` (`Papercut.Service.Settings.json`, `appsettings.json`, or the environment variable), then restart:
+To let your own page call Papercut, or if a proxy rewrites `Host` without setting `X-Forwarded-Host`, list the origins in `CorsAllowedOrigins`, separated by `;` (`Papercut.SMTP.Service.Settings.json`, `appsettings.json`, or the environment variable), then restart:
 
 ```json
 { "CorsAllowedOrigins": "http://localhost:3000;https://tools.example.com" }

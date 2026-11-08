@@ -1,6 +1,20 @@
 # Desktop App
 
-The Papercut SMTP desktop app is both the SMTP server and the viewer — when it's running, you're catching email.
+The Papercut SMTP desktop app is both the SMTP server and the viewer — when it's running, you're catching email. It runs on Windows and macOS. It sits in the system tray (the menu bar on macOS), and its window shows the same web UI as the [service](service.md).
+
+## The Tray
+
+The tray icon shows Papercut's status and opens its menu:
+
+- **Open Papercut** — opens the window
+- **Open in Browser** — opens the same UI in your default browser
+- **Run at Startup** and **Show Notifications**
+- **View Logs** — opens the log folder
+- **Exit** — stops Papercut, and with it the SMTP server
+
+Closing the window keeps Papercut running in the tray. Use **Exit** to stop it.
+
+New mail triggers a notification. On Windows, clicking it opens the message.
 
 ## Message Views
 
@@ -12,22 +26,12 @@ Select a message to inspect every layer of it:
 - **Sections** — every MIME part, viewable and downloadable individually (attachments included)
 - **Raw** — the raw encoded message source
 
-Right-click works everywhere you'd expect: copy selected text, copy or open links in the HTML view, and Copy / Select All in the Headers, Body, and Raw views.
-
 ![Rich and Detailed View of Received Email](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/PapercutV7-Main-1.png)
-
-## Notifications & the Tray
-
-New mail triggers a toast notification. Papercut can minimize to the system tray and sit silently until something arrives:
-
-![Instant Feedback When New Email Arrives](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutV7-Notification-1.png)
-
-Configure minimize-to-tray, minimize-on-close, and run-on-startup behavior in **Options**.
 
 ## Managing Messages
 
-- Messages are stored as standard **`.eml` files** — right-click → open the containing folder to grab them directly
-- **Delete** removes the selected message(s); **Delete All** clears everything older than the moment you confirm
+- Messages are stored as standard **`.eml` files** — **File → Open Data Folder** in the window takes you to them
+- **Delete** removes the selected message(s); **Delete All** clears them all after you confirm
 - **Forward** a received message on to a real SMTP server (with optional authentication) when you need to get a captured email out
 
 ## Rules
@@ -38,20 +42,28 @@ Papercut can act on messages automatically as they arrive:
 - **Relay** — conditionally relay matching messages
 - **Retention** — periodically prune old messages
 
-Configure rules from the main window; if the [background service](service.md) is running, rule and settings changes sync to it automatically.
+Configure rules with the **Rules** button in the web UI.
 
 ## Options
 
-The gear icon opens Options:
+The **Options** dialog in the web UI has:
 
 | Setting | Default | Notes |
 |---------|---------|-------|
-| SMTP IP | `127.0.0.1` | `Any` accepts mail from other machines |
-| SMTP Port | `25` | Any free port works |
-| Message folder | per-user app data | Where `.eml` files are written |
-| Theme | System | Light / Dark / follow Windows, with accent color options |
-| Startup | — | Start with Windows, start minimized |
+| SMTP IP | `Any` | Accepts mail from other machines. Pick `127.0.0.1` to accept mail from this machine only |
+| SMTP Port | `25` (`2525` on macOS) | Any free port works |
+| Sort Order | Newest first | |
+| Theme | System | Light / Dark / follow the system, with accent colors beside it |
+| MCP | Off | See [MCP Server](mcp.md) |
+
+**Run at Startup** and **Show Notifications** are in the window's **Options** menu.
+
+To change where messages are stored, edit `MessagePaths` in `Papercut.Shell.json` in the data folder, then restart Papercut.
+
+## Using a Service You Already Run
+
+If the [Windows Service](service.md) or a [Docker container](docker.md) is already running on your machine, the desktop app uses it instead of starting its own. Options and rules then apply to that service, and mail goes to its SMTP port, which defaults to `2525`. The tray's status line shows which one is in use, and for an installed Windows Service the menu can start and stop it.
 
 ## Logs
 
-The **Logs** view shows the live application log — SMTP server start/stop, connections, received messages, and any errors. It's the first place to look when something seems off (see [Troubleshooting](troubleshooting.md)).
+**View Logs** in the tray menu opens the log folder, and the web UI has a live log viewer. Logs show SMTP server start and stop, received messages, and any errors. They're the first place to look when something seems off (see [Troubleshooting](troubleshooting.md)).

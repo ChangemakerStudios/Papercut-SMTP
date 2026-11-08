@@ -20,7 +20,7 @@ Point your application at Papercut SMTP instead of a real mail server. It accept
 
 - **Instant notifications** when a new email arrives — Papercut sits quietly in the tray until it has something to show you
 - **Full email inspection** — rendered HTML, plain text body, headers, MIME parts, attachments, and raw source
-- **Zero configuration** — start the app and it's already listening on `127.0.0.1:25`
+- **Zero configuration** — start the app and it's already listening on port `25` (`2525` on macOS)
 - **Optional background service** with a browser-based web UI, for receiving email even when the desktop app isn't running
 - **Docker image** for containerized development environments and CI
 - **Rules** — automatically forward or relay received messages when needed
@@ -28,8 +28,8 @@ Point your application at Papercut SMTP instead of a real mail server. It accept
 
 ## Quick Start
 
-1. [Install Papercut SMTP](getting-started.md) and run it — it immediately listens on `127.0.0.1:25`.
-2. [Point your application](send-from-your-app.md) at host `localhost`, port `25`, no credentials.
+1. [Install Papercut SMTP](getting-started.md) and run it — it immediately listens on port `25` (`2525` on macOS).
+2. [Point your application](send-from-your-app.md) at host `localhost`, that port, no credentials.
 3. Send an email from your app — it pops up in Papercut. That's it.
 
 !!! tip "New to Papercut?"
