@@ -126,14 +126,24 @@ A subject alone is enough.
 
 ### Calling the API from a web page
 
-Scripts, curl and MCP clients aren't affected by this. Web pages are: a page on another origin gets `403` from the API, MCP and the live-update hub, which stops ordinary cross-site requests from a site you visit reading or deleting your captured mail. The web UI is same-origin, including behind a reverse proxy that keeps `Host` or sets `X-Forwarded-Host`. A proxy that does neither gets a blank page. nginx does neither by default, so add `proxy_set_header Host $http_host;`.
+Scripts, curl and MCP clients aren't affected by this. Web pages are: a page on another origin gets `403` from the API, MCP and the live-update hub, so a site you visit can't read or delete your captured mail. The web UI is same-origin.
 
-To let your own page call Papercut, or if a proxy rewrites `Host` without setting `X-Forwarded-Host`, list the origins in `CorsAllowedOrigins`, separated by `;` (`Papercut.SMTP.Service.Settings.json`, `appsettings.json`, or the environment variable), then restart:
+Behind a reverse proxy, add the web UI's public URL to `CorsAllowedOrigins`. Without it, the web UI is a blank page or a `403` unless the proxy sets `X-Forwarded-Host`, or keeps `Host` and the name is one that [needs no setting](#reaching-papercut-by-host-name). nginx does neither by default.
+
+To let your own page call Papercut, or for a reverse proxy, list the origins in `CorsAllowedOrigins`, separated by `;` (`Papercut.SMTP.Service.Settings.json`, `appsettings.json`, or the environment variable), then restart:
 
 ```json
 { "CorsAllowedOrigins": "http://localhost:3000;https://tools.example.com" }
 ```
 
-`*` allows any origin, which also lets any website you visit reach your mail. Avoid it outside a locked-down environment.
+`*` allows any origin and any host name, which also lets any website you visit reach your mail. Avoid it outside a locked-down environment.
+
+### Reaching Papercut by host name
+
+This check applies to every caller, including scripts and curl. It stops DNS rebinding, where a website points its own domain at your machine.
+
+These work with no setting: IP addresses, `localhost`, single-word names such as `papercut`, and names ending in `.localhost`, `.local`, `.internal`, `.test` or `.home.arpa`.
+
+Any other name, such as `mail.example.com`, gets `403` until you add its URL to `CorsAllowedOrigins`, for example `https://mail.example.com`. Only the name has to match, so the port doesn't matter. A reverse proxy that keeps `Host` needs this for its public name.
 
 For AI agents and coding assistants, the service can also expose these operations over the Model Context Protocol — see [MCP Server](mcp.md).

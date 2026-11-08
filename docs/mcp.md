@@ -54,7 +54,7 @@ In the desktop app, turn on **MCP** under **Options** and restart Papercut inste
 
 ## Connecting a client
 
-MCP clients that run in a web page, such as a browser-based inspector, need their origin listed in [`CorsAllowedOrigins`](service.md#calling-the-api-from-a-web-page). Clients that run as a program, including Claude Code, aren't affected.
+MCP clients that run in a web page, such as a browser-based inspector, need their origin listed in [`CorsAllowedOrigins`](service.md#calling-the-api-from-a-web-page). Clients that run as a program, including Claude Code, aren't affected unless they connect by a [public host name](service.md#reaching-papercut-by-host-name).
 
 **Claude Code:**
 

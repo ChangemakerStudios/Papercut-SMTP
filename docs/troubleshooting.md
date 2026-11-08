@@ -31,6 +31,8 @@ Blocked GET /main-RVU45O6T.js from https://mail.example.com
 
 To allow that origin, or if a reverse proxy passes neither `Host` nor `X-Forwarded-Host`, see [Calling the API from a web page](service.md#calling-the-api-from-a-web-page).
 
+A `403` saying Papercut doesn't answer to this host name, with a log line like `Blocked GET / for host mail.example.com`, means that name has to be listed. See [Reaching Papercut by host name](service.md#reaching-papercut-by-host-name).
+
 ## Do I need the Papercut Service?
 
 **No.** The desktop app alone receives and displays email. The service is only for receiving email when the desktop app isn't running — see [Service & Web UI](service.md).
