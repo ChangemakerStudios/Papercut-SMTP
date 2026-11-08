@@ -1,8 +1,12 @@
 # Release Notes
 
-## Papercut SMTP v8.0.0 [Unreleased]
+## Papercut SMTP v8.0.0 [2026-11-08]
 
 The desktop app is rebuilt. It's now a tray app that shows the same web UI as the Papercut Service, and it runs on macOS as well as Windows. Updating from v7 is a normal in-place update: your messages, SMTP IP and port, message folders, notification setting and window size all come with you.
+
+### Security
+
+- **Please Update** - In 7.8.0 and earlier, any web page could call the Papercut Service's API, so a site you visited could read or delete your captured mail. Updating to 8.0.0 fixes this.
 
 ### Before You Update
 
