@@ -14,7 +14,7 @@ If you send emails from an application during development, you know the fear of 
 
 Point your application at Papercut SMTP instead of a real mail server. It accepts every message instantly, stores it locally, and shows it to you — body, HTML, headers, attachments, right down to the raw encoded bits. Nothing is ever delivered.
 
-![Rich and Detailed View of Received Email](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/PapercutV7-Main-1.png)
+![Rich and Detailed View of Received Email](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/PapercutV8-Main-1.png)
 
 ## Features
 

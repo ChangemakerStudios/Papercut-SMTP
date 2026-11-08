@@ -9,9 +9,9 @@ The **Papercut SMTP Service** is an optional background component that receives 
 
 The service serves a web interface at **http://localhost:8080** by default. The [desktop app](desktop.md) shows the same UI in its window:
 
-![Papercut SMTP Web UI - Message List](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutWebUI-V7-1.png)
+![Papercut SMTP Web UI - Message List](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutV8-List-1.png)
 
-![Papercut SMTP Web UI - Message Detail](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutWebUI-V7-2.png)
+![Papercut SMTP Web UI - Message Detail in Dark Mode](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutV8-Dark-1.png)
 
 ## Install as a Windows Service
 

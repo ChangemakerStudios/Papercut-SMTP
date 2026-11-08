@@ -8,7 +8,7 @@
 
 Papercut SMTP is a 2-in-1 quick email viewer **and** built-in SMTP server for development. Point your application at `localhost:25` and every email it sends is caught, displayed instantly, and **never delivered anywhere** — body, HTML, headers, attachments, and raw bits included.
 
-![Rich and Detailed View of Received Email](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/PapercutV7-Main-1.png)
+![Rich and Detailed View of Received Email](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/refs/heads/develop/graphics/PapercutV8-Main-1.png)
 
 ## Install
 
