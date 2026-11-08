@@ -309,6 +309,8 @@ interface MessageViewData {
 export class MessageDetailComponent {
   protected readonly icons = { Mail, Paperclip };
 
+  private static readonly MESSAGE_TAB_INDEX = 0;
+
   /** Survives switching between messages so the active tab is kept */
   selectedTabIndex = 0;
 
@@ -423,10 +425,14 @@ export class MessageDetailComponent {
   /**
    * True while the pane is still showing the previous message. Data arriving is
    * not enough -- the iframe has to have painted the new body, otherwise
-   * lifting the veil uncovers the old one for a beat.
+   * lifting the veil uncovers the old one for a beat. Only the Message tab has
+   * a frame: on the others nothing would ever report painted.
    */
   isSwitchingMessage(messageData: MessageViewData): boolean {
-    return messageData.isLoadingDetail || this.renderedMessageId !== this.routeMessageId;
+    if (messageData.isLoadingDetail) return true;
+
+    return this.selectedTabIndex === MessageDetailComponent.MESSAGE_TAB_INDEX
+      && this.renderedMessageId !== this.routeMessageId;
   }
 
   onBodyRendered(messageId: string): void {

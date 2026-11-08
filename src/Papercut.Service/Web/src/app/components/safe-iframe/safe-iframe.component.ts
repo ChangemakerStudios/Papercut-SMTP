@@ -50,6 +50,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
   private visibilityChangeListener?: () => void;
   private intersectionObserver?: IntersectionObserver;
   private hasWrittenContent = false;
+  private writtenKey = '';
 
   constructor(
     private ngZone: NgZone,
@@ -129,6 +130,13 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
       doc.open();
       doc.write(content);
       doc.close();
+
+      // doc.open() keeps the frame's scroll offset. A new message starts at the
+      // top; a rewrite of the same one (theme change) stays where it was.
+      if (this.contentKey !== this.writtenKey) {
+        iframe.contentWindow?.scrollTo(0, 0);
+        this.writtenKey = this.contentKey;
+      }
 
       this.attachLinkHandler(doc);
       this.hasWrittenContent = true;
