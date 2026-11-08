@@ -1,5 +1,12 @@
 # Release Notes
 
+## Papercut SMTP v8.0.1 [2026-11-08]
+
+### Bug Fixes
+
+- **Messages Stuck Loading** - Opening a message while the Headers, Body, Sections or Raw tab was selected left the pane on the loading spinner until the window was reloaded.
+- **Scroll Position** - Opening another message now starts at the top instead of keeping the previous message's scroll position.
+
 ## Papercut SMTP v8.0.0 [2026-11-08]
 
 The desktop app is rebuilt. It's now a tray app that shows the same web UI as the Papercut Service, and it runs on macOS as well as Windows. Updating from v7 is a normal in-place update: your messages, SMTP IP and port, message folders, notification setting and window size all come with you.
