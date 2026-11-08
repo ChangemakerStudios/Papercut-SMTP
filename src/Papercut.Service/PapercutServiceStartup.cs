@@ -123,6 +123,25 @@ internal class PapercutServiceStartup
             async (context, next) =>
             {
                 var request = context.Request;
+
+                if (!CrossOriginPolicy.IsAllowedHost(request.Host.Value, allowedOrigins))
+                {
+                    Log.Warning(
+                        "Blocked {Method} {Path} for host {Host}. To allow this name, add its URL to {SettingKey}",
+                        request.Method,
+                        request.Path.Value,
+                        request.Host.Value,
+                        CrossOriginPolicy.AllowedOriginsSettingKey);
+
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    context.Response.ContentType = "text/plain; charset=utf-8";
+
+                    await context.Response.WriteAsync(
+                        $"Papercut doesn't answer to this host name. To allow it, add its URL to {CrossOriginPolicy.AllowedOriginsSettingKey} and restart.");
+
+                    return;
+                }
+
                 var origin = request.Headers.Origin.ToString();
 
                 if (CrossOriginPolicy.IsAllowed(origin, request.Host.Value, request.Headers["X-Forwarded-Host"].ToString(), allowedOrigins))

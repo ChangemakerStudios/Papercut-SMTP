@@ -86,6 +86,64 @@ public class CrossOriginPolicyTests
         CrossOriginPolicy.IsAllowed("null", Host, null, allowed).Should().BeTrue();
     }
 
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("localhost:8080")]
+    [TestCase("LOCALHOST:8080")]
+    [TestCase("127.0.0.1:37410")]
+    [TestCase("192.168.1.20:8080", Description = "LAN by address")]
+    [TestCase("[::1]:8080")]
+    [TestCase("papercut:8080", Description = "Docker service name")]
+    [TestCase("my_papercut:8080")]
+    [TestCase("devbox")]
+    [TestCase("host.docker.internal:8080")]
+    [TestCase("papercut.default.svc.cluster.local:8080")]
+    [TestCase("devbox.local")]
+    [TestCase("papercut.localhost")]
+    [TestCase("papercut.test:8080")]
+    [TestCase("devbox.home.arpa")]
+    public void IsAllowedHost_NamesThatCannotBeRebound_NeedNoSetting(string? host)
+    {
+        CrossOriginPolicy.IsAllowedHost(host, []).Should().BeTrue();
+    }
+
+    [TestCase("evil.example:37410")]
+    [TestCase("mail.corp.example")]
+    [TestCase("127.0.0.1.nip.io:8080", Description = "public name that resolves to loopback")]
+    [TestCase("localhost.evil.example")]
+    [TestCase("evil.notlocal", Description = "suffix must match on a label boundary")]
+    [TestCase("localhost:8080.evil.example")]
+    [TestCase("evil.example.", Description = "trailing dot is still a public name")]
+    [TestCase("not a host")]
+    public void IsAllowedHost_PublicNames_AreBlockedByDefault(string host)
+    {
+        CrossOriginPolicy.IsAllowedHost(host, []).Should().BeFalse();
+    }
+
+    [TestCase("mail.corp.example")]
+    [TestCase("mail.corp.example:8443", Description = "a proxy may change the port")]
+    [TestCase("MAIL.CORP.EXAMPLE")]
+    public void IsAllowedHost_ListedOriginName_IsAllowed(string host)
+    {
+        var allowed = CrossOriginPolicy.ParseAllowedOrigins("https://mail.corp.example");
+
+        CrossOriginPolicy.IsAllowedHost(host, allowed).Should().BeTrue();
+    }
+
+    [Test]
+    public void IsAllowedHost_OtherNamesStayBlockedWhenOneIsListed()
+    {
+        var allowed = CrossOriginPolicy.ParseAllowedOrigins("https://mail.corp.example");
+
+        CrossOriginPolicy.IsAllowedHost("evil.example", allowed).Should().BeFalse();
+    }
+
+    [Test]
+    public void IsAllowedHost_Wildcard_AllowsAny()
+    {
+        CrossOriginPolicy.IsAllowedHost("evil.example", CrossOriginPolicy.ParseAllowedOrigins("*")).Should().BeTrue();
+    }
+
     [TestCase(null, new string[0])]
     [TestCase("  ", new string[0])]
     [TestCase("*", new[] { "*" })]
