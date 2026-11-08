@@ -1,0 +1,760 @@
+// ============================================================================
+// Papercut SMTP — global styles
+// Design language: "desktop-clean" — the classic Papercut desktop layout,
+// refined. All colors/fonts come from the token layer (styles/_tokens.scss);
+// the accent is user-configurable at runtime (Theme Accent).
+// ============================================================================
+
+@use '@angular/material' as mat;
+
+@import 'styles/tokens';
+
+// Tailwind CSS directives
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Keep virtualized rows to the panel width.
+   NOTE: never override position/overflow on .cdk-virtual-scroll-content-wrapper.
+   The CDK absolutely-positions it over the spacer that represents the full list
+   height; forcing position: relative puts the rendered rows back into normal
+   flow, so the spacer's height is added below them and the list ends in a
+   screenful of empty space. */
+/* The wrapper is absolutely positioned, so it sizes to its content -- and
+   min-width: 100% only sets a floor. A long unwrapped subject line therefore
+   stretched it past the panel, which both defeated the rows' ellipsis (their
+   100% was 100% of the stretched wrapper) and left the list scrolling
+   sideways. Capping it is enough; position and overflow stay untouched. */
+app-message-list cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper {
+  max-width: 100%;
+}
+
+app-message-list cdk-virtual-scroll-viewport .cdk-virtual-scroll-content-wrapper > app-message-list-item {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: block;
+}
+
+// ============================================================================
+// Angular Material theme
+// Material provides component behavior; the visible design language is ours.
+// ============================================================================
+
+@include mat.elevation-classes();
+@include mat.app-background();
+
+$pc-typography: mat.m2-define-typography-config(
+  $font-family: "'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif",
+);
+
+$primary-palette: mat.m2-define-palette(mat.$m2-blue-palette, 600);
+$accent-palette: mat.m2-define-palette(mat.$m2-light-blue-palette, 400);
+$warn-palette: mat.m2-define-palette(mat.$m2-red-palette);
+
+$light-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $primary-palette,
+    accent: $accent-palette,
+    warn: $warn-palette,
+  ),
+  typography: $pc-typography,
+  density: 0,
+));
+
+$dark-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: mat.m2-define-palette(mat.$m2-blue-palette, 400),
+    accent: mat.m2-define-palette(mat.$m2-light-blue-palette, 300),
+    warn: mat.m2-define-palette(mat.$m2-red-palette, 300),
+  ),
+  typography: $pc-typography,
+  density: 0,
+));
+
+@include mat.all-component-themes($light-theme);
+
+body[data-theme='dark'] {
+  @include mat.all-component-colors($dark-theme);
+
+  background-color: var(--pc-bg);
+  color: var(--pc-ink);
+}
+
+// ============================================================================
+// Base
+// ============================================================================
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: var(--pc-font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  font-kerning: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--pc-ink);
+  background-color: var(--pc-bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1 { font-size: 1.35rem; font-weight: 700; margin: 0; color: var(--pc-ink-strong); }
+h2 { font-size: 1.15rem; font-weight: 600; margin: 0; color: var(--pc-ink-strong); }
+h3 { font-size: 1rem; font-weight: 600; margin: 0; color: var(--pc-ink-strong); }
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: var(--pc-accent-text);
+}
+
+// Technical values (addresses, sizes, ids) read in mono
+.pc-mono {
+  font-family: var(--pc-font-mono);
+  font-size: 0.92em;
+}
+
+.file-size {
+  color: var(--pc-muted);
+  font-size: 0.9rem;
+}
+
+// Lucide icon sizing helper — icons align to text by default
+lucide-icon svg {
+  display: block;
+}
+
+// ============================================================================
+// App layout
+// ============================================================================
+
+.app-container {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--pc-bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.main-content {
+  flex: 1;
+  margin-top: 52px;
+  margin-bottom: 48px; /* Space for bottom toolbar */
+  min-height: 0;
+  background-color: var(--pc-bg);
+  overflow: hidden;
+}
+
+// ============================================================================
+// Chrome bar (navigation) — accent-tinted, like the desktop title bar
+// ============================================================================
+
+.papercut-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: 52px;
+  background-color: var(--pc-chrome);
+  border-bottom: 1px solid color-mix(in srgb, var(--pc-chrome) 80%, #000);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease;
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  max-width: 100%;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.brand-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
+  color: var(--pc-on-chrome);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+.brand-wordmark .brand-cut {
+  color: var(--pc-brand-cut);
+}
+
+.brand-wordmark .brand-smtp {
+  font-weight: 500;
+  font-size: 9px;
+  color: var(--pc-on-chrome-faint);
+  letter-spacing: 0.12em;
+  margin-left: 5px;
+}
+
+.brand-logo-icon {
+  color: var(--pc-on-chrome);
+  display: flex;
+  align-items: center;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+// Quiet ghost buttons on the chrome bar
+.papercut-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--pc-on-chrome-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.papercut-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--pc-on-chrome);
+}
+
+.papercut-nav-btn:active {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.papercut-nav-btn.active {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--pc-on-chrome);
+}
+
+// ============================================================================
+// Message list / detail layout
+// ============================================================================
+
+.message-list-container {
+  display: flex;
+  height: 100vh;
+  min-height: 0;
+  background-color: var(--pc-bg);
+}
+
+.message-list-panel {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  min-width: 200px;
+  height: 100%;
+  border-right: 1px solid var(--pc-border);
+  background-color: var(--pc-surface);
+}
+
+.message-list-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pc-border);
+  background-color: var(--pc-surface-2);
+  min-height: 32px;
+}
+
+.message-list-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pc-ink-strong);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.message-count {
+  font-size: 11px;
+  color: var(--pc-muted);
+  margin: 2px 0 0 0;
+}
+
+.message-list-panel cdk-virtual-scroll-viewport {
+  flex: 1;
+  height: 0;
+  background-color: var(--pc-surface);
+}
+
+.message-detail-panel {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--pc-surface);
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--pc-border);
+  min-height: 0;
+}
+
+.loading-more-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  color: var(--pc-muted);
+  font-size: 0.875rem;
+  background-color: var(--pc-surface-2);
+  border-top: 1px solid var(--pc-border);
+}
+
+// ============================================================================
+// Message detail
+// ============================================================================
+
+.message-details {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-details-header {
+  padding: 12px 16px 8px;
+  background-color: var(--pc-surface-2);
+  border-bottom: 1px solid var(--pc-border);
+  font-size: 12px;
+}
+
+.message-subject {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--pc-ink-strong);
+  line-height: 1.3;
+  word-wrap: break-word;
+}
+
+.no-message {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--pc-muted);
+  text-align: center;
+  padding: 32px 16px;
+  background-color: var(--pc-surface);
+}
+
+.no-message h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--pc-ink-strong);
+}
+
+.no-message p {
+  font-size: 12px;
+  margin: 0;
+  max-width: 300px;
+  color: var(--pc-muted);
+}
+
+// ============================================================================
+// Flex plumbing (tabs, router outlet) — layout-critical, do not remove
+// ============================================================================
+
+.flex-column { display: flex !important; flex-direction: column !important; }
+.flex-fill { flex: 1 1 auto !important; min-height: 0 !important; }
+.flex-none { flex: none !important; }
+.flex-center { align-items: center !important; justify-content: center !important; }
+
+router-outlet {
+  display: flex;
+  flex-direction: column;
+}
+
+app-message-detail {
+  display: flex;
+  flex-direction: column;
+  height: 100% !important;
+  flex: 1;
+}
+
+.message-tabs mat-tab-group {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.message-tabs mat-tab-group .mat-mdc-tab-body-wrapper {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+.mat-mdc-tab-body-wrapper {
+  height: 100% !important;
+}
+
+.message-tabs mat-tab-group .mat-mdc-tab-body {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+.message-tabs mat-tab-group .mat-mdc-tab-body-content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+
+// ============================================================================
+// Tab strip — the desktop app's big text tabs
+// ============================================================================
+
+.message-tabs .mat-mdc-tab-header {
+  background-color: var(--pc-surface);
+  border-bottom: 1px solid var(--pc-border);
+  flex-shrink: 0;
+  --mat-tab-container-height: 44px;
+}
+
+.message-tabs .mdc-tab {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 0 14px;
+  min-width: 60px;
+}
+
+.message-tabs .mat-mdc-tab .mdc-tab__text-label {
+  color: var(--pc-faint) !important;
+  transition: color 0.15s ease;
+}
+
+.message-tabs .mat-mdc-tab:hover .mdc-tab__text-label {
+  color: var(--pc-muted) !important;
+}
+
+.message-tabs .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label,
+.message-tabs .mat-mdc-tab.mdc-tab--active:hover .mdc-tab__text-label {
+  color: var(--pc-accent-text) !important;
+}
+
+.message-tabs .mdc-tab-indicator__content--underline {
+  border-color: var(--pc-accent) !important;
+  border-top-width: 3px !important;
+}
+
+.message-tabs .mat-mdc-tab .mdc-tab__ripple::before,
+.message-tabs .mat-mdc-tab .mat-mdc-tab-ripple {
+  display: none;
+}
+
+.tab-content {
+  padding: 8px;
+  background-color: var(--pc-surface);
+  overflow: hidden;
+  height: 100% !important;
+}
+
+// ============================================================================
+// Tab panes: headers / body / sections / raw — technical content is mono
+// ============================================================================
+
+.headers-content {
+  font-family: var(--pc-font-mono);
+  font-size: var(--pc-text-read);
+  line-height: var(--pc-leading-read);
+  overflow: auto;
+}
+
+.header-item {
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.header-name {
+  font-weight: 600;
+  color: var(--pc-accent-text);
+  margin-right: 8px;
+}
+
+.header-value {
+  color: var(--pc-ink);
+}
+
+.body-content {
+  font-family: var(--pc-font-mono);
+  font-size: var(--pc-text-read);
+  line-height: var(--pc-leading-read);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.body-content .message-body {
+  flex: 1;
+  min-height: 0;
+}
+
+.body-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--pc-ink);
+}
+
+.sections-content {
+  font-size: 12px;
+  overflow: auto;
+}
+
+.section-item {
+  margin-bottom: 16px;
+  border: 1px solid var(--pc-border);
+  border-radius: 6px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--pc-surface-2);
+  border-bottom: 1px solid var(--pc-border);
+}
+
+/* Rows that expand are clickable end to end, so they have to look it */
+.section-header.is-expandable {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.section-header.is-expandable:hover {
+  background-color: var(--pc-hover);
+}
+
+.section-header.is-expandable:focus-visible {
+  outline: 2px solid var(--pc-accent);
+  outline-offset: -2px;
+}
+
+.section-type {
+  font-weight: 600;
+  color: var(--pc-ink-strong);
+}
+
+.section-info {
+  font-size: 11px;
+  color: var(--pc-muted);
+  font-family: var(--pc-font-mono);
+}
+
+.section-content {
+  padding: 8px 12px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.section-content pre {
+  margin: 0;
+  font-family: var(--pc-font-mono);
+  font-size: var(--pc-text-small);
+  line-height: var(--pc-leading-read);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--pc-ink);
+}
+
+.raw-content {
+  font-family: var(--pc-font-mono);
+  font-size: var(--pc-text-read);
+  line-height: var(--pc-leading-read);
+  overflow: auto;
+}
+
+.raw-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--pc-ink);
+}
+
+.message-iframe {
+  width: 100%;
+  border: 1px solid var(--pc-border);
+  border-radius: 0;
+  background-color: #ffffff; // email content renders on white regardless of theme
+}
+
+// ============================================================================
+// Menus (accent picker, theme picker)
+// ============================================================================
+
+.mat-mdc-menu-item .mat-mdc-menu-item-text {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 130px;
+}
+
+// ============================================================================
+// Toast notifications
+// ============================================================================
+
+.toast-notification {
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+  padding: 0 !important;
+  min-width: 320px !important;
+  max-width: 480px !important;
+}
+
+.toast-notification .mat-mdc-snack-bar-container {
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+}
+
+.toast-new-message {
+  cursor: pointer !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.toast-new-message:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25) !important;
+}
+
+.toast-new-message .mdc-snack-bar__surface {
+  min-width: 320px !important;
+  max-width: 480px !important;
+}
+
+.mat-mdc-snack-bar-container {
+  // bottom-center position must clear the fixed bottom toolbar (48px)
+  margin: 8px 8px 60px !important;
+}
+
+// Toast surfaces follow the token palette (accent-aware chrome for
+// informational toasts, semantic colors for success/warn/error)
+.toast-notification .mdc-snack-bar__surface {
+  background: var(--pc-chrome) !important;
+  color: var(--pc-on-chrome) !important;
+}
+
+.toast-success .mdc-snack-bar__surface { background: var(--pc-ok) !important; }
+.toast-error .mdc-snack-bar__surface { background: var(--pc-danger-strong) !important; }
+.toast-warning .mdc-snack-bar__surface { background: var(--pc-warn) !important; }
+
+// ============================================================================
+// Bottom toolbar positioning
+// ============================================================================
+
+app-bottom-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+}
+
+// ============================================================================
+// Responsive
+// ============================================================================
+
+@media (max-width: 1024px) {
+  .message-list-panel {
+    width: 320px;
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .papercut-navbar,
+  .nav-container {
+    height: 48px;
+  }
+
+  .nav-container {
+    padding: 0 12px;
+  }
+
+  .papercut-nav-btn span {
+    display: none;
+  }
+
+  .papercut-nav-btn {
+    padding: 0 8px;
+    min-width: 36px;
+    justify-content: center;
+  }
+
+  .main-content {
+    margin-top: 48px;
+    margin-bottom: 48px;
+  }
+
+  .message-list-container {
+    flex-direction: column;
+  }
+
+  .message-list-panel {
+    width: 100%;
+    max-width: none;
+    height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid var(--pc-border);
+  }
+
+  .message-detail-panel {
+    height: 60vh;
+  }
+
+  .message-tabs .mdc-tab {
+    font-size: 14px;
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-wordmark {
+    font-size: 16px;
+  }
+}

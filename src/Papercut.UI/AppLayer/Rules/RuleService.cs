@@ -18,6 +18,7 @@
 
 namespace Papercut.AppLayer.Rules;
 
+using Papercut.Core;
 using Papercut.Core.Domain.Rules;
 using Papercut.Core.Infrastructure.Async;
 using Papercut.Domain.BackendService;
@@ -32,7 +33,8 @@ public class RuleService(
     MessageWatcher messageWatcher,
     IRulesRunner rulesRunner,
     IMessageBus messageBus)
-    : RuleServiceBase(ruleRepository, logger), IAppLifecycleStarted, IAppLifecyclePreExit, IEventHandler<PapercutServiceStatusEvent>
+    // rules beside the exe are wiped by every Velopack update -- keep them in user app data
+    : RuleServiceBase(ruleRepository, logger, Path.Combine(AppConstants.UserAppDataDirectory, "rules.json")), IAppLifecycleStarted, IAppLifecyclePreExit, IEventHandler<PapercutServiceStatusEvent>
 {
     private static readonly TimeSpan PeriodicRunInterval = TimeSpan.FromMinutes(1);
 

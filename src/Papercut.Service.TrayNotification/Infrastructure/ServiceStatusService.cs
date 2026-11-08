@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -27,13 +27,30 @@ namespace Papercut.Service.TrayNotification.Infrastructure;
 /// </summary>
 public class ServiceStatusService(
     PapercutServiceControllerProvider serviceControllerProvider,
-    ServiceCommunicator serviceCommunicator)
+    ServiceEndpointProvider endpointProvider,
+    MessagesHubClient hubClient)
 {
     private ServiceControllerStatus? _lastKnownStatus;
 
     public ServiceControllerStatus? CurrentStatus => _lastKnownStatus;
 
     public bool IsServiceInstalled { get; private set; } = true;
+
+    /// <summary>
+    /// True when a Papercut service is actually reachable, evidenced by a live
+    /// messages hub connection. The service can run as a console app or in Docker,
+    /// so this is deliberately independent of <see cref="IsServiceInstalled" />.
+    /// </summary>
+    public bool IsServiceReachable => hubClient.IsConnected;
+
+    /// <summary>
+    /// True when the web UI can be opened: a reachable service (console app, Docker,
+    /// or an installed service we are connected to), or an installed Windows Service
+    /// that reports Running while the hub is still connecting. The menu item and every
+    /// way of opening the UI (click, double-click, balloon) must use this one check.
+    /// </summary>
+    public bool IsWebUIAvailable =>
+        IsServiceReachable || (IsServiceInstalled && CurrentStatus == ServiceControllerStatus.Running);
 
     public event EventHandler<ServiceControllerStatus>? StatusChanged;
 
@@ -79,7 +96,7 @@ public class ServiceStatusService(
         if (status == ServiceControllerStatus.Stopped)
         {
             serviceControllerProvider.Start();
-            serviceCommunicator.InvalidateCache();
+            endpointProvider.InvalidateCache();
             UpdateStatus();
         }
     }
@@ -108,23 +125,23 @@ public class ServiceStatusService(
         if (status == ServiceControllerStatus.Running)
         {
             serviceControllerProvider.Restart();
-            serviceCommunicator.InvalidateCache();
+            endpointProvider.InvalidateCache();
             UpdateStatus();
         }
     }
 
     /// <summary>
-    /// Gets the web UI URL from the service via IPComm
+    /// Gets the web UI URL, read from the service configuration
     /// </summary>
-    public async Task<string> GetWebUIUrlAsync()
+    public Task<string> GetWebUIUrlAsync()
     {
-        return await serviceCommunicator.GetWebUIUrlAsync();
+        return Task.FromResult(endpointProvider.BaseUrl);
     }
 
     /// <summary>
-    /// Gets the cached web UI URL without making an async call
+    /// Gets the web UI URL without making an async call
     /// </summary>
-    public string? CachedWebUIUrl => serviceCommunicator.CachedWebUrl;
+    public string? CachedWebUIUrl => endpointProvider.BaseUrl;
 
     /// <summary>
     /// Gets a display-friendly status text
@@ -133,7 +150,7 @@ public class ServiceStatusService(
     {
         if (!IsServiceInstalled)
         {
-            return "Not Installed";
+            return IsServiceReachable ? "Running, not installed" : "Not Installed";
         }
 
         return _lastKnownStatus switch

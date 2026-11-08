@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -52,6 +52,10 @@ internal static class Program
             using var container = new SimpleContainer<PapercutServiceTrayModule>().Build();
 
             _ = container.Resolve<ServiceTrayCoordinator>();
+
+            // started here rather than as an IStartable: startables run before the real
+            // logger exists, so the hub client would log into a closed bootstrap logger
+            container.Resolve<MessagesHubClient>().Start();
 
             Application.Run();
         }

@@ -18,6 +18,7 @@
 
 using System.Net;
 using System.Net.Security;
+using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 
 using Autofac.Util;
@@ -37,7 +38,11 @@ public class PapercutSmtpServer(
     Func<ISmtpServerOptions, SmtpServer.SmtpServer> smtpServerFactory)
     : Disposable, IServer
 {
+    private static readonly TimeSpan BindRetryDelay = TimeSpan.FromSeconds(2);
+
     private EndpointDefinition _currentEndpoint = null!;
+
+    private Task _listening = Task.CompletedTask;
 
     private SmtpServer.SmtpServer? _server;
 
@@ -60,7 +65,8 @@ public class PapercutSmtpServer(
             {
                 logger.Information("Stopping Smtp Server");
 
-                await _server.ShutdownTask;
+                // ShutdownTask never completes on a server that has not bound yet
+                await Task.WhenAny(_server.ShutdownTask, _listening);
             }
 
             _tokenSource?.Dispose();
@@ -95,32 +101,64 @@ public class PapercutSmtpServer(
                     .AllowUnsecureAuthentication(false)
                     .Build());
 
-        _server = smtpServerFactory(options.Build());
+        var server = smtpServerFactory(options.Build());
 
-        _server.SessionCreated += OnSessionCreated;
-        _server.SessionCompleted += OnSessionCompleted;
+        server.SessionCreated += OnSessionCreated;
+        server.SessionCompleted += OnSessionCompleted;
+
+        _server = server;
 
         logger.Information("Starting Smtp Server on {IP}:{Port}...", ListenIpAddress, ListenPort);
         _tokenSource = new CancellationTokenSource();
 
-#pragma warning disable 4014
         // server will block -- just let it run
-        Task.Factory.StartNew(
-            async () =>
-            {
-                try
-                {
-                    await _server.StartAsync(_tokenSource.Token);
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex, "Smtp Server Error");
-                }
-            },
-            _tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-#pragma warning restore 4014
+        var stopToken = _tokenSource.Token;
+
+        _listening = Task.Factory.StartNew(
+            () => ListenAsync(server, stopToken),
+            stopToken,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default).Unwrap();
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Keeps trying while the port is in use: another Papercut may be about to release it.
+    /// </summary>
+    private async Task ListenAsync(SmtpServer.SmtpServer server, CancellationToken stopToken)
+    {
+        var warned = false;
+
+        while (!stopToken.IsCancellationRequested)
+        {
+            try
+            {
+                await server.StartAsync(stopToken);
+                return;
+            }
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.AddressAlreadyInUse)
+            {
+                if (!warned)
+                    logger.Warning("SMTP port {Port} is in use -- retrying until it is free", ListenPort);
+
+                warned = true;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Smtp Server Error");
+                return;
+            }
+
+            try
+            {
+                await Task.Delay(BindRetryDelay, stopToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)

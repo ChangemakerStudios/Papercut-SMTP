@@ -1,7 +1,7 @@
-ï»¿// Papercut
+// Papercut
 // 
-// Copyright Â© 2008 - 2012 Ken Robertson
-// Copyright Â© 2013 - 2025 Jaben Cargman
+// Copyright © 2008 - 2012 Ken Robertson
+// Copyright © 2013 - 2025 Jaben Cargman
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,16 +16,25 @@
 // limitations under the License.
 
 
+namespace Papercut.Service;
+
+using Application.Messages;
+
+using Infrastructure.Hosting;
+using Infrastructure.MessageWatching;
+using Infrastructure.Servers;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-using Papercut.Rules;
+using Application.Mcp;
+
+using Rules;
+
+using Papercut.Core.Domain.Network;
 using Papercut.Service.Domain;
 using Papercut.Service.Infrastructure.Configuration;
-using Papercut.Service.Infrastructure.Servers;
-
-namespace Papercut.Service;
 
 internal class PapercutServiceStartup
 {
@@ -38,30 +47,32 @@ internal class PapercutServiceStartup
 
         services.AddHttpContextAccessor();
 
-        services.AddCors(
-            s =>
-            {
-                s.AddDefaultPolicy(
-                    c =>
-                    {
-                        c.AllowAnyHeader();
-                        c.AllowAnyOrigin();
-                    });
-            });
+        services.AddCors();
+
+        // Add SignalR
+        services.AddSignalR();
 
         services.Configure<SmtpServerOptions>(configuration.GetSection("SmtpServer"));
 
+        services.AddSingleton<McpEndpointState>();
+
+        services
+            .AddMcpServer()
+            .WithHttpTransport()
+            .WithToolsFromAssembly();
+
         // hosted services
         services.AddHostedService<PapercutServerHostedService>();
+        services.AddHostedService<MessageWatcherHostedService>();
+        services.AddHostedService<ParentProcessWatcher>();
     }
 
-    IEnumerable<Autofac.Module> GetModules()
+    IEnumerable<Module> GetModules()
     {
         yield return new PapercutCoreModule();
         yield return new PapercutMessageModule();
         yield return new PapercutRuleModule();
         yield return new PapercutIPCommModule();
-        yield return new PapercutRuleModule();
         yield return new PapercutSmtpModule();
 
         yield return new PapercutServiceModule();
@@ -70,7 +81,7 @@ internal class PapercutServiceStartup
     [UsedImplicitly]
     public void ConfigureContainer(ContainerBuilder builder)
     {
-        foreach (var module in this.GetModules())
+        foreach (var module in GetModules())
         {
             builder.RegisterModule(module);
         }
@@ -101,14 +112,120 @@ internal class PapercutServiceStartup
                 });
         }
 
+        var allowedOrigins = CrossOriginPolicy.ParseAllowedOrigins(
+            app.Services.GetRequiredService<ISettingStore>().Get(
+                CrossOriginPolicy.AllowedOriginsSettingKey,
+                app.Configuration[CrossOriginPolicy.AllowedOriginsSettingKey]));
+
+        // CORS only stops a page reading a response: the request still runs, and WebSockets
+        // ignore CORS altogether. This stops them all, for the API, MCP and the hub.
+        app.Use(
+            async (context, next) =>
+            {
+                var request = context.Request;
+
+                if (!CrossOriginPolicy.IsAllowedHost(request.Host.Value, allowedOrigins))
+                {
+                    Log.Warning(
+                        "Blocked {Method} {Path} for host {Host}. To allow this name, add its URL to {SettingKey}",
+                        request.Method,
+                        request.Path.Value,
+                        request.Host.Value,
+                        CrossOriginPolicy.AllowedOriginsSettingKey);
+
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    context.Response.ContentType = "text/plain; charset=utf-8";
+
+                    await context.Response.WriteAsync(
+                        $"Papercut doesn't answer to this host name. To allow it, add its URL to {CrossOriginPolicy.AllowedOriginsSettingKey} and restart.");
+
+                    return;
+                }
+
+                var origin = request.Headers.Origin.ToString();
+
+                if (CrossOriginPolicy.IsAllowed(origin, request.Host.Value, request.Headers["X-Forwarded-Host"].ToString(), allowedOrigins))
+                {
+                    await next();
+                    return;
+                }
+
+                Log.Warning(
+                    "Blocked {Method} {Path} from {Origin}. To allow this site, add it to {SettingKey}",
+                    request.Method,
+                    request.Path.Value,
+                    origin,
+                    CrossOriginPolicy.AllowedOriginsSettingKey);
+
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            });
+
         app.UseRouting();
 
-        app.UseSerilogRequestLogging();
+        if (allowedOrigins.Length > 0)
+        {
+            app.UseCors(
+                c =>
+                {
+                    if (allowedOrigins.Contains(CrossOriginPolicy.AnyOrigin)) c.AllowAnyOrigin();
+                    else c.WithOrigins(allowedOrigins);
+
+                    c.AllowAnyHeader();
+                    c.AllowAnyMethod();
+                });
+        }
+
+        // Request traffic is background noise for a mail viewer: a single click
+        // fetches the ref, the detail and the rendered body, so logging each one
+        // at INF buried the events people actually open the log for (messages
+        // received, rules run, failures). Successful requests go to DBG, where
+        // the Log view's level picker can still bring them back.
+        app.UseSerilogRequestLogging(
+            options => options.GetLevel = (httpContext, _, ex) =>
+            {
+                if (ex != null || httpContext.Response.StatusCode >= 500)
+                    return Serilog.Events.LogEventLevel.Error;
+
+                if (httpContext.Response.StatusCode >= 400)
+                    return Serilog.Events.LogEventLevel.Warning;
+
+                // the web Log view polls this endpoint; even at DBG its own
+                // tailing would crowd out everything else
+                if (httpContext.Request.Path.StartsWithSegments("/api/logs"))
+                    return Serilog.Events.LogEventLevel.Verbose;
+
+                return Serilog.Events.LogEventLevel.Debug;
+            });
+
+        var mcpEnabled = McpServerSettings.IsEnabled(
+            app.Services.GetRequiredService<ISettingStore>(),
+            app.Configuration);
+
+        app.Services.GetRequiredService<McpEndpointState>().IsMapped = mcpEnabled;
+
+        if (mcpEnabled)
+        {
+            Log.Information(
+                "MCP server is enabled -- serving MCP endpoint at {McpEndpointPath}",
+                $"{pathPrefix}{McpServerSettings.EndpointPath}");
+        }
+        else
+        {
+            Log.Information(
+                "MCP server is disabled (set {McpEnabledSettingKey} to true to enable)",
+                McpServerSettings.EnabledSettingKey);
+        }
 
         app.UseEndpoints(
             s =>
             {
                 s.MapControllers();
+                s.MapHub<MessagesHub>("/hubs/messages");
+
+                if (mcpEnabled)
+                {
+                    s.MapMcp(McpServerSettings.EndpointPath);
+                }
             });
     }
 

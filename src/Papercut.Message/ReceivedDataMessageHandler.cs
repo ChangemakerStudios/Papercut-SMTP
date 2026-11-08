@@ -26,12 +26,14 @@ namespace Papercut.Message;
 public class ReceivedDataMessageHandler(
     IMessageRepository messageRepository,
     IMessageBus messageBus,
+    PublishedMessageTracker publishedMessageTracker,
     ILogger logger)
     : IReceivedDataHandler
 {
-    public async Task HandleReceivedAsync(
+    public async Task<string> HandleReceivedAsync(
         byte[] messageData,
-        string[] recipients)
+        string[] recipients,
+        bool notify = true)
     {
         ArgumentNullException.ThrowIfNull(messageData);
         ArgumentNullException.ThrowIfNull(recipients);
@@ -79,11 +81,19 @@ public class ReceivedDataMessageHandler(
         try
         {
             if (!string.IsNullOrWhiteSpace(file) && File.Exists(file))
-                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file).ToDto()));
+            {
+                // claim before publishing so the file watcher, which sees this same
+                // file appear, knows the message has already been announced
+                publishedMessageTracker.MarkPublished(file);
+
+                await messageBus.PublishAsync(new NewMessageEvent(new MessageEntry(file).ToDto(), notify));
+            }
         }
         catch (Exception ex)
         {
             logger.Fatal(ex, "Unable to publish new message event for message file: {MessageFile}", file);
         }
+
+        return file;
     }
 }

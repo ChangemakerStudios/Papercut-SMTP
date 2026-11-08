@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -78,7 +78,14 @@ public class ServiceTrayCoordinator : IDisposable
         {
             Interval = 2000
         };
-        _statusUpdateTimer.Tick += (_, _) => _serviceStatusService.UpdateStatus();
+        _statusUpdateTimer.Tick += (_, _) =>
+        {
+            _serviceStatusService.UpdateStatus();
+
+            // hub connectivity changes without the Windows Service status changing,
+            // so refresh the tooltip here rather than only on StatusChanged
+            UpdateTrayIcon();
+        };
         _statusUpdateTimer.Start();
 
         // Initial status update
@@ -97,27 +104,27 @@ public class ServiceTrayCoordinator : IDisposable
         _trayIcon?.Dispose();
     }
 
-    private void OnNewMessageReceived(object? sender, Core.Domain.Message.NewMessageEvent e)
+    private void OnNewMessageReceived(object? sender, NewMessageDto message)
     {
         if (!_notificationService.NotificationsEnabled)
             return;
 
         try
         {
-            // Extract subject from filename format: {timestamp} {subject} {randomstring}.eml
-            var fileName = Path.GetFileNameWithoutExtension(e.NewMessage.Name);
-            var parts = fileName.Split(' ', 3); // Split into timestamp, subject, random
-            var subject = parts.Length >= 2
-                ? string.Join(" ", parts.Skip(1).Take(parts.Length - 2))
-                : "(No Subject)";
+            // shaped like a mail client's toast: the sender is the title and the subject
+            // is the text. The header already reads "Papercut SMTP" (the exe's file
+            // description), so a "New Email Received" title would only repeat it.
+            var subject = string.IsNullOrWhiteSpace(message.Subject) ? "(No Subject)" : message.Subject.Trim();
+            var from = string.IsNullOrWhiteSpace(message.FromDisplay) ? "New message" : message.FromDisplay.Trim();
 
-            if (string.IsNullOrWhiteSpace(subject))
-                subject = "(No Subject)";
+            // logged so a notification that never reaches the screen can be told
+            // apart from one that was never raised (Windows can suppress toasts)
+            Log.Information("Showing new mail balloon tip for {Subject} from {From}", subject, from);
 
             ShowBalloonTip(
-                "New Email Received",
-                $"Subject: {subject}",
-                ToolTipIcon.Info);
+                Truncate(from, BalloonTitleMaxLength),
+                Truncate(subject, BalloonTextMaxLength),
+                ToolTipIcon.None);
         }
         catch (Exception ex)
         {
@@ -243,12 +250,15 @@ public class ServiceTrayCoordinator : IDisposable
 
         if (!_serviceStatusService.IsServiceInstalled)
         {
-            statusLabel.Text = "✗ Service Not Installed";
+            // the service also runs as a console app or in Docker, where there is no
+            // Windows Service to control but the web UI and notifications work fine
+            var reachable = _serviceStatusService.IsServiceReachable;
+
+            statusLabel.Text = reachable ? "● Service Running (not installed)" : "✗ Service Not Installed";
             startItem.Enabled = false;
             stopItem.Enabled = false;
             restartItem.Enabled = false;
-            openWebUIItem.Enabled = false;
-            openWebUIItem.Text = "Open Web UI";
+            SetOpenWebUIItem(openWebUIItem, _serviceStatusService.IsWebUIAvailable);
             return;
         }
 
@@ -268,18 +278,18 @@ public class ServiceTrayCoordinator : IDisposable
         restartItem.Enabled = _serviceStatusService.CanRestart();
 
         // Update Open Web UI menu item with URL and enable only when service is running
-        var isRunning = status == ServiceControllerStatus.Running;
-        openWebUIItem.Enabled = isRunning;
+        SetOpenWebUIItem(openWebUIItem, _serviceStatusService.IsWebUIAvailable);
+    }
 
-        var cachedUrl = _serviceStatusService.CachedWebUIUrl;
-        if (!isRunning || string.IsNullOrEmpty(cachedUrl))
-        {
-            openWebUIItem.Text = "Open Web UI";
-        }
-        else
-        {
-            openWebUIItem.Text = $"Open Web UI ({cachedUrl})";
-        }
+    private void SetOpenWebUIItem(ToolStripMenuItem openWebUIItem, bool enabled)
+    {
+        openWebUIItem.Enabled = enabled;
+
+        var url = _serviceStatusService.CachedWebUIUrl;
+
+        openWebUIItem.Text = !enabled || string.IsNullOrEmpty(url)
+            ? "Open Web UI"
+            : $"Open Web UI ({url})";
     }
 
     private void OnTrayIconDoubleClick(object? sender, EventArgs e)
@@ -402,22 +412,14 @@ public class ServiceTrayCoordinator : IDisposable
 
     private async void OnOpenWebUI(object? sender, EventArgs e)
     {
-        // Check if service is running before attempting to open web UI
-        if (!_serviceStatusService.IsServiceInstalled)
+        // same check the menu uses to enable this item -- the handler used to demand an
+        // installed, running Windows Service, so a console-app or Docker service showed
+        // an enabled menu item that only produced an error dialog
+        if (!_serviceStatusService.IsWebUIAvailable)
         {
             MessageBox.Show(
-                "The Papercut SMTP Service is not installed.\n\nPlease install the service first.",
-                "Service Not Installed",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
-            return;
-        }
-
-        if (_serviceStatusService.CurrentStatus != ServiceControllerStatus.Running)
-        {
-            MessageBox.Show(
-                "The Papercut SMTP Service is not running.\n\nPlease start the service first.",
-                "Service Not Running",
+                "The Papercut SMTP Service is not running or not reachable.\n\nPlease start the service first.",
+                "Service Not Available",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
             return;
@@ -528,6 +530,14 @@ public class ServiceTrayCoordinator : IDisposable
     {
         _notifyIcon.ShowBalloonTip(3000, title, text, icon);
     }
+
+    // NOTIFYICONDATA holds 64 chars of title and 256 of text, each including the terminator
+    private const int BalloonTitleMaxLength = 63;
+
+    private const int BalloonTextMaxLength = 255;
+
+    private static string Truncate(string value, int maxLength) =>
+        value.Length <= maxLength ? value : value[..(maxLength - 1)] + "…";
 
     #region Begin Static Container Registrations
 

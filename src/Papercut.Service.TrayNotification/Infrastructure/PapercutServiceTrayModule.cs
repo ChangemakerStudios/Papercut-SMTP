@@ -19,7 +19,6 @@
 using Autofac;
 using Papercut.Core.Domain.Paths;
 using Papercut.Core.Infrastructure.Container;
-using Papercut.Infrastructure.IPComm;
 
 namespace Papercut.Service.TrayNotification.Infrastructure;
 
@@ -27,16 +26,6 @@ public class PapercutServiceTrayModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        foreach (var module in GetPapercutServiceModules())
-        {
-            builder.RegisterModule(module);
-        }
-
         builder.RegisterStaticMethods(ThisAssembly);
-    }
-
-    private IEnumerable<Module> GetPapercutServiceModules()
-    {
-        yield return new PapercutIPCommModule();
     }
 }

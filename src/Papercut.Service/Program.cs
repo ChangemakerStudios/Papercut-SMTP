@@ -17,7 +17,6 @@
 
 
 using Autofac.Extensions.DependencyInjection;
-using ElectronNET.API;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -85,14 +84,10 @@ public class Program
             {
                 sp.AddSingleton(context.Configuration);
                 sp.AddSingleton(context.HostingEnvironment);
-
-                if (HybridSupport.IsElectronActive)
-                    sp.AddHostedService<ElectronService>();
             });
 
         builder.Logging.ClearProviders();
         builder.Host.UseSerilog();
-        builder.WebHost.UseElectron(args);
 
         var startup = new PapercutServiceStartup();
 

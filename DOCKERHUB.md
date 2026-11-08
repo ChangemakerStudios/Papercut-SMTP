@@ -1,4 +1,4 @@
-![Papercut Logo](https://raw.githubusercontent.com/ChangemakerStudios/Papercut/develop/graphics/PapercutLogo.png)<br>
+﻿![Papercut Logo](https://raw.githubusercontent.com/ChangemakerStudios/Papercut/develop/graphics/PapercutLogo.png)<br>
 *The Simple Desktop Email Helper*
 
 ## The problem
@@ -29,8 +29,8 @@ docker run -d \
 
 ### Papercut SMTP Web UI
 
-![Papercut SMTP Web UI - Message List](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutWebUI-V7-1.png)
-![Papercut SMTP Web UI - Message Detail](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutWebUI-V7-2.png)
+![Papercut SMTP Web UI - Message List](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutV8-List-1.png)
+![Papercut SMTP Web UI - Message Detail in Dark Mode](https://raw.githubusercontent.com/ChangemakerStudios/Papercut-SMTP/develop/graphics/PapercutV8-Dark-1.png)
 
 ---
 
@@ -90,8 +90,11 @@ docker run -d \
 - `SmtpServer__MessagePath` - Path where emails are stored (default: /app/Incoming)
 - `SmtpServer__LoggingPath` - Path for log files (default: /app/logs)
 - `SmtpServer__AllowedIps` - IP allowlist for SMTP connections (default: "*" = all IPs allowed)
+- `SmtpServer__RateLimit` - Message reception rate limit as `<count>/<window>`, e.g. `500/1h` (default: "*" = no limit)
+- `SmtpServer__RateLimitReplyCode` - SMTP reply code returned once the rate limit is hit (default: 451)
 - `Urls` - HTTP server URLs (default: http://0.0.0.0:8080)
 - `HttpPathPrefix` - Serve the web UI and API under a path prefix, e.g. `/webmail` (default: empty = serve at root)
+- `CorsAllowedOrigins` - Other web origins allowed to call the API and public host names Papercut answers to, separated by `;` (default: empty = none). See [Calling the API from a Web Page](#calling-the-api-from-a-web-page)
 
 **Security - SMTP IP Allowlist Configuration:**
 - `SmtpServer__AllowedIps` - Comma-separated list of allowed IP addresses or CIDR ranges for SMTP connections
@@ -457,6 +460,27 @@ docker run -d \
 
 Requests without the prefix continue to work, so proxies that strip the prefix before forwarding are also supported. **Note for prefix-stripping proxies:** if your proxy strips the prefix, it must also redirect the bare prefix (`/webmail` → `/webmail/`) itself — the app only sees `/` and cannot issue that redirect. Forwarding the full prefix (with `HttpPathPrefix` set) avoids this entirely.
 
+### Calling the API from a Web Page
+
+Web pages on another origin get `403` from the API, MCP and the live-update hub, so a website you visit can't read or delete your captured mail. Scripts, curl, your tests and MCP clients aren't affected, because they don't send an `Origin` header.
+
+To let your own page call Papercut, list its origin. Separate several with `;`:
+
+```bash
+docker run -d \
+  --name papercut \
+  -e "CorsAllowedOrigins=http://localhost:3000;https://tools.example.com" \
+  -p 8080:8080 \
+  -p 2525:2525 \
+  changemakerstudiosus/papercut-smtp:latest
+```
+
+`*` allows any origin and any host name, which also lets any website you visit reach your mail. Avoid it unless the container is locked down.
+
+**Host names:** to stop DNS rebinding, where a website points its own domain at your machine, Papercut only answers to names that can't be taken over. This applies to every caller, including scripts and curl. IP addresses, `localhost`, single-word names such as a Compose service name, and names ending in `.localhost`, `.local`, `.internal`, `.test` or `.home.arpa` need no setting. Any other name, such as `mail.example.com`, gets `403` until you add its URL to `CorsAllowedOrigins`. Only the name has to match, so the port doesn't matter.
+
+**Behind a reverse proxy or ingress:** set `CorsAllowedOrigins` to the public URL of the web UI, such as `https://mail.example.com`. If the public name is one that needs no setting, the web UI also works when the proxy keeps the original `Host` header or sets `X-Forwarded-Host`, including on WebSocket upgrades. If it does neither, the web UI shows a blank page. nginx does neither by default.
+
 ### IPv6 Support
 
 To listen on IPv6:
@@ -581,7 +605,7 @@ Access via port-forward for testing:
 kubectl port-forward svc/papercut-smtp 37408:8080 2525:2525
 ```
 
-**Exposing behind an ingress under a sub-path?** Set the `HttpPathPrefix` environment variable (e.g. `/webmail`) in the deployment so the web UI serves itself under that prefix — no path rewriting needed in the ingress.
+**Exposing behind an ingress under a sub-path?** Set the `HttpPathPrefix` environment variable (e.g. `/webmail`) in the deployment so the web UI serves itself under that prefix — no path rewriting needed in the ingress. Also set `CorsAllowedOrigins` to the ingress's public URL, because ingresses keep the original `Host`. See [Calling the API from a Web Page](#calling-the-api-from-a-web-page).
 
 ---
 
@@ -662,6 +686,17 @@ docker run -d \
 2. Check logs: `docker logs papercut`
 3. Verify port mapping: `docker port papercut`
 4. Try alternate port based on your mapping: http://localhost:8080
+
+### Web UI Is Blank or Gets 403 Errors
+
+**Symptoms:** Behind a reverse proxy, the web UI is a blank page, with `403` errors for its scripts in the browser console. Or your own web page gets a CORS or `403` error calling the API.
+
+**Check the logs:**
+```bash
+docker logs papercut | grep Blocked
+```
+
+A line like `Blocked GET /main-RVU45O6T.js from https://mail.example.com` means that origin isn't allowed. Set it in `CorsAllowedOrigins`, or configure your proxy to pass `Host` or `X-Forwarded-Host`. A line like `Blocked GET / for host mail.example.com` means the host name isn't allowed, so add its URL to `CorsAllowedOrigins`. See [Calling the API from a Web Page](#calling-the-api-from-a-web-page).
 
 ### SMTP Not Receiving Emails
 

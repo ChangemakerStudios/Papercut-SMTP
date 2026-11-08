@@ -27,4 +27,6 @@ public record SmtpServerSettings(
     string CertificateStoreName,
     string MessagePath,
     string LoggingPath,
-    string AllowedIps);
+    string AllowedIps,
+    string RateLimit,
+    int RateLimitReplyCode);

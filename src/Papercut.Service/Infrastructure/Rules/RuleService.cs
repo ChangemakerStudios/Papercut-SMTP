@@ -25,6 +25,9 @@ using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Rules.App;
 using Papercut.Rules.Domain.Rules;
+using Papercut.Service.Infrastructure.Configuration;
+
+using Microsoft.Extensions.Configuration;
 
 namespace Papercut.Service.Infrastructure.Rules;
 
@@ -32,8 +35,9 @@ public class RuleService(
     IRuleRepository ruleRepository,
     IBackgroundTaskRunner backgroundTaskRunner,
     ILogger logger,
-    IRulesRunner rulesRunner)
-    : RuleServiceBase(ruleRepository, logger),
+    IRulesRunner rulesRunner,
+    IConfiguration configuration)
+    : RuleServiceBase(ruleRepository, logger, ServiceDataDirectory.GetFilePath(configuration, "rules.json")),
         IEventHandler<RulesUpdatedEvent>,
         IEventHandler<PapercutServiceReadyEvent>,
         IEventHandler<NewMessageEvent>
@@ -156,8 +160,12 @@ public class RuleService(
 
     private static void Register(ContainerBuilder builder)
     {
+        // Singleton: this holds the process's rule state (loaded rules +
+        // periodic subscription). A scoped instance would let HTTP-request
+        // handling mutate a throwaway copy while the root instance keeps
+        // dispatching the stale set (same failure mode as PapercutSmtpServer).
         builder.RegisterType<RuleService>().AsImplementedInterfaces().AsSelf()
-            .InstancePerLifetimeScope();
+            .SingleInstance();
     }
 
     #endregion

@@ -16,12 +16,12 @@
 // limitations under the License.
 
 
-using Microsoft.Extensions.Hosting;
-
-using Papercut.Infrastructure.IPComm.Network;
-
 namespace Papercut.Service.Infrastructure.Servers
 {
+    using Microsoft.Extensions.Hosting;
+
+    using Papercut.Infrastructure.IPComm.Network;
+
     public class PapercutServerHostedService(
         PapercutIPCommServer ipCommServer,
         PapercutSmtpServer smtpServer,

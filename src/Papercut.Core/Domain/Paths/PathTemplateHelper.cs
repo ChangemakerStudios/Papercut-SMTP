@@ -1,8 +1,8 @@
 // Papercut
-// 
+//
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -82,6 +82,13 @@ public class PathTemplateHelper
                 renderedPath = renderedPath.Replace($"%{pathKeyName}%", path);
             }
         }
+
+        renderedPath = renderedPath
+            .Replace($"\\", $@"{Path.DirectorySeparatorChar}")
+            .Replace($"//", $@"{Path.DirectorySeparatorChar}")
+            .Replace("/", $@"{Path.DirectorySeparatorChar}")
+            .Replace(@"\", $@"{Path.DirectorySeparatorChar}");
+
 
         // Normalize all path separators to OS-appropriate separator
         // Replace both forward and backslashes, then deduplicate

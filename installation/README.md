@@ -115,6 +115,5 @@ Enable logging to diagnose issues:
 
 ## System Requirements
 
-- Windows 7 SP1 or later
-- .NET 8.0 Runtime (installed automatically if needed)
+- Windows 10 or later
 - WebView2 Runtime (installed automatically if needed)

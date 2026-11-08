@@ -1,0 +1,45 @@
+19:42:03.149  spike                      start      os=Microsoft Windows NT 10.0.26200.0 rid=win-x64 origin=http://127.0.0.1:53480/
+19:42:03.614  tray                       created    left-click or 'Open Papercut' shows the window; 'Exit' quits
+19:42:03.974  EnvironmentRequested       config     WindowsWebView2EnvironmentRequestedEventArgs devtools=False data=C:\Users\jaben\AppData\Local\Papercut.Shell.Spike
+19:42:04.421  AdapterCreated             info       DetailedWebViewAdapterInfo { Type = WebView2, Engine = Blink, Version = 153.0.4234.48, IsSupported = True, IsInstalled = True, UnavailableReason = , SupportedScenarios = NativeControlHost }
+19:42:04.430  WebView2Hooks              attached   FrameNavigationStarting + PermissionRequested on 153.0.4234.48
+19:42:04.478  NavigationStarted          allowed    http://127.0.0.1:53480/ 
+19:42:04.506  FrameNavigationStarting    allowed    about:blank
+19:42:04.506  FrameNavigationStarting    allowed    about:srcdoc
+19:42:04.523  NavigationCompleted        ok         http://127.0.0.1:53480/
+19:42:12.104  NavigationStarted          allowed    http://127.0.0.1:53480/same-origin 
+19:42:12.129  NavigationCompleted        ok         http://127.0.0.1:53480/same-origin
+19:42:13.344  NavigationStarted          allowed    http://127.0.0.1:53480/ 
+19:42:13.385  FrameNavigationStarting    allowed    about:blank
+19:42:13.400  FrameNavigationStarting    allowed    about:srcdoc
+19:42:13.412  NavigationCompleted        ok         http://127.0.0.1:53480/
+19:42:14.530  NavigationStarted          CANCELLED  https://example.com/?case=T2 <T2>
+19:42:14.632  NavigationCompleted        failed     http://127.0.0.1:53480/
+19:42:14.892  NavigationStarted          CANCELLED  https://example.com/?case=T2 <T2>
+19:42:14.915  NavigationCompleted        failed     http://127.0.0.1:53480/
+19:42:16.163  NewWindowRequested         HANDLED    https://example.com/?case=T3 <T3>
+19:42:18.327  PermissionRequested        DENIED     Geolocation http://127.0.0.1:53480/
+19:42:20.629  NewWindowRequested         HANDLED    https://example.com/?case=T3 <T3>
+19:42:21.244  NewWindowRequested         HANDLED    https://example.com/?case=I1 <I1>
+19:42:22.003  FrameNavigationStarting    CANCELLED  https://example.com/?case=I2
+19:42:26.628  NewWindowRequested         HANDLED    https://example.com/?case=T4 <T4>
+19:42:31.386  NavigationStarted          allowed    http://127.0.0.1:53480/same-origin 
+19:42:31.409  NavigationCompleted        ok         http://127.0.0.1:53480/same-origin
+19:42:32.461  NavigationStarted          allowed    http://127.0.0.1:53480/ 
+19:42:32.501  FrameNavigationStarting    allowed    about:blank
+19:42:32.511  FrameNavigationStarting    allowed    about:srcdoc
+19:42:32.541  NavigationCompleted        ok         http://127.0.0.1:53480/
+19:42:33.469  NavigationStarted          CANCELLED  https://example.com/?case=T2 <T2>
+19:42:33.480  NavigationCompleted        failed     http://127.0.0.1:53480/
+19:42:34.276  NavigationStarted          CANCELLED  https://example.com/?case=T2 <T2>
+19:42:34.289  NavigationCompleted        failed     http://127.0.0.1:53480/
+19:42:35.963  NewWindowRequested         HANDLED    https://example.com/?case=T3 <T3>
+19:42:36.601  NewWindowRequested         HANDLED    https://example.com/?case=T3 <T3>
+19:42:37.318  NavigationStarted          CANCELLED  mailto:someone@example.com?subject=T5 <T5>
+19:42:37.324  NavigationCompleted        failed     http://127.0.0.1:53480/
+19:42:38.067  NavigationStarted          CANCELLED  mailto:someone@example.com?subject=T5 <T5>
+19:42:38.114  NavigationCompleted        failed     http://127.0.0.1:53480/
+19:42:39.204  NewWindowRequested         HANDLED    https://example.com/?case=I1 <I1>
+19:42:39.915  FrameNavigationStarting    CANCELLED  https://example.com/?case=I2
+19:42:51.556  window                     hidden     close hides to tray
+19:42:51.712  NewWindowRequested         HANDLED    https://example.com/?case=I1 <I1>

@@ -1,5 +1,5 @@
-
-#module nuget:?package=Cake.BuildSystems.Module&version=8.0.0
+﻿
+#module nuget:?package=Cake.BuildSystems.Module&version=9.0.0
 
 #tool "nuget:?package=System.Configuration.ConfigurationManager&version=4.5.0"
 #tool "nuget:?package=MarkdownSharp&version=2.0.5"
@@ -8,10 +8,10 @@
 #tool "nuget:?package=OpenCover&version=4.7.1221"
 
 #tool "dotnet:?package=GitVersion.Tool&version=6.4.0"
-#tool "dotnet:?package=vpk&version=0.0.1521-gf115f70&prerelease"
+#tool "dotnet:?package=vpk&version=1.2.158"
 
-#addin "nuget:?package=Cake.FileHelpers&version=7.0.0"
-#addin "nuget:?package=Cake.Incubator&version=8.0.0"
+#addin "nuget:?package=Cake.FileHelpers&version=9.0.0"
+#addin "nuget:?package=Cake.Incubator&version=11.0.0"
 
 #nullable enable
 
@@ -21,6 +21,7 @@
 
 #load "./build/ReleaseNotes.cake"
 #load "./build/Velopack.cake"
+#load "./build/Desktop.cake"
 #load "./build/WinGet.cake"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,8 +88,7 @@ Task("Clean")
 ///////////////////////////////////////////////////////////////////////////////
 // RELEASE NOTES
 Task("CreateReleaseNotes")
-    .Does(() => ReleaseNotes.Create(Context))
-    .OnError(exception => Error(exception));
+    .Does(() => ReleaseNotes.Create(Context));
 
 ///////////////////////////////////////////////////////////////////////////////
 Task("Restore")
@@ -123,8 +123,7 @@ Task("Test")
 
         DotNetTest(project.FullPath, settings);
     }
-})
-.OnError(exception => Error(exception));
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
@@ -142,8 +141,7 @@ Task("BuildUI64")
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-})
-.OnError(exception => Error(exception));
+});
 
 Task("PackageUI64")
     .IsDependentOn("BuildUI64")
@@ -170,8 +168,7 @@ Task("PackageUI64")
     // Copy installation helper files alongside Setup.exe
     CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
     CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("BuildUI32")
     .IsDependentOn("Restore")
@@ -189,8 +186,7 @@ Task("BuildUI32")
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-})
-.OnError(exception => Error(exception));
+});
 
 Task("PackageUI32")
     .IsDependentOn("BuildUI32")
@@ -218,8 +214,7 @@ Task("PackageUI32")
     // Copy installation helper files alongside Setup.exe
     CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
     CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("BuildUIArm64")
     .IsDependentOn("Restore")
@@ -237,8 +232,7 @@ Task("BuildUIArm64")
     };
 
     DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-})
-.OnError(exception => Error(exception));
+});
 
 Task("PackageUIArm64")
     .IsDependentOn("BuildUIArm64")
@@ -265,8 +259,7 @@ Task("PackageUIArm64")
     // Copy installation helper files alongside Setup.exe
     CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
     CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("DeployReleases")
     .WithCriteria(isRunningInGitHubActions && (isMasterBranch || isDevelopBranch) && hasGithubToken)
@@ -364,8 +357,7 @@ Task("DeployReleases")
                 });
             }
         }
-    })
-.OnError(exception => Error(exception));
+    });
 
 
 Task("BuildAndPackServiceWin64")
@@ -406,8 +398,7 @@ Task("BuildAndPackServiceWin64")
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("BuildAndPackServiceWin32")
     .IsDependentOn("Restore")
@@ -448,8 +439,7 @@ Task("BuildAndPackServiceWin32")
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
-})
-.OnError(exception => Error(exception));
+});
 
 Task("BuildAndPackServiceWinArm64")
     .IsDependentOn("Restore")
@@ -490,8 +480,7 @@ Task("BuildAndPackServiceWinArm64")
 
     var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
     Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
-})
-.OnError(exception => Error(exception));
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 // WINGET
@@ -508,23 +497,48 @@ Task("PrepareWinGetRelease")
     };
 
     WinGet.PrepareRelease(Context, wingetParams);
-})
-.OnError(exception => Error(exception));
+});
 
 ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// v8 DESKTOP (Avalonia shell + service/) -- what "All" ships
+
+var desktopPublishDirectory = Directory("./publish/desktop");
+
+foreach (var desktopRuntime in new[] { "win-x64", "win-x86", "win-arm64" })
+{
+    var runtime = desktopRuntime;
+
+    Task($"PackageDesktop-{runtime}")
+        .IsDependentOn("Restore")
+        .Does(() =>
+    {
+        Desktop.Publish(Context, runtime, configuration, desktopPublishDirectory, versionMSBuildSettings);
+        Velopack.Pack(Context, Desktop.WindowsPackParams(runtime, channelPostfix, versionInfo.FullSemVer, desktopPublishDirectory, releasesDirectory));
+
+        // Copy installation helper files alongside Setup.exe
+        CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
+        CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
+    });
+}
+
+Task("PackageDesktop")
+    .IsDependentOn("PackageDesktop-win-x64")
+    .IsDependentOn("PackageDesktop-win-x86")
+    .IsDependentOn("PackageDesktop-win-arm64");
+
 Task("All")
     .IsDependentOn("Clean")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("Test")
-    .IsDependentOn("BuildUI32").IsDependentOn("PackageUI32")
-    .IsDependentOn("BuildUI64").IsDependentOn("PackageUI64")
-    .IsDependentOn("BuildUIArm64").IsDependentOn("PackageUIArm64")
+    // WPF isn't shipped, but it shares code with the service: keep it compiling until it's removed
+    .IsDependentOn("BuildUI64")
+    .IsDependentOn("PackageDesktop")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")
     .IsDependentOn("BuildAndPackServiceWinArm64")
     .IsDependentOn("PrepareWinGetRelease")
-    .IsDependentOn("DeployReleases")
-    .OnError(exception => Error(exception));
+    .IsDependentOn("DeployReleases");
 
 RunTarget(target);

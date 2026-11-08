@@ -6,8 +6,8 @@ This directory contains template manifest files for publishing Papercut SMTP to 
 
 Winget allows users to install and update Papercut using simple commands:
 ```powershell
-winget install ChangemakerStudios.PapercutSMTP
-winget upgrade ChangemakerStudios.PapercutSMTP
+winget install ChangemakerStudios.Papercut-SMTP
+winget upgrade ChangemakerStudios.Papercut-SMTP
 ```
 
 ## Automated Publishing
@@ -85,9 +85,9 @@ If the token is not configured, you can download the manifests from either the r
 
 The files in this directory are templates. The actual manifests are generated during the build/release process.
 
-- **ChangemakerStudios.PapercutSMTP.yaml** - Version file template
-- **ChangemakerStudios.PapercutSMTP.locale.en-US.yaml** - Locale file template (metadata, description, license)
-- **ChangemakerStudios.PapercutSMTP.installer.yaml** - Installer file template (URLs, SHA256 hashes - placeholders only)
+- **ChangemakerStudios.Papercut-SMTP.yaml** - Version file template
+- **ChangemakerStudios.Papercut-SMTP.locale.en-US.yaml** - Locale file template (metadata, description, license)
+- **ChangemakerStudios.Papercut-SMTP.installer.yaml** - Installer file template (URLs, SHA256 hashes - placeholders only)
 
 ## Manual Submission Process
 
@@ -110,14 +110,14 @@ If automated publishing is not configured, you can manually submit to winget:
 2. Download the `winget-manifests-X.Y.Z` artifact
 3. Extract the three YAML files
 4. Fork/clone microsoft/winget-pkgs
-5. Copy files to: `manifests/c/ChangemakerStudios/PapercutSMTP/<version>/`
+5. Copy files to: `manifests/c/ChangemakerStudios/Papercut-SMTP/<version>/`
 6. Create a PR
 
 #### Option B: Use wingetcreate Tool
 
 ```powershell
 $version = "7.5.1"
-wingetcreate update ChangemakerStudios.PapercutSMTP `
+wingetcreate update ChangemakerStudios.Papercut-SMTP `
   --version $version `
   --urls `
     "https://github.com/ChangemakerStudios/Papercut-SMTP/releases/download/$version/PapercutSMTP-win-x64-stable-Setup.exe" `

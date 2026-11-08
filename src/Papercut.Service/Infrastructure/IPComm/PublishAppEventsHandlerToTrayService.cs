@@ -28,7 +28,7 @@ public class PublishAppEventsHandlerToTrayService(
 
     public Task HandleAsync(NewMessageEvent @event, CancellationToken token = default)
     {
-        return PublishAsync(@event, token);
+        return @event.Notify ? PublishAsync(@event, token) : Task.CompletedTask;
     }
 
     public Task HandleAsync(PapercutServiceReadyEvent @event, CancellationToken token = default)
