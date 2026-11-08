@@ -84,6 +84,10 @@ public class StaticContentController : ControllerBase
 
         if (string.Equals(resourceName, IndexResource, StringComparison.OrdinalIgnoreCase))
         {
+            // overrides [ResponseCache]: this page names the hashed bundles, so a
+            // cached copy keeps running the old version after an update
+            Response.Headers.CacheControl = "no-cache";
+
             return Content(await ReadIndexWithBaseHrefAsync(resourceContent), "text/html", Encoding.UTF8);
         }
 
