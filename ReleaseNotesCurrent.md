@@ -1,5 +1,11 @@
 # Release Notes
 
+## Papercut SMTP v8.0.2 [2026-11-08]
+
+### Bug Fixes
+
+- **Old Interface After Updating** - After an update, the desktop app or a browser could keep showing the previous version's interface for up to 10 minutes. From the next update on, the new interface loads straight away. If this update still looks like the old version, press Ctrl+F5.
+
 ## Papercut SMTP v8.0.1 [2026-11-08]
 
 ### Bug Fixes
