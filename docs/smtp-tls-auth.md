@@ -19,7 +19,7 @@ New-SelfSignedCertificate -Subject "CN=localhost" -DnsName "localhost" `
 
 ### 2. Point Papercut at it
 
-In the service's `appsettings.json` (or `Papercut.Service.Settings.json`):
+In the service's `appsettings.json` (or `Papercut.SMTP.Service.Settings.json`):
 
 ```json
 {

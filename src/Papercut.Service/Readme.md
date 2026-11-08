@@ -123,7 +123,7 @@ The service uses standard ASP.NET Core configuration files:
 
 Beyond the ASP.NET Core configuration files, two user-facing files persist runtime changes:
 
-1. **`Papercut.Service.Settings.json`** - User-editable settings that persist UI changes
+1. **`Papercut.SMTP.Service.Settings.json`** - User-editable settings that persist UI changes
    - Located in the same directory as `Papercut.Service.exe`
    - Contains configuration with comments outlining options
    - Changes made via the Papercut UI (e.g. SMTP IP/Port) are saved here automatically
@@ -133,7 +133,7 @@ Beyond the ASP.NET Core configuration files, two user-facing files persist runti
    - Located in the same directory as `Papercut.Service.exe`
    - Rule changes made via the Papercut UI are synchronized to the service and saved here automatically
 
-**Configuration Priority:** `Papercut.Service.Settings.json` > `appsettings.{Environment}.json` > `appsettings.json`
+**Configuration Priority:** `Papercut.SMTP.Service.Settings.json` > `appsettings.{Environment}.json` > `appsettings.json`
 
 ### SMTP Server Configuration
 ```json
@@ -187,7 +187,7 @@ The service includes an embedded **Angular 17** web interface located in the `We
 
 ### Serve the Web UI Under a Path Prefix
 
-When running behind a reverse proxy or Kubernetes ingress, the web UI (and API) can be served under a path prefix (e.g. `http://host:8080/webmail/`). Set `HttpPathPrefix` in `appsettings.json` or `Papercut.Service.Settings.json`:
+When running behind a reverse proxy or Kubernetes ingress, the web UI (and API) can be served under a path prefix (e.g. `http://host:8080/webmail/`). Set `HttpPathPrefix` in `appsettings.json` or `Papercut.SMTP.Service.Settings.json`:
 
 ```json
 {
@@ -225,7 +225,7 @@ The default (empty) serves the web UI at the root as before. Requests without th
 ## 🔧 Dependencies & Requirements
 
 ### Runtime Requirements
-- **.NET 8.0 Runtime** - Latest LTS version
+- **.NET 10 Runtime** - Latest LTS version
 - **Windows Service support** (for service installation mode)
 
 ### External Libraries
@@ -258,5 +258,5 @@ Comprehensive logging is available through Serilog:
 ---
 
 **License**: Apache License, Version 2.0
-**Target Framework**: .NET 8.0
+**Target Framework**: .NET 10
 **Platform Support**: Windows (primary), Linux (Docker)

@@ -48,6 +48,8 @@ Restart the service after changing it. When enabled, the endpoint is served at:
 http://localhost:8080/mcp
 ```
 
+In the desktop app, turn on **MCP** under **Options** and restart Papercut instead. Its endpoint is normally `http://127.0.0.1:37410/mcp`.
+
 (Streamable HTTP transport; the path respects `HttpPathPrefix` if configured.) The web UI shows an **MCP** badge in the navigation bar when the server is on — hover it for the endpoint URL, click to copy. The URL is also available programmatically at `GET /api/mcp`, which — like all API routes — is relative to the service base URL including any `HttpPathPrefix`, and returns the full endpoint URL with the prefix applied.
 
 ## Connecting a client

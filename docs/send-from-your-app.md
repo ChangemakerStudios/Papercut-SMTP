@@ -171,7 +171,7 @@ Some things aren't really sending email: a build script telling you it finished,
 
 ## Sending from another machine
 
-By default Papercut listens on `127.0.0.1` — localhost only. To catch email from other machines (a VM, a phone, another dev box), open **Options** and set the IP to `Any`, then point the sender at your machine's LAN address. Watch out for firewalls blocking port 25.
+By default Papercut accepts email from other machines (a VM, a phone, another dev box), so point the sender at your machine's LAN address. If you set the IP in **Options** to a specific address, set it back to `Any`. Watch out for firewalls blocking port 25.
 
 ## Testing credentials & encrypted connections
 
