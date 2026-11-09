@@ -660,9 +660,36 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.fetch(0, loaded)
       .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe(response => {
+        const openId = this.selectedMessageId;
+        const wasListed = this.allMessages.some(msg => msg.id === openId);
+        const shrank = response.totalMessageCount < this.totalCount;
+
         this.allMessages = response.messages;
         this.setTotalCount(response.totalMessageCount);
+
+        // a delete only moves rows up, so a row missing from a shorter list is
+        // really gone -- new mail can push one past the loaded window, this can't
+        if (shrank) {
+          this.dropSelectionsGoneFromList(openId, wasListed);
+        }
       });
+  }
+
+  /** Something outside this window deleted mail, maybe the one being read. */
+  private dropSelectionsGoneFromList(openId: string | null, wasListed: boolean): void {
+    const listed = new Set(this.allMessages.map(msg => msg.id));
+    const stillTicked = [...this.selectedIds].filter(id => listed.has(id));
+
+    if (stillTicked.length !== this.selectedIds.size) {
+      this.selectedIds = new Set(stillTicked);
+      this.anchorIndex = null;
+      this.publishSelection();
+    }
+
+    if (wasListed && openId && !listed.has(openId)) {
+      this.selectedMessageId = null;
+      this.router.navigate(['/'], { queryParamsHandling: 'preserve' });
+    }
   }
 
   trackByMessageId(index: number, message: RefDto): string {
