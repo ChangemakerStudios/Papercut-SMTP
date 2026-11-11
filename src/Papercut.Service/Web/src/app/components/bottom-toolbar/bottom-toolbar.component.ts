@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideAngularModule, Forward, Trash2, Trash } from 'lucide-angular';
+import { LucideAngularModule, Forward, Trash2, Trash, Heart } from 'lucide-angular';
 import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
@@ -39,6 +39,15 @@ import { ConfirmService } from '../../services/confirm.service';
 
         <!-- Right side - Status info -->
         <div class="toolbar-status">
+          <a href="https://github.com/sponsors/Jaben"
+             target="_blank"
+             rel="noopener"
+             class="sponsor-link"
+             matTooltip="Papercut is free and built by one person. Sponsoring keeps it going.">
+            <lucide-icon [img]="icons.Heart" [size]="12"></lucide-icon>
+            <span>Sponsor</span>
+          </a>
+          <span class="status-sep" aria-hidden="true">·</span>
           <span class="status-text">
             Papercut SMTP —
             <a href="https://github.com/ChangemakerStudios/Papercut-SMTP"
@@ -125,6 +134,26 @@ import { ConfirmService } from '../../services/confirm.service';
       text-decoration: underline;
     }
 
+    .sponsor-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--pc-accent-text);
+      text-decoration: none;
+    }
+
+    .sponsor-link:hover {
+      text-decoration: underline;
+    }
+
+    .status-sep {
+      margin: 0 8px;
+      font-size: 11px;
+      color: var(--pc-faint);
+    }
+
     /* Mobile responsiveness */
     @media (max-width: 768px) {
       .toolbar-status {
@@ -151,7 +180,7 @@ import { ConfirmService } from '../../services/confirm.service';
   `]
 })
 export class BottomToolbarComponent {
-  protected readonly icons = { Forward, Trash2, Trash };
+  protected readonly icons = { Forward, Trash2, Trash, Heart };
 
   @Input() selectedMessageCount = 0;
   @Input() totalMessageCount = 0;
