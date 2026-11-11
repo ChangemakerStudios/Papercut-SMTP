@@ -75,6 +75,8 @@ See [ReleaseNotes.md](ReleaseNotes.md) for the full release history.
 
 Papercut SMTP is free and open source. If it saves you time, consider [sponsoring the project](https://github.com/sponsors/Jaben) — sponsorships go directly toward project costs like the annual code-signing certificate that keeps the installer trusted by Windows.
 
+If your team relies on Papercut in CI or local development, a company sponsorship keeps it maintained and puts your logo here and in the docs. GitHub can invoice your organization, so no personal card is needed.
+
 ## License
 
 Papercut SMTP is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
