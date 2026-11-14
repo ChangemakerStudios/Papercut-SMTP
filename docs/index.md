@@ -35,6 +35,10 @@ Point your application at Papercut SMTP instead of a real mail server. It accept
 !!! tip "New to Papercut?"
     Read [How It Works](how-it-works.md) — a two-minute explanation of what Papercut is (and isn't).
 
+## More from Changemaker Studios
+
+- **[PowerPlanSwitcher](https://github.com/ChangemakerStudios/PowerSwitcher)**: switch Windows power plans from the tray, by hand or automatically when you plug in, unplug, or start work.
+
 ## License
 
 Papercut SMTP is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).

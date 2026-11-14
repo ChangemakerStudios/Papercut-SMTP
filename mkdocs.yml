@@ -4,6 +4,11 @@ site_description: The simple desktop email receiver and viewer for development â
 repo_url: https://github.com/ChangemakerStudios/Papercut-SMTP
 repo_name: ChangemakerStudios/Papercut-SMTP
 edit_uri: edit/develop/docs/
+# rendered in the footer of every page, where visitors from YouTube links land
+copyright: >
+  Also from Changemaker Studios:
+  <a href="https://github.com/ChangemakerStudios/PowerSwitcher">PowerPlanSwitcher</a>,
+  switch Windows power plans from the tray
 
 # internal planning docs, not part of the site
 exclude_docs: |
