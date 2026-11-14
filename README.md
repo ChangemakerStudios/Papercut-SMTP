@@ -77,6 +77,10 @@ Papercut SMTP is free and open source. If it saves you time, consider [sponsorin
 
 If your team relies on Papercut in CI or local development, a company sponsorship keeps it maintained and puts your logo here and in the docs. GitHub can invoice your organization, so no personal card is needed.
 
+## More from Changemaker Studios
+
+- **[PowerPlanSwitcher](https://github.com/ChangemakerStudios/PowerSwitcher)**: switch Windows power plans from the tray, by hand or automatically when you plug in, unplug, or start work.
+
 ## License
 
 Papercut SMTP is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
