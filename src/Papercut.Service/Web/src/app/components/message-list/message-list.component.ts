@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
@@ -70,7 +70,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     
       <!-- Message List Panel -->
       @if (!isListCollapsed) {
-        <div #listPanel class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel"
+        <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel"
           [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
           <!-- Count bar -->
           <div class="list-count-bar">
@@ -344,9 +344,6 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   @ViewChild(CdkVirtualScrollViewport) viewport?: CdkVirtualScrollViewport;
 
-  /** The list itself, not the detail pane beside it: arrows and Ctrl+A act on it only while you are working in it. */
-  @ViewChild('listPanel') listPanel?: ElementRef<HTMLElement>;
-
   private unregisterShortcuts?: () => void;
 
   /** Must match the fixed .msg-item height for virtual scrolling to line up */
@@ -434,25 +431,18 @@ export class MessageListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadFirstChunk();
 
-    const listPanel = () => this.listPanel?.nativeElement;
     this.unregisterShortcuts = this.shortcuts.register(
       {
         id: 'list.next', label: 'Next message', group: 'Messages',
-        keys: ['j'], scopedKeys: ['ArrowDown'], scope: listPanel,
+        keys: ['j'],
         isEnabled: () => this.allMessages.length > 0,
         run: () => this.moveSelection(1)
       },
       {
         id: 'list.previous', label: 'Previous message', group: 'Messages',
-        keys: ['k'], scopedKeys: ['ArrowUp'], scope: listPanel,
+        keys: ['k'],
         isEnabled: () => this.allMessages.length > 0,
         run: () => this.moveSelection(-1)
-      },
-      {
-        id: 'list.selectAll', label: 'Select all messages', group: 'Messages',
-        keys: [], scopedKeys: ['Mod+a'], scope: listPanel,
-        isEnabled: () => this.allMessages.length > 0,
-        run: () => this.selectAllLoaded()
       }
     );
 
@@ -815,7 +805,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * j/k and the arrows: open the next or previous message, the way a plain
+   * j/k: open the next or previous message, the way a plain
    * click would, and keep it on screen. Nothing open yet starts at the top.
    */
   private moveSelection(delta: number): void {
@@ -833,19 +823,10 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.selectMessage(message.id);
     this.scrollIntoView(index);
 
-    // arrows keep working after j/k, as they would after a click
-    this.shortcuts.noteInteraction(this.listPanel?.nativeElement);
-
     // walking off the end of what is loaded fetches the next chunk
     if (index >= this.allMessages.length - 5) {
       this.loadNextChunk();
     }
-  }
-
-  /** Every loaded message, ready for Delete. Messages not loaded yet are left out. */
-  private selectAllLoaded(): void {
-    this.selectedIds = new Set(this.allMessages.map(msg => msg.id!).filter(Boolean));
-    this.publishSelection();
   }
 
   /** Scrolls the least distance that shows the whole row. */

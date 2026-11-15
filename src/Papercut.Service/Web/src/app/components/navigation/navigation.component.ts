@@ -315,20 +315,20 @@ export class NavigationComponent implements OnDestroy {
   }
 
   showLog(): void {
-    this.dialog.open(LogDialogComponent, { autoFocus: false, maxWidth: '90vw' });
+    this.dialog.open(LogDialogComponent, { autoFocus: 'dialog', maxWidth: '90vw' });
   }
 
   showRules(): void {
-    this.dialog.open(RulesDialogComponent, { autoFocus: false })
+    this.dialog.open(RulesDialogComponent, { autoFocus: 'dialog' })
       .afterClosed().subscribe(() => this.refreshRulesCount());
   }
 
   showOptions(): void {
-    this.dialog.open(OptionsDialogComponent, { autoFocus: false });
+    this.dialog.open(OptionsDialogComponent, { autoFocus: 'dialog' });
   }
 
   showShortcuts(): void {
-    this.dialog.open(ShortcutsDialogComponent, { autoFocus: false });
+    this.dialog.open(ShortcutsDialogComponent, { autoFocus: 'dialog' });
   }
 
   ngOnDestroy() {

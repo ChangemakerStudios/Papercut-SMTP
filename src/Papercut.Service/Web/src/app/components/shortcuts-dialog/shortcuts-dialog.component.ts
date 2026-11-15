@@ -167,7 +167,7 @@ export class ShortcutsDialogComponent {
   private static readonly ORDER: ShortcutGroup[] = ['Messages', 'Open message', 'App'];
 
   /** Registration order follows whichever component loaded first; read moving around first instead. */
-  private static readonly ROW_ORDER = ['list.next', 'list.previous', 'list.selectAll', 'messages.delete', 'message.forward'];
+  private static readonly ROW_ORDER = ['list.next', 'list.previous', 'messages.delete', 'message.forward'];
 
   private static rank(id: string): number {
     const index = ShortcutsDialogComponent.ROW_ORDER.indexOf(id);
@@ -183,13 +183,13 @@ export class ShortcutsDialogComponent {
     const rows = (group: ShortcutGroup): ShortcutRow[] => shortcuts.commands
       .filter(c => c.group === group)
       .sort((a, b) => ShortcutsDialogComponent.rank(a.id) - ShortcutsDialogComponent.rank(b.id))
-      .map(c => ({ label: c.label, keys: [...c.keys, ...(c.scopedKeys ?? [])].map(formatCombo) }));
+      .map(c => ({ label: c.label, keys: c.keys.map(formatCombo) }));
 
     this.groups = ShortcutsDialogComponent.ORDER
       .map(name => ({
         name,
         rows: name === 'App'
-          ? [...rows(name), { label: 'Close a dialog', keys: [formatCombo('Escape')] }]
+          ? [...rows(name), { label: 'Close a pop-up, like this one', keys: [formatCombo('Escape')] }]
           : rows(name)
       }))
       .filter(group => group.rows.length > 0);

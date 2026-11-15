@@ -63,6 +63,30 @@ describe('KeyboardShortcutService', () => {
     expect(event.defaultPrevented).toBeTrue();
   });
 
+  it('keeps moving while j is held down', () => {
+    const run = register({ keys: ['j'] });
+
+    press('j', { repeat: true });
+
+    expect(run).toHaveBeenCalled();
+  });
+
+  it('ignores other held-down keys, so one press is one delete', () => {
+    const run = register({ keys: ['Delete'] });
+
+    press('Delete', { repeat: true });
+
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it('leaves the arrows to the browser, which scrolls with them', () => {
+    register({ keys: ['j'] });
+
+    const event = press('ArrowDown');
+
+    expect(event.defaultPrevented).toBeFalse();
+  });
+
   it('leaves Ctrl+J alone when only j is bound', () => {
     const run = register({ keys: ['j'] });
 
@@ -99,62 +123,6 @@ describe('KeyboardShortcutService', () => {
 
     expect(run).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBeFalse();
-  });
-
-  describe('scoped keys', () => {
-    let list: HTMLElement;
-    let elsewhere: HTMLElement;
-
-    beforeEach(() => {
-      list = document.createElement('div');
-      elsewhere = document.createElement('div');
-      document.body.append(list, elsewhere);
-    });
-
-    afterEach(() => {
-      list.remove();
-      elsewhere.remove();
-    });
-
-    it('fire while working in the scope', () => {
-      const run = register({ scopedKeys: ['ArrowDown'], scope: () => list });
-      service.noteInteraction(list);
-
-      press('ArrowDown');
-
-      expect(run).toHaveBeenCalled();
-    });
-
-    it('stay with the browser after a click elsewhere, so the page can scroll', () => {
-      const run = register({ scopedKeys: ['ArrowDown'], scope: () => list });
-      service.noteInteraction(elsewhere);
-
-      const event = press('ArrowDown');
-
-      expect(run).not.toHaveBeenCalled();
-      expect(event.defaultPrevented).toBeFalse();
-    });
-
-    it('never fire from inside the message frame, which scrolls with them', () => {
-      const run = register({ scopedKeys: ['ArrowDown'], scope: () => list });
-      service.noteInteraction(list);
-
-      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', cancelable: true });
-      Object.defineProperty(event, 'target', { value: document.body });
-      service.handle(event, true);
-
-      expect(run).not.toHaveBeenCalled();
-    });
-
-    it('global keys still fire from inside the message frame', () => {
-      const run = register({ keys: ['j'], scopedKeys: ['ArrowDown'], scope: () => list });
-
-      const event = new KeyboardEvent('keydown', { key: 'j', cancelable: true });
-      Object.defineProperty(event, 'target', { value: document.body });
-      service.handle(event, true);
-
-      expect(run).toHaveBeenCalled();
-    });
   });
 
   it('forgets commands when their owner unregisters them', () => {

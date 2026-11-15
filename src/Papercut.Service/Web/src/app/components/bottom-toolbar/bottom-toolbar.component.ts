@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideAngularModule, Forward, Trash2, Trash, Heart } from 'lucide-angular';
+import { LucideAngularModule, Forward, Trash2, Trash, Heart, Star } from 'lucide-angular';
 import { ConfirmService } from '../../services/confirm.service';
 import { KeyboardShortcutService } from '../../services/keyboard-shortcut.service';
 
@@ -40,10 +40,19 @@ import { KeyboardShortcutService } from '../../services/keyboard-shortcut.servic
 
         <!-- Right side - Status info -->
         <div class="toolbar-status">
+          <a href="https://github.com/ChangemakerStudios/Papercut-SMTP"
+             target="_blank"
+             rel="noopener"
+             class="ask-link"
+             matTooltip="A star on GitHub helps other people find Papercut.">
+            <lucide-icon [img]="icons.Star" [size]="12"></lucide-icon>
+            <span>Star</span>
+          </a>
+          <span class="status-sep" aria-hidden="true">·</span>
           <a href="https://github.com/sponsors/Jaben"
              target="_blank"
              rel="noopener"
-             class="sponsor-link"
+             class="ask-link"
              matTooltip="Papercut is free and built by one person. Sponsoring keeps it going.">
             <lucide-icon [img]="icons.Heart" [size]="12"></lucide-icon>
             <span>Sponsor</span>
@@ -135,7 +144,7 @@ import { KeyboardShortcutService } from '../../services/keyboard-shortcut.servic
       text-decoration: underline;
     }
 
-    .sponsor-link {
+    .ask-link {
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -145,7 +154,7 @@ import { KeyboardShortcutService } from '../../services/keyboard-shortcut.servic
       text-decoration: none;
     }
 
-    .sponsor-link:hover {
+    .ask-link:hover {
       text-decoration: underline;
     }
 
@@ -181,7 +190,7 @@ import { KeyboardShortcutService } from '../../services/keyboard-shortcut.servic
   `]
 })
 export class BottomToolbarComponent implements OnDestroy {
-  protected readonly icons = { Forward, Trash2, Trash, Heart };
+  protected readonly icons = { Forward, Trash2, Trash, Heart, Star };
 
   @Input() selectedMessageCount = 0;
   @Input() totalMessageCount = 0;

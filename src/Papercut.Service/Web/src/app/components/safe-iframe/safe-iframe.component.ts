@@ -200,13 +200,12 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
   /**
    * Clicking into an email moves keyboard focus into this frame, and its key
    * presses never reach the app's document -- so j/k would stop working until
-   * you clicked back on the list. Hand them to the shortcut service; it leaves
-   * the arrows to the frame, which still needs them to scroll.
+   * you clicked back on the list. Hand them to the shortcut service.
    *
    * Re-attached on every write: doc.open() drops the document's listeners.
    */
   private attachKeyRelay(doc: Document): void {
-    doc.addEventListener('keydown', (event: KeyboardEvent) => this.shortcuts.handle(event, true));
+    doc.addEventListener('keydown', (event: KeyboardEvent) => this.shortcuts.handle(event));
   }
 
   private openLink(href: string): void {

@@ -17,14 +17,6 @@ export interface ShortcutCommand {
   /** Fire wherever focus is (except while typing). "Mod" is Ctrl, or Cmd on a Mac. */
   keys: string[];
 
-  /**
-   * Fire only while the user is working in scope(): arrows and select-all
-   * belong to the list there, but must keep scrolling and selecting text
-   * everywhere else.
-   */
-  scopedKeys?: string[];
-  scope?: () => Element | null | undefined;
-
   /** False leaves the key to the browser: nothing open to forward, tab disabled. */
   isEnabled?: () => boolean;
 
@@ -62,12 +54,10 @@ export function comboOf(event: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'altKey' 
   return parts.join('+');
 }
 
-/** "Mod+," -> "Ctrl+," (or "⌘,"); "ArrowDown" -> "↓". For display only. */
+/** "Mod+," -> "Ctrl+," (or "⌘,"); "Delete" -> "Del". For display only. */
 export function formatCombo(combo: string): string {
   const names: Record<string, string> = {
     Mod: isMac ? '⌘' : 'Ctrl',
-    ArrowDown: '↓',
-    ArrowUp: '↑',
     Delete: 'Del',
     Backspace: isMac ? '⌫' : 'Backspace',
     Escape: 'Esc'
@@ -90,14 +80,9 @@ export class KeyboardShortcutService {
   private readonly registered = new BehaviorSubject<ShortcutCommand[]>([]);
   readonly commands$ = this.registered.asObservable();
 
-  /** Where the user last clicked or focused: decides who owns arrows and Ctrl+A. */
-  private lastInteraction: Node | null = null;
-
   constructor(private zone: NgZone, private dialog: MatDialog) {
     this.zone.runOutsideAngular(() => {
       document.addEventListener('keydown', event => this.handle(event));
-      document.addEventListener('pointerdown', event => this.lastInteraction = event.target as Node, true);
-      document.addEventListener('focusin', event => this.lastInteraction = event.target as Node, true);
     });
   }
 
@@ -113,17 +98,12 @@ export class KeyboardShortcutService {
     return () => this.registered.next(this.registered.value.filter(c => !commands.includes(c)));
   }
 
-  /** Keyboard navigation counts as working in that area, like a click would. */
-  noteInteraction(element: Element | null | undefined): void {
-    if (element) this.lastInteraction = element;
-  }
-
   /**
    * Handles a key press from this document, or one relayed from the message
    * frame -- clicking into an email moves focus there, and its key presses
    * would otherwise never reach us.
    */
-  handle(event: KeyboardEvent, fromFrame = false): void {
+  handle(event: KeyboardEvent): void {
     if (event.defaultPrevented || event.isComposing) return;
     if (event.repeat && !this.isNavigationKey(event)) return;
 
@@ -136,13 +116,7 @@ export class KeyboardShortcutService {
     const combo = comboOf(event);
 
     for (const command of this.registered.value) {
-      const global = command.keys.some(k => normalizeCombo(k) === combo);
-      const scoped = !global
-        && !fromFrame
-        && (command.scopedKeys ?? []).some(k => normalizeCombo(k) === combo)
-        && this.isWorkingIn(command.scope?.());
-
-      if (!global && !scoped) continue;
+      if (!command.keys.some(k => normalizeCombo(k) === combo)) continue;
       if (command.isEnabled && !command.isEnabled()) continue;
 
       event.preventDefault();
@@ -151,19 +125,8 @@ export class KeyboardShortcutService {
     }
   }
 
-  /** Holding j/k or an arrow should keep moving, the way it does in a list. */
+  /** Holding j or k keeps moving, the way it does in a list. */
   private isNavigationKey(event: KeyboardEvent): boolean {
-    return ['j', 'k', 'ArrowDown', 'ArrowUp'].includes(event.key);
-  }
-
-  private isWorkingIn(scope: Element | null | undefined): boolean {
-    if (!scope) return false;
-
-    const active = document.activeElement;
-    if (active && active !== document.body) return scope.contains(active);
-
-    // nothing focused (a click on plain text): go by the last click, and on a
-    // fresh page with no clicks yet, let the list have it
-    return !this.lastInteraction || scope.contains(this.lastInteraction);
+    return ['j', 'k'].includes(event.key);
   }
 }
