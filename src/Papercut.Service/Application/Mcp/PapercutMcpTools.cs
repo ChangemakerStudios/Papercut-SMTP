@@ -44,16 +44,18 @@ public class PapercutMcpTools(
     const int MaxSectionBytes = 512_000;
 
     [McpServerTool(Name = "list_messages")]
-    [Description("Lists received email messages, newest first. Returns the total message count and a page of message summaries (id, subject, size, created date).")]
+    [Description("Lists received email messages, newest first. Returns the match count (totalMessageCount), the count of every message (inboxCount), and a page of message summaries (id, subject, from, size, created date). Use search to find messages by sender, recipient or subject.")]
     public async Task<GetMessagesResponse> ListMessages(
         [Description("Maximum number of messages to return (default 10)")] int limit = 10,
         [Description("Zero-based offset to start from, for paging (default 0)")] int start = 0,
+        [Description("Only messages whose subject, From, To or Cc (names or addresses) contain every word, ignoring case")] string? search = null,
         CancellationToken cancellationToken = default)
     {
         var messageEntries = messageRepository.LoadMessages().ToList();
+        var matching = await MessageSearch.FilterAsync(messageEntries, messageLoader, search, cancellationToken);
 
         var tasks =
-            messageEntries
+            matching
                 .OrderByDescending(msg => msg.ModifiedDate)
                 .Skip(start)
                 .Take(limit)
@@ -62,7 +64,7 @@ public class PapercutMcpTools(
 
         var messages = await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-        return new GetMessagesResponse(messageEntries.Count, messages);
+        return new GetMessagesResponse(matching.Count, messages, messageEntries.Count);
     }
 
     [McpServerTool(Name = "get_message")]

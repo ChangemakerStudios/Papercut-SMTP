@@ -167,7 +167,7 @@ export class ShortcutsDialogComponent {
   private static readonly ORDER: ShortcutGroup[] = ['Messages', 'Open message', 'App'];
 
   /** Registration order follows whichever component loaded first; read moving around first instead. */
-  private static readonly ROW_ORDER = ['list.next', 'list.previous', 'messages.delete', 'message.forward'];
+  private static readonly ROW_ORDER = ['list.next', 'list.previous', 'list.search', 'messages.delete', 'message.forward'];
 
   private static rank(id: string): number {
     const index = ShortcutsDialogComponent.ROW_ORDER.indexOf(id);

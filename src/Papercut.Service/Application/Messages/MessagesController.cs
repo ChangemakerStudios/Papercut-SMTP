@@ -43,7 +43,7 @@ public class MessagesController(
     : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<GetMessagesResponse>> GetAll(int limit = 10, int start = 0, string order = "desc", CancellationToken token = default)
+    public async Task<ActionResult<GetMessagesResponse>> GetAll(int limit = 10, int start = 0, string order = "desc", string? search = null, CancellationToken token = default)
     {
         var messageEntries = messageRepository.LoadMessages().ToList();
 
@@ -70,9 +70,11 @@ public class MessagesController(
         // Add ETag to response
         Response.Headers.ETag = etag;
 
+        var matching = await MessageSearch.FilterAsync(messageEntries, messageLoader, search, token);
+
         var ordered = string.Equals(order, "asc", StringComparison.OrdinalIgnoreCase)
-            ? messageEntries.OrderBy(msg => msg.ModifiedDate)
-            : messageEntries.OrderByDescending(msg => msg.ModifiedDate);
+            ? matching.OrderBy(msg => msg.ModifiedDate)
+            : matching.OrderByDescending(msg => msg.ModifiedDate);
 
         var tasks =
             ordered
@@ -92,7 +94,7 @@ public class MessagesController(
 
         var messages = await Task.WhenAll(tasks).WaitAsync(token);
 
-        return new GetMessagesResponse(messageEntries.Count, messages);
+        return new GetMessagesResponse(matching.Count, messages, messageEntries.Count);
     }
 
     /// <summary>
