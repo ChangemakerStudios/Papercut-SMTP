@@ -60,6 +60,9 @@ public class MessageEntry : INotifyPropertyChanged, IEquatable<MessageEntry>, IF
 
     public DateTime ModifiedDate => _info.LastWriteTime;
 
+    /// <summary>When it was received: from the file name, else the file's creation time.</summary>
+    public DateTime? Created => _created;
+
     public long SortTicks => (_created ?? ModifiedDate).Ticks;
 
     public string Name => _info.Name;

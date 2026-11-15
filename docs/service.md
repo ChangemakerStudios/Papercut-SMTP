@@ -99,6 +99,18 @@ Environment variable form (Docker): `SmtpServer__RateLimit` and `SmtpServer__Rat
 
 The web UI is backed by a small HTTP API (`/api/messages`, etc.) you can script against — handy for asserting "an email was sent" in end-to-end tests. Explore the endpoints via your browser's dev tools on the web UI.
 
+### Searching messages
+
+`GET /api/messages?search=...` returns only the messages containing every word, ignoring case, anywhere in the subject, sender or recipient addresses, body text or attachment names. Words of 3 or more characters also match inside longer words, so part of an address or a code works.
+
+```bash
+curl "http://localhost:8080/api/messages?search=jane@example.com%20reset"
+```
+
+`totalMessageCount` is the number of matches and `inboxCount` the number of messages overall; page through the matches with `start` and `limit` as usual.
+
+Search uses an index file, `papercut-index.db`, kept beside the messages (in Docker, in the `/app/Incoming` volume). It also remembers which messages have been opened. It is rebuilt from the `.eml` files if deleted.
+
 ### Creating a message
 
 You can put a message straight into Papercut without SMTP, which makes it a handy local notification system: it shows up in the inbox and raises a desktop notification like received mail, and rules run on it.

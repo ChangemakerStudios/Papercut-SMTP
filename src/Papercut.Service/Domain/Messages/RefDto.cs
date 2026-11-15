@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -20,6 +20,8 @@ namespace Papercut.Service.Domain.Messages;
 
 using Infrastructure.EmailAddresses;
 
+using Papercut.Message.Index;
+
 [PublicAPI]
 public class RefDto
 {
@@ -40,6 +42,23 @@ public class RefDto
     public string? Priority { get; set; }
 
     public int AttachmentCount { get; set; }
+
+    /// <summary>A list row from the message index, without opening the file.</summary>
+    public static RefDto CreateFrom(MessageEntry entry, MessageSummary summary)
+    {
+        return new RefDto
+        {
+            Id = entry.Id,
+            Name = entry.Name,
+            Subject = summary.Subject,
+            CreatedAt = entry.Created?.ToUniversalTime(),
+            Size = entry.FileSizeBytes,
+            From = summary.From.Select(a => new EmailAddressDto { Name = a.Name, Address = a.Address }).ToList(),
+            AttachmentCount = summary.AttachmentCount,
+            Priority = summary.Priority,
+            IsRead = summary.IsRead,
+        };
+    }
 
     public static RefDto CreateFrom(MimeMessageEntry messageEntry)
     {

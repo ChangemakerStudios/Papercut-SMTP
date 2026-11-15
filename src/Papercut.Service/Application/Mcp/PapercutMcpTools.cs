@@ -37,6 +37,7 @@ public class PapercutMcpTools(
     IMessageRepository messageRepository,
     IMimeMessageLoader messageLoader,
     IReceivedDataHandler receivedDataHandler,
+    MessageListService messageList,
     ILogger logger)
 {
     const int MaxRawMessageChars = 200_000;
@@ -44,27 +45,14 @@ public class PapercutMcpTools(
     const int MaxSectionBytes = 512_000;
 
     [McpServerTool(Name = "list_messages")]
-    [Description("Lists received email messages, newest first. Returns the match count (totalMessageCount), the count of every message (inboxCount), and a page of message summaries (id, subject, from, size, created date). Use search to find messages by sender, recipient or subject.")]
+    [Description("Lists received email messages, newest first. Returns the match count (totalMessageCount), the count of every message (inboxCount), and a page of message summaries (id, subject, from, size, created date). Use search to find messages by any text in them.")]
     public async Task<GetMessagesResponse> ListMessages(
         [Description("Maximum number of messages to return (default 10)")] int limit = 10,
         [Description("Zero-based offset to start from, for paging (default 0)")] int start = 0,
-        [Description("Only messages whose subject, From, To or Cc (names or addresses) contain every word, ignoring case")] string? search = null,
+        [Description("Only messages containing every word, ignoring case, anywhere in the subject, sender or recipient addresses, body text or attachment names. Words of 3+ characters match inside longer words and addresses.")] string? search = null,
         CancellationToken cancellationToken = default)
     {
-        var messageEntries = messageRepository.LoadMessages().ToList();
-        var matching = await MessageSearch.FilterAsync(messageEntries, messageLoader, search, cancellationToken);
-
-        var tasks =
-            matching
-                .OrderByDescending(msg => msg.ModifiedDate)
-                .Skip(start)
-                .Take(limit)
-                .Select(async e => RefDto.CreateFrom(new MimeMessageEntry(e, (await messageLoader.GetAsync(e, cancellationToken))!)))
-                .ToArray();
-
-        var messages = await Task.WhenAll(tasks).WaitAsync(cancellationToken);
-
-        return new GetMessagesResponse(matching.Count, messages, messageEntries.Count);
+        return await messageList.ListAsync(messageList.LoadEntries(), start, limit, ascending: false, search, cancellationToken);
     }
 
     [McpServerTool(Name = "get_message")]

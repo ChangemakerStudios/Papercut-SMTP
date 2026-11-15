@@ -30,7 +30,8 @@ describe('Message System Integration', () => {
     const mockApiService = jasmine.createSpyObj('MessageApiService', [
       'getMessages',
       'getMessageRef',
-      'getMessageDetail'
+      'getMessageDetail',
+      'markAllRead'
     ]);
     const mockSignalR = jasmine.createSpyObj('SignalRService', [
       'start',
@@ -97,7 +98,7 @@ describe('Message System Integration', () => {
       tick();
       
       // Verify the mock API service was called
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       
       // Verify component state
       expect(component.allMessages).toEqual(mockMessages);
@@ -121,7 +122,7 @@ describe('Message System Integration', () => {
       tick();
       
       // Verify mock API service was called
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       
       // Test that the component can handle route parameter changes for pagination
       // This is what the component is actually designed to do
@@ -147,7 +148,7 @@ describe('Message System Integration', () => {
       component.onScrolledIndexChange();
       tick();
 
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, loaded, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, loaded, 'desc', '');
 
       flush();
     }));
@@ -174,7 +175,7 @@ describe('Message System Integration', () => {
     it('asks the server once typing pauses, and counts results against the inbox', fakeAsync(() => {
       const component = search('  invoice ');
 
-      expect(messageApiService.getMessages).toHaveBeenCalledOnceWith(100, 0, 'desc', 'invoice');
+      expect(messageApiService.getMessages).toHaveBeenCalledOnceWith(250, 0, 'desc', 'invoice');
       expect(component.allMessages).toEqual([mockMessages[0]]);
       expect(messageListFixture.nativeElement.querySelector('.list-count').textContent.trim()).toBe('1 of 120 messages');
 
@@ -200,7 +201,7 @@ describe('Message System Integration', () => {
       tick();
 
       expect(component.allMessages.some(m => m.id === 'brand-new')).toBeFalse();
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', 'invoice');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', 'invoice');
 
       flush();
     }));
@@ -229,8 +230,28 @@ describe('Message System Integration', () => {
       component.clearSearch();
       tick();
 
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       expect(component.allMessages).toEqual(mockMessages);
+
+      flush();
+    }));
+  });
+
+  describe('Read status', () => {
+    it('Mark all read clears every unread row', fakeAsync(() => {
+      const component = messageListFixture.componentInstance;
+      messageListFixture.detectChanges();
+      tick();
+      messageApiService.markAllRead.and.returnValue(of(undefined));
+
+      expect(component.mayHaveUnread).toBeTrue();
+
+      component.markAllRead();
+      tick();
+
+      expect(messageApiService.markAllRead).toHaveBeenCalled();
+      expect(component.allMessages.every(m => m.isRead)).toBeTrue();
+      expect(component.mayHaveUnread).toBeFalse();
 
       flush();
     }));
@@ -250,7 +271,7 @@ describe('Message System Integration', () => {
       messageListFixture.detectChanges();
       tick();
 
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       expect(component.isLoading).toBe(false);
       
       // Now test that the component can handle subsequent successful requests
@@ -261,7 +282,7 @@ describe('Message System Integration', () => {
       (component as any).loadFirstChunk();
       tick();
 
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       expect(component.isLoading).toBe(false);
       
       // Clean up timers
@@ -283,7 +304,7 @@ describe('Message System Integration', () => {
       tick();
       
       // Verify the mock API service was called
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       
       // Clean up timers
       flush();
@@ -298,7 +319,7 @@ describe('Message System Integration', () => {
       messageListFixture.detectChanges();
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       
       // Verify data consistency
       expect(component.allMessages).toEqual(mockMessages);
@@ -317,7 +338,7 @@ describe('Message System Integration', () => {
       messageListFixture.detectChanges();
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       
       // Verify loading state synchronization
       expect(component.isLoading).toBe(false);
@@ -334,7 +355,7 @@ describe('Message System Integration', () => {
       messageListFixture.detectChanges();
       tick();
       
-      expect(messageApiService.getMessages).toHaveBeenCalledWith(100, 0, 'desc', '');
+      expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       
       // the list keeps its own state now rather than reading pagination
       // out of the route

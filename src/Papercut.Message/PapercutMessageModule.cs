@@ -19,7 +19,9 @@
 using Autofac;
 
 using Papercut.Core.Domain.Message;
+using Papercut.Core;
 using Papercut.Core.Domain.Paths;
+using Papercut.Message.Index;
 
 namespace Papercut.Message;
 
@@ -31,6 +33,12 @@ public class PapercutMessageModule : Module
                 new MessageRepository(p.ResolveKeyed<IPathConfigurator>(PathTemplateType.Message), p.Resolve<ILogger>().ForContext<MessageRepository>()))
             .As<IMessageRepository>().SingleInstance();
         builder.RegisterType<MimeMessageLoader>().As<IMimeMessageLoader>().SingleInstance();
+
+        builder.Register<IMessageIndex>(p =>
+                new MessageIndex(
+                    MessageIndex.LocationFor(p.ResolveKeyed<IPathConfigurator>(PathTemplateType.Message).DefaultSavePath, AppConstants.UserAppDataDirectory),
+                    p.Resolve<ILogger>().ForContext<MessageIndex>()))
+            .SingleInstance();
         builder.RegisterType<ReceivedDataMessageHandler>().As<IReceivedDataHandler>().SingleInstance();
         builder.RegisterType<PublishedMessageTracker>().AsSelf().SingleInstance();
     }

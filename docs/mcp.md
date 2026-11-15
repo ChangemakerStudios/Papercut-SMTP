@@ -5,7 +5,7 @@ The Papercut SMTP Service includes an optional **[Model Context Protocol](https:
 A typical agent-driven test loop:
 
 1. The agent triggers your app to send an email
-2. `list_messages` — confirm it arrived
+2. `list_messages` — confirm it arrived (`search` narrows it to the one you're after, e.g. by recipient or a code in the body)
 3. `get_message` — assert on subject, recipients, and body
 4. `get_message_section` — verify an attachment's actual content
 5. `delete_all_messages` — reset for the next test
@@ -79,7 +79,7 @@ claude mcp add --transport http papercut http://localhost:8080/mcp
 
 | Tool | Description |
 |------|-------------|
-| `list_messages` | Paged message summaries, newest first (`limit`, `start`) |
+| `list_messages` | Paged message summaries, newest first (`limit`, `start`). `search` finds messages containing every word anywhere: subject, addresses, body or attachment names |
 | `get_message` | Full detail for one message: from/to/cc/bcc, subject, text and HTML bodies, headers, and a manifest of MIME sections (index, contentId, media type, filename, attachment flag, size) |
 | `get_message_section` | Decoded content of a single MIME part, selected by `index` or `contentId` from the manifest — text parts return as text, binary parts as base64 |
 | `get_message_raw` | The raw RFC 822 (`.eml`) source of a message |

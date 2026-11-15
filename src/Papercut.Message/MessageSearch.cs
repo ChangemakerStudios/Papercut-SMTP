@@ -75,7 +75,7 @@ public static class MessageSearch
         return list.Where((_, i) => matches[i]).ToList();
     }
 
-    private static string[] Terms(string? search) =>
+    public static string[] Terms(string? search) =>
         (search ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     private static string Describe(InternetAddressList? addresses) =>

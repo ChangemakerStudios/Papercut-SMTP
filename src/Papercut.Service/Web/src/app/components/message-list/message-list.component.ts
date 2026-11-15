@@ -21,7 +21,7 @@ import { KeyboardShortcutService } from '../../services/keyboard-shortcut.servic
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideAngularModule, PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X } from 'lucide-angular';
+import { LucideAngularModule, PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X, CheckCheck } from 'lucide-angular';
 import { ResizerComponent } from '../resizer/resizer.component';
 import { MessageListItemComponent } from './message-list-item.component';
 import { MessageListEmptyStateComponent } from './message-list-empty-state.component';
@@ -100,6 +100,12 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
             @if (isLoading || isLoadingMore) {
               <mat-spinner diameter="12" strokeWidth="2"></mat-spinner>
             }
+            @if (mayHaveUnread) {
+              <button class="rail-btn mark-read-btn" (click)="markAllRead()"
+                aria-label="Mark all read" matTooltip="Mark all read" matTooltipPosition="left">
+                <lucide-icon [img]="icons.CheckCheck" [size]="15"></lucide-icon>
+              </button>
+            }
             <button class="rail-btn count-bar-btn" (click)="toggleListCollapsed()"
               matTooltip="Collapse the message list" matTooltipPosition="left">
               <lucide-icon [img]="icons.PanelLeftClose" [size]="15"></lucide-icon>
@@ -108,7 +114,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
           <div class="list-search">
             <lucide-icon [img]="icons.Search" [size]="14" class="search-icon"></lucide-icon>
             <input #searchInput type="text" class="search-input"
-              placeholder="Search sender, recipient, subject"
+              placeholder="Search messages"
               aria-label="Search messages"
               autocomplete="off" spellcheck="false"
               [value]="searchText"
@@ -378,6 +384,16 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
       margin-right: -4px;
     }
 
+    .mark-read-btn {
+      width: 22px;
+      height: 22px;
+      margin-left: auto;
+    }
+
+    .mark-read-btn + .count-bar-btn {
+      margin-left: 0;
+    }
+
     .sort-btn {
       width: 20px;
       height: 20px;
@@ -440,7 +456,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
   readonly messageRowHeight = 76;
 
   /** How many messages are fetched per trip to the server */
-  private readonly chunkSize = 100;
+  private readonly chunkSize = 250;
 
   allMessages: RefDto[] = [];
 
@@ -462,7 +478,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
   private readonly searchTyped$ = new Subject<string>();
 
   // Resizer properties
-  protected readonly icons = { PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X };
+  protected readonly icons = { PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X, CheckCheck };
 
   messageListWidth = 400; // Default width
 
@@ -1055,6 +1071,18 @@ export class MessageListComponent implements OnInit, OnDestroy {
    * list load reports), but waiting for that round trip would leave the row
    * bold under the reader's eyes.
    */
+  /** Anything unread on screen, or more mail than is loaded to tell. */
+  get mayHaveUnread(): boolean {
+    return this.allMessages.length < this.inboxCount || this.allMessages.some(msg => !msg.isRead);
+  }
+
+  markAllRead(): void {
+    this.messageApiService.markAllRead().subscribe({
+      next: () => this.allMessages.forEach(msg => msg.isRead = true),
+      error: error => this.loggingService.error('Failed to mark all read', error)
+    });
+  }
+
   private markRead(messageId: string): void {
     const message = this.allMessages.find(msg => msg.id === messageId);
     if (message && !message.isRead) {
