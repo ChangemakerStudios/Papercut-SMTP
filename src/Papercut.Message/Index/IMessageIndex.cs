@@ -54,5 +54,7 @@ public interface IMessageIndex : IDisposable
 
     void MarkRead(string file);
 
+    void MarkUnread(string file);
+
     void MarkAllRead();
 }

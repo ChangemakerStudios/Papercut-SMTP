@@ -205,6 +205,19 @@ public sealed class MessageIndex : IMessageIndex
         Write("UPDATE messages SET is_read = 1 WHERE id = $id", ("$id", row.Id));
     }
 
+    public void MarkUnread(string file)
+    {
+        if (!IsAvailable) return;
+
+        _readBeforeIndexed.TryRemove(file, out _);
+
+        if (!_rows.TryGetValue(file, out var row) || !row.Summary.IsRead) return;
+
+        _rows[file] = row with { Summary = row.Summary with { IsRead = false } };
+
+        Write("UPDATE messages SET is_read = 0 WHERE id = $id", ("$id", row.Id));
+    }
+
     public void MarkAllRead()
     {
         if (!IsAvailable) return;

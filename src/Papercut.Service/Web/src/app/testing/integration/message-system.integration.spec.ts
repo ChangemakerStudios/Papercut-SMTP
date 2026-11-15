@@ -31,7 +31,9 @@ describe('Message System Integration', () => {
       'getMessages',
       'getMessageRef',
       'getMessageDetail',
-      'markAllRead'
+      'markAllRead',
+      'markRead',
+      'markUnread'
     ]);
     const mockSignalR = jasmine.createSpyObj('SignalRService', [
       'start',
@@ -232,6 +234,65 @@ describe('Message System Integration', () => {
 
       expect(messageApiService.getMessages).toHaveBeenCalledWith(250, 0, 'desc', '');
       expect(component.allMessages).toEqual(mockMessages);
+
+      flush();
+    }));
+  });
+
+  describe('Right-click menu', () => {
+    const rightClick = () => new MouseEvent('contextmenu', { clientX: 40, clientY: 60, cancelable: true });
+
+    beforeEach(fakeAsync(() => {
+      messageListFixture.detectChanges();
+      tick();
+    }));
+
+    it('acts on the clicked row alone when it was not ticked, and replaces the browser menu', fakeAsync(() => {
+      const component = messageListFixture.componentInstance;
+      const event = rightClick();
+
+      component.onRowMenu(mockMessages[1], event);
+      tick();
+
+      expect(event.defaultPrevented).toBeTrue();
+      expect(component.menuTargets.map(m => m.id)).toEqual([mockMessages[1].id]);
+
+      flush();
+    }));
+
+    it('acts on every ticked row when the click is on one of them', fakeAsync(() => {
+      const component = messageListFixture.componentInstance;
+      (component as any).selectedIds = new Set([mockMessages[0].id, mockMessages[2].id]);
+
+      component.onRowMenu(mockMessages[2], rightClick());
+      tick();
+
+      expect(component.menuTargets.map(m => m.id)).toEqual([mockMessages[0].id, mockMessages[2].id]);
+
+      flush();
+    }));
+
+    it('marks unread rows read, and read rows unread', fakeAsync(() => {
+      const component = messageListFixture.componentInstance;
+      messageApiService.markRead.and.returnValue(of(undefined));
+      messageApiService.markUnread.and.returnValue(of(undefined));
+      const target = component.allMessages[0];
+      target.isRead = false;
+
+      component.onRowMenu(target, rightClick());
+      tick();
+      expect(component.menuMarksRead).toBeTrue();
+
+      component.setReadFromMenu(true);
+      tick();
+      expect(messageApiService.markRead).toHaveBeenCalledWith(target.id!);
+      expect(target.isRead).toBeTrue();
+      expect(component.menuMarksRead).toBeFalse();
+
+      component.setReadFromMenu(false);
+      tick();
+      expect(messageApiService.markUnread).toHaveBeenCalledWith(target.id!);
+      expect(target.isRead).toBeFalse();
 
       flush();
     }));

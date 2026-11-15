@@ -16,6 +16,10 @@ export class MessageStateService {
   private totalCount = new BehaviorSubject<number>(0);
   readonly totalCount$ = this.totalCount.asObservable();
 
+  /** Forward this message, open or not (the list's right-click menu). */
+  private forwardRequests = new Subject<string>();
+  readonly forwardRequests$ = this.forwardRequests.asObservable();
+
   private refreshRequests = new Subject<void>();
   readonly refreshRequests$ = this.refreshRequests.asObservable();
 
@@ -46,6 +50,10 @@ export class MessageStateService {
     if (this.totalCount.value !== count) {
       this.totalCount.next(count);
     }
+  }
+
+  requestForward(messageId: string): void {
+    this.forwardRequests.next(messageId);
   }
 
   requestRefresh(): void {

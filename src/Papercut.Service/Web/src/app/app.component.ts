@@ -51,6 +51,8 @@ export class AppComponent {
     private dialog: MatDialog,
     private router: Router
   ) {
+    this.messageState.forwardRequests$.subscribe(id => this.onForward(id));
+
     this.loggingService.logEnvironmentInfo();
     this.loggingService.info('Papercut application started');
   }
@@ -66,8 +68,7 @@ export class AppComponent {
     }
   }
 
-  onForward(): void {
-    const messageId = this.messageState.getCurrentMessageId();
+  onForward(messageId = this.messageState.getCurrentMessageId()): void {
     if (!messageId) return;
 
     const data: ForwardDialogData = { messageId, subject: null };

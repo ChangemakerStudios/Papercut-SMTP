@@ -82,10 +82,21 @@ public class MessageListService(
         index.MarkRead(entry.File);
     }
 
+    /// <summary>Read again once opened. Without the index, mail older than a few minutes still counts as seen.</summary>
+    public void MarkUnread(MessageEntry entry)
+    {
+        readState.MarkUnread(entry.Id);
+        index.MarkUnread(entry.File);
+
+        // the list's ETag only moves with the version, which removing may not have bumped
+        readState.Touch();
+    }
+
     public void MarkAllRead()
     {
         readState.MarkRead(LoadEntries().Select(e => e.Id));
         index.MarkAllRead();
+        readState.Touch();
     }
 
     /// <summary>

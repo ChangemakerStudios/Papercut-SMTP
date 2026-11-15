@@ -148,6 +148,22 @@ public class MessagesController(
         return this.NoContent();
     }
 
+    [HttpPost("{id}/read")]
+    public ActionResult MarkRead(string id)
+    {
+        messageList.MarkRead(this.GetMessageEntry(id));
+
+        return this.NoContent();
+    }
+
+    [HttpPost("{id}/unread")]
+    public ActionResult MarkUnread(string id)
+    {
+        messageList.MarkUnread(this.GetMessageEntry(id));
+
+        return this.NoContent();
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<DetailDto>> Get(string id, CancellationToken token = default)
     {

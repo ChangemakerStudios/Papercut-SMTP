@@ -90,6 +90,15 @@ export class KeyboardShortcutService {
     return this.registered.value;
   }
 
+  /** Runs a registered command as if its key were pressed; false when it is missing or unavailable. */
+  run(id: string): boolean {
+    const command = this.registered.value.find(c => c.id === id);
+    if (!command || (command.isEnabled && !command.isEnabled())) return false;
+
+    this.zone.run(() => command.run());
+    return true;
+  }
+
   /** Adds commands; call the returned function to remove them again. */
   register(...commands: ShortcutCommand[]): () => void {
     const ids = new Set(commands.map(c => c.id));

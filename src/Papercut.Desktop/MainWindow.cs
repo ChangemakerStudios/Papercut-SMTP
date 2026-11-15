@@ -204,7 +204,7 @@ internal sealed class MainWindow : Window
         }
 
 #if WINDOWS
-        Platform.Windows.WebView2Hooks.Attach(_webView, IsAllowed);
+        Platform.Windows.WebView2Hooks.Attach(_webView, IsAllowed, OpenLink);
 #endif
     }
 
@@ -223,10 +223,16 @@ internal sealed class MainWindow : Window
 
         if (e.Request == null) return;
 
-        if (_origin != null && LinkPolicy.IsSameOrigin(e.Request, _origin))
-            OpenExternallyRequested?.Invoke(e.Request);
+        OpenLink(e.Request);
+    }
+
+    /// <summary>A link the page asked to open, by click or by the context menu.</summary>
+    private void OpenLink(Uri uri)
+    {
+        if (_origin != null && LinkPolicy.IsSameOrigin(uri, _origin))
+            OpenExternallyRequested?.Invoke(uri);
         else
-            Handle(e.Request);
+            Handle(uri);
     }
 
     private bool IsAllowed(Uri uri) => LinkPolicy.Decide(uri, _origin) == LinkAction.Allow;

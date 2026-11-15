@@ -2,12 +2,13 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { Observable, debounceTime, finalize, filter, skip, Subject, takeUntil } from 'rxjs';
+import { Observable, debounceTime, finalize, filter, forkJoin, skip, Subject, takeUntil } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MessageService } from '../../services/message.service';
 import { MessageApiService } from '../../services/message-api.service';
@@ -21,7 +22,7 @@ import { KeyboardShortcutService } from '../../services/keyboard-shortcut.servic
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideAngularModule, PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X, CheckCheck } from 'lucide-angular';
+import { LucideAngularModule, PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X, CheckCheck, MailOpen, Mail, Forward, Copy, Download, Trash2, Eye } from 'lucide-angular';
 import { ResizerComponent } from '../resizer/resizer.component';
 import { MessageListItemComponent } from './message-list-item.component';
 import { MessageListEmptyStateComponent } from './message-list-empty-state.component';
@@ -38,6 +39,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     MatChipsModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatMenuModule,
     LucideAngularModule,
     ScrollingModule,
     ResizerComponent,
@@ -150,6 +152,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
                 [selected]="message.id === selectedMessageId"
                 [inSelection]="isInSelection(message.id)"
                 (select)="onRowClick(message.id!, $event)"
+                (menu)="onRowMenu(message, $event)"
                 class="block w-full">
               </app-message-list-item>
             </cdk-virtual-scroll-viewport>
@@ -157,6 +160,39 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
         </div>
       }
     
+      <!-- Right-click menu, opened at the pointer -->
+      <div class="row-menu-anchor" [style.left.px]="menuAt.x" [style.top.px]="menuAt.y"
+        [matMenuTriggerFor]="rowMenu" #rowMenuTrigger="matMenuTrigger"></div>
+      <mat-menu #rowMenu="matMenu" class="row-menu">
+        @if (menuTargets.length === 1) {
+          <button mat-menu-item (click)="openFromMenu()">
+            <lucide-icon [img]="icons.Eye" [size]="15"></lucide-icon><span>Open</span>
+          </button>
+          <button mat-menu-item (click)="forwardFromMenu()">
+            <lucide-icon [img]="icons.Forward" [size]="15"></lucide-icon><span>Forward…</span>
+          </button>
+        }
+        <button mat-menu-item (click)="setReadFromMenu(menuMarksRead)">
+          <lucide-icon [img]="menuMarksRead ? icons.MailOpen : icons.Mail" [size]="15"></lucide-icon>
+          <span>{{ menuMarksRead ? 'Mark as read' : 'Mark as unread' }}</span>
+        </button>
+        @if (menuTargets.length === 1) {
+          @if (menuTargets[0].from?.[0]?.address) {
+            <button mat-menu-item (click)="copySenderFromMenu()">
+              <lucide-icon [img]="icons.Copy" [size]="15"></lucide-icon><span>Copy sender address</span>
+            </button>
+          }
+          <button mat-menu-item (click)="saveFromMenu()">
+            <lucide-icon [img]="icons.Download" [size]="15"></lucide-icon><span>Save as .eml</span>
+          </button>
+        }
+        <div class="row-menu-sep"></div>
+        <button mat-menu-item class="row-menu-danger" (click)="deleteFromMenu()">
+          <lucide-icon [img]="icons.Trash2" [size]="15"></lucide-icon>
+          <span>{{ menuTargets.length > 1 ? 'Delete ' + menuTargets.length + ' messages' : 'Delete' }}</span>
+        </button>
+      </mat-menu>
+
       <!-- Resizer Handle -->
       @if (!isListCollapsed) {
         <div class="flex-shrink-0 list-resizer">
@@ -384,6 +420,41 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
       margin-right: -4px;
     }
 
+    .row-menu-anchor {
+      position: fixed;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    /* the menu panel lives in the overlay, outside this component */
+    ::ng-deep .row-menu .mat-mdc-menu-item {
+      min-height: 34px;
+    }
+
+    ::ng-deep .row-menu .mat-mdc-menu-item-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: var(--pc-text-ui);
+    }
+
+    ::ng-deep .row-menu lucide-icon {
+      display: inline-flex;
+      color: var(--pc-muted);
+    }
+
+    .row-menu-sep {
+      height: 1px;
+      margin: 4px 0;
+      background: var(--pc-border);
+    }
+
+    .row-menu-danger,
+    .row-menu-danger lucide-icon {
+      color: var(--pc-danger, #c0392b) !important;
+    }
+
     .mark-read-btn {
       width: 22px;
       height: 22px;
@@ -477,8 +548,19 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   private readonly searchTyped$ = new Subject<string>();
 
+  @ViewChild('rowMenuTrigger') rowMenuTrigger?: MatMenuTrigger;
+
+  /** Where the right-click happened, and the messages its menu acts on. */
+  menuAt = { x: 0, y: 0 };
+  menuTargets: RefDto[] = [];
+
+  /** Any of them unread: the menu offers to mark them read, otherwise unread. */
+  get menuMarksRead(): boolean {
+    return this.menuTargets.some(msg => !msg.isRead);
+  }
+
   // Resizer properties
-  protected readonly icons = { PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X, CheckCheck };
+  protected readonly icons = { PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X, CheckCheck, MailOpen, Mail, Forward, Copy, Download, Trash2, Eye };
 
   messageListWidth = 400; // Default width
 
@@ -1071,6 +1153,73 @@ export class MessageListComponent implements OnInit, OnDestroy {
    * list load reports), but waiting for that round trip would leave the row
    * bold under the reader's eyes.
    */
+  /**
+   * Right-click acts on the ticked rows when the click is on one of them, the
+   * way a file manager does; on any other row it ticks just that one first.
+   */
+  onRowMenu(message: RefDto, event: MouseEvent): void {
+    if (!message.id) return;
+    event.preventDefault();
+
+    if (!this.selectedIds.has(message.id)) {
+      this.selectedIds = new Set([message.id]);
+      this.anchorIndex = this.allMessages.findIndex(msg => msg.id === message.id);
+      this.publishSelection();
+    }
+
+    this.menuTargets = this.allMessages.filter(msg => !!msg.id && this.selectedIds.has(msg.id));
+    this.menuAt = { x: event.clientX, y: event.clientY };
+
+    // the anchor has to move to the pointer before the menu measures it
+    setTimeout(() => this.rowMenuTrigger?.openMenu());
+  }
+
+  openFromMenu(): void {
+    const id = this.menuTargets[0]?.id;
+    if (id) this.selectMessage(id);
+  }
+
+  forwardFromMenu(): void {
+    const id = this.menuTargets[0]?.id;
+    if (id) this.messageStateService.requestForward(id);
+  }
+
+  setReadFromMenu(read: boolean): void {
+    const targets = this.menuTargets.filter(msg => !!msg.id && !!msg.isRead !== read);
+    if (targets.length === 0) return;
+
+    forkJoin(targets.map(msg => read
+      ? this.messageApiService.markRead(msg.id!)
+      : this.messageApiService.markUnread(msg.id!)))
+      .subscribe({
+        next: () => targets.forEach(msg => msg.isRead = read),
+        error: error => {
+          this.loggingService.error('Failed to change read status', error);
+          this.toastService.showError('Could not change read status');
+          this.refreshCurrentPage();
+        }
+      });
+  }
+
+  copySenderFromMenu(): void {
+    const address = this.menuTargets[0]?.from?.[0]?.address;
+    if (!address || !navigator.clipboard) return;
+
+    navigator.clipboard.writeText(address).then(
+      () => this.toastService.showInfo(`Copied ${address}`),
+      () => this.toastService.showError('Could not copy to the clipboard'));
+  }
+
+  saveFromMenu(): void {
+    const id = this.menuTargets[0]?.id;
+    if (id) this.messageApiService.downloadRawMessage(id);
+  }
+
+  /** The same confirm and delete as the toolbar button and the Del key. */
+  deleteFromMenu(): void {
+    this.shortcuts.run('messages.delete');
+  }
+
   /** Anything unread on screen, or more mail than is loaded to tell. */
   get mayHaveUnread(): boolean {
     return this.allMessages.length < this.inboxCount || this.allMessages.some(msg => !msg.isRead);

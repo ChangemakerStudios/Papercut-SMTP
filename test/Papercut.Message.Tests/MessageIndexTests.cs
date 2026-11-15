@@ -222,6 +222,23 @@ public class MessageIndexTests
     }
 
     [Test]
+    public async Task Mark_unread_sticks_until_opened_again()
+    {
+        var old = Write("old");
+        var index = await Built();
+
+        index.MarkUnread(old);
+        index.Dispose();
+        SqliteConnection.ClearAllPools();
+
+        var reopened = Open();
+        reopened.IsRead(old).Should().BeFalse();
+
+        reopened.MarkRead(old);
+        reopened.IsRead(old).Should().BeTrue();
+    }
+
+    [Test]
     public async Task Mark_all_read()
     {
         Write("old");

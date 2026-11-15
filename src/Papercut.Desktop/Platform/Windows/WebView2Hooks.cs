@@ -29,7 +29,7 @@ namespace Papercut.Desktop.Platform.Windows;
 /// </summary>
 internal static class WebView2Hooks
 {
-    public static void Attach(NativeWebView webView, Func<Uri, bool> isAllowed)
+    public static void Attach(NativeWebView webView, Func<Uri, bool> isAllowed, Action<Uri> openLink)
     {
         if (webView.TryGetPlatformHandle() is not IWindowsWebView2PlatformHandle handle || handle.CoreWebView2 == IntPtr.Zero)
         {
@@ -62,6 +62,8 @@ internal static class WebView2Hooks
             e.State = CoreWebView2PermissionState.Deny;
             Log.Information("Denied {Permission} for {Uri}", e.PermissionKind, e.Uri);
         };
+
+        WebView2ContextMenu.Attach(core, openLink);
 
         // carried over from Papercut.UI DisableEdgeFeaturesHelper
         core.Settings.IsZoomControlEnabled = true;

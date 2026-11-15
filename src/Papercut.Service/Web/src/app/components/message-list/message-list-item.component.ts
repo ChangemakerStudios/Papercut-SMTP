@@ -16,7 +16,8 @@ import { RefDto } from 'src/app/models';
            'msg-in-selection': inSelection && !selected,
            'msg-unread': !message.isRead
          }"
-      (click)="onSelect($event)">
+      (click)="onSelect($event)"
+      (contextmenu)="menu.emit($event)">
       <div class="msg-subject" [matTooltip]="message.subject ?? 'No Subject'" matTooltipShowDelay="700">
         {{ message.subject ?? '(No Subject)' }}
       </div>
@@ -163,6 +164,9 @@ export class MessageListItemComponent {
   /** Ticked as part of a ctrl/shift selection, but not the message on screen. */
   @Input() inSelection = false;
   @Output() select = new EventEmitter<MouseEvent>();
+
+  /** Right-click: the list shows its own menu instead of the browser's. */
+  @Output() menu = new EventEmitter<MouseEvent>();
 
   constructor(private emailService: EmailService) {}
 

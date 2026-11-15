@@ -205,6 +205,14 @@ export class MessageApiService {
     return this.http.get(`${this.baseUrl}/${encodedId}/html`, { responseType: 'text' });
   }
 
+  markRead(messageId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${encodeURIComponent(messageId)}/read`, null);
+  }
+
+  markUnread(messageId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${encodeURIComponent(messageId)}/unread`, null);
+  }
+
   /** Marks every message read. */
   markAllRead(): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/read-all`, null);

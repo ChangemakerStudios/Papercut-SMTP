@@ -52,6 +52,14 @@ public class MessageReadStateService
         if (added > 0) Version++;
     }
 
+    /// <summary>Read status changed somewhere this set doesn't track (the message index).</summary>
+    public void Touch() => Version++;
+
+    public void MarkUnread(string messageId)
+    {
+        if (_read.TryRemove(messageId, out _)) Version++;
+    }
+
     public void MarkRead(string messageId)
     {
         if (string.IsNullOrEmpty(messageId)) return;
