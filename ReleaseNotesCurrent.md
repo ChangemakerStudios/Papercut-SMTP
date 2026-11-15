@@ -79,5 +79,3 @@ The desktop app is rebuilt. It's now a tray app that shows the same web UI as th
 Special thanks to [dpinkham6](https://github.com/dpinkham6), [AntekOlszewski](https://github.com/AntekOlszewski), and [Carsak](https://github.com/Carsak) for their reports and suggestions!
 
 Papercut SMTP is free and open source. If it saves you time, consider [sponsoring the project](https://github.com/sponsors/Jaben).
-
-Several features and fixes in this release were developed with the assistance of [Claude Code](https://claude.ai/claude-code).

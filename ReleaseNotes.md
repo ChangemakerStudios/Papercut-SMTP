@@ -80,8 +80,6 @@ Special thanks to [dpinkham6](https://github.com/dpinkham6), [AntekOlszewski](ht
 
 Papercut SMTP is free and open source. If it saves you time, consider [sponsoring the project](https://github.com/sponsors/Jaben).
 
-Several features and fixes in this release were developed with the assistance of [Claude Code](https://claude.ai/claude-code).
-
 ## Papercut SMTP v7.8.0 [2026-08-15]
 
 ### New Features
@@ -107,8 +105,6 @@ Several features and fixes in this release were developed with the assistance of
 ### Contributors
 
 Special thanks to [Abdulstar](https://github.com/Abdulstar) for the .NET 10 upgrade, [AntekOlszewski](https://github.com/AntekOlszewski) for the icon pack cleanup, [PingouinFerreux](https://github.com/PingouinFerreux) for the README fix, and to [Theo-bos](https://github.com/Theo-bos), [Moreno-Gentili](https://github.com/Moreno-Gentili), and [Pxtl](https://github.com/Pxtl) for their reports and suggestions!
-
-Several features and fixes in this release were developed with the assistance of [Claude Code](https://claude.ai/claude-code).
 
 ## Papercut SMTP v7.7.2 [2026-03-22]
 
@@ -142,8 +138,6 @@ Several features and fixes in this release were developed with the assistance of
 ### Contributors
 
 Special thanks to [AntekOlszewski](https://github.com/AntekOlszewski) for fixing the Delete All race condition and [mguinness](https://github.com/mguinness) for documenting Aspire integration!
-
-Several features and fixes in this release were developed with the assistance of [Claude Code](https://claude.ai/claude-code).
 
 ## Papercut SMTP v7.6.2 [2025-11-11]
 
