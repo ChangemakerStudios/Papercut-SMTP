@@ -15,6 +15,7 @@ import {
   Monitor,
   Palette,
   Check,
+  Keyboard,
   type LucideIconData
 } from 'lucide-angular';
 import { MatDialog } from '@angular/material/dialog';
@@ -26,6 +27,8 @@ import { OptionsDialogComponent } from '../options-dialog/options-dialog.compone
 import { RulesDialogComponent } from '../rules-dialog/rules-dialog.component';
 import { LogDialogComponent } from '../log-dialog/log-dialog.component';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
+import { ShortcutsDialogComponent } from '../shortcuts-dialog/shortcuts-dialog.component';
+import { KeyboardShortcutService, formatCombo } from '../../services/keyboard-shortcut.service';
 import { Observable, map } from 'rxjs';
 
 @Component({
@@ -69,7 +72,8 @@ import { Observable, map } from 'rxjs';
             }
           </button>
     
-          <button class="papercut-nav-btn" (click)="showOptions()">
+          <button class="papercut-nav-btn" (click)="showOptions()"
+            [matTooltip]="'Options (' + optionsKey + ')'">
             <lucide-icon [img]="icons.Settings2" [size]="15"></lucide-icon>
             <span>Options</span>
           </button>
@@ -87,7 +91,14 @@ import { Observable, map } from 'rxjs';
           <app-connection-status></app-connection-status>
     
           <span class="nav-divider desktop-only"></span>
-    
+
+          <button class="papercut-nav-btn desktop-only"
+            (click)="showShortcuts()"
+            matTooltip="Keyboard shortcuts (?)"
+            aria-label="Keyboard shortcuts">
+            <lucide-icon [img]="icons.Keyboard" [size]="15"></lucide-icon>
+          </button>
+
           <!-- Theme accent picker -->
           <button class="papercut-nav-btn desktop-only"
             [matMenuTriggerFor]="accentMenu"
@@ -214,7 +225,11 @@ import { Observable, map } from 'rxjs';
   `]
 })
 export class NavigationComponent implements OnDestroy {
-  protected readonly icons = { Mail, ScrollText, ListChecks, Settings2, Zap, Sun, Moon, Monitor, Palette, Check };
+  protected readonly icons = { Mail, ScrollText, ListChecks, Settings2, Zap, Sun, Moon, Monitor, Palette, Check, Keyboard };
+
+  protected readonly optionsKey = formatCombo('Mod+,');
+
+  private readonly unregisterShortcuts: () => void;
 
   protected readonly themeOptions: { value: ThemePreference; label: string; icon: LucideIconData }[] = [
     { value: 'system', label: 'System', icon: Monitor },
@@ -234,8 +249,22 @@ export class NavigationComponent implements OnDestroy {
     private loggingService: LoggingService,
     private mcpService: McpService,
     private rulesApiService: RulesApiService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    shortcuts: KeyboardShortcutService
   ) {
+    this.unregisterShortcuts = shortcuts.register(
+      {
+        id: 'app.options', label: 'Options', group: 'App',
+        keys: ['Mod+,'],
+        run: () => this.showOptions()
+      },
+      {
+        id: 'app.shortcuts', label: 'Keyboard shortcuts', group: 'App',
+        keys: ['?'],
+        run: () => this.showShortcuts()
+      }
+    );
+
     this.isDarkTheme$ = this.themeService.theme$.pipe(
       map(theme => theme === 'dark')
     );
@@ -298,7 +327,13 @@ export class NavigationComponent implements OnDestroy {
     this.dialog.open(OptionsDialogComponent, { autoFocus: false });
   }
 
+  showShortcuts(): void {
+    this.dialog.open(ShortcutsDialogComponent, { autoFocus: false });
+  }
+
   ngOnDestroy() {
+    this.unregisterShortcuts();
+
     if (this.mcpCopiedTimeout) {
       clearTimeout(this.mcpCopiedTimeout);
     }

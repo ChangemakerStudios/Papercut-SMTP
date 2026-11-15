@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { LucideAngularModule, Forward, Trash2, Trash, Heart } from 'lucide-angular';
 import { ConfirmService } from '../../services/confirm.service';
+import { KeyboardShortcutService } from '../../services/keyboard-shortcut.service';
 
 @Component({
   selector: 'app-bottom-toolbar',
@@ -15,7 +16,7 @@ import { ConfirmService } from '../../services/confirm.service';
           <button class="toolbar-btn"
                   (click)="onForward()"
                   [disabled]="!canForward"
-                  matTooltip="Forward the open message">
+                  matTooltip="Forward the open message (F)">
             <lucide-icon [img]="icons.Forward" [size]="14"></lucide-icon>
             <span>Forward</span>
           </button>
@@ -23,7 +24,7 @@ import { ConfirmService } from '../../services/confirm.service';
           <button class="toolbar-btn toolbar-btn-danger"
                   (click)="onDeleteSelected()"
                   [disabled]="!selectedMessageCount"
-                  matTooltip="Delete selected message(s)">
+                  matTooltip="Delete selected message(s) (Del)">
             <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
             <span>Delete{{ selectedMessageCount ? ' (' + selectedMessageCount + ')' : '' }}</span>
           </button>
@@ -179,7 +180,7 @@ import { ConfirmService } from '../../services/confirm.service';
     }
   `]
 })
-export class BottomToolbarComponent {
+export class BottomToolbarComponent implements OnDestroy {
   protected readonly icons = { Forward, Trash2, Trash, Heart };
 
   @Input() selectedMessageCount = 0;
@@ -192,7 +193,29 @@ export class BottomToolbarComponent {
   @Output() deleteSelected = new EventEmitter<void>();
   @Output() deleteAll = new EventEmitter<void>();
 
-  constructor(private confirmService: ConfirmService) {}
+  private readonly unregisterShortcuts: () => void;
+
+  constructor(private confirmService: ConfirmService, shortcuts: KeyboardShortcutService) {
+    this.unregisterShortcuts = shortcuts.register(
+      {
+        id: 'message.forward', label: 'Forward', group: 'Open message',
+        keys: ['f'],
+        isEnabled: () => this.canForward,
+        run: () => this.onForward()
+      },
+      {
+        // the same confirm as the button: a stray key must not lose mail
+        id: 'messages.delete', label: 'Delete selected', group: 'Messages',
+        keys: ['Delete', '#', 'Backspace'],
+        isEnabled: () => this.selectedMessageCount > 0,
+        run: () => this.onDeleteSelected()
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.unregisterShortcuts();
+  }
 
   onForward(): void {
     this.forward.emit();

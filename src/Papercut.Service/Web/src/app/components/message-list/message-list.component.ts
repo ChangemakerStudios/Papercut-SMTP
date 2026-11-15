@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
@@ -17,6 +17,7 @@ import { PlatformNotificationService } from '../../services/platform-notificatio
 import { LoggingService } from '../../services/logging.service';
 import { MessageStateService } from '../../services/message-state.service';
 import { UserSettingsService, MessageSortOrder } from '../../services/user-settings.service';
+import { KeyboardShortcutService } from '../../services/keyboard-shortcut.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -69,7 +70,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     
       <!-- Message List Panel -->
       @if (!isListCollapsed) {
-        <div class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel"
+        <div #listPanel class="border-r border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col message-list-panel"
           [ngStyle]="{'flex': '0 0 ' + messageListWidth + 'px'}">
           <!-- Count bar -->
           <div class="list-count-bar">
@@ -343,6 +344,11 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   @ViewChild(CdkVirtualScrollViewport) viewport?: CdkVirtualScrollViewport;
 
+  /** The list itself, not the detail pane beside it: arrows and Ctrl+A act on it only while you are working in it. */
+  @ViewChild('listPanel') listPanel?: ElementRef<HTMLElement>;
+
+  private unregisterShortcuts?: () => void;
+
   /** Must match the fixed .msg-item height for virtual scrolling to line up */
   readonly messageRowHeight = 76;
 
@@ -379,7 +385,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
     private loggingService: LoggingService,
     private messageStateService: MessageStateService,
     private userSettingsService: UserSettingsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private shortcuts: KeyboardShortcutService
   ) {
     // Reload when the sort order preference changes
     this.userSettingsService.sortOrder$
@@ -426,6 +433,28 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadFirstChunk();
+
+    const listPanel = () => this.listPanel?.nativeElement;
+    this.unregisterShortcuts = this.shortcuts.register(
+      {
+        id: 'list.next', label: 'Next message', group: 'Messages',
+        keys: ['j'], scopedKeys: ['ArrowDown'], scope: listPanel,
+        isEnabled: () => this.allMessages.length > 0,
+        run: () => this.moveSelection(1)
+      },
+      {
+        id: 'list.previous', label: 'Previous message', group: 'Messages',
+        keys: ['k'], scopedKeys: ['ArrowUp'], scope: listPanel,
+        isEnabled: () => this.allMessages.length > 0,
+        run: () => this.moveSelection(-1)
+      },
+      {
+        id: 'list.selectAll', label: 'Select all messages', group: 'Messages',
+        keys: [], scopedKeys: ['Mod+a'], scope: listPanel,
+        isEnabled: () => this.allMessages.length > 0,
+        run: () => this.selectAllLoaded()
+      }
+    );
 
     // Start SignalR connection
     this.signalRService.start();
@@ -785,6 +814,56 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.messageStateService.setSelectedIds([...this.selectedIds]);
   }
 
+  /**
+   * j/k and the arrows: open the next or previous message, the way a plain
+   * click would, and keep it on screen. Nothing open yet starts at the top.
+   */
+  private moveSelection(delta: number): void {
+    const current = this.allMessages.findIndex(msg => msg.id === this.selectedMessageId);
+    const index = current === -1
+      ? 0
+      : Math.max(0, Math.min(this.allMessages.length - 1, current + delta));
+
+    const message = this.allMessages[index];
+    if (!message?.id) return;
+
+    this.selectedIds = new Set([message.id]);
+    this.anchorIndex = index;
+    this.publishSelection();
+    this.selectMessage(message.id);
+    this.scrollIntoView(index);
+
+    // arrows keep working after j/k, as they would after a click
+    this.shortcuts.noteInteraction(this.listPanel?.nativeElement);
+
+    // walking off the end of what is loaded fetches the next chunk
+    if (index >= this.allMessages.length - 5) {
+      this.loadNextChunk();
+    }
+  }
+
+  /** Every loaded message, ready for Delete. Messages not loaded yet are left out. */
+  private selectAllLoaded(): void {
+    this.selectedIds = new Set(this.allMessages.map(msg => msg.id!).filter(Boolean));
+    this.publishSelection();
+  }
+
+  /** Scrolls the least distance that shows the whole row. */
+  private scrollIntoView(index: number): void {
+    if (!this.viewport) return;
+
+    const top = index * this.messageRowHeight;
+    const bottom = top + this.messageRowHeight;
+    const offset = this.viewport.measureScrollOffset();
+    const height = this.viewport.getViewportSize();
+
+    if (top < offset) {
+      this.viewport.scrollToOffset(top);
+    } else if (bottom > offset + height) {
+      this.viewport.scrollToOffset(bottom - height);
+    }
+  }
+
 
 
   /**
@@ -805,6 +884,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.unregisterShortcuts?.();
+
     if (this.loadingTimeout) {
       clearTimeout(this.loadingTimeout);
       this.loadingTimeout = null;

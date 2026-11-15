@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, AfterViewInit, ViewChild, ElementRef, OnChanges, SimpleChanges, OnDestroy, NgZone } from '@angular/core';
 
 import { ToastNotificationService } from '../../services/toast-notification.service';
+import { KeyboardShortcutService } from '../../services/keyboard-shortcut.service';
 import { openInNewTab } from '../../utils/open-in-new-tab';
 
 @Component({
@@ -54,7 +55,8 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   constructor(
     private ngZone: NgZone,
-    private toastService: ToastNotificationService
+    private toastService: ToastNotificationService,
+    private shortcuts: KeyboardShortcutService
   ) {}
 
   ngAfterViewInit() {
@@ -139,6 +141,7 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
       }
 
       this.attachLinkHandler(doc);
+      this.attachKeyRelay(doc);
       this.hasWrittenContent = true;
       this.notifyWhenPainted(iframe, content);
       return true;
@@ -192,6 +195,18 @@ export class SafeIframeComponent implements AfterViewInit, OnChanges, OnDestroy 
 
       this.ngZone.run(() => this.openLink(href));
     });
+  }
+
+  /**
+   * Clicking into an email moves keyboard focus into this frame, and its key
+   * presses never reach the app's document -- so j/k would stop working until
+   * you clicked back on the list. Hand them to the shortcut service; it leaves
+   * the arrows to the frame, which still needs them to scroll.
+   *
+   * Re-attached on every write: doc.open() drops the document's listeners.
+   */
+  private attachKeyRelay(doc: Document): void {
+    doc.addEventListener('keydown', (event: KeyboardEvent) => this.shortcuts.handle(event, true));
   }
 
   private openLink(href: string): void {
