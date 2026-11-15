@@ -64,6 +64,7 @@ internal class PapercutServiceStartup
         // hosted services
         services.AddHostedService<PapercutServerHostedService>();
         services.AddHostedService<MessageWatcherHostedService>();
+        services.AddHostedService<MessageIndexHostedService>();
         services.AddHostedService<ParentProcessWatcher>();
     }
 

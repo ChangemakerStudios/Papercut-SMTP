@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideAngularModule, Forward, Trash2, Trash } from 'lucide-angular';
+import { LucideAngularModule, Forward, Trash2, Trash, Heart, Star } from 'lucide-angular';
 import { ConfirmService } from '../../services/confirm.service';
+import { KeyboardShortcutService } from '../../services/keyboard-shortcut.service';
 
 @Component({
   selector: 'app-bottom-toolbar',
@@ -15,7 +16,7 @@ import { ConfirmService } from '../../services/confirm.service';
           <button class="toolbar-btn"
                   (click)="onForward()"
                   [disabled]="!canForward"
-                  matTooltip="Forward the open message">
+                  matTooltip="Forward the open message (F)">
             <lucide-icon [img]="icons.Forward" [size]="14"></lucide-icon>
             <span>Forward</span>
           </button>
@@ -23,7 +24,7 @@ import { ConfirmService } from '../../services/confirm.service';
           <button class="toolbar-btn toolbar-btn-danger"
                   (click)="onDeleteSelected()"
                   [disabled]="!selectedMessageCount"
-                  matTooltip="Delete selected message(s)">
+                  matTooltip="Delete selected message(s) (Del)">
             <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
             <span>Delete{{ selectedMessageCount ? ' (' + selectedMessageCount + ')' : '' }}</span>
           </button>
@@ -39,6 +40,24 @@ import { ConfirmService } from '../../services/confirm.service';
 
         <!-- Right side - Status info -->
         <div class="toolbar-status">
+          <a href="https://github.com/ChangemakerStudios/Papercut-SMTP"
+             target="_blank"
+             rel="noopener"
+             class="ask-link"
+             matTooltip="A star on GitHub helps other people find Papercut.">
+            <lucide-icon [img]="icons.Star" [size]="12"></lucide-icon>
+            <span>Star</span>
+          </a>
+          <span class="status-sep" aria-hidden="true">·</span>
+          <a href="https://github.com/sponsors/Jaben"
+             target="_blank"
+             rel="noopener"
+             class="ask-link"
+             matTooltip="Papercut is free and built by one person. Sponsoring keeps it going.">
+            <lucide-icon [img]="icons.Heart" [size]="12"></lucide-icon>
+            <span>Sponsor</span>
+          </a>
+          <span class="status-sep" aria-hidden="true">·</span>
           <span class="status-text">
             Papercut SMTP —
             <a href="https://github.com/ChangemakerStudios/Papercut-SMTP"
@@ -125,6 +144,26 @@ import { ConfirmService } from '../../services/confirm.service';
       text-decoration: underline;
     }
 
+    .ask-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--pc-accent-text);
+      text-decoration: none;
+    }
+
+    .ask-link:hover {
+      text-decoration: underline;
+    }
+
+    .status-sep {
+      margin: 0 8px;
+      font-size: 11px;
+      color: var(--pc-faint);
+    }
+
     /* Mobile responsiveness */
     @media (max-width: 768px) {
       .toolbar-status {
@@ -150,8 +189,8 @@ import { ConfirmService } from '../../services/confirm.service';
     }
   `]
 })
-export class BottomToolbarComponent {
-  protected readonly icons = { Forward, Trash2, Trash };
+export class BottomToolbarComponent implements OnDestroy {
+  protected readonly icons = { Forward, Trash2, Trash, Heart, Star };
 
   @Input() selectedMessageCount = 0;
   @Input() totalMessageCount = 0;
@@ -163,7 +202,29 @@ export class BottomToolbarComponent {
   @Output() deleteSelected = new EventEmitter<void>();
   @Output() deleteAll = new EventEmitter<void>();
 
-  constructor(private confirmService: ConfirmService) {}
+  private readonly unregisterShortcuts: () => void;
+
+  constructor(private confirmService: ConfirmService, shortcuts: KeyboardShortcutService) {
+    this.unregisterShortcuts = shortcuts.register(
+      {
+        id: 'message.forward', label: 'Forward', group: 'Open message',
+        keys: ['f'],
+        isEnabled: () => this.canForward,
+        run: () => this.onForward()
+      },
+      {
+        // the same confirm as the button: a stray key must not lose mail
+        id: 'messages.delete', label: 'Delete selected', group: 'Messages',
+        keys: ['Delete', '#', 'Backspace'],
+        isEnabled: () => this.selectedMessageCount > 0,
+        run: () => this.onDeleteSelected()
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.unregisterShortcuts();
+  }
 
   onForward(): void {
     this.forward.emit();

@@ -22,8 +22,11 @@ import { RefDto } from './ref-dto';
  * Matches the C# GetMessagesResponse class.
  */
 export interface GetMessagesResponse {
-  /** The total number of messages available */
+  /** Messages matching the search, or every message when there is none */
   totalMessageCount: number;
+
+  /** Every message, search or not */
+  inboxCount?: number;
   
   /** The list of message references for the current page */
   messages: RefDto[];

@@ -3,6 +3,7 @@
 
 [![Build and Release](https://github.com/ChangemakerStudios/Papercut-SMTP/actions/workflows/build.yml/badge.svg)](https://github.com/ChangemakerStudios/Papercut-SMTP/actions/workflows/build.yml)
 [![GitHub release](https://img.shields.io/github/v/release/ChangemakerStudios/Papercut-SMTP?label=release)](https://github.com/ChangemakerStudios/Papercut-SMTP/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/ChangemakerStudios/Papercut-SMTP/total?logo=github&label=downloads)](https://github.com/ChangemakerStudios/Papercut-SMTP/releases)
 [![Docker Pulls](https://img.shields.io/docker/pulls/changemakerstudiosus/papercut-smtp?logo=docker)](https://hub.docker.com/r/changemakerstudiosus/papercut-smtp)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/Jaben?logo=githubsponsors&label=sponsors)](https://github.com/sponsors/Jaben)
 
@@ -73,6 +74,12 @@ See [ReleaseNotes.md](ReleaseNotes.md) for the full release history.
 ## Support Papercut SMTP
 
 Papercut SMTP is free and open source. If it saves you time, consider [sponsoring the project](https://github.com/sponsors/Jaben) — sponsorships go directly toward project costs like the annual code-signing certificate that keeps the installer trusted by Windows.
+
+If your team relies on Papercut in CI or local development, a company sponsorship keeps it maintained and puts your logo here and in the docs. GitHub can invoice your organization, so no personal card is needed.
+
+## More from Changemaker Studios
+
+- **[PowerPlanSwitcher](https://github.com/ChangemakerStudios/PowerSwitcher)**: switch Windows power plans from the tray, by hand or automatically when you plug in, unplug, or start work.
 
 ## License
 

@@ -18,11 +18,14 @@
 
 namespace Papercut.Service.Infrastructure.MessageWatching;
 
+using System.Reactive.Linq;
+
 using Microsoft.Extensions.Hosting;
 
 public class MessageWatcherHostedService(Lazy<MessageWatcher> messageWatcher, IMessageBus messageBus, ILogger logger) : IHostedService
 {
     private MessageWatcher _watcher;
+    private IDisposable? _refreshSubscription;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -35,11 +38,29 @@ public class MessageWatcherHostedService(Lazy<MessageWatcher> messageWatcher, IM
             await messageBus.PublishAsync(new NewMessageEvent(args.NewMessage.ToDto()), cancellationToken);
         };
 
+        // a cleanup rule deletes in a burst: one refresh for the lot, not one per file
+        _refreshSubscription = Observable.FromEventPattern(
+                e => _watcher.RefreshNeeded += e,
+                e => _watcher.RefreshNeeded -= e)
+            .Throttle(TimeSpan.FromMilliseconds(100))
+            .Subscribe(async _ =>
+            {
+                try
+                {
+                    await messageBus.PublishAsync(new MessageListChangedEvent(), CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Error publishing message list change");
+                }
+            });
+
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        _refreshSubscription?.Dispose();
         _watcher.Dispose();
         
         return Task.CompletedTask;

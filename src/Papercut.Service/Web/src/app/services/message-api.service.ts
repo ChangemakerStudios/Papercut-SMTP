@@ -54,7 +54,7 @@ export class MessageApiService {
    * @param start The starting index for pagination (default: 0)
    * @returns Observable of GetMessagesResponse with converted dates
    */
-  getMessages(limit: number = 10, start: number = 0, order: 'desc' | 'asc' = 'desc'): Observable<GetMessagesResponse> {
+  getMessages(limit: number = 10, start: number = 0, order: 'desc' | 'asc' = 'desc', search: string = ''): Observable<GetMessagesResponse> {
     let params = new HttpParams();
 
     if (limit !== undefined) {
@@ -65,6 +65,9 @@ export class MessageApiService {
     }
     if (order !== 'desc') {
       params = params.set('order', order);
+    }
+    if (search) {
+      params = params.set('search', search);
     }
     
     return this.http.get<GetMessagesResponse>(this.baseUrl, { params }).pipe(
@@ -200,6 +203,19 @@ export class MessageApiService {
   getMessageHtml(messageId: string): Observable<string> {
     const encodedId = encodeURIComponent(messageId);
     return this.http.get(`${this.baseUrl}/${encodedId}/html`, { responseType: 'text' });
+  }
+
+  markRead(messageId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${encodeURIComponent(messageId)}/read`, null);
+  }
+
+  markUnread(messageId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${encodeURIComponent(messageId)}/unread`, null);
+  }
+
+  /** Marks every message read. */
+  markAllRead(): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/read-all`, null);
   }
 
   /**

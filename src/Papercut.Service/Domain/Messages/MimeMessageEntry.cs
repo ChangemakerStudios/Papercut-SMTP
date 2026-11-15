@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -24,7 +24,6 @@ public class MimeMessageEntry(MessageEntry entry, MimeMessage message) : Message
     
     public string? Subject => MailMessage?.Subject;
 
-    public DateTime? Created => _created;
 
     public MimeMessage MailMessage { get; } = message;
 }

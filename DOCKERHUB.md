@@ -771,8 +771,14 @@ QUIT
 
 - **GitHub Repository:** https://github.com/ChangemakerStudios/Papercut-SMTP
 - **Desktop Application:** https://github.com/ChangemakerStudios/Papercut-SMTP/releases
-- **Documentation:** https://github.com/ChangemakerStudios/Papercut-SMTP/tree/develop/src/Papercut.Service
+- **Documentation:** https://www.papercut-smtp.com/docker/
 - **Issues:** https://github.com/ChangemakerStudios/Papercut-SMTP/issues
+
+---
+
+## Support Papercut SMTP
+
+Papercut SMTP is free, open source, and maintained by one person. If your team runs it in CI or local development, a [company sponsorship](https://github.com/sponsors/Jaben) keeps it maintained and puts your logo in the README and docs. GitHub can invoice your organization, so no personal card is needed.
 
 ---
 

@@ -1,5 +1,25 @@
 # Release Notes
 
+## Papercut SMTP v8.1.0 [2026-11-15]
+
+### New Features
+
+- **Search** - A search box at the top of the message list finds messages by any text in them: subject, sender and recipient addresses, body, link URLs and attachment names. Any 3 or more characters match inside longer words, so part of an address, a code or a token works. Press `/` to jump to it. While searching, **Select all** selects every result so you can delete them in one go. Search also works in the API (`GET /api/messages?search=...`) and the MCP `list_messages` tool. Fixes [#250](https://github.com/ChangemakerStudios/Papercut-SMTP/issues/250) (Thanks, [VenkatRamanan6](https://github.com/VenkatRamanan6), [trendy-software](https://github.com/trendy-software) and [agail](https://github.com/agail)!)
+- **Read Status That Sticks** - A message stays unread until you open it, and Papercut remembers this across restarts. Before, anything older than 5 minutes showed as read. **Mark all read** is in the list header, and right-click a message to mark it read or unread. After updating, the mail already in your inbox starts out read.
+- **Keyboard Shortcuts** - `j` / `k` for the next and previous message, `Del` to delete, `f` to forward, `1`-`5` for the message tabs, `/` to search, `Ctrl+,` for Options, and `?` for the full list.
+- **Right-Click Menu** - Right-click a message for Open, Forward, Mark as read or unread, Copy sender address, Save as .eml and Delete. With several messages selected, it acts on all of them. In the desktop app, the browser's own menu (Back, Refresh, Print) is gone: inside an email you get Open link, Copy link and Copy, and text fields keep Cut, Copy and Paste.
+
+### Improvements
+
+- **Faster Message List** - The list reads from the new index instead of opening every message file, so scrolling through a large inbox no longer stalls, and more messages load at a time.
+- **Search Index** - Search and read status are kept in `papercut-index.db` beside your messages (in Docker, in the `/app/Incoming` volume). It is built in the background on the first start and is rebuilt from the messages if deleted. If it can't be created, Papercut works as before.
+- **Sponsor and Star Links** - The footer links to GitHub Sponsors and to starring the project. Papercut is free and built by one person, and both help.
+
+### Bug Fixes
+
+- **Deleted Messages Staying in the List** - Messages deleted outside the window, by a Cleanup Mail rule, another browser tab or the API, now disappear from the list straight away. If the open message was deleted, the view clears.
+- **Esc Not Closing Dialogs** - Esc now closes Options, Rules, the log and the shortcuts list even when you were last clicking in a message.
+
 ## Papercut SMTP v8.0.2 [2026-11-08]
 
 ### Bug Fixes

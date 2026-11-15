@@ -1,13 +1,14 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { Observable, finalize, filter, skip, Subject, takeUntil } from 'rxjs';
+import { Observable, debounceTime, finalize, filter, forkJoin, skip, Subject, takeUntil } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MessageService } from '../../services/message.service';
 import { MessageApiService } from '../../services/message-api.service';
@@ -17,10 +18,11 @@ import { PlatformNotificationService } from '../../services/platform-notificatio
 import { LoggingService } from '../../services/logging.service';
 import { MessageStateService } from '../../services/message-state.service';
 import { UserSettingsService, MessageSortOrder } from '../../services/user-settings.service';
+import { KeyboardShortcutService } from '../../services/keyboard-shortcut.service';
 import { GetMessagesResponse, RefDto, DetailDto } from '../../models';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideAngularModule, PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp } from 'lucide-angular';
+import { LucideAngularModule, PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X, CheckCheck, MailOpen, Mail, Forward, Copy, Download, Trash2, Eye } from 'lucide-angular';
 import { ResizerComponent } from '../resizer/resizer.component';
 import { MessageListItemComponent } from './message-list-item.component';
 import { MessageListEmptyStateComponent } from './message-list-empty-state.component';
@@ -37,6 +39,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
     MatChipsModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatMenuModule,
     LucideAngularModule,
     ScrollingModule,
     ResizerComponent,
@@ -74,7 +77,11 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
           <!-- Count bar -->
           <div class="list-count-bar">
             <span class="list-count">
-              {{ totalCount }} {{ totalCount === 1 ? 'message' : 'messages' }}
+              @if (activeSearch) {
+                {{ totalCount }} of {{ inboxCount }} {{ inboxCount === 1 ? 'message' : 'messages' }}
+              } @else {
+                {{ totalCount }} {{ totalCount === 1 ? 'message' : 'messages' }}
+              }
             </span>
             <!-- Sort toggle. Shares the Options setting, so flipping it here
             sticks and the two never disagree. -->
@@ -83,22 +90,52 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
               [matTooltip]="sortOrder === 'desc' ? 'Newest first' : 'Oldest first'">
               <lucide-icon [img]="sortOrder === 'desc' ? icons.ArrowDown : icons.ArrowUp" [size]="14"></lucide-icon>
             </button>
-            @if (allMessages.length < totalCount) {
+            @if (allMessages.length < totalCount && !activeSearch) {
               <span class="list-loaded">
                 {{ allMessages.length }} loaded
               </span>
             }
+            @if (activeSearch && totalCount > 0) {
+              <button class="select-results-btn" (click)="selectAllResults()"
+                [matTooltip]="'Select all ' + totalCount + ' to delete them'">Select all</button>
+            }
             @if (isLoading || isLoadingMore) {
               <mat-spinner diameter="12" strokeWidth="2"></mat-spinner>
+            }
+            @if (mayHaveUnread) {
+              <button class="rail-btn mark-read-btn" (click)="markAllRead()"
+                aria-label="Mark all read" matTooltip="Mark all read" matTooltipPosition="left">
+                <lucide-icon [img]="icons.CheckCheck" [size]="15"></lucide-icon>
+              </button>
             }
             <button class="rail-btn count-bar-btn" (click)="toggleListCollapsed()"
               matTooltip="Collapse the message list" matTooltipPosition="left">
               <lucide-icon [img]="icons.PanelLeftClose" [size]="15"></lucide-icon>
             </button>
           </div>
+          <div class="list-search">
+            <lucide-icon [img]="icons.Search" [size]="14" class="search-icon"></lucide-icon>
+            <input #searchInput type="text" class="search-input"
+              placeholder="Search messages"
+              aria-label="Search messages"
+              autocomplete="off" spellcheck="false"
+              [value]="searchText"
+              (input)="onSearchInput(searchInput.value)"
+              (keydown.enter)="applySearch(searchInput.value)"
+              (keydown.escape)="onSearchEscape()">
+            @if (searchText) {
+              <button class="rail-btn search-clear" (click)="clearSearch()" aria-label="Clear search">
+                <lucide-icon [img]="icons.X" [size]="13"></lucide-icon>
+              </button>
+            }
+          </div>
           <!-- No Messages Placeholder -->
           @if (!isLoading && allMessages.length === 0) {
-            <app-message-list-empty-state></app-message-list-empty-state>
+            @if (activeSearch) {
+              <div class="search-empty">No messages match “{{ activeSearch }}”</div>
+            } @else {
+              <app-message-list-empty-state></app-message-list-empty-state>
+            }
           }
           <!-- Virtualized list: only the visible rows exist in the DOM, and the
           next chunk loads as it comes into view -->
@@ -115,6 +152,7 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
                 [selected]="message.id === selectedMessageId"
                 [inSelection]="isInSelection(message.id)"
                 (select)="onRowClick(message.id!, $event)"
+                (menu)="onRowMenu(message, $event)"
                 class="block w-full">
               </app-message-list-item>
             </cdk-virtual-scroll-viewport>
@@ -122,6 +160,39 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
         </div>
       }
     
+      <!-- Right-click menu, opened at the pointer -->
+      <div class="row-menu-anchor" [style.left.px]="menuAt.x" [style.top.px]="menuAt.y"
+        [matMenuTriggerFor]="rowMenu" #rowMenuTrigger="matMenuTrigger"></div>
+      <mat-menu #rowMenu="matMenu" class="row-menu">
+        @if (menuTargets.length === 1) {
+          <button mat-menu-item (click)="openFromMenu()">
+            <lucide-icon [img]="icons.Eye" [size]="15"></lucide-icon><span>Open</span>
+          </button>
+          <button mat-menu-item (click)="forwardFromMenu()">
+            <lucide-icon [img]="icons.Forward" [size]="15"></lucide-icon><span>Forward…</span>
+          </button>
+        }
+        <button mat-menu-item (click)="setReadFromMenu(menuMarksRead)">
+          <lucide-icon [img]="menuMarksRead ? icons.MailOpen : icons.Mail" [size]="15"></lucide-icon>
+          <span>{{ menuMarksRead ? 'Mark as read' : 'Mark as unread' }}</span>
+        </button>
+        @if (menuTargets.length === 1) {
+          @if (menuTargets[0].from?.[0]?.address) {
+            <button mat-menu-item (click)="copySenderFromMenu()">
+              <lucide-icon [img]="icons.Copy" [size]="15"></lucide-icon><span>Copy sender address</span>
+            </button>
+          }
+          <button mat-menu-item (click)="saveFromMenu()">
+            <lucide-icon [img]="icons.Download" [size]="15"></lucide-icon><span>Save as .eml</span>
+          </button>
+        }
+        <div class="row-menu-sep"></div>
+        <button mat-menu-item class="row-menu-danger" (click)="deleteFromMenu()">
+          <lucide-icon [img]="icons.Trash2" [size]="15"></lucide-icon>
+          <span>{{ menuTargets.length > 1 ? 'Delete ' + menuTargets.length + ' messages' : 'Delete' }}</span>
+        </button>
+      </mat-menu>
+
       <!-- Resizer Handle -->
       @if (!isListCollapsed) {
         <div class="flex-shrink-0 list-resizer">
@@ -209,6 +280,68 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
       color: var(--pc-faint);
     }
 
+    .list-search {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      padding: 6px 10px 6px 14px;
+      border-bottom: 1px solid var(--pc-border);
+      background: var(--pc-surface);
+    }
+
+    .search-icon {
+      display: inline-flex;
+      color: var(--pc-faint);
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 0;
+      padding: 3px 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--pc-ink);
+      font-size: var(--pc-text-ui);
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .search-input::placeholder {
+      color: var(--pc-faint);
+    }
+
+    .list-search:focus-within {
+      box-shadow: inset 0 -2px 0 var(--pc-accent);
+    }
+
+    .search-clear {
+      width: 20px;
+      height: 20px;
+    }
+
+    .select-results-btn {
+      padding: 0;
+      border: none;
+      background: none;
+      color: var(--pc-accent-text);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .select-results-btn:hover {
+      text-decoration: underline;
+    }
+
+    .search-empty {
+      padding: 24px 16px;
+      text-align: center;
+      color: var(--pc-muted);
+      font-size: var(--pc-text-ui);
+    }
+
     cdk-virtual-scroll-viewport {
       min-height: 0;
     }
@@ -287,6 +420,51 @@ import { MessageListNoSelectionComponent } from './message-list-no-selection.com
       margin-right: -4px;
     }
 
+    .row-menu-anchor {
+      position: fixed;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    /* the menu panel lives in the overlay, outside this component */
+    ::ng-deep .row-menu .mat-mdc-menu-item {
+      min-height: 34px;
+    }
+
+    ::ng-deep .row-menu .mat-mdc-menu-item-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: var(--pc-text-ui);
+    }
+
+    ::ng-deep .row-menu lucide-icon {
+      display: inline-flex;
+      color: var(--pc-muted);
+    }
+
+    .row-menu-sep {
+      height: 1px;
+      margin: 4px 0;
+      background: var(--pc-border);
+    }
+
+    .row-menu-danger,
+    .row-menu-danger lucide-icon {
+      color: var(--pc-danger, #c0392b) !important;
+    }
+
+    .mark-read-btn {
+      width: 22px;
+      height: 22px;
+      margin-left: auto;
+    }
+
+    .mark-read-btn + .count-bar-btn {
+      margin-left: 0;
+    }
+
     .sort-btn {
       width: 20px;
       height: 20px;
@@ -343,18 +521,46 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   @ViewChild(CdkVirtualScrollViewport) viewport?: CdkVirtualScrollViewport;
 
+  private unregisterShortcuts?: () => void;
+
   /** Must match the fixed .msg-item height for virtual scrolling to line up */
   readonly messageRowHeight = 76;
 
   /** How many messages are fetched per trip to the server */
-  private readonly chunkSize = 100;
+  private readonly chunkSize = 250;
 
   allMessages: RefDto[] = [];
+
+  /** Messages matching the search (every message without one): what the list pages through. */
   totalCount = 0;
+
+  /** Every message, search or not: "3 of 120", and what Delete All removes. */
+  inboxCount = 0;
   isLoadingMore = false;
 
+  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
+
+  /** What is typed in the box. */
+  searchText = '';
+
+  /** What the list is showing results for; trails searchText while typing. */
+  activeSearch = '';
+
+  private readonly searchTyped$ = new Subject<string>();
+
+  @ViewChild('rowMenuTrigger') rowMenuTrigger?: MatMenuTrigger;
+
+  /** Where the right-click happened, and the messages its menu acts on. */
+  menuAt = { x: 0, y: 0 };
+  menuTargets: RefDto[] = [];
+
+  /** Any of them unread: the menu offers to mark them read, otherwise unread. */
+  get menuMarksRead(): boolean {
+    return this.menuTargets.some(msg => !msg.isRead);
+  }
+
   // Resizer properties
-  protected readonly icons = { PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp };
+  protected readonly icons = { PanelLeftClose, PanelLeftOpen, ArrowDown, ArrowUp, Search, X, CheckCheck, MailOpen, Mail, Forward, Copy, Download, Trash2, Eye };
 
   messageListWidth = 400; // Default width
 
@@ -379,8 +585,14 @@ export class MessageListComponent implements OnInit, OnDestroy {
     private loggingService: LoggingService,
     private messageStateService: MessageStateService,
     private userSettingsService: UserSettingsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private shortcuts: KeyboardShortcutService
   ) {
+    // Search as you type, once typing pauses
+    this.searchTyped$
+      .pipe(debounceTime(250), takeUntil(this.destroy$))
+      .subscribe(text => this.applySearch(text));
+
     // Reload when the sort order preference changes
     this.userSettingsService.sortOrder$
       .pipe(skip(1), takeUntil(this.destroy$))
@@ -426,6 +638,26 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadFirstChunk();
+
+    this.unregisterShortcuts = this.shortcuts.register(
+      {
+        id: 'list.next', label: 'Next message', group: 'Messages',
+        keys: ['j'],
+        isEnabled: () => this.allMessages.length > 0,
+        run: () => this.moveSelection(1)
+      },
+      {
+        id: 'list.previous', label: 'Previous message', group: 'Messages',
+        keys: ['k'],
+        isEnabled: () => this.allMessages.length > 0,
+        run: () => this.moveSelection(-1)
+      },
+      {
+        id: 'list.search', label: 'Search messages', group: 'Messages',
+        keys: ['/'],
+        run: () => this.focusSearch()
+      }
+    );
 
     // Start SignalR connection
     this.signalRService.start();
@@ -525,7 +757,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe(response => {
         this.allMessages = response.messages;
-        this.setTotalCount(response.totalMessageCount);
+        this.setCounts(response);
       });
   }
 
@@ -543,7 +775,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
         const fresh = response.messages.filter(m => !known.has(m.id));
 
         this.allMessages = [...this.allMessages, ...fresh];
-        this.setTotalCount(response.totalMessageCount);
+        this.setCounts(response);
       });
   }
 
@@ -556,13 +788,93 @@ export class MessageListComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** A page of the list as it stands. A reply for a search since replaced is dropped. */
   private fetch(start: number, limit: number): Observable<GetMessagesResponse> {
-    return this.messageApiService.getMessages(limit, start, this.userSettingsService.getSortOrder());
+    const search = this.activeSearch;
+
+    return this.messageApiService
+      .getMessages(limit, start, this.userSettingsService.getSortOrder(), search)
+      .pipe(filter(() => search === this.activeSearch));
   }
 
-  private setTotalCount(total: number): void {
-    this.totalCount = total;
-    this.messageStateService.setTotalCount(total);
+  private setCounts(response: GetMessagesResponse): void {
+    this.totalCount = response.totalMessageCount;
+    this.inboxCount = response.inboxCount ?? response.totalMessageCount;
+    this.messageStateService.setTotalCount(this.inboxCount);
+  }
+
+  /** Mail added or removed here: the inbox always changes, the results only if it was listed. */
+  private adjustCounts(delta: number, listed: boolean): void {
+    if (listed) this.totalCount = Math.max(0, this.totalCount + delta);
+    this.inboxCount = Math.max(0, this.inboxCount + delta);
+    this.messageStateService.setTotalCount(this.inboxCount);
+  }
+
+  onSearchInput(text: string): void {
+    this.searchText = text;
+    this.searchTyped$.next(text);
+  }
+
+  /** Esc clears the search, and a second Esc leaves the box. */
+  onSearchEscape(): void {
+    if (this.searchText) {
+      this.clearSearch();
+    } else {
+      this.searchInput?.nativeElement.blur();
+    }
+  }
+
+  clearSearch(): void {
+    this.searchText = '';
+    this.applySearch('');
+  }
+
+  /** Shows results for text, from the top. The open message stays open. */
+  applySearch(text: string): void {
+    const search = text.trim();
+    if (search === this.activeSearch) return;
+
+    this.activeSearch = search;
+    this.selectedIds = this.selectedMessageId ? new Set([this.selectedMessageId]) : new Set();
+    this.anchorIndex = null;
+    this.publishSelection();
+
+    this.viewport?.scrollToOffset(0);
+    this.loadFirstChunk();
+  }
+
+  private focusSearch(): void {
+    if (this.isListCollapsed) this.toggleListCollapsed();
+
+    // the box only exists once the expanded list has rendered
+    setTimeout(() => {
+      this.searchInput?.nativeElement.focus();
+      this.searchInput?.nativeElement.select();
+    });
+  }
+
+  /** Ticks every result, loading any not on screen yet, ready for Delete. */
+  selectAllResults(): void {
+    const select = () => {
+      this.selectedIds = new Set(this.allMessages.map(msg => msg.id!).filter(Boolean));
+      this.publishSelection();
+    };
+
+    if (this.allMessages.length >= this.totalCount) {
+      select();
+      return;
+    }
+
+    this.isLoadingMore = true;
+
+    this.fetch(this.allMessages.length, this.totalCount - this.allMessages.length)
+      .pipe(finalize(() => { this.isLoadingMore = false; }))
+      .subscribe(response => {
+        const known = new Set(this.allMessages.map(m => m.id));
+        this.allMessages = [...this.allMessages, ...response.messages.filter(m => !known.has(m.id))];
+        this.setCounts(response);
+        select();
+      });
   }
 
   private handleNewMessage(newMessage: RefDto): void {
@@ -589,6 +901,13 @@ export class MessageListComponent implements OnInit, OnDestroy {
       );
     }
 
+    // the server knows whether it matches the search; let it decide
+    if (this.activeSearch) {
+      this.adjustCounts(1, false);
+      this.refreshCurrentPage();
+      return;
+    }
+
     const alreadyListed = this.allMessages.some(msg => msg.id === newMessage.id);
 
     if (!alreadyListed) {
@@ -605,7 +924,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
       this.loggingService.debug('Added new message to list', { messageId: newMessage.id });
     }
 
-    this.setTotalCount(this.totalCount + 1);
+    this.adjustCounts(1, true);
   }
 
   /**
@@ -628,7 +947,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
     }
 
     this.allMessages = this.allMessages.filter(msg => !msg.id || !gone.has(msg.id));
-    this.setTotalCount(Math.max(0, this.totalCount - deletedIds.length));
+    this.adjustCounts(-deletedIds.length, true);
 
     this.selectedIds = new Set();
     this.anchorIndex = null;
@@ -660,9 +979,36 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.fetch(0, loaded)
       .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe(response => {
+        const openId = this.selectedMessageId;
+        const wasListed = this.allMessages.some(msg => msg.id === openId);
+        const shrank = response.totalMessageCount < this.totalCount;
+
         this.allMessages = response.messages;
-        this.setTotalCount(response.totalMessageCount);
+        this.setCounts(response);
+
+        // a delete only moves rows up, so a row missing from a shorter list is
+        // really gone -- new mail can push one past the loaded window, this can't
+        if (shrank) {
+          this.dropSelectionsGoneFromList(openId, wasListed);
+        }
       });
+  }
+
+  /** Something outside this window deleted mail, maybe the one being read. */
+  private dropSelectionsGoneFromList(openId: string | null, wasListed: boolean): void {
+    const listed = new Set(this.allMessages.map(msg => msg.id));
+    const stillTicked = [...this.selectedIds].filter(id => listed.has(id));
+
+    if (stillTicked.length !== this.selectedIds.size) {
+      this.selectedIds = new Set(stillTicked);
+      this.anchorIndex = null;
+      this.publishSelection();
+    }
+
+    if (wasListed && openId && !listed.has(openId)) {
+      this.selectedMessageId = null;
+      this.router.navigate(['/'], { queryParamsHandling: 'preserve' });
+    }
   }
 
   trackByMessageId(index: number, message: RefDto): string {
@@ -758,6 +1104,47 @@ export class MessageListComponent implements OnInit, OnDestroy {
     this.messageStateService.setSelectedIds([...this.selectedIds]);
   }
 
+  /**
+   * j/k: open the next or previous message, the way a plain
+   * click would, and keep it on screen. Nothing open yet starts at the top.
+   */
+  private moveSelection(delta: number): void {
+    const current = this.allMessages.findIndex(msg => msg.id === this.selectedMessageId);
+    const index = current === -1
+      ? 0
+      : Math.max(0, Math.min(this.allMessages.length - 1, current + delta));
+
+    const message = this.allMessages[index];
+    if (!message?.id) return;
+
+    this.selectedIds = new Set([message.id]);
+    this.anchorIndex = index;
+    this.publishSelection();
+    this.selectMessage(message.id);
+    this.scrollIntoView(index);
+
+    // walking off the end of what is loaded fetches the next chunk
+    if (index >= this.allMessages.length - 5) {
+      this.loadNextChunk();
+    }
+  }
+
+  /** Scrolls the least distance that shows the whole row. */
+  private scrollIntoView(index: number): void {
+    if (!this.viewport) return;
+
+    const top = index * this.messageRowHeight;
+    const bottom = top + this.messageRowHeight;
+    const offset = this.viewport.measureScrollOffset();
+    const height = this.viewport.getViewportSize();
+
+    if (top < offset) {
+      this.viewport.scrollToOffset(top);
+    } else if (bottom > offset + height) {
+      this.viewport.scrollToOffset(bottom - height);
+    }
+  }
+
 
 
   /**
@@ -766,6 +1153,85 @@ export class MessageListComponent implements OnInit, OnDestroy {
    * list load reports), but waiting for that round trip would leave the row
    * bold under the reader's eyes.
    */
+  /**
+   * Right-click acts on the ticked rows when the click is on one of them, the
+   * way a file manager does; on any other row it ticks just that one first.
+   */
+  onRowMenu(message: RefDto, event: MouseEvent): void {
+    if (!message.id) return;
+    event.preventDefault();
+
+    if (!this.selectedIds.has(message.id)) {
+      this.selectedIds = new Set([message.id]);
+      this.anchorIndex = this.allMessages.findIndex(msg => msg.id === message.id);
+      this.publishSelection();
+    }
+
+    this.menuTargets = this.allMessages.filter(msg => !!msg.id && this.selectedIds.has(msg.id));
+    this.menuAt = { x: event.clientX, y: event.clientY };
+
+    // the anchor has to move to the pointer before the menu measures it
+    setTimeout(() => this.rowMenuTrigger?.openMenu());
+  }
+
+  openFromMenu(): void {
+    const id = this.menuTargets[0]?.id;
+    if (id) this.selectMessage(id);
+  }
+
+  forwardFromMenu(): void {
+    const id = this.menuTargets[0]?.id;
+    if (id) this.messageStateService.requestForward(id);
+  }
+
+  setReadFromMenu(read: boolean): void {
+    const targets = this.menuTargets.filter(msg => !!msg.id && !!msg.isRead !== read);
+    if (targets.length === 0) return;
+
+    forkJoin(targets.map(msg => read
+      ? this.messageApiService.markRead(msg.id!)
+      : this.messageApiService.markUnread(msg.id!)))
+      .subscribe({
+        next: () => targets.forEach(msg => msg.isRead = read),
+        error: error => {
+          this.loggingService.error('Failed to change read status', error);
+          this.toastService.showError('Could not change read status');
+          this.refreshCurrentPage();
+        }
+      });
+  }
+
+  copySenderFromMenu(): void {
+    const address = this.menuTargets[0]?.from?.[0]?.address;
+    if (!address || !navigator.clipboard) return;
+
+    navigator.clipboard.writeText(address).then(
+      () => this.toastService.showInfo(`Copied ${address}`),
+      () => this.toastService.showError('Could not copy to the clipboard'));
+  }
+
+  saveFromMenu(): void {
+    const id = this.menuTargets[0]?.id;
+    if (id) this.messageApiService.downloadRawMessage(id);
+  }
+
+  /** The same confirm and delete as the toolbar button and the Del key. */
+  deleteFromMenu(): void {
+    this.shortcuts.run('messages.delete');
+  }
+
+  /** Anything unread on screen, or more mail than is loaded to tell. */
+  get mayHaveUnread(): boolean {
+    return this.allMessages.length < this.inboxCount || this.allMessages.some(msg => !msg.isRead);
+  }
+
+  markAllRead(): void {
+    this.messageApiService.markAllRead().subscribe({
+      next: () => this.allMessages.forEach(msg => msg.isRead = true),
+      error: error => this.loggingService.error('Failed to mark all read', error)
+    });
+  }
+
   private markRead(messageId: string): void {
     const message = this.allMessages.find(msg => msg.id === messageId);
     if (message && !message.isRead) {
@@ -778,6 +1244,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.unregisterShortcuts?.();
+
     if (this.loadingTimeout) {
       clearTimeout(this.loadingTimeout);
       this.loadingTimeout = null;

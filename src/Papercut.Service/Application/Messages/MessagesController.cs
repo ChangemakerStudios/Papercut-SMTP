@@ -38,14 +38,15 @@ public class MessagesController(
     IMessageRepository messageRepository,
     IMimeMessageLoader messageLoader,
     MessageReadStateService readState,
+    MessageListService messageList,
     IReceivedDataHandler receivedDataHandler,
     ILogger logger)
     : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<GetMessagesResponse>> GetAll(int limit = 10, int start = 0, string order = "desc", CancellationToken token = default)
+    public async Task<ActionResult<GetMessagesResponse>> GetAll(int limit = 10, int start = 0, string order = "desc", string? search = null, CancellationToken token = default)
     {
-        var messageEntries = messageRepository.LoadMessages().ToList();
+        var messageEntries = messageList.LoadEntries();
 
         if (messageEntries.Count == 0)
         {
@@ -70,29 +71,9 @@ public class MessagesController(
         // Add ETag to response
         Response.Headers.ETag = etag;
 
-        var ordered = string.Equals(order, "asc", StringComparison.OrdinalIgnoreCase)
-            ? messageEntries.OrderBy(msg => msg.ModifiedDate)
-            : messageEntries.OrderByDescending(msg => msg.ModifiedDate);
+        var ascending = string.Equals(order, "asc", StringComparison.OrdinalIgnoreCase);
 
-        var tasks =
-            ordered
-                .Skip(start)
-                .Take(limit)
-                .Select(async e =>
-                {
-                    var dto = RefDto.CreateFrom(new MimeMessageEntry(e, (await messageLoader.GetAsync(e, token))!));
-
-                    // HasBeenSeen only knows the message's age; this knows whether
-                    // anyone actually opened it
-                    dto.IsRead |= readState.IsRead(dto.Id!);
-
-                    return dto;
-                })
-                .ToArray();
-
-        var messages = await Task.WhenAll(tasks).WaitAsync(token);
-
-        return new GetMessagesResponse(messageEntries.Count, messages);
+        return await messageList.ListAsync(messageEntries, start, limit, ascending, search, token);
     }
 
     /// <summary>
@@ -156,6 +137,33 @@ public class MessagesController(
         return this.NoContent();
     }
 
+    /// <summary>
+    /// Marks every message read.
+    /// </summary>
+    [HttpPost("read-all")]
+    public ActionResult MarkAllRead()
+    {
+        messageList.MarkAllRead();
+
+        return this.NoContent();
+    }
+
+    [HttpPost("{id}/read")]
+    public ActionResult MarkRead(string id)
+    {
+        messageList.MarkRead(this.GetMessageEntry(id));
+
+        return this.NoContent();
+    }
+
+    [HttpPost("{id}/unread")]
+    public ActionResult MarkUnread(string id)
+    {
+        messageList.MarkUnread(this.GetMessageEntry(id));
+
+        return this.NoContent();
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<DetailDto>> Get(string id, CancellationToken token = default)
     {
@@ -163,7 +171,7 @@ public class MessagesController(
 
         // Opening the message is what marks it read -- ahead of the 304 below,
         // so a cached re-open still counts
-        readState.MarkRead(messageEntry.Id);
+        messageList.MarkRead(messageEntry);
 
         // Generate ETag based on the message's modified date
         var etag = $@"""{messageEntry.ModifiedDate.Ticks}""";

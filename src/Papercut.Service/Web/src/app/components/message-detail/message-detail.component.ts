@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable, map, switchMap, catchError, of, EMPTY, startWith, combineLatest, shareReplay } from 'rxjs';
@@ -11,6 +11,7 @@ import { EmailSectionDto } from '../../models';
 import { MessageService } from '../../services/message.service';
 import { MessageApiService } from '../../services/message-api.service';
 import { LoggingService } from '../../services/logging.service';
+import { KeyboardShortcutService, ShortcutCommand } from '../../services/keyboard-shortcut.service';
 import { DetailDto, RefDto } from '../../models';
 import { MessageSectionsComponent } from '../message-sections/message-sections.component';
 import { MessageHeaderComponent } from './message-header.component';
@@ -306,10 +307,16 @@ interface MessageViewData {
     }
   `]
 })
-export class MessageDetailComponent {
+export class MessageDetailComponent implements OnDestroy {
   protected readonly icons = { Mail, Paperclip };
 
   private static readonly MESSAGE_TAB_INDEX = 0;
+
+  /** In tab order; the keys 1-5 follow it. */
+  private static readonly TABS = ['Message', 'Headers', 'Body', 'Sections', 'Raw'];
+  private static readonly SECTIONS_TAB_INDEX = 3;
+
+  private readonly unregisterShortcuts: () => void;
 
   /** Survives switching between messages so the active tab is kept */
   selectedTabIndex = 0;
@@ -326,8 +333,22 @@ export class MessageDetailComponent {
     private router: Router,
     private messageService: MessageService,
     private messageApiService: MessageApiService,
-    private loggingService: LoggingService
+    private loggingService: LoggingService,
+    shortcuts: KeyboardShortcutService
   ) {
+    this.unregisterShortcuts = shortcuts.register(
+      ...MessageDetailComponent.TABS.map((tab, index): ShortcutCommand => ({
+        id: `message.tab.${tab.toLowerCase()}`,
+        label: `${tab} tab`,
+        group: 'Open message',
+        keys: [String(index + 1)],
+        // Sections is disabled when there are none; the key follows the tab
+        isEnabled: () => index !== MessageDetailComponent.SECTIONS_TAB_INDEX
+          || !!this.currentMessage?.sections?.length,
+        run: () => this.selectedTabIndex = index
+      }))
+    );
+
     this.messageData$ = this.route.params.pipe(
       switchMap(params => {
         const messageId = params['id'];
@@ -398,6 +419,10 @@ export class MessageDetailComponent {
       }),
       shareReplay(1)
     );
+  }
+
+  ngOnDestroy(): void {
+    this.unregisterShortcuts();
   }
 
   private redirectToHome(reason: string): void {

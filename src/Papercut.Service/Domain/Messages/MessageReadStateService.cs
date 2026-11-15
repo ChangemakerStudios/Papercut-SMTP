@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 //
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -45,6 +45,20 @@ public class MessageReadStateService
     public long Version { get; private set; }
 
     public bool IsRead(string messageId) => _read.ContainsKey(messageId);
+
+    public void MarkRead(IEnumerable<string> messageIds)
+    {
+        var added = messageIds.Count(id => !string.IsNullOrEmpty(id) && _read.TryAdd(id, 0));
+        if (added > 0) Version++;
+    }
+
+    /// <summary>Read status changed somewhere this set doesn't track (the message index).</summary>
+    public void Touch() => Version++;
+
+    public void MarkUnread(string messageId)
+    {
+        if (_read.TryRemove(messageId, out _)) Version++;
+    }
 
     public void MarkRead(string messageId)
     {

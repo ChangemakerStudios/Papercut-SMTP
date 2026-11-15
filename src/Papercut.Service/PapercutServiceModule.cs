@@ -17,6 +17,7 @@
 
 using Papercut.Message;
 
+using Papercut.Service.Application.Messages;
 using Papercut.Service.Domain;
 using Papercut.Service.Domain.Messages;
 
@@ -80,6 +81,8 @@ public class PapercutServiceModule : Module
         // Read state lives for the life of the service, so it must not be
         // rebuilt per request scope
         builder.RegisterType<MessageReadStateService>().AsSelf().SingleInstance();
+
+        builder.RegisterType<MessageListService>().AsSelf().SingleInstance();
 
         builder.RegisterStaticMethods(ThisAssembly);
     }

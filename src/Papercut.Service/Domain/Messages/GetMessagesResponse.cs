@@ -1,4 +1,4 @@
-// Papercut
+﻿// Papercut
 // 
 // Copyright © 2008 - 2012 Ken Robertson
 // Copyright © 2013 - 2025 Jaben Cargman
@@ -18,9 +18,13 @@
 
 namespace Papercut.Service.Domain.Messages;
 
-public class GetMessagesResponse(int totalMessageCount, IEnumerable<RefDto> messages)
+public class GetMessagesResponse(int totalMessageCount, IEnumerable<RefDto> messages, int? inboxCount = null)
 {
+    /// <summary>Messages matching the search, or every message when there is none. Page against this.</summary>
     public int TotalMessageCount { get; } = totalMessageCount;
+
+    /// <summary>Every message, search or not.</summary>
+    public int InboxCount { get; } = inboxCount ?? totalMessageCount;
 
     public List<RefDto> Messages { get; } = messages.IfNullEmpty().ToList();
 }
