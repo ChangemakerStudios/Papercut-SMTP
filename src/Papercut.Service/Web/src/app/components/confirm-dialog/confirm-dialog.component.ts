@@ -36,6 +36,14 @@ export interface ConfirmDialogData {
    * so a reflexive Enter does not do the damage.
    */
   initialFocus?: 'confirm' | 'cancel';
+  /** Adds a checkbox with this label; its state comes back in the result. */
+  dontAskAgainLabel?: string;
+}
+
+export interface ConfirmDialogResult {
+  confirmed: boolean;
+  /** The checkbox's state. Always false when the dialog has no checkbox. */
+  dontAskAgain: boolean;
 }
 
 /**
@@ -63,6 +71,14 @@ export interface ConfirmDialogData {
         <p class="confirm-message">{{ data.message }}</p>
         @if (data.detail) {
           <p class="confirm-detail">{{ data.detail }}</p>
+        }
+        @if (data.dontAskAgainLabel) {
+          <label class="confirm-check">
+            <input type="checkbox"
+              [checked]="dontAskAgain"
+              (change)="dontAskAgain = $any($event.target).checked" />
+            <span>{{ data.dontAskAgainLabel }}</span>
+          </label>
         }
       </div>
     
@@ -137,6 +153,19 @@ export interface ConfirmDialogData {
       color: var(--pc-muted);
     }
 
+    .confirm-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 14px;
+      font-size: 12.5px;
+      color: var(--pc-ink);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .confirm-check input { accent-color: var(--pc-accent); }
+
     .dialog-actions {
       display: flex;
       justify-content: flex-end;
@@ -195,8 +224,10 @@ export interface ConfirmDialogData {
 export class ConfirmDialogComponent {
   protected readonly icons = { AlertTriangle, HelpCircle, X };
 
+  dontAskAgain = false;
+
   constructor(
-    private dialogRef: MatDialogRef<ConfirmDialogComponent, boolean>,
+    private dialogRef: MatDialogRef<ConfirmDialogComponent, ConfirmDialogResult>,
     @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData
   ) {}
 
@@ -205,10 +236,10 @@ export class ConfirmDialogComponent {
   }
 
   confirm(): void {
-    this.dialogRef.close(true);
+    this.dialogRef.close({ confirmed: true, dontAskAgain: this.dontAskAgain });
   }
 
   cancel(): void {
-    this.dialogRef.close(false);
+    this.dialogRef.close({ confirmed: false, dontAskAgain: this.dontAskAgain });
   }
 }

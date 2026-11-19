@@ -17,8 +17,9 @@
 
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable, map } from 'rxjs';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../components/confirm-dialog/confirm-dialog.component';
+import { Observable, map, of, tap } from 'rxjs';
+import { ConfirmDialogComponent, ConfirmDialogData, ConfirmDialogResult } from '../components/confirm-dialog/confirm-dialog.component';
+import { UserSettingsService } from './user-settings.service';
 
 /**
  * Opens the app's confirmation dialog. Emits exactly once: true if confirmed,
@@ -28,16 +29,42 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../components/confirm
 @Injectable({ providedIn: 'root' })
 export class ConfirmService {
 
-  constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatDialog, private userSettings: UserSettingsService) {}
 
   confirm(data: ConfirmDialogData): Observable<boolean> {
+    return this.open(data).pipe(map(result => result.confirmed));
+  }
+
+  /**
+   * The confirmation for deleting messages. The dialog offers "Never ask for
+   * confirmation on delete"; once that is chosen this emits true straight
+   * away, until the prompt is turned back on in Options.
+   */
+  confirmDelete(data: ConfirmDialogData): Observable<boolean> {
+    if (!this.userSettings.isDeleteConfirmationEnabled()) return of(true);
+
+    return this.open({ ...data, dontAskAgainLabel: 'Never ask for confirmation on delete' }).pipe(
+      tap(result => {
+        // only a delete that went ahead counts: ticking the box and then
+        // cancelling must not silently switch the prompt off
+        if (result.confirmed && result.dontAskAgain) {
+          this.userSettings.setDeleteConfirmationEnabled(false);
+        }
+      }),
+      map(result => result.confirmed));
+  }
+
+  private open(data: ConfirmDialogData): Observable<ConfirmDialogResult> {
     return this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
+      .open<ConfirmDialogComponent, ConfirmDialogData, ConfirmDialogResult>(ConfirmDialogComponent, {
         data,
         autoFocus: true,
         restoreFocus: true
       })
       .afterClosed()
-      .pipe(map(result => result === true));
+      .pipe(map(result => ({
+        confirmed: result?.confirmed === true,
+        dontAskAgain: result?.dontAskAgain === true
+      })));
   }
 }
