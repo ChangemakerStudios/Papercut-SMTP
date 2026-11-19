@@ -165,6 +165,17 @@ jobs:
       - name: Smoke test
         run: bash src/Papercut.Desktop/packaging/macos/smoke-test.sh "src/Papercut.Desktop/packaging/macos/out/${{ matrix.rid }}/releases"
 
+      # other runs (PRs, manual runs on a branch) keep the installer as a run artifact for testing
+      - name: Upload installer artifact
+        if: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')) }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: papercut-${{ matrix.rid }}
+          path: |
+            src/Papercut.Desktop/packaging/macos/out/${{ matrix.rid }}/releases/*.pkg
+            src/Papercut.Desktop/packaging/macos/out/${{ matrix.rid }}/releases/*Portable.zip
+          retention-days: 14
+
       # adds to the draft release build-windows created
       - name: Upload to the release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
