@@ -22,11 +22,13 @@ using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Themes.Fluent;
 using Avalonia.Threading;
 
 using Papercut.Desktop.Platform;
+using Papercut.Desktop.Platform.MacOS;
 using Papercut.Desktop.Services;
 
 namespace Papercut.Desktop;
@@ -75,6 +77,8 @@ internal sealed class App : Application
 
     public override void Initialize()
     {
+        // macOS shows this as the app menu title; Avalonia's default is "Avalonia Application"
+        Name = "Papercut SMTP";
         Styles.Add(new FluentTheme());
     }
 
@@ -108,6 +112,9 @@ internal sealed class App : Application
         _tray.Clicked += (_, _) => ShowWindow();
         TrayIcon.SetIcons(this, new TrayIcons { _tray });
         RebuildMenu();
+
+        // replaces Avalonia's default app menu ("About Avalonia", ...), which is turned off in Program
+        if (OperatingSystem.IsMacOS()) NativeMenu.SetMenu(this, CreateMacAppMenu());
 
         lifetime.ShutdownRequested += (_, _) => _ = StopServicesAsync();
 
@@ -172,8 +179,15 @@ internal sealed class App : Application
             _window.OpenExternallyRequested += OpenExternally;
             _window.SetService(_supervisor.IsStarting ? null : _supervisor.BaseUri, _supervisor.StatusText);
             _window.SetMenu(_windowMenu);
+
+            // closing hides the window: drop the Dock icon with it
+            _window.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == Visual.IsVisibleProperty && e.NewValue is false) MacDock.SetVisible(false);
+            };
         }
 
+        MacDock.SetVisible(true);
         _window.Show();
         _window.WindowState = _window.WindowState == WindowState.Minimized ? WindowState.Normal : _window.WindowState;
         _window.Activate();
@@ -267,6 +281,30 @@ internal sealed class App : Application
         _windowMenu.Add(new NativeMenuItem("_View") { Menu = view });
         _windowMenu.Add(new NativeMenuItem("_Options") { Menu = options });
         _windowMenu.Add(new NativeMenuItem("_Help") { Menu = help });
+    }
+
+    /// <summary>
+    /// The macOS app menu (the bold "Papercut SMTP" one), shown while the window is open.
+    /// </summary>
+    private NativeMenu CreateMacAppMenu()
+    {
+        var menu = new NativeMenu();
+        menu.Add(Item("About Papercut SMTP", () => OpenExternally(new Uri(ShellUpdater.RepositoryUrl))));
+        menu.Add(Item("Check for Updates...", () => _ = CheckForUpdatesAsync()));
+        menu.Add(new NativeMenuItemSeparator());
+
+        var hide = Item("Hide Papercut SMTP", MacDock.HideApp);
+        hide.Gesture = new KeyGesture(Key.H, KeyModifiers.Meta);
+        menu.Add(hide);
+
+        menu.Add(new NativeMenuItemSeparator());
+
+        // through ExitAsync, so Cmd+Q also stops the service
+        var quit = Item("Quit Papercut SMTP", () => _ = ExitAsync());
+        quit.Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta);
+        menu.Add(quit);
+
+        return menu;
     }
 
     private NativeMenuItem OpenInBrowserItem() =>

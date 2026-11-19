@@ -72,6 +72,10 @@ internal static class Program
 
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                // start in the menu bar only, as Info.plist's LSUIElement says; Avalonia's default
+                // puts a Dock icon up anyway. MacDock shows it while the window is open.
+                // App sets its own app menu in place of Avalonia's "About Avalonia" one
+                .With(new MacOSPlatformOptions { ShowInDock = false, DisableDefaultApplicationMenuItems = true })
                 .LogToTrace()
                 .StartWithClassicDesktopLifetime(args, Avalonia.Controls.ShutdownMode.OnExplicitShutdown);
 

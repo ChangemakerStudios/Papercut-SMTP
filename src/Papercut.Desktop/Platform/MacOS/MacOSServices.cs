@@ -17,9 +17,64 @@
 
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security;
 
 namespace Papercut.Desktop.Platform.MacOS;
+
+/// <summary>
+/// The Dock icon follows the window: shown while it is open, gone while Papercut lives only
+/// in the menu bar. Avalonia only sets this at startup (MacOSPlatformOptions.ShowInDock), so
+/// this flips NSApp's activation policy directly. Main thread only.
+/// </summary>
+internal static class MacDock
+{
+    private const string ObjC = "/usr/lib/libobjc.A.dylib";
+
+    private const long Regular = 0;
+
+    private const long Accessory = 1;
+
+    public static void SetVisible(bool visible) =>
+        Send("change the Dock icon", app => objc_msgSend(app, sel_registerName("setActivationPolicy:"), visible ? Regular : Accessory));
+
+    /// <summary>
+    /// The app menu's Hide (Cmd+H): [NSApp hide:nil].
+    /// </summary>
+    public static void HideApp() =>
+        Send("hide the app", app => objc_msgSend(app, sel_registerName("hide:"), IntPtr.Zero));
+
+    private static void Send(string what, Action<IntPtr> send)
+    {
+        if (!OperatingSystem.IsMacOS()) return;
+
+        try
+        {
+            var app = objc_msgSend(objc_getClass("NSApplication"), sel_registerName("sharedApplication"));
+            if (app != IntPtr.Zero) send(app);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to {What}", what);
+        }
+    }
+
+    [DllImport(ObjC)]
+    private static extern IntPtr objc_getClass(string name);
+
+    [DllImport(ObjC)]
+    private static extern IntPtr sel_registerName(string name);
+
+    [DllImport(ObjC)]
+    private static extern IntPtr objc_msgSend(IntPtr receiver, IntPtr selector);
+
+    [DllImport(ObjC)]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private static extern bool objc_msgSend(IntPtr receiver, IntPtr selector, long value);
+
+    [DllImport(ObjC)]
+    private static extern void objc_msgSend(IntPtr receiver, IntPtr selector, IntPtr arg);
+}
 
 /// <summary>
 /// Interim: osascript's "display notification" works unsigned, but is attributed to Script
