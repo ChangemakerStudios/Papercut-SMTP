@@ -125,6 +125,25 @@ Task("Test")
     }
 });
 
+// The web UI's unit tests (Karma + Jasmine), in headless Chrome
+Task("TestWeb")
+    .Does(() =>
+{
+    var web = MakeAbsolute(Directory("./src/Papercut.Service/Web"));
+    void Npm(string arguments)
+    {
+        // npm is a .cmd shim on Windows; cmd finds it on the PATH, StartProcess alone does not
+        var exitCode = IsRunningOnWindows()
+            ? StartProcess("cmd", new ProcessSettings { Arguments = $"/c npm {arguments}", WorkingDirectory = web })
+            : StartProcess("npm", new ProcessSettings { Arguments = arguments, WorkingDirectory = web });
+        if (exitCode != 0) throw new Exception($"npm {arguments} failed with exit code {exitCode}");
+    }
+
+    if (!DirectoryExists(web.Combine("node_modules"))) Npm("ci");
+
+    Npm("test -- --browsers=ChromeHeadless");
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD
 Task("BuildUI64")
@@ -532,6 +551,7 @@ Task("All")
     .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("Test")
+    .IsDependentOn("TestWeb")
     // WPF isn't shipped, but it shares code with the service: keep it compiling until it's removed
     .IsDependentOn("BuildUI64")
     .IsDependentOn("PackageDesktop")
