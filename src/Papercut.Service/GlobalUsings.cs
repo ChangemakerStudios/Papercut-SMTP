@@ -32,7 +32,6 @@ global using Papercut.Core.Domain.Paths;
 global using Papercut.Core.Domain.Settings;
 global using Papercut.Core.Infrastructure.Container;
 global using Papercut.Core.Infrastructure.Lifecycle;
-global using Papercut.Infrastructure.IPComm;
 global using Papercut.Infrastructure.Smtp;
 global using Papercut.Infrastructure.Smtp.RateLimiting;
 global using Papercut.Message;

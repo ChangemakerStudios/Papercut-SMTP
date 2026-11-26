@@ -73,7 +73,6 @@ internal class PapercutServiceStartup
         yield return new PapercutCoreModule();
         yield return new PapercutMessageModule();
         yield return new PapercutRuleModule();
-        yield return new PapercutIPCommModule();
         yield return new PapercutSmtpModule();
 
         yield return new PapercutServiceModule();

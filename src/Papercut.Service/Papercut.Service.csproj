@@ -61,7 +61,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Papercut.Common\Papercut.Common.csproj" />
 		<ProjectReference Include="..\Papercut.Core\Papercut.Core.csproj" />
-		<ProjectReference Include="..\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj" />
 		<ProjectReference Include="..\Papercut.Infrastructure.Smtp\Papercut.Infrastructure.Smtp.csproj" />
 		<ProjectReference Include="..\Papercut.Message\Papercut.Message.csproj" />
 		<ProjectReference Include="..\Papercut.Rules\Papercut.Rules.csproj" />

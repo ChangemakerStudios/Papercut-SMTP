@@ -5,6 +5,7 @@
 ### Security
 
 - **Please Update** - In 8.0.0 through 8.1.0, anyone who could reach the Papercut Service's web port could add an Invoke Process rule through the API and make the service run any program on its machine. The Docker image listens on every interface by default, so this includes anyone on your network. Invoke Process rules are now off unless you set `EnableInvokeProcessRule=true` in the service's configuration, which can't be changed from the web UI or the API. Reported by EZO Labs Security. (Thanks!)
+- **Port 37403 Closed** - The service no longer listens on port 37403. Only the v7 desktop app used it, and any program on the same machine could send it rule changes.
 - **SMTP Passwords Not Sent Back** - The rules API no longer returns the passwords saved in Forward and Relay rules. Leave the password blank when editing to keep it. If you change the server, port, SSL or username, enter it again.
 
 ### Before You Update

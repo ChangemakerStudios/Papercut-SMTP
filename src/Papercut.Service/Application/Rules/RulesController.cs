@@ -29,10 +29,9 @@ using Papercut.Rules.Domain.Relaying;
 namespace Papercut.Service.Application.Rules;
 
 /// <summary>
-///     Rules management, replacing the desktop's IPComm rules sync. GET
-///     returns the active rule set; PUT replaces it wholesale (the same
-///     semantics as the IPComm <see cref="RulesUpdatedEvent" /> path) and
-///     the singleton RuleService persists and applies it immediately.
+///     Rules management. GET returns the active rule set; PUT replaces it
+///     wholesale (published as a <see cref="RulesUpdatedEvent" />) and the
+///     singleton RuleService persists and applies it immediately.
 ///     SMTP passwords are never returned; a rule sent back without one keeps
 ///     its stored password only while its connection settings are unchanged.
 ///     New Invoke Process rules are refused unless
