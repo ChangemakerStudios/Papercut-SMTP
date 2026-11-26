@@ -131,12 +131,30 @@ public static class WinGet
             InstallerSwitches = new WinGetInstallerSwitches
             {
                 Silent = "--silent",
-                SilentWithProgress = "--silent"
+                SilentWithProgress = "--silent",
+                // Velopack Setup.exe options
+                InstallLocation = "--installto \"<INSTALLPATH>\"",
+                Log = "--log \"<LOGPATH>\""
             },
             UpgradeBehavior = "install",
             // Velopack app Id ("PapercutSMTP" for all architectures) registers as the ARP ProductCode
             ProductCode = "PapercutSMTP",
             ReleaseDate = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+            // winget-pkgs requires each version to keep the previous version's metadata;
+            // these match what Velopack writes to Apps & Features (Publisher defaults to the app Id)
+            AppsAndFeaturesEntries = new List<WinGetAppsAndFeaturesEntry>
+            {
+                new WinGetAppsAndFeaturesEntry
+                {
+                    Publisher = "PapercutSMTP",
+                    DisplayVersion = @params.Version,
+                    ProductCode = "PapercutSMTP"
+                }
+            },
+            InstallationMetadata = new WinGetInstallationMetadata
+            {
+                DefaultInstallLocation = @"%LocalAppData%\PapercutSMTP"
+            },
             Installers = new List<WinGetInstaller>(),
             ManifestType = "installer",
             ManifestVersion = "1.6.0"
@@ -223,6 +241,8 @@ public class WinGetInstallerManifest
     public string? UpgradeBehavior { get; set; }
     public string? ProductCode { get; set; }
     public string? ReleaseDate { get; set; }
+    public List<WinGetAppsAndFeaturesEntry>? AppsAndFeaturesEntries { get; set; }
+    public WinGetInstallationMetadata? InstallationMetadata { get; set; }
     public List<WinGetInstaller>? Installers { get; set; }
     public string? ManifestType { get; set; }
     public string? ManifestVersion { get; set; }
@@ -232,6 +252,20 @@ public class WinGetInstallerSwitches
 {
     public string? Silent { get; set; }
     public string? SilentWithProgress { get; set; }
+    public string? InstallLocation { get; set; }
+    public string? Log { get; set; }
+}
+
+public class WinGetAppsAndFeaturesEntry
+{
+    public string? Publisher { get; set; }
+    public string? DisplayVersion { get; set; }
+    public string? ProductCode { get; set; }
+}
+
+public class WinGetInstallationMetadata
+{
+    public string? DefaultInstallLocation { get; set; }
 }
 
 public class WinGetInstaller
