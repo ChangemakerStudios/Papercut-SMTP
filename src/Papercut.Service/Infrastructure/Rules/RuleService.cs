@@ -24,7 +24,9 @@ using Papercut.Core.Domain.Rules;
 using Papercut.Core.Infrastructure.Async;
 using Papercut.Core.Infrastructure.Logging;
 using Papercut.Rules.App;
+using Papercut.Rules.Domain.Invoking;
 using Papercut.Rules.Domain.Rules;
+using Papercut.Service.Application.Rules;
 using Papercut.Service.Infrastructure.Configuration;
 
 using Microsoft.Extensions.Configuration;
@@ -61,7 +63,9 @@ public class RuleService(
                 {
                     await Task.Delay(2000, t);
                     await rulesRunner.RunNewMessageRules(
-                        Rules.OfType<INewMessageRule>().ToArray(),
+                        RuleUpdatePolicy.WithoutInvokeProcessRules(
+                            Rules.OfType<INewMessageRule>(),
+                            InvokeProcessRuleSettings.IsEnabled(configuration)),
                         @event.NewMessage.ToEntry(),
                         t);
                 }
@@ -95,6 +99,8 @@ public class RuleService(
             {
                 _logger.Information("No Rules found in {RuleFileName}", RuleFileName);
             }
+
+            WarnIfInvokeProcessRulesDisabled();
         }
         catch (Exception ex) when (_logger.ErrorWithContext(ex, "Error loading rules from file {RuleFileName}", RuleFileName))
         {
@@ -111,7 +117,23 @@ public class RuleService(
         Rules.AddRange(@event.Rules);
         Save();
 
+        WarnIfInvokeProcessRulesDisabled();
+
         return Task.CompletedTask;
+    }
+
+    private void WarnIfInvokeProcessRulesDisabled()
+    {
+        if (InvokeProcessRuleSettings.IsEnabled(configuration)) return;
+
+        var count = Rules.OfType<InvokeProcessRule>().Count(r => r.IsEnabled);
+
+        if (count == 0) return;
+
+        _logger.Warning(
+            "{RuleCount} Invoke Process rule(s) will not run: set {SettingKey}=true in the service configuration to allow them",
+            count,
+            InvokeProcessRuleSettings.EnabledSettingKey);
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)

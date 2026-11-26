@@ -24,6 +24,7 @@ using Microsoft.Extensions.Configuration;
 
 using Papercut.Core.Domain.Network.Smtp;
 using Papercut.Service.Application.Mcp;
+using Papercut.Service.Application.Rules;
 using Papercut.Service.Domain;
 
 namespace Papercut.Service.Application.Settings;
@@ -50,6 +51,7 @@ public class SettingsController(
             SmtpIP = smtpSettings.IP,
             SmtpPort = smtpSettings.Port,
             McpEnabled = McpServerSettings.IsEnabled(settingStore, configuration),
+            InvokeProcessRuleEnabled = InvokeProcessRuleSettings.IsEnabled(configuration),
             AvailableIPs = GetAvailableIPs()
         };
     }
@@ -131,6 +133,12 @@ public class SettingsController(
         public int SmtpPort { get; set; }
 
         public bool McpEnabled { get; set; }
+
+        /// <summary>
+        ///     Read-only here: set only through the service's configuration,
+        ///     never through this API.
+        /// </summary>
+        public bool InvokeProcessRuleEnabled { get; set; }
 
         public List<string> AvailableIPs { get; set; } = [];
     }
