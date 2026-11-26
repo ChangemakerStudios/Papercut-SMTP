@@ -2,6 +2,10 @@
 
 ## Papercut SMTP v8.2.0 [Unreleased]
 
+### Improvements
+
+- **Skip the Delete Prompt** - Tick **Never ask for confirmation on delete** in the Delete prompt to delete selected messages straight away. Turn the prompt back on under **Options**. Delete All still always asks. (Thanks, [ischyrus](https://github.com/ischyrus)!)
+
 ### Before You Update
 
 - **Windows Service Zip Has No Tray App** - The Windows Service download no longer includes the Service Tray Manager (`TrayNotification` folder). The desktop app now does its job: it finds an installed Papercut Service, shows its mail and gives new-mail notifications. If you start the tray app from a shortcut or at login, remove that and install the desktop app instead.
