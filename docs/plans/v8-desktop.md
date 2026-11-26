@@ -75,7 +75,7 @@ Keeping the id, channels, exe name and AUMID means v7's `UpdateManager` offers v
 
 The shell calls `VelopackApp.Build().Run()` first, and uses the same `GithubSource` for updates. Before it applies an update, it stops the child service, because that service holds files in `current\`.
 
-Secondary distributions are unchanged: the service zip (service + tray in `TrayNotification/`), Docker, and WinGet.
+Secondary distributions are unchanged: the service zip (service only; the tray app was removed after 8.1.1), Docker, and WinGet.
 
 ### macOS packaging
 

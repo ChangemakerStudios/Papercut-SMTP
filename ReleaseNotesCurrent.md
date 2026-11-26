@@ -1,5 +1,11 @@
 # Release Notes
 
+## Papercut SMTP v8.2.0 [Unreleased]
+
+### Before You Update
+
+- **Windows Service Zip Has No Tray App** - The Windows Service download no longer includes the Service Tray Manager (`TrayNotification` folder). The desktop app now does its job: it finds an installed Papercut Service, shows its mail and gives new-mail notifications. If you start the tray app from a shortcut or at login, remove that and install the desktop app instead.
+
 ## Papercut SMTP v8.1.1 [2026-11-25]
 
 ### Security
