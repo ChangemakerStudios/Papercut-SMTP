@@ -1,25 +1,13 @@
 ﻿
 #module nuget:?package=Cake.BuildSystems.Module&version=9.0.0
 
-#tool "nuget:?package=System.Configuration.ConfigurationManager&version=4.5.0"
-#tool "nuget:?package=MarkdownSharp&version=2.0.5"
-#tool "nuget:?package=MimekitLite&version=4.14.0"
-#tool "nuget:?package=NUnit.ConsoleRunner&version=3.17.0"
-#tool "nuget:?package=OpenCover&version=4.7.1221"
-
 #tool "dotnet:?package=GitVersion.Tool&version=6.4.0"
 #tool "dotnet:?package=vpk&version=1.2.158"
 
-#addin "nuget:?package=Cake.FileHelpers&version=9.0.0"
 #addin "nuget:?package=Cake.Incubator&version=11.0.0"
 
 #nullable enable
 
-#reference "tools/System.Configuration.ConfigurationManager.4.5.0/lib/netstandard2.0/System.Configuration.ConfigurationManager.dll"
-#reference "tools/MarkdownSharp.2.0.5/lib/netstandard2.0/MarkdownSharp.dll"
-#reference "tools/MimeKitLite.4.14.0/lib/netstandard2.0/MimeKitLite.dll"
-
-#load "./build/ReleaseNotes.cake"
 #load "./build/Velopack.cake"
 #load "./build/Desktop.cake"
 #load "./build/WinGet.cake"
@@ -60,7 +48,6 @@ Teardown(ctx => Information("Finished running tasks."));
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration
 ///////////////////////////////////////////////////////////////////////////////
-var papercutDir = Directory("./src/Papercut.UI");
 var papercutServiceDir = Directory("./src/Papercut.Service");
 var publishDirectory = Directory("./publish");
 var releasesDirectory = Directory("./releases");
@@ -84,11 +71,6 @@ Task("Clean")
         CleanDirectory(directory);
     }
 });
-
-///////////////////////////////////////////////////////////////////////////////
-// RELEASE NOTES
-Task("CreateReleaseNotes")
-    .Does(() => ReleaseNotes.Create(Context));
 
 ///////////////////////////////////////////////////////////////////////////////
 Task("Restore")
@@ -142,142 +124,6 @@ Task("TestWeb")
     if (!DirectoryExists(web.Combine("node_modules"))) Npm("ci");
 
     Npm("test -- --browsers=ChromeHeadless");
-});
-
-///////////////////////////////////////////////////////////////////////////////
-// BUILD
-Task("BuildUI64")
-    .IsDependentOn("Restore")
-    .Does(() =>
-{
-    var settings = new DotNetPublishSettings
-    {
-        Configuration = configuration,
-        Runtime = "win-x64",
-        OutputDirectory = publishDirectory,
-        EnableCompressionInSingleFile = true,
-        MSBuildSettings = versionMSBuildSettings
-    };
-
-    DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-});
-
-Task("PackageUI64")
-    .IsDependentOn("BuildUI64")
-    .Does(() =>
-{
-    var packParams = new VpkPackParams
-    {
-        Id = "PapercutSMTP",
-        Title = "Papercut SMTP",
-        Icon = papercutDir + File("App.ico"),
-        ReleaseNotes = "ReleaseNotesCurrent.md",
-        Channel = "win-x64" + channelPostfix,
-        Version = versionInfo.FullSemVer,
-        PublishDirectory = publishDirectory,
-        ReleaseDirectory = releasesDirectory,
-        ExeName = "Papercut.exe",
-        Framework = "net8.0-x64-desktop,webview2",
-        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png"),
-        Aumid = "ChangemakerStudios.PapercutSMTP"
-    };
-
-    Velopack.Pack(Context, packParams);
-
-    // Copy installation helper files alongside Setup.exe
-    CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
-    CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
-});
-
-Task("BuildUI32")
-    .IsDependentOn("Restore")
-    .Does(() =>
-{
-    CleanDirectory(publishDirectory);
-
-    var settings = new DotNetPublishSettings
-    {
-        Configuration = configuration,
-        Runtime = "win-x86",
-        OutputDirectory = publishDirectory,
-        EnableCompressionInSingleFile = true,
-        MSBuildSettings = versionMSBuildSettings
-    };
-
-    DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-});
-
-Task("PackageUI32")
-    .IsDependentOn("BuildUI32")
-    .Does(() =>
-{
-    // Create a new instance of VpkPackParams with the necessary properties
-    var packParams = new VpkPackParams
-    {
-        Id = "PapercutSMTP",
-        Title = "Papercut SMTP",
-        Icon = papercutDir + File("App.ico"),
-        ReleaseNotes = "ReleaseNotesCurrent.md",
-        Channel = "win-x86" + channelPostfix,
-        Version = versionInfo.FullSemVer,
-        PublishDirectory = publishDirectory,
-        ReleaseDirectory = releasesDirectory,
-        ExeName = "Papercut.exe",
-        Framework = "net8.0-x86-desktop,webview2",
-        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png"),
-        Aumid = "ChangemakerStudios.PapercutSMTP"
-    };
-
-    Velopack.Pack(Context, packParams);
-
-    // Copy installation helper files alongside Setup.exe
-    CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
-    CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
-});
-
-Task("BuildUIArm64")
-    .IsDependentOn("Restore")
-    .Does(() =>
-{
-    CleanDirectory(publishDirectory);
-
-    var settings = new DotNetPublishSettings
-    {
-        Configuration = configuration,
-        Runtime = "win-arm64",
-        OutputDirectory = publishDirectory,
-        EnableCompressionInSingleFile = true,
-        MSBuildSettings = versionMSBuildSettings
-    };
-
-    DotNetPublish("./src/Papercut.UI/Papercut.csproj", settings);
-});
-
-Task("PackageUIArm64")
-    .IsDependentOn("BuildUIArm64")
-    .Does(() =>
-{
-    var packParams = new VpkPackParams
-    {
-        Id = "PapercutSMTP",
-        Title = "Papercut SMTP",
-        Icon = papercutDir + File("App.ico"),
-        ReleaseNotes = "ReleaseNotesCurrent.md",
-        Channel = "win-arm64" + channelPostfix,
-        Version = versionInfo.FullSemVer,
-        PublishDirectory = publishDirectory,
-        ReleaseDirectory = releasesDirectory,
-        ExeName = "Papercut.exe",
-        Framework = "net8.0-arm64-desktop,webview2",
-        SplashImage = papercutDir + File("Resources/PapercutSMTP-Installation-Splash.png"),
-        Aumid = "ChangemakerStudios.PapercutSMTP"
-    };
-
-    Velopack.Pack(Context, packParams);
-
-    // Copy installation helper files alongside Setup.exe
-    CopyFile("./installation/UI/Install-PapercutSMTP.ps1", releasesDirectory + File("Install-PapercutSMTP.ps1"));
-    CopyFile("./installation/README.md", releasesDirectory + File("INSTALLATION.md"));
 });
 
 Task("DeployReleases")
@@ -378,128 +224,42 @@ Task("DeployReleases")
         }
     });
 
-
-Task("BuildAndPackServiceWin64")
-    .IsDependentOn("Restore")
-    .Does(() =>
+// Windows Service zip per architecture. The task names are what DeployReleases depends on.
+foreach (var (serviceTask, serviceRuntime) in new[]
 {
-    CleanDirectory(publishDirectory);
-    var runtime = "win-x64";
-
-    var settings = new DotNetPublishSettings
-    {
-        Configuration = configuration,
-        OutputDirectory = publishDirectory,
-        Runtime = runtime,
-        EnableCompressionInSingleFile = true,
-        PublishSingleFile = true,
-        SelfContained = true,
-        MSBuildSettings = versionMSBuildSettings
-    };
-
-    DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
-
-    var traySettings = new DotNetPublishSettings
-    {
-        Configuration = configuration,
-        OutputDirectory = publishDirectory + Directory("TrayNotification"),
-        Runtime = runtime,
-        EnableCompressionInSingleFile = true,
-        PublishSingleFile = true,
-        SelfContained = true,
-        MSBuildSettings = versionMSBuildSettings
-    };
-
-    DotNetPublish("./src/Papercut.Service.TrayNotification/Papercut.Service.TrayNotification.csproj", traySettings);
-
-    CopyFiles("./installation/service/*.ps1", publishDirectory);
-    CopyFiles("./installation/service/*.bat", publishDirectory);
-
-    var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
-    Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
-});
-
-Task("BuildAndPackServiceWin32")
-    .IsDependentOn("Restore")
-    .Does(() =>
+    ("BuildAndPackServiceWin64", "win-x64"),
+    ("BuildAndPackServiceWin32", "win-x86"),
+    ("BuildAndPackServiceWinArm64", "win-arm64")
+})
 {
-    CleanDirectory(publishDirectory);
+    var runtime = serviceRuntime;
 
-    var runtime = "win-x86";
-
-    var settings = new DotNetPublishSettings
+    Task(serviceTask)
+        .IsDependentOn("Restore")
+        .Does(() =>
     {
-        Configuration = configuration,
-        OutputDirectory = publishDirectory,
-        Runtime = runtime,
-        EnableCompressionInSingleFile = true,
-        PublishSingleFile = true,
-        SelfContained = true,
-        MSBuildSettings = versionMSBuildSettings
-    };
+        CleanDirectory(publishDirectory);
 
-    DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
+        var settings = new DotNetPublishSettings
+        {
+            Configuration = configuration,
+            OutputDirectory = publishDirectory,
+            Runtime = runtime,
+            EnableCompressionInSingleFile = true,
+            PublishSingleFile = true,
+            SelfContained = true,
+            MSBuildSettings = versionMSBuildSettings
+        };
 
-    var traySettings = new DotNetPublishSettings
-    {
-        Configuration = configuration,
-        OutputDirectory = publishDirectory + Directory("TrayNotification"),
-        Runtime = runtime,
-        EnableCompressionInSingleFile = true,
-        PublishSingleFile = true,
-        SelfContained = true,
-        MSBuildSettings = versionMSBuildSettings
-    };
+        DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
 
-    DotNetPublish("./src/Papercut.Service.TrayNotification/Papercut.Service.TrayNotification.csproj", traySettings);
+        CopyFiles("./installation/service/*.ps1", publishDirectory);
+        CopyFiles("./installation/service/*.bat", publishDirectory);
 
-    CopyFiles("./installation/service/*.ps1", publishDirectory);
-    CopyFiles("./installation/service/*.bat", publishDirectory);
-
-    var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
-    Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
-});
-
-Task("BuildAndPackServiceWinArm64")
-    .IsDependentOn("Restore")
-    .Does(() =>
-{
-    CleanDirectory(publishDirectory);
-
-    var runtime = "win-arm64";
-
-    var settings = new DotNetPublishSettings
-    {
-        Configuration = configuration,
-        OutputDirectory = publishDirectory,
-        Runtime = runtime,
-        EnableCompressionInSingleFile = true,
-        PublishSingleFile = true,
-        SelfContained = true,
-        MSBuildSettings = versionMSBuildSettings
-    };
-
-    DotNetPublish("./src/Papercut.Service/Papercut.Service.csproj", settings);
-
-    var traySettings = new DotNetPublishSettings
-    {
-        Configuration = configuration,
-        OutputDirectory = publishDirectory + Directory("TrayNotification"),
-        Runtime = runtime,
-        EnableCompressionInSingleFile = true,
-        PublishSingleFile = true,
-        SelfContained = true,
-        MSBuildSettings = versionMSBuildSettings
-    };
-
-    DotNetPublish("./src/Papercut.Service.TrayNotification/Papercut.Service.TrayNotification.csproj", traySettings);
-
-    CopyFiles("./installation/service/*.ps1", publishDirectory);
-    CopyFiles("./installation/service/*.bat", publishDirectory);
-
-    var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
-    Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
-});
+        var destFileName = new DirectoryPath(releasesDirectory).CombineWithFilePath($"Papercut.Smtp.Service.{versionInfo.FullSemVer}-{runtime}.zip");
+        Zip(publishDirectory, destFileName, GetFiles(publishDirectory.ToString() + "/**/*"));
+    });
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // WINGET
@@ -548,12 +308,9 @@ Task("PackageDesktop")
 
 Task("All")
     .IsDependentOn("Clean")
-    .IsDependentOn("CreateReleaseNotes")
     .IsDependentOn("Restore")
     .IsDependentOn("Test")
     .IsDependentOn("TestWeb")
-    // WPF isn't shipped, but it shares code with the service: keep it compiling until it's removed
-    .IsDependentOn("BuildUI64")
     .IsDependentOn("PackageDesktop")
     .IsDependentOn("BuildAndPackServiceWin64")
     .IsDependentOn("BuildAndPackServiceWin32")

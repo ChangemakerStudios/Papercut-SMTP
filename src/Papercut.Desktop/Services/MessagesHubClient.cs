@@ -21,8 +21,8 @@ using Microsoft.AspNetCore.SignalR.Client;
 namespace Papercut.Desktop.Services;
 
 /// <summary>
-/// New-mail events from the service's /hubs/messages, for notifications. Ported from the
-/// WinForms tray (Papercut.Service.TrayNotification), but pointed at whichever source the
+/// New-mail events from the service's /hubs/messages, for notifications. Ported from the old
+/// WinForms service tray app, but pointed at whichever source the
 /// supervisor picked, and re-pointed when that changes.
 /// </summary>
 internal sealed class MessagesHubClient : IAsyncDisposable

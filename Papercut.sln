@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11205.157
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut", "src\Papercut.UI\Papercut.csproj", "{AC067042-66BD-4110-ADA1-E2CEA43E7947}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Core", "src\Papercut.Core\Papercut.Core.csproj", "{EEDD1016-6442-48CE-8F8E-1D350829FBDE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Service", "src\Papercut.Service\Papercut.Service.csproj", "{BDDBCFD4-A1BD-4469-ACBD-E676E1723252}"
@@ -45,8 +43,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Build", ".Build", "{8661B3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Infrastructure.Smtp", "src\Papercut.Infrastructure.Smtp\Papercut.Infrastructure.Smtp.csproj", "{873EC485-8E94-4877-8EA7-A7DFE7612E0A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Papercut.Infrastructure.IPComm", "src\Papercut.Infrastructure.IPComm\Papercut.Infrastructure.IPComm.csproj", "{DA92047E-B764-41B4-B2D9-1C66C5449FA9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Core.Tests", "test\Papercut.Core.Tests\Papercut.Core.Tests.csproj", "{26A0A4C3-EA5A-490E-9805-5B255DD56994}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Message.Tests", "test\Papercut.Message.Tests\Papercut.Message.Tests.csproj", "{9A019B4C-378B-2566-564C-03CD2D1BAFA8}"
@@ -76,8 +72,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendRichEmailTest", "exampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendWordWrapTest", "examples\SendWordWrapTest\SendWordWrapTest.csproj", "{EA8024E3-5D17-3271-8D7A-BC8982C05ADE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Service.TrayNotification", "src\Papercut.Service.TrayNotification\Papercut.Service.TrayNotification.csproj", "{83838EEA-4004-B056-5AA6-4BB789F67A07}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Desktop", "src\Papercut.Desktop\Papercut.Desktop.csproj", "{2B130FD5-2FC8-4271-A798-7750631CFEAA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Papercut.Desktop.Tests", "test\Papercut.Desktop.Tests\Papercut.Desktop.Tests.csproj", "{74D751DA-9AE0-4EA7-818F-7B662D461946}"
@@ -92,18 +86,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|x64.ActiveCfg = Debug|AnyCPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|x64.Build.0 = Debug|AnyCPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|x86.ActiveCfg = Debug|x86
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Debug|x86.Build.0 = Debug|x86
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|AnyCPU.Build.0 = Release|AnyCPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|x64.ActiveCfg = Release|AnyCPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|x64.Build.0 = Release|AnyCPU
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|x86.ActiveCfg = Release|x86
-		{AC067042-66BD-4110-ADA1-E2CEA43E7947}.Release|x86.Build.0 = Release|x86
 		{EEDD1016-6442-48CE-8F8E-1D350829FBDE}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{EEDD1016-6442-48CE-8F8E-1D350829FBDE}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{EEDD1016-6442-48CE-8F8E-1D350829FBDE}.Debug|x64.ActiveCfg = Debug|AnyCPU
@@ -176,18 +158,6 @@ Global
 		{873EC485-8E94-4877-8EA7-A7DFE7612E0A}.Release|x64.Build.0 = Release|AnyCPU
 		{873EC485-8E94-4877-8EA7-A7DFE7612E0A}.Release|x86.ActiveCfg = Release|x86
 		{873EC485-8E94-4877-8EA7-A7DFE7612E0A}.Release|x86.Build.0 = Release|x86
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Debug|x64.ActiveCfg = Debug|AnyCPU
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Debug|x64.Build.0 = Debug|AnyCPU
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Debug|x86.ActiveCfg = Debug|x86
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Debug|x86.Build.0 = Debug|x86
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Release|AnyCPU.Build.0 = Release|AnyCPU
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Release|x64.ActiveCfg = Release|AnyCPU
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Release|x64.Build.0 = Release|AnyCPU
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Release|x86.ActiveCfg = Release|x86
-		{DA92047E-B764-41B4-B2D9-1C66C5449FA9}.Release|x86.Build.0 = Release|x86
 		{26A0A4C3-EA5A-490E-9805-5B255DD56994}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
 		{26A0A4C3-EA5A-490E-9805-5B255DD56994}.Debug|AnyCPU.Build.0 = Debug|Any CPU
 		{26A0A4C3-EA5A-490E-9805-5B255DD56994}.Debug|x64.ActiveCfg = Debug|x64
@@ -332,18 +302,6 @@ Global
 		{EA8024E3-5D17-3271-8D7A-BC8982C05ADE}.Release|x64.Build.0 = Release|Any CPU
 		{EA8024E3-5D17-3271-8D7A-BC8982C05ADE}.Release|x86.ActiveCfg = Release|Any CPU
 		{EA8024E3-5D17-3271-8D7A-BC8982C05ADE}.Release|x86.Build.0 = Release|Any CPU
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Debug|AnyCPU.Build.0 = Debug|Any CPU
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Debug|x64.ActiveCfg = Debug|x64
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Debug|x64.Build.0 = Debug|x64
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Debug|x86.ActiveCfg = Debug|x86
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Debug|x86.Build.0 = Debug|x86
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Release|AnyCPU.ActiveCfg = Release|Any CPU
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Release|AnyCPU.Build.0 = Release|Any CPU
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Release|x64.ActiveCfg = Release|x64
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Release|x64.Build.0 = Release|x64
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Release|x86.ActiveCfg = Release|x86
-		{83838EEA-4004-B056-5AA6-4BB789F67A07}.Release|x86.Build.0 = Release|x86
 		{2B130FD5-2FC8-4271-A798-7750631CFEAA}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
 		{2B130FD5-2FC8-4271-A798-7750631CFEAA}.Debug|AnyCPU.Build.0 = Debug|Any CPU
 		{2B130FD5-2FC8-4271-A798-7750631CFEAA}.Debug|x64.ActiveCfg = Debug|x64
