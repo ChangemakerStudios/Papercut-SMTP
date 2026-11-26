@@ -17,7 +17,6 @@ WORKDIR /work
 COPY ["src/Papercut.Service/Papercut.Service.csproj", "/work/Papercut.Service/"]
 COPY ["src/Papercut.Common/Papercut.Common.csproj", "/work/Papercut.Common/"]
 COPY ["src/Papercut.Core/Papercut.Core.csproj", "/work/Papercut.Core/"]
-COPY ["src/Papercut.Infrastructure.IPComm/Papercut.Infrastructure.IPComm.csproj", "/work/Papercut.Infrastructure.IPComm/"]
 COPY ["src/Papercut.Infrastructure.Smtp/Papercut.Infrastructure.Smtp.csproj", "/work/Papercut.Infrastructure.Smtp/"]
 COPY ["src/Papercut.Message/Papercut.Message.csproj", "/work/Papercut.Message/"]
 COPY ["src/Papercut.Rules/Papercut.Rules.csproj", "/work/Papercut.Rules/"]
@@ -69,8 +68,5 @@ EXPOSE 2525
 
 # Optional TLS/SSL port (requires certificate configuration)
 # EXPOSE 465
-
-# optional -- should only be used locally: IPComm
-# EXPOSE 37403
 
 CMD ["dotnet", "Papercut.Service.dll"]

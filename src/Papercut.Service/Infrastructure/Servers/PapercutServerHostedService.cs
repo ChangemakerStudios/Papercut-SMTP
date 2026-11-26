@@ -20,14 +20,9 @@ namespace Papercut.Service.Infrastructure.Servers
 {
     using Microsoft.Extensions.Hosting;
 
-    using Papercut.Infrastructure.IPComm.Network;
-
     public class PapercutServerHostedService(
-        PapercutIPCommServer ipCommServer,
         PapercutSmtpServer smtpServer,
-        PapercutIPCommEndpoints papercutIpCommEndpoints,
         IAppMeta applicationMetaData,
-        ILogger logger,
         IMessageBus messageBus)
         : IHostedService
     {
@@ -37,20 +32,6 @@ namespace Papercut.Service.Infrastructure.Servers
                 new PapercutServicePreStartEvent { AppMeta = applicationMetaData },
                 cancellationToken);
 
-            try
-            {
-                await ipCommServer.StopAsync(cancellationToken);
-                await ipCommServer.StartAsync(papercutIpCommEndpoints.Service, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                logger.Warning(
-                    ex,
-                    "Unable to Create Papercut IPComm Server Listener on {IP}:{Port}. After 5 Retries. Failing",
-                    ipCommServer.ListenIpAddress,
-                    ipCommServer.ListenPort);
-            }
-
             await messageBus.PublishAsync(
                 new PapercutServiceReadyEvent { AppMeta = applicationMetaData },
                 cancellationToken);
@@ -58,7 +39,7 @@ namespace Papercut.Service.Infrastructure.Servers
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            await Task.WhenAll(smtpServer.StopAsync(cancellationToken), ipCommServer.StopAsync(cancellationToken)).WaitAsync(cancellationToken);
+            await smtpServer.StopAsync(cancellationToken).WaitAsync(cancellationToken);
 
             await messageBus.PublishAsync(new PapercutServiceExitEvent { AppMeta = applicationMetaData }, cancellationToken);
         }

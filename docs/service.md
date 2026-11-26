@@ -63,7 +63,19 @@ Use `http://0.0.0.0:8080` to listen on all interfaces — but read the warning b
 ```
 
 !!! warning "Network exposure"
-    When binding to `0.0.0.0`, `+`, `*`, or a LAN IP, the web UI is reachable from other machines — and Papercut has **no built-in authentication**. Use firewall rules or a reverse proxy with auth in front of it.
+    When binding to `0.0.0.0`, `+`, `*`, or a LAN IP, the web UI is reachable from other machines — and Papercut has **no built-in authentication**. Use firewall rules or a reverse proxy with auth in front of it. Anyone who reaches it can read and delete mail and change rules; [Invoke Process rules](#invoke-process-rules) stay off unless you turn them on.
+
+### Invoke Process rules
+
+An Invoke Process rule runs a program on the service's machine, as the service's user, for each new message. Because Papercut has no authentication, anyone who can reach the web UI could otherwise add one, so these rules are **off by default**: the web UI doesn't offer the type, the API refuses new ones, and ones already saved don't run (the service log says so at startup).
+
+To allow them, set `EnableInvokeProcessRule` in `appsettings.json` and restart the service:
+
+```json
+{ "EnableInvokeProcessRule": true }
+```
+
+Or set the environment variable `EnableInvokeProcessRule=true` (Docker: `-e EnableInvokeProcessRule=true`). It can't be changed from the web UI or the API. Only turn it on when the web UI is reachable from this machine alone (`Urls` on `127.0.0.1`, which is how the desktop app starts the service) or sits behind authentication.
 
 **Rate limiting** — reject mail once a quota is hit, so you can test how your application
 handles a mail server that is throttling it (`appsettings.json`):

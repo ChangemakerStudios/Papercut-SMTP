@@ -39,8 +39,12 @@ Select a message to inspect every layer of it:
 Papercut can act on messages automatically as they arrive:
 
 - **Forward** — pass received messages along to another SMTP server (supports authentication)
-- **Relay** — conditionally relay matching messages
-- **Retention** — periodically prune old messages
+- **Relay** — send received messages on to their original recipients through another SMTP server
+- **Conditional Forward** — forward only messages whose headers or body match a regular expression, optionally retrying on failure
+- **Invoke Process** — run a program for each new message (`%e` in the arguments is the message file). Off by default; see [Invoke Process rules](service.md#invoke-process-rules)
+- **Cleanup Mail** — periodically delete messages older than a number of days
+
+Saved SMTP passwords are never sent back to the browser. Leave the password blank to keep the saved one; changing the server, port, SSL or username clears it unless you enter it again.
 
 Configure rules with the **Rules** button in the web UI.
 

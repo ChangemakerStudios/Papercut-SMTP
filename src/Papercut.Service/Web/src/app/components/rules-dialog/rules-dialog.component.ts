@@ -23,6 +23,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { LucideAngularModule, ListChecks, X, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-angular';
 import { RulesApiService } from '../../services/rules-api.service';
+import { SettingsApiService } from '../../services/settings-api.service';
 import { ToastNotificationService } from '../../services/toast-notification.service';
 import {
   RuleDto,
@@ -58,7 +59,7 @@ import {
         <div class="dialog-body">
           <div class="add-row">
             <select class="pc-input" [(ngModel)]="newRuleType" [disabled]="isSaving">
-              @for (t of ruleTypes; track t) {
+              @for (t of availableRuleTypes; track t) {
                 <option [value]="t">{{ t }}</option>
               }
             </select>
@@ -117,7 +118,12 @@ import {
               <label class="field-label" for="rule-user">Username</label>
               <input id="rule-user" class="pc-input" [(ngModel)]="rule.smtpUsername" autocomplete="off" />
               <label class="field-label" for="rule-pass">Password</label>
-              <input id="rule-pass" class="pc-input" type="password" [(ngModel)]="rule.smtpPassword" autocomplete="new-password" />
+              <input id="rule-pass" class="pc-input" type="password" [(ngModel)]="rule.smtpPassword" autocomplete="new-password"
+                [placeholder]="rule.hasSmtpPassword ? '(saved — leave blank to keep)' : ''" />
+              @if (rule.hasSmtpPassword) {
+                <span class="field-label"></span>
+                <div class="field-hint">Changing the server, port, SSL or username clears the saved password unless you enter it again.</div>
+              }
               <label class="field-label" for="rule-bcc">To BCC</label>
               <input id="rule-bcc" class="pc-input pc-mono" [(ngModel)]="rule.toBcc" placeholder="(optional)" />
             }
@@ -142,6 +148,13 @@ import {
               </div>
             }
             @if (rule.type === 'Invoke Process') {
+              @if (!invokeProcessEnabled) {
+                <span class="field-label"></span>
+                <div class="field-hint field-hint-warn">
+                  Invoke Process rules are turned off on this server and will not run. To allow them, set
+                  <code>EnableInvokeProcessRule=true</code> in the service's configuration and restart it.
+                </div>
+              }
               <label class="field-label" for="rule-proc">Process</label>
               <input id="rule-proc" class="pc-input pc-mono" [(ngModel)]="rule.processToRun" placeholder="C:\\path\\to\\program.exe" />
               <label class="field-label" for="rule-args">Arguments</label>
@@ -388,6 +401,16 @@ import {
       margin-right: auto;
     }
 
+    .field-hint {
+      font-size: 11.5px;
+      color: var(--pc-faint);
+      line-height: 1.4;
+    }
+
+    .field-hint-warn {
+      color: var(--pc-danger-strong);
+    }
+
     .dialog-error {
       margin: 12px 0 4px;
       padding: 8px 12px;
@@ -439,6 +462,8 @@ import {
 export class RulesDialogComponent {
   protected readonly icons = { ListChecks, X, Plus, Pencil, Trash2, ChevronLeft };
   protected readonly ruleTypes = RULE_TYPES;
+  /** Off until the server says otherwise, so the type isn't offered on a server that refuses it. */
+  invokeProcessEnabled = false;
   protected readonly isRelayFamily = isRelayFamily;
   protected readonly isForwardFamily = isForwardFamily;
   protected readonly isConditionalFamily = isConditionalFamily;
@@ -458,8 +483,14 @@ export class RulesDialogComponent {
   constructor(
     private dialogRef: MatDialogRef<RulesDialogComponent, boolean>,
     private rulesApi: RulesApiService,
+    private settingsApi: SettingsApiService,
     private toastService: ToastNotificationService
   ) {
+    this.settingsApi.getSettings().subscribe({
+      next: settings => this.invokeProcessEnabled = !!settings.invokeProcessRuleEnabled,
+      error: () => this.invokeProcessEnabled = false
+    });
+
     this.rulesApi.getRules().subscribe({
       next: rules => {
         this.rules = rules;
@@ -470,6 +501,10 @@ export class RulesDialogComponent {
         this.isLoading = false;
       }
     });
+  }
+
+  get availableRuleTypes(): RuleType[] {
+    return this.invokeProcessEnabled ? this.ruleTypes : this.ruleTypes.filter(t => t !== 'Invoke Process');
   }
 
   markDirty(): void {
@@ -486,7 +521,7 @@ export class RulesDialogComponent {
       case 'Conditional Forward with Retry':
         return `${rule.type}: ${rule.regexHeaderMatch || rule.regexBodyMatch || '(no condition)'} → ${rule.toEmail || '?'}`;
       case 'Invoke Process':
-        return `${rule.type}: ${rule.processToRun || '?'}`;
+        return `${rule.type}: ${rule.processToRun || '?'}${this.invokeProcessEnabled ? '' : ' (turned off on this server)'}`;
       case 'Cleanup Mail':
         return `${rule.type}: keep ${rule.mailRetentionDays ?? '?'} day(s)`;
       default:

@@ -7,6 +7,8 @@ export interface ServerSettings {
   smtpIP: string;
   smtpPort: number;
   mcpEnabled: boolean;
+  /** Read-only: set by the service's configuration (EnableInvokeProcessRule), not this API. */
+  invokeProcessRuleEnabled: boolean;
   availableIPs: string[];
 }
 

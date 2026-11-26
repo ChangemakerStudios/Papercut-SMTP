@@ -49,7 +49,10 @@ export interface RuleDto {
   smtpPort?: number | null;
   smtpUseSSL?: boolean | null;
   smtpUsername?: string | null;
+  /** Write-only: the server never returns it. Null keeps the stored password; '' clears it. */
   smtpPassword?: string | null;
+  /** Read-only: whether the server holds a password for this rule. */
+  hasSmtpPassword?: boolean | null;
   toBcc?: string | null;
   fromEmail?: string | null;
   toEmail?: string | null;
