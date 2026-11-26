@@ -38,15 +38,15 @@ describe('BottomToolbarComponent', () => {
     expect(emitted).toHaveBeenCalledTimes(1);
   });
 
-  it('routes Delete All through the delete confirmation', () => {
+  it('always confirms Delete All, without the never-ask option', () => {
     const emitted = jasmine.createSpy('deleteAll');
     component.deleteAll.subscribe(emitted);
     component.totalMessageCount = 5;
 
     component.onDeleteAll();
 
-    expect(confirmService.confirmDelete).toHaveBeenCalledTimes(1);
-    expect(confirmService.confirm).not.toHaveBeenCalled();
+    expect(confirmService.confirm).toHaveBeenCalledTimes(1);
+    expect(confirmService.confirmDelete).not.toHaveBeenCalled();
     expect(emitted).toHaveBeenCalledTimes(1);
   });
 

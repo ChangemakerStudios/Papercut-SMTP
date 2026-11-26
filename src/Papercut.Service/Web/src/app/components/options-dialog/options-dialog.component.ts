@@ -81,7 +81,7 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
           <label class="field-label">Delete</label>
           <label class="pc-check">
             <input type="checkbox" [(ngModel)]="confirmDelete" [disabled]="isSaving" />
-            <span>Ask for confirmation before deleting messages</span>
+            <span>Ask for confirmation before deleting selected messages</span>
           </label>
         </div>
     

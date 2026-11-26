@@ -42,7 +42,7 @@ export class UserSettingsService {
     }
   }
 
-  /** Whether deleting messages asks first. Covers Delete and Delete All. */
+  /** Whether deleting selected messages asks first. Delete All always asks. */
   isDeleteConfirmationEnabled(): boolean {
     // Read through rather than cached, so another tab's choice applies here too
     return localStorage.getItem(CONFIRM_DELETE_KEY) !== 'false';

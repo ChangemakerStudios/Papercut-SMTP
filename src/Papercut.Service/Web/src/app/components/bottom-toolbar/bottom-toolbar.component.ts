@@ -251,7 +251,8 @@ export class BottomToolbarComponent implements OnDestroy {
   onDeleteAll(): void {
     if (this.totalMessageCount === 0) return;
 
-    this.confirmService.confirmDelete({
+    // always asks, even with the delete prompt turned off: this empties the inbox
+    this.confirmService.confirm({
       title: 'Delete All Messages',
       message: `Delete all ${this.totalMessageCount} messages?`,
       detail: 'Every .eml file in the message folder will be removed. This cannot be undone.',
