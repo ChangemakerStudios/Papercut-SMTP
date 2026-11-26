@@ -1,5 +1,16 @@
 # Release Notes
 
+## Papercut SMTP v8.1.1 [unreleased]
+
+### Security
+
+- **Please Update** - In 8.0.0 through 8.1.0, anyone who could reach the Papercut Service's web port could add an Invoke Process rule through the API and make the service run any program on its machine. The Docker image listens on every interface by default, so this includes anyone on your network. Invoke Process rules are now off unless you set `EnableInvokeProcessRule=true` in the service's configuration, which can't be changed from the web UI or the API. Reported by EZO Labs Security. (Thanks!)
+- **SMTP Passwords Not Sent Back** - The rules API no longer returns the passwords saved in Forward and Relay rules. Leave the password blank when editing to keep it. If you change the server, port, SSL or username, enter it again.
+
+### Before You Update
+
+- **If You Use Invoke Process Rules** - They stop running after this update until you set `EnableInvokeProcessRule=true` in `appsettings.json` or as an environment variable and restart. Only do that if the web UI can be reached from your machine alone or sits behind authentication. See [Invoke Process rules](https://www.papercut-smtp.com/service/#invoke-process-rules).
+
 ## Papercut SMTP v8.1.0 [2026-11-15]
 
 ### New Features

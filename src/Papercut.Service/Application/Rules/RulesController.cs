@@ -16,7 +16,10 @@
 // limitations under the License.
 
 
+using Microsoft.Extensions.Configuration;
+
 using Papercut.Core.Domain.Rules;
+using Papercut.Rules.App;
 using Papercut.Rules.Domain.Cleanup;
 using Papercut.Rules.Domain.Conditional.Forwarding;
 using Papercut.Rules.Domain.Forwarding;
@@ -30,9 +33,16 @@ namespace Papercut.Service.Application.Rules;
 ///     returns the active rule set; PUT replaces it wholesale (the same
 ///     semantics as the IPComm <see cref="RulesUpdatedEvent" /> path) and
 ///     the singleton RuleService persists and applies it immediately.
+///     SMTP passwords are never returned; a rule sent back without one keeps
+///     its stored password only while its connection settings are unchanged.
+///     New Invoke Process rules are refused unless
+///     <see cref="InvokeProcessRuleSettings.EnabledSettingKey" /> is set.
 /// </summary>
 [Route("api/[controller]")]
-public class RulesController(Infrastructure.Rules.RuleService ruleService, IMessageBus messageBus) : ControllerBase
+public class RulesController(
+    Infrastructure.Rules.RuleService ruleService,
+    IMessageBus messageBus,
+    IConfiguration configuration) : ControllerBase
 {
     [HttpGet]
     public IEnumerable<RuleDto> Get()
@@ -44,14 +54,26 @@ public class RulesController(Infrastructure.Rules.RuleService ruleService, IMess
     public async Task<ActionResult<IEnumerable<RuleDto>>> Update([FromBody] List<RuleDto> rules, CancellationToken token = default)
     {
         IRule[] mapped;
+        var existing = ruleService.Rules.ToArray();
 
         try
         {
-            mapped = rules.Select(r => r.ToRule()).ToArray();
+            mapped = rules.Select(r => r.ToRule(existing)).ToArray();
         }
         catch (ArgumentException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+
+        if (!InvokeProcessRuleSettings.IsEnabled(configuration)
+            && RuleUpdatePolicy.FindNewInvokeProcessRules(mapped, existing).Count > 0)
+        {
+            return BadRequest(new
+            {
+                error = "Invoke Process rules are disabled on this server. To allow them, set "
+                        + $"{InvokeProcessRuleSettings.EnabledSettingKey}=true in the service's configuration "
+                        + "(appsettings.json or an environment variable) and restart it."
+            });
         }
 
         await messageBus.PublishAsync(new RulesUpdatedEvent(mapped), token);
@@ -85,7 +107,15 @@ public class RulesController(Infrastructure.Rules.RuleService ruleService, IMess
 
         public string? SmtpUsername { get; set; }
 
+        /// <summary>
+        ///     Write-only: always null in responses. On a PUT, null keeps the
+        ///     stored password (when the connection is unchanged) and an empty
+        ///     string clears it.
+        /// </summary>
         public string? SmtpPassword { get; set; }
+
+        /// <summary>Read-only: whether a password is stored for this rule.</summary>
+        public bool HasSmtpPassword { get; set; }
 
         public string? ToBcc { get; set; }
 
@@ -128,7 +158,7 @@ public class RulesController(Infrastructure.Rules.RuleService ruleService, IMess
                 dto.SmtpPort = relay.SmtpPort;
                 dto.SmtpUseSSL = relay.SmtpUseSSL;
                 dto.SmtpUsername = relay.SmtpUsername;
-                dto.SmtpPassword = relay.SmtpPassword;
+                dto.HasSmtpPassword = !string.IsNullOrEmpty(relay.SmtpPassword);
                 dto.ToBcc = relay.ToBcc;
             }
 
@@ -164,7 +194,7 @@ public class RulesController(Infrastructure.Rules.RuleService ruleService, IMess
             return dto;
         }
 
-        public IRule ToRule()
+        public IRule ToRule(IReadOnlyCollection<IRule>? existing = null)
         {
             IRule rule = Type switch
             {
@@ -186,6 +216,11 @@ public class RulesController(Infrastructure.Rules.RuleService ruleService, IMess
 
             rule.Name = this.Name ?? string.Empty;
             rule.IsEnabled = this.IsEnabled;
+
+            if (rule is RelayRule relay && this.SmtpPassword is null && existing is not null)
+            {
+                relay.SmtpPassword = RuleUpdatePolicy.FindStoredSmtpPassword(relay, this.Id, existing) ?? string.Empty;
+            }
 
             return rule;
         }
