@@ -5,8 +5,7 @@ import { EnvironmentService } from './environment.service';
 import { RuleDto } from '../models/rule-dto';
 
 /**
- * Rules management (GET/PUT api/rules). PUT replaces the whole rule set —
- * the same semantics as the desktop's IPComm rules sync.
+ * Rules management (GET/PUT api/rules). PUT replaces the whole rule set.
  */
 @Injectable({ providedIn: 'root' })
 export class RulesApiService {

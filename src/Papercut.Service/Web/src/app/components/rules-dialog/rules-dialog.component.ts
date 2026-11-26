@@ -38,8 +38,7 @@ import {
 /**
  * The desktop app's Rules window, web edition: manage the service's rule
  * set (forward, relay, conditional, invoke process, retention). Edits are
- * local until Save, which replaces the server's rule set wholesale —
- * matching the desktop's IPComm sync semantics.
+ * local until Save, which replaces the server's rule set wholesale.
  */
 @Component({
   selector: 'app-rules-dialog',

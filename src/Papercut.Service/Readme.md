@@ -36,7 +36,6 @@ src/Papercut.Service/
 └── Infrastructure/       # Infrastructure Layer - External Concerns
     ├── EmailAddresses/   # Email address utilities
     ├── Hosting/          # ASP.NET hosting configuration
-    ├── IPComm/           # Inter-process communication
     ├── Logging/          # Logging infrastructure
     ├── Paths/            # File path management
     ├── Rules/            # Rule processing infrastructure
@@ -84,7 +83,6 @@ src/Papercut.Service/
 #### **Key Modules & Dependencies**
 - **Papercut.Core** - Core domain logic and infrastructure
 - **Papercut.Infrastructure.Smtp** - SMTP server implementation
-- **Papercut.Infrastructure.IPComm** - Inter-process communication
 - **Papercut.Message** - Message repository and management
 - **Papercut.Rules** - Message processing rules engine
 - **Papercut.Common** - Shared utilities and extensions
@@ -253,7 +251,6 @@ Comprehensive logging is available through Serilog:
 ## 📄 Related Documentation
 
 - `Web/README.md` - Angular frontend documentation
-- `Web/TESTING.md` - Web UI testing guidelines
 
 ---
 
