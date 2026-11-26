@@ -213,7 +213,7 @@ export class BottomToolbarComponent implements OnDestroy {
         run: () => this.onForward()
       },
       {
-        // the same confirm as the button: a stray key must not lose mail
+        // the same confirm as the button, unless the user has turned it off
         id: 'messages.delete', label: 'Delete selected', group: 'Messages',
         keys: ['Delete', '#', 'Backspace'],
         isEnabled: () => this.selectedMessageCount > 0,
@@ -235,7 +235,7 @@ export class BottomToolbarComponent implements OnDestroy {
 
     const one = this.selectedMessageCount === 1;
 
-    this.confirmService.confirm({
+    this.confirmService.confirmDelete({
       title: one ? 'Delete Message' : 'Delete Messages',
       message: one
         ? 'Delete this message?'
@@ -251,6 +251,7 @@ export class BottomToolbarComponent implements OnDestroy {
   onDeleteAll(): void {
     if (this.totalMessageCount === 0) return;
 
+    // always asks, even with the delete prompt turned off: this empties the inbox
     this.confirmService.confirm({
       title: 'Delete All Messages',
       message: `Delete all ${this.totalMessageCount} messages?`,

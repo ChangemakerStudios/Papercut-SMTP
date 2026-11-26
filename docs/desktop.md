@@ -31,7 +31,7 @@ Select a message to inspect every layer of it:
 ## Managing Messages
 
 - Messages are stored as standard **`.eml` files** — **File → Open Data Folder** in the window takes you to them
-- **Delete** removes the selected message(s); **Delete All** clears them all after you confirm
+- **Delete** removes the selected message(s) after you confirm, until you tick **Never ask for confirmation on delete** in the prompt; **Delete All** clears them all and always asks first
 - **Forward** a received message on to a real SMTP server (with optional authentication) when you need to get a captured email out
 
 ## Rules
@@ -57,6 +57,7 @@ The **Options** dialog in the web UI has:
 | SMTP IP | `Any` | Accepts mail from other machines. Pick `127.0.0.1` to accept mail from this machine only |
 | SMTP Port | `25` (`2525` on macOS) | Any free port works |
 | Sort Order | Newest first | |
+| Ask before deleting | On | Covers Delete; Delete All always asks. Turn it back on here after choosing **Never ask for confirmation on delete** |
 | Theme | System | Light / Dark / follow the system, with accent colors beside it |
 | MCP | Off | See [MCP Server](mcp.md) |
 

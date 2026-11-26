@@ -5,11 +5,12 @@ export type MessageSortOrder = 'desc' | 'asc';
 
 const SORT_ORDER_KEY = 'papercut-sort-order';
 const NOTIFICATIONS_KEY = 'papercut-notifications-enabled';
+const CONFIRM_DELETE_KEY = 'papercut-confirm-delete';
 
 /**
  * Client-side user preferences (persisted in localStorage), covering the
  * desktop Options fields that are per-viewer rather than per-server:
- * message sort order and new-mail notifications.
+ * message sort order, new-mail notifications and the delete confirmation.
  */
 @Injectable({ providedIn: 'root' })
 export class UserSettingsService {
@@ -39,6 +40,16 @@ export class UserSettingsService {
       localStorage.setItem(NOTIFICATIONS_KEY, String(enabled));
       this.notificationsEnabled.next(enabled);
     }
+  }
+
+  /** Whether deleting selected messages asks first. Delete All always asks. */
+  isDeleteConfirmationEnabled(): boolean {
+    // Read through rather than cached, so another tab's choice applies here too
+    return localStorage.getItem(CONFIRM_DELETE_KEY) !== 'false';
+  }
+
+  setDeleteConfirmationEnabled(enabled: boolean): void {
+    localStorage.setItem(CONFIRM_DELETE_KEY, String(enabled));
   }
 
   private loadSortOrder(): MessageSortOrder {

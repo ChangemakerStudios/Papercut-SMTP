@@ -29,7 +29,7 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
 /**
  * The desktop app's Options window, web edition. Server settings (SMTP
  * binding, MCP) persist via the settings API; viewer settings (sort order,
- * theme, accent, notifications) persist locally.
+ * theme, accent, notifications, delete confirmation) persist locally.
  */
 @Component({
   selector: 'app-options-dialog',
@@ -76,6 +76,12 @@ import { ToastNotificationService } from '../../services/toast-notification.serv
           <label class="pc-check">
             <input type="checkbox" [(ngModel)]="notificationsEnabled" [disabled]="isSaving" />
             <span>Show new message notifications</span>
+          </label>
+
+          <label class="field-label">Delete</label>
+          <label class="pc-check">
+            <input type="checkbox" [(ngModel)]="confirmDelete" [disabled]="isSaving" />
+            <span>Ask for confirmation before deleting selected messages</span>
           </label>
         </div>
     
@@ -335,6 +341,7 @@ export class OptionsDialogComponent {
   // Viewer settings
   sortOrder: MessageSortOrder;
   notificationsEnabled: boolean;
+  confirmDelete: boolean;
   themePreference: ThemePreference;
   selectedAccent: AccentColor;
 
@@ -347,6 +354,7 @@ export class OptionsDialogComponent {
   ) {
     this.sortOrder = this.userSettings.getSortOrder();
     this.notificationsEnabled = this.userSettings.areNotificationsEnabled();
+    this.confirmDelete = this.userSettings.isDeleteConfirmationEnabled();
     this.themePreference = this.themeService.getCurrentPreference();
     this.selectedAccent = this.themeService.getCurrentAccent();
 
@@ -383,6 +391,7 @@ export class OptionsDialogComponent {
     // Viewer settings apply immediately
     this.userSettings.setSortOrder(this.sortOrder);
     this.userSettings.setNotificationsEnabled(this.notificationsEnabled);
+    this.userSettings.setDeleteConfirmationEnabled(this.confirmDelete);
     this.themeService.setPreference(this.themePreference);
     this.themeService.setAccent(this.selectedAccent);
 
